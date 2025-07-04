@@ -1,0 +1,114 @@
+:root {
+    color: #FFE082;
+    --text: #78350F;
+    --heading: #92400E;
+    --nav-link: #78350F;
+    --nav-link-hover: #F59E0B;
+    --button-bg: #F59E0B;
+    --button-text: #FFFFFF;
+    --button-hover: #D97706;
+    --button-active: #92400E;
+    --highlight: #FFFFFF;
+    --footer-bg: #E5E7EB;
+    --footer-text: #78350F;
+    --search-heading: #F59E0B;
+    --modal-bg: #FFFFFF;
+    --modal-text: #78350F;
+}
+
+[data-theme="dark"] {
+    --background: #1E1E1E;
+    --text: #E0E0E0;
+    --heading: #FBC02D;
+    --nav-link: #E0E0E0;
+    --nav-link-hover: #FFD54F;
+    --button-bg: #FFD54F;
+    --button-text: #1E1E1E;
+    --button-hover: #e6bf45;
+    --button-active: #FFB300;
+    --highlight: #424242;
+    --footer-bg: #424242;
+    --footer-text: #E0E0E0;
+    --search-heading: #FBC02D;
+    --modal-bg: #1E1E1E;
+    --modal-text: #E0E0E0;
+}
+
+[data-theme="light"] h1 {
+    color: var(--button-bg);
+}
+
+[data-theme="light"] .description {
+    color: #FFFFFF;
+}
+
+[data-theme="light"] .no-results {
+    color: #FFFFFF;
+}
+
+[data-theme="light"] input#search-input {
+    color: #FFFFFF;
+}
+
+[data-theme="light"] input#search-input::-webkit-input-placeholder {
+    color: #D1D5DB;
+}
+
+[data-theme="light"] input#search-input::-moz-placeholder {
+    color: #D1D5DB;
+}
+
+[data-theme="dark"] .modal-content {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #FFE082;
+    border: 1px solid #555;
+}
+
+[data-theme="light"] .modal-content {
+    background-color: #FFFFFF;
+    color: #78350F;
+    border: 1px solid #DDD;
+}
+
+[data-theme="dark"] .modal-content input,
+[data-theme="dark"] .modal-content select,
+[data-theme="dark"] .modal-content textarea {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #FFE082;
+    border: 1px solid #888;
+}
+
+[data-theme="light"] .modal-content input,
+[data-theme="light"] .modal-content select,
+[data-theme="light"] .modal-content textarea {
+    background-color: #FAFAFA;
+    color: #78350F;
+    border: 1px solid #ccc;
+}
+    /* Added placeholder styles for modal inputs */        
+        [data-theme="light"] .modal-content input::placeholder,
+        [data-theme="light"] .modal-content textarea::placeholder {
+            color: #A0AEC0;
+        }
+
+        [data-theme="dark"] .modal-content input::placeholder,
+        [data-theme="dark"] .modal-content textarea::placeholder {
+            color: #A0AEC0;
+        }
+[data-theme="dark"] .cta-button {
+    background-color: #FFD54F;
+    color: #1E1E1E;
+}
+
+[data-theme="light"] .cta-button {
+    background-color: #F59E0B;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] {
+    --button-active: #FFB300;
+}
+
+[data-theme="light"] {
+    --button-active: #92400E;
+}
