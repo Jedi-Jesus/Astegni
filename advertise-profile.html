@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Advertiser Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="css/root_theme.css" rel="stylesheet"/>
+    <style>
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: sans-serif;
+        }
+
+        nav {
+            background-color: var(--highlight);
+            color: var(--nav-link);
+        }
+
+        nav a {
+            color: var(--nav-link);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--nav-link-hover);
+        }
+
+        #mobile-menu {
+            background-color: var(--nav-bg);
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        #mobile-menu.open {
+            max-height: 300px;
+            display: block;
+        }
+
+        #mobile-menu a:hover, #mobile-menu-mobile-theme-toggle:hover {
+            background-color: var(--highlight);
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--heading);
+        }
+
+        button:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s;
+        }
+
+        button:hover:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-hover);
+        }
+
+        button:active:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-active);
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            background-color: var(--modal-input-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input::placeholder,
+        .modal-content textarea::placeholder {
+            color: var(--modal-text);
+            opacity: 0.6;
+        }
+
+        .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+
+        .cta-button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .cta-button:active {
+            background-color: var(--button-active);
+        }
+
+        #campaign-search {
+            background-color: var(--highlight);
+            color: var(--text);
+            border-color: var(--modal-input-border);
+        }
+
+        #campaign-search::placeholder {
+            color: var(--text);
+            opacity: 0.6;
+        }
+
+        #theme-toggle-btn, #mobile-theme-toggle-btn {
+            background-color: transparent;
+            color: var(--nav-link);
+        }
+
+        #theme-toggle-btn:hover, #mobile-theme-toggle-btn:hover {
+            color: var(--nav-link-hover);
+        }
+
+        .no-results {
+            color: var(--text);
+        }
+
+        canvas {
+            background-color: var(--modal-bg);
+        }
+
+        .ad-placeholder {
+            background-color: var(--background);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="index.html" class="hover:text-[var(--nav-link-hover)]">Home</a>
+                <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+                <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()" aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <button id="menu-btn" class="md:hidden focus:outline-none" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden">
+            <a href="index.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Home</a>
+            <a href="find-tutors.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+            <button id="mobile-notification-bell" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative" onclick="openNotificationModal()" aria-label="View notifications">
+                Notifications
+                <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button id="mobile-theme-toggle-btn" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left" aria-label="Toggle theme">
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <!-- Profile Section -->
+    <section class="py-16">
+        <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
+            <!-- Main Content (Advertiser Profile and Campaigns) -->
+            <div class="lg:w-3/4 space-y-6">
+                <!-- Advertiser Profile -->
+                <div class="p-6 rounded-lg shadow-lg max-w-4xl mx-auto" style="background-color: var(--modal-bg)">
+                    <img id="advertiser-cover" src="https://via.placeholder.com/1200x150" class="w-full h-48 md:h-72 object-cover rounded-t-lg mb-4" alt="Advertiser Cover">
+                    <img id="advertiser-profile-pic" src="https://via.placeholder.com/64" class="w-16 h-16 rounded-full mb-4" alt="Advertiser Profile">
+                    <h3 class="text-xl font-semibold" id="advertiser-name">EduAds Inc.</h3>
+                    <p class="mb-2">Email: <span id="advertiser-email">contact@eduads.com</span></p>
+                    <p class="mb-2">Phone: <span id="advertiser-phone">+251912345680</span></p>
+                    <button onclick="openEditProfileModal()" class="px-4 py-2 rounded-lg cta-button">Edit Profile</button>
+                </div>
+                <!-- Sponsorship Placeholder (Second Instance) -->
+      <div id="sponsorship-placeholder-2" class="rounded-lg shadow-lg p-4 text-center bg-[var(--highlight)]">
+        <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Sponsor Our Platform</h3>
+        <img src="https://via.placeholder.com/728x90" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder 2">
+        <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a>!</p>
+      </div>
+                <!-- My Campaigns -->
+                <div class="p-6 rounded-lg shadow-lg max-w-4xl mx-auto" style="background-color: var(--modal-bg)">
+                    <h3 class="text-xl font-semibold mb-4">My Campaigns</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <input id="campaign-search" type="text" class="w-full max-w-md p-2 border rounded-lg" placeholder="Search campaigns by name or description" oninput="searchCampaigns()">
+                        <button onclick="openCreateCampaignModal()" class="px-4 py-2 rounded-lg cta-button">Create New Campaign</button>
+                    </div>
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Campaign Name</th>
+                                <th class="p-2">Status</th>
+                                <th class="p-2">Action</th>
+                                <th class="p-2">Analysis</th>
+                                <th class="p-2">View</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaign-table">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Advertisement Sidebar -->
+            <aside class="lg:w-1/4 hidden lg:block sticky top-20 self-start">
+                <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                    Advertisement (300x250)
+                </div>
+                <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                    Advertisement (300x250)
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Edit Profile">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Edit Profile</h3>
+            <label class="block mb-2">Company Name</label>
+            <input id="edit-name" type="text" class="w-full p-2 border rounded-lg mb-4" value="EduAds Inc.">
+            <label class="block mb-2">Email</label>
+            <input id="edit-email" type="email" class="w-full p-2 border rounded-lg mb-4" value="contact@eduads.com">
+            <label class="block mb-2">Phone</label>
+            <input id="edit-phone" type="tel" class="w-full p-2 border rounded-lg mb-4" value="+251912345680">
+            <label class="block mb-2">Profile Picture</label>
+            <input id="edit-profile-pic" type="file" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Cover Picture</label>
+            <input id="edit-cover-pic" type="file" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <button onclick="saveProfile()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeEditProfileModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Create Campaign Modal -->
+    <div id="create-campaign-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Create New Campaign">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Create New Campaign</h3>
+            <label class="block mb-2">Campaign Name</label>
+            <input id="campaign-name" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Coca-Cola Tutoring Promo">
+            <label class="block mb-2">Duration</label>
+            <select id="campaign-duration-package" class="w-full p-2 border rounded-lg mb-4" onchange="toggleCustomDuration()">
+                <option value="1">1 Day (1000 birr)</option>
+                <option value="3">3 Days (2700 birr)</option>
+                <option value="7">1 Week (5600 birr)</option>
+                <option value="15">2 Weeks (11,250 birr)</option>
+                <option value="30">1 Month (19,500 birr)</option>
+                <option value="custom">Custom Duration</option>
+            </select>
+            <div id="custom-duration-container" class="hidden">
+                <label class="block mb-2">Custom Duration (days)</label>
+                <input id="campaign-custom-duration" type="number" min="1" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., 5">
+            </div>
+            <p id="campaign-price" class="mb-4">Price: 1000 birr</p>
+            <label class="block mb-2">Ad Content (Image/Video)</label>
+            <input id="campaign-ad-content" type="file" accept="image/*,video/mp4" class="hidden">
+            <button onclick="document.getElementById('campaign-ad-content').click()" class="px-4 py-2 rounded-lg cta-button w-full mb-4">Upload Image/Video</button>
+            <label class="block mb-2">Ad Description</label>
+            <textarea id="campaign-ad-description" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Promote tutoring with Coca-Cola"></textarea>
+            <button onclick="createCampaign()" class="px-4 py-2 rounded-lg cta-button w-full">Save Draft</button>
+            <button onclick="closeCreateCampaignModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- View Campaign Modal -->
+    <div id="view-campaign-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Campaign Details">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Campaign Details</h3>
+            <div id="view-campaign-content">
+                <!-- Populated by JavaScript -->
+            </div>
+            <button onclick="closeViewCampaignModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div id="analytics-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Campaign Analytics">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Campaign Analytics</h3>
+            <div id="analytics-content">
+                <!-- Populated by JavaScript -->
+            </div>
+            <canvas id="analytics-chart" class="my-4"></canvas>
+            <button onclick="closeAnalyticsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Select Payment Method">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Select Payment Method</h3>
+            <div class="space-y-2">
+                <button onclick="selectBank('CBE')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="CBE Logo" class="w-6 h-6 mr-2">
+                    <span>CBE</span>
+                </button>
+                <button onclick="selectBank('Telebirr')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Telebirr Logo" class="w-6 h-6 mr-2">
+                    <span>Telebirr</span>
+                </button>
+                <button onclick="selectBank('Dashen')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Dashen Logo" class="w-6 h-6 mr-2">
+                    <span>Dashen</span>
+                </button>
+                <button onclick="selectBank('Wegagen')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Wegagen Logo" class="w-6 h-6 mr-2">
+                    <span>Wegagen</span>
+                </button>
+                <button onclick="selectBank('Oromia')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Oromia Logo" class="w-6 h-6 mr-2">
+                    <span>Oromia</span>
+                </button>
+            </div>
+            <button onclick="closePaymentModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Notifications">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Notifications</h3>
+            <div id="notification-content">You have no notifications.</div>
+            <button onclick="closeNotificationModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Quick Links -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <!-- Newsletter -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <form class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
+                    </form>
+                </div>
+                <!-- Get in Touch -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Interactivity -->
+    <script>
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+            return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                    return csv;
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeToggleIcon(newTheme);
+        }
+
+        function updateThemeToggleIcon(theme) {
+            const icon = theme === 'light' ?
+                `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>` :
+                `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+            const themeToggle = document.getElementById('theme-toggle-btn');
+            themeToggle.querySelector('svg').innerHTML = icon;
+            const mobileThemeToggle = document.getElementById('mobile-theme-toggle-btn');
+            mobileThemeToggle.innerHTML = `Toggle Theme <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${icon}</svg>`;
+        }
+
+        // Data Objects
+        const advertiser = {
+            id: 1,
+            name: 'EduAds Inc.',
+            email: 'contact@eduads.com',
+            phone: '+251912345680',
+            profilePic: 'https://via.placeholder.com/64',
+            coverImage: 'https://via.placeholder.com/1200x300'
+        };
+        const campaigns = {
+            1: {
+                id: 1,
+                name: 'Math Tutoring Promo',
+                duration: 30,
+                price: 19500,
+                adContent: { url: 'https://via.placeholder.com/150', description: 'Promote math tutoring with fun visuals' },
+                reviewStatus: 'Under Review',
+                analytics: { impressions: 1000, clicks: 50, conversions: 5 }
+            },
+            2: {
+                id: 2,
+                name: 'Science Campaign',
+                duration: 15,
+                price: 11250,
+                adContent: { url: 'https://via.placeholder.com/150', description: 'Science tutoring ad for all grades' },
+                reviewStatus: 'Approved',
+                analytics: { impressions: 2000, clicks: 120, conversions: 15 }
+            }
+        };
+
+        // Initialize Profile
+        function initProfile() {
+            document.getElementById('advertiser-name').textContent = advertiser.name;
+            document.getElementById('advertiser-email').textContent = advertiser.email;
+            document.getElementById('advertiser-phone').textContent = advertiser.phone;
+            document.getElementById('advertiser-profile-pic').src = advertiser.profilePic;
+            document.getElementById('advertiser-cover').src = advertiser.coverImage;
+            searchCampaigns();
+            checkNotifications();
+        }
+
+        // Edit Profile Modal
+        function openEditProfileModal() {
+            document.getElementById('edit-name').value = advertiser.name;
+            document.getElementById('edit-email').value = advertiser.email;
+            document.getElementById('edit-phone').value = advertiser.phone;
+            document.getElementById('edit-profile-pic').value = '';
+            document.getElementById('edit-cover-pic').value = '';
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('edit-profile-modal'));
+        }
+        function closeEditProfileModal() {
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function saveProfile() {
+            advertiser.name = document.getElementById('edit-name').value.trim();
+            advertiser.email = document.getElementById('edit-email').value.trim();
+            advertiser.phone = document.getElementById('edit-phone').value.trim();
+            const profilePic = document.getElementById('edit-profile-pic').files[0];
+            const coverPic = document.getElementById('edit-cover-pic').files[0];
+            if (!advertiser.name || !advertiser.email || !advertiser.phone) {
+                alert('Please fill in all fields');
+                return;
+            }
+            if (profilePic) advertiser.profilePic = URL.createObjectURL(profilePic);
+            if (coverPic) advertiser.coverImage = URL.createObjectURL(coverPic);
+            initProfile();
+            alert('Profile updated');
+            closeEditProfileModal();
+        }
+
+        // Create Campaign Modal
+        function openCreateCampaignModal() {
+            document.getElementById('create-campaign-modal').classList.remove('hidden');
+            updateCampaignPrice();
+            trapFocus(document.getElementById('create-campaign-modal'));
+        }
+        function closeCreateCampaignModal() {
+            document.getElementById('create-campaign-modal').classList.add('hidden');
+            document.getElementById('campaign-name').value = '';
+            document.getElementById('campaign-duration-package').value = '1';
+            document.getElementById('campaign-custom-duration').value = '';
+            document.getElementById('custom-duration-container').classList.add('hidden');
+            document.getElementById('campaign-ad-content').value = '';
+            document.getElementById('campaign-ad-description').value = '';
+            document.getElementById('campaign-price').textContent = 'Price: 1000 birr';
+            restoreFocus();
+        }
+        function toggleCustomDuration() {
+            const packageSelect = document.getElementById('campaign-duration-package').value;
+            const customContainer = document.getElementById('custom-duration-container');
+            if (packageSelect === 'custom') {
+                customContainer.classList.remove('hidden');
+            } else {
+                customContainer.classList.add('hidden');
+            }
+            updateCampaignPrice();
+        }
+        function updateCampaignPrice() {
+            const packageSelect = document.getElementById('campaign-duration-package').value;
+            let duration = parseInt(packageSelect);
+            let price;
+            const packages = {
+                1: 1000,
+                3: 2700,
+                7: 5600,
+                15: 11250,
+                30: 19500
+            };
+            if (packageSelect === 'custom') {
+                duration = parseInt(document.getElementById('campaign-custom-duration').value) || 1;
+                price = duration * 1000;
+            } else {
+                price = packages[duration];
+            }
+            document.getElementById('campaign-price').textContent = `Price: ${price} birr`;
+        }
+        function createCampaign() {
+            const name = document.getElementById('campaign-name').value.trim();
+            const packageSelect = document.getElementById('campaign-duration-package').value;
+            let duration = parseInt(packageSelect);
+            let price;
+            const packages = {
+                1: 1000,
+                3: 2700,
+                7: 5600,
+                15: 11250,
+                30: 19500
+            };
+            if (packageSelect === 'custom') {
+                duration = parseInt(document.getElementById('campaign-custom-duration').value);
+                if (!duration || duration < 1) {
+                    alert('Please enter a valid custom duration');
+                    return;
+                }
+                price = duration * 1000;
+            } else {
+                price = packages[duration];
+            }
+            const adContent = document.getElementById('campaign-ad-content').files[0];
+            const description = document.getElementById('campaign-ad-description').value.trim();
+            if (!name || !adContent || !description) {
+                alert('Please fill in all fields, upload an ad image or video, and provide a description');
+                return;
+            }
+            const newId = Object.keys(campaigns).length + 1;
+            campaigns[newId] = {
+                id: newId,
+                name,
+                duration,
+                price,
+                adContent: { url: URL.createObjectURL(adContent), description },
+                reviewStatus: 'Draft',
+                analytics: { impressions: 0, clicks: 0, conversions: 0 }
+            };
+            searchCampaigns();
+            checkNotifications();
+            alert('Campaign draft saved');
+            closeCreateCampaignModal();
+        }
+
+        // View Campaign Modal
+        let selectedCampaignId = null;
+        function openViewCampaignModal(campaignId) {
+            selectedCampaignId = campaignId;
+            document.getElementById('view-campaign-modal').classList.remove('hidden');
+            updateViewCampaign();
+            trapFocus(document.getElementById('view-campaign-modal'));
+        }
+        function closeViewCampaignModal() {
+            document.getElementById('view-campaign-modal').classList.add('hidden');
+            selectedCampaignId = null;
+            restoreFocus();
+        }
+        function updateViewCampaign() {
+            const campaign = campaigns[selectedCampaignId];
+            const content = document.getElementById('view-campaign-content');
+            content.innerHTML = `
+                <h4 class="text-xl font-semibold mb-2">${campaign.name}</h4>
+                <a href="${campaign.adContent.url}" target="_blank">
+                    <img src="${campaign.adContent.url}" alt="${campaign.name}" class="w-full h-48 object-cover rounded-lg mb-4">
+                </a>
+                <p class="mb-2"><strong>Description:</strong> ${campaign.adContent.description}</p>
+                <p class="mb-2"><strong>Duration:</strong> ${campaign.duration} days</p>
+                <p class="mb-2"><strong>Price:</strong> ${campaign.price} birr</p>
+            `;
+        }
+
+        // Analytics Modal
+        function openAnalyticsModal(campaignId) {
+            selectedCampaignId = campaignId;
+            document.getElementById('analytics-modal').classList.remove('hidden');
+            updateAnalytics();
+            trapFocus(document.getElementById('analytics-modal'));
+        }
+        function closeAnalyticsModal() {
+            document.getElementById('analytics-modal').classList.add('hidden');
+            selectedCampaignId = null;
+            const chartCanvas = document.getElementById('analytics-chart');
+            const chart = Chart.getChart(chartCanvas);
+            if (chart) chart.destroy();
+            restoreFocus();
+        }
+        function updateAnalytics() {
+            const campaign = campaigns[selectedCampaignId];
+            const content = document.getElementById('analytics-content');
+            content.innerHTML = `
+                <h4 class="text-xl font-semibold mb-2">${campaign.name}</h4>
+                <p class="mb-2">Impressions: ${campaign.analytics.impressions}</p>
+                <p class="mb-2">Clicks: ${campaign.analytics.clicks}</p>
+                <p class="mb-2">Conversions: ${campaign.analytics.conversions}</p>
+                <p class="mb-2">Click-Through Rate: ${(campaign.analytics.clicks / (campaign.analytics.impressions || 1) * 100).toFixed(2)}%</p>
+                <p class="mb-2">Ad Content: <a href="${campaign.adContent.url}" target="_blank" class="underline">View</a></p>
+                <p class="mb-2">Ad Description: ${campaign.adContent.description}</p>
+            `;
+            renderAnalyticsChart();
+        }
+
+        // Render Analytics Chart
+        function renderAnalyticsChart() {
+            const campaign = campaigns[selectedCampaignId];
+            const ctx = document.getElementById('analytics-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Impressions', 'Clicks', 'Conversions'],
+                    datasets: [{
+                        label: 'Campaign Metrics',
+                        data: [campaign.analytics.impressions, campaign.analytics.clicks, campaign.analytics.conversions],
+                        backgroundColor: ['var(--button-bg)', 'var(--button-hover)', 'var(--button-active)'],
+                        borderColor: ['var(--button-active)', 'var(--button-active)', 'var(--button-hover)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: 'var(--modal-text)' } },
+                        x: { ticks: { color: 'var(--modal-text)' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: 'var(--modal-bg)', titleColor: 'var(--modal-text)', bodyColor: 'var(--modal-text)' }
+                    }
+                }
+            });
+        }
+
+        // Search Campaigns
+        function searchCampaigns() {
+            const searchTerm = document.getElementById('campaign-search').value.trim().toLowerCase();
+            const campaignTable = document.getElementById('campaign-table');
+            campaignTable.innerHTML = '';
+            Object.values(campaigns).forEach(campaign => {
+                const matchesName = searchTerm === '' || campaign.name.toLowerCase().includes(searchTerm);
+                const matchesDescription = searchTerm === '' || campaign.adContent.description.toLowerCase().includes(searchTerm);
+                if (matchesName || matchesDescription) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-2">${campaign.name}</td>
+                        <td class="p-2">${campaign.reviewStatus}</td>
+                        <td class="p-2">
+                            ${campaign.reviewStatus === 'Draft' ? `<button onclick="submitForReview(${campaign.id})" class="hover:underline">Submit for Review</button>` : ''}
+                            ${campaign.reviewStatus === 'Approved' ? `<button onclick="openPaymentModal(${campaign.id})" class="hover:underline">Pay Now</button>` : ''}
+                        </td>
+                        <td class="p-2">
+                            ${campaign.reviewStatus === 'Active' || campaign.reviewStatus === 'Approved' ? `<button onclick="openAnalyticsModal(${campaign.id})" class="hover:underline">View Analytics</button>` : 'N/A'}
+                        </td>
+                        <td class="p-2">
+                            <button onclick="openViewCampaignModal(${campaign.id})" class="hover:underline">View</button>
+                        </td>
+                    `;
+                    campaignTable.appendChild(tr);
+                }
+            });
+        }
+
+        // Campaign Review
+        function submitForReview(campaignId) {
+            campaigns[campaignId].reviewStatus = 'Under Review';
+            alert(`Campaign "${campaigns[campaignId].name}" submitted for review`);
+            searchCampaigns();
+            checkNotifications();
+        }
+        function reviewCampaign(campaignId, approve) {
+            campaigns[campaignId].reviewStatus = approve ? 'Approved' : 'Rejected';
+            alert(`Campaign "${campaigns[campaignId].name}" ${approve ? 'approved' : 'rejected'}`);
+            searchCampaigns();
+            checkNotifications();
+        }
+
+        // Payment Modal
+        function openPaymentModal(campaignId) {
+            if (campaigns[campaignId].reviewStatus !== 'Approved') {
+                alert('Campaign must be approved before payment');
+                return;
+            }
+            document.getElementById('payment-modal').dataset.campaignId = campaignId;
+            document.getElementById('payment-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('payment-modal'));
+        }
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function selectBank(bank) {
+            const campaignId = document.getElementById('payment-modal').dataset.campaignId;
+            campaigns[campaignId].reviewStatus = 'Active';
+            alert(`Redirecting to ${bank} banking API for campaign ${campaignId} (Price: ${campaigns[campaignId].price} birr)`);
+            console.log(`Payment initiated for Campaign ${campaignId} via ${bank}`);
+            closePaymentModal();
+            searchCampaigns();
+            checkNotifications();
+        }
+
+        // Notification Modal
+        function openNotificationModal() {
+            document.getElementById('notification-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('notification-modal'));
+        }
+        function closeNotificationModal() {
+            document.getElementById('notification-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function checkNotifications() {
+            let hasNotifications = false;
+            const notificationContent = document.getElementById('notification-content');
+            notificationContent.innerHTML = '';
+            Object.values(campaigns).forEach(campaign => {
+                if (campaign.reviewStatus === 'Draft') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.textContent = `Campaign "${campaign.name}" is in draft. Submit for review.`;
+                    p.innerHTML += ` <button onclick="submitForReview(${campaign.id})" class="underline">Submit</button>`;
+                    notificationContent.appendChild(p);
+                } else if (campaign.reviewStatus === 'Under Review') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.textContent = `Campaign "${campaign.name}" is under review.`;
+                    notificationContent.appendChild(p);
+                } else if (campaign.reviewStatus === 'Approved') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.textContent = `Campaign "${campaign.name}" is approved. Proceed to payment (Price: ${campaign.price} birr).`;
+                    p.innerHTML += ` <button onclick="openPaymentModal(${campaign.id})" class="underline">Pay Now</button>`;
+                    notificationContent.appendChild(p);
+                } else if (campaign.reviewStatus === 'Active') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.textContent = `Campaign "${campaign.name}" is now active!`;
+                    p.innerHTML += ` <button onclick="openAnalyticsModal(${campaign.id})" class="underline">View Analytics</button>`;
+                    notificationContent.appendChild(p);
+                } else if (campaign.reviewStatus === 'Rejected') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.textContent = `Campaign "${campaign.name}" was rejected. Please revise and resubmit.`;
+                    notificationContent.appendChild(p);
+                }
+            });
+            if (!hasNotifications) {
+                notificationContent.textContent = 'You have no notifications.';
+            }
+            const dot = document.getElementById('notification-dot');
+            const mobileDot = document.getElementById('mobile-notification-dot');
+            if (hasNotifications) {
+                dot.classList.remove('hidden');
+                mobileDot.classList.remove('hidden');
+            } else {
+                dot.classList.add('hidden');
+                mobileDot.classList.add('hidden');
+            }
+        }
+
+        // Focus Management
+        let lastFocusedElement = null;
+        function trapFocus(modal) {
+            lastFocusedElement = document.activeElement;
+            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            modal.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            });
+
+            firstElement.focus();
+        }
+
+        function restoreFocus() {
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuBtn = document.getElementById('menu-btn');
+            const isOpen = mobileMenu.classList.contains('open');
+            if (isOpen) {
+                mobileMenu.classList.remove('open');
+                menuBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                mobileMenu.classList.add('open');
+                menuBtn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // Initialize
+        function initialize() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeToggleIcon(savedTheme);
+            initProfile();
+            setInterval(checkNotifications, 60000);
+            document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+            document.getElementById('mobile-theme-toggle-btn').addEventListener('click', toggleTheme);
+            document.getElementById('menu-btn').addEventListener('click', toggleMobileMenu);
+            document.getElementById('campaign-duration-package')?.addEventListener('change', updateCampaignPrice);
+            document.getElementById('campaign-custom-duration')?.addEventListener('input', updateCampaignPrice);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', initialize);
+
+        // Close Modals on Escape Key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modals = [
+                    'edit-profile-modal', 'create-campaign-modal', 'view-campaign-modal',
+                    'analytics-modal', 'payment-modal', 'notification-modal'
+                ];
+                modals.forEach(id => {
+                    const modal = document.getElementById(id);
+                    if (!modal.classList.contains('hidden')) {
+                        modal.classList.add('hidden');
+                        restoreFocus();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

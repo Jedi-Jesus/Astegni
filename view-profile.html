@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astegni - View Tutor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/xlsx.full.min.js"></script>
+    <link href="css/root_theme.css" rel="stylesheet">
+<style>
+body {
+    background-color: var(--background);
+    color: var(--text);
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+nav {
+    background-color: var(--highlight);
+    color: var(--nav-link);
+}
+
+nav a, nav button {
+    color: var(--nav-link);
+}
+
+nav a:hover, nav button:hover {
+    color: var(--nav-link-hover);
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: var(--modal-bg);
+    color: var(--modal-text);
+    padding: 20px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-close {
+    position: absolute;
+    top: 1.25rem;
+    right: 1rem;
+    cursor: pointer;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: var(--button-hover);
+}
+
+.modal-content label {
+    word-break: break-word;
+}
+
+.video-card {
+    background-color: var(--highlight);
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+}
+
+.admin-section {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.video-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.video-controls .interaction-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+}
+
+.video-controls button {
+    flex: 1;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+}
+
+.video-controls button:hover {
+    background-color: var(--button-hover);
+}
+
+.video-controls input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--text);
+    border-radius: 4px;
+    background-color: var(--highlight);
+    color: var(--text);
+}
+
+.video-controls .comment-list {
+    max-height: 100px;
+    overflow-y: auto;
+    margin-top: 10px;
+    padding: 5px;
+    border: 1px solid var(--text);
+    border-radius: 4px;
+    background-color: var(--highlight);
+}
+
+.share-modal-content a, .share-modal-content button {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    text-decoration: none;
+    color: var(--button-text);
+    width: 100%;
+}
+
+.share-modal-content a svg, .share-modal-content button svg {
+    margin-right: 8px;
+}
+
+.comment-modal-content {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.social-login-button {
+    margin-bottom: 10px;
+}
+
+.social-login-button button {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--button-bg);
+    color: var(--button-text);
+}
+
+.social-login-button button:hover {
+    background-color: var(--button-hover);
+}
+
+#cover-photo {
+    width: 100%;
+    height: 150px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+}
+
+.profile-section {
+    min-height: calc(100vh - 64px);
+    width: 100%;
+    padding: 2rem 0;
+    background-color: var(--background);
+    display: flex;
+    justify-content: center;
+}
+
+.profile-content {
+    width: 100%;
+    margin-right: 0;
+}
+
+#profile-picture {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -50px;
+    left: 1rem;
+    border: 2px solid var(--background);
+}
+
+#tutor-name{
+    margin-top: 20px;
+}
+
+#view-profile-socials{
+    margin-top: 1rem;
+}
+
+#view-profile-socials a{
+    margin-right: 1rem;
+}
+.profile-details {
+    margin-top: 1.5rem;
+    padding-top: 0;
+}
+
+.profile-details h3{
+    margin-top: 1.25rem;
+}
+
+
+
+.progress-circle {
+    position: relative;
+}
+
+.progress-circle svg circle:first-child {
+    stroke: #e5e7eb;
+}
+
+
+.progress-circle svg circle:last-child {
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+}
+
+.sponsor-placeholder {
+    background-color: var(--highlight);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+footer {
+    background-color: var(--footer-bg);
+    color: var(--footer-text);
+    padding: 1rem;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .profile-section {
+        flex-direction: column;
+        padding: 1rem 0;
+    }
+    .profile-content {
+        width: 100%;
+        padding: 0 0.5rem;
+        max-width: none;
+    }
+    #profile-picture {
+        width: 50px;
+        height: 50px;
+        bottom: -25px;
+        left: 0.5rem;
+    }
+    .profile-details {
+        margin-top: 1rem;
+    }
+}
+
+button.cta-button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+}
+
+button.cta-button:hover {
+    background-color: var(--button-hover);
+}
+
+button.cta-button:active {
+    background-color: var(--button-active);
+}
+</style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold">Astegni</a>
+            <div class="hidden md:flex space-x-6 items-center" id="desktop-nav">
+                <a href="index.html" class="hover:text-[--nav-link-hover]">Home</a>
+                <a href="find-tutors.html" class="hover:text-[--nav-link-hover]">Find Tutors</a>
+                <a class="nav-link px-2 py-1 rounded" href="reels.html">Reels</a>
+                <div id="profile-container" class="profile-container relative">
+                    <button class="flex items-center gap-2 focus:outline-none px-2 py-1 rounded transition-all duration-200" onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic w-8 h-8 rounded-full" src="pictures/profile_picture.png" alt="Profile Picture">
+                        <span id="profile-name" class="nav-link text-sm"></span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()" aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme" onclick="toggleTheme()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <button id="menu-btn" class="md:hidden focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden">
+            <a href="index.html" class="block py-2 px-4 hover:bg-[--highlight] hover:text-[--nav-link-hover]">Home</a>
+            <a href="find-tutors.html" class="block py-2 px-4 hover:bg-[--highlight] hover:text-[--nav-link-hover]">Find Tutors</a>
+            <button id="mobile-notification-bell" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative" onclick="openNotificationModal()" aria-label="View notifications">
+                Notifications
+                <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button onclick="openLoginRegisterModal()" class="block py-2 px-4 hover:bg-[--highlight] hover:text-[--nav-link-hover] w-full text-left">Login/Register</button>
+            <button onclick="openAdvertiseModal()" class="block py-2 px-4 hover:bg-[--highlight] hover:text-[--nav-link-hover] w-full text-left">Advertise</button>
+            <a href="" class="block py-2 px-4 hover:bg-[--highlight] hover:text-[--nav-link-hover] hidden" id="mobile-my-profile-link">My Profile</a>
+            <button onclick="toggleTheme()" class="block py-2 px-4 hover:bg-[--highlight] hover:text-[--nav-link-hover] w-full text-left flex items-center">
+                <svg id="mobile-theme-icon" class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                </svg>
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <!-- Tutor Profile Section -->
+    <section class="profile-section">
+        <div class="profile-content rounded-lg shadow-lg">
+            <div class="admin-section hidden" id="admin-section">
+                <button onclick="toggleAdminSection()" class="cta-button px-4 py-2 rounded-lg mb-4">Toggle Admin Upload</button>
+                <input type="file" id="tutor-file" accept=".xlsx" onchange="loadTutorFile()" class="block mx-auto">
+            </div>
+            <div id="cover-photo" class="mb-0" style="background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=150&q=80');">
+                <img src="pictures/profile_picture.png" id="profile-picture" alt="Tutor Profile">
+            </div>
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row gap-4 mb-4">
+                    <div class="profile-details w-full md:w-2/3">
+                        <div>
+                            <h2 id="tutor-name" class="text-2xl font-bold inline-flex items-center">
+                                <span class="ml-2 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center" title="Verified Tutor">
+                                    <svg class="w-4 h-4" fill="white" viewBox="0 0 20 20">
+                                        <path d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586l-3.293-3.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z"/>
+                                    </svg>
+                                </span>
+                            </h2>
+                            <div class="flex flex-col items-start mb-1">
+                                <div class="relative w-16 h-16 progress-circle" style="margin-top: .75rem;">
+                                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                                        <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+                                        <circle id="rating-arc" cx="50" cy="50" r="45" stroke="#EF4444" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"/>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]" id="rating-label"></div>
+                                </div>
+                                <span id="tutor-rating-stars" class="text-yellow-500 mt-1"></span>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <p class="text-[var(--text)]"><span id="follower-number">0</span> Followers</p>
+                                    <p id="tutor-gender" class="text-[var(--text)]"></p>
+                                </div>
+                                <div>
+                                    <p id="tutor-subjects" class="text-[var(--text)]"></p>
+                                    <p id="tutor-school" class="text-[var(--text)]"></p>
+                                </div>
+                                <div>
+                                    <p id="tutor-location" class="text-[var(--text)]"></p>
+                                    <p id="tutor-payment-method" class="text-[var(--text)]"></p>
+                                </div>
+                            </div>
+                            <p id="tutor-bio" class="text-[var(--text)]"></p>
+                            <div class="mb-4">
+                                <h3 class="text-xl font-semibold mb-2" style="color: var(--heading);">Connect with me through:</h3>
+                                <div id='view-profile-socials' class = "flex space-x-4">
+                                    <a href="https://facebook.com" target="_blank" class="hover:text-[var(--nav-link-hover)]">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.5 7.09h-2.07c-.28 0-.5.22-.5.5v1.41h2.57l-.34 2.59h-2.23v6.41h-2.59v-6.41H9.5v-2.59h1.84V9.59c0-1.81 1.1-2.8 2.71-2.8h1.95v2.3z"/></svg>
+                                    </a>
+                                    <a href="https://linkedin.com" target="_blank" class="hover:text-[var(--nav-link-hover)]">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2.5 16.5h-2v-7h2v7zm-1-7.9c-.7 0-1.2-.6-1.2-1.3s.5-1.3 1.2-1.3 1.2.6 1.2 1.3-.5 1.3-1.2 1.3zm9.5 7.9h-2v-4c0-.9-.3-1.5-1.1-1.5-.6 0-1 .4-1.1 1v4.5h-2v-7h2v1.1c.3-.5.9-.8 1.6-.8 1.2 0 2.1.7 2.1 2.2v4.5z"/></svg>
+                                    </a>
+                                    <a href="https://x.com" target="_blank" class="hover:text-[var(--nav-link-hover)]">
+                                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sponsor-placeholder w-full md:w-1/3">
+                        <h4 class="text-lg font-semibold mb-2" style="color: var(--heading);">Sponsor</h4>
+                        <img src="https://via.placeholder.com/300x250?text=Sponsor+Ad" alt="Sponsor Ad" class="w-full rounded-lg">
+                        <p class="mt-2">Contact us to advertise here!</p>
+                    </div>
+                </div>
+                <div class="flex justify-start space-x-2 mb-2">
+                    <button onclick="openCommentsModal()" class="cta-button px-4 py-2 rounded-lg">Guardian/Student's Comments</button>
+                    <button onclick="openRequestSessionModal()" class="cta-button px-4 py-2 rounded-lg">Request a Session</button>
+                    <button onclick="openChatModal()" class="cta-button px-4 py-2 rounded-lg">Chat</button>
+                    <button onclick="followTutor()" class="cta-button px-4 py-2 rounded-lg flex items-center" id="follow-button">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Follow
+                    </button>
+                </div>
+                <div class="mb-8 flex flex-col md:flex-row gap-4">
+                    <div class="w-full md:w-3/4">
+                        <h3 class="text-xl font-semibold mb-4" style="color: var(--heading);">Introduction Video</h3>
+                        <div class="video-card w-full">
+                            <video controls class="w-full h-[360px] rounded-lg" id="intro-video">
+                                <source src="https://via.placeholder.com/640x360.mp4" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                            <div class="video-controls">
+                                <div class="interaction-buttons">
+                                    <button onclick="likeVideo('intro-video')" class="like-button">Like (<span id="likes-intro-video">0</span>)</button>
+                                    <button onclick="dislikeVideo('intro-video')" class="bg-red-500 text-white hover:bg-red-600">Dislike (<span id="dislikes-intro-video">0</span>)</button>
+                                    <button onclick="openShareModal('intro-video')" class="share-button">Share</button>
+                                </div>
+                                <input type="text" id="comment-input-intro-video" placeholder="Add a comment" onkeydown="if(event.key === 'Enter') openCommentModal('intro-video')">
+                                <div class="comment-list" id="comments-intro-video"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-1/4 sponsor-placeholder video-sponsor">
+                        <h4 class="text-lg font-semibold mb-2" style="color: var(--heading);">Sponsor</h4>
+                        <img src="https://via.placeholder.com/300x250" alt="Sponsor Ad" class="w-full rounded-lg">
+                        <p class="mt-2">Ad space for sponsor</p>
+                    </div>
+                </div>
+                <!-- Insert this just before the <h4> element for "Short Clips" -->
+<div class="sponsor-placeholder mb-4">
+    <h4 class="text-lg font-semibold mb-2" style="color: var(--heading);">Sponsor</h4>
+    <img src="https://via.placeholder.com/300x250?text=Sponsor+Ad" alt="Sponsor Ad" class="w-full rounded-lg">
+    <p class="mt-2">Contact us to advertise here!</p>
+</div>
+                <h4 class="text-lg font-semibold mt-4 mb-2" style="color: var(--heading);">Short Clips</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="video-card">
+                        <video controls class="w-full rounded-lg" id="clip-1">
+                            <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-controls">
+                            <div class="interaction-buttons">
+                                <button onclick="likeVideo('clip-1')" class="like-button">Like (<span id="likes-clip-1">0</span>)</button>
+                                <button onclick="dislikeVideo('clip-1')" class="bg-red-500 text-white hover:bg-red-600">Dislike (<span id="dislikes-clip-1">0</span>)</button>
+                                <button onclick="openShareModal('clip-1')" class="share-button">Share</button>
+                            </div>
+                            <input type="text" id="comment-input-clip-1" placeholder="Add a comment" onkeydown="if(event.key === 'Enter') openCommentModal('clip-1')">
+                            <div class="comment-list" id="comments-clip-1"></div>
+                        </div>
+                    </div>
+                    <div class="video-card">
+                        <video controls class="w-full rounded-lg" id="clip-2">
+                            <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-controls">
+                            <div class="interaction-buttons">
+                                <button onclick="likeVideo('clip-2')" class="like-button">Like (<span id="likes-clip-2">0</span>)</button>
+                                <button onclick="dislikeVideo('clip-2')" class="bg-red-500 text-white hover:bg-red-600">Dislike (<span id="dislikes-clip-2">0</span>)</button>
+                                <button onclick="openShareModal('clip-2')" class="share-button">Share</button>
+                            </div>
+                            <input type="text" id="comment-input-clip-2" placeholder="Add a comment" onkeydown="if(event.key === 'Enter') openCommentModal('clip-2')">
+                            <div class="comment-list" id="comments-clip-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeNotificationModal()">×</span>
+            <h3 class="text-2xl font-bold mb-4" style="color: var(--heading);">Notifications</h3>
+            <div id="notification-content" class="text-[var(--text)]"></div>
+            <button onclick="closeNotificationModal()" class="mt-4 text-[var(--text)] hover:text-[var(--nav-link-hover)] w-full text-center">Close</button>
+        </div>
+    </div>
+
+    <!-- Comments Modal -->
+    <div id="comments-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeCommentsModal()">×</span>
+            <h3 class="text-2xl font-bold mb-4" style="color: var(--heading);">Guardian/Student Comments</h3>
+            <div id="comments-list" class="text-[var(--text)]"></div>
+            <button onclick="closeCommentsModal()" class="mt-4 text-[var(--text)] hover:text-[var(--nav-link-hover)] w-full text-center">Close</button>
+        </div>
+    </div>
+
+    <!-- Share Modal -->
+    <div id="share-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeShareModal()">×</span>
+            <h3 class="text-2xl font-bold mb-4" style="color: var(--heading);">Share Video</h3>
+            <div class="share-modal-content">
+                <a id="share-facebook" href="#" target="_blank" class="bg-blue-600 hover:bg-blue-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M22 12c0-5.523-4.477-10-10 10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63 1.562 0-1.2V0 2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"/>
+                    </svg>
+                    Share on Facebook
+                </a>
+                <a id="share-instagram" href="#" target="_blank" class="bg-pink-600 hover:bg-pink-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                    </svg>
+                    Share on Instagram
+                </a>
+                <a id="share-x" href="#" target="_blank" class="bg-blue-400 hover:bg-blue-500">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    Share on X
+                </a>
+                <a id="share-youtube" href="#" target="_blank" class="bg-red-600 hover:bg-red-700">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.016 3.016 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.872.505 9.377.505 9.377.505s7.505 0 9.377-.505a3.016 3.016 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    Share on YouTube
+                </a>
+                <a id="share-snapchat" href="#" target="_blank" class="bg-yellow-400 hover:bg-yellow-500">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 16.5c-2.49 0-4.65-1.11-5.99-2.93-.15-.2-.31-.4-.48-.6-.1-.11-.22-.15-.34-.12-.14.03-.26.13-.34.26-.09.15-.13.32-.13.49 0 .36.15.71.42.98.55.55 1.34.91 2.24.91.45 0 .88-.11 1.27-.31.17-.09.35-.14.53-.14.24 0 .47.09.64.24.32.3.44.74.32 1.14-.09.3-.31.56-.61.74-.55.33-1.2.5-1.88.5-1.32 0-2.55-.55-3.42-1.49-.26-.28-.43-.62-.49-.99-.02-.15-.02-.31 0-.46.03-.24.13-.47.29-.65.17-.19.41-.32.67-.36.28-.05.55.03.77.21.15.12.27.28.36.46.2.4.49.76.86 1.06.55.45 1.22.68 1.95.68s1.4-.23 1.95-.68c.37-.3.66-.66.86-1.06.09-.18.21-.34.36-.46.22-.18.49-.26.77-.21.26.04.5.17.67.36.16.18.26.41.29.65.02.15.02.31 0 .46-.06.37-.23.71-.49.99-.87.94-2.1 1.49-3.42 1.49-.68 0-1.33-.17-1.88-.5-.3-.18-.52-.44-.61-.74-.12-.4 0-.84.32-1.14.17-.15.4-.24.64-.24.18 0 .36.05.53.14.39.2.82.31 1.27.31.9 0 1.69-.36 2.24-.91.27-.27.42-.62.42-.98 0-.17-.04-.34-.13-.49-.08-.13-.2-.23-.34-.26-.12-.03-.24.01-.34.12-.17.2-.33.4-.48.6-1.34 1.82-3.5 2.93-5.99 2.93z"/>
+                    </svg>
+                    Share on Snapchat
+                </a>
+                <a id="share-tiktok" href="#" target="_blank" class="bg-black hover:bg-gray-800">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 7.57c-.28.24-.61.43-.96.55-.35.12-.73.18-1.11.18-.74 0-1.43-.25-1.98-.68-.54-.43-.96-.99-1.21-1.64-.05-.14-.08-.28-.08-.42v-3.5h-1.5v10.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-5.25c.19.26.44.49.74.68.3.19.64.29 1.01.29.38 0 .76-.06 1.11-.18.35-.12.68-.31.96-.55v3.93c-.68.49-1.47.83-2.31.98-.84.15-1.71.08-2.52-.2-.81-.28-1.54-.76-2.12-1.41-.58-.65-.99-1.42-1.2-2.28-.21-.86-.25-1.76-.11-2.63.14-.87.46-1.69.94-2.42.48-.73 1.12-1.36 1.89-1.84.77-.48 1.64-.78 2.55-.86v1.5c-.38.07-.75.21-1.09.41-.34.2-.64.47-.88.79-.24.32-.41.69-.49 1.09-.08.4-.05.81.08 1.19.13.38.37.73.69 1.01.32.28.72.47 1.14.47.42 0 .82-.19 1.14-.47.32-.28.56-.63.69-1.01.13-.38.16-.79.08-1.19-.08-.4-.25-.77-.49-1.09-.24-.32-.54-.59-.88-.79-.34-.2-.71-.34-1.09-.41v-1.5c1.68.08 3.27.73 4.54 1.84v3.93z"/>
+                    </svg>
+                    Share on TikTok
+                </a>
+                <button id="share-copy" class="bg-gray-500 hover:bg-gray-600">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                    </svg>
+                    Copy Link
+                </button>
+            </div>
+            <button onclick="closeShareModal()" class="mt-4 text-[var(--text)] hover:text-[var(--nav-link-hover)] w-full text-center">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Comment Modal -->
+    <div id="comment-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeCommentModal()">×</span>
+            <h3 class="text-2xl font-bold mb-4" style="color: var(--heading);">Add Comment</h3>
+            <textarea id="comment-text" class="w-full p-2 border rounded-lg mb-4" placeholder="Your comment"></textarea>
+            <button onclick="submitComment()" class="cta-button px-4 py-2 rounded-lg w-full">Submit</button>
+            <button onclick="closeCommentModal()" class="mt-4 text-[var(--text)] hover:text-[var(--nav-link-hover)] w-full text-center">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Request Session Modal -->
+    <div id="request-session-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeRequestSessionModal()">×</span>
+            <h3 class="text-2xl font-bold mb-4" style="color: var(--heading);">Request a Session</h3>
+            <label class="block mb-2">Course</label>
+            <select id="session-course" class="w-full p-2 border rounded-lg mb-4">
+                <option value="Algebra">Algebra</option>
+                <option value="Geometry">Geometry</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+                <option value="Biology">Biology</option>
+            </select>
+            <label class="block mb-2">Days of Week</label>
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <label><input type="checkbox" class="mr-2" value="Monday"> Monday</label>
+                <label><input type="checkbox" class="mr-2" value="Tuesday"> Tuesday</label>
+                <label><input type="checkbox" class="mr-2" value="Wednesday"> Wednesday</label>
+                <label><input type="checkbox" class="mr-2" value="Thursday"> Thursday</label>
+                <label><input type="checkbox" class="mr-2" value="Friday"> Friday</label>
+                <label><input type="checkbox" class="mr-2" value="Saturday"> Saturday</label>
+                <label><input type="checkbox" class="mr-2" value="Sunday"> Sunday</label>
+            </div>
+            <label class="block mb-2">Date</label>
+            <input type="date" id="session-date" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Time</label>
+            <input type="time" id="session-time" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Duration</label>
+            <select id="session-duration" class="w-full p-2 border rounded-lg mb-4">
+                <option value="60">60 minutes</option>
+                <option value="90">90 minutes</option>
+                <option value="120">120 minutes</option>
+            </select>
+            <label class="block mb-2">Mode</label>
+            <select id="session-mode" class="w-full p-2 border rounded-lg mb-4">
+                <option value="Online">Online</option>
+                <option value="In-person">In-person</option>
+                <option value="Group">Group</option>
+            </select>
+            <button onclick="submitSessionRequest()" class="cta-button px-4 py-2 rounded-lg w-full">Submit Request</button>
+            <button onclick="closeRequestSessionModal()" class="mt-4 text-[var(--text)] hover:text-[var(--nav-link-hover)] w-full text-center">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeChatModal()">×</span>
+            <h3 class="text-2xl font-bold mb-4" style="color: var(--heading);">Chat with Tutor</h3>
+            <div id="chat-messages" class="border p-4 mb-4 max-h-64 overflow-y-auto">
+                <p class="text-[var(--text)]">Start your conversation here...</p>
+            </div>
+            <textarea id="chat-input" class="w-full p-2 border rounded-lg mb-4" placeholder="Type your message"></textarea>
+            <button onclick="sendMessage()" class="cta-button px-4 py-2 rounded-lg w-full">Send</button>
+            <button onclick="closeChatModal()" class="mt-4 text-[var(--text)] hover:text-[var(--nav-link-hover)] w-full text-center">Cancel</button>
+        </div>
+    </div>
+
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <div class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
+                    </div>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10 10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let gk_fileData = {};
+        let gk_xlsxFileLookup = {};
+        let gk_isXlsx = false;
+        // Track following status for tutors
+let followingStatus = {};
+
+        function loadFileData(fileName) {
+            if (!gk_xlsxFileLookup[fileName]) return '';
+            const workbook = XLSX.read(gk_fileData[fileName], { type: 'base64' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            return XLSX.utils.sheet_to_csv(firstSheet);
+        }
+
+        const tutors = [
+            {
+                id: 1,
+                name: "John Doe",
+                profilePicture: "pictures/profile_picture.png",
+                coverPhoto: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=150&q=80",
+                rating: 4.5,
+                gender: "Male",
+                subjects: ["Algebra", "Geometry", "Physics"],
+                school: "Springfield High School",
+                location: "Springfield, USA",
+                bio: "Experienced tutor with 5 years of teaching high school math and physics.",
+                paymentMethod: "Hourly",
+                socialLinks: {
+                    facebook: "https://facebook.com/johndoe",
+                    linkedin: "https://linkedin.com/in/johndoe",
+                    x: "https://x.com/johndoe"
+                },
+                introVideo: "https://via.placeholder.com/640x360.mp4",
+                clips: [
+                    "https://via.placeholder.com/320x180.mp4",
+                    "https://via.placeholder.com/320x180.mp4"
+                ],
+                followers: 0,
+                comments: [
+                    { author: "Jane Smith", text: "Great tutor, very patient!", date: "2025-06-20" },
+                    { author: "Mike Johnson", text: "Helped my son ace his exams.", date: "2025-06-15" }
+                ]
+            }
+        ];
+
+        let currentTutor = null;
+        let isLoggedIn = false;
+        let currentVideoId = null;
+        const notifications = {
+            1: { message: "New session request received!", date: "2025-06-23" },
+            2: { message: "John Doe posted a new clip.", date: "2025-06-22" }
+        };
+
+
+// Notification Modal Functions
+function openNotificationModal() {
+    const notificationContent = document.getElementById('notification-content');
+    const notificationList = Object.values(notifications); // Assuming 'notifications' is defined
+    notificationContent.innerHTML = notificationList.length ? notificationList.map(n => `
+        <div class="mb-2">
+            <p class="text-[var(--text)]">${n.message}</p>
+            <p class="text-sm text-gray-500">${n.date}</p>
+        </div>
+    `).join('') : '<p class="text-[var(--text)]">You have no notifications.</p>';
+    document.getElementById('notification-modal').style.display = 'flex';
+}
+
+function closeNotificationModal() {
+    document.getElementById('notification-modal').style.display = 'none';
+}
+
+// Comments Modal Functions
+function openCommentsModal() {
+    const commentsList = document.getElementById('comments-list');
+    commentsList.innerHTML = currentTutor.comments?.length ? currentTutor.comments.map(comment => `
+        <div class="mb-2">
+            <p class="font-semibold text-[var(--text)]">${comment.author}</p>
+            <p class="text-[var(--text)]">${comment.text}</p>
+            <p class="text-sm text-gray-500">${comment.date}</p>
+        </div>
+    `).join('') : '<p class="text-[var(--text)]">No comments yet. Be the first to leave a review!</p>';
+    document.getElementById('comments-modal').style.display = 'flex';
+}
+
+function closeCommentsModal() {
+    document.getElementById('comments-modal').style.display = 'none';
+}
+
+        function openShareModal(videoId) {
+            currentVideoId = videoId;
+            document.getElementById('share-modal').classList.remove('hidden');
+            // trapFocus(document.getElementById('share-modal'));
+        }
+
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+            // restoreFocus();
+        }
+
+        function openCommentModal(videoId) {
+            currentVideoId = videoId;
+            document.getElementById('comment-modal').classList.remove('hidden');
+            // trapFocus(document.getElementById('comment-modal'));
+        }
+
+        function closeCommentModal() {
+            document.getElementById('comment-modal').classList.add('hidden');
+            // restoreFocus();
+        }
+
+// Request Session Modal Functions
+function openRequestSessionModal() {
+    document.getElementById('request-session-modal').style.display = 'flex';
+}
+
+function closeRequestSessionModal() {
+    document.getElementById('request-session-modal').style.display = 'none';
+}
+
+// Chat Modal Functions
+function openChatModal() {
+    document.getElementById('chat-modal').style.display = 'flex';
+}
+
+function closeChatModal() {
+    document.getElementById('chat-modal').style.display = 'none';
+}
+
+
+// Function to update the theme icon
+function updateThemeIcon(theme) {
+    const sunPath = "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z";
+    const moonPath = "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z";
+    const desktopPath = document.getElementById('desktop-theme-path');
+    const mobilePath = document.getElementById('mobile-theme-path'); // Optional, if using mobile icon
+
+    if (desktopPath) {
+        desktopPath.setAttribute('d', theme === 'dark' ? moonPath : sunPath);
+    }
+    if (mobilePath) {
+        mobilePath.setAttribute('d', theme === 'dark' ? moonPath : sunPath);
+    }
+}
+
+// Theme toggle function
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeIcon(newTheme);
+}
+        // Load Theme
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeIcon(savedTheme);
+            loadTutorProfile();
+            checkLoginStatus();
+            checkNotifications();
+        });
+
+ 
+
+        // Check Login Status
+        function checkLoginStatus() {
+            isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+            if (isLoggedIn) {
+                document.getElementById('profile-name').textContent = localStorage.getItem('userName') || 'User';
+                document.getElementById('mobile-my-profile-link').classList.remove('hidden');
+                document.getElementById('profile-pic').src = tutors[0].profilePicture;
+            } else {
+                document.getElementById('profile-container').innerHTML = `
+                    <button onclick="openLoginRegisterModal()" class="cta-button px-4 py-2 rounded-lg">Login</button>
+                `;
+            }
+        }
+
+
+        function loadTutorProfile() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tutorId = parseInt(urlParams.get('id'));
+    currentTutor = tutors.find(t => t.id === tutorId) || tutors[0];
+
+    if (currentTutor) {
+        document.getElementById('cover-photo').style.backgroundImage = `url('${currentTutor.coverPhoto}')`;
+        document.getElementById('profile-picture').src = currentTutor.profilePicture;
+        document.getElementById('tutor-name').firstChild.textContent = currentTutor.name || 'Tutor Name';
+
+        const rating = currentTutor.rating || 0;
+        const ratingArc = document.getElementById('rating-arc');
+        const radius = 45;
+        const circumference = 2 * Math.PI * radius; // Approx. 282.74
+        const percentage = rating > 0 ? (rating / 5) * 100 : 0;
+        const dashOffset = circumference * (1 - percentage / 100);
+
+        ratingArc.setAttribute('stroke-dasharray', circumference);
+        ratingArc.setAttribute('stroke-dashoffset', dashOffset);
+
+        // Set stroke color based on rating
+        let color;
+        if (rating > 4) {
+            color = '#10B981'; // Green
+        } else if (rating > 3) {
+            color = '#FBBF24'; // Yellow
+        } else if (rating > 2) {
+            color = '#EF4444'; // Red
+        } else if (rating > 1) {
+            color = '#3B82F6'; // Blue
+        } else {
+            color = '#6B7280'; // Gray
+        }
+        ratingArc.setAttribute('stroke', color);
+
+        document.getElementById('rating-label').textContent = rating > 0 ? `${rating.toFixed(1)}/5` : 'N/A';
+
+        const stars = rating > 0 ? '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating)) : 'No rating';
+        document.getElementById('tutor-rating-stars').textContent = stars;
+
+        document.getElementById('tutor-gender').textContent = `Gender: ${currentTutor.gender || 'Not specified'}`;
+        document.getElementById('tutor-subjects').textContent = `Subjects: ${currentTutor.subjects?.join(', ') || 'None listed'}`;
+        document.getElementById('tutor-school').textContent = `School: ${currentTutor.school || 'Not specified'}`;
+        document.getElementById('tutor-location').textContent = `Location: ${currentTutor.location || 'Not specified'}`;
+        document.getElementById('tutor-bio').textContent = `Bio: ${currentTutor.bio || 'No bio provided'}`;
+        document.getElementById('tutor-payment-method').textContent = `Payment Method: ${currentTutor.paymentMethod || 'Not specified'}`;
+
+        const socialLinks = currentTutor.socialLinks || {};
+        const facebookLink = document.querySelector('a[href="https://facebook.com"]');
+        const linkedinLink = document.querySelector('a[href="https://linkedin.com"]');
+        const xLink = document.querySelector('a[href="https://x.com"]');
+        facebookLink.href = socialLinks.facebook || 'https://facebook.com';
+        linkedinLink.href = socialLinks.linkedin || 'https://linkedin.com';
+        xLink.href = socialLinks.x || 'https://x.com';
+
+        document.getElementById('follower-number').textContent = currentTutor.followers || 0;
+
+        document.getElementById('intro-video').src = currentTutor.introVideo || 'https://via.placeholder.com/640x360.mp4';
+        const clip1 = document.getElementById('clip-1');
+        const clip2 = document.getElementById('clip-2');
+        clip1.src = currentTutor.clips?.[0] || 'https://via.placeholder.com/320x180.mp4';
+        clip2.src = currentTutor.clips?.[1] || 'https://via.placeholder.com/320x180.mp4';
+
+        const followButton = document.getElementById('follow-button');
+        if (followingStatus[currentTutor.id]) {
+            followButton.textContent = 'Unfollow';
+        } else {
+            followButton.textContent = 'Follow';
+        }
+        document.getElementById('follower-number').textContent = currentTutor.followers;
+    }
+}
+
+// Follow/Unfollow Toggle Function
+function followTutor() {
+    if (!isLoggedIn) { // Assuming 'isLoggedIn' is defined
+        alert('Please log in to follow this tutor.');
+        return;
+    }
+    const tutorId = currentTutor.id; // Assuming 'currentTutor' is defined
+    if (followingStatus[tutorId]) {
+        // Unfollow
+        currentTutor.followers -= 1;
+        followingStatus[tutorId] = false;
+        document.getElementById('follow-button').textContent = 'Follow';
+    } else {
+        // Follow
+        currentTutor.followers += 1;
+        followingStatus[tutorId] = true;
+        document.getElementById('follow-button').textContent = 'Unfollow';
+    }
+    document.getElementById('follower-number').textContent = currentTutor.followers;
+}
+
+
+        // Notification Bell
+        function checkNotifications() {
+            const hasNotifications = Object.values(notifications).length > 0;
+            document.getElementById('notification-dot').classList.toggle('hidden', !hasNotifications);
+            document.getElementById('mobile-notification-dot').classList.toggle('hidden', !hasNotifications);
+        }
+
+        // Toggle Admin Section
+        function toggleAdminSection() {
+            const adminSection = document.getElementById('admin-section');
+            adminSection.classList.toggle('hidden');
+        }
+
+        // Load Tutor File
+        function loadTutorFile() {
+            const fileInput = document.getElementById('tutor-file');
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = e.target.result;
+                    gk_fileData[file.name] = data.split(',')[1];
+                    gk_xlsxFileLookup[file.name] = true;
+                    gk_isXlsx = true;
+                    const csv = loadFileData(file.name);
+                    console.log('Parsed CSV:', csv);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Mobile Menu Toggle
+        document.getElementById('menu-btn').addEventListener('click', () => {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Profile Dropdown Toggle
+        function toggleProfileDropdown() {
+            // Implement dropdown if needed
+        }
+
+        // Video Interactions
+        function likeVideo(videoId) {
+            const likeCount = document.getElementById(`likes-${videoId}`);
+            likeCount.textContent = parseInt(likeCount.textContent) + 1;
+        }
+
+        function dislikeVideo(videoId) {
+            const dislikeCount = document.getElementById(`dislikes-${videoId}`);
+            dislikeCount.textContent = parseInt(dislikeCount.textContent) + 1;
+        }
+
+        function submitComment() {
+            const commentText = document.getElementById('comment-text').value;
+            if (commentText && currentVideoId) {
+                const commentList = document.getElementById(`comments-${currentVideoId}`);
+                const comment = document.createElement('p');
+                comment.textContent = commentText;
+                commentList.appendChild(comment);
+                document.getElementById(`comment-input-${currentVideoId}`).value = '';
+                document.getElementById('comment-text').value = '';
+                closeCommentModal();
+            }
+        }
+
+        // Session Request
+        function submitSessionRequest() {
+            const course = document.getElementById('session-course').value;
+            const date = document.getElementById('session-date').value;
+            const time = document.getElementById('session-time').value;
+            const duration = document.getElementById('session-duration').value;
+            const mode = document.getElementById('session-mode').value;
+
+            if (course && date && time && duration && mode) {
+                alert('Session request submitted successfully!');
+                closeRequestSessionModal();
+            } else {
+                alert('Please fill in all fields.');
+            }
+        }
+
+        // Chat
+        function sendMessage() {
+            const message = document.getElementById('chat-input').value;
+            if (message) {
+                const chatMessages = document.getElementById('chat-messages');
+                const messageElement = document.createElement('p');
+                messageElement.textContent = `You: ${message}`;
+                chatMessages.appendChild(messageElement);
+                document.getElementById('chat-input').value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+
+    </script>
+</body>
+</html>
