@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASTEGNI - Parent Profile</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href  = 'css/root_theme.css' rel = 'stylesheet'/>
+    <link href="./css/output.css" rel="stylesheet">
+    <link href="css/root_theme.css" rel="stylesheet"/>
+    <script defer src="./js/xlsx.full.min.js"></script>
+    <script src="./js/app.js" defer></script>
+    <script defer src="./js/chart.min.js"></script>
+    <script defer src="./js/parent-profile.js"></script>
     <style>
         
         body {
@@ -249,6 +252,17 @@ button:not(.modal-content button):not(#theme-toggle):not(#mobile-theme-toggle):n
                     <img src="https://via.placeholder.com/300x600" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder 3">
                     <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a>!</p>
                 </div>
+                <div id="sponsorship-placeholder-1" class="rounded-lg shadow-lg p-4 text-center" style="background-color: var(--highlight)">
+                    <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Sponsor Our Platform</h3>
+                    <img src="https://via.placeholder.com/300x600" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder 1">
+                    <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a>!</p>
+                </div>
+                <!-- Sponsorship Placeholder 3 (beside My Children) -->
+                <div id="sponsorship-placeholder-3" class="rounded-lg shadow-lg p-4 text-center" style="background-color: var(--highlight)">
+                    <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Sponsor Our Platform</h3>
+                    <img src="https://via.placeholder.com/300x600" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder 3">
+                    <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a>!</p>
+                </div>
             </div>
         </div>
     </div>
@@ -269,28 +283,45 @@ button:not(.modal-content button):not(#theme-toggle):not(#mobile-theme-toggle):n
         </div>
     </div>
 
-    <!-- Register Child Modal -->
-    <div id="register-child-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Register New Child">
-        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-4">Register New Child</h3>
-            <label class="block mb-2">Name</label>
-            <input id="child-name" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter child's name">
-            <label class="block mb-2">Gender</label>
-            <select id="child-gender" class="w-full p-2 border rounded-lg mb-4">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-            </select>
-            <label class="block mb-2">Profile Picture URL</label>
-            <input id="child-profile-pic" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter URL or leave blank for default" value="https://via.placeholder.com/64">
-            <label class="block mb-2">Cover Picture URL</label>
-            <input id="child-cover-pic" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter URL or leave blank for default" value="https://via.placeholder.com/1200x300">
-            <label class="block mb-2">Courses</label>
-            <input id="child-courses" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Math, Physics">
-            <button onclick="registerChild()" class="px-4 py-2 rounded-lg cta-button w-full">Register</button>
-            <button onclick="closeRegisterChildModal()" class="mt-4 hover:underline">Cancel</button>
-        </div>
+   <!-- Register Child Modal -->
+<div id="register-child-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Register New Child">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto" style="background-color: var(--modal-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+        <h3 class="text-2xl font-bold mb-4">Register New Child</h3>
+        <label class="block mb-2">Name</label>
+        <input id="child-name" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter child's name" style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+        <label class="block mb-2">Gender</label>
+        <select id="child-gender" class="w-full p-2 border rounded-lg mb-4" style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+        </select>
+        <label class="block mb-2">Profile Picture URL</label>
+        <input id="child-profile-pic" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter URL or leave blank for default" value="https://via.placeholder.com/64" style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+        <label class="block mb-2">Cover Picture URL</label>
+        <input id="child-cover-pic" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter URL or leave blank for default" value="https://via.placeholder.com/1200x300" style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+        <label class="block mb-2">Courses</label>
+        <input id="child-courses" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Math, Physics" style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+        <label class="block mb-2">Payment Method</label>
+        <select id="child-payment-method" class="w-full p-2 border rounded-lg mb-4" style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+            <option value="" disabled selected>Select payment method</option>
+            <option value="Credit Card">Credit Card</option>
+            <option value="PayPal">PayPal</option>
+            <option value="Bank Transfer">Bank Transfer</option>
+        </select>
+        <button onclick="registerChild()" class="px-4 py-2 rounded-lg cta-button w-full" style="background-color: var(--button-bg); color: var(--button-text);">Register</button>
+        <button onclick="closeRegisterChildModal()" class="mt-4 hover:underline">Cancel</button>
     </div>
+</div>
+
+<!-- Confirm Child Payment Modal -->
+<div id="confirm-child-payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Confirm Child Registration Payment">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto" style="background-color: var(--modal-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+        <h3 class="text-2xl font-bold mb-4">Confirm Payment</h3>
+        <p id="confirm-child-payment-details" class="mb-4"></p>
+        <button onclick="confirmChildPayment()" class="px-4 py-2 rounded-lg cta-button w-full" style="background-color: var(--button-bg); color: var(--button-text);">Confirm</button>
+        <button onclick="closeChildPaymentModal()" class="mt-4 hover:underline">Cancel</button>
+    </div>
+</div>
 
     <!-- Child Details Modal -->
     <div id="child-details-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Child Details">
@@ -492,7 +523,7 @@ button:not(.modal-content button):not(#theme-toggle):not(#mobile-theme-toggle):n
                     </a>
                     <a class="social-icon" href="https://instagram.com">
                         <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.689.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
                         </svg>
                     </a>
                 </div>
@@ -507,743 +538,815 @@ button:not(.modal-content button):not(#theme-toggle):not(#mobile-theme-toggle):n
 
 
     <!-- JavaScript for Interactivity -->
-    <script>
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-            return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-                try {
-                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                    var firstSheetName = workbook.SheetNames[0];
-                    var worksheet = workbook.Sheets[firstSheetName];
-                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                    var filteredData = jsonData.filter(row => row.some(filledCell));
-                    var headerRowIndex = filteredData.findIndex((row, index) =>
-                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                    );
-                    if (headerRowIndex === -1 || headerRowIndex > 25) {
-                        headerRowIndex = 0;
-                    }
-                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                    return csv;
-                } catch (e) {
-                    console.error(e);
-                    return "";
-                }
+<script>
+var gk_isXlsx = false;
+var gk_xlsxFileLookup = {};
+var gk_fileData = {};
+function filledCell(cell) {
+    return cell !== '' && cell != null;
+}
+function loadFileData(filename) {
+    if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+        try {
+            var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+            var firstSheetName = workbook.SheetNames[0];
+            var worksheet = workbook.Sheets[firstSheetName];
+            var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+            var filteredData = jsonData.filter(row => row.some(filledCell));
+            var headerRowIndex = filteredData.findIndex((row, index) =>
+                row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+            );
+            if (headerRowIndex === -1 || headerRowIndex > 25) {
+                headerRowIndex = 0;
             }
-            return gk_fileData[filename] || "";
+            var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+            csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+            return csv;
+        } catch (e) {
+            console.error(e);
+            return "";
         }
+    }
+    return gk_fileData[filename] || "";
+}
 
-        // Theme Toggle
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            updateThemeToggleIcon(newTheme);
-        }
+// Theme Toggle
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeToggleIcon(newTheme);
+}
 
-        function updateThemeToggleIcon(theme) {
-            const icon = theme === 'light' ?
-                `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>` :
-                `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
-            const themeToggle = document.getElementById('theme-toggle');
-            themeToggle.querySelector('svg').innerHTML = icon;
-            const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
-            mobileThemeToggle.innerHTML = `Toggle Theme <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${icon}</svg>`;
-        }
+function updateThemeToggleIcon(theme) {
+    const icon = theme === 'light' ?
+        `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>` :
+        `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+    const themeToggle = document.getElementById('theme-toggle');
+    themeToggle.querySelector('svg').innerHTML = icon;
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    mobileThemeToggle.innerHTML = `Toggle Theme <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${icon}</svg>`;
+}
 
-        // Data Objects
-        const parent = {
-            id: 1,
-            name: 'Mulugeta Alemu',
-            email: 'mulugeta@example.com',
-            phone: '+251912345679',
-            location: 'Addis Ababa, Ethiopia',
-            verified: false
-        };
-        const children = {
-            1: {
-                id: 1,
-                name: 'Abebe Kebede',
-                gender: 'Male',
-                profilePicture: 'https://via.placeholder.com/64',
-                coverPicture: 'https://via.placeholder.com/1200x300',
-                courses: ['Math', 'Physics'],
-                pendingCourses: [],
-                tutorIds: [1],
-                progress: {
-                    tutors: {
-                        1: { subjects: { Math: 60, Physics: 40 }, overall: 50 }
-                    },
-                    cumulative: 50
-                }
+// Data Objects
+const parent = {
+    id: 1,
+    name: 'Mulugeta Alemu',
+    email: 'mulugeta@example.com',
+    phone: '+251912345679',
+    location: 'Addis Ababa, Ethiopia',
+    verified: false
+};
+const children = {
+    1: {
+        id: 1,
+        name: 'Abebe Kebede',
+        gender: 'Male',
+        profilePicture: 'https://via.placeholder.com/64',
+        coverPicture: 'https://via.placeholder.com/1200x300',
+        courses: ['Math', 'Physics'],
+        pendingCourses: [],
+        tutorIds: [1],
+        progress: {
+            tutors: {
+                1: { subjects: { Math: 60, Physics: 40 }, overall: 50 }
             },
-            2: {
-                id: 2,
-                name: 'Selam Tesfaye',
-                gender: 'Female',
-                profilePicture: 'https://via.placeholder.com/64',
-                coverPicture: 'https://via.placeholder.com/1200x300',
-                courses: ['Chemistry', 'Biology'],
-                pendingCourses: ['English'],
-                tutorIds: [2],
-                progress: {
-                    tutors: {
-                        2: { subjects: { Chemistry: 70, Biology: 30 }, overall: 50 }
-                    },
-                    cumulative: 50
-                }
-            }
-        };
-        const tutors = {
-            1: { id: 1, name: 'Amanuel Tesfaye', subjects: ['Math', 'Physics'], availability: 'Weekdays', rating: 1.0, fee: 1000, profilePicture: 'https://via.placeholder.com/64' },
-            2: { id: 2, name: 'Kebede Worku', subjects: ['Chemistry', 'Biology'], availability: 'Weekends', rating: 2.0, fee: 1200, profilePicture: 'https://via.placeholder.com/64' }
-        };
-        const sessions = {
-            1: {
-                sessionId: 1,
-                date: '2025-05-20',
-                time: '14:00',
-                duration: '80 minutes',
-                student: 'Abebe Kebede',
-                studentId: 1,
-                tutor: 'Amanuel Tesfaye',
-                tutorId: 1,
-                subjects: ['Math', 'Physics'],
-                cost: 1000,
-                status: 'Confirmed',
-                studentConfirmed: true,
-                tutorConfirmed: true,
-                waiting: { student: false, tutor: false },
-                missed: false,
-                makeup: null,
-                mode: 'Online'
+            cumulative: 50
+        }
+    },
+    2: {
+        id: 2,
+        name: 'Selam Tesfaye',
+        gender: 'Female',
+        profilePicture: 'https://via.placeholder.com/64',
+        coverPicture: 'https://via.placeholder.com/1200x300',
+        courses: ['Chemistry', 'Biology'],
+        pendingCourses: ['English'],
+        tutorIds: [2],
+        progress: {
+            tutors: {
+                2: { subjects: { Chemistry: 70, Biology: 30 }, overall: 50 }
             },
-            2: {
-                sessionId: 2,
-                date: '2025-05-21',
-                time: '10:00',
-                duration: '60 minutes',
-                student: 'Selam Tesfaye',
-                studentId: 2,
-                tutor: 'Kebede Worku',
-                tutorId: 2,
-                subjects: ['Chemistry', 'Biology'],
-                cost: 1200,
-                status: 'Scheduled',
-                studentConfirmed: false,
-                tutorConfirmed: false,
-                waiting: { student: false, tutor: false },
-                missed: false,
-                makeup: null,
-                mode: 'Online'
-            }
-        };
-        const ratings = [];
-        const videos = {
-            1: { intro: null, clips: [] },
-            2: { intro: null, clips: [] }
-        };
+            cumulative: 50
+        }
+    }
+};
+const tutors = {
+    1: { id: 1, name: 'Amanuel Tesfaye', subjects: ['Math', 'Physics'], availability: 'Weekdays', rating: 1.0, fee: 1000, profilePicture: 'https://via.placeholder.com/64' },
+    2: { id: 2, name: 'Kebede Worku', subjects: ['Chemistry', 'Biology'], availability: 'Weekends', rating: 2.0, fee: 1200, profilePicture: 'https://via.placeholder.com/64' }
+};
+const sessions = {
+    1: {
+        sessionId: 1,
+        date: '2025-05-20',
+        time: '14:00',
+        duration: '80 minutes',
+        student: 'Abebe Kebede',
+        studentId: 1,
+        tutor: 'Amanuel Tesfaye',
+        tutorId: 1,
+        subjects: ['Math', 'Physics'],
+        cost: 1000,
+        status: 'Confirmed',
+        studentConfirmed: true,
+        tutorConfirmed: true,
+        waiting: { student: false, tutor: false },
+        missed: false,
+        makeup: null,
+        mode: 'Online'
+    },
+    2: {
+        sessionId: 2,
+        date: '2025-05-21',
+        time: '10:00',
+        duration: '60 minutes',
+        student: 'Selam Tesfaye',
+        studentId: 2,
+        tutor: 'Kebede Worku',
+        tutorId: 2,
+        subjects: ['Chemistry', 'Biology'],
+        cost: 1200,
+        status: 'Scheduled',
+        studentConfirmed: false,
+        tutorConfirmed: false,
+        waiting: { student: false, tutor: false },
+        missed: false,
+        makeup: null,
+        mode: 'Online'
+    }
+};
+const ratings = [];
+const videos = {
+    1: { intro: null, clips: [] },
+    2: { intro: null, clips: [] }
+};
+const payments = {};
+const logs = {};
 
-        // Initialize Profile
-        function initProfile() {
-            document.getElementById('parent-email').textContent = parent.email;
-            document.getElementById('parent-phone').textContent = parent.phone;
-            document.getElementById('parent-location').textContent = parent.location || 'Not set';
-            const verificationStatus = document.getElementById('verification-status');
-            verificationStatus.textContent = parent.verified ? 'Verified' : 'Unverified';
-            verificationStatus.className = parent.verified ? 'text-green-600 italic mb-2' : 'text-red-600 italic mb-2';
-            searchChildren();
-        }
+// Initialize Profile
+function initProfile() {
+    document.getElementById('parent-email').textContent = parent.email;
+    document.getElementById('parent-phone').textContent = parent.phone;
+    document.getElementById('parent-location').textContent = parent.location || 'Not set';
+    const verificationStatus = document.getElementById('verification-status');
+    verificationStatus.textContent = parent.verified ? 'Verified' : 'Unverified';
+    verificationStatus.className = parent.verified ? 'text-green-600 italic mb-2' : 'text-red-600 italic mb-2';
+    searchChildren();
+}
 
-        // Edit Profile Modal
-        function openEditProfileModal() {
-            document.getElementById('edit-email').value = parent.email;
-            document.getElementById('edit-phone').value = parent.phone;
-            document.getElementById('edit-location').value = parent.location || '';
-            document.getElementById('edit-profile-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('edit-profile-modal'));
-        }
-        function closeEditProfileModal() {
-            document.getElementById('edit-profile-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function saveProfile() {
-            parent.email = document.getElementById('edit-email').value;
-            parent.phone = document.getElementById('edit-phone').value;
-            parent.location = document.getElementById('edit-location').value;
-            initProfile();
-            alert('Profile updated');
-            closeEditProfileModal();
-        }
+// Edit Profile Modal
+function openEditProfileModal() {
+    document.getElementById('edit-email').value = parent.email;
+    document.getElementById('edit-phone').value = parent.phone;
+    document.getElementById('edit-location').value = parent.location || '';
+    document.getElementById('edit-profile-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('edit-profile-modal'));
+}
+function closeEditProfileModal() {
+    document.getElementById('edit-profile-modal').classList.add('hidden');
+    restoreFocus();
+}
+function saveProfile() {
+    parent.email = document.getElementById('edit-email').value;
+    parent.phone = document.getElementById('edit-phone').value;
+    parent.location = document.getElementById('edit-location').value;
+    initProfile();
+    alert('Profile updated');
+    closeEditProfileModal();
+}
 
-        // Share Profile Modal
-        function openShareModal() {
-            const shareLink = `https://astegni.et/parent/${parent.id}`;
-            document.getElementById('share-link').value = shareLink;
-            document.getElementById('share-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('share-modal'));
-        }
-        function closeShareModal() {
-            document.getElementById('share-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function copyShareLink() {
-            const shareLink = document.getElementById('share-link');
-            shareLink.select();
-            document.execCommand('copy');
-            alert('Link copied to clipboard!');
-        }
-        function shareProfile() {
-            const shareLink = document.getElementById('share-link').value;
-            const shareData = {
-                title: 'My ASTEGNI Parent Profile',
-                text: `Check out my parent profile on ASTEGNI!`,
-                url: shareLink
-            };
-            if (navigator.share) {
-                navigator.share(shareData)
-                    .then(() => console.log('Profile shared successfully'))
-                    .catch((error) => console.error('Error sharing:', error));
-            } else {
-                copyShareLink();
-            }
-        }
+// Share Profile Modal
+function openShareModal() {
+    const shareLink = `https://astegni.et/parent/${parent.id}`;
+    document.getElementById('share-link').value = shareLink;
+    document.getElementById('share-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('share-modal'));
+}
+function closeShareModal() {
+    document.getElementById('share-modal').classList.add('hidden');
+    restoreFocus();
+}
+function copyShareLink() {
+    const shareLink = document.getElementById('share-link');
+    shareLink.select();
+    document.execCommand('copy');
+    alert('Link copied to clipboard!');
+}
+function shareProfile() {
+    const shareLink = document.getElementById('share-link').value;
+    const shareData = {
+        title: 'My ASTEGNI Parent Profile',
+        text: `Check out my parent profile on ASTEGNI!`,
+        url: shareLink
+    };
+    if (navigator.share) {
+        navigator.share(shareData)
+            .then(() => console.log('Profile shared successfully'))
+            .catch((error) => console.error('Error sharing:', error));
+    } else {
+        copyShareLink();
+    }
+}
 
-        // Register Child Modal
-        function openRegisterChildModal() {
-            document.getElementById('register-child-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('register-child-modal'));
-        }
-        function closeRegisterChildModal() {
-            document.getElementById('register-child-modal').classList.add('hidden');
-            document.getElementById('child-name').value = '';
-            document.getElementById('child-gender').value = 'Male';
-            document.getElementById('child-profile-pic').value = 'https://via.placeholder.com/64';
-            document.getElementById('child-cover-pic').value = 'https://via.placeholder.com/1200x300';
-            document.getElementById('child-courses').value = '';
-            restoreFocus();
-        }
-        function registerChild() {
-            const name = document.getElementById('child-name').value.trim();
-            const gender = document.getElementById('child-gender').value;
-            const profilePic = document.getElementById('child-profile-pic').value.trim() || 'https://via.placeholder.com/64';
-            const coverPic = document.getElementById('child-cover-pic').value.trim() || 'https://via.placeholder.com/1200x300';
-            const courses = document.getElementById('child-courses').value.split(',').map(c => c.trim()).filter(c => c);
-            if (!name) {
-                alert('Please enter a name');
-                return;
-            }
-            const newId = Object.keys(children).length + 1;
-            children[newId] = {
-                id: newId,
-                name,
-                gender,
-                profilePicture: profilePic,
-                coverPicture: coverPic,
-                courses,
-                pendingCourses: [],
-                tutorIds: [],
-                progress: { tutors: {}, cumulative: 0 }
-            };
-            searchChildren();
-            alert('Child registered');
-            closeRegisterChildModal();
-        }
+// Register Child Modal
+let pendingChild = null;
+let pendingPaymentId = null;
+function openRegisterChildModal() {
+    document.getElementById('register-child-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('register-child-modal'));
+}
+function closeRegisterChildModal() {
+    document.getElementById('register-child-modal').classList.add('hidden');
+    document.getElementById('child-name').value = '';
+    document.getElementById('child-gender').value = 'Male';
+    document.getElementById('child-profile-pic').value = 'https://via.placeholder.com/64';
+    document.getElementById('child-cover-pic').value = 'https://via.placeholder.com/1200x300';
+    document.getElementById('child-courses').value = '';
+    document.getElementById('child-payment-method').value = '';
+    restoreFocus();
+}
+function registerChild() {
+    const name = document.getElementById('child-name').value.trim();
+    const gender = document.getElementById('child-gender').value;
+    const profilePic = document.getElementById('child-profile-pic').value.trim() || 'https://via.placeholder.com/64';
+    const coverPic = document.getElementById('child-cover-pic').value.trim() || 'https://via.placeholder.com/1200x300';
+    const courses = document.getElementById('child-courses').value.split(',').map(c => c.trim()).filter(c => c);
+    const paymentMethod = document.getElementById('child-payment-method').value;
 
-        // Child Details Modal
-        let selectedChildId = null;
-        let selectedTutorId = null;
-        function openChildDetailsModal(childId) {
-            selectedChildId = childId;
-            document.getElementById('child-details-modal').classList.remove('hidden');
-            updateChildDetails();
-            trapFocus(document.getElementById('child-details-modal'));
-        }
-        function closeChildDetailsModal() {
-            document.getElementById('child-details-modal').classList.add('hidden');
-            selectedChildId = null;
-            selectedTutorId = null;
-            document.getElementById('child-details-search').value = '';
-            restoreFocus();
-        }
+    if (!name || !gender || !courses.length || !paymentMethod) {
+        alert('Please fill in all required fields, including payment method.');
+        return;
+    }
 
-        // Add Course Modal
-        function openAddCourseModal() {
-            document.getElementById('add-course-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('add-course-modal'));
-        }
-        function closeAddCourseModal() {
-            document.getElementById('add-course-modal').classList.add('hidden');
-            document.getElementById('new-course').value = '';
-            restoreFocus();
-        }
-        function addCourse() {
-            const isFromNotification = document.getElementById('add-course-modal').dataset.fromNotification === 'true';
-            const child = children[selectedChildId];
-            let courses = [];
+    const newChildId = Object.keys(children).length + 1;
+    pendingChild = {
+        id: newChildId,
+        name,
+        gender,
+        profilePicture: profilePic,
+        coverPicture: coverPic,
+        courses,
+        pendingCourses: [],
+        tutorIds: [],
+        progress: { tutors: {}, cumulative: 0 }
+    };
 
-            if (isFromNotification) {
-                courses = child.pendingCourses;
-                if (courses.length === 0) {
-                    alert('No pending courses to confirm');
-                    closeAddCourseModal();
-                    closeNotificationModal();
-                    return;
-                }
-            } else {
-                courses = document.getElementById('new-course').value.split(',').map(c => c.trim()).filter(c => c);
-                if (courses.length === 0) {
-                    alert('Please enter at least one course');
-                    return;
-                }
-            }
+    const newPaymentId = Object.keys(payments).length + 1;
+    pendingPaymentId = newPaymentId;
+    payments[newPaymentId] = {
+        id: newPaymentId,
+        type: 'Registration',
+        details: `Child Registration: ${name}`,
+        amount: 500,
+        status: 'Pending',
+        childId: newChildId,
+        paymentMethod
+    };
 
-            courses.forEach(course => {
-                if (!child.courses.includes(course) && !child.pendingCourses.includes(course)) {
-                    child.pendingCourses.push(course);
-                }
-            });
-            child.courses.push(...child.pendingCourses);
-            child.pendingCourses = [];
-            alert('Courses confirmed');
-            updateChildDetails();
-            searchChildren();
+    document.getElementById('confirm-child-payment-details').textContent = `Confirm payment of 500 birr for registering ${name} using ${paymentMethod}?`;
+    document.getElementById('confirm-child-payment-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('confirm-child-payment-modal'));
+}
+function confirmChildPayment() {
+    if (pendingChild && pendingPaymentId) {
+        children[pendingChild.id] = pendingChild;
+        payments[pendingPaymentId].status = 'Completed';
+        logAction(`Confirmed payment for child registration: ${pendingChild.name}`);
+        alert('Child registered and payment confirmed');
+        searchChildren();
+        closeChildPaymentModal();
+        closeRegisterChildModal();
+        checkNotifications();
+        pendingChild = null;
+        pendingPaymentId = null;
+    }
+}
+function closeChildPaymentModal() {
+    document.getElementById('confirm-child-payment-modal').classList.add('hidden');
+    if (pendingPaymentId) {
+        delete payments[pendingPaymentId];
+    }
+    pendingChild = null;
+    pendingPaymentId = null;
+    restoreFocus();
+}
+
+// Child Details Modal
+let selectedChildId = null;
+let selectedTutorId = null;
+function openChildDetailsModal(childId) {
+    selectedChildId = childId;
+    document.getElementById('child-details-modal').classList.remove('hidden');
+    updateChildDetails();
+    trapFocus(document.getElementById('child-details-modal'));
+}
+function closeChildDetailsModal() {
+    document.getElementById('child-details-modal').classList.add('hidden');
+    selectedChildId = null;
+    selectedTutorId = null;
+    document.getElementById('child-details-search').value = '';
+    restoreFocus();
+}
+
+// Add Course Modal
+function openAddCourseModal() {
+    document.getElementById('add-course-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('add-course-modal'));
+}
+function closeAddCourseModal() {
+    document.getElementById('add-course-modal').classList.add('hidden');
+    document.getElementById('new-course').value = '';
+    restoreFocus();
+}
+function addCourse() {
+    const isFromNotification = document.getElementById('add-course-modal').dataset.fromNotification === 'true';
+    const child = children[selectedChildId];
+    let courses = [];
+
+    if (isFromNotification) {
+        courses = child.pendingCourses;
+        if (courses.length === 0) {
+            alert('No pending courses to confirm');
             closeAddCourseModal();
-            if (isFromNotification) {
-                closeNotificationModal();
-            }
-            checkNotifications();
+            closeNotificationModal();
+            return;
         }
-        function confirmCourse(childId) {
-            selectedChildId = childId;
-            document.getElementById('add-course-modal').dataset.fromNotification = 'true';
-            openAddCourseModal();
+    } else {
+        courses = document.getElementById('new-course').value.split(',').map(c => c.trim()).filter(c => c);
+        if (courses.length === 0) {
+            alert('Please enter at least one course');
+            return;
         }
+    }
 
-        // Update Child Details
-        function updateChildDetails() {
-            const searchTerm = document.getElementById('child-details-search').value.trim().toLowerCase();
-            const childDetails = document.getElementById('child-details');
-            const sessionTable = document.getElementById('session-table');
-            childDetails.innerHTML = '';
-            sessionTable.innerHTML = '';
+    courses.forEach(course => {
+        if (!child.courses.includes(course) && !child.pendingCourses.includes(course)) {
+            child.pendingCourses.push(course);
+        }
+    });
+    child.courses.push(...child.pendingCourses);
+    child.pendingCourses = [];
+    alert('Courses confirmed');
+    updateChildDetails();
+    searchChildren();
+    closeAddCourseModal();
+    if (isFromNotification) {
+        closeNotificationModal();
+    }
+    checkNotifications();
+}
+function confirmCourse(childId) {
+    selectedChildId = childId;
+    document.getElementById('add-course-modal').dataset.fromNotification = 'true';
+    openAddCourseModal();
+}
 
-            const child = children[selectedChildId];
-            const matchesCourse = searchTerm === '' || child.courses.some(course => course.toLowerCase().includes(searchTerm));
-            const matchesTutor = searchTerm === '' || child.tutorIds.some(id => tutors[id].name.toLowerCase().includes(searchTerm));
+// Update Child Details
+function updateChildDetails() {
+    const searchTerm = document.getElementById('child-details-search').value.trim().toLowerCase();
+    const childDetails = document.getElementById('child-details');
+    const sessionTable = document.getElementById('session-table');
+    childDetails.innerHTML = '';
+    sessionTable.innerHTML = '';
 
-            if (searchTerm === '' || matchesCourse || matchesTutor) {
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <img src="${child.coverPicture}" class="w-full h-48 object-cover mb-4 rounded-lg" alt="Cover Picture">
-                    <div class="flex items-center mb-4">
-                        <img src="${child.profilePicture}" class="w-16 h-16 rounded-full mr-4" alt="Profile Picture">
-                        <div>
-                            <h3 class="text-xl font-semibold">${child.name}</h3>
-                            <p class="text-[var(--text)]">Gender: ${child.gender}</p>
-                        </div>
-                    </div>
-                    <p class="text-[var(--text)] mb-2">Courses: ${child.courses.join(', ')}</p>
-                    <p class="text-[var(--text)] mb-2">Pending Courses: ${child.pendingCourses.join(', ') || 'None'}</p>
-                    <div class="flex space-x-2 mb-4 flex-wrap gap-y-2">
-                        <button onclick="openAddCourseModal()" class="px-4 py-2 rounded-lg cta-button">Add Course</button>
-                        ${child.tutorIds.map(id => `
-                            <button onclick="openChatModal(${id})" class="px-4 py-2 rounded-lg cta-button">Chat with ${tutors[id].name}</button>
-                            <button onclick="openRatingModal(${id})" class="px-4 py-2 rounded-lg cta-button">Rate ${tutors[id].name}</button>
-                        `).join('')}
-                    </div>
-                    <h4 class="text-lg font-semibold mb-2" tabindex="0">Progress</h4>
-                    <div class="flex flex-wrap justify-center gap-6 md:gap-8">
-                        ${child.tutorIds.map(tutorId => {
-                            const progress = child.progress.tutors[tutorId] || { subjects: {}, overall: 0 };
-                            return Object.keys(progress.subjects).map(subject => `
-                                <div class="text-center w-28" aria-label="${subject} progress">
-                                    <div class="relative w-24 h-24 mx-auto">
-                                        <svg class="w-full h-full" viewBox="0 0 100 100" aria-hidden="true">
-                                            <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
-                                            <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="var(--button-bg)" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="${283 * (1 - progress.subjects[subject] / 100)}" transform="rotate(-90 50 50)"/>
-                                        </svg>
-                                        <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-bold" aria-live="polite">${progress.subjects[subject]}%</span>
-                                    </div>
-                                    <p class="mt-2 text-[var(--text)] text-sm font-medium">${subject}</p>
-                                </div>
-                            `).join('');
-                        }).join('')}
-                        <div class="text-center w-28" aria-label="Overall progress">
-                            <div class="relative inline-block group w-24 h-24 mx-auto">
-                                <svg class="w-full h-full" viewBox="0 0 100 100" aria-hidden="true">
+    const child = children[selectedChildId];
+    const matchesCourse = searchTerm === '' || child.courses.some(course => course.toLowerCase().includes(searchTerm));
+    const matchesTutor = searchTerm === '' || child.tutorIds.some(id => tutors[id].name.toLowerCase().includes(searchTerm));
+
+    if (searchTerm === '' || matchesCourse || matchesTutor) {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <img src="${child.coverPicture}" class="w-full h-48 object-cover mb-4 rounded-lg" alt="Cover Picture">
+            <div class="flex items-center mb-4">
+                <img src="${child.profilePicture}" class="w-16 h-16 rounded-full mr-4" alt="Profile Picture">
+                <div>
+                    <h3 class="text-xl font-semibold">${child.name}</h3>
+                    <p class="text-[var(--text)]">Gender: ${child.gender}</p>
+                </div>
+            </div>
+            <p class="text-[var(--text)] mb-2">Courses: ${child.courses.join(', ')}</p>
+            <p class="text-[var(--text)] mb-2">Pending Courses: ${child.pendingCourses.join(', ') || 'None'}</p>
+            <div class="flex space-x-2 mb-4 flex-wrap gap-y-2">
+                <button onclick="openAddCourseModal()" class="px-4 py-2 rounded-lg cta-button">Add Course</button>
+                ${child.tutorIds.map(id => `
+                    <button onclick="openChatModal(${id})" class="px-4 py-2 rounded-lg cta-button">Chat with ${tutors[id].name}</button>
+                    <button onclick="openRatingModal(${id})" class="px-4 py-2 rounded-lg cta-button">Rate ${tutors[id].name}</button>
+                `).join('')}
+            </div>
+            <h4 class="text-lg font-semibold mb-2">Progress</h4>
+            <div class="flex space-x-8 justify-center flex-wrap gap-y-4">
+                ${child.tutorIds.map(tutorId => {
+                    const progress = child.progress.tutors[tutorId] || { subjects: {}, overall: 0 };
+                    return Object.keys(progress.subjects).map(subject => `
+                        <div class="text-center">
+                            <div class="relative w-24 h-24">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
                                     <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
-                                    <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="var(--button-bg)" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="${283 * (1 - child.progress.cumulative / 100)}" transform="rotate(-90 50 50)"/>
+                                    <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="${283 * (1 - progress.subjects[subject] / 100)}" transform="rotate(-90 50 50)"/>
                                 </svg>
-                                <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-bold" aria-live="polite">${child.progress.cumulative}%</span>
-                                <div class="absolute hidden group-hover:block p-4 rounded-lg shadow-lg z-10 w-64 left-1/2 -translate-x-1/2 top-28 bg-[var(--modal-bg)] text-[var(--modal-text)]" role="tooltip">
-                                    <h4 class="text-sm font-semibold mb-2">Subject Progress</h4>
-                                    ${child.tutorIds.map(tutorId => {
-                                        const progress = child.progress.tutors[tutorId] || { subjects: {} };
-                                        return Object.keys(progress.subjects).map(subject => `
-                                            <div class="mb-2">
-                                                <p class="text-sm text-[var(--modal-text)]">${subject}: ${progress.subjects[subject]}%</p>
-                                                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                                    <div class="h-2.5 rounded-full" style="width: ${progress.subjects[subject]}%; background-color: var(--button-bg)"></div>
-                                                </div>
-                                            </div>
-                                        `).join('');
-                                    }).join('')}
-                                </div>
+                                <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-bold">${progress.subjects[subject]}%</span>
                             </div>
-                            <p class="mt-2 text-[var(--text)] text-sm font-medium">Overall</p>
+                            <p class="mt-2 text-[var(--text)]">${subject}</p>
+                        </div>
+                    `).join('');
+                }).join('')}
+                <div class="text-center">
+                    <div class="relative inline-block group">
+                        <div class="relative w-24 h-24">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
+                                <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="${283 * (1 - child.progress.cumulative / 100)}" transform="rotate(-90 50 50)"/>
+                            </svg>
+                            <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xl font-bold">${child.progress.cumulative}%</span>
+                        </div>
+                        <div class="absolute hidden group-hover:block p-4 rounded-lg shadow-lg z-10 w-64 -left-20 top-28" style="background-color: var(--modal-bg); color: var(--modal-text)">
+                            <h4 class="text-sm font-semibold mb-2">Subject Progress</h4>
+                            ${child.tutorIds.map(tutorId => {
+                                const progress = child.progress.tutors[tutorId] || { subjects: {} };
+                                return Object.keys(progress.subjects).map(subject => `
+                                    <div class="mb-2">
+                                        <p class="text-sm text-[var(--modal-text)]">${subject}: ${progress.subjects[subject]}%</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div class="h-2.5 rounded-full" style="width: ${progress.subjects[subject]}%; background-color: var(--button-bg)"></div>
+                                        </div>
+                                    </div>
+                                `).join('');
+                            }).join('')}
                         </div>
                     </div>
+                    <p class="mt-2 text-[var(--text)]">Overall</p>
+                </div>
+            </div>
+        `;
+        childDetails.appendChild(div);
+
+        Object.values(sessions).forEach(session => {
+            if (session.studentId === selectedChildId) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2">${session.date}</td>
+                    <td class="p-2">${session.time}</td>
+                    <td class="p-2">${session.duration}</td>
+                    <td class="p-2">${session.tutor}</td>
+                    <td class="p-2">${session.subjects.join(', ')}</td>
+                    <td class="p-2">${session.cost} birr</td>
+                    <td class="p-2">${session.status}</td>
+                    <td class="p-2 flex space-x-2 flex-wrap gap-y-2">
+                        <button onclick="confirmAttendance(${session.sessionId})" class="px-2 py-1 rounded cta-button">Confirm Attendance</button>
+                        <button onclick="confirmWaiting(${session.sessionId})" class="px-2 py-1 rounded cta-button">Confirm Waiting</button>
+                        <button onclick="openProposeMakeupModal(${session.sessionId})" class="px-2 py-1 rounded cta-button">Propose Makeup</button>
+                        <button onclick="openEditSubjectsModal(${session.sessionId})" class="px-2 py-1 rounded cta-button">Edit Subjects</button>
+                    </td>
                 `;
-                childDetails.appendChild(div);
-
-                Object.values(sessions).forEach(session => {
-                    if (session.studentId === selectedChildId) {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td class="p-2">${session.date}</td>
-                            <td class="p-2">${session.time}</td>
-                            <td class="p-2">${session.duration}</td>
-                            <td class="p-2">${session.tutor}</td>
-                            <td class="p-2">${session.subjects.join(', ')}</td>
-                            <td class="p-2">${session.cost} birr</td>
-                            <td class="p-2">${session.status}</td>
-                            <td class="p-2 flex space-x-2 flex-wrap gap-y-2">
-                                <button onclick="confirmAttendance(${session.sessionId})" class="px-2 py-1 rounded cta-button">Confirm Attendance</button>
-                                <button onclick="confirmWaiting(${session.sessionId})" class="px-2 py-1 rounded cta-button">Confirm Waiting</button>
-                                <button onclick="openProposeMakeupModal(${session.sessionId})" class="px-2 py-1 rounded cta-button">Propose Makeup</button>
-                                <button onclick="openEditSubjectsModal(${session.sessionId})" class="px-2 py-1 rounded cta-button">Edit Subjects</button>
-                            </td>
-                        `;
-                        sessionTable.appendChild(tr);
-                    }
-                });
-            } else {
-                childDetails.innerHTML = '<p class="no-results">No matching results found.</p>';
-                sessionTable.innerHTML = '<tr><td colspan="8" class="p-2 no-results">No sessions found.</td></tr>';
-            }
-        }
-
-        // Search Children
-        function searchChildren() {
-            const searchTerm = document.getElementById('child-search').value.trim().toLowerCase();
-            const childTable = document.getElementById('child-table');
-            childTable.innerHTML = '';
-            Object.values(children).forEach(child => {
-                const matchesName = searchTerm === '' || child.name.toLowerCase().includes(searchTerm);
-                const matchesCourse = searchTerm === '' || child.courses.some(course => course.toLowerCase().includes(searchTerm));
-                if (matchesName || matchesCourse) {
-                    const strokeDashoffset = 283 * (1 - child.progress.cumulative / 100);
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="p-2">${child.name}</td>
-                        <td class="p-2">${child.gender}</td>
-                        <td class="p-2">${child.courses.join(', ')}</td>
-                        <td class="p-2">
-                            <div class="relative inline-block group">
-                                <div class="relative w-16 h-16">
-                                    <svg class="w-full h-full" viewBox="0 0 100 100">
-                                        <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
-                                        <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="${strokeDashoffset}" transform="rotate(-90 50 50)"/>
-                                    </svg>
-                                    <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm font-bold">${child.progress.cumulative}%</span>
-                                </div>
-                                <div class="absolute hidden group-hover:block p-4 rounded-lg shadow-lg z-10 w-64 -left-20 top-16" style="background-color: var(--modal-bg); color: var(--modal-text)">
-                                    <h4 class="text-sm font-semibold mb-2">Subject Progress</h4>
-                                    ${child.tutorIds.map(tutorId => {
-                                        const progress = child.progress.tutors[tutorId] || { subjects: {} };
-                                        return Object.keys(progress.subjects).map(subject => `
-                                            <div class="mb-2">
-                                                <p class="text-sm text-[var(--modal-text)]">${subject}: ${progress.subjects[subject]}%</p>
-                                                <div class="w-full bg-gray-200 rounded-full h-2.5">
-                                                    <div class="h-2.5 rounded-full" style="width: ${progress.subjects[subject]}%; background-color: var(--button-bg)"></div>
-                                                </div>
-                                            </div>
-                                        `).join('');
-                                    }).join('')}
-                                </div>
-                            </div>
-                        </td>
-                        <td class="p-2">
-                            <button onclick="openChildDetailsModal(${child.id})" class="hover:underline">View</button>
-                        </td>
-                    `;
-                    childTable.appendChild(tr);
-                }
-            });
-        }
-
-        // Chat Modal
-        function openChatModal(tutorId) {
-            selectedTutorId = tutorId;
-            const tutor = tutors[tutorId];
-            document.getElementById('chat-modal').querySelector('h3').textContent = `Chat with ${tutor.name}`;
-            document.getElementById('chat-modal').dataset.tutorId = tutorId;
-            document.getElementById('chat-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('chat-modal'));
-        }
-        function closeChatModal() {
-            document.getElementById('chat-modal').classList.add('hidden');
-            selectedTutorId = null;
-            restoreFocus();
-        }
-        function sendMessage() {
-            const tutorId = document.getElementById('chat-modal').dataset.tutorId;
-            const message = document.getElementById('chat-input').value.trim();
-            if (!message) return;
-            const messages = document.getElementById('chat-messages');
-            const p = document.createElement('p');
-            p.textContent = `You: ${message}`;
-            messages.appendChild(p);
-            messages.scrollTop = messages.scrollHeight;
-            document.getElementById('chat-input').value = '';
-            console.log(`Message sent to TutorId=${tutorId}: ${message}`);
-        }
-
-        // Rating Modal
-        function openRatingModal(tutorId) {
-            selectedTutorId = tutorId;
-            document.getElementById('rating-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('rating-modal'));
-        }
-        function closeRatingModal() {
-            document.getElementById('rating-modal').classList.add('hidden');
-            selectedTutorId = null;
-            restoreFocus();
-        }
-        function submitRating() {
-            const rating = document.getElementById('rating-value').value;
-            const comment = document.getElementById('rating-comment').value;
-            const dislike = document.getElementById('rating-dislike').checked;
-            ratings.push({ tutorId: selectedTutorId, rating, comment, dislike });
-            alert('Rating submitted');
-            console.log(`Rating Submitted: TutorId=${selectedTutorId}, Rating=${rating}, Comment=${comment}, Dislike=${dislike}`);
-            closeRatingModal();
-        }
-
-        // Notification Modal
-        function openNotificationModal() {
-            document.getElementById('notification-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('notification-modal'));
-        }
-        function closeNotificationModal() {
-            document.getElementById('notification-modal').classList.add('hidden');
-            restoreFocus();
-        }
-
-        // Payment Modal
-        function openPaymentModal(sessionId) {
-            document.getElementById('payment-modal').dataset.sessionId = sessionId;
-            document.getElementById('payment-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('payment-modal'));
-        }
-        function closePaymentModal() {
-            document.getElementById('payment-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function selectBank(bank) {
-            const sessionId = document.getElementById('payment-modal').dataset.sessionId;
-            alert(`Redirecting to ${bank} banking API for session ${sessionId}`);
-            console.log(`Payment initiated for Session ${sessionId} via ${bank}`);
-            closePaymentModal();
-        }
-
-        // Session Actions
-        function confirmAttendance(sessionId) {
-            sessions[sessionId].studentConfirmed = true;
-            sessions[sessionId].status = 'Confirmed';
-            alert('Attendance confirmed');
-            console.log(`Session ${sessionId}: Parent confirmed attendance`);
-            checkNotifications();
-            updateChildDetails();
-        }
-        function confirmWaiting(sessionId) {
-            sessions[sessionId].waiting.student = true;
-            alert('Waiting confirmed');
-            console.log(`Session ${sessionId}: Parent confirmed waiting`);
-            checkNotifications();
-        }
-        function openProposeMakeupModal(sessionId) {
-            document.getElementById('propose-makeup-modal').dataset.sessionId = sessionId;
-            document.getElementById('propose-makeup-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('propose-makeup-modal'));
-        }
-        function closeProposeMakeupModal() {
-            document.getElementById('propose-makeup-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function submitMakeup() {
-            const sessionId = document.getElementById('propose-makeup-modal').dataset.sessionId;
-            const date = document.getElementById('makeup-date').value;
-            const time = document.getElementById('makeup-time').value;
-            const duration = document.getElementById('makeup-duration').value;
-            if (!date || !time || !duration) {
-                alert('Please fill in all fields');
-                return;
-            }
-            sessions[sessionId].makeup = { date, time, duration };
-            sessions[sessionId].missed = true;
-            alert('Makeup session proposed');
-            console.log(`Session ${sessionId}: Makeup proposed - Date=${date}, Time=${time}, Duration=${duration}`);
-            closeProposeMakeupModal();
-            checkNotifications();
-            updateChildDetails();
-        }
-        function openEditSubjectsModal(sessionId) {
-            document.getElementById('edit-subjects-modal').dataset.sessionId = sessionId;
-            document.getElementById('edit-subjects-input').value = sessions[sessionId].subjects.join(', ');
-            document.getElementById('edit-subjects-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('edit-subjects-modal'));
-        }
-        function closeEditSubjectsModal() {
-            document.getElementById('edit-subjects-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function submitEditSubjects() {
-            const sessionId = document.getElementById('edit-subjects-modal').dataset.sessionId;
-            const subjectsInput = document.getElementById('edit-subjects-input').value;
-            const newSubjects = subjectsInput.split(',').map(s => s.trim()).filter(s => s);
-            if (newSubjects.length === 0) {
-                alert('Please enter at least one subject');
-                return;
-            }
-            sessions[sessionId].subjects = newSubjects;
-            alert('Subjects updated');
-            console.log(`Session ${sessionId}: Subjects updated to ${newSubjects.join(', ')}`);
-            closeEditSubjectsModal();
-            updateChildDetails();
-        }
-
-        // Focus Management
-        let lastFocusedElement = null;
-        function trapFocus(modal) {
-            lastFocusedElement = document.activeElement;
-            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-            const firstElement = focusableElements[0];
-            const lastElement = focusableElements[focusableElements.length - 1];
-
-            modal.addEventListener('keydown', function(e) {
-                if (e.key === 'Tab') {
-                    if (e.shiftKey && document.activeElement === firstElement) {
-                        e.preventDefault();
-                        lastElement.focus();
-                    } else if (!e.shiftKey && document.activeElement === lastElement) {
-                        e.preventDefault();
-                        firstElement.focus();
-                    }
-                }
-            });
-
-            firstElement.focus();
-        }
-
-        function restoreFocus() {
-            if (lastFocusedElement) {
-                lastFocusedElement.focus();
-            }
-        }
-
-        // Notifications
-        function checkNotifications() {
-            const currentTime = new Date();
-            let hasNotifications = false;
-            const notificationContent = document.getElementById('notification-content');
-            notificationContent.innerHTML = '';
-            Object.values(sessions).forEach(session => {
-                if (session.status === 'Confirmed') {
-                    hasNotifications = true;
-                    const p = document.createElement('p');
-                    p.textContent = `Session ${session.subjects.join(', ')} for ${session.student} confirmed! Proceed to payment.`;
-                    p.innerHTML += ` <button onclick="openPaymentModal(${session.sessionId})" class="underline">Pay Now</button>`;
-                    notificationContent.appendChild(p);
-                }
-                const sessionTime = new Date(`${session.date}T${session.time}:00+03:00`);
-                const timeDiff = (sessionTime - currentTime) / (1000 * 60);
-                if (session.status === 'Scheduled' && timeDiff > 0 && timeDiff <= 30) {
-                    hasNotifications = true;
-                    const p = document.createElement('p');
-                    p.textContent = `Session with ${session.tutor} for ${session.student} in ${Math.round(timeDiff)} minutes!`;
-                    notificationContent.appendChild(p);
-                }
-            });
-            Object.values(children).forEach(child => {
-                if (child.pendingCourses.length > 0) {
-                    hasNotifications = true;
-                    const p = document.createElement('p');
-                    p.textContent = `Confirm courses: ${child.pendingCourses.join(', ')} for ${child.name}`;
-                    p.innerHTML += ` <button onclick="confirmCourse(${child.id})" class="underline">Confirm</button>`;
-                    notificationContent.appendChild(p);
-                }
-            });
-            if (!hasNotifications) {
-                notificationContent.textContent = 'You have no notifications.';
-            }
-            const dot = document.getElementById('notification-dot');
-            const mobileDot = document.getElementById('mobile-notification-dot');
-            if (hasNotifications) {
-                dot.classList.remove('hidden');
-                mobileDot.classList.remove('hidden');
-            } else {
-                dot.classList.add('hidden');
-                mobileDot.classList.add('hidden');
-            }
-        }
-
-        // Mobile Menu Toggle
-        function toggleMobileMenu() {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const menuBtn = document.getElementById('menu-btn');
-            const isOpen = mobileMenu.classList.contains('open');
-            if (isOpen) {
-                mobileMenu.classList.remove('open');
-                menuBtn.setAttribute('aria-expanded', 'false');
-            } else {
-                mobileMenu.classList.add('open');
-                menuBtn.setAttribute('aria-expanded', 'true');
-            }
-        }
-
-        // Initialize
-        function initialize() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeToggleIcon(savedTheme);
-            initProfile();
-            checkNotifications();
-            setInterval(checkNotifications, 60000);
-            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-            document.getElementById('mobile-theme-toggle').addEventListener('click', toggleTheme);
-            document.getElementById('menu-btn').addEventListener('click', toggleMobileMenu);
-        }
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', initialize);
-
-        // Close Modals on Escape Key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const modals = [
-                    'edit-profile-modal', 'register-child-modal', 'child-details-modal',
-                    'add-course-modal', 'chat-modal', 'rating-modal', 'notification-modal',
-                    'propose-makeup-modal', 'edit-subjects-modal', 'payment-modal', 'share-modal'
-                ];
-                modals.forEach(id => {
-                    const modal = document.getElementById(id);
-                    if (!modal.classList.contains('hidden')) {
-                        modal.classList.add('hidden');
-                        restoreFocus();
-                    }
-                });
+                sessionTable.appendChild(tr);
             }
         });
+    } else {
+        childDetails.innerHTML = '<p class="no-results">No matching results found.</p>';
+        sessionTable.innerHTML = '<tr><td colspan="8" class="p-2 no-results">No sessions found.</td></tr>';
+    }
+}
+
+// Search Children
+function searchChildren() {
+    const searchTerm = document.getElementById('child-search').value.trim().toLowerCase();
+    const childTable = document.getElementById('child-table');
+    childTable.innerHTML = '';
+    Object.values(children).forEach(child => {
+        const matchesName = searchTerm === '' || child.name.toLowerCase().includes(searchTerm);
+        const matchesCourse = searchTerm === '' || child.courses.some(course => course.toLowerCase().includes(searchTerm));
+        if (matchesName || matchesCourse) {
+            const strokeDashoffset = 283 * (1 - child.progress.cumulative / 100);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-2">${child.name}</td>
+                <td class="p-2">${child.gender}</td>
+                <td class="p-2">${child.courses.join(', ')}</td>
+                <td class="p-2">
+                    <div class="relative inline-block group">
+                        <div class="relative w-16 h-16">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
+                                <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="${strokeDashoffset}" transform="rotate(-90 50 50)"/>
+                            </svg>
+                            <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm font-bold">${child.progress.cumulative}%</span>
+                        </div>
+                        <div class="absolute hidden group-hover:block p-4 rounded-lg shadow-lg z-10 w-64 -left-20 top-16" style="background-color: var(--modal-bg); color: var(--modal-text)">
+                            <h4 class="text-sm font-semibold mb-2">Subject Progress</h4>
+                            ${child.tutorIds.map(tutorId => {
+                                const progress = child.progress.tutors[tutorId] || { subjects: {} };
+                                return Object.keys(progress.subjects).map(subject => `
+                                    <div class="mb-2">
+                                        <p class="text-sm text-[var(--modal-text)]">${subject}: ${progress.subjects[subject]}%</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div class="h-2.5 rounded-full" style="width: ${progress.subjects[subject]}%; background-color: var(--button-bg)"></div>
+                                        </div>
+                                    </div>
+                                `).join('');
+                            }).join('')}
+                        </div>
+                    </div>
+                </td>
+                <td class="p-2">
+                    <button onclick="openChildDetailsModal(${child.id})" class="hover:underline">View</button>
+                </td>
+            `;
+            childTable.appendChild(tr);
+        }
+    });
+}
+
+// Chat Modal
+function openChatModal(tutorId) {
+    selectedTutorId = tutorId;
+    const tutor = tutors[tutorId];
+    document.getElementById('chat-modal').querySelector('h3').textContent = `Chat with ${tutor.name}`;
+    document.getElementById('chat-modal').dataset.tutorId = tutorId;
+    document.getElementById('chat-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('chat-modal'));
+}
+function closeChatModal() {
+    document.getElementById('chat-modal').classList.add('hidden');
+    selectedTutorId = null;
+    restoreFocus();
+}
+function sendMessage() {
+    const tutorId = document.getElementById('chat-modal').dataset.tutorId;
+    const message = document.getElementById('chat-input').value.trim();
+    if (!message) return;
+    const messages = document.getElementById('chat-messages');
+    const p = document.createElement('p');
+    p.textContent = `You: ${message}`;
+    messages.appendChild(p);
+    messages.scrollTop = messages.scrollHeight;
+    document.getElementById('chat-input').value = '';
+    console.log(`Message sent to TutorId=${tutorId}: ${message}`);
+}
+
+// Rating Modal
+function openRatingModal(tutorId) {
+    selectedTutorId = tutorId;
+    document.getElementById('rating-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('rating-modal'));
+}
+function closeRatingModal() {
+    document.getElementById('rating-modal').classList.add('hidden');
+    selectedTutorId = null;
+    restoreFocus();
+}
+function submitRating() {
+    const rating = document.getElementById('rating-value').value;
+    const comment = document.getElementById('rating-comment').value;
+    const dislike = document.getElementById('rating-dislike').checked;
+    ratings.push({ tutorId: selectedTutorId, rating, comment, dislike });
+    alert('Rating submitted');
+    console.log(`Rating Submitted: TutorId=${selectedTutorId}, Rating=${rating}, Comment=${comment}, Dislike=${dislike}`);
+    closeRatingModal();
+}
+
+// Notification Modal
+function openNotificationModal() {
+    document.getElementById('notification-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('notification-modal'));
+}
+function closeNotificationModal() {
+    document.getElementById('notification-modal').classList.add('hidden');
+    restoreFocus();
+}
+
+// Payment Modal
+function openPaymentModal(sessionId) {
+    document.getElementById('payment-modal').dataset.sessionId = sessionId;
+    document.getElementById('payment-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('payment-modal'));
+}
+function closePaymentModal() {
+    document.getElementById('payment-modal').classList.add('hidden');
+    restoreFocus();
+}
+function selectBank(bank) {
+    const sessionId = document.getElementById('payment-modal').dataset.sessionId;
+    alert(`Redirecting to ${bank} banking API for session ${sessionId}`);
+    console.log(`Payment initiated for Session ${sessionId} via ${bank}`);
+    closePaymentModal();
+}
+
+// Session Actions
+function confirmAttendance(sessionId) {
+    sessions[sessionId].studentConfirmed = true;
+    sessions[sessionId].status = 'Confirmed';
+    alert('Attendance confirmed');
+    console.log(`Session ${sessionId}: Parent confirmed attendance`);
+    checkNotifications();
+    updateChildDetails();
+}
+function confirmWaiting(sessionId) {
+    sessions[sessionId].waiting.student = true;
+    alert('Waiting confirmed');
+    console.log(`Session ${sessionId}: Parent confirmed waiting`);
+    checkNotifications();
+}
+function openProposeMakeupModal(sessionId) {
+    document.getElementById('propose-makeup-modal').dataset.sessionId = sessionId;
+    document.getElementById('propose-makeup-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('propose-makeup-modal'));
+}
+function closeProposeMakeupModal() {
+    document.getElementById('propose-makeup-modal').classList.add('hidden');
+    restoreFocus();
+}
+function submitMakeup() {
+    const sessionId = document.getElementById('propose-makeup-modal').dataset.sessionId;
+    const date = document.getElementById('makeup-date').value;
+    const time = document.getElementById('makeup-time').value;
+    const duration = document.getElementById('makeup-duration').value;
+    if (!date || !time || !duration) {
+        alert('Please fill in all fields');
+        return;
+    }
+    sessions[sessionId].makeup = { date, time, duration };
+    sessions[sessionId].missed = true;
+    alert('Makeup session proposed');
+    console.log(`Session ${sessionId}: Makeup proposed - Date=${date}, Time=${time}, Duration=${duration}`);
+    closeProposeMakeupModal();
+    checkNotifications();
+    updateChildDetails();
+}
+function openEditSubjectsModal(sessionId) {
+    document.getElementById('edit-subjects-modal').dataset.sessionId = sessionId;
+    document.getElementById('edit-subjects-input').value = sessions[sessionId].subjects.join(', ');
+    document.getElementById('edit-subjects-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('edit-subjects-modal'));
+}
+function closeEditSubjectsModal() {
+    document.getElementById('edit-subjects-modal').classList.add('hidden');
+    restoreFocus();
+}
+function submitEditSubjects() {
+    const sessionId = document.getElementById('edit-subjects-modal').dataset.sessionId;
+    const subjectsInput = document.getElementById('edit-subjects-input').value;
+    const newSubjects = subjectsInput.split(',').map(s => s.trim()).filter(s => s);
+    if (newSubjects.length === 0) {
+        alert('Please enter at least one subject');
+        return;
+    }
+    sessions[sessionId].subjects = newSubjects;
+    alert('Subjects updated');
+    console.log(`Session ${sessionId}: Subjects updated to ${newSubjects.join(', ')}`);
+    closeEditSubjectsModal();
+    updateChildDetails();
+}
+
+// Log Action
+function logAction(action) {
+    const newId = Object.keys(logs).length + 1;
+    logs[newId] = {
+        id: newId,
+        action,
+        user: parent.email,
+        date: new Date().toLocaleString()
+    };
+}
+
+// Focus Management
+let lastFocusedElement = null;
+function trapFocus(modal) {
+    lastFocusedElement = document.activeElement;
+    const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+
+    modal.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            if (e.shiftKey && document.activeElement === firstElement) {
+                e.preventDefault();
+                lastElement.focus();
+            } else if (!e.shiftKey && document.activeElement === lastElement) {
+                e.preventDefault();
+                firstElement.focus();
+            }
+        }
+    });
+
+    firstElement.focus();
+}
+
+function restoreFocus() {
+    if (lastFocusedElement) {
+        lastFocusedElement.focus();
+    }
+}
+
+// Notifications
+function checkNotifications() {
+    const currentTime = new Date();
+    let hasNotifications = false;
+    const notificationContent = document.getElementById('notification-content');
+    notificationContent.innerHTML = '';
+    Object.values(sessions).forEach(session => {
+        if (session.status === 'Confirmed') {
+            hasNotifications = true;
+            const p = document.createElement('p');
+            p.textContent = `Session ${session.subjects.join(', ')} for ${session.student} confirmed! Proceed to payment.`;
+            p.innerHTML += ` <button onclick="openPaymentModal(${session.sessionId})" class="underline">Pay Now</button>`;
+            notificationContent.appendChild(p);
+        }
+        const sessionTime = new Date(`${session.date}T${session.time}:00+03:00`);
+        const timeDiff = (sessionTime - currentTime) / (1000 * 60);
+        if (session.status === 'Scheduled' && timeDiff > 0 && timeDiff <= 30) {
+            hasNotifications = true;
+            const p = document.createElement('p');
+            p.textContent = `Session with ${session.tutor} for ${session.student} in ${Math.round(timeDiff)} minutes!`;
+            notificationContent.appendChild(p);
+        }
+    });
+    Object.values(children).forEach(child => {
+        if (child.pendingCourses.length > 0) {
+            hasNotifications = true;
+            const p = document.createElement('p');
+            p.textContent = `Confirm courses: ${child.pendingCourses.join(', ')} for ${child.name}`;
+            p.innerHTML += ` <button onclick="confirmCourse(${child.id})" class="underline">Confirm</button>`;
+            notificationContent.appendChild(p);
+        }
+    });
+    Object.values(payments).forEach(payment => {
+        if (payment.status === 'Pending' && payment.type === 'Registration') {
+            hasNotifications = true;
+            const p = document.createElement('p');
+            p.textContent = `Confirm payment for child registration: ${payment.details}`;
+            p.innerHTML += ` <button onclick="confirmChildPayment(${payment.id})" class="underline">Confirm Payment</button>`;
+            notificationContent.appendChild(p);
+        }
+    });
+    if (!hasNotifications) {
+        notificationContent.textContent = 'You have no notifications.';
+    }
+    const dot = document.getElementById('notification-dot');
+    const mobileDot = document.getElementById('mobile-notification-dot');
+    if (hasNotifications) {
+        dot.classList.remove('hidden');
+        mobileDot.classList.remove('hidden');
+    } else {
+        dot.classList.add('hidden');
+        mobileDot.classList.add('hidden');
+    }
+}
+
+// Mobile Menu Toggle
+function toggleMobileMenu() {
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuBtn = document.getElementById('menu-btn');
+    const isOpen = mobileMenu.classList.contains('open');
+    if (isOpen) {
+        mobileMenu.classList.remove('open');
+        menuBtn.setAttribute('aria-expanded', 'false');
+    } else {
+        mobileMenu.classList.add('open');
+        menuBtn.setAttribute('aria-expanded', 'true');
+    }
+}
+
+// Initialize
+function initialize() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeToggleIcon(savedTheme);
+    initProfile();
+    checkNotifications();
+    setInterval(checkNotifications, 60000);
+    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+    document.getElementById('mobile-theme-toggle').addEventListener('click', toggleTheme);
+    document.getElementById('menu-btn').addEventListener('click', toggleMobileMenu);
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', initialize);
+
+// Close Modals on Escape Key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modals = [
+            'edit-profile-modal', 'register-child-modal', 'child-details-modal',
+            'add-course-modal', 'chat-modal', 'rating-modal', 'notification-modal',
+            'propose-makeup-modal', 'edit-subjects-modal', 'payment-modal', 'share-modal',
+            'confirm-child-payment-modal'
+        ];
+        modals.forEach(id => {
+            const modal = document.getElementById(id);
+            if (!modal.classList.contains('hidden')) {
+                modal.classList.add('hidden');
+                if (id === 'confirm-child-payment-modal') {
+                    closeChildPaymentModal();
+                } else {
+                    restoreFocus();
+                }
+            }
+        });
+    }
+});
+
     </script>
 </body>
 </html>

@@ -4,50 +4,26 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ASTEGNI - Tutor Profile</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="css/root_theme.css" rel="stylesheet" />
+  <link href="./css/output.css" rel="stylesheet">
+  <link href="css/root_theme.css" rel="stylesheet"/>
+  <script defer src="./js/xlsx.full.min.js"></script>
+  <script src="./js/app.js" defer></script>
+  <script defer src="./js/chart.min.js"></script>
+  <script defer src="./js/tutor-profile.js"></script>
   <style>
     body {
       background-color: var(--background);
       color: var(--text);
       font-family: sans-serif;
     }
-
-    nav {
-      background-color: var(--highlight);
-    }
-
-    nav a {
-      color: var(--nav-link);
-    }
-
-    nav a:hover {
-      color: var(--nav-link-hover);
-    }
-
-    button.cta-button {
-      background-color: var(--button-bg);
-      color: var(--button-text);
-    }
-
-    button.cta-button:hover {
-      background-color: var(--button-hover);
-    }
-
-    footer {
-      background-color: var(--footer-bg);
-      color: var(--footer-text);
-    }
-
-    .modal-content {
-      background-color: var(--modal-bg);
-      color: var(--modal-text);
-    }
-
-    .progress-circle:hover .tooltip {
-      display: block;
-    }
-
+    nav { background-color: var(--highlight); }
+    nav a { color: var(--nav-link); }
+    nav a:hover { color: var(--nav-link-hover); }
+    button.cta-button { background-color: var(--button-bg); color: var(--button-text); }
+    button.cta-button:hover { background-color: var(--button-hover); }
+    footer { background-color: var(--footer-bg); color: var(--footer-text); }
+    .modal-content { background-color: var(--modal-bg); color: var(--modal-text); }
+    .progress-circle:hover .tooltip { display: block; }
     .tooltip {
       display: none;
       position: absolute;
@@ -58,16 +34,8 @@
       border-radius: 0.25rem;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
-
-    canvas {
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-    }
-
-    video.preview {
-      max-height: 100px;
-    }
-
+    canvas { border: 1px solid #e5e7eb; border-radius: 8px; }
+    video.preview { max-height: 100px; }
     .ad-placeholder {
       background-color: var(--background);
       border: 1px solid #e5e7eb;
@@ -80,7 +48,6 @@
       margin-bottom: 1rem;
       text-align: center;
     }
-
     #cover-photo {
       height: 150px;
       background-size: cover;
@@ -88,7 +55,6 @@
       position: relative;
       border-radius: 8px;
     }
-
     #profile-picture {
       width: 80px;
       height: 80px;
@@ -99,10 +65,29 @@
       border: 4px solid var(--background);
       object-fit: cover;
     }
+    #school-suggestions {
+      position: absolute;
+      z-index: 20;
+      background-color: var(--modal-bg);
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 100%;
+      display: none;
+    }
+    #school-suggestions div {
+      padding: 8px;
+      cursor: pointer;
+    }
+    #school-suggestions div:hover {
+      background-color: var(--button-hover);
+      color: var(--button-text);
+    }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
+  <!-- Navigation (unchanged) -->
   <nav class="p-4 sticky top-0 z-10 shadow-sm">
     <div class="container mx-auto flex justify-between items-center">
       <a href="index.html" class="text-2xl font-bold">ASTEGNI</a>
@@ -134,12 +119,10 @@
     </div>
   </nav>
 
-  <!-- Tutor Profile Section -->
+  <!-- Tutor Profile Section (unchanged) -->
   <section class="py-16">
     <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
-      <!-- Main Content (Tutor Profile) -->
       <div class="lg:w-3/4">
-        <!-- Cover Photo -->
         <div id="cover-photo" class="mb-8" style="background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=150&q=80');">
           <img src="pictures/profile_picture.png" id="profile-picture" alt="Tutor Profile Picture">
         </div>
@@ -155,28 +138,32 @@
                 </span>
               </h2>
               <p id="verification-status" class="text-sm italic mb-2"></p>
-              <div class="flex flex-col items-start mb-4">
-                <div class="relative w-16 h-16 progress-circle">
-                  <svg class="w-full h-full" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="8" fill="none"/>
-                    <circle id="rating-arc" cx="50" cy="50" r="45" stroke="#EF4444" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"/>
-                  </svg>
-                  <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]" id="rating-label">N/A</div>
+              <div class="flex flex-col md:flex-row gap-6 mb-4">
+                <!-- Rating Circle and Stars -->
+                <div class="w-full md:w-1/4">
+                  <div class="relative w-16 h-16 progress-circle">
+                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+                      < Ascircle id="rating-arc" cx="50" cy="50" r="45" stroke="#EF4444" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"/>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]" id="rating-label">N/A</div>
+                  </div>
+                  <span id="tutor-rating-stars" class="text-yellow-500 mt-1">No rating</span>
                 </div>
-                <span id="tutor-rating-stars" class="text-yellow-500 mt-1">No rating</span>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <div>
-                  <p class="text-[var(--text)]"><span id="follower-number">0</span> Followers</p>
-                  <p id="tutor-gender" class="text-[var(--text)]">Male</p>
-                </div>
-                <div>
-                  <p id="tutor-address" class="text-[var(--text)]">Address: Not set</p>
-                  <p id="tutor-school" class="text-[var(--text)]">Teaches: Not set</p>
-                </div>
-                <div>
-                  <p id="courses" class="text-[var(--text)]">Courses: Not set</p>
-                  <p id="payment-method" class="text-[var(--text)]">Payment Method: Not set</p>
+                <!-- Tutor Details -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full md:w-3/4">
+                  <div class="md:col-span-1">
+                    <p class="text-[var(--text)]"><span id="follower-number">0</span> Followers</p>
+                    <p id="tutor-gender" class="text-[var(--text)]">Male</p>
+                  </div>
+                  <div class="md:col-span-1">
+                    <p id="tutor-address" class="text-[var(--text)]">Address: Not set</p>
+                    <p id="tutor-school" class="text-[var(--text)]">Teaches: Not set</p>
+                  </div>
+                  <div class="md:col-span-1">
+                    <p id="courses" class="text-[var(--text)]">Courses: Algebra (hourly: 350 birr), Geometry (hourly: 350 birr), Physics 101 (hourly: 400 birr)</p>
+                    <p id="payment-method" class="text-[var(--text)]">Payment Method: Not set</p>
+                  </div>
                 </div>
               </div>
               <h4 class="text-2xl font-bold mb-4 text-[var(--heading)]">About me</h4>
@@ -211,13 +198,11 @@
             <button onclick="openCommentModal()" class="cta-button px-4 py-2 rounded-lg">View Comments</button>
             <button onclick="openReferralModal()" class="cta-button px-4 py-2 rounded-lg">Share Referral</button>
           </div>
-          <!-- Sponsorship Placeholder -->
           <div id="sponsorship-placeholder-2" class="rounded-lg shadow-lg p-4 text-center bg-[var(--highlight)]">
             <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Sponsor Our Platform</h3>
             <img src="https://via.placeholder.com/728x90" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder">
-            <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a Sunspear!</p>
+            <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a> Sunspear!</p>
           </div>
-          <!-- Introduction Video -->
           <div class="mt-8">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-xl font-semibold text-[var(--heading)]">Introduction Video</h3>
@@ -233,53 +218,50 @@
               <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
               <button onclick="openVideoCommentModal('intro')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
               <button onclick="openShareModal('intro')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
-            </div>
-            <div id="intro-comments" class="text-[var(--text)] mt-2">
-              <p>No comments yet.</p>
-            </div>
-            <button onclick="openVideoDescModal('intro')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
-            <!-- Short Clips -->
-            <h4 class="text-lg font-semibold mt-8 mb-4 text-[var(--heading)]">Short Clips</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <video controls class="w-full rounded-lg" id="clip-1">
-                  <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
-                  Your browser does not support the video tag.
-                </video>
-                <p id="clip-1-desc" class="text-[var(--text)] mt-2">Quick Math tip.</p>
-                <div class="flex gap-2 mt-2">
-                  <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
-                  <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
-                  <button onclick="openVideoCommentModal('clip1')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
-                  <button onclick="openShareModal('clip1')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
-                </div>
-                <div id="clip1-comments" class="text-[var(--text)] mt-2">
-                  <p>No comments yet.</p>
-                </div>
-                <button onclick="openVideoDescModal('clip1')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
-              </div>
-              <div>
-                <video controls class="w-full rounded-lg" id="clip-2">
-                  <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
-                  Your browser does not support the video tag.
-                </video>
-                <p id="clip-2-desc" class="text-[var(--text)] mt-2">Physics concept explained.</p>
-                <div class="flex gap-2 mt-2">
-                  <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
-                  <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
-                  <button onclick="openVideoCommentModal('clip2')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
-                  <button onclick="openShareModal('clip2')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
-                </div>
-                <div id="clip2-comments" class="text-[var(--text)] mt-2">
-                  <p>No comments yet.</p>
-                </div>
-                <button onclick="openVideoDescModal('clip2')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
-              </div>
-            </div>
-          </div>
-        </div>
+  </div>
+  <div id="intro-comments" class="text-[var(--text)] mt-2">
+    <p>No comments yet.</p>
+  </div>
+  <button onclick="openVideoDescModal('intro')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
+  <h4 class="text-lg font-semibold mt-8 mb-4 text-[var(--heading)]">Short Clips</h4>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div>
+      <video controls class="w-full rounded-lg" id="clip-1">
+        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <p id="clip-1-desc" class="text-[var(--text)] mt-2">Quick Math tip.</p>
+      <div class="flex gap-2 mt-2">
+        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+        <button onclick="openVideoCommentModal('clip1')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+        <button onclick="openShareModal('clip1')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
       </div>
-      <!-- Advertisement Sidebar -->
+      <div id="clip1-comments" class="text-[var(--text)] mt-2">
+        <p>No comments yet.</p>
+      </div>
+      <button onclick="openVideoDescModal('clip1')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
+    </div>
+    <div>
+      <video controls class="w-full rounded-lg" id="clip-2">
+        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
+      <p id="clip-2-desc" class="text-[var(--text)] mt-2">Physics concept explained.</p>
+      <div class="flex gap-2 mt-2">
+        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+        <button onclick="openVideoCommentModal('clip2')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+        <button onclick="openShareModal('clip2')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
+      </div>
+      <div id="clip2-comments" class="text-[var(--text)] mt-2">
+        <p>No comments yet.</p>
+      </div>
+      <button onclick="openVideoDescModal('clip2')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
+    </div>
+  </div>
+</div>
+      </div>
       <aside class="lg:w-1/4 hidden lg:block sticky top-20 self-start">
         <div class="ad-placeholder" style="width: 300px; height: 250px;">Advertisement (300x250)</div>
         <div class="ad-placeholder" style="width: 300px; height: 250px;">Advertisement (300x250)</div>
@@ -289,63 +271,18 @@
   </section>
 
   <!-- Modals -->
-  <!-- Student Details Modal -->
-  <div id="student-details-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Student Details</h3>
-      <p id="student-detail-name" class="text-[var(--text)] mb-2"></p>
-      <p id="student-detail-subjects" class="text-[var(--text)] mb-2"></p>
-      <p id="student-detail-session" class="text-[var(--text)] mb-4"></p>
-      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Overall Progress</h4>
-      <div class="relative w-24 h-24 progress-circle mb-4">
-        <svg class="w-full h-full">
-          <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none"/>
-          <circle id="detail-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="0"/>
-        </svg>
-        <div class="absolute inset-0 flex items-center justify-center font-bold text-lg text-[var(--text)]" id="detail-progress-label">0%</div>
-      </div>
-      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Detailed Progress</h4>
-      <div class="mb-4">
-        <div class="mb-2">
-          <span>Math: <span id="detail-subj-math">0%</span></span>
-          <div class="bg-gray-200 h-2 rounded">
-            <div id="detail-bar-math" class="bg-blue-600 h-2 rounded" style="width:0%"></div>
-          </div>
-        </div>
-        <div class="mb-2">
-          <span>Physics: <span id="detail-subj-physics">0%</span></span>
-          <div class="bg-gray-200 h-2 rounded">
-            <div id="detail-bar-physics" class="bg-green-600 h-2 rounded" style="width:0%"></div>
-          </div>
-        </div>
-      </div>
-      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Session History</h4>
-      <table id="student-session-history" class="w-full text-left mb-4">
-        <thead>
-          <tr class="bg-gray-200">
-            <th class="p-2">Date</th>
-            <th class="p-2">Time</th>
-            <th class="p-2">Subjects</th>
-            <th class="p-2">Cost</th>
-            <th class="p-2">Status</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-      <div class="flex gap-2">
-        <button onclick="closeStudentDetailsModal()" class="bg-gray-700 text-white px-4 py-2 rounded-lg flex-1 hover:bg-gray-800">Close</button>
-        <button onclick="openChatModal(document.getElementById('student-details-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1">Chat</button>
-        <button onclick="openGoLiveModal(document.getElementById('student-details-modal').dataset.studentId)" class="bg-red-600 text-white px-4 py-2 rounded-lg flex-1 hover:bg-red-700">Go Live</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Edit Profile Modal -->
+  <!-- Edit Profile Modal (unchanged) -->
   <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Profile</h3>
       <label class="block mb-2 text-[var(--text)]">Name</label>
       <input type="text" id="profile-name" class="w-full p-2 border rounded-lg mb-4" value="Amanuel Tesfaye">
+      <label class="block mb-2 text-[var(--text)]">Phone Number</label>
+      <input type="tel" id="profile-phone" class="w-full p-2 border rounded-lg mb-4" placeholder="+251912345678">
+      <p id="phone-error" class="text-red-500 text-sm mb-2 hidden">Invalid phone number (e.g., +251912345678).</p>
+      <label class="block mb-2 text-[var(--text)]">Email Address</label>
+      <input type="email" id="profile-email" class="w-full p-2 border rounded-lg mb-4" placeholder="example@astegni.et">
+      <p id="email-error" class="text-red-500 text-sm mb-2 hidden">Invalid email address.</p>
       <label class="block mb-2 text-[var(--text)]">Location</label>
       <div class="flex gap-2 mb-4">
         <input type="text" id="profile-location" class="w-full p-2 border rounded-lg" placeholder="Enter your location" readonly>
@@ -353,8 +290,12 @@
       </div>
       <p id="location-error" class="text-red-500 text-sm mb-2 hidden">Unable to get location.</p>
       <label class="block mb-2 text-[var(--text)]">School</label>
-      <input type="text" id="profile-school" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter school name">
-      <p id="school-error" class="text-red-500 text-sm mb-2 hidden">Invalid school name. Please select a valid school.</p>
+      <div class="relative mb-4">
+        <input type="text" id="profile-school" class="w-full p-2 border rounded-lg" placeholder="Search for a school...">
+        <div id="school-suggestions" class="absolute"></div>
+        <button id="request-school" class="cta-button px-4 py-2 rounded-lg mt-2 hidden" onclick="requestSchoolListing()">Request School Listing</button>
+      </div>
+      <p id="school-error" class="text-red-500 text-sm mb-2 hidden">Please select a valid school from the list or request a new one.</p>
       <label class="block mb-2 text-[var(--text)]">ID Document (Passport, Driver’s License, FIDA, etc.)</label>
       <input type="file" id="id-input" accept="image/*,application/pdf" class="w-full p-2 border rounded-lg mb-2">
       <p id="id-error" class="text-red-500 text-sm mb-2 hidden">Invalid file (max 5MB, JPEG/PNG/GIF/PDF).</p>
@@ -403,12 +344,137 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
       <input type="text" id="social-facebook" class="w-full p-2 border rounded-lg mb-4" placeholder="Facebook URL">
       <input type="text" id="social-twitter" class="w-full p-2 border rounded-lg mb-4" placeholder="Twitter URL">
       <input type="text" id="social-youtube" class="w-full p-2 border rounded-lg mb-4" placeholder="YouTube URL">
-      <button onclick="submitProfileEdit()" class="cta-button px-4 py-2 rounded-lg w-full">Save Changes</button>
-      <button onclick="closeEditProfileModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+      <div class="flex gap-2 mb-4">
+        <button onclick="submitProfileEdit()" class="cta-button px-4 py-2 rounded-lg flex-1">Save Changes</button>
+        <button onclick="sendForVerification()" class="cta-button px-4 py-2 rounded-lg flex-1">Send for Verification</button>
+      </div>
+      <button onclick="closeEditProfileModal()" class="mt-4 text-[var(--text)] hover:underline w-full text-center">Cancel</button>
     </div>
   </div>
 
-  <!-- Upload Video Modal -->
+  <!-- School Request Modal (unchanged) -->
+  <div id="school-request-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Request School Listing</h3>
+      <label class="block mb-2 text-[var(--text)]">School Name</label>
+      <input type="text" id="request-school-name" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter school name">
+      <p id="request-school-error" class="text-red-500 text-sm mb-2 hidden">Please enter a valid school name.</p>
+      <label class="block mb-2 text-[var(--text)]">Contact Email</label>
+      <input type="email" id="request-school-email" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter contact email">
+      <p id="request-school-email-error" class="text-red-500 text-sm mb-2 hidden">Invalid email address.</p>
+      <button onclick="submitSchoolRequest()" class="cta-button px-4 py-2 rounded-lg w-full">Submit Request</button>
+      <button onclick="closeSchoolRequestModal()" class="mt-4 text-[var(--text)] hover:underline w-full text-center">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Student Details Modal (Modified) -->
+  <div id="student-details-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Student Details</h3>
+      <p id="student-detail-name" class="text-[var(--text)] mb-2"></p>
+      <p id="student-detail-subjects" class="text-[var(--text)] mb-2"></p>
+      <p id="student-detail-session" class="text-[var(--text)] mb-4"></p>
+      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Overall Progress</h4>
+      <div class="relative w-24 h-24 progress-circle mb-4">
+        <svg class="w-full h-full">
+          <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+          <circle id="detail-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="0"/>
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center font-bold text-lg text-[var(--text)]" id="detail-progress-label">0%</div>
+      </div>
+      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Detailed Progress</h4>
+      <div class="mb-4">
+        <div class="mb-2">
+          <span>Math: <span id="detail-subj-math">0%</span></span>
+          <div class="bg-gray-200 h-2 rounded">
+            <div id="detail-bar-math" class="bg-blue-600 h-2 rounded" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="mb-2">
+          <span>Physics: <span id="detail-subj-physics">0%</span></span>
+          <div class="bg-gray-200 h-2 rounded">
+            <div id="detail-bar-physics" class="bg-green-600 h-2 rounded" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Session History</h4>
+      <table id="student-session-history" class="w-full text-left mb-4">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2">Date</th>
+            <th class="p-2">Time</th>
+            <th class="p-2">Subjects</th>
+            <th class="p-2">Cost</th>
+            <th class="p-2">Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="flex gap-2">
+        <button onclick="openParentProfileModal(document.getElementById('student-details-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1">Connect with Parent</button>
+        <button onclick="openChatModal(document.getElementById('student-details-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1">Chat</button>
+        <button onclick="openVideoCallModal(document.getElementById('student-details-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1 flex items-center justify-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5l6-6m0 0H9m12 0v12m-6 6l-6-6m6 0H3"></path>
+          </svg>
+          Video Call
+        </button>
+      </div>
+      <button onclick="closeStudentDetailsModal()" class="mt-4 text-[var(--text)] hover:underline w-full text-center">Close</button>
+    </div>
+  </div>
+
+  <!-- Parent Profile Modal (New) -->
+  <div id="parent-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Parent Profile</h3>
+      <div class="flex items-center mb-4">
+        <img id="parent-profile-picture" src="https://via.placeholder.com/64" alt="Parent Profile Picture" class="w-16 h-16 rounded-full mr-4">
+        <div>
+          <p id="parent-name" class="text-lg font-semibold text-[var(--text)]">Not set</p>
+          <p id="parent-email" class="text-[var(--text)]">Email: Not set</p>
+          <p id="parent-phone" class="text-[var(--text)]">Phone: Not set</p>
+        </div>
+      </div>
+      <div class="flex gap-2 mb-4">
+        <button onclick="openVideoCallModal(document.getElementById('parent-profile-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1 flex items-center justify-center">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5l6-6m0 0H9m12 0v12m-6 6l-6-6m6 0H3"></path>
+          </svg>
+          Video Call
+        </button>
+        <button onclick="openChatModal(document.getElementById('parent-profile-modal').dataset.studentId, 'parent')" class="cta-button px-4 py-2 rounded-lg flex-1">Chat</button>
+        <button onclick="openStudentAnalysisModal(document.getElementById('parent-profile-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1">Report Analysis</button>
+      </div>
+      <button onclick="closeParentProfileModal()" class="mt-4 text-[var(--text)] hover:underline w-full text-center">Close</button>
+    </div>
+  </div>
+
+  <!-- Student Analysis Modal (New) -->
+  <div id="student-analysis-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Student Analysis Report</h3>
+      <p id="student-analysis-name" class="text-[var(--text)] mb-2"></p>
+      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Performance Summary</h4>
+      <div class="mb-4">
+        <div class="mb-2">
+          <span>Math: <span id="analysis-subj-math">0%</span></span>
+          <div class="bg-gray-200 h-2 rounded">
+            <div id="analysis-bar-math" class="bg-blue-600 h-2 rounded" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="mb-2">
+          <span>Physics: <span id="analysis-subj-physics">0%</span></span>
+          <div class="bg-gray-200 h-2 rounded">
+            <div id="analysis-bar-physics" class="bg-green-600 h-2 rounded" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <button onclick="closeStudentAnalysisModal()" class="mt-4 text-[var(--text)] hover:underline w-full text-center">Close</button>
+    </div>
+  </div>
+
+  <!-- Upload Video Modal (unchanged) -->
   <div id="upload-video-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Upload Video</h3>
@@ -429,7 +495,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Video Description Modal -->
+  <!-- Video Description Modal (unchanged) -->
   <div id="video-desc-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Video Description</h3>
@@ -440,7 +506,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Modals -->
+  <!-- Comment Modal (unchanged) -->
   <div id="comment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Student Comments</h3>
@@ -449,7 +515,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Share Modal -->
+  <!-- Share Modal (unchanged) -->
   <div id="share-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Share Video</h3>
@@ -466,7 +532,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Referral Modal -->
+  <!-- Referral Modal (unchanged) -->
   <div id="referral-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Share Your Referral Link</h3>
@@ -482,7 +548,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Students Modal -->
+  <!-- Students Modal (unchanged) -->
   <div id="students-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto relative">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">My Students</h3>
@@ -540,7 +606,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Session Sheet Modal -->
+  <!-- Session Sheet Modal (unchanged) -->
   <div id="session-sheet-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Session Sheet</h3>
@@ -579,7 +645,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Subjects Modal -->
+  <!-- Subjects Modal (unchanged) -->
   <div id="subjects-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Session Subjects</h3>
@@ -593,7 +659,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Makeup Session Modal -->
+  <!-- Makeup Modal (unchanged) -->
   <div id="makeup-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Propose Makeup Session</h3>
@@ -606,7 +672,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Notification Modal -->
+  <!-- Notification Modal (unchanged) -->
   <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Notifications</h3>
@@ -615,7 +681,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Chat Modal -->
+  <!-- Chat Modal (unchanged) -->
   <div id="chat-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto flex flex-col">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]" id="chat-student-name">Chat</h3>
@@ -628,16 +694,16 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Go Live Modal -->
-  <div id="go-live-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+  <!-- Video Call Modal (Modified from Go Live) -->
+  <div id="video-call-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Go Live</h3>
-      <p class="text-[var(--text)]">Go Live functionality to be implemented.</p>
-      <button onclick="closeGoLiveModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Video Call</h3>
+      <p class="text-[var(--text)]">Video call functionality to be implemented.</p>
+      <button onclick="closeVideoCallModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
     </div>
   </div>
 
-  <!-- Footer -->
+  <!-- Footer (unchanged) -->
   <footer class="py-8">
     <div class="container mx-auto px-4">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -694,17 +760,26 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     let currentSessionId = null;
     let currentVideoKey = null;
     let currentStudentId = null;
+    let schoolRequests = {};
 
     const students = {
       1: {
         name: 'Abebe Kebede',
         progress: { cumulative: 50, math: 60, physics: 40 },
-        nextSession: 'May 20, 2025, 2:00 PM'
+        nextSession: 'May 20, 2025, 2:00 PM',
+        parent: {
+          name: 'Kebede Tadesse',
+          email: 'kebede@example.com',
+          phone: '+251912345679',
+          profilePicture: 'https://via.placeholder.com/64'
+        }
       }
     };
 
     const tutor = {
       name: 'Amanuel Tesfaye',
+      phone: '',
+      email: '',
       rating: 1.0,
       about: "Hi, I'm Amanuel, a passionate tutor with 5 years of experience in teaching Math and Physics. I focus on making complex concepts simple and engaging for students.",
       address: '',
@@ -732,9 +807,9 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
         clip2: { src: 'https://via.placeholder.com/320x180.mp4', desc: 'Physics concept explained.', comments: [] }
       },
       comments: [
-    { author: 'Abebe Kebede', text: 'Amanuel explains complex topics clearly!', date: '2025-05-20' },
-    { author: 'Selam Yohannes', text: 'Great tutor, very patient and knowledgeable.', date: '2025-05-22' }
-  ]
+        { author: 'Abebe Kebede', text: 'Amanuel explains complex topics clearly!', date: '2025-05-20' },
+        { author: 'Selam Yohannes', text: 'Great tutor, very patient and knowledgeable.', date: '2025-05-22' }
+      ]
     };
 
     const sessions = {
@@ -757,6 +832,10 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
       1: [
         { sender: 'You', message: 'Hi Abebe, how’s your Math prep going?', timestamp: '2025-05-20 13:00' },
         { sender: 'Abebe Kebede', message: 'It’s going well, thanks! Need help with algebra.', timestamp: '2025-05-20 13:05' }
+      ],
+      'parent_1': [
+        { sender: 'You', message: 'Hello, discussing Abebe’s progress.', timestamp: '2025-05-20 14:00' },
+        { sender: 'Kebede Tadesse', message: 'Thanks for the update!', timestamp: '2025-05-20 14:05' }
       ]
     };
 
@@ -828,11 +907,8 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
 
     function verifyPayment(paymentMethod, paymentAccount) {
       if (!paymentMethod || !paymentAccount) return false;
-      // Simulate payment verification (e.g., check format or external API call)
-      const accountRegex = /^\d{10,16}$/; // Example: 10-16 digit account number
-      const isValidAccount = accountRegex.test(paymentAccount);
-      // Simulate API call to payment gateway (mocked for now)
-      return isValidAccount; // Assume success if format is valid
+      const accountRegex = /^\d{10,16}$/;
+      return accountRegex.test(paymentAccount);
     }
 
     function captureSelfie() {
@@ -841,426 +917,86 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
       document.getElementById('face-scan-status').className = 'text-green-600 mb-2';
     }
 
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            tutor.address = `Lat:${latitude.toFixed(4)},Lon:${longitude.toFixed(4)}`;
-            document.getElementById('profile-location').value = tutor.address;
-            document.getElementById('location-error').classList.add('hidden');
-          },
-          () => {
-            document.getElementById('location-error').classList.remove('hidden');
-          }
-        );
-      } else {
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        document.getElementById('profile-location').value = `${latitude}, ${longitude}`;
+        document.getElementById('location-error').classList.add('hidden');
+      },
+      () => {
         document.getElementById('location-error').classList.remove('hidden');
       }
-    }
+    );
+  } else {
+    document.getElementById('location-error').classList.remove('hidden');
+  }
+}
 
-    function validateSchool(school) {
-      return schoolDatabase.includes(school.trim());
-    }
+// School Search
+function validateSchool(school) {
+  return schoolDatabase.includes(school);
+}
 
-    function generateReferralCode() {
-      if (!tutor.referralCode) {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        tutor.referralCode = Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-      }
-      return tutor.referralCode;
-    }
-
-    function updateRatingCircle() {
-      const rating = tutor.rating;
-      const percent = (rating / 5) * 100;
-      const ratingArc = document.getElementById('rating-arc');
-      let color;
-      if (rating > 4) {
-        color = '#10B981'; // Green
-      } else if (rating > 3) {
-        color = '#FBBF24'; // Yellow
-      } else if (rating > 2) {
-        color = '#EF4444'; // Red
-      } else if (rating > 1) {
-        color = '#3B82F6'; // Blue
-      } else {
-        color = '#6B7280'; // Gray
-      }
-      ratingArc.setAttribute('stroke', color);
-      const circumference = 2 * Math.PI * 45;
-      ratingArc.setAttribute('stroke-dasharray', circumference);
-      ratingArc.setAttribute('stroke-dashoffset', circumference * (1 - percent / 100));
-      document.getElementById('rating-label').textContent = rating > 0 ? `${rating.toFixed(1)}/5` : 'N/A';
-      const stars = rating > 0 ? '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating)) : 'No rating';
-      document.getElementById('tutor-rating-stars').textContent = stars;
-    }
-
-    function updateVerificationStatus() {
-      const verified = tutor.verified;
-      const paymentVerified = tutor.paymentVerified;
-      const statusEl = document.getElementById('verification-status');
-      statusEl.textContent = verified ? 'Verified' : paymentVerified ? 'Payment Verified' : 'Unverified';
-      statusEl.className = verified ? 'text-green-500 italic mb-2' : paymentVerified ? 'text-blue-500 italic mb-2' : 'text-red-500 italic mb-2';
-    }
-
-    function previewId() {
-      const input = document.getElementById('id-input');
-      const preview = document.getElementById('id-preview');
-      const error = document.getElementById('id-error');
-      preview.innerHTML = '';
-      error.classList.add('hidden');
-      const file = input.files[0];
-      if (!file) return;
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
-      const maxSize = 5 * 1024 * 1024;
-      if (!validTypes.includes(file.type) || file.size > maxSize) {
-        error.classList.remove('hidden');
-        input.value = '';
-        return;
-      }
+function searchSchools(query) {
+  const suggestions = document.getElementById('school-suggestions');
+  suggestions.innerHTML = '';
+  if (query.length < 2) {
+    suggestions.style.display = 'none';
+    document.getElementById('request-school').classList.add('hidden');
+    return;
+  }
+  const matches = schoolDatabase.filter(school => school.toLowerCase().includes(query.toLowerCase()));
+  if (matches.length === 0) {
+    suggestions.style.display = 'none';
+    document.getElementById('request-school').classList.remove('hidden');
+  } else {
+    suggestions.style.display = 'block';
+    matches.forEach(school => {
       const div = document.createElement('div');
-      if (file.type === 'application/pdf') {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(file);
-        a.target = '_blank';
-        a.textContent = file.name;
-        a.className = 'text-blue-600 underline';
-        div.appendChild(a);
-      } else {
-        const img = document.createElement('img');
-        img.src = URL.createObjectURL(file);
-        img.alt = file.name;
-        img.className = 'w-32 h-32 object-cover rounded-lg';
-        div.appendChild(img);
-        const p = document.createElement('p');
-        p.textContent = file.name;
-        p.className = 'text-sm text-[var(--text)] mt-1 truncate';
-        div.appendChild(p);
-      }
-      preview.appendChild(div);
-    }
-
-    function previewImage(inputId, canvasId, errorId, width, height) {
-      const input = document.getElementById(inputId);
-      const canvas = document.getElementById(canvasId);
-      const error = document.getElementById(errorId);
-      error.classList.add('hidden');
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const file = input.files[0];
-      if (!file) return;
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-      const maxSize = 5 * 1024 * 1024;
-      if (!validTypes.includes(file.type) || file.size > maxSize) {
-        error.classList.remove('hidden');
-        input.value = '';
-        return;
-      }
-      const img = new Image();
-      img.onload = () => ctx.drawImage(img, 0, 0, width, height);
-      img.src = URL.createObjectURL(file);
-    }
-
-    function previewVideo() {
-      const input = document.getElementById('upload-video-input');
-      const preview = document.getElementById('upload-video-preview');
-      const error = document.getElementById('upload-video-error');
-      error.classList.add('hidden');
-      preview.src = '';
-      const file = input.files[0];
-      if (!file) return;
-      const validTypes = ['video/mp4'];
-      const maxSize = 10 * 1024 * 1024;
-      if (!validTypes.includes(file.type) || file.size > maxSize) {
-        error.classList.remove('hidden');
-        input.value = '';
-        return;
-      }
-      preview.src = URL.createObjectURL(file);
-    }
-
-    function previewDocuments() {
-      const input = document.getElementById('certification-documents-input');
-      const preview = document.getElementById('certification-documents-preview');
-      const error = document.getElementById('certification-documents-error');
-      preview.innerHTML = '';
-      error.classList.add('hidden');
-      const files = Array.from(input.files);
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
-      const maxSize = 5 * 1024 * 1024;
-      files.forEach(file => {
-        if (!validTypes.includes(file.type) || file.size > maxSize) {
-          error.classList.remove('hidden');
-          return;
-        }
-        const div = document.createElement('div');
-        if (file.type === 'application/pdf') {
-          const a = document.createElement('a');
-          a.href = URL.createObjectURL(file);
-          a.target = '_blank';
-          a.textContent = file.name;
-          a.className = 'text-blue-600 underline';
-          div.appendChild(a);
-        } else {
-          const canvas = document.createElement('canvas');
-          canvas.width = 128;
-          canvas.height = 128;
-          canvas.className = 'border rounded-lg';
-          const img = new Image();
-          img.onload = () => canvas.getContext('2d').drawImage(img, 0, 0, 128, 128);
-          img.src = URL.createObjectURL(file);
-          div.appendChild(canvas);
-          const p = document.createElement('p');
-          p.textContent = file.name;
-          p.className = 'text-sm text-[var(--text)] mt-1 truncate';
-          div.appendChild(p);
-        }
-        preview.appendChild(div);
-      });
-    }
-
-function openReferralModal() {
-  document.getElementById('referral-modal').classList.remove('hidden');
-  const referralCode = generateReferralCode();
-  document.getElementById('referral-code-value').textContent = referralCode;
-  const referralLink = `https://astegni.et/referral/${referralCode}`;
-  document.getElementById('referral-link').value = referralLink;
-  document.getElementById('referral-share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
-  document.getElementById('referral-share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=Join%20ASTEGNI%20with%20my%20referral%20code!`;
+      div.textContent = school;
+      div.onclick = () => {
+        document.getElementById('profile-school').value = school;
+        suggestions.style.display = 'none';
+        document.getElementById('request-school').classList.add('hidden');
+      };
+      suggestions.appendChild(div);
+    });
+  }
 }
 
-function copyReferralLink() {
-  const referralLink = document.getElementById('referral-link');
-  referralLink.select();
-  document.execCommand('copy');
-  alert('Referral link copied to clipboard!');
-}
+document.getElementById('profile-school').addEventListener('input', (e) => {
+  searchSchools(e.target.value);
+});
 
-function closeReferralModal() {
-  document.getElementById('referral-modal').classList.add('hidden');
-}
-
+// Modal Management
 function openEditProfileModal() {
-  document.getElementById('edit-profile-modal').classList.remove('hidden');
+  const modal = document.getElementById('edit-profile-modal');
+  modal.classList.remove('hidden');
   document.getElementById('profile-name').value = tutor.name;
+  document.getElementById('profile-phone').value = tutor.phone;
+  document.getElementById('profile-email').value = tutor.email;
   document.getElementById('profile-location').value = tutor.address;
   document.getElementById('profile-school').value = tutor.school;
-  document.getElementById('payment-method').value = tutor.paymentMethod || '';
-  document.getElementById('payment-account').value = tutor.paymentAccount || '';
+  document.getElementById('payment-method').value = tutor.paymentMethod;
+  document.getElementById('payment-account').value = tutor.paymentAccount;
   document.getElementById('profile-about').value = tutor.about;
   document.getElementById('profile-courses').value = tutor.courses.map(c => `${c.name}:${c.feeType}:${c.rate}`).join(',');
   document.getElementById('profile-certifications').value = tutor.certifications.join('\n');
-  document.getElementById('social-facebook').value = tutor.socialMedia.facebook;
-  document.getElementById('social-twitter').value = tutor.socialMedia.twitter;
-  document.getElementById('social-youtube').value = tutor.socialMedia.youtube;
+  updatePreviews();
 }
 
 function closeEditProfileModal() {
   document.getElementById('edit-profile-modal').classList.add('hidden');
-  resetEditProfileForm();
 }
 
-function resetEditProfileForm() {
-  document.getElementById('id-input').value = '';
-  document.getElementById('id-preview').innerHTML = '';
-  document.getElementById('id-error').classList.add('hidden');
-  document.getElementById('profile-picture-input').value = '';
-  document.getElementById('profile-picture-error').classList.add('hidden');
-  document.getElementById('cover-picture-input').value = '';
-  document.getElementById('cover-picture-error').classList.add('hidden');
-  document.getElementById('certification-documents-input').value = '';
-  document.getElementById('certification-documents-preview').innerHTML = '';
-  document.getElementById('certification-documents-error').classList.add('hidden');
-  document.getElementById('school-error').classList.add('hidden');
-  document.getElementById('payment-method-error').classList.add('hidden');
-  document.getElementById('payment-account-error').classList.add('hidden');
+function openSchoolRequestModal() {
+  document.getElementById('school-request-modal').classList.remove('hidden');
 }
 
-function submitProfileEdit() {
-  const name = sanitizeInput(document.getElementById('profile-name').value);
-  const address = sanitizeInput(document.getElementById('profile-location').value);
-  const school = sanitizeInput(document.getElementById('profile-school').value);
-  const paymentMethod = document.getElementById('payment-method').value;
-  const paymentAccount = sanitizeInput(document.getElementById('payment-account').value);
-  const about = sanitizeInput(document.getElementById('profile-about').value);
-  const coursesInput = sanitizeInput(document.getElementById('profile-courses').value);
-  const certifications = document.getElementById('profile-certifications').value.split('\n').map(s => sanitizeInput(s.trim())).filter(s => s);
-  const idFile = document.getElementById('id-input').files[0];
-  const profilePicture = document.getElementById('profile-picture-input').files[0];
-  const coverPicture = document.getElementById('cover-picture-input').files[0];
-  const certificationDocuments = Array.from(document.getElementById('certification-documents-input').files);
-  const socialFacebook = sanitizeInput(document.getElementById('social-facebook').value);
-  const socialTwitter = sanitizeInput(document.getElementById('social-twitter').value);
-  const socialYoutube = sanitizeInput(document.getElementById('social-youtube').value);
-
-  // Validate inputs
-  if (!name || name.length < 2) {
-    alert('Name must be at least 2 characters long.');
-    return;
-  }
-  if (!validateSchool(school)) {
-    document.getElementById('school-error').classList.remove('hidden');
-    return;
-  }
-  if (!paymentMethod) {
-    document.getElementById('payment-method-error').classList.remove('hidden');
-    return;
-  }
-  if (!/^\d{10,16}$/.test(paymentAccount)) {
-    document.getElementById('payment-account-error').classList.remove('hidden');
-    return;
-  }
-
-  // Update tutor object
-  tutor.name = name;
-  tutor.address = address;
-  tutor.school = school;
-  tutor.paymentMethod = paymentMethod;
-  tutor.paymentAccount = paymentAccount;
-  tutor.paymentVerified = verifyPayment(paymentMethod, paymentAccount);
-  tutor.about = about;
-  tutor.courses = coursesInput.split(',').map(c => {
-    const [name, feeType, rate] = c.split(':');
-    return { name: sanitizeInput(name), feeType, rate: parseFloat(rate) };
-  }).filter(c => c.name && c.feeType && !isNaN(c.rate));
-  tutor.certifications = certifications;
-  tutor.socialMedia = { facebook: socialFacebook, twitter: socialTwitter, youtube: socialYoutube };
-  if (idFile) tutor.idFile = idFile;
-  if (profilePicture) tutor.profilePicture = URL.createObjectURL(profilePicture);
-  if (coverPicture) tutor.coverPicture = URL.createObjectURL(coverPicture);
-  if (certificationDocuments.length) tutor.certificationDocuments = certificationDocuments;
-  tutor.verified = verifyTutor(tutor);
-
-  updateProfileUI();
-  updateVerificationStatus();
-  closeEditProfileModal();
-}
-
-function updateProfileUI() {
-  document.getElementById('tutor-name').childNodes[0].textContent = tutor.name;
-  document.getElementById('tutor-gender').textContent = tutor.gender || 'Not specified';
-  document.getElementById('tutor-address').textContent = `Address: ${tutor.address || 'Not set'}`;
-  document.getElementById('tutor-school').textContent = `Teaches: ${tutor.school || 'Not set'}`;
-  document.getElementById('courses').textContent = `Courses: ${tutor.courses.map(c => `${c.name} (${c.feeType}: ${c.rate} birr)`).join(', ') || 'Not set'}`;
-  document.getElementById('course-fee').textContent = `Fee: ${tutor.courses.length ? tutor.courses.map(c => `${c.rate} birr/${c.feeType}`).join(', ') : 'Not set'}`;
-  document.getElementById('payment-method').textContent = `Payment Method: ${tutor.paymentMethod || 'Not set'}`;
-  document.getElementById('tutor-bio').textContent = tutor.about || 'No bio available.';
-  document.getElementById('tutor-certifications').innerHTML = tutor.certifications.join('<br>') || 'No certifications listed.';
-  document.getElementById('profile-picture').src = tutor.profilePicture;
-  document.getElementById('cover-photo').style.backgroundImage = `url(${tutor.coverPicture})`;
-  document.getElementById('social-facebook').href = tutor.socialMedia.facebook || '#';
-  document.getElementById('social-twitter').href = tutor.socialMedia.twitter || '#';
-  document.getElementById('social-linkedin').href = tutor.socialMedia.youtube || '#';
-}
-
-function openUploadVideoModal() {
-  document.getElementById('upload-video-modal').classList.remove('hidden');
-  document.getElementById('upload-video-input').value = '';
-  document.getElementById('upload-video-preview').src = '';
-  document.getElementById('upload-video-error').classList.add('hidden');
-}
-
-function closeUploadVideoModal() {
-  document.getElementById('upload-video-modal').classList.add('hidden');
-}
-
-function submitVideoUpload() {
-  const videoSelect = document.getElementById('video-select').value;
-  const videoFile = document.getElementById('upload-video-input').files[0];
-  const desc = sanitizeInput(document.getElementById('upload-video-desc-input').value);
-  if (!videoFile) {
-    document.getElementById('upload-video-error').classList.remove('hidden');
-    return;
-  }
-  const validTypes = ['video/mp4'];
-  const maxSize = 10 * 1024 * 1024;
-  if (!validTypes.includes(videoFile.type) || videoFile.size > maxSize) {
-    document.getElementById('upload-video-error').classList.remove('hidden');
-    return;
-  }
-  tutor.videos[videoSelect].src = URL.createObjectURL(videoFile);
-  tutor.videos[videoSelect].desc = desc;
-  document.getElementById(videoSelect).querySelector('source').src = tutor.videos[videoSelect].src;
-  document.getElementById(videoSelect).load();
-  document.getElementById(`${videoSelect}-desc`).textContent = desc;
-  closeUploadVideoModal();
-}
-
-function openVideoDescModal(videoKey) {
-  currentVideoKey = videoKey;
-  document.getElementById('video-desc-modal').classList.remove('hidden');
-  document.getElementById('video-desc-input').value = tutor.videos[videoKey].desc;
-}
-
-function closeVideoDescModal() {
-  document.getElementById('video-desc-modal').classList.add('hidden');
-  currentVideoKey = null;
-}
-
-function submitVideoDesc() {
-  if (currentVideoKey) {
-    const desc = sanitizeInput(document.getElementById('video-desc-input').value);
-    tutor.videos[currentVideoKey].desc = desc;
-    document.getElementById(`${currentVideoKey}-desc`).textContent = desc;
-  }
-  closeVideoDescModal();
-}
-
-    function openCommentModal() {
-      const commentsList = document.getElementById('comments-list');
-      commentsList.innerHTML = tutor.comments?.length ? tutor.comments.map(comment => `
-        <div class="mb-2">
-          <p class="font-semibold text-[var(--text)]">${sanitizeInput(comment.author)}</p>
-          <p class="text-[var(--text)]">${sanitizeInput(comment.text)}</p>
-          <p class="text-sm text-gray-500">${comment.date}</p>
-        </div>
-      `).join('') : '<p class="text-[var(--text)]">No comments yet. Be the first to leave a review!</p>';
-      document.getElementById('comment-modal').classList.remove('hidden');
-    }
-
-function closeCommentModal() {
-  document.getElementById('comment-modal').classList.add('hidden');
-}
-
-function submitComment() {
-  const comment = sanitizeInput(document.getElementById('comment-input').value);
-  if (comment) {
-    alert('Comment submitted: ' + comment); // Replace with actual comment submission logic
-    closeCommentModal();
-  } else {
-    alert('Please enter a comment.');
-  }
-}
-
-function openVideoCommentModal(videoKey) {
-  currentVideoKey = videoKey;
-  document.getElementById('comment-modal').classList.remove('hidden');
-  document.getElementById('comment-input').value = '';
-}
-
-function openShareModal(videoKey) {
-  currentVideoKey = videoKey;
-  document.getElementById('share-modal').classList.remove('hidden');
-  const videoUrl = tutor.videos[videoKey].src;
-  document.getElementById('share-url').value = videoUrl;
-  document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(videoUrl)}`;
-  document.getElementById('share-instagram').href = `https://www.instagram.com/?url=${encodeURIComponent(videoUrl)}`;
-  document.getElementById('share-youtube').href = `https://www.youtube.com/share?url=${encodeURIComponent(videoUrl)}`;
-  document.getElementById('share-tiktok').href = `https://www.tiktok.com/share?url=${encodeURIComponent(videoUrl)}`;
-  document.getElementById('share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(videoUrl)}&text=Check%20out%20this%20video!`;
-}
-
-function closeShareModal() {
-  document.getElementById('share-modal').classList.add('hidden');
-  currentVideoKey = null;
-}
-
-function copyLink() {
-  const shareUrl = document.getElementById('share-url');
-  shareUrl.select();
-  document.execCommand('copy');
-  alert('Link copied to clipboard!');
+function closeSchoolRequestModal() {
+  document.getElementById('school-request-modal').classList.add('hidden');
 }
 
 function openStudentsModal() {
@@ -1270,96 +1006,6 @@ function openStudentsModal() {
 
 function closeStudentsModal() {
   document.getElementById('students-modal').classList.add('hidden');
-}
-
-function updateStudentsTable() {
-  const tableBody = document.getElementById('student-table');
-  tableBody.innerHTML = '';
-  Object.entries(students).forEach(([id, student]) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="p-2">${student.name}</td>
-      <td class="p-2">
-        <div class="relative inline-block progress-circle">
-          <svg class="w-12 h-12">
-            <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none"/>
-            <circle class="student-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="${283 * (1 - student.progress.cumulative / 100)}"/>
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]">${student.progress.cumulative}%</div>
-          <div class="tooltip hidden top-full mt-2 w-48 bg-[var(--modal-bg)] p-3 rounded shadow-lg text-sm text-[var(--text)]">
-            <div class="mb-1">Math: <span>${student.progress.math}%</span></div>
-            <div class="bg-gray-200 h-2 rounded mb-2">
-              <div class="bg-blue-600 h-2 rounded" style="width:${student.progress.math}%"></div>
-            </div>
-            <div class="mb-1">Physics: <span>${student.progress.physics}%</span></div>
-            <div class="bg-gray-200 h-2 rounded">
-              <div class="bg-green-600 h-2 rounded" style="width:${student.progress.physics}%"></div>
-            </div>
-          </div>
-        </div>
-      </td>
-      <td class="p-2">${student.nextSession}</td>
-      <td class="p-2">
-        <button onclick="openStudentDetailsModal(${id})" class="cta-button px-2 py-1 rounded">View</button>
-      </td>
-    `;
-    tableBody.appendChild(row);
-  });
-
-  const overallProgress = Object.values(students).reduce((sum, s) => sum + s.progress.cumulative, 0) / Object.keys(students).length;
-  const overallArc = document.getElementById('overall-progress-arc');
-  const circumference = 283;
-  overallArc.setAttribute('stroke-dashoffset', circumference * (1 - overallProgress / 100));
-  document.getElementById('overall-progress-label').textContent = `${Math.round(overallProgress)}%`;
-  const overallTooltip = document.getElementById('overall-student-progress');
-  const avgMath = Object.values(students).reduce((sum, s) => sum + s.progress.math, 0) / Object.keys(students).length;
-  const avgPhysics = Object.values(students).reduce((sum, s) => sum + s.progress.physics, 0) / Object.keys(students).length;
-  overallTooltip.innerHTML = `
-    <div class="mb-1">Math: <span>${Math.round(avgMath)}%</span></div>
-    <div class="bg-gray-200 h-2 rounded mb-2">
-      <div class="bg-blue-600 h-2 rounded" style="width:${avgMath}%"></div>
-    </div>
-    <div class="mb-1">Physics: <span>${Math.round(avgPhysics)}%</span></div>
-    <div class="bg-gray-200 h-2 rounded">
-      <div class="bg-green-600 h-2 rounded" style="width:${avgPhysics}%"></div>
-    </div>
-  `;
-}
-
-function openStudentDetailsModal(studentId) {
-  currentStudentId = studentId;
-  const student = students[studentId];
-  document.getElementById('student-details-modal').dataset.studentId = studentId;
-  document.getElementById('student-details-modal').classList.remove('hidden');
-  document.getElementById('student-detail-name').textContent = `Name: ${student.name}`;
-  document.getElementById('student-detail-subjects').textContent = `Subjects: Math, Physics`;
-  document.getElementById('student-detail-session').textContent = `Next Session: ${student.nextSession}`;
-  const progressArc = document.getElementById('detail-progress-arc');
-  const circumference = 283;
-  progressArc.setAttribute('stroke-dashoffset', circumference * (1 - student.progress.cumulative / 100));
-  document.getElementById('detail-progress-label').textContent = `${student.progress.cumulative}%`;
-  document.getElementById('detail-subj-math').textContent = `${student.progress.math}%`;
-  document.getElementById('detail-bar-math').style.width = `${student.progress.math}%`;
-  document.getElementById('detail-subj-physics').textContent = `${student.progress.physics}%`;
-  document.getElementById('detail-bar-physics').style.width = `${student.progress.physics}%`;
-  const sessionHistory = document.getElementById('student-session-history').querySelector('tbody');
-  sessionHistory.innerHTML = '';
-  Object.entries(sessions).filter(([_, s]) => s.student == studentId).forEach(([id, session]) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="p-2">${session.date}</td>
-      <td class="p-2">${session.time}</td>
-      <td class="p-2">${session.subjects.join(', ')}</td>
-      <td class="p-2">${session.cost} birr</td>
-      <td class="p-2">${session.status}</td>
-    `;
-    sessionHistory.appendChild(row);
-  });
-}
-
-function closeStudentDetailsModal() {
-  document.getElementById('student-details-modal').classList.add('hidden');
-  currentStudentId = null;
 }
 
 function openSessionSheetModal() {
@@ -1380,57 +1026,15 @@ function openSubjectsModal(sessionId) {
 
 function closeSubjectsModal() {
   document.getElementById('subjects-modal').classList.add('hidden');
-  currentSessionId = null;
 }
 
-function submitSubjects() {
-  if (currentSessionId) {
-    const subjects = [];
-    if (document.getElementById('subject-Math').checked) subjects.push('Math');
-    if (document.getElementById('subject-Physics').checked) subjects.push('Physics');
-    sessions[currentSessionId].subjects = subjects;
-    alert('Subjects updated.');
-    closeSubjectsModal();
-  }
-}
-
-function confirmAttendance(sessionId, role) {
-  sessions[sessionId][`${role}Confirmed`] = true;
-  document.getElementById(`session-${sessionId}-status`).textContent = 'Confirmed';
-  document.getElementById(`session-${sessionId}-confirm`).classList.add('hidden');
-  document.getElementById(`session-${sessionId}-wait`).classList.remove('hidden');
-  document.getElementById(`session-${sessionId}-makeup`).classList.remove('hidden');
-}
-
-function confirmWaiting(sessionId, role) {
-  sessions[sessionId].waiting[role] = true;
-  document.getElementById(`session-${sessionId}-status`).textContent = 'Waiting';
-  document.getElementById(`session-${sessionId}-wait`).classList.add('hidden');
-}
-
-function proposeMakeup(sessionId) {
+function openMakeupModal(sessionId) {
   currentSessionId = sessionId;
   document.getElementById('makeup-modal').classList.remove('hidden');
 }
 
 function closeMakeupModal() {
   document.getElementById('makeup-modal').classList.add('hidden');
-  currentSessionId = null;
-}
-
-function submitMakeup() {
-  if (currentSessionId) {
-    const date = document.getElementById('makeup-date').value;
-    const time = document.getElementById('makeup-time').value;
-    if (date && time) {
-      sessions[currentSessionId].makeup = { date, time };
-      document.getElementById(`session-${currentSessionId}-status`).textContent = 'Makeup Proposed';
-      alert('Makeup session proposed.');
-      closeMakeupModal();
-    } else {
-      alert('Please select a date and time.');
-    }
-  }
 }
 
 function openNotificationModal() {
@@ -1441,90 +1045,512 @@ function closeNotificationModal() {
   document.getElementById('notification-modal').classList.add('hidden');
 }
 
-function openChatModal(studentId) {
-  currentStudentId = studentId || null;
+function openChatModal(studentId, type = 'student') {
+  currentStudentId = studentId;
   document.getElementById('chat-modal').classList.remove('hidden');
-  if (studentId && students[studentId]) {
-    document.getElementById('chat-student-name').textContent = `Chat with ${students[studentId].name}`;
-    const messages = chatMessages[studentId] || [];
-    const chatMessagesDiv = document.getElementById('chat-messages');
-    chatMessagesDiv.innerHTML = messages.map(m => `
-      <div class="mb-2 ${m.sender === 'You' ? 'text-right' : 'text-left'}">
-        <p class="inline-block p-2 rounded-lg ${m.sender === 'You' ? 'bg-blue-100' : 'bg-gray-200'}">${m.message}</p>
-        <p class="text-xs text-gray-500">${m.timestamp}</p>
-      </div>
-    `).join('');
-    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-  } else {
-    document.getElementById('chat-student-name').textContent = 'Chat';
-    document.getElementById('chat-messages').innerHTML = '<p>Select a student to chat.</p>';
-  }
+  const chatKey = type === 'parent' ? `parent_${studentId}` : studentId;
+  const studentName = type === 'parent' ? students[studentId].parent.name : students[studentId].name;
+  document.getElementById('chat-student-name').textContent = `Chat with ${studentName}`;
+  updateChatMessages(chatKey);
 }
 
 function closeChatModal() {
   document.getElementById('chat-modal').classList.add('hidden');
-  currentStudentId = null;
 }
 
-function sendMessage() {
-  const message = sanitizeInput(document.getElementById('chat-input').value);
-  if (message && currentStudentId) {
-    if (!chatMessages[currentStudentId]) chatMessages[currentStudentId] = [];
-    const timestamp = new Date().toLocaleString();
-    chatMessages[currentStudentId].push({ sender: 'You', message, timestamp });
-    const chatMessagesDiv = document.getElementById('chat-messages');
-    chatMessagesDiv.innerHTML += `
-      <div class="mb-2 text-right">
-        <p class="inline-block p-2 rounded-lg bg-blue-100">${message}</p>
-        <p class="text-xs text-gray-500">${timestamp}</p>
-      </div>
-    `;
-    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
-    document.getElementById('chat-input').value = '';
+function openVideoCallModal(studentId) {
+  currentStudentId = studentId;
+  document.getElementById('video-call-modal').classList.remove('hidden');
+}
+
+function closeVideoCallModal() {
+  document.getElementById('video-call-modal').classList.add('hidden');
+}
+
+function openUploadVideoModal() {
+  document.getElementById('upload-video-modal').classList.remove('hidden');
+}
+
+function closeUploadVideoModal() {
+  document.getElementById('upload-video-modal').classList.add('hidden');
+}
+
+function openVideoDescModal(videoKey) {
+  currentVideoKey = videoKey;
+  document.getElementById('video-desc-modal').classList.remove('hidden');
+  document.getElementById('video-desc-input').value = tutor.videos[videoKey].desc;
+}
+
+function closeVideoDescModal() {
+  document.getElementById('video-desc-modal').classList.add('hidden');
+}
+
+function openCommentModal() {
+  document.getElementById('comment-modal').classList.remove('hidden');
+  updateComments();
+}
+
+function closeCommentModal() {
+  document.getElementById('comment-modal').classList.add('hidden');
+}
+
+function openVideoCommentModal(videoKey) {
+  currentVideoKey = videoKey;
+  document.getElementById('comment-modal').classList.remove('hidden');
+  updateVideoComments();
+}
+
+function openShareModal(videoKey) {
+  currentVideoKey = videoKey;
+  document.getElementById('share-modal').classList.remove('hidden');
+  const url = `https://astegni.et/videos/${tutor.videos[videoKey].src}`;
+  document.getElementById('share-url').value = url;
+  document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+  document.getElementById('share-instagram').href = `https://www.instagram.com/?url=${encodeURIComponent(url)}`;
+  document.getElementById('share-youtube').href = `https://www.youtube.com/?url=${encodeURIComponent(url)}`;
+  document.getElementById('share-tiktok').href = `https://www.tiktok.com/?url=${encodeURIComponent(url)}`;
+  document.getElementById('share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(url)}`;
+}
+
+function closeShareModal() {
+  document.getElementById('share-modal').classList.add('hidden');
+}
+
+function openReferralModal() {
+  document.getElementById('referral-modal').classList.remove('hidden');
+  if (!tutor.referralCode) {
+    tutor.referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+  }
+  document.getElementById('referral-code-value').textContent = tutor.referralCode;
+  const referralLink = `https://astegni.et/referral/${tutor.referralCode}`;
+  document.getElementById('referral-link').value = referralLink;
+  document.getElementById('referral-share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
+  document.getElementById('referral-share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
+}
+
+function closeReferralModal() {
+  document.getElementById('referral-modal').classList.add('hidden');
+}
+
+function openParentProfileModal(studentId) {
+  currentStudentId = studentId;
+  const modal = document.getElementById('parent-profile-modal');
+  modal.dataset.studentId = studentId;
+  const parent = students[studentId].parent;
+  document.getElementById('parent-name').textContent = parent.name;
+  document.getElementById('parent-email').textContent = `Email: ${parent.email}`;
+  document.getElementById('parent-phone').textContent = `Phone: ${parent.phone}`;
+  document.getElementById('parent-profile-picture').src = parent.profilePicture;
+  modal.classList.remove('hidden');
+}
+
+function closeParentProfileModal() {
+  document.getElementById('parent-profile-modal').classList.add('hidden');
+}
+
+function openStudentAnalysisModal(studentId) {
+  currentStudentId = studentId;
+  const modal = document.getElementById('student-analysis-modal');
+  modal.dataset.studentId = studentId;
+  const student = students[studentId];
+  document.getElementById('student-analysis-name').textContent = `Analysis for ${student.name}`;
+  document.getElementById('analysis-subj-math').textContent = `${student.progress.math}%`;
+  document.getElementById('analysis-bar-math').style.width = `${student.progress.math}%`;
+  document.getElementById('analysis-subj-physics').textContent = `${student.progress.physics}%`;
+  document.getElementById('analysis-bar-physics').style.width = `${student.progress.physics}%`;
+  modal.classList.remove('hidden');
+}
+
+function closeStudentAnalysisModal() {
+  document.getElementById('student-analysis-modal').classList.add('hidden');
+}
+
+// Form Submissions
+function submitProfileEdit() {
+  tutor.name = sanitizeInput(document.getElementById('profile-name').value);
+  tutor.phone = sanitizeInput(document.getElementById('profile-phone').value);
+  tutor.email = sanitizeInput(document.getElementById('profile-email').value);
+  tutor.address = sanitizeInput(document.getElementById('profile-location').value);
+  tutor.school = sanitizeInput(document.getElementById('profile-school').value);
+  tutor.paymentMethod = document.getElementById('payment-method').value;
+  tutor.paymentAccount = sanitizeInput(document.getElementById('payment-account').value);
+  tutor.about = sanitizeInput(document.getElementById('profile-about').value);
+  tutor.courses = document.getElementById('profile-courses').value.split(',').map(course => {
+    const [name, feeType, rate] = course.split(':');
+    return { name: sanitizeInput(name), feeType, rate: parseInt(rate) };
+  });
+  tutor.certifications = document.getElementById('profile-certifications').value.split('\n').map(sanitizeInput);
+  tutor.socialMedia.facebook = sanitizeInput(document.getElementById('social-facebook').value);
+  tutor.socialMedia.twitter = sanitizeInput(document.getElementById('social-twitter').value);
+  tutor.socialMedia.youtube = sanitizeInput(document.getElementById('social-youtube').value);
+  updateProfileDisplay();
+  closeEditProfileModal();
+}
+
+function sendForVerification() {
+  if (verifyTutor(tutor)) {
+    tutor.verified = true;
+    document.getElementById('verification-status').textContent = 'Verification sent successfully!';
+    document.getElementById('verification-status').className = 'text-green-600 text-sm italic mb-2';
   } else {
-    alert('Please enter a message and select a student.');
+    document.getElementById('verification-status').textContent = 'Please complete all required fields.';
+    document.getElementById('verification-status').className = 'text-red-500 text-sm italic mb-2';
+  }
+  updateProfileDisplay();
+}
+
+function submitSchoolRequest() {
+  const schoolName = sanitizeInput(document.getElementById('request-school-name').value);
+  const email = sanitizeInput(document.getElementById('request-school-email').value);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (schoolName && emailRegex.test(email)) {
+    schoolRequests[schoolName] = { email, status: 'pending' };
+    closeSchoolRequestModal();
+    alert('School request submitted!');
+  } else {
+    document.getElementById('request-school-error').classList.remove('hidden');
+    document.getElementById('request-school-email-error').classList.toggle('hidden', emailRegex.test(email));
   }
 }
 
-function openGoLiveModal(studentId) {
-  currentStudentId = studentId;
-  document.getElementById('go-live-modal').classList.remove('hidden');
+function submitVideoUpload() {
+  const videoInput = document.getElementById('upload-video-input');
+  const desc = sanitizeInput(document.getElementById('upload-video-desc-input').value);
+  const videoKey = document.getElementById('video-select').value;
+  if (videoInput.files.length > 0) {
+    const file = videoInput.files[0];
+    if (file.size <= 10 * 1024 * 1024 && file.type === 'video/mp4') {
+      tutor.videos[videoKey].src = URL.createObjectURL(file);
+      tutor.videos[videoKey].desc = desc;
+      updateProfileDisplay();
+      closeUploadVideoModal();
+    } else {
+      document.getElementById('upload-video-error').classList.remove('hidden');
+    }
+  }
 }
 
-function closeGoLiveModal() {
-  document.getElementById('go-live-modal').classList.add('hidden');
-  currentStudentId = null;
+function submitVideoDesc() {
+  tutor.videos[currentVideoKey].desc = sanitizeInput(document.getElementById('video-desc-input').value);
+  updateProfileDisplay();
+  closeVideoDescModal();
 }
 
-function openLoginRegisterModal() {
-  alert('Login/Register modal to be implemented.');
+function submitSubjects() {
+  const subjects = [];
+  if (document.getElementById('subject-Math').checked) subjects.push('Math');
+  if (document.getElementById('subject-Physics').checked) subjects.push('Physics');
+  sessions[currentSessionId].subjects = subjects;
+  updateSessionSheet();
+  closeSubjectsModal();
 }
 
-function openAdvertiseModal() {
-  alert('Advertise modal to be implemented.');
+function submitMakeup() {
+  const date = document.getElementById('makeup-date').value;
+  const time = document.getElementById('makeup-time').value;
+  if (date && time) {
+    sessions[currentSessionId].makeup = { date, time };
+    updateSessionSheet();
+    closeMakeupModal();
+  }
 }
 
-// Event Listeners
-document.getElementById('id-input').addEventListener('change', previewId);
-document.getElementById('profile-picture-input').addEventListener('change', () => previewImage('profile-picture-input', 'profile-picture-preview', 'profile-picture-error', 128, 128));
-document.getElementById('cover-picture-input').addEventListener('change', () => previewImage('cover-picture-input', 'cover-picture-preview', 'cover-picture-error', 300, 100));
-document.getElementById('certification-documents-input').addEventListener('change', previewDocuments);
-document.getElementById('upload-video-input').addEventListener('change', previewVideo);
-document.getElementById('student-search').addEventListener('input', () => {
-  const search = document.getElementById('student-search').value.toLowerCase();
-  const rows = document.getElementById('student-table').querySelectorAll('tr');
-  rows.forEach(row => {
-    const name = row.cells[0].textContent.toLowerCase();
-    row.style.display = name.includes(search) ? '' : 'none';
+function confirmAttendance(sessionId, role) {
+  sessions[sessionId][`${role}Confirmed`] = true;
+  updateSessionStatus(sessionId);
+}
+
+function confirmWaiting(sessionId, role) {
+  sessions[sessionId].waiting[role] = true;
+  updateSessionStatus(sessionId);
+}
+
+function proposeMakeup(sessionId) {
+  openMakeupModal(sessionId);
+}
+
+// Update Functions
+function updateProfileDisplay() {
+  document.getElementById('tutor-name').firstChild.textContent = tutor.name;
+  document.getElementById('tutor-gender').textContent = tutor.email.includes('female') ? 'Female' : 'Male';
+  document.getElementById('tutor-address').textContent = `Address: ${tutor.address || 'Not set'}`;
+  document.getElementById('tutor-school').textContent = `Teaches: ${tutor.school || 'Not set'}`;
+  document.getElementById('courses').textContent = `Courses: ${tutor.courses.map(c => `${c.name} (${c.feeType}: ${c.rate} birr)`).join(', ')}`;
+  document.getElementById('payment-method').textContent = `Payment Method: ${tutor.paymentMethod || 'Not set'}`;
+  document.getElementById('tutor-bio').textContent = tutor.about;
+  document.getElementById('tutor-certifications').innerHTML = tutor.certifications.join('<br>');
+  document.getElementById('profile-picture').src = tutor.profilePicture;
+  document.getElementById('cover-photo').style.backgroundImage = `url(${tutor.coverPicture})`;
+  document.getElementById('intro-video').src = tutor.videos.intro.src;
+  document.getElementById('intro-video-desc').textContent = tutor.videos.intro.desc;
+  document.getElementById('clip-1').src = tutor.videos.clip1.src;
+  document.getElementById('clip-1-desc').textContent = tutor.videos.clip1.desc;
+  document.getElementById('clip-2').src = tutor.videos.clip2.src;
+  document.getElementById('clip-2-desc').textContent = tutor.videos.clip2.desc;
+  document.getElementById('social-facebook').href = tutor.socialMedia.facebook || '#';
+  document.getElementById('social-twitter').href = tutor.socialMedia.twitter || '#';
+  document.getElementById('social-linkedin').href = tutor.socialMedia.youtube || '#';
+  updateRatingArc();
+}
+
+function updateRatingArc() {
+  const ratingArc = document.getElementById('rating-arc');
+  const ratingLabel = document.getElementById('rating-label');
+  const stars = document.getElementById('tutor-rating-stars');
+  if (tutor.rating >= 0) {
+    const percentage = tutor.rating * 20;
+    const dashOffset = 283 - (283 * percentage) / 100;
+    ratingArc.setAttribute('stroke-dashoffset', dashOffset);
+    ratingLabel.textContent = `${tutor.rating.toFixed(1)}/5`;
+    stars.textContent = '★'.repeat(Math.round(tutor.rating)) + '☆'.repeat(5 - Math.round(tutor.rating));
+  }
+}
+
+function updatePreviews() {
+  const idInput = document.getElementById('id-input');
+  const profilePictureInput = document.getElementById('profile-picture-input');
+  const coverPictureInput = document.getElementById('cover-picture-input');
+  const certificationInput = document.getElementById('certification-documents-input');
+  const videoInput = document.getElementById('upload-video-input');
+
+  if (idInput.files.length > 0) {
+    tutor.idFile = URL.createObjectURL(idInput.files[0]);
+    const preview = document.getElementById('id-preview');
+    preview.innerHTML = tutor.idFile.includes('.pdf') ? `<a href="${tutor.idFile}" target="_blank">View ID</a>` : `<img src="${tutor.idFile}" class="w-full rounded-lg" alt="ID Preview">`;
+  }
+
+  if (profilePictureInput.files.length > 0) {
+    tutor.profilePicture = URL.createObjectURL(profilePictureInput.files[0]);
+    const canvas = document.getElementById('profile-picture-preview');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.src = tutor.profilePicture;
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+  }
+
+  if (coverPictureInput.files.length > 0) {
+    tutor.coverPicture = URL.createObjectURL(coverPictureInput.files[0]);
+    const canvas = document.getElementById('cover-picture-preview');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.src = tutor.coverPicture;
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+  }
+
+  if (certificationInput.files.length > 0) {
+    tutor.certificationDocuments = Array.from(certificationInput.files).map(file => URL.createObjectURL(file));
+    const preview = document.getElementById('certification-documents-preview');
+    preview.innerHTML = tutor.certificationDocuments.map(url => url.includes('.pdf') ? `<a href="${url}" target="_blank" class="block mb-2">View Certification</a>` : `<img src="${url}" class="w-full rounded-lg mb-2" alt="Certification Preview">`).join('');
+  }
+
+  if (videoInput.files.length > 0) {
+    const videoKey = document.getElementById('video-select').value;
+    tutor.videos[videoKey].src = URL.createObjectURL(videoInput.files[0]);
+    document.getElementById('upload-video-preview').src = tutor.videos[videoKey].src;
+  }
+}
+
+function updateStudentsTable() {
+  const tbody = document.getElementById('student-table');
+  tbody.innerHTML = '';
+  Object.entries(students).forEach(([id, student]) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="p-2">${student.name}</td>
+      <td class="p-2">
+        <div class="relative inline-block progress-circle">
+          <svg class="w-12 h-12">
+            <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+            <circle class="student-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="${283 - (283 * student.progress.cumulative) / 100}"/>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]">${student.progress.cumulative}%</div>
+          <div class="tooltip hidden top-full mt-2 w-48 bg-[var(--modal-bg)] p-3 rounded shadow-lg text-sm text-[var(--text)]">
+            <div class="mb-1">Math: <span>${student.progress.math}%</span></div>
+            <div class="bg-gray-200 h-2 rounded mb-2">
+              <div class="bg-blue-600 h-2 rounded" style="width:${student.progress.math}%"></div>
+            </div>
+            <div class="mb-1">Physics: <span>${student.progress.physics}%</span></div>
+            <div class="bg-gray-200 h-2 rounded">
+              <div class="bg-green-600 h-2 rounded" style="width:${student.progress.physics}%"></div>
+            </div>
+          </div>
+        </div>
+      </td>
+      <td class="p-2">${student.nextSession}</td>
+      <td class="p-2"><button onclick="openStudentDetailsModal(${id})" class="cta-button px-2 py-1 rounded">View</button></td>
+    `;
+    tbody.appendChild(row);
   });
-});
+  updateOverallProgress();
+}
+
+function updateOverallProgress() {
+  const overallProgress = Object.values(students).reduce((sum, student) => sum + student.progress.cumulative, 0) / Object.keys(students).length;
+  const arc = document.getElementById('overall-progress-arc');
+  const label = document.getElementById('overall-progress-label');
+  const tooltip = document.getElementById('overall-student-progress');
+  arc.setAttribute('stroke-dashoffset', 283 - (283 * overallProgress) / 100);
+  label.textContent = `${Math.round(overallProgress)}%`;
+  tooltip.innerHTML = Object.values(students).map(student => `
+    <div class="mb-1">${student.name}: <span>${student.progress.cumulative}%</span></div>
+    <div class="bg-gray-200 h-2 rounded mb-2">
+      <div class="bg-blue-600 h-2 rounded" style="width:${student.progress.cumulative}%"></div>
+    </div>
+  `).join('');
+}
+
+function updateSessionSheet() {
+  const tbody = document.querySelector('#session-sheet-modal tbody');
+  tbody.innerHTML = '';
+  Object.entries(sessions).forEach(([id, session]) => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td class="p-2">${session.date}</td>
+      <td class="p-2">${session.time}</td>
+      <td class="p-2">${session.duration}</td>
+      <td class="p-2">${students[session.student].name}</td>
+      <td class="p-2">${session.subjects.join(', ')}</td>
+      <td class="p-2">${session.cost} birr</td>
+      <td class="p-2" id="session-${id}-status">${session.status}</td>
+      <td class="p-2">
+        <button id="session-${id}-confirm" onclick="confirmAttendance(${id}, 'tutor')" class="cta-button px-2 py-1 rounded ${session.tutorConfirmed ? 'hidden' : ''}">Confirm Attendance</button>
+        <button id="session-${id}-wait" onclick="confirmWaiting(${id}, 'tutor')" class="bg-yellow-600 text-white px-2 py-1 rounded hover:bg-yellow-700 ${session.waiting.tutor || session.tutorConfirmed ? 'hidden' : ''}">Confirm Waiting</button>
+        <button id="session-${id}-makeup" onclick="proposeMakeup(${id})" class="cta-button px-2 py-1 rounded ${session.status === 'Missed' ? '' : 'hidden'}">Propose Makeup</button>
+        <button id="session-${id}-subjects" onclick="openSubjectsModal(${id})" class="cta-button px-2 py-1 rounded">Edit Subjects</button>
+      </td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+function updateSessionStatus(sessionId) {
+  const session = sessions[sessionId];
+  if (session.tutorConfirmed && session.studentConfirmed) {
+    session.status = 'Confirmed';
+  } else if (session.waiting.tutor && session.waiting.student) {
+    session.status = 'Missed';
+    document.getElementById(`session-${sessionId}-makeup`).classList.remove('hidden');
+  } else if (session.waiting.tutor || session.waiting.student) {
+    session.status = 'Waiting';
+  }
+  document.getElementById(`session-${sessionId}-status`).textContent = session.status;
+  document.getElementById(`session-${sessionId}-confirm`).classList.toggle('hidden', session.tutorConfirmed);
+  document.getElementById(`session-${sessionId}-wait`).classList.toggle('hidden', session.waiting.tutor || session.tutorConfirmed);
+}
+
+function updateComments() {
+  const commentsList = document.getElementById('comments-list');
+  commentsList.innerHTML = tutor.comments.map(comment => `
+    <div class="mb-2">
+      <p class="font-semibold">${comment.author}</p>
+      <p>${comment.text}</p>
+      <p class="text-sm text-gray-500">${comment.date}</p>
+    </div>
+  `).join('');
+}
+
+function updateVideoComments() {
+  const commentsList = document.getElementById('comments-list');
+  commentsList.innerHTML = tutor.videos[currentVideoKey].comments.map(comment => `
+    <div class="mb-2">
+      <p class="font-semibold">${comment.author}</p>
+      <p>${comment.text}</p>
+      <p class="text-sm text-gray-500">${comment.date}</p>
+    </div>
+  `).join('');
+}
+
+function updateChatMessages(chatKey) {
+  const messages = chatMessages[chatKey] || [];
+  document.getElementById('chat-messages').innerHTML = messages.map(msg => `
+    <div class="${msg.sender === 'You' ? 'text-right' : 'text-left'} mb-2">
+      <p class="font-semibold">${msg.sender}</p>
+      <p class="p-2 rounded-lg ${msg.sender === 'You' ? 'bg-blue-100' : 'bg-gray-200'}">${msg.message}</p>
+      <p class="text-sm text-gray-500">${msg.timestamp}</p>
+    </div>
+  `).join('');
+}
+
+function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const message = sanitizeInput(input.value);
+  if (message && currentStudentId) {
+    const chatKey = document.getElementById('chat-student-name').textContent.includes('Parent') ? `parent_${currentStudentId}` : currentStudentId;
+    if (!chatMessages[chatKey]) chatMessages[chatKey] = [];
+    chatMessages[chatKey].push({
+      sender: 'You',
+      message,
+      timestamp: new Date().toISOString().slice(0, 16).replace('T', ' ')
+    });
+    updateChatMessages(chatKey);
+    input.value = '';
+  }
+}
+
+function copyLink() {
+  const url = document.getElementById('share-url').value;
+  navigator.clipboard.writeText(url);
+  alert('Link copied to clipboard!');
+}
+
+function copyReferralLink() {
+  const link = document.getElementById('referral-link').value;
+  navigator.clipboard.writeText(link);
+  alert('Referral link copied to clipboard!');
+}
+
+function openStudentDetailsModal(studentId) {
+  currentStudentId = studentId;
+  const modal = document.getElementById('student-details-modal');
+  modal.dataset.studentId = studentId;
+  const student = students[studentId];
+  document.getElementById('student-detail-name').textContent = `Name: ${student.name}`;
+  document.getElementById('student-detail-subjects').textContent = `Subjects: ${sessions[1].subjects.join(', ')}`;
+  document.getElementById('student-detail-session').textContent = `Next Session: ${student.nextSession}`;
+  document.getElementById('detail-progress-label').textContent = `${student.progress.cumulative}%`;
+  document.getElementById('detail-progress-arc').setAttribute('stroke-dashoffset', 283 - (283 * student.progress.cumulative) / 100);
+  document.getElementById('detail-subj-math').textContent = `${student.progress.math}%`;
+  document.getElementById('detail-bar-math').style.width = `${student.progress.math}%`;
+  document.getElementById('detail-subj-physics').textContent = `${student.progress.physics}%`;
+  document.getElementById('detail-bar-physics').style.width = `${student.progress.physics}%`;
+  const tbody = document.getElementById('student-session-history').querySelector('tbody');
+  tbody.innerHTML = '';
+  Object.entries(sessions).forEach(([id, session]) => {
+    if (session.student == studentId) {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td class="p-2">${session.date}</td>
+        <td class="p-2">${session.time}</td>
+        <td class="p-2">${session.subjects.join(', ')}</td>
+        <td class="p-2">${session.cost} birr</td>
+        <td class="p-2">${session.status}</td>
+      `;
+      tbody.appendChild(row);
+    }
+  });
+  modal.classList.remove('hidden');
+}
+
+function closeStudentDetailsModal() {
+  document.getElementById('student-details-modal').classList.add('hidden');
+}
+
+function requestSchoolListing() {
+  openSchoolRequestModal();
+}
 
 // Initialize
-initializeTheme();
-updateNavigation();
-updateProfileUI();
-updateRatingCircle();
-updateVerificationStatus();
+document.addEventListener('DOMContentLoaded', () => {
+  initializeTheme();
+  updateNavigation();
+  updateProfileDisplay();
+  updateStudentsTable();
+  updateSessionSheet();
+});
   </script>
 </body>
 </html>

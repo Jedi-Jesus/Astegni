@@ -4,76 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASTEGNI - Admin Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href  = 'css/root_theme.css' rel = 'stylesheet'/>
+    <link href="./css/output.css" rel="stylesheet">
+    <link href="css/root_theme.css" rel="stylesheet"/>
+    <script defer src="./js/xlsx.full.min.js"></script>
+    <script src="./js/app.js" defer></script>
+    <script defer src="./js/chart.min.js"></script>
+    <script defer src="./js/admin.js"></script>
     <style>
-
         body {
             background-color: var(--background);
             color: var(--text);
             font-family: sans-serif;
         }
-
         nav {
             background-color: var(--highlight);
             color: var(--nav-link);
         }
-
         nav a {
             color: var(--nav-link);
             transition: color 0.2s;
         }
-
         nav a:hover {
             color: var(--nav-link-hover);
         }
-
         #mobile-menu {
             background-color: var(--nav-bg);
             transition: max-height 0.3s ease-in-out;
             max-height: 0;
             overflow: hidden;
         }
-
         #mobile-menu.open {
             max-height: 300px;
             display: block;
         }
-
         #mobile-menu a:hover, #mobile-theme-toggle-btn:hover {
             background-color: var(--highlight-bg);
         }
-
         h1, h2, h3, h4 {
             color: var(--heading);
         }
-
         .cta-button {
             background-color: var(--button-bg);
             color: var(--button-text);
             transition: background-color 0.2s;
         }
-
         .cta-button:hover {
             background-color: var(--button-hover);
         }
-
         .cta-button:active {
             background-color: var(--button-active);
         }
-
         footer {
             background-color: var(--footer-bg);
             color: var(--footer-text);
         }
-
         .modal-content {
             background-color: var(--modal-bg);
             color: var(--modal-text);
             border: 1px solid var(--modal-input-border);
         }
-
         .modal-content input,
         .modal-content select,
         .modal-content textarea {
@@ -81,52 +70,41 @@
             color: var(--modal-text);
             border: 1px solid var(--modal-input-border);
         }
-
         .modal-content input::placeholder,
         .modal-content textarea::placeholder {
             color: var(--modal-text);
             opacity: 0.6;
         }
-
-        #user-search, #campaign-search, #payment-search, #log-search {
+        #advertiser-search, #campaign-search, #school-search {
             background-color: var(--highlight-bg);
             color: var(--text);
             border-color: var(--modal-input-border);
         }
-
-        #user-search::placeholder, #campaign-search::placeholder,
-        #payment-search::placeholder, #log-search::placeholder {
+        #advertiser-search::placeholder, #campaign-search::placeholder, #school-search::placeholder {
             color: var(--text);
             opacity: 0.6;
         }
-
         #theme-toggle-btn, #mobile-theme-toggle-btn {
             background-color: transparent;
             color: var(--nav-link);
         }
-
         #theme-toggle-btn:hover, #mobile-theme-toggle-btn:hover {
             color: var(--nav-link-hover);
         }
-
         .tab-button {
             color: var(--text);
             transition: color 0.2s, border-color 0.2s;
         }
-
         .tab-button:hover {
             color: var(--nav-link-hover);
         }
-
         .tab-button.active {
             color: var(--button-bg);
             border-bottom: 2px solid var(--button-bg);
         }
-
         canvas {
             background-color: var(--modal-bg);
         }
-
         table tr:hover {
             background-color: var(--highlight-bg);
         }
@@ -176,41 +154,35 @@
         <div class="container mx-auto px-4">
             <h2 class="text-3xl font-bold mb-8">Admin Dashboard</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-                <div class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
-                    <h3 class="text-lg font-semibold">Total Advertisers</h3>
-                    <p id="total-advertisers" class="text-2xl">2</p>
-                </div>
+
                 <div class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
                     <h3 class="text-lg font-semibold">Active Campaigns</h3>
                     <p id="active-campaigns" class="text-2xl">0</p>
-                </div>
-                <div id="total-revenue-card" class="p-4 rounded-lg shadow-lg hidden" style="background-color: var(--highlight-bg)">
-                    <h3 class="text-lg font-semibold">Total Revenue</h3>
-                    <p id="total-revenue" class="text-2xl">0 birr</p>
                 </div>
                 <div class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
                     <h3 class="text-lg font-semibold">Pending Reviews</h3>
                     <p id="pending-reviews" class="text-2xl">1</p>
                 </div>
+<div class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <h3 class="text-lg font-semibold">School Listing Requests</h3>
+        <p id="school-listing-requests" class="text-2xl">0</p>
+    </div>
             </div>
 
             <!-- Tabs -->
             <div class="p-6 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
                 <div class="flex flex-wrap border-b mb-4">
-                    <button class="tab-button px-4 py-2 font-semibold active" onclick="showTab('users')">Users</button>
+                    <button class="tab-button px-4 py-2 font-semibold active" onclick="showTab('advertisers')">Advertisers</button>
                     <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('campaigns')">Campaigns</button>
-                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('payments')">Payments</button>
-                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('analytics')">Analytics</button>
                     <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('notifications')">Notifications</button>
-                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('moderation')">Moderation</button>
-                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('settings')">Settings</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('schools')">Schools</button>
                     <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('logs')">Logs</button>
                 </div>
 
-                <!-- Users Tab -->
-                <div id="users" class="tab-content">
+                <!-- Advertisers Tab -->
+                <div id="advertisers" class="tab-content">
                     <h3 class="text-xl font-semibold mb-4">Manage Advertisers</h3>
-                    <input id="user-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4" placeholder="Search advertisers by name or email" oninput="searchUsers()">
+                    <input id="advertiser-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4" placeholder="Search advertisers by name or email" oninput="searchAdvertisers()">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-gray-200">
@@ -220,7 +192,7 @@
                                 <th class="p-2">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="user-table"></tbody>
+                        <tbody id="advertiser-table"></tbody>
                     </table>
                 </div>
 
@@ -234,46 +206,11 @@
                                 <th class="p-2">Name</th>
                                 <th class="p-2">Advertiser</th>
                                 <th class="p-2">Status</th>
-                                <th class="p-2">Duration</th>
-                                <th class="p-2">Price</th>
                                 <th class="p-2">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="campaign-table"></tbody>
                     </table>
-                </div>
-
-                <!-- Payments Tab -->
-                <div id="payments" class="tab-content hidden">
-                    <h3 class="text-xl font-semibold mb-4">Manage Payments</h3>
-                    <div class="flex items-center mb-4">
-                        <select id="payment-type-filter" class="p-2 border rounded-lg mr-4 bg-[var(--modal-input-bg)] text-[var(--modal-text)]" onchange="searchPayments()">
-                            <option value="all">All Payments</option>
-                            <option value="Ad Campaign">Ad Campaign</option>
-                            <option value="Registration">Registration</option>
-                            <option value="Subscription">Subscription</option>
-                        </select>
-                        <input id="payment-search" type="text" class="w-full max-w-md p-2 border rounded-lg" placeholder="Search payments by campaign, advertiser, or tutor" oninput="searchPayments()">
-                    </div>
-                    <table class="w-full text-left">
-                        <thead>
-                            <tr class="bg-gray-200">
-                                <th class="p-2">Type</th>
-                                <th class="p-2">Details</th>
-                                <th class="p-2">Amount</th>
-                                <th class="p-2">Status</th>
-                                <th class="p-2">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="payment-table"></tbody>
-                    </table>
-                </div>
-
-                <!-- Analytics Tab -->
-                <div id="analytics" class="tab-content hidden">
-                    <h3 class="text-xl font-semibold mb-4">Platform Analytics</h3>
-                    <canvas id="platform-analytics-chart" class="my-4"></canvas>
-                    <button onclick="generatePlatformReport()" class="px-4 py-2 rounded-lg cta-button">Generate Report</button>
                 </div>
 
                 <!-- Notifications Tab -->
@@ -292,29 +229,23 @@
                     </table>
                 </div>
 
-                <!-- Moderation Tab -->
-                <div id="moderation" class="tab-content hidden">
-                    <h3 class="text-xl font-semibold mb-4">Content Moderation</h3>
+                <!-- Schools Tab -->
+                <div id="schools" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Manage Schools</h3>
+                    <button onclick="openAddSchoolModal()" class="px-4 py-2 rounded-lg cta-button mb-4">Add School</button>
+                    <input id="school-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4" placeholder="Search schools by name or email" oninput="searchSchools()">
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-gray-200">
-                                <th class="p-2">Campaign</th>
-                                <th class="p-2">Ad Content</th>
-                                <th class="p-2">Status</th>
+                                <th class="p-2">Name</th>
+                                <th class="p-2">Phone Number</th>
+                                <th class="p-2">Email Address</th>
+                                <th class="p-2">Location</th>
                                 <th class="p-2">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="moderation-table"></tbody>
+                        <tbody id="school-table"></tbody>
                     </table>
-                </div>
-
-                <!-- Settings Tab -->
-                <div id="settings" class="tab-content hidden">
-                    <h3 class="text-xl font-semibold mb-4">System Settings</h3>
-                    <button id="pricing-btn" onclick="openPricingModal()" class="px-4 py-2 rounded-lg cta-button mb-4 hidden">Update Pricing</button>
-                    <button id="price-requests-btn" onclick="openPriceRequestsModal()" class="px-4 py-2 rounded-lg cta-button mb-4 hidden">View Price Update Requests</button>
-                    <button id="reports-btn" onclick="openReportsModal()" class="px-4 py-2 rounded-lg cta-button mb-4 hidden">View Advertiser Reports</button>
-                    <button onclick="openAdminModal()" class="px-4 py-2 rounded-lg cta-button mb-4">Manage Admins</button>
                 </div>
 
                 <!-- Logs Tab -->
@@ -343,9 +274,20 @@
             <div id="review-campaign-content"></div>
             <div class="flex space-x-4 mt-4">
                 <button onclick="reviewCampaign(selectedCampaignId, true)" class="px-4 py-2 rounded-lg cta-button">Approve</button>
-                <button onclick="reviewCampaign(selectedCampaignId, false)" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Reject</button>
+                <button onclick="openRejectCampaignModal()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Reject</button>
             </div>
             <button onclick="closeReviewCampaignModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Reject Campaign Modal -->
+    <div id="reject-campaign-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Reject Campaign">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Reject Campaign</h3>
+            <label class="block mb-2">Reason for Rejection</label>
+            <textarea id="reject-reason" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter reason for rejection"></textarea>
+            <button onclick="rejectCampaignWithReason()" class="px-4 py-2 rounded-lg cta-button w-full">Submit</button>
+            <button onclick="closeRejectCampaignModal()" class="mt-4 hover:underline">Cancel</button>
         </div>
     </div>
 
@@ -357,22 +299,10 @@
             <input id="edit-campaign-name" type="text" class="w-full p-2 border rounded-lg mb-4">
             <label class="block mb-2">Duration (days)</label>
             <input id="edit-campaign-duration" type="number" min="1" class="w-full p-2 border rounded-lg mb-4">
-            <label class="block mb-2">Price (birr)</label>
-            <input id="edit-campaign-price" type="number" min="0" class="w-full p-2 border rounded-lg mb-4">
             <label class="block mb-2">Ad Description</label>
             <textarea id="edit-campaign-description" class="w-full p-2 border rounded-lg mb-4"></textarea>
             <button onclick="saveCampaign()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
             <button onclick="closeEditCampaignModal()" class="mt-4 hover:underline">Cancel</button>
-        </div>
-    </div>
-
-    <!-- Confirm Payment Modal -->
-    <div id="confirm-payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Confirm Payment">
-        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-4">Confirm Payment</h3>
-            <p id="confirm-payment-details" class="mb-4"></p>
-            <button onclick="confirmPayment()" class="px-4 py-2 rounded-lg cta-button w-full">Confirm</button>
-            <button onclick="closeConfirmPaymentModal()" class="mt-4 hover:underline">Cancel</button>
         </div>
     </div>
 
@@ -391,120 +321,6 @@
         </div>
     </div>
 
-    <!-- Pricing Modal -->
-    <div id="pricing-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Update Pricing">
-        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-4">Update Pricing</h3>
-            <label class="block mb-2">Pricing Type</label>
-            <select id="pricing-type" class="w-full p-2 border rounded-lg mb-4" onchange="updatePricingFields()">
-                <option value="campaign">Ad Campaign</option>
-                <option value="registration">Registration</option>
-                <option value="subscription">Subscription</option>
-            </select>
-            <div id="campaign-pricing">
-                <label class="block mb-2">1 Day (birr)</label>
-                <input id="price-1" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="1000">
-                <label class="block mb-2">3 Days (birr)</label>
-                <input id="price-3" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="2700">
-                <label class="block mb-2">1 Week (birr)</label>
-                <input id="price-7" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="5600">
-                <label class="block mb-2">2 Weeks (birr)</label>
-                <input id="price-15" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="11250">
-                <label class="block mb-2">1 Month (birr)</label>
-                <input id="price-30" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="19500">
-                <label class="block mb-2">Custom Rate (birr/day)</label>
-                <input id="price-custom" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="1000">
-            </div>
-            <div id="registration-pricing" class="hidden">
-                <label class="block mb-2">Registration Fee (birr)</label>
-                <input id="price-registration" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="500">
-            </div>
-            <div id="subscription-pricing" class="hidden">
-                <label class="block mb-2">Subscription Fee (birr/month)</label>
-                <input id="price-subscription" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="200">
-            </div>
-            <button onclick="savePricing()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
-            <button onclick="closePricingModal()" class="mt-4 hover:underline">Cancel</button>
-        </div>
-    </div>
-
-    <!-- Price Requests Modal -->
-    <div id="price-requests-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Price Update Requests">
-        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-4">Price Update Requests</h3>
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="p-2">Department</th>
-                        <th class="p-2">Pricing Type</th>
-                        <th class="p-2">Proposed Prices</th>
-                        <th class="p-2">Status</th>
-                        <th class="p-2">Date</th>
-                        <th class="p-2">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="price-requests-table"></tbody>
-            </table>
-            <button onclick="closePriceRequestsModal()" class="mt-4 hover:underline">Close</button>
-        </div>
-    </div>
-
-    <!-- Advertiser Reports Modal -->
-    <div id="reports-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Advertiser Reports">
-        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-4">Advertiser Reports</h3>
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="p-2">Advertiser</th>
-                        <th class="p-2">Reported By</th>
-                        <th class="p-2">Status</th>
-                        <th class="p-2">Date</th>
-                        <th class="p-2">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="reports-table"></tbody>
-            </table>
-            <button onclick="closeReportsModal()" class="mt-4 hover:underline">Close</button>
-        </div>
-    </div>
-
-    <!-- Manage Admins Modal -->
-    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Manage Admins">
-        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-4">Manage Admins</h3>
-            <label class="block mb-2">Add New Admin (Email)</label>
-            <input id="new-admin-email" type="email" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., admin@astegni.et">
-            <label class="block mb-2">Role</label>
-            <select id="new-admin-role" class="w-full p-2 border rounded-lg mb-4">
-                <option value="Admin">Admin</option>
-                <option value="Super Admin">Super Admin</option>
-            </select>
-            <button onclick="addAdmin()" class="px-4 py-2 rounded-lg cta-button w-full">Add</button>
-            <table class="w-full text-left mt-4">
-                <thead>
-                    <tr class="bg-gray-200">
-                        <th class="p-2">Email</th>
-                        <th class="p-2">Role</th>
-                        <th class="p-2">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-table"></tbody>
-            </table>
-            <button onclick="closeAdminModal()" class="mt-4 hover:underline">Cancel</button>
-        </div>
-    </div>
-
-    <!-- View Ad Content Modal -->
-    <div id="view-ad-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Ad Content">
-        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <h3 class="text-2xl font-bold mb-4">Ad Content</h3>
-            <img id="view-ad-image" src="" alt="Ad Content" class="w-full h-48 object-cover rounded-lg mb-4">
-            <p id="view-ad-description" class="mb-4"></p>
-            <button onclick="closeViewAdModal()" class="mt-4 hover:underline">Close</button>
-        </div>
-    </div>
-
     <!-- Notification Modal -->
     <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Admin Notifications">
         <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
@@ -514,59 +330,73 @@
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="py-8" style="background-color: var(--footer-bg);">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Quick Links -->
-            <div class="text-center md:text-left">
-                <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
-                <ul class="space-y-2">
-                    <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
-                    <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
-                    <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
-                    <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
-                </ul>
-            </div>
-            <!-- Newsletter -->
-            <div class="text-center md:text-left">
-                <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
-                <p class="mb-4">Stay updated with our latest news and offers.</p>
-                <form class="mt-4 flex flex-col items-center md:items-start">
-                    <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
-                    <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
-                </form>
-            </div>
-            <!-- Get in Touch -->
-            <div class="text-center md:text-left">
-                <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
-                <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
-                <p class="mb-4">Phone: +251-912-345-678</p>
-                <div class="flex justify-center md:justify-start gap-4">
-                    <a class="social-icon" href="https://facebook.com">
-                        <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
-                        </svg>
-                    </a>
-                    <a class="social-icon" href="https://x.com">
-                        <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                        </svg>
-                    </a>
-                    <a class="social-icon" href="https://instagram.com">
-                        <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
-                        </svg>
-                    </a>
-                </div>
-            </div>
-        </div>
-        <div class="mt-8 text-center">
-            <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
-            <p>© 2025 Astegni. All rights reserved.</p>
+    <!-- Add School Modal -->
+    <div id="add-school-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Add School">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Add School</h3>
+            <label class="block mb-2">School Name</label>
+            <input id="school-name" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Central Prep">
+            <label class="block mb-2">Phone Number</label>
+            <input id="school-phone" type="tel" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., +251-912-345-678">
+            <label class="block mb-2">Email Address</label>
+            <input id="school-email" type="email" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., info@school.et">
+            <label class="block mb-2">Location</label>
+            <input id="school-location" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Addis Ababa, Ethiopia">
+            <button onclick="saveSchool()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeAddSchoolModal()" class="mt-4 hover:underline">Cancel</button>
         </div>
     </div>
-</footer>
+
+    <!-- Footer -->
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <form class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
+                    </form>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <!-- JavaScript for Interactivity -->
     <script>
@@ -578,7 +408,6 @@
             html.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             updateThemeToggleIcon(newTheme);
-            updateAnalytics(); // Re-render chart for theme
         }
 
         function updateThemeToggleIcon(theme) {
@@ -613,10 +442,6 @@
                 status: 'Pending'
             }
         };
-        const tutors = {
-            1: { id: 1, name: 'Abebe Kebede', email: 'abebe@tutor.et' },
-            2: { id: 2, name: 'Mulu Alem', email: 'mulu@tutor.et' }
-        };
         const campaigns = {
             1: {
                 id: 1,
@@ -626,8 +451,7 @@
                 price: 19500,
                 adContent: { url: 'https://via.placeholder.com/150', description: 'Promote math tutoring with fun visuals' },
                 reviewStatus: 'Under Review',
-                moderationStatus: 'Pending',
-                analytics: { impressions: 1000, clicks: 50, conversions: 5 }
+                moderationStatus: 'Pending'
             },
             2: {
                 id: 2,
@@ -637,35 +461,7 @@
                 price: 11250,
                 adContent: { url: 'https://via.placeholder.com/150', description: 'Science tutoring ad for all grades' },
                 reviewStatus: 'Approved',
-                moderationStatus: 'Approved',
-                analytics: { impressions: 2000, clicks: 120, conversions: 15 }
-            }
-        };
-        const payments = {
-            1: {
-                id: 1,
-                type: 'Ad Campaign',
-                campaignId: 2,
-                advertiserId: 1,
-                amount: 11250,
-                status: 'Pending',
-                date: '2025-05-20'
-            },
-            2: {
-                id: 2,
-                type: 'Registration',
-                tutorId: 1,
-                amount: 500,
-                status: 'Pending',
-                date: '2025-05-21'
-            },
-            3: {
-                id: 3,
-                type: 'Subscription',
-                tutorId: 2,
-                amount: 200,
-                status: 'Paid',
-                date: '2025-05-22'
+                moderationStatus: 'Approved'
             }
         };
         const notifications = {
@@ -684,48 +480,27 @@
                 date: '2025-05-20 10:00'
             }
         };
-        const admins = {
-            1: { id: 1, email: 'admin@astegni.et', role: 'Super Admin' },
-            2: { id: 2, email: 'moderator@astegni.et', role: 'Admin' }
-        };
-        let pricing = {
-            campaign: { 1: 1000, 3: 2700, 7: 5600, 15: 11250, 30: 19500, custom: 1000 },
-            registration: 500,
-            subscription: 200
-        };
-        const priceRequests = {
+        const schools = {
             1: {
                 id: 1,
-                department: 'Marketing A',
-                type: 'campaign',
-                prices: { 1: 1200, 3: 3000, 7: 6000, 15: 12000, 30: 20000, custom: 1100 },
-                status: 'Pending',
-                date: '2025-05-20'
+                name: 'Central Prep',
+                phone: '+251-912-000-111',
+                email: 'info@centralprep.et',
+                location: 'Addis Ababa, Ethiopia'
             },
             2: {
                 id: 2,
-                department: 'Finance',
-                type: 'registration',
-                prices: { registration: 600 },
-                status: 'Pending',
-                date: '2025-05-21'
+                name: 'Riverside Academy',
+                phone: '+251-912-000-222',
+                email: 'contact@riverside.et',
+                location: 'Bahir Dar, Ethiopia'
             },
             3: {
                 id: 3,
-                department: 'Operations',
-                type: 'subscription',
-                prices: { subscription: 250 },
-                status: 'Pending',
-                date: '2025-05-22'
-            }
-        };
-        const reports = {
-            1: {
-                id: 1,
-                advertiserId: 1,
-                reportedBy: 'moderator@astegni.et',
-                status: 'Pending',
-                date: '2025-05-22'
+                name: 'Springfield High',
+                phone: '+251-912-000-333',
+                email: 'admin@springfield.et',
+                location: 'Hawassa, Ethiopia'
             }
         };
 
@@ -733,35 +508,25 @@
         function initDashboard() {
             if (currentAdmin.role === 'Super Admin') {
                 document.getElementById('total-revenue-card').classList.remove('hidden');
-                document.getElementById('pricing-btn').classList.remove('hidden');
-                document.getElementById('price-requests-btn').classList.remove('hidden');
-                document.getElementById('reports-btn').classList.remove('hidden');
             }
             updateSummary();
-            searchUsers();
+            searchAdvertisers();
             searchCampaigns();
-            searchPayments();
-            updateAnalytics();
             updateNotifications();
-            updateModeration();
-            updateAdmins();
+            searchSchools();
             searchLogs();
-            updatePriceRequests();
-            updateReports();
             checkNotifications();
         }
 
         // Update Summary
-        function updateSummary() {
-            const totalAdvertisers = Object.values(advertisers).length;
-            const activeCampaigns = Object.values(campaigns).filter(c => c.reviewStatus === 'Active').length;
-            const totalRevenue = Object.values(payments).reduce((sum, p) => p.status === 'Paid' ? sum + p.amount : sum, 0);
-            const pendingReviews = Object.values(campaigns).filter(c => c.reviewStatus === 'Under Review').length;
-            document.getElementById('total-advertisers').textContent = totalAdvertisers;
-            document.getElementById('active-campaigns').textContent = activeCampaigns;
-            document.getElementById('total-revenue').textContent = `${totalRevenue} birr`;
-            document.getElementById('pending-reviews').textContent = pendingReviews;
-        }
+       function updateSummary() {
+    const activeCampaigns = Object.values(campaigns).filter(c => c.reviewStatus === 'Active').length;
+    const pendingReviews = Object.values(campaigns).filter(c => c.reviewStatus === 'Under Review').length;
+    const schoolListingRequests = Object.values(schools).filter(s => s.status === 'Pending').length;
+    document.getElementById('active-campaigns').textContent = activeCampaigns;
+    document.getElementById('pending-reviews').textContent = pendingReviews;
+    document.getElementById('school-listing-requests').textContent = schoolListingRequests;
+}
 
         // Tab Management
         function showTab(tabId) {
@@ -773,12 +538,12 @@
             document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
         }
 
-        // User Management
+        // Advertiser Management
         let selectedUserId = null;
-        function searchUsers() {
-            const searchTerm = document.getElementById('user-search').value.trim().toLowerCase();
-            const userTable = document.getElementById('user-table');
-            userTable.innerHTML = '';
+        function searchAdvertisers() {
+            const searchTerm = document.getElementById('advertiser-search').value.trim().toLowerCase();
+            const advertiserTable = document.getElementById('advertiser-table');
+            advertiserTable.innerHTML = '';
             Object.values(advertisers).forEach(user => {
                 if (searchTerm === '' || user.name.toLowerCase().includes(searchTerm) || user.email.toLowerCase().includes(searchTerm)) {
                     const tr = document.createElement('tr');
@@ -794,7 +559,7 @@
                             ${currentAdmin.role === 'Super Admin' ? `<button onclick="deleteUser(${user.id})" class="hover:underline">Delete</button>` : ''}
                         </td>
                     `;
-                    userTable.appendChild(tr);
+                    advertiserTable.appendChild(tr);
                 }
             });
         }
@@ -802,14 +567,14 @@
             advertisers[userId].status = 'Active';
             logAction(`Approved user ${advertisers[userId].email}`);
             alert('User approved');
-            searchUsers();
+            searchAdvertisers();
             updateSummary();
         }
         function rejectUser(userId) {
             advertisers[userId].status = 'Rejected';
             logAction(`Rejected user ${advertisers[userId].email}`);
             alert('User rejected');
-            searchUsers();
+            searchAdvertisers();
             updateSummary();
         }
         function suspendUser(userId) {
@@ -826,31 +591,20 @@
                 };
             }
             alert(`User ${user.status === 'Suspended' ? 'suspended' : 'unsuspended'}`);
-            searchUsers();
+            searchAdvertisers();
             checkNotifications();
         }
         function reportUser(userId) {
             const user = advertisers[userId];
-            const newId = Object.keys(reports).length + 1;
-            reports[newId] = {
+            const newId = Object.keys(notifications).length + 1;
+            notifications[newId] = {
                 id: newId,
-                advertiserId: userId,
-                reportedBy: currentAdmin.email,
-                status: 'Pending',
+                message: `Advertiser ${user.email} reported by ${currentAdmin.email}`,
+                recipient: 'Super Admin',
                 date: new Date().toISOString().split('T')[0]
             };
             logAction(`Reported user ${user.email}`);
-            if (currentAdmin.role !== 'Super Admin') {
-                const notificationId = Object.keys(notifications).length + 1;
-                notifications[notificationId] = {
-                    id: notificationId,
-                    message: `Advertiser ${user.email} reported by ${currentAdmin.email}`,
-                    recipient: 'Super Admin',
-                    date: new Date().toISOString().split('T')[0]
-                };
-            }
             alert('User reported for review');
-            updateReports();
             checkNotifications();
         }
         function deleteUser(userId) {
@@ -858,58 +612,9 @@
                 logAction(`Deleted user ${advertisers[userId].email}`);
                 delete advertisers[userId];
                 alert('User deleted');
-                searchUsers();
+                searchAdvertisers();
                 updateSummary();
             }
-        }
-
-        // Reports Management
-        function openReportsModal() {
-            updateReports();
-            document.getElementById('reports-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('reports-modal'));
-        }
-        function closeReportsModal() {
-            document.getElementById('reports-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function updateReports() {
-            const reportsTable = document.getElementById('reports-table');
-            reportsTable.innerHTML = '';
-            Object.values(reports).forEach(report => {
-                const advertiser = advertisers[report.advertiserId] || { name: 'Unknown', email: 'Unknown' };
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-2">${advertiser.name} (${advertiser.email})</td>
-                    <td class="p-2">${report.reportedBy}</td>
-                    <td class="p-2">${report.status}</td>
-                    <td class="p-2">${report.date}</td>
-                    <td class="p-2">
-                        ${report.status === 'Pending' ? `<button onclick="approveReport(${report.id})" class="hover:underline">Approve (Delete)</button> | ` : ''}
-                        ${report.status === 'Pending' ? `<button onclick="rejectReport(${report.id})" class="hover:underline">Reject (Keep)</button>` : ''}
-                    </td>
-                `;
-                reportsTable.appendChild(tr);
-            });
-        }
-        function approveReport(reportId) {
-            const report = reports[reportId];
-            const advertiser = advertisers[report.advertiserId];
-            logAction(`Approved report: Deleted user ${advertiser.email}`);
-            delete advertisers[report.advertiserId];
-            report.status = 'Approved';
-            alert('Report approved, user deleted');
-            updateReports();
-            searchUsers();
-            updateSummary();
-        }
-        function rejectReport(reportId) {
-            const report = reports[reportId];
-            const advertiser = advertisers[report.advertiserId];
-            logAction(`Rejected report: Kept user ${advertiser.email}`);
-            report.status = 'Rejected';
-            alert('Report rejected, user kept');
-            updateReports();
         }
 
         // Campaign Management
@@ -924,18 +629,16 @@
                     const tr = document.createElement('tr');
                     tr.setAttribute('data-campaign-id', campaign.id);
                     tr.innerHTML = `
-                        <td class="p-2">${campaign.name}</td>
-                        <td class="p-2">${advertiser ? advertiser.name : 'Unknown'}</td>
-                        <td class="p-2">${campaign.reviewStatus}</td>
-                        <td class="p-2">${campaign.duration} days</td>
-                        <td class="p-2">${currentAdmin.role === 'Super Admin' ? campaign.price : 'N/A'} birr</td>
-                        <td class="p-2">
-                            ${campaign.reviewStatus === 'Under Review' ? `<button onclick="openReviewCampaignModal(${campaign.id})" class="hover:underline">Review</button> | ` : ''}
-                            <button onclick="openEditCampaignModal(${campaign.id})" class="hover:underline">Edit</button> |
-                            <button onclick="deleteCampaign(${campaign.id})" class="hover:underline">Delete</button> |
-                            ${campaign.reviewStatus === 'Active' ? `<button onclick="pauseCampaign(${campaign.id})" class="hover:underline">${campaign.reviewStatus === 'Paused' ? 'Resume' : 'Pause'}</button>` : ''}
-                        </td>
-                    `;
+    <td class="p-2">${campaign.name}</td>
+    <td class="p-2">${advertiser ? advertiser.name : 'Unknown'}</td>
+    <td class="p-2">${campaign.reviewStatus}</td>
+    <td class="p-2">
+        ${campaign.reviewStatus === 'Under Review' ? `<button onclick="openReviewCampaignModal(${campaign.id})" class="hover:underline">Review</button> | ` : ''}
+        <button onclick="openEditCampaignModal(${campaign.id})" class="hover:underline">Edit</button> |
+        <button onclick="deleteCampaign(${campaign.id})" class="hover:underline">Delete</button> |
+        ${campaign.reviewStatus === 'Active' ? `<button onclick="pauseCampaign(${campaign.id})" class="hover:underline">${campaign.reviewStatus === 'Paused' ? 'Resume' : 'Pause'}</button>` : ''}
+    </td>
+`;
                     campaignTable.appendChild(tr);
                 }
             });
@@ -950,7 +653,6 @@
                 </a>
                 <p class="mb-2"><strong>Description:</strong> ${campaign.adContent.description}</p>
                 <p class="mb-2"><strong>Duration:</strong> ${campaign.duration} days</p>
-                <p class="mb-2"><strong>Price:</strong> ${currentAdmin.role === 'Super Admin' ? campaign.price : 'N/A'} birr</p>
             `;
             document.getElementById('review-campaign-modal').classList.remove('hidden');
             trapFocus(document.getElementById('review-campaign-modal'));
@@ -960,13 +662,54 @@
             selectedCampaignId = null;
             restoreFocus();
         }
-        function reviewCampaign(campaignId, approve) {
-            campaigns[campaignId].reviewStatus = approve ? 'Approved' : 'Rejected';
-            campaigns[campaignId].moderationStatus = approve ? 'Approved' : 'Rejected';
-            logAction(`Campaign ${campaignId} ${approve ? 'approved' : 'rejected'}`);
-            alert(`Campaign ${approve ? 'approved' : 'rejected'}`);
+        function openRejectCampaignModal() {
+            document.getElementById('reject-reason').value = '';
+            document.getElementById('reject-campaign-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('reject-campaign-modal'));
+        }
+        function closeRejectCampaignModal() {
+            document.getElementById('reject-campaign-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function rejectCampaignWithReason() {
+            const reason = document.getElementById('reject-reason').value.trim();
+            if (!reason) {
+                alert('Please provide a reason for rejection');
+                return;
+            }
+            const campaign = campaigns[selectedCampaignId];
+            campaign.reviewStatus = 'Rejected';
+            campaign.moderationStatus = 'Rejected';
+            const newId = Object.keys(notifications).length + 1;
+            notifications[newId] = {
+                id: newId,
+                message: `Your campaign "${campaign.name}" was rejected. Reason: ${reason}`,
+                recipient: advertisers[campaign.advertiserId].email,
+                date: new Date().toISOString().split('T')[0]
+            };
+            logAction(`Rejected campaign ${campaign.name} with reason: ${reason}`);
+            alert('Campaign rejected and notification sent');
             searchCampaigns();
-            updateModeration();
+            updateSummary();
+            closeRejectCampaignModal();
+            closeReviewCampaignModal();
+        }
+        function reviewCampaign(campaignId, approve) {
+            if (approve) {
+                const campaign = campaigns[campaignId];
+                campaign.reviewStatus = 'Approved';
+                campaign.moderationStatus = 'Approved';
+                const newId = Object.keys(notifications).length + 1;
+                notifications[newId] = {
+                    id: newId,
+                    message: `Congratulations, your campaign "${campaign.name}" has been approved!`,
+                    recipient: advertisers[campaign.advertiserId].email,
+                    date: new Date().toISOString().split('T')[0]
+                };
+                logAction(`Approved campaign ${campaign.name}`);
+                alert('Campaign approved and notification sent');
+            }
+            searchCampaigns();
             updateSummary();
             closeReviewCampaignModal();
         }
@@ -975,13 +718,7 @@
             const campaign = campaigns[campaignId];
             document.getElementById('edit-campaign-name').value = campaign.name;
             document.getElementById('edit-campaign-duration').value = campaign.duration;
-            document.getElementById('edit-campaign-price').value = campaign.price;
             document.getElementById('edit-campaign-description').value = campaign.adContent.description;
-            if (currentAdmin.role !== 'Super Admin') {
-                document.getElementById('edit-campaign-price').disabled = true;
-            } else {
-                document.getElementById('edit-campaign-price').disabled = false;
-            }
             document.getElementById('edit-campaign-modal').classList.remove('hidden');
             trapFocus(document.getElementById('edit-campaign-modal'));
         }
@@ -994,11 +731,8 @@
             const campaign = campaigns[selectedCampaignId];
             campaign.name = document.getElementById('edit-campaign-name').value.trim();
             campaign.duration = parseInt(document.getElementById('edit-campaign-duration').value);
-            if (currentAdmin.role === 'Super Admin') {
-                campaign.price = parseFloat(document.getElementById('edit-campaign-price').value);
-            }
             campaign.adContent.description = document.getElementById('edit-campaign-description').value.trim();
-            if (!campaign.name || !campaign.duration || (currentAdmin.role === 'Super Admin' && !campaign.price) || !campaign.adContent.description) {
+            if (!campaign.name || !campaign.duration || !campaign.adContent.description) {
                 alert('Please fill in all fields');
                 return;
             }
@@ -1023,134 +757,109 @@
             alert(`Campaign ${campaign.reviewStatus === 'Paused' ? 'paused' : 'resumed'}`);
             searchCampaigns();
         }
-        function highlightCampaign(campaignId) {
-            const rows = document.querySelectorAll('#campaign-table tr');
-            rows.forEach(row => row.classList.remove('bg-yellow-100'));
-            const targetRow = document.querySelector(`#campaign-table tr[data-campaign-id="${campaignId}"]`);
-            if (targetRow) targetRow.classList.add('bg-yellow-100');
-        }
 
-        // Payment Management
-        let selectedPaymentId = null;
-        function searchPayments() {
-            const searchTerm = document.getElementById('payment-search').value.trim().toLowerCase();
-            const typeFilter = document.getElementById('payment-type-filter').value;
-            const paymentTable = document.getElementById('payment-table');
-            paymentTable.innerHTML = '';
-            Object.values(payments).forEach(payment => {
-                const campaign = payment.type === 'Ad Campaign' ? campaigns[payment.campaignId] : null;
-                const advertiser = payment.type === 'Ad Campaign' ? advertisers[payment.advertiserId] : null;
-                const tutor = payment.type !== 'Ad Campaign' ? tutors[payment.tutorId] : null;
-                const details = payment.type === 'Ad Campaign' ? (campaign ? campaign.name : 'Unknown') + ' (' + (advertiser ? advertiser.name : 'Unknown') + ')' : (tutor ? tutor.name : 'Unknown');
-                const matchesSearch = searchTerm === '' || details.toLowerCase().includes(searchTerm);
-                const matchesType = typeFilter === 'all' || payment.type === typeFilter;
-                if (matchesSearch && matchesType) {
+        // School Management
+        let selectedSchoolId = null;
+        function searchSchools() {
+            const searchTerm = document.getElementById('school-search').value.trim().toLowerCase();
+            const schoolTable = document.getElementById('school-table');
+            schoolTable.innerHTML = '';
+            Object.values(schools).forEach(school => {
+                if (searchTerm === '' || school.name.toLowerCase().includes(searchTerm) || school.email.toLowerCase().includes(searchTerm)) {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td class="p-2">${payment.type}</td>
-                        <td class="p-2">${details}</td>
-                        <td class="p-2">${payment.amount} birr</td>
-                        <td class="p-2">${payment.status}</td>
+                        <td class="p-2">${school.name}</td>
+                        <td class="p-2">${school.phone}</td>
+                        <td class="p-2">${school.email}</td>
+                        <td class="p-2">${school.location}</td>
                         <td class="p-2">
-                            ${payment.status === 'Pending' ? `<button onclick="openConfirmPaymentModal(${payment.id})" class="hover:underline">Confirm</button> | ` : ''}
-                            ${payment.status === 'Paid' ? `<button onclick="refundPayment(${payment.id})" class="hover:underline">Refund</button>` : ''}
+                            <button onclick="openEditSchoolModal(${school.id})" class="hover:underline">Edit</button> |
+                            <button onclick="deleteSchool(${school.id})" class="hover:underline">Delete</button>
                         </td>
                     `;
-                    paymentTable.appendChild(tr);
+                    schoolTable.appendChild(tr);
                 }
             });
         }
-        function openConfirmPaymentModal(paymentId) {
-            selectedPaymentId = paymentId;
-            const payment = payments[paymentId];
-            const details = payment.type === 'Ad Campaign' ? 
-                `campaign "${campaigns[payment.campaignId]?.name || 'Unknown'}"` : 
-                `${payment.type.toLowerCase()} for tutor "${tutors[payment.tutorId]?.name || 'Unknown'}"`;
-            document.getElementById('confirm-payment-details').textContent = `Confirm payment of ${payment.amount} birr for ${details}`;
-            document.getElementById('confirm-payment-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('confirm-payment-modal'));
+        function openAddSchoolModal() {
+            selectedSchoolId = null;
+            document.getElementById('add-school-modal').querySelector('h3').textContent = 'Add School';
+            document.getElementById('school-name').value = '';
+            document.getElementById('school-phone').value = '';
+            document.getElementById('school-email').value = '';
+            document.getElementById('school-location').value = '';
+            document.getElementById('add-school-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('add-school-modal'));
         }
-        function closeConfirmPaymentModal() {
-            document.getElementById('confirm-payment-modal').classList.add('hidden');
-            selectedPaymentId = null;
+        function openEditSchoolModal(schoolId) {
+            selectedSchoolId = schoolId;
+            const school = schools[schoolId];
+            document.getElementById('add-school-modal').querySelector('h3').textContent = 'Edit School';
+            document.getElementById('school-name').value = school.name;
+            document.getElementById('school-phone').value = school.phone;
+            document.getElementById('school-email').value = school.email;
+            document.getElementById('school-location').value = school.location;
+            document.getElementById('add-school-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('add-school-modal'));
+        }
+        function closeAddSchoolModal() {
+            document.getElementById('add-school-modal').classList.add('hidden');
+            selectedSchoolId = null;
             restoreFocus();
         }
-        function confirmPayment() {
-            const payment = payments[selectedPaymentId];
-            payment.status = 'Paid';
-            if (payment.type === 'Ad Campaign') {
-                const campaign = campaigns[payment.campaignId];
-                campaign.reviewStatus = 'Active';
+        function saveSchool() {
+            const name = document.getElementById('school-name').value.trim();
+            const phone = document.getElementById('school-phone').value.trim();
+            const email = document.getElementById('school-email').value.trim();
+            const location = document.getElementById('school-location').value.trim();
+            if (!name || !phone || !email || !location) {
+                alert('Please fill in all fields');
+                return;
             }
-            logAction(`Confirmed ${payment.type.toLowerCase()} payment ${payment.id}`);
-            alert('Payment confirmed');
-            searchPayments();
-            searchCampaigns();
-            updateSummary();
-            closeConfirmPaymentModal();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert('Please enter a valid email address');
+                return;
+            }
+            if (!/^\+?\d{10,}$/.test(phone.replace(/[-()\s]/g, ''))) {
+                alert('Please enter a valid phone number');
+                return;
+            }
+            if (selectedSchoolId) {
+                schools[selectedSchoolId] = { ...schools[selectedSchoolId], name, phone, email, location };
+                logAction(`Edited school ${name}`);
+                alert('School updated');
+            } else {
+                const newId = Object.keys(schools).length + 1;
+                schools[newId] = { id: newId, name, phone, email, location };
+                logAction(`Added school ${name}`);
+                alert('School added');
+            }
+            searchSchools();
+            closeAddSchoolModal();
         }
-        function refundPayment(paymentId) {
-            if (confirm('Are you sure you want to refund this payment?')) {
-                const payment = payments[paymentId];
-                payment.status = 'Refunded';
-                if (payment.type === 'Ad Campaign') {
-                    const campaign = campaigns[payment.campaignId];
-                    campaign.reviewStatus = 'Approved';
-                }
-                logAction(`Refunded ${payment.type.toLowerCase()} payment ${paymentId}`);
-                alert('Payment refunded');
-                searchPayments();
-                searchCampaigns();
-                updateSummary();
+        function deleteSchool(schoolId) {
+            if (confirm('Are you sure you want to delete this school?')) {
+                logAction(`Deleted school ${schools[schoolId].name}`);
+                delete schools[schoolId];
+                alert('School deleted');
+                searchSchools();
             }
         }
 
-        // Analytics
-        function updateAnalytics() {
-            const totalImpressions = Object.values(campaigns).reduce((sum, c) => sum + c.analytics.impressions, 0);
-            const totalClicks = Object.values(campaigns).reduce((sum, c) => sum + c.analytics.clicks, 0);
-            const totalConversions = Object.values(campaigns).reduce((sum, c) => sum + c.analytics.conversions, 0);
-            const ctx = document.getElementById('platform-analytics-chart').getContext('2d');
-            const existingChart = Chart.getChart(ctx);
-            if (existingChart) existingChart.destroy();
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Impressions', 'Clicks', 'Conversions'],
-                    datasets: [{
-                        label: 'Platform Metrics',
-                        data: [totalImpressions, totalClicks, totalConversions],
-                        backgroundColor: ['var(--button-bg)', 'var(--button-hover)', 'var(--button-active)'],
-                        borderColor: ['var(--button-active)', 'var(--button-active)', 'var(--button-hover)'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: { beginAtZero: true, ticks: { color: 'var(--modal-text)' } },
-                        x: { ticks: { color: 'var(--modal-text)' } }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: { backgroundColor: 'var(--modal-bg)', titleColor: 'var(--modal-text)', bodyColor: 'var(--modal-text)' }
-                    }
-                }
+        // Notifications
+        function updateNotifications() {
+            const notificationTable = document.getElementById('notification-table');
+            notificationTable.innerHTML = '';
+            Object.values(notifications).forEach(notification => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2">${notification.message}</td>
+                    <td class="p-2">${notification.recipient}</td>
+                    <td class="p-2">${notification.date}</td>
+                `;
+                notificationTable.appendChild(tr);
             });
         }
-        function generatePlatformReport() {
-            const report = Object.values(campaigns).map(c => ({
-                Name: c.name,
-                Advertiser: advertisers[c.advertiserId]?.name,
-                Impressions: c.analytics.impressions,
-                Clicks: c.analytics.clicks,
-                Conversions: c.analytics.conversions
-            }));
-            console.log('CSV Report:', report);
-            alert('Report generated (check console for CSV data)');
-            logAction('Generated platform report');
-        }
-
-        // Notification Management
         function openSendNotificationModal() {
             document.getElementById('notification-recipient').value = 'all';
             document.getElementById('notification-message').value = '';
@@ -1179,205 +888,32 @@
             alert('Notification sent');
             updateNotifications();
             closeSendNotificationModal();
-        }
-        function updateNotifications() {
-            const notificationTable = document.getElementById('notification-table');
-            notificationTable.innerHTML = '';
-            Object.values(notifications).forEach(n => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-2">${n.message}</td>
-                    <td class="p-2">${n.recipient}</td>
-                    <td class="p-2">${n.date}</td>
-                `;
-                notificationTable.appendChild(tr);
-            });
+            checkNotifications();
         }
 
-        // Content Moderation
-        function updateModeration() {
-            const moderationTable = document.getElementById('moderation-table');
-            moderationTable.innerHTML = '';
-            Object.values(campaigns).forEach(campaign => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-2"><a href="#" onclick="showTab('campaigns'); searchCampaigns(); highlightCampaign(${campaign.id})" class="underline">View</a> |
-                    <button onclick="openViewAdModal(${campaign.id})" class="hover:underline">Preview</button>
-                    <td class="p-2">${campaign.moderationStatus}</td>
-                    <td class="p-2">
-                        ${campaign.moderationStatus === 'Pending' ? `<button onclick="moderateContent(${campaign.id}, true)" class="hover:underline">Approve</button> | ` : ''}
-                        ${campaign.moderationStatus === 'Pending' ? `<button onclick="moderateContent(${campaign.id}, false)" class="hover:underline">Reject</button>` : ''}
-                    </td>
-                `;
-                moderationTable.appendChild(tr);
-            });
+        // Admin Notifications
+        function checkNotifications() {
+            const hasNotifications = Object.values(notifications).some(n => n.recipient === 'Admin' || n.recipient === 'Super Admin');
+            document.getElementById('notification-dot').classList.toggle('hidden', !hasNotifications);
+            document.getElementById('mobile-notification-dot').classList.toggle('hidden', !hasNotifications);
+            const notificationContent = document.getElementById('notification-content');
+            const adminNotifications = Object.values(notifications).filter(n => n.recipient === 'Admin' || n.recipient === 'Super Admin');
+            if (adminNotifications.length === 0) {
+                notificationContent.textContent = 'You have no notifications.';
+            } else {
+                notificationContent.innerHTML = adminNotifications.map(n => `<p>${n.message} (${n.date})</p>`).join('');
+            }
         }
-        function moderateContent(campaignId, approve) {
-            campaigns[campaignId].moderationStatus = approve ? 'Approved' : 'Rejected';
-            logAction(`Moderated campaign ${campaignId} content: ${approve ? 'Approved' : 'Rejected'}`);
-            alert(`Content ${approve ? 'approved' : 'rejected'}`);
-            updateModeration();
+        function openNotificationModal() {
+            document.getElementById('notification-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('notification-modal'));
         }
-        function openViewAdModal(campaignId) {
-            const campaign = campaigns[campaignId];
-            document.getElementById('view-ad-image').src = campaign.adContent.url;
-            document.getElementById('view-ad-description').textContent = campaign.adContent.description;
-            document.getElementById('view-ad-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('view-ad-modal'));
-        }
-        function closeViewAdModal() {
-            document.getElementById('view-ad-modal').classList.add('hidden');
+        function closeNotificationModal() {
+            document.getElementById('notification-modal').classList.add('hidden');
             restoreFocus();
         }
 
-        // System Settings
-        function openPricingModal() {
-            document.getElementById('pricing-type').value = 'campaign';
-            document.getElementById('price-1').value = pricing.campaign[1];
-            document.getElementById('price-3').value = pricing.campaign[3];
-            document.getElementById('price-7').value = pricing.campaign[7];
-            document.getElementById('price-15').value = pricing.campaign[15];
-            document.getElementById('price-30').value = pricing.campaign[30];
-            document.getElementById('price-custom').value = pricing.campaign.custom;
-            document.getElementById('price-registration').value = pricing.registration;
-            document.getElementById('price-subscription').value = pricing.subscription;
-            updatePricingFields();
-            document.getElementById('pricing-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('pricing-modal'));
-        }
-        function closePricingModal() {
-            document.getElementById('pricing-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function updatePricingFields() {
-            const type = document.getElementById('pricing-type').value;
-            document.getElementById('campaign-pricing').classList.add('hidden');
-            document.getElementById('registration-pricing').classList.add('hidden');
-            document.getElementById('subscription-pricing').classList.add('hidden');
-            document.getElementById(`${type}-pricing`).classList.remove('hidden');
-        }
-        function savePricing() {
-            const type = document.getElementById('pricing-type').value;
-            if (type === 'campaign') {
-                pricing.campaign = {
-                    1: parseFloat(document.getElementById('price-1').value),
-                    3: parseFloat(document.getElementById('price-3').value),
-                    7: parseFloat(document.getElementById('price-7').value),
-                    15: parseFloat(document.getElementById('price-15').value),
-                    30: parseFloat(document.getElementById('price-30').value),
-                    custom: parseFloat(document.getElementById('price-custom').value)
-                };
-            } else if (type === 'registration') {
-                pricing.registration = parseFloat(document.getElementById('price-registration').value);
-            } else if (type === 'subscription') {
-                pricing.subscription = parseFloat(document.getElementById('price-subscription').value);
-            }
-            logAction(`Updated ${type} pricing`);
-            alert(`${type.charAt(0).toUpperCase() + type.slice(1)} pricing updated`);
-            closePricingModal();
-        }
-        function openPriceRequestsModal() {
-            updatePriceRequests();
-            document.getElementById('price-requests-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('price-requests-modal'));
-        }
-        function closePriceRequestsModal() {
-            document.getElementById('price-requests-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function updatePriceRequests() {
-            const priceRequestsTable = document.getElementById('price-requests-table');
-            priceRequestsTable.innerHTML = '';
-            Object.values(priceRequests).forEach(request => {
-                const pricesText = request.type === 'campaign' ? 
-                    `1 Day: ${request.prices[1]} birr, 3 Days: ${request.prices[3]} birr, 1 Week: ${request.prices[7]} birr, 2 Weeks: ${request.prices[15]} birr, 1 Month: ${request.prices[30]} birr, Custom: ${request.prices.custom} birr` :
-                    request.type === 'registration' ? `Registration: ${request.prices.registration} birr` :
-                    `Subscription: ${request.prices.subscription} birr/month`;
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-2">${request.department}</td>
-                    <td class="p-2">${request.type.charAt(0).toUpperCase() + request.type.slice(1)}</td>
-                    <td class="p-2">${pricesText}</td>
-                    <td class="p-2">${request.status}</td>
-                    <td class="p-2">${request.date}</td>
-                    <td class="p-2">
-                        ${request.status === 'Pending' ? `<button onclick="approvePriceRequest(${request.id})" class="hover:underline">Approve</button> | ` : ''}
-                        ${request.status === 'Pending' ? `<button onclick="rejectPriceRequest(${request.id})" class="hover:underline">Reject</button>` : ''}
-                    </td>
-                `;
-                priceRequestsTable.appendChild(tr);
-            });
-        }
-        function approvePriceRequest(requestId) {
-            const request = priceRequests[requestId];
-            if (request.type === 'campaign') {
-                pricing.campaign = { ...request.prices };
-            } else if (request.type === 'registration') {
-                pricing.registration = request.prices.registration;
-            } else if (request.type === 'subscription') {
-                pricing.subscription = request.prices.subscription;
-            }
-            request.status = 'Approved';
-            logAction(`Approved price request ${requestId} for ${request.type}`);
-            alert('Price request approved');
-            updatePriceRequests();
-        }
-        function rejectPriceRequest(requestId) {
-            priceRequests[requestId].status = 'Rejected';
-            logAction(`Rejected price request ${requestId}`);
-            alert('Price request rejected');
-            updatePriceRequests();
-        }
-        function openAdminModal() {
-            document.getElementById('new-admin-email').value = '';
-            document.getElementById('new-admin-role').value = 'Admin';
-            updateAdmins();
-            document.getElementById('admin-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('admin-modal'));
-        }
-        function closeAdminModal() {
-            document.getElementById('admin-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function addAdmin() {
-            const email = document.getElementById('new-admin-email').value.trim();
-            const role = document.getElementById('new-admin-role').value;
-            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                alert('Please enter a valid email');
-                return;
-            }
-            const newId = Object.keys(admins).length + 1;
-            admins[newId] = { id: newId, email, role };
-            logAction(`Added admin ${email} as ${role}`);
-            alert('Admin added');
-            updateAdmins();
-            document.getElementById('new-admin-email').value = '';
-        }
-          function updateAdmins() {
-            const adminTable = document.getElementById('admin-table');
-            adminTable.innerHTML = '';
-            Object.values(admins).forEach(admin => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="p-2">${admin.email}</td>
-                    <td class="p-2">${admin.role}</td>
-                    <td class="p-2">
-                        ${admin.id !== currentAdmin.id ? `<button onclick="deleteAdmin(${admin.id})" class="hover:underline">Delete</button>` : ''}
-                    </td>
-                `;
-                adminTable.appendChild(tr);
-            });
-        }
-        function deleteAdmin(adminId) {
-            if (confirm('Are you sure you want to delete this admin?')) {
-                logAction(`Deleted admin ${admins[adminId].email}`);
-                delete admins[adminId];
-                alert('Admin deleted');
-                updateAdmins();
-            }
-        }
-
-        // Activity Logs
+        // Logs
         function searchLogs() {
             const searchTerm = document.getElementById('log-search').value.trim().toLowerCase();
             const logTable = document.getElementById('log-table');
@@ -1394,105 +930,70 @@
                 }
             });
         }
-
-        // Logging
         function logAction(action) {
             const newId = Object.keys(logs).length + 1;
             logs[newId] = {
                 id: newId,
                 action,
                 user: currentAdmin.email,
-                date: new Date().toISOString().split('T')[0] + ' ' + new Date().toTimeString().split(' ')[0]
+                date: new Date().toLocaleString()
             };
             searchLogs();
         }
 
-        // Notification Bell
-        function checkNotifications() {
-            const hasNotifications = Object.values(notifications).some(n => n.recipient === currentAdmin.role || n.recipient === 'all');
-            document.getElementById('notification-dot').classList.toggle('hidden', !hasNotifications);
-            document.getElementById('mobile-notification-dot').classList.toggle('hidden', !hasNotifications);
-        }
-        function openNotificationModal() {
-            const notificationContent = document.getElementById('notification-content');
-            const relevantNotifications = Object.values(notifications).filter(n => n.recipient === currentAdmin.role || n.recipient === 'all');
-            if (relevantNotifications.length === 0) {
-                notificationContent.innerHTML = 'You have no notifications.';
-            } else {
-                notificationContent.innerHTML = relevantNotifications.map(n => `
-                    <div class="mb-2">
-                        <p>${n.message}</p>
-                        <p class="text-sm">${n.date}</p>
-                    </div>
-                `).join('');
-            }
-            document.getElementById('notification-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('notification-modal'));
-        }
-        function closeNotificationModal() {
-            document.getElementById('notification-modal').classList.add('hidden');
-            restoreFocus();
-        }
-
-        // Focus Management for Accessibility
-        let focusBeforeModal = null;
-        function trapFocus(modal) {
-            focusBeforeModal = document.activeElement;
-            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-            const firstFocusable = focusableElements[0];
-            const lastFocusable = focusableElements[focusableElements.length - 1];
-            firstFocusable.focus();
-            modal.addEventListener('keydown', (e) => {
-                if (e.key === 'Tab') {
-                    if (e.shiftKey && document.activeElement === firstFocusable) {
-                        e.preventDefault();
-                        lastFocusable.focus();
-                    } else if (!e.shiftKey && document.activeElement === lastFocusable) {
-                        e.preventDefault();
-                        firstFocusable.focus();
-                    }
-                } else if (e.key === 'Escape') {
-                    closeModal(modal.id);
-                }
-            });
-        }
-        function restoreFocus() {
-            if (focusBeforeModal) focusBeforeModal.focus();
-            focusBeforeModal = null;
-        }
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            const closeFunction = {
-                'review-campaign-modal': closeReviewCampaignModal,
-                'edit-campaign-modal': closeEditCampaignModal,
-                'confirm-payment-modal': closeConfirmPaymentModal,
-                'send-notification-modal': closeSendNotificationModal,
-                'pricing-modal': closePricingModal,
-                'price-requests-modal': closePriceRequestsModal,
-                'reports-modal': closeReportsModal,
-                'admin-modal': closeAdminModal,
-                'view-ad-modal': closeViewAdModal,
-                'notification-modal': closeNotificationModal
-            }[modalId];
-            if (closeFunction) closeFunction();
-        }
-
-        // Mobile Menu Toggle
+        // Menu Toggle
         document.getElementById('menu-btn').addEventListener('click', () => {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const isOpen = mobileMenu.classList.contains('open');
-            mobileMenu.classList.toggle('open');
+            const menu = document.getElementById('mobile-menu');
+            const isOpen = menu.classList.contains('open');
+            menu.classList.toggle('open');
             document.getElementById('menu-btn').setAttribute('aria-expanded', !isOpen);
         });
 
-        // Theme Toggle Event Listeners
-        document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
-        document.getElementById('mobile-theme-toggle-btn').addEventListener('click', toggleTheme);
-
-        // Initialize Theme
+        // Theme Initialization
         const savedTheme = localStorage.getItem('theme') || 'light';
         document.documentElement.setAttribute('data-theme', savedTheme);
         updateThemeToggleIcon(savedTheme);
+        document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+        document.getElementById('mobile-theme-toggle-btn').addEventListener('click', toggleTheme);
+
+        // Accessibility
+        let focusableElements = [];
+        let firstFocusableElement = null;
+        let lastFocusableElement = null;
+        let lastFocusedElement = null;
+        function trapFocus(modal) {
+            focusableElements = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+            firstFocusableElement = focusableElements[0];
+            lastFocusableElement = focusableElements[focusableElements.length - 1];
+            lastFocusedElement = document.activeElement;
+            firstFocusableElement.focus();
+            modal.addEventListener('keydown', handleFocusTrap);
+        }
+        function handleFocusTrap(e) {
+            if (e.key === 'Tab') {
+                if (e.shiftKey) {
+                    if (document.activeElement === firstFocusableElement) {
+                        e.preventDefault();
+                        lastFocusableElement.focus();
+                    }
+                } else {
+                    if (document.activeElement === lastFocusableElement) {
+                        e.preventDefault();
+                        firstFocusableElement.focus();
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                closeAllModals();
+            }
+        }
+        function restoreFocus() {
+            if (lastFocusedElement) lastFocusedElement.focus();
+            document.querySelectorAll('.modal').forEach(modal => modal.removeEventListener('keydown', handleFocusTrap));
+        }
+        function closeAllModals() {
+            document.querySelectorAll('.modal').forEach(modal => modal.classList.add('hidden'));
+            restoreFocus();
+        }
 
         // Initialize
         initDashboard();

@@ -4,9 +4,11 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Astegni</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-latest/xlsx.full.min.js"></script>
-    <link href="css/rootTheme.css" rel="stylesheet"/>
+    <link href="./css/output.css" rel="stylesheet">
+    <link href="css/root_theme.css" rel="stylesheet"/>
+    <script defer src="./js/xlsx.full.min.js"></script>
+    <script src="./js/app.js" defer></script>
+    <script defer src="./js/chart.min.js"></script>
     <style>
        body {
             background-color: var(--background);
@@ -403,28 +405,30 @@
                 <a id="find-tutors-link" class="nav-link px-2 py-1 rounded hidden" href="find-tutors.html">Find Tutors</a>
                 <a id="reels-link" class="nav-link px-2 py-1 rounded hidden" href="reels.html">Reels</a>
 
-                <button id="login-register-btn" class="nav-link px-2 py-1 rounded" onclick="openLoginRegisterModal()">Login/Register</button>
-                <button id='advertise-btn' class="nav-link px-2 py-1 rounded" onclick="openAdvertiseModal()">Advertise</button>
-<div id="profile-container" class="profile-container hidden relative">
-       <button class="flex items-center gap-2 focus:outline-none" onclick="toggleProfileDropdown()">
-           <img id="profile-pic" class="profile-pic" src="https://picsum.photos/32" alt="Profile Picture">
-           <span id="profile-name" class="nav-link"></span>
-           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-           </svg>
-       </button>
-       <div id="profile-dropdown" class="hidden absolute top-10 right-0 bg-[var(--background)] border border-[var(--text)] rounded-lg shadow-lg p-2 w-48 z-50">
-           <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="toggleVerification()">
-               Toggle Verify
-               <span id="verify-icon">
-                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                   </svg>
-               </span>
-           </button>
-       </div>
-   </div>        
-   
+               <div class="flex items-center space-x-4">
+            <button id="theme-toggle" onclick="toggleTheme()" class="text-gray-500 dark:text-gray-300"></button>
+            <button id="notification-bell" onclick="toggleNotificationDropdown()" class="text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                </svg>
+            </button>
+            <div id="notification-dropdown" class="absolute top-12 right-4 bg-white dark:bg-gray-700 shadow-lg rounded-lg w-64 hidden">
+                <div id="notification-dropdown-content"></div>
+            </div>
+            <button id="login-register-btn" onclick="openLoginRegisterModal()" class="text-blue-500">Login/Register</button>
+            <div id="profile-container" class="hidden flex items-center space-x-2">
+                <img id="profile-pic" src="https://picsum.photos/32" alt="Profile" class="w-8 h-8 rounded-full">
+                <span id="profile-name">User</span>
+                <span id="verify-icon"></span>
+                <button onclick="toggleProfileDropdown()" class="text-gray-500">▼</button>
+                <div id="profile-dropdown" class="absolute top-12 right-4 bg-white dark:bg-gray-700 shadow-lg rounded-lg hidden">
+                    <button onclick="toggleVerification()" class="block w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-600">Toggle Verification</button>
+                    <button onclick="logout()" class="block w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-600">Log Out</button>
+                </div>
+            </div>
+            
+   <button id='advertise-btn' class="nav-link px-2 py-1 rounded" onclick="openAdvertiseModal()">Advertise</button>
+</div>
                    <button id="notification-bell" class="relative focus:outline-none hidden" onclick="openNotificationModal()" aria-label="View notifications">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
@@ -717,6 +721,7 @@
                 <button onclick="showLogin()" class="cta-button px-4 py-2 rounded-lg">Login</button>
                 <button onclick="showRegister()" class="cta-button px-4 py-2 rounded-lg">Register</button>
             </div>
+            
             <div id="login-form">
                 <div class="form-group">
                     <label>Login Method</label>
@@ -785,6 +790,7 @@
                     <button class="text-[--text] hover:text-[--nav-link-hover] w-full text-center" onclick="closeModal('login-register-modal')">Cancel</button>
                 </div>
             </div>
+            
             <div id="register-form" class="hidden">
                 <div class="form-group">
                     <label>Register As</label>
@@ -1066,10 +1072,32 @@
     </div>
 </footer>
 <script>
-        let user = null;
-        let token = null; // Store JWT (for later)
+        let user = null;//Global user object
+        let token = null;//store Jwt
+// Load user and token from localStorage on page load
+function initializeSession() {
+    const storedToken = localStorage.getItem('token');
+    const storedUser = localStorage.getItem('user');
+    if (storedToken && storedUser) {
+        try {
+            token = storedToken;
+            user = JSON.parse(storedUser);
+            updateNavbar();
+            updateVerifyIcon();
+        } catch (error) {
+            console.error('Failed to restore session:', error);
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+        }
+    } else {
+        updateNavbar(); // Set navbar to logged-out state
+    }
+}
 
-        function toggleTheme() {
+// Call on page load
+document.addEventListener('DOMContentLoaded', initializeSession);
+        
+function toggleTheme() {
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-theme');
             const newTheme = currentTheme === 'light' ? 'dark' : 'light';
@@ -1242,22 +1270,24 @@
             alert(`Logging in with ${platform}`);
         }
 
-        
-        // Updated functions with fetch
+
+// Updated login function with error display
 async function login() {
     const loginType = document.querySelector('input[name="login-type"]:checked').value;
     let identifier;
     if (loginType === 'email') {
-        identifier = document.getElementById('login-email').value;
+        identifier = document.getElementById('login-email-input').value;
     } else if (loginType === 'phone') {
-        identifier = document.getElementById('login-phone').value;
+        identifier = document.getElementById('login-phone-input').value;
     } else if (loginType === 'social') {
         identifier = document.getElementById('login-social-address').value;
     }
     const password = document.getElementById('login-password').value;
+    const errorDiv = document.getElementById('login-error');
 
     if (!identifier || !password) {
-        alert('Please fill in all fields.');
+        errorDiv.textContent = 'Please fill in all fields.';
+        errorDiv.classList.remove('hidden');
         return;
     }
 
@@ -1272,7 +1302,15 @@ async function login() {
             })
         });
         const result = await response.json();
-        if (!response.ok) throw new Error(result.detail);
+        if (!response.ok) {
+            if (result.detail === "This account isn't registered") {
+                errorDiv.textContent = result.detail;
+                errorDiv.classList.remove('hidden');
+            } else {
+                alert(`Login failed: ${result.detail}`);
+            }
+            return;
+        }
         user = {
             identifier: result.identifier,
             isVerified: result.is_verified,
@@ -1282,15 +1320,19 @@ async function login() {
         };
         token = result.access_token;
         localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        errorDiv.classList.add('hidden');
         updateNavbar();
         updateVerifyIcon();
         closeModal('login-register-modal');
-        alert('Login successful! Please verify your account.');
+        alert('Login successful!');
     } catch (error) {
-        alert(`Login failed: ${error.message}`);
+        errorDiv.textContent = 'An error occurred. Please try again.';
+        errorDiv.classList.remove('hidden');
     }
 }
 
+// Registration and advertisement functions (unchanged)
 async function submitRegistration() {
     const registerAs = document.getElementById('register-as').value;
     const loginType = document.querySelector('input[name="register-type"]:checked').value;
@@ -1305,8 +1347,8 @@ async function submitRegistration() {
     const password = document.getElementById('register-password').value;
     const repeatPassword = document.getElementById('register-repeat-password').value;
     const gender = document.getElementById('register-gender')?.value || null;
-    const guardianType = document.getElementById('guardian-type')?.value || null;
-    const instituteType = document.getElementById('institute-type')?.value || null;
+    const guardianType = document.getElementById('register-guardian-type')?.value || null;
+    const instituteType = document.getElementById('register-institute-type')?.value || null;
 
     if (!identifier || !password || password !== repeatPassword) {
         alert('Please fill in all fields correctly.');
@@ -1333,12 +1375,16 @@ async function submitRegistration() {
             identifier: result.identifier,
             isVerified: result.is_verified,
             name: result.name,
-            profilePic: result.profile_pic
+            profilePic: result.profile_pic,
+            role: registerAs
         };
+        token = null;
+        localStorage.removeItem('token');
+        localStorage.setItem('user', JSON.stringify(user));
         updateNavbar();
         updateVerifyIcon();
         closeModal('login-register-modal');
-        alert('Registration successful! Please verify your account.');
+        alert('Registration successful! Please log in.');
     } catch (error) {
         alert(`Registration failed: ${error.message}`);
     }
@@ -1365,12 +1411,20 @@ async function submitAdvertisement() {
         return;
     }
 
+    const storedToken = localStorage.getItem('token');
+    if (!storedToken) {
+        alert('Please log in first.');
+        closeModal('advertise-modal');
+        openLoginRegisterModal();
+        return;
+    }
+
     try {
         const response = await fetch('http://127.0.0.1:8000/advertise', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token || localStorage.getItem('token')}`
+                'Authorization': `Bearer ${storedToken}`
             },
             body: JSON.stringify({
                 identifier,
@@ -1390,16 +1444,18 @@ async function submitAdvertisement() {
             profilePic: result.profile_pic,
             role: `advertiser_${advertiseAs}`
         };
+        localStorage.setItem('user', JSON.stringify(user));
         updateNavbar();
         updateVerifyIcon();
         closeModal('advertise-modal');
-        alert('Advertisement account created! Please verify your account.');
+        alert('Advertisement account created!');
     } catch (error) {
         alert(`Advertisement failed: ${error.message}`);
     }
 }
-        
-    function toggleProfileDropdown() {
+
+
+        function toggleProfileDropdown() {
        console.log('Toggling profile dropdown'); // Debug log
        const dropdown = document.getElementById('profile-dropdown');
        dropdown.classList.toggle('hidden');
@@ -1513,6 +1569,7 @@ async function submitAdvertisement() {
         mobileNotificationBell.classList.add('hidden');
     }
 }
+
    // Close dropdown when clicking outside
    document.addEventListener('click', (e) => {
        const profileContainer = document.getElementById('profile-container');

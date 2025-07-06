@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutor Confirmation Admin Panel</title>
+<link href="./css/output.css" rel="stylesheet">
+    <link href="css/root_theme.css" rel="stylesheet"/>
+    <script defer src="./js/xlsx.full.min.js"></script>
+    <script src="./js/app.js" defer></script>
+    <script defer src="./js/chart.min.js"></script>
+  <script defer src="./js/admin.js"></script>
+  <script defer src="./js/tutor-confirmation.js"></script>
+    
+  <style>
+    .tutor-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      align-items: center;
+      background: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .tutor-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .tutor-info img {
+      width: 6rem;
+      height: 6rem;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    .tutor-details h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .tutor-details p, .school-info p, .status-info p {
+      color: #4b5563;
+      margin-bottom: 0.25rem;
+    }
+    .school-info, .status-info {
+      padding: 0 1rem;
+    }
+    .school-info h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    .tutor-actions {
+      display: flex;
+      gap: 1rem;
+    }
+    .confirm-btn:disabled,
+    .deny-btn:disabled {
+      background-color: #d1d5db;
+      cursor: not-allowed;
+    }
+    .filter-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .filter-section label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">Tutor Confirmation Admin Panel</h1>
+    <div class="mb-6">
+      <input
+        type="text"
+        id="searchBar"
+        placeholder="Search by tutor name, school, or tutor phone..."
+        class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+    <div class="filter-section">
+      <label>
+        <input type="checkbox" id="confirmedFilter"> Sort by Confirmed First
+      </label>
+      <label>
+        <input type="checkbox" id="sortSchoolAsc" checked> School (Asc)
+      </label>
+      <label>
+        <input type="checkbox" id="sortRatingAsc"> School Rating (Asc)
+      </label>
+    </div>
+    <div id="tutorList">
+      <!-- Tutor 1 -->
+      <div class="tutor-card" data-name="John Doe" data-school="Central Prep" data-status="Pending" data-rating="4.2" data-phone="+1-555-123-4567">
+        <div class="tutor-info">
+          <img src="https://via.placeholder.com/150" alt="John Doe">
+          <div class="tutor-details">
+            <h3>Tutor: John Doe</h3>
+            <p>Phone: +1-555-123-4567</p>
+            <p>Email: john.doe@example.com</p>
+          </div>
+        </div>
+        <div class="school-info">
+          <h3>School: Central Prep</h3>
+          <p>School Rating: 4.2</p>
+          <p>School Phone: +1-555-000-1111</p>
+        </div>
+        <div class="status-info">
+          <p>Status: Pending</p>
+          <div class="tutor-actions">
+            <button class="confirm-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Confirm</button>
+            <button class="deny-btn px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Deny</button>
+          </div>
+        </div>
+      </div>
+      <!-- Tutor 2 -->
+      <div class="tutor-card" data-name="Bob Wilson" data-school="Central Prep" data-status="Pending" data-rating="4.2" data-phone="+1-555-321-9876">
+        <div class="tutor-info">
+          <img src="https://via.placeholder.com/150" alt="Bob Wilson">
+          <div class="tutor-details">
+            <h3>Tutor: Bob Wilson</h3>
+            <p>Phone: +1-555-321-9876</p>
+            <p>Email: bob.wilson@example.com</p>
+          </div>
+        </div>
+        <div class="school-info">
+          <h3>School: Central Prep</h3>
+          <p>School Rating: 4.2</p>
+          <p>School Phone: +1-555-000-1111</p>
+        </div>
+        <div class="status-info">
+          <p>Status: Pending</p>
+          <div class="tutor-actions">
+            <button class="confirm-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Confirm</button>
+            <button class="deny-btn px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Deny</button>
+          </div>
+        </div>
+      </div>
+      <!-- Tutor 3 -->
+      <div class="tutor-card" data-name="Jane Smith" data-school="Riverside Academy" data-status="Confirmed" data-rating="3.8" data-phone="+1-555-987-6543">
+        <div class="tutor-info">
+          <img src="https://via.placeholder.com/150" alt="Jane Smith">
+          <div class="tutor-details">
+            <h3>Tutor: Jane Smith</h3>
+            <p>Phone: +1-555-987-6543</p>
+            <p>Email: jane.smith@example.com</p>
+          </div>
+        </div>
+        <div class="school-info">
+          <h3>School: Riverside Academy</h3>
+          <p>School Rating: 3.8</p>
+          <p>School Phone: +1-555-000-2222</p>
+        </div>
+        <div class="status-info">
+          <p>Status: Confirmed</p>
+          <div class="tutor-actions">
+            <button class="confirm-btn px-4 py-2 bg-gray-400 text-white rounded-md" disabled>Confirm</button>
+            <button class="deny-btn px-4 py-2 bg-gray-400 text-white rounded-md" disabled>Deny</button>
+          </div>
+        </div>
+      </div>
+      <!-- Tutor 4 -->
+      <div class="tutor-card" data-name="Alice Johnson" data-school="Springfield High" data-status="Pending" data-rating="4.5" data-phone="+1-555-456-7890">
+        <div class="tutor-info">
+          <img src="https://via.placeholder.com/150" alt="Alice Johnson">
+          <div class="tutor-details">
+            <h3>Tutor: Alice Johnson</h3>
+            <p>Phone: +1-555-456-7890</p>
+            <p>Email: alice.johnson@example.com</p>
+          </div>
+        </div>
+        <div class="school-info">
+          <h3>School: Springfield High</h3>
+          <p>School Rating: 4.5</p>
+          <p>School Phone: +1-555-000-3333</p>
+        </div>
+        <div class="status-info">
+          <p>Status: Pending</p>
+          <div class="tutor-actions">
+            <button class="confirm-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Confirm</button>
+            <button class="deny-btn px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Deny</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    // Sorting, filtering, and search functionality
+    const searchBar = document.getElementById('searchBar');
+    const confirmedFilter = document.getElementById('confirmedFilter');
+    const sortSchoolAsc = document.getElementById('sortSchoolAsc');
+    const sortRatingAsc = document.getElementById('sortRatingAsc');
+    const tutorList = document.getElementById('tutorList');
+    const tutorCards = Array.from(document.querySelectorAll('.tutor-card'));
+
+    function applyFiltersAndSort() {
+      const searchTerm = searchBar.value.toLowerCase();
+      const sortByConfirmed = confirmedFilter.checked;
+      const schoolAsc = sortSchoolAsc.checked;
+      const ratingAsc = sortRatingAsc.checked;
+
+      // Filter tutors by search term (name, school, or tutor phone)
+      let filteredTutors = tutorCards.filter(card => {
+        const name = card.getAttribute('data-name').toLowerCase();
+        const school = card.getAttribute('data-school').toLowerCase();
+        const phone = card.getAttribute('data-phone').toLowerCase();
+        return name.includes(searchTerm) || school.includes(searchTerm) || phone.includes(searchTerm);
+      });
+
+      // Sort tutors
+      filteredTutors.sort((a, b) => {
+        const statusA = a.getAttribute('data-status');
+        const statusB = b.getAttribute('data-status');
+        // 1. Primary sort: confirmation status
+        if (statusA !== statusB) {
+          return sortByConfirmed
+            ? statusA === 'Confirmed' ? -1 : 1
+            : statusA === 'Pending' ? -1 : 1;
+        }
+        // 2. Secondary sort: school name
+        const schoolA = a.getAttribute('data-school');
+        const schoolB = b.getAttribute('data-school');
+        if (schoolAsc !== undefined && schoolA !== schoolB) {
+          return schoolAsc ? schoolA.localeCompare(schoolB) : schoolB.localeCompare(schoolA);
+        }
+        // 3. Tertiary sort: school rating
+        if (ratingAsc !== undefined) {
+          const ratingA = parseFloat(a.getAttribute('data-rating'));
+          const ratingB = parseFloat(b.getAttribute('data-rating'));
+          if (ratingA !== ratingB) {
+            return ratingAsc ? ratingA - ratingB : ratingB - rating1B;
+          }
+        }
+        return 0; // Stable sort if all criteria are equal
+      });
+
+      // Clear and re-append sorted tutors
+      tutorList.innerHTML = '';
+      filteredTutors.forEach(card => {
+        tutorList.appendChild(card);
+        card.style.display = 'grid';
+      });
+      // Hide non-matching tutors
+      tutorCards.forEach(card => {
+        if (!filteredTutors.includes(card)) {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    searchBar.addEventListener('input', applyFiltersAndSort);
+    confirmedFilter.addEventListener('change', applyFiltersAndSort);
+    sortSchoolAsc.addEventListener('change', applyFiltersAndSort);
+    sortRatingAsc.addEventListener('change', applyFiltersAndSort);
+
+    // Confirm and Deny button functionality
+    document.querySelectorAll('.confirm-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const card = e.target.closest('.tutor-card');
+        card.querySelector('.status-info p').textContent = 'Status: Confirmed';
+        card.setAttribute('data-status', 'Confirmed');
+        e.target.disabled = true;
+        e.target.classList.add('bg-gray-400');
+        e.target.classList.remove('bg-green-500', 'hover:bg-green-600');
+        card.querySelector('.deny-btn').disabled = true;
+        card.querySelector('.deny-btn').classList.add('bg-gray-400');
+        card.querySelector('.deny-btn').classList.remove('bg-red-500', 'hover:bg-red-600');
+        console.log(`Confirmed tutor: ${card.querySelector('.tutor-details h3').textContent}`);
+        applyFiltersAndSort(); // Re-apply filters and sort after status change
+      });
+    });
+
+    document.querySelectorAll('.deny-btn').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const card = e.target.closest('.tutor-card');
+        card.remove();
+        console.log(`Denied tutor: ${card.querySelector('.tutor-details h3').textContent}`);
+        applyFiltersAndSort(); // Re-apply filters and sort after removal
+      });
+    });
+
+    // Initial sort and filter
+    applyFiltersAndSort();
+  </script>
+</body>
+</html>
