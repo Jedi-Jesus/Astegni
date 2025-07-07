@@ -6,85 +6,11 @@
   <title>ASTEGNI - Tutor Profile</title>
   <link href="../css/output.css" rel="stylesheet">
   <link href="../css/root_theme.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/tutor-profile.css">
   <script defer src="../js/xlsx.full.min.js"></script>
   <script src="../js/app.js" defer></script>
   <script defer src="../js/chart.min.js"></script>
-  <script defer src="../js/tutor-profile.js"></script>
-  <style>
-    body {
-      background-color: var(--background);
-      color: var(--text);
-      font-family: sans-serif;
-    }
-    nav { background-color: var(--highlight); }
-    nav a { color: var(--nav-link); }
-    nav a:hover { color: var(--nav-link-hover); }
-    button.cta-button { background-color: var(--button-bg); color: var(--button-text); }
-    button.cta-button:hover { background-color: var(--button-hover); }
-    footer { background-color: var(--footer-bg); color: var(--footer-text); }
-    .modal-content { background-color: var(--modal-bg); color: var(--modal-text); }
-    .progress-circle:hover .tooltip { display: block; }
-    .tooltip {
-      display: none;
-      position: absolute;
-      z-index: 10;
-      background-color: var(--modal-bg);
-      color: var(--modal-text);
-      padding: 0.5rem;
-      border-radius: 0.25rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-    canvas { border: 1px solid #e5e7eb; border-radius: 8px; }
-    video.preview { max-height: 100px; }
-    .ad-placeholder {
-      background-color: var(--background);
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #888;
-      font-weight: bold;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-    #cover-photo {
-      height: 150px;
-      background-size: cover;
-      background-position: center;
-      position: relative;
-      border-radius: 8px;
-    }
-    #profile-picture {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      position: absolute;
-      bottom: -40px;
-      left: 20px;
-      border: 4px solid var(--background);
-      object-fit: cover;
-    }
-    #school-suggestions {
-      position: absolute;
-      z-index: 20;
-      background-color: var(--modal-bg);
-      border: 1px solid #e5e7eb;
-      border-radius: 4px;
-      max-height: 200px;
-      overflow-y: auto;
-      width: 100%;
-      display: none;
-    }
-    #school-suggestions div {
-      padding: 8px;
-      cursor: pointer;
-    }
-    #school-suggestions div:hover {
-      background-color: var(--button-hover);
-      color: var(--button-text);
-    }
-  </style>
+
 </head>
 <body>
   <!-- Navigation (unchanged) -->
@@ -119,12 +45,17 @@
     </div>
   </nav>
 
-  <!-- Tutor Profile Section (unchanged) -->
+  <!-- Tutor Profile Section -->
   <section class="py-16">
     <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
       <div class="lg:w-3/4">
-        <div id="cover-photo" class="mb-8" style="background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=150&q=80');">
+        <div id="cover-photo" class="mb-8 relative" style="background-image: url('https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=150&q=80');">
           <img src="pictures/profile_picture.png" id="profile-picture" alt="Tutor Profile Picture">
+          <button onclick="openEditCoverPictureModal()" class="edit-icon absolute top-2 right-2">
+            <svg class="w-5 h-5" fill="none" stroke="var(--text)" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+            </svg>
+          </button>
         </div>
         <div class="p-6 bg-[var(--modal-bg)] rounded-lg shadow-lg">
           <div class="flex flex-col md:flex-row gap-4 mb-4">
@@ -144,17 +75,19 @@
                   <div class="relative w-16 h-16 progress-circle">
                     <svg class="w-full h-full" viewBox="0 0 100 100">
                       <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="8" fill="none"/>
-                      < Ascircle id="rating-arc" cx="50" cy="50" r="45" stroke="#EF4444" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283"/>
+                      <circle id="rating-arc" cx="50" cy="50" r="45" stroke="#EF4444" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]" id="rating-label">N/A</div>
                   </div>
                   <span id="tutor-rating-stars" class="text-yellow-500 mt-1">No rating</span>
+                    <p class="text-[var(--text)]"><span id="follower-number">0</span> Followers</p>
+                    <p id="tutor-gender" class="text-[var(--text)]">Male</p>
                 </div>
                 <!-- Tutor Details -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 w-full md:w-3/4">
                   <div class="md:col-span-1">
-                    <p class="text-[var(--text)]"><span id="follower-number">0</span> Followers</p>
-                    <p id="tutor-gender" class="text-[var(--text)]">Male</p>
+                    <p id="tutor-phone" class="text-[var(--text)]">Phone: +251912345678</p>
+                    <p id="tutor-email" class="text-[var(--text)]">Email: <span id="email">amanuel@example.com</span></p>
                   </div>
                   <div class="md:col-span-1">
                     <p id="tutor-address" class="text-[var(--text)]">Address: Not set</p>
@@ -166,12 +99,70 @@
                   </div>
                 </div>
               </div>
-              <h4 class="text-2xl font-bold mb-4 text-[var(--heading)]">About me</h4>
-              <p id="tutor-bio" class="text-[var(--text)]">Hi, I'm Amanuel, a passionate tutor with 5 years of experience in teaching Math and Physics. I focus on making complex concepts simple and engaging for students.</p>
-              <h4 class="text-2xl font-bold mb-4 text-[var(--heading)]">Certifications</h4>
-              <p id="tutor-certifications" class="text-[var(--text)]">BSc in Physics, Addis Ababa University, 2018<br>Teaching Certificate, Ethiopian Ministry of Education, 2019</p>
-              <div class="mb-4">
-                <h3 class="text-xl font-semibold mb-2" style="color: var(--heading);">Connect with me through:</h3>
+                        
+          <div class="flex flex-wrap gap-2 mb-6">
+            <button onclick="openEditProfileModal()" class="cta-button px-4 py-2 rounded-lg flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+              </svg>
+              Edit Profile
+            </button>
+            <button onclick="openChatModal()" class="cta-button px-4 py-2 rounded-lg">Chat</button>
+            <button onclick="openStudentsModal()" class="cta-button px-4 py-2 rounded-lg">My Students</button>
+            <button onclick="openCommentModal()" class="cta-button px-4 py-2 rounded-lg">View Comments</button>
+            <button onclick="openReferralModal()" class="cta-button px-4 py-2 rounded-lg">Share Referral</button>
+          </div>
+
+              <div class="relative mb-4">
+                <h4 class="text-2xl font-bold text-[var(--heading)] inline-flex items-center">
+                  About me
+                  <button onclick="toggleEditField('about-me')" class="edit-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="var(--text)" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                  </button>
+                </h4>
+                <textarea id="edit-about-me" class="edit-field-hidden w-full p-2 border rounded-lg mt-2" rows="4"></textarea>
+                <div class="edit-field-hidden flex gap-2 mt-2" id="about-me-buttons">
+                  <button onclick="saveAboutMe()" class="cta-button px-4 py-2 rounded-lg">Save</button>
+                  <button onclick="toggleEditField('about-me')" class="cta-button px-4 py-2 rounded-lg">Cancel</button>
+                </div>
+                <p id="tutor-bio" class="text-[var(--text)]">Hi, I'm Amanuel, a passionate tutor with 5 years of experience in teaching Math and Physics. I focus on making complex concepts simple and engaging for students.</p>
+              </div>
+              <div class="relative mb-4">
+                <h4 class="text-2xl font-bold text-[var(--heading)] inline-flex items-center">
+                  Certifications
+                  <button onclick="toggleEditField('certifications')" class="edit-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="var(--text)" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                  </button>
+                </h4>
+                <textarea id="edit-certifications" class="edit-field-hidden w-full p-2 border rounded-lg mt-2" rows="4"></textarea>
+                <div class="edit-field-hidden flex gap-2 mt-2" id="certifications-buttons">
+                  <button onclick="saveCertifications()" class="cta-button px-4 py-2 rounded-lg">Save</button>
+                  <button onclick="toggleEditField('certifications')" class="cta-button px-4 py-2 rounded-lg">Cancel</button>
+                </div>
+                <p id="tutor-certifications" class="text-[var(--text)]">BSc in Physics, Addis Ababa University, 2018<br>Teaching Certificate, Ethiopian Ministry of Education, 2019</p>
+              </div>
+              <div class="relative mb-4">
+                <h3 class="text-xl font-semibold text-[var(--heading)] inline-flex items-center">
+                  Connect with me through:
+                  <button onclick="toggleEditField('socials')" class="edit-icon">
+                    <svg class="w-5 h-5" fill="none" stroke="var(--text)" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                  </button>
+                </h3>
+                <div id="edit-socials" class="edit-field-hidden mt-2">
+                  <input type="text" id="edit-social-facebook" class="w-full p-2 border rounded-lg mb-2" placeholder="Facebook URL">
+                  <input type="text" id="edit-social-twitter" class="w-full p-2 border rounded-lg mb-2" placeholder="Twitter URL">
+                  <input type="text" id="edit-social-youtube" class="w-full p-2 border rounded-lg mb-2" placeholder="YouTube URL">
+                  <div class="flex gap-2 mt-2">
+                    <button onclick="saveSocials()" class="cta-button px-4 py-2 rounded-lg">Save</button>
+                    <button onclick="toggleEditField('socials')" class="cta-button px-4 py-2 rounded-lg">Cancel</button>
+                  </div>
+                </div>
                 <div id="view-profile-socials" class="flex space-x-4">
                   <a id="social-facebook" href="#" target="_blank" class="hover:text-[var(--nav-link-hover)]">
                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.5 7.09h-2.07c-.28 0-.5.22-.5.5v1.41h2.57l-.34 2.59h-2.23v6.41h-2.59v-6.41H9.5v-2.59h1.84V9.59c0-1.81 1.1-2.8 2.71-2.8h1.95v2.3z"/></svg>
@@ -186,23 +177,14 @@
               </div>
             </div>
           </div>
-          <div class="flex flex-wrap gap-2 mb-6">
-            <button onclick="openEditProfileModal()" class="cta-button px-4 py-2 rounded-lg flex items-center">
-              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-              </svg>
-              Edit Profile
-            </button>
-            <button onclick="openChatModal()" class="cta-button px-4 py-2 rounded-lg">Chat</button>
-            <button onclick="openStudentsModal()" class="cta-button px-4 py-2 rounded-lg">My Students</button>
-            <button onclick="openCommentModal()" class="cta-button px-4 py-2 rounded-lg">View Comments</button>
-            <button onclick="openReferralModal()" class="cta-button px-4 py-2 rounded-lg">Share Referral</button>
-          </div>
+
+          
           <div id="sponsorship-placeholder-2" class="rounded-lg shadow-lg p-4 text-center bg-[var(--highlight)]">
             <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Sponsor Our Platform</h3>
             <img src="https://via.placeholder.com/728x90" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder">
             <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a> Sunspear!</p>
           </div>
+          
           <div class="mt-8">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-xl font-semibold text-[var(--heading)]">Introduction Video</h3>
@@ -218,49 +200,50 @@
               <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
               <button onclick="openVideoCommentModal('intro')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
               <button onclick="openShareModal('intro')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
-  </div>
-  <div id="intro-comments" class="text-[var(--text)] mt-2">
-    <p>No comments yet.</p>
-  </div>
-  <button onclick="openVideoDescModal('intro')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
-  <h4 class="text-lg font-semibold mt-8 mb-4 text-[var(--heading)]">Short Clips</h4>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div>
-      <video controls class="w-full rounded-lg" id="clip-1">
-        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <p id="clip-1-desc" class="text-[var(--text)] mt-2">Quick Math tip.</p>
-      <div class="flex gap-2 mt-2">
-        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
-        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
-        <button onclick="openVideoCommentModal('clip1')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
-        <button onclick="openShareModal('clip1')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
-      </div>
-      <div id="clip1-comments" class="text-[var(--text)] mt-2">
-        <p>No comments yet.</p>
-      </div>
-      <button onclick="openVideoDescModal('clip1')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
-    </div>
-    <div>
-      <video controls class="w-full rounded-lg" id="clip-2">
-        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <p id="clip-2-desc" class="text-[var(--text)] mt-2">Physics concept explained.</p>
-      <div class="flex gap-2 mt-2">
-        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
-        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
-        <button onclick="openVideoCommentModal('clip2')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
-        <button onclick="openShareModal('clip2')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
-      </div>
-      <div id="clip2-comments" class="text-[var(--text)] mt-2">
-        <p>No comments yet.</p>
-      </div>
-      <button onclick="openVideoDescModal('clip2')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
-    </div>
-  </div>
-</div>
+            </div>
+            <div id="intro-comments" class="text-[var(--text)] mt-2">
+              <p>No comments yet.</p>
+            </div>
+            <button onclick="openVideoDescModal('intro')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
+            <h4 class="text-lg font-semibold mt-8 mb-4 text-[var(--heading)]">Short Clips</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <video controls class="w-full rounded-lg" id="clip-1">
+                  <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+                <p id="clip-1-desc" class="text-[var(--text)] mt-2">Quick Math tip.</p>
+                <div class="flex gap-2 mt-2">
+                  <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+                  <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+                  <button onclick="openVideoCommentModal('clip1')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+                  <button onclick="openShareModal('clip1')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
+                </div>
+                <div id="clip1-comments" class="text-[var(--text)] mt-2">
+                  <p>No comments yet.</p>
+                </div>
+                <button onclick="openVideoDescModal('clip1')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
+              </div>
+              <div>
+                <video controls class="w-full rounded-lg" id="clip-2">
+                  <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+                <p id="clip-2-desc" class="text-[var(--text)] mt-2">Physics concept explained.</p>
+                <div class="flex gap-2 mt-2">
+                  <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+                  <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+                  <button onclick="openVideoCommentModal('clip2')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+                  <button onclick="openShareModal('clip2')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
+                </div>
+                <div id="clip2-comments" class="text-[var(--text)] mt-2">
+                  <p>No comments yet.</p>
+                </div>
+                <button onclick="openVideoDescModal('clip2')" class="cta-button px-4 py-2 rounded-lg mt-4">Video Description</button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
       <aside class="lg:w-1/4 hidden lg:block sticky top-20 self-start">
         <div class="ad-placeholder" style="width: 300px; height: 250px;">Advertisement (300x250)</div>
@@ -271,7 +254,7 @@
   </section>
 
   <!-- Modals -->
-  <!-- Edit Profile Modal (unchanged) -->
+  <!-- Edit Profile Modal (Updated: Removed About Me, Certifications, Socials) -->
   <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Profile</h3>
@@ -315,16 +298,6 @@
       <label class="block mb-2 text-[var(--text)]">Payment Account Number</label>
       <input type="text" id="payment-account" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter account number">
       <p id="payment-account-error" class="text-red-500 text-sm mb-2 hidden">Invalid account number.</p>
-      <label class="block mb-2 text-[var(--text)]">Profile Picture</label>
-      <input type="file" id="profile-picture-input" accept="image/*" class="w-full p-2 border rounded-lg mb-2">
-      <p id="profile-picture-error" class="text-red-500 text-sm mb-2 hidden">Invalid image file (max 5MB, JPEG/PNG/GIF).</p>
-      <canvas id="profile-picture-preview" width="128" height="128" class="mb-4"></canvas>
-      <label class="block mb-2 text-[var(--text)]">Cover Picture</label>
-      <input type="file" id="cover-picture-input" accept="image/*" class="w-full p-2 border rounded-lg mb-2">
-      <p id="cover-picture-error" class="text-red-500 text-sm mb-2 hidden">Invalid image file (max 5MB, JPEG/PNG/GIF).</p>
-      <canvas id="cover-picture-preview" width="300" height="100" class="mb-4"></canvas>
-      <label class="block mb-2 text-[var(--text)]">About Me</label>
-      <textarea id="profile-about" class="w-full p-2 border rounded-lg mb-4" rows="4">Hi, I'm Amanuel, a passionate tutor with 5 years of experience in teaching Math and Physics. I focus on making complex concepts simple and engaging for students.</textarea>
       <label class="block mb-2 text-[var(--text)]">Courses (comma-separated, e.g., Algebra:hourly:350)</label>
       <div class="mb-4">
         <select id="fee-type" class="w-full p-2 border rounded-lg mb-2">
@@ -333,22 +306,43 @@
         </select>
         <input type="text" id="profile-courses" class="w-full p-2 border rounded-lg" value="Algebra:hourly:350,Geometry:hourly:350,Physics 101:hourly:400">
       </div>
-      <label class="block mb-2 text-[var(--text)]">Certifications (one per line)</label>
-      <textarea id="profile-certifications" class="w-full p-2 border rounded-lg mb-4" rows="4">BSc in Physics, Addis Ababa University, 2018
-Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
       <label class="block mb-2 text-[var(--text)]">Certification Documents</label>
       <input type="file" id="certification-documents-input" accept="image/*,application/pdf" multiple class="w-full p-2 border rounded-lg mb-2">
       <p id="certification-documents-error" class="text-red-500 text-sm mb-2 hidden">Invalid file(s) (max 5MB, JPEG/PNG/GIF/PDF).</p>
       <div id="certification-documents-preview" class="grid grid-cols-2 gap-4 mb-4"></div>
-      <label class="block mb-2 text-[var(--text)]">Social Media Links</label>
-      <input type="text" id="social-facebook" class="w-full p-2 border rounded-lg mb-4" placeholder="Facebook URL">
-      <input type="text" id="social-twitter" class="w-full p-2 border rounded-lg mb-4" placeholder="Twitter URL">
-      <input type="text" id="social-youtube" class="w-full p-2 border rounded-lg mb-4" placeholder="YouTube URL">
       <div class="flex gap-2 mb-4">
         <button onclick="submitProfileEdit()" class="cta-button px-4 py-2 rounded-lg flex-1">Save Changes</button>
         <button onclick="sendForVerification()" class="cta-button px-4 py-2 rounded-lg flex-1">Send for Verification</button>
       </div>
       <button onclick="closeEditProfileModal()" class="mt-4 text-[var(--text)] hover:underline w-full text-center">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Profile Picture Edit Modal -->
+  <div id="edit-profile-picture-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Profile Picture</h3>
+      <input type="file" id="profile-picture-input" accept="image/*" class="w-full p-2 border rounded-lg mb-2">
+      <p id="profile-picture-error" class="text-red-500 text-sm mb-2 hidden">Invalid image file (max 5MB, JPEG/PNG/GIF).</p>
+      <canvas id="profile-picture-preview" width="128" height="128" class="mb-4"></canvas>
+      <div class="flex gap-2">
+        <button onclick="saveProfilePicture()" class="cta-button px-4 py-2 rounded-lg flex-1">Save</button>
+        <button onclick="closeEditProfilePictureModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cover Picture Edit Modal -->
+  <div id="edit-cover-picture-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Cover Picture</h3>
+      <input type="file" id="cover-picture-input" accept="image/*" class="w-full p-2 border rounded-lg mb-2">
+      <p id="cover-picture-error" class="text-red-500 text-sm mb-2 hidden">Invalid image file (max 5MB, JPEG/PNG/GIF).</p>
+      <canvas id="cover-picture-preview" width="300" height="100" class="mb-4"></canvas>
+      <div class="flex gap-2">
+        <button onclick="saveCoverPicture()" class="cta-button px-4 py-2 rounded-lg flex-1">Save</button>
+        <button onclick="closeEditCoverPictureModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Cancel</button>
+      </div>
     </div>
   </div>
 
@@ -367,18 +361,25 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Student Details Modal (Modified) -->
+  <!-- Student Details Modal -->
   <div id="student-details-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Student Details</h3>
+    <div class="modal-content p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto" style="background-color: var(--modal-bg); color: var(--modal-text); border: 1px solid var(--modal-text)">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-2xl font-bold text-[var(--heading)]">Student Details</h3>
+        <button onclick="backToStudentsModal()" class="edit-icon">
+          <svg class="w-6 h-6" fill="none" stroke="var(--text)" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+        </button>
+      </div>
       <p id="student-detail-name" class="text-[var(--text)] mb-2"></p>
       <p id="student-detail-subjects" class="text-[var(--text)] mb-2"></p>
       <p id="student-detail-session" class="text-[var(--text)] mb-4"></p>
       <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Overall Progress</h4>
       <div class="relative w-24 h-24 progress-circle mb-4">
-        <svg class="w-full h-full">
-          <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none"/>
-          <circle id="detail-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="0"/>
+        <svg class="w-full h-full" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+          <circle id="detail-progress-arc" cx="50" cy="50" r="45" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="283" stroke-dashoffset="0"/>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center font-bold text-lg text-[var(--text)]" id="detail-progress-label">0%</div>
       </div>
@@ -413,6 +414,9 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
       <div class="flex gap-2">
         <button onclick="openParentProfileModal(document.getElementById('student-details-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1">Connect with Parent</button>
         <button onclick="openChatModal(document.getElementById('student-details-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1">Chat</button>
+        <button onclick="addStudentComment(document.getElementById('student-details-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1 flex items-center justify-center">
+          <span id="comment-button-text">Comment on Student</span>
+        </button>
         <button onclick="openVideoCallModal(document.getElementById('student-details-modal').dataset.studentId)" class="cta-button px-4 py-2 rounded-lg flex-1 flex items-center justify-center">
           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10.5l6-6m0 0H9m12 0v12m-6 6l-6-6m6 0H3"></path>
@@ -424,7 +428,19 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Parent Profile Modal (New) -->
+  <!-- Comment Student Modal -->
+  <div id="commentStudent" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-lg" style="background-color: var(--modal-bg); color: var(--modal-text); border: 1px solid var(--modal-text)">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Add Comment</h3>
+      <textarea id="comment-input" class="w-full p-2 mb-4 border rounded" style="background-color: var(--modal-bg); color: var(--modal-text); border-color: var(--modal-text)" placeholder="Enter your comment about the student"></textarea>
+      <div class="flex gap-2">
+        <button onclick="submitStudentComment(document.getElementById('student-details-modal').dataset.studentId, document.getElementById('comment-input').value)" class="cta-button px-4 py-2 rounded-lg flex-1">Submit Comment</button>
+        <button onclick="closeStudentCommentModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parent Profile Modal (unchanged) -->
   <div id="parent-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Parent Profile</h3>
@@ -450,7 +466,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Student Analysis Modal (New) -->
+  <!-- Student Analysis Modal (unchanged) -->
   <div id="student-analysis-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Student Analysis Report</h3>
@@ -548,15 +564,15 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Students Modal (unchanged) -->
+  <!-- Students Modal -->
   <div id="students-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto relative">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">My Students</h3>
-      <input type="text" id="student-search" class="w-full p-2 border rounded-lg mb-4" placeholder="Search students by name...">
+      <input type="text" id="student-search" class="w-1/2 p-2 border rounded-lg mb-4" placeholder="Search students by name...">
       <div class="absolute top-6 right-6 w-24 h-24 progress-circle">
-        <svg class="w-full h-full">
-          <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none"/>
-          <circle id="overall-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="0"/>
+        <svg class="w-full h-full" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+          <circle id="overall-progress-arc" cx="50" cy="50" r="45" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="283" stroke-dashoffset="0"/>
         </svg>
         <div class="absolute inset-0 flex items-center justify-center font-bold text-lg text-[var(--text)]" id="overall-progress-label">0%</div>
         <div class="tooltip hidden top-full mt-2 w-48 bg-[var(--modal-bg)] p-3 rounded shadow-lg text-sm text-[var(--text)]">
@@ -568,19 +584,26 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
         <thead>
           <tr class="bg-gray-200">
             <th class="p-2">Student Name</th>
-            <th class="p-2">Progress</th>
+            <th class="p-2">Subjects</th>
+            <th class="p-2">Phone</th>
+            <th class="p-2">Email</th>
             <th class="p-2">Next Session</th>
+            <th class="p-2">Progress</th>
             <th class="p-2">Details</th>
           </tr>
         </thead>
         <tbody id="student-table">
           <tr>
             <td class="p-2">Abebe Kebede</td>
+            <td class="p-2">Math, Physics</td>
+            <td class="p-2">+251912345678</td>
+            <td class="p-2">abebe@example.com</td>
+            <td class="p-2">May 20, 2025, 2:00 PM</td>
             <td class="p-2">
               <div class="relative inline-block progress-circle">
-                <svg class="w-12 h-12">
-                  <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none"/>
-                  <circle class="student-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="141.5"/>
+                <svg class="w-12 h-12" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="8" fill="none"/>
+                  <circle class="student-progress-arc" cx="50" cy="50" r="45" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="283" stroke-dashoffset="141.5"/>
                 </svg>
                 <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]">50%</div>
                 <div class="tooltip hidden top-full mt-2 w-48 bg-[var(--modal-bg)] p-3 rounded shadow-lg text-sm text-[var(--text)]">
@@ -595,7 +618,6 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
                 </div>
               </div>
             </td>
-            <td class="p-2">May 20, 2025, 2:00 PM</td>
             <td class="p-2">
               <button onclick="openStudentDetailsModal(1)" class="cta-button px-2 py-1 rounded">View</button>
             </td>
@@ -694,7 +716,7 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
     </div>
   </div>
 
-  <!-- Video Call Modal (Modified from Go Live) -->
+  <!-- Video Call Modal (unchanged) -->
   <div id="video-call-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
     <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
       <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Video Call</h3>
@@ -736,821 +758,21 @@ Teaching Certificate, Ethiopian Ministry of Education, 2019</textarea>
             </a>
             <a class="social-icon" href="https://x.com">
               <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.            68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
               </svg>
             </a>
-            <a class="social-icon" href="https://instagram.com">
+            <a class="social-icon" href="https://linkedin.com">
               <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                <path d="M19 3a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h14zm-9.5 15.5h-2v-7h2v7zm-1-7.9c-.7 0-1.2-.6-1.2-1.3s.5-1.3 1.2-1.3 1.2.6 1.2 1.3-.5 1.3-1.2 1.3zm9.5 7.9h-2v-4c0-.9-.3-1.5-1.1-1.5-.6 0-1 .4-1.1 1v4.5h-2v-7h2v1.1c.3-.5.9-.8 1.6-.8 1.2 0 2.1.7 2.1 2.2v4.5z"/>
               </svg>
             </a>
           </div>
         </div>
       </div>
-      <div class="mt-8 text-center">
-        <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
-        <p>© 2025 Astegni. All rights reserved.</p>
-      </div>
+      <p class="text-center mt-8">© 2025 ASTEGNI. All rights reserved.</p>
     </div>
   </footer>
 
-  <!-- Scripts -->
-  <script>
-    let isLoggedIn = true;
-    let currentSessionId = null;
-    let currentVideoKey = null;
-    let currentStudentId = null;
-    let schoolRequests = {};
-
-    const students = {
-      1: {
-        name: 'Abebe Kebede',
-        progress: { cumulative: 50, math: 60, physics: 40 },
-        nextSession: 'May 20, 2025, 2:00 PM',
-        parent: {
-          name: 'Kebede Tadesse',
-          email: 'kebede@example.com',
-          phone: '+251912345679',
-          profilePicture: 'https://via.placeholder.com/64'
-        }
-      }
-    };
-
-    const tutor = {
-      name: 'Amanuel Tesfaye',
-      phone: '',
-      email: '',
-      rating: 1.0,
-      about: "Hi, I'm Amanuel, a passionate tutor with 5 years of experience in teaching Math and Physics. I focus on making complex concepts simple and engaging for students.",
-      address: '',
-      school: '',
-      paymentMethod: '',
-      paymentAccount: '',
-      paymentVerified: false,
-      referralCode: null,
-      courses: [
-        { name: 'Algebra', feeType: 'hourly', rate: 350 },
-        { name: 'Geometry', feeType: 'hourly', rate: 350 },
-        { name: 'Physics 101', feeType: 'hourly', rate: 400 }
-      ],
-      certifications: ['BSc in Physics, Addis Ababa University, 2018', 'Teaching Certificate, Ethiopian Ministry of Education, 2019'],
-      certificationDocuments: [],
-      socialMedia: { facebook: '', twitter: '', youtube: '' },
-      idFile: null,
-      selfieCaptured: false,
-      verified: false,
-      profilePicture: 'https://via.placeholder.com/64',
-      coverPicture: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=150&q=80',
-      videos: {
-        intro: { src: 'https://via.placeholder.com/640x360.mp4', desc: 'Introduction to my teaching style.', comments: [] },
-        clip1: { src: 'https://via.placeholder.com/320x180.mp4', desc: 'Quick Math tip.', comments: [] },
-        clip2: { src: 'https://via.placeholder.com/320x180.mp4', desc: 'Physics concept explained.', comments: [] }
-      },
-      comments: [
-        { author: 'Abebe Kebede', text: 'Amanuel explains complex topics clearly!', date: '2025-05-20' },
-        { author: 'Selam Yohannes', text: 'Great tutor, very patient and knowledgeable.', date: '2025-05-22' }
-      ]
-    };
-
-    const sessions = {
-      1: {
-        date: '2025-05-20',
-        time: '14:00',
-        duration: '80 minutes',
-        student: 1,
-        subjects: ['Math', 'Physics'],
-        cost: 1000,
-        status: 'Scheduled',
-        studentConfirmed: false,
-        tutorConfirmed: false,
-        waiting: { student: false, tutor: false },
-        makeup: null
-      }
-    };
-
-    const chatMessages = {
-      1: [
-        { sender: 'You', message: 'Hi Abebe, how’s your Math prep going?', timestamp: '2025-05-20 13:00' },
-        { sender: 'Abebe Kebede', message: 'It’s going well, thanks! Need help with algebra.', timestamp: '2025-05-20 13:05' }
-      ],
-      'parent_1': [
-        { sender: 'You', message: 'Hello, discussing Abebe’s progress.', timestamp: '2025-05-20 14:00' },
-        { sender: 'Kebede Tadesse', message: 'Thanks for the update!', timestamp: '2025-05-20 14:05' }
-      ]
-    };
-
-    const schoolDatabase = [
-      'Addis Ababa University',
-      'Menelik II School',
-      'St. Joseph School',
-      'Ethiopian International School',
-      'Lycee Guebre-Mariam'
-    ];
-
-    // Utility function to sanitize input
-    function sanitizeInput(input) {
-      const div = document.createElement('div');
-      div.textContent = input;
-      return div.innerHTML;
-    }
-
-    // Theme Management
-    function toggleTheme() {
-      const html = document.documentElement;
-      const currentTheme = html.getAttribute('data-theme');
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      html.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-    }
-
-    function initializeTheme() {
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-    }
-
-    // Navigation
-    const menuBtn = document.getElementById('menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    menuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-    });
-
-    document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-    document.getElementById('mobile-theme-toggle').addEventListener('click', toggleTheme);
-
-    function updateNavigation() {
-      const notificationBell = document.getElementById('notification-bell');
-      const mobileNotificationBell = document.getElementById('mobile-notification-bell');
-      if (isLoggedIn) {
-        notificationBell.classList.remove('hidden');
-        mobileNotificationBell.classList.remove('hidden');
-      } else {
-        notificationBell.classList.add('hidden');
-        mobileNotificationBell.classList.add('hidden');
-      }
-    }
-
-    // Verification Functions
-    function verifyTutor(tutor) {
-      const { name, idFile, selfieCaptured, paymentMethod, paymentAccount, school, certifications } = tutor;
-      return (
-        name && name.trim().length >= 2 &&
-        idFile &&
-        selfieCaptured &&
-        paymentMethod &&
-        paymentAccount &&
-        verifyPayment(paymentMethod, paymentAccount) &&
-        school && validateSchool(school) &&
-        certifications && certifications.length > 0
-      );
-    }
-
-    function verifyPayment(paymentMethod, paymentAccount) {
-      if (!paymentMethod || !paymentAccount) return false;
-      const accountRegex = /^\d{10,16}$/;
-      return accountRegex.test(paymentAccount);
-    }
-
-    function captureSelfie() {
-      tutor.selfieCaptured = true;
-      document.getElementById('face-scan-status').textContent = 'Selfie captured successfully.';
-      document.getElementById('face-scan-status').className = 'text-green-600 mb-2';
-    }
-
-function getLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        document.getElementById('profile-location').value = `${latitude}, ${longitude}`;
-        document.getElementById('location-error').classList.add('hidden');
-      },
-      () => {
-        document.getElementById('location-error').classList.remove('hidden');
-      }
-    );
-  } else {
-    document.getElementById('location-error').classList.remove('hidden');
-  }
-}
-
-// School Search
-function validateSchool(school) {
-  return schoolDatabase.includes(school);
-}
-
-function searchSchools(query) {
-  const suggestions = document.getElementById('school-suggestions');
-  suggestions.innerHTML = '';
-  if (query.length < 2) {
-    suggestions.style.display = 'none';
-    document.getElementById('request-school').classList.add('hidden');
-    return;
-  }
-  const matches = schoolDatabase.filter(school => school.toLowerCase().includes(query.toLowerCase()));
-  if (matches.length === 0) {
-    suggestions.style.display = 'none';
-    document.getElementById('request-school').classList.remove('hidden');
-  } else {
-    suggestions.style.display = 'block';
-    matches.forEach(school => {
-      const div = document.createElement('div');
-      div.textContent = school;
-      div.onclick = () => {
-        document.getElementById('profile-school').value = school;
-        suggestions.style.display = 'none';
-        document.getElementById('request-school').classList.add('hidden');
-      };
-      suggestions.appendChild(div);
-    });
-  }
-}
-
-document.getElementById('profile-school').addEventListener('input', (e) => {
-  searchSchools(e.target.value);
-});
-
-// Modal Management
-function openEditProfileModal() {
-  const modal = document.getElementById('edit-profile-modal');
-  modal.classList.remove('hidden');
-  document.getElementById('profile-name').value = tutor.name;
-  document.getElementById('profile-phone').value = tutor.phone;
-  document.getElementById('profile-email').value = tutor.email;
-  document.getElementById('profile-location').value = tutor.address;
-  document.getElementById('profile-school').value = tutor.school;
-  document.getElementById('payment-method').value = tutor.paymentMethod;
-  document.getElementById('payment-account').value = tutor.paymentAccount;
-  document.getElementById('profile-about').value = tutor.about;
-  document.getElementById('profile-courses').value = tutor.courses.map(c => `${c.name}:${c.feeType}:${c.rate}`).join(',');
-  document.getElementById('profile-certifications').value = tutor.certifications.join('\n');
-  updatePreviews();
-}
-
-function closeEditProfileModal() {
-  document.getElementById('edit-profile-modal').classList.add('hidden');
-}
-
-function openSchoolRequestModal() {
-  document.getElementById('school-request-modal').classList.remove('hidden');
-}
-
-function closeSchoolRequestModal() {
-  document.getElementById('school-request-modal').classList.add('hidden');
-}
-
-function openStudentsModal() {
-  document.getElementById('students-modal').classList.remove('hidden');
-  updateStudentsTable();
-}
-
-function closeStudentsModal() {
-  document.getElementById('students-modal').classList.add('hidden');
-}
-
-function openSessionSheetModal() {
-  document.getElementById('session-sheet-modal').classList.remove('hidden');
-}
-
-function closeSessionSheetModal() {
-  document.getElementById('session-sheet-modal').classList.add('hidden');
-}
-
-function openSubjectsModal(sessionId) {
-  currentSessionId = sessionId;
-  document.getElementById('subjects-modal').classList.remove('hidden');
-  const session = sessions[sessionId];
-  document.getElementById('subject-Math').checked = session.subjects.includes('Math');
-  document.getElementById('subject-Physics').checked = session.subjects.includes('Physics');
-}
-
-function closeSubjectsModal() {
-  document.getElementById('subjects-modal').classList.add('hidden');
-}
-
-function openMakeupModal(sessionId) {
-  currentSessionId = sessionId;
-  document.getElementById('makeup-modal').classList.remove('hidden');
-}
-
-function closeMakeupModal() {
-  document.getElementById('makeup-modal').classList.add('hidden');
-}
-
-function openNotificationModal() {
-  document.getElementById('notification-modal').classList.remove('hidden');
-}
-
-function closeNotificationModal() {
-  document.getElementById('notification-modal').classList.add('hidden');
-}
-
-function openChatModal(studentId, type = 'student') {
-  currentStudentId = studentId;
-  document.getElementById('chat-modal').classList.remove('hidden');
-  const chatKey = type === 'parent' ? `parent_${studentId}` : studentId;
-  const studentName = type === 'parent' ? students[studentId].parent.name : students[studentId].name;
-  document.getElementById('chat-student-name').textContent = `Chat with ${studentName}`;
-  updateChatMessages(chatKey);
-}
-
-function closeChatModal() {
-  document.getElementById('chat-modal').classList.add('hidden');
-}
-
-function openVideoCallModal(studentId) {
-  currentStudentId = studentId;
-  document.getElementById('video-call-modal').classList.remove('hidden');
-}
-
-function closeVideoCallModal() {
-  document.getElementById('video-call-modal').classList.add('hidden');
-}
-
-function openUploadVideoModal() {
-  document.getElementById('upload-video-modal').classList.remove('hidden');
-}
-
-function closeUploadVideoModal() {
-  document.getElementById('upload-video-modal').classList.add('hidden');
-}
-
-function openVideoDescModal(videoKey) {
-  currentVideoKey = videoKey;
-  document.getElementById('video-desc-modal').classList.remove('hidden');
-  document.getElementById('video-desc-input').value = tutor.videos[videoKey].desc;
-}
-
-function closeVideoDescModal() {
-  document.getElementById('video-desc-modal').classList.add('hidden');
-}
-
-function openCommentModal() {
-  document.getElementById('comment-modal').classList.remove('hidden');
-  updateComments();
-}
-
-function closeCommentModal() {
-  document.getElementById('comment-modal').classList.add('hidden');
-}
-
-function openVideoCommentModal(videoKey) {
-  currentVideoKey = videoKey;
-  document.getElementById('comment-modal').classList.remove('hidden');
-  updateVideoComments();
-}
-
-function openShareModal(videoKey) {
-  currentVideoKey = videoKey;
-  document.getElementById('share-modal').classList.remove('hidden');
-  const url = `https://astegni.et/videos/${tutor.videos[videoKey].src}`;
-  document.getElementById('share-url').value = url;
-  document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
-  document.getElementById('share-instagram').href = `https://www.instagram.com/?url=${encodeURIComponent(url)}`;
-  document.getElementById('share-youtube').href = `https://www.youtube.com/?url=${encodeURIComponent(url)}`;
-  document.getElementById('share-tiktok').href = `https://www.tiktok.com/?url=${encodeURIComponent(url)}`;
-  document.getElementById('share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(url)}`;
-}
-
-function closeShareModal() {
-  document.getElementById('share-modal').classList.add('hidden');
-}
-
-function openReferralModal() {
-  document.getElementById('referral-modal').classList.remove('hidden');
-  if (!tutor.referralCode) {
-    tutor.referralCode = `REF${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-  }
-  document.getElementById('referral-code-value').textContent = tutor.referralCode;
-  const referralLink = `https://astegni.et/referral/${tutor.referralCode}`;
-  document.getElementById('referral-link').value = referralLink;
-  document.getElementById('referral-share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`;
-  document.getElementById('referral-share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}`;
-}
-
-function closeReferralModal() {
-  document.getElementById('referral-modal').classList.add('hidden');
-}
-
-function openParentProfileModal(studentId) {
-  currentStudentId = studentId;
-  const modal = document.getElementById('parent-profile-modal');
-  modal.dataset.studentId = studentId;
-  const parent = students[studentId].parent;
-  document.getElementById('parent-name').textContent = parent.name;
-  document.getElementById('parent-email').textContent = `Email: ${parent.email}`;
-  document.getElementById('parent-phone').textContent = `Phone: ${parent.phone}`;
-  document.getElementById('parent-profile-picture').src = parent.profilePicture;
-  modal.classList.remove('hidden');
-}
-
-function closeParentProfileModal() {
-  document.getElementById('parent-profile-modal').classList.add('hidden');
-}
-
-function openStudentAnalysisModal(studentId) {
-  currentStudentId = studentId;
-  const modal = document.getElementById('student-analysis-modal');
-  modal.dataset.studentId = studentId;
-  const student = students[studentId];
-  document.getElementById('student-analysis-name').textContent = `Analysis for ${student.name}`;
-  document.getElementById('analysis-subj-math').textContent = `${student.progress.math}%`;
-  document.getElementById('analysis-bar-math').style.width = `${student.progress.math}%`;
-  document.getElementById('analysis-subj-physics').textContent = `${student.progress.physics}%`;
-  document.getElementById('analysis-bar-physics').style.width = `${student.progress.physics}%`;
-  modal.classList.remove('hidden');
-}
-
-function closeStudentAnalysisModal() {
-  document.getElementById('student-analysis-modal').classList.add('hidden');
-}
-
-// Form Submissions
-function submitProfileEdit() {
-  tutor.name = sanitizeInput(document.getElementById('profile-name').value);
-  tutor.phone = sanitizeInput(document.getElementById('profile-phone').value);
-  tutor.email = sanitizeInput(document.getElementById('profile-email').value);
-  tutor.address = sanitizeInput(document.getElementById('profile-location').value);
-  tutor.school = sanitizeInput(document.getElementById('profile-school').value);
-  tutor.paymentMethod = document.getElementById('payment-method').value;
-  tutor.paymentAccount = sanitizeInput(document.getElementById('payment-account').value);
-  tutor.about = sanitizeInput(document.getElementById('profile-about').value);
-  tutor.courses = document.getElementById('profile-courses').value.split(',').map(course => {
-    const [name, feeType, rate] = course.split(':');
-    return { name: sanitizeInput(name), feeType, rate: parseInt(rate) };
-  });
-  tutor.certifications = document.getElementById('profile-certifications').value.split('\n').map(sanitizeInput);
-  tutor.socialMedia.facebook = sanitizeInput(document.getElementById('social-facebook').value);
-  tutor.socialMedia.twitter = sanitizeInput(document.getElementById('social-twitter').value);
-  tutor.socialMedia.youtube = sanitizeInput(document.getElementById('social-youtube').value);
-  updateProfileDisplay();
-  closeEditProfileModal();
-}
-
-function sendForVerification() {
-  if (verifyTutor(tutor)) {
-    tutor.verified = true;
-    document.getElementById('verification-status').textContent = 'Verification sent successfully!';
-    document.getElementById('verification-status').className = 'text-green-600 text-sm italic mb-2';
-  } else {
-    document.getElementById('verification-status').textContent = 'Please complete all required fields.';
-    document.getElementById('verification-status').className = 'text-red-500 text-sm italic mb-2';
-  }
-  updateProfileDisplay();
-}
-
-function submitSchoolRequest() {
-  const schoolName = sanitizeInput(document.getElementById('request-school-name').value);
-  const email = sanitizeInput(document.getElementById('request-school-email').value);
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (schoolName && emailRegex.test(email)) {
-    schoolRequests[schoolName] = { email, status: 'pending' };
-    closeSchoolRequestModal();
-    alert('School request submitted!');
-  } else {
-    document.getElementById('request-school-error').classList.remove('hidden');
-    document.getElementById('request-school-email-error').classList.toggle('hidden', emailRegex.test(email));
-  }
-}
-
-function submitVideoUpload() {
-  const videoInput = document.getElementById('upload-video-input');
-  const desc = sanitizeInput(document.getElementById('upload-video-desc-input').value);
-  const videoKey = document.getElementById('video-select').value;
-  if (videoInput.files.length > 0) {
-    const file = videoInput.files[0];
-    if (file.size <= 10 * 1024 * 1024 && file.type === 'video/mp4') {
-      tutor.videos[videoKey].src = URL.createObjectURL(file);
-      tutor.videos[videoKey].desc = desc;
-      updateProfileDisplay();
-      closeUploadVideoModal();
-    } else {
-      document.getElementById('upload-video-error').classList.remove('hidden');
-    }
-  }
-}
-
-function submitVideoDesc() {
-  tutor.videos[currentVideoKey].desc = sanitizeInput(document.getElementById('video-desc-input').value);
-  updateProfileDisplay();
-  closeVideoDescModal();
-}
-
-function submitSubjects() {
-  const subjects = [];
-  if (document.getElementById('subject-Math').checked) subjects.push('Math');
-  if (document.getElementById('subject-Physics').checked) subjects.push('Physics');
-  sessions[currentSessionId].subjects = subjects;
-  updateSessionSheet();
-  closeSubjectsModal();
-}
-
-function submitMakeup() {
-  const date = document.getElementById('makeup-date').value;
-  const time = document.getElementById('makeup-time').value;
-  if (date && time) {
-    sessions[currentSessionId].makeup = { date, time };
-    updateSessionSheet();
-    closeMakeupModal();
-  }
-}
-
-function confirmAttendance(sessionId, role) {
-  sessions[sessionId][`${role}Confirmed`] = true;
-  updateSessionStatus(sessionId);
-}
-
-function confirmWaiting(sessionId, role) {
-  sessions[sessionId].waiting[role] = true;
-  updateSessionStatus(sessionId);
-}
-
-function proposeMakeup(sessionId) {
-  openMakeupModal(sessionId);
-}
-
-// Update Functions
-function updateProfileDisplay() {
-  document.getElementById('tutor-name').firstChild.textContent = tutor.name;
-  document.getElementById('tutor-gender').textContent = tutor.email.includes('female') ? 'Female' : 'Male';
-  document.getElementById('tutor-address').textContent = `Address: ${tutor.address || 'Not set'}`;
-  document.getElementById('tutor-school').textContent = `Teaches: ${tutor.school || 'Not set'}`;
-  document.getElementById('courses').textContent = `Courses: ${tutor.courses.map(c => `${c.name} (${c.feeType}: ${c.rate} birr)`).join(', ')}`;
-  document.getElementById('payment-method').textContent = `Payment Method: ${tutor.paymentMethod || 'Not set'}`;
-  document.getElementById('tutor-bio').textContent = tutor.about;
-  document.getElementById('tutor-certifications').innerHTML = tutor.certifications.join('<br>');
-  document.getElementById('profile-picture').src = tutor.profilePicture;
-  document.getElementById('cover-photo').style.backgroundImage = `url(${tutor.coverPicture})`;
-  document.getElementById('intro-video').src = tutor.videos.intro.src;
-  document.getElementById('intro-video-desc').textContent = tutor.videos.intro.desc;
-  document.getElementById('clip-1').src = tutor.videos.clip1.src;
-  document.getElementById('clip-1-desc').textContent = tutor.videos.clip1.desc;
-  document.getElementById('clip-2').src = tutor.videos.clip2.src;
-  document.getElementById('clip-2-desc').textContent = tutor.videos.clip2.desc;
-  document.getElementById('social-facebook').href = tutor.socialMedia.facebook || '#';
-  document.getElementById('social-twitter').href = tutor.socialMedia.twitter || '#';
-  document.getElementById('social-linkedin').href = tutor.socialMedia.youtube || '#';
-  updateRatingArc();
-}
-
-function updateRatingArc() {
-  const ratingArc = document.getElementById('rating-arc');
-  const ratingLabel = document.getElementById('rating-label');
-  const stars = document.getElementById('tutor-rating-stars');
-  if (tutor.rating >= 0) {
-    const percentage = tutor.rating * 20;
-    const dashOffset = 283 - (283 * percentage) / 100;
-    ratingArc.setAttribute('stroke-dashoffset', dashOffset);
-    ratingLabel.textContent = `${tutor.rating.toFixed(1)}/5`;
-    stars.textContent = '★'.repeat(Math.round(tutor.rating)) + '☆'.repeat(5 - Math.round(tutor.rating));
-  }
-}
-
-function updatePreviews() {
-  const idInput = document.getElementById('id-input');
-  const profilePictureInput = document.getElementById('profile-picture-input');
-  const coverPictureInput = document.getElementById('cover-picture-input');
-  const certificationInput = document.getElementById('certification-documents-input');
-  const videoInput = document.getElementById('upload-video-input');
-
-  if (idInput.files.length > 0) {
-    tutor.idFile = URL.createObjectURL(idInput.files[0]);
-    const preview = document.getElementById('id-preview');
-    preview.innerHTML = tutor.idFile.includes('.pdf') ? `<a href="${tutor.idFile}" target="_blank">View ID</a>` : `<img src="${tutor.idFile}" class="w-full rounded-lg" alt="ID Preview">`;
-  }
-
-  if (profilePictureInput.files.length > 0) {
-    tutor.profilePicture = URL.createObjectURL(profilePictureInput.files[0]);
-    const canvas = document.getElementById('profile-picture-preview');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.src = tutor.profilePicture;
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
-  }
-
-  if (coverPictureInput.files.length > 0) {
-    tutor.coverPicture = URL.createObjectURL(coverPictureInput.files[0]);
-    const canvas = document.getElementById('cover-picture-preview');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.src = tutor.coverPicture;
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
-  }
-
-  if (certificationInput.files.length > 0) {
-    tutor.certificationDocuments = Array.from(certificationInput.files).map(file => URL.createObjectURL(file));
-    const preview = document.getElementById('certification-documents-preview');
-    preview.innerHTML = tutor.certificationDocuments.map(url => url.includes('.pdf') ? `<a href="${url}" target="_blank" class="block mb-2">View Certification</a>` : `<img src="${url}" class="w-full rounded-lg mb-2" alt="Certification Preview">`).join('');
-  }
-
-  if (videoInput.files.length > 0) {
-    const videoKey = document.getElementById('video-select').value;
-    tutor.videos[videoKey].src = URL.createObjectURL(videoInput.files[0]);
-    document.getElementById('upload-video-preview').src = tutor.videos[videoKey].src;
-  }
-}
-
-function updateStudentsTable() {
-  const tbody = document.getElementById('student-table');
-  tbody.innerHTML = '';
-  Object.entries(students).forEach(([id, student]) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="p-2">${student.name}</td>
-      <td class="p-2">
-        <div class="relative inline-block progress-circle">
-          <svg class="w-12 h-12">
-            <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none"/>
-            <circle class="student-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="${283 - (283 * student.progress.cumulative) / 100}"/>
-          </svg>
-          <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]">${student.progress.cumulative}%</div>
-          <div class="tooltip hidden top-full mt-2 w-48 bg-[var(--modal-bg)] p-3 rounded shadow-lg text-sm text-[var(--text)]">
-            <div class="mb-1">Math: <span>${student.progress.math}%</span></div>
-            <div class="bg-gray-200 h-2 rounded mb-2">
-              <div class="bg-blue-600 h-2 rounded" style="width:${student.progress.math}%"></div>
-            </div>
-            <div class="mb-1">Physics: <span>${student.progress.physics}%</span></div>
-            <div class="bg-gray-200 h-2 rounded">
-              <div class="bg-green-600 h-2 rounded" style="width:${student.progress.physics}%"></div>
-            </div>
-          </div>
-        </div>
-      </td>
-      <td class="p-2">${student.nextSession}</td>
-      <td class="p-2"><button onclick="openStudentDetailsModal(${id})" class="cta-button px-2 py-1 rounded">View</button></td>
-    `;
-    tbody.appendChild(row);
-  });
-  updateOverallProgress();
-}
-
-function updateOverallProgress() {
-  const overallProgress = Object.values(students).reduce((sum, student) => sum + student.progress.cumulative, 0) / Object.keys(students).length;
-  const arc = document.getElementById('overall-progress-arc');
-  const label = document.getElementById('overall-progress-label');
-  const tooltip = document.getElementById('overall-student-progress');
-  arc.setAttribute('stroke-dashoffset', 283 - (283 * overallProgress) / 100);
-  label.textContent = `${Math.round(overallProgress)}%`;
-  tooltip.innerHTML = Object.values(students).map(student => `
-    <div class="mb-1">${student.name}: <span>${student.progress.cumulative}%</span></div>
-    <div class="bg-gray-200 h-2 rounded mb-2">
-      <div class="bg-blue-600 h-2 rounded" style="width:${student.progress.cumulative}%"></div>
-    </div>
-  `).join('');
-}
-
-function updateSessionSheet() {
-  const tbody = document.querySelector('#session-sheet-modal tbody');
-  tbody.innerHTML = '';
-  Object.entries(sessions).forEach(([id, session]) => {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="p-2">${session.date}</td>
-      <td class="p-2">${session.time}</td>
-      <td class="p-2">${session.duration}</td>
-      <td class="p-2">${students[session.student].name}</td>
-      <td class="p-2">${session.subjects.join(', ')}</td>
-      <td class="p-2">${session.cost} birr</td>
-      <td class="p-2" id="session-${id}-status">${session.status}</td>
-      <td class="p-2">
-        <button id="session-${id}-confirm" onclick="confirmAttendance(${id}, 'tutor')" class="cta-button px-2 py-1 rounded ${session.tutorConfirmed ? 'hidden' : ''}">Confirm Attendance</button>
-        <button id="session-${id}-wait" onclick="confirmWaiting(${id}, 'tutor')" class="bg-yellow-600 text-white px-2 py-1 rounded hover:bg-yellow-700 ${session.waiting.tutor || session.tutorConfirmed ? 'hidden' : ''}">Confirm Waiting</button>
-        <button id="session-${id}-makeup" onclick="proposeMakeup(${id})" class="cta-button px-2 py-1 rounded ${session.status === 'Missed' ? '' : 'hidden'}">Propose Makeup</button>
-        <button id="session-${id}-subjects" onclick="openSubjectsModal(${id})" class="cta-button px-2 py-1 rounded">Edit Subjects</button>
-      </td>
-    `;
-    tbody.appendChild(row);
-  });
-}
-
-function updateSessionStatus(sessionId) {
-  const session = sessions[sessionId];
-  if (session.tutorConfirmed && session.studentConfirmed) {
-    session.status = 'Confirmed';
-  } else if (session.waiting.tutor && session.waiting.student) {
-    session.status = 'Missed';
-    document.getElementById(`session-${sessionId}-makeup`).classList.remove('hidden');
-  } else if (session.waiting.tutor || session.waiting.student) {
-    session.status = 'Waiting';
-  }
-  document.getElementById(`session-${sessionId}-status`).textContent = session.status;
-  document.getElementById(`session-${sessionId}-confirm`).classList.toggle('hidden', session.tutorConfirmed);
-  document.getElementById(`session-${sessionId}-wait`).classList.toggle('hidden', session.waiting.tutor || session.tutorConfirmed);
-}
-
-function updateComments() {
-  const commentsList = document.getElementById('comments-list');
-  commentsList.innerHTML = tutor.comments.map(comment => `
-    <div class="mb-2">
-      <p class="font-semibold">${comment.author}</p>
-      <p>${comment.text}</p>
-      <p class="text-sm text-gray-500">${comment.date}</p>
-    </div>
-  `).join('');
-}
-
-function updateVideoComments() {
-  const commentsList = document.getElementById('comments-list');
-  commentsList.innerHTML = tutor.videos[currentVideoKey].comments.map(comment => `
-    <div class="mb-2">
-      <p class="font-semibold">${comment.author}</p>
-      <p>${comment.text}</p>
-      <p class="text-sm text-gray-500">${comment.date}</p>
-    </div>
-  `).join('');
-}
-
-function updateChatMessages(chatKey) {
-  const messages = chatMessages[chatKey] || [];
-  document.getElementById('chat-messages').innerHTML = messages.map(msg => `
-    <div class="${msg.sender === 'You' ? 'text-right' : 'text-left'} mb-2">
-      <p class="font-semibold">${msg.sender}</p>
-      <p class="p-2 rounded-lg ${msg.sender === 'You' ? 'bg-blue-100' : 'bg-gray-200'}">${msg.message}</p>
-      <p class="text-sm text-gray-500">${msg.timestamp}</p>
-    </div>
-  `).join('');
-}
-
-function sendMessage() {
-  const input = document.getElementById('chat-input');
-  const message = sanitizeInput(input.value);
-  if (message && currentStudentId) {
-    const chatKey = document.getElementById('chat-student-name').textContent.includes('Parent') ? `parent_${currentStudentId}` : currentStudentId;
-    if (!chatMessages[chatKey]) chatMessages[chatKey] = [];
-    chatMessages[chatKey].push({
-      sender: 'You',
-      message,
-      timestamp: new Date().toISOString().slice(0, 16).replace('T', ' ')
-    });
-    updateChatMessages(chatKey);
-    input.value = '';
-  }
-}
-
-function copyLink() {
-  const url = document.getElementById('share-url').value;
-  navigator.clipboard.writeText(url);
-  alert('Link copied to clipboard!');
-}
-
-function copyReferralLink() {
-  const link = document.getElementById('referral-link').value;
-  navigator.clipboard.writeText(link);
-  alert('Referral link copied to clipboard!');
-}
-
-function openStudentDetailsModal(studentId) {
-  currentStudentId = studentId;
-  const modal = document.getElementById('student-details-modal');
-  modal.dataset.studentId = studentId;
-  const student = students[studentId];
-  document.getElementById('student-detail-name').textContent = `Name: ${student.name}`;
-  document.getElementById('student-detail-subjects').textContent = `Subjects: ${sessions[1].subjects.join(', ')}`;
-  document.getElementById('student-detail-session').textContent = `Next Session: ${student.nextSession}`;
-  document.getElementById('detail-progress-label').textContent = `${student.progress.cumulative}%`;
-  document.getElementById('detail-progress-arc').setAttribute('stroke-dashoffset', 283 - (283 * student.progress.cumulative) / 100);
-  document.getElementById('detail-subj-math').textContent = `${student.progress.math}%`;
-  document.getElementById('detail-bar-math').style.width = `${student.progress.math}%`;
-  document.getElementById('detail-subj-physics').textContent = `${student.progress.physics}%`;
-  document.getElementById('detail-bar-physics').style.width = `${student.progress.physics}%`;
-  const tbody = document.getElementById('student-session-history').querySelector('tbody');
-  tbody.innerHTML = '';
-  Object.entries(sessions).forEach(([id, session]) => {
-    if (session.student == studentId) {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td class="p-2">${session.date}</td>
-        <td class="p-2">${session.time}</td>
-        <td class="p-2">${session.subjects.join(', ')}</td>
-        <td class="p-2">${session.cost} birr</td>
-        <td class="p-2">${session.status}</td>
-      `;
-      tbody.appendChild(row);
-    }
-  });
-  modal.classList.remove('hidden');
-}
-
-function closeStudentDetailsModal() {
-  document.getElementById('student-details-modal').classList.add('hidden');
-}
-
-function requestSchoolListing() {
-  openSchoolRequestModal();
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  initializeTheme();
-  updateNavigation();
-  updateProfileDisplay();
-  updateStudentsTable();
-  updateSessionSheet();
-});
-  </script>
+  <script defer src="../js/tutor-profile.js"></script>
 </body>
 </html>
