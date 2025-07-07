@@ -22,7 +22,13 @@ function initializeSession() {
 }
 
 // Call on page load
-document.addEventListener('DOMContentLoaded', initializeSession);
+document.addEventListener('DOMContentLoaded', function() {
+    initializeSession();
+    initializeTheme();
+    initializeCarousel();
+    initializeCounters();
+    initializeModals();
+});
 
 function toggleTheme() {
     const html = document.documentElement;
@@ -53,8 +59,7 @@ function initializeTheme() {
     updateThemeToggleIcon(savedTheme);
 }
 
-document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-document.getElementById('mobile-theme-toggle-btn').addEventListener('click', toggleTheme);
+// Theme toggle event listeners are now handled in the main DOMContentLoaded event
 
 const menuBtn = document.getElementById('menu-btn');
 const mobileMenu = document.getElementById('mobile-menu');
@@ -558,20 +563,55 @@ function initializeCounters() {
             const updateCounter = () => {
                 count += increment;
                 if (count >= counter.target) {
-                    count = counter.target;
+                    element.textContent = counter.target;
                 } else {
-                    setTimeout(updateCounter, 16);
+                    element.textContent = Math.floor(count);
+                    requestAnimationFrame(updateCounter);
                 }
-                element.textContent = Math.floor(count);
             };
-            updateCounter();
+            // Start the counter animation
+            requestAnimationFrame(updateCounter);
         }
     });
 }
 
-window.onload = function() {
-    initializeTheme();
-    initializeSession();
-    initializeCarousel();
-    initializeCounters();
-};
+// Function to ensure modals are properly initialized
+function initializeModals() {
+    // Hide all modals on page load
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.style.display = 'none';
+    });
+}
+
+// Add event listeners for modal close functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add click event listeners to all modal close buttons
+    document.querySelectorAll('.modal-close').forEach(button => {
+        button.addEventListener('click', function() {
+            const modal = this.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+    
+    // Add click event listeners to modal backgrounds for closing
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+            }
+        });
+    });
+    
+    // Initialize theme toggle event listeners
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle-btn');
+    
+    if (themeToggle) {
+        themeToggle.addEventListener('click', toggleTheme);
+    }
+    if (mobileThemeToggle) {
+        mobileThemeToggle.addEventListener('click', toggleTheme);
+    }
+});
