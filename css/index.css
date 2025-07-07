@@ -221,6 +221,14 @@ body {
             padding: 8px;
             border: 1px solid var(--text);
             border-radius: 4px;
+            background-color: var(--background);
+            color: var(--text);
+        }
+
+        .video-controls input:focus {
+            outline: none;
+            border-color: var(--button-bg);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
         }
 
         .video-controls .comment-list {
@@ -310,6 +318,25 @@ body {
             .tutor-list img {
                 margin-bottom: 8px;
             }
+
+            .modal-content {
+                width: 95%;
+                margin: 1rem;
+                max-height: 90vh;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .form-actions button {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .counter-card {
+                margin-bottom: 1rem;
+            }
         }
 
         .partner-card {
@@ -381,4 +408,50 @@ body {
             display: flex;
             gap: 1rem;
             margin-top: 1rem;
+        }
+
+        .form-actions button {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .form-actions button[type="button"] {
+            background-color: var(--background);
+            color: var(--text);
+            border: 1px solid var(--text);
+        }
+
+        .form-actions button[type="button"]:hover {
+            background-color: var(--highlight);
+            border-color: var(--button-hover);
+            color: var(--button-hover);
+        }
+
+        /* Hidden class utility */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Modal specific form styling */
+        .modal-content .form-group input:focus,
+        .modal-content .form-group select:focus {
+            outline: none;
+            border-color: var(--button-bg);
+            box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2);
+        }
+
+        /* Button styling improvements */
+        button {
+            border: none;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }

@@ -1,5 +1,6 @@
 :root {
     color: #FFE082;
+    --background: #FFFFFF;
     --text: #78350F;
     --heading: #92400E;
     --nav-link: #78350F;
@@ -8,7 +9,7 @@
     --button-text: #FFFFFF;
     --button-hover: #D97706;
     --button-active: #92400E;
-    --highlight: #FFFFFF;
+    --highlight: #F3F4F6;
     --footer-bg: #E5E7EB;
     --footer-text: #78350F;
     --search-heading: #F59E0B;
