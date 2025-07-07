@@ -10,7 +10,6 @@
     <script defer src="js/xlsx.full.min.js"></script>
     <script defer src="js/app.js"></script>
     <script defer src="js/chart.min.js"></script>
-
 </head>
 <body class="font-sans">
     <nav class="py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
@@ -20,39 +19,35 @@
                 <a class="nav-link px-2 py-1 rounded" href="index.html">Home</a>
                 <a id="find-tutors-link" class="nav-link px-2 py-1 rounded hidden" href="branch/">Find Tutors</a>
                 <a id="reels-link" class="nav-link px-2 py-1 rounded hidden" href="branch/">Reels</a>
-
-               <div class="flex items-center space-x-4">
-            <button id="theme-toggle" onclick="toggleTheme()" class="text-gray-500 dark:text-gray-300"></button>
-            <button id="notification-bell" onclick="toggleNotificationDropdown()" class="text-gray-500">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                </svg>
-            </button>
-            <div id="notification-dropdown" class="absolute top-12 right-4 bg-white dark:bg-gray-700 shadow-lg rounded-lg w-64 hidden">
-                <div id="notification-dropdown-content"></div>
-            </div>
-            <button id="login-register-btn" onclick="openLoginRegisterModal()" class="text-blue-500">Login/Register</button>
-            <div id="profile-container" class="hidden flex items-center space-x-2">
-                <img id="profile-pic" src="https://picsum.photos/32" alt="Profile" class="w-8 h-8 rounded-full">
-                <span id="profile-name">User</span>
-                <span id="verify-icon"></span>
-                <button onclick="toggleProfileDropdown()" class="text-gray-500">▼</button>
-                <div id="profile-dropdown" class="absolute top-12 right-4 bg-white dark:bg-gray-700 shadow-lg rounded-lg hidden">
-                    <button onclick="toggleVerification()" class="block w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-600">Toggle Verification</button>
-                    <button onclick="logout()" class="block w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-600">Log Out</button>
+                <div class="flex items-center space-x-4">
+                    <button id="notification-bell" onclick="toggleNotificationDropdown()" class="text-gray-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                    </button>
+                    <div id="notification-dropdown" class="absolute top-12 right-4 bg-white dark:bg-gray-700 shadow-lg rounded-lg w-64 hidden">
+                        <div id="notification-dropdown-content"></div>
+                    </div>
+                    <button id="login-register-btn" onclick="openLoginRegisterModal()">Login/Register</button>
+                    <div id="profile-container" class="hidden flex items-center space-x-2">
+                        <img id="profile-pic" src="https://picsum.photos/32" alt="Profile" class="w-8 h-8 rounded-full">
+                        <span id="profile-name">User</span>
+                        <span id="verify-icon"></span>
+                        <button onclick="toggleProfileDropdown()" class="text-gray-500">▼</button>
+                        <div id="profile-dropdown" class="absolute top-12 right-4 bg-white dark:bg-gray-700 shadow-lg rounded-lg hidden">
+                            <button onclick="toggleVerification()" class="block w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-600">Toggle Verification</button>
+                            <button onclick="logout()" class="block w-full text-left p-2 hover:bg-gray-100 dark:hover:bg-gray-600">Log Out</button>
+                        </div>
+                    </div>
+                    <button id="advertise-btn" class="nav-link px-2 py-1 rounded" onclick="openAdvertiseModal()">Advertise</button>
                 </div>
-            </div>
-            
-   <button id='advertise-btn' class="nav-link px-2 py-1 rounded" onclick="openAdvertiseModal()">Advertise</button>
-</div>
-                   <button id="notification-bell" class="relative focus:outline-none hidden" onclick="openNotificationModal()" aria-label="View notifications">
+                <button id="notification-bell" class="relative focus:outline-none hidden" onclick="openNotificationModal()" aria-label="View notifications">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
                     </svg>
                     <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
                 </button>
-
-   <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                <button id="theme-toggle" class="focus:outline-none" aria-label="Toggle theme">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
@@ -70,26 +65,26 @@
             <a id="mobile-reels-link" class="block py-2 px-4 nav-link hidden" href="reels.html">Reels</a>
             <button id="mobile-notification-bell" class="block py-2 px-4 nav-link hidden w-full text-left" onclick="openNotificationModal()">Notifications</button>
             <button id="mobile-login-register-btn" class="block py-2 px-4 nav-link w-full text-left" onclick="openLoginRegisterModal()">Login/Register</button>
-            <button id="mobile-advertise-btn"class="block py-2 px-4 nav-link w-full text-left" onclick="openAdvertiseModal()">Advertise</button>
+            <button id="mobile-advertise-btn" class="block py-2 px-4 nav-link w-full text-left" onclick="openAdvertiseModal()">Advertise</button>
             <div id="mobile-profile-container" class="block py-2 px-4 nav-link hidden relative">
-       <button class="flex items-center gap-2" onclick="toggleProfileDropdown()">
-           <img id="mobile-profile-pic" class="profile-pic inline-block mr-2" src="https://picsum.photos/32" alt="Profile Picture">
-           <span id="mobile-profile-name"></span>
-           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-           </svg>
-       </button>
-       <div id="profile-dropdown" class="hidden absolute top-10 right-0 bg-[var(--background)] border border-[var(--text)] rounded-lg shadow-lg p-2 w-48 z-50">
-           <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="toggleVerification()">
-               Toggle Verify
-               <span id="verify-icon">
-                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                   </svg>
-               </span>
-           </button>
-       </div>
-   </div>
+                <button class="flex items-center gap-2" onclick="toggleProfileDropdown()">
+                    <img id="mobile-profile-pic" class="profile-pic inline-block mr-2" src="https://picsum.photos/32" alt="Profile Picture">
+                    <span id="mobile-profile-name"></span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="profile-dropdown" class="hidden absolute top-10 right-0 bg-[var(--background)] border border-[var(--text)] rounded-lg shadow-lg p-2 w-48 z-50">
+                    <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="toggleVerification()">
+                        Toggle Verify
+                        <span id="verify-icon">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </div>
             <button id="mobile-theme-toggle-btn" class="block py-2 px-4 nav-link w-full text-left" aria-label="Toggle theme">
                 Toggle Theme
             </button>
@@ -117,10 +112,9 @@
                     <p>Training Centers</p>
                 </div>
             </div>
-                <div class="flex justify-center items-center gap-4 mb-6 max-w-4xl mx-auto">
-       <button id="hero-login-btn" class="cta-button px-6 py-3 rounded-lg font-semibold text-[var(--button-text)] bg-[var(--button-bg)] hover:bg-[var(--button-hover)] transition-all duration-300" onclick="openLoginRegisterModal()">Login/Register Now</button>
-       <button id="hero-advertise-btn" class="cta-button px-6 py-3 rounded-lg font-semibold text-[var(--button-text)] bg-[var(--button-bg)] hover:bg-[var(--button-hover)] transition-all duration-300" onclick="openAdvertiseModal()">Advertise</button>
-
+            <div class="flex justify-center items-center gap-4 mb-6 max-w-4xl mx-auto">
+                <button id="hero-login-btn" class="cta-button px-6 py-3 rounded-lg font-semibold text-[var(--button-text)] bg-[var(--button-bg)] hover:bg-[var(--button-hover)] transition-all duration-300" onclick="openLoginRegisterModal()">Login/Register Now</button>
+                <button id="hero-advertise-btn" class="cta-button px-6 py-3 rounded-lg font-semibold text-[var(--button-text)] bg-[var(--button-bg)] hover:bg-[var(--button-hover)] transition-all duration-300" onclick="openAdvertiseModal()">Advertise</button>
             </div>
         </div>
     </section>
@@ -227,7 +221,7 @@
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(8)">Like (<span id="likes-8">0</span>)</button>
-                            <button onclick="dislikeVideo(8)">Dislike(<span id="dislikes-8">0</span>)</button>
+                            <button onclick="dislikeVideo(8)">Dislike (<span id="dislikes-8">0</span>)</button>
                             <button onclick="openShareModal(8)">Share</button>
                         </div>
                         <input id="comment-input-8" onkeydown="if(event.key === 'Enter') openCommentModal(8)" placeholder="Add a comment" type="text"/>
@@ -337,7 +331,6 @@
                 <button onclick="showLogin()" class="cta-button px-4 py-2 rounded-lg">Login</button>
                 <button onclick="showRegister()" class="cta-button px-4 py-2 rounded-lg">Register</button>
             </div>
-            
             <div id="login-form">
                 <div class="form-group">
                     <label>Login Method</label>
@@ -401,12 +394,12 @@
                 <div class="form-group">
                     <a href="#forgot-password" class="nav-link hover:underline">Forgot Password?</a>
                 </div>
+                <div class="form-group hidden" id="login-error"></div>
                 <div class="form-actions">
                     <button class="cta-button px-4 py-2 rounded-lg w-full" onclick="login()">Login</button>
                     <button class="text-[--text] hover:text-[--nav-link-hover] w-full text-center" onclick="closeModal('login-register-modal')">Cancel</button>
                 </div>
             </div>
-            
             <div id="register-form" class="hidden">
                 <div class="form-group">
                     <label>Register As</label>
@@ -639,54 +632,54 @@
         </div>
     </div>
     <footer class="py-8" style="background-color: var(--footer-bg);">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-x-8 lg:gap-x-16">
-            <div>
-                <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
-                <ul class="space-y-2">
-                    <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
-                    <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
-                    <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
-                    <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
-                </ul>
-            </div>
-            <div>
-                <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
-                <p class="mb-4">Stay updated with our latest news and offers.</p>
-                <div class="mt-4 flex flex-col">
-                    <input class="w-full p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
-                    <button class="cta-button px-4 py-2 rounded-lg w-full">Subscribe</button>
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-x-8 lg:gap-x-16">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <div class="mt-4 flex flex-col">
+                        <input class="w-full p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="cta-button px-4 py-2 rounded-lg w-full">Subscribe</button>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
                 </div>
             </div>
-            <div>
-                <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
-                <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
-                <p class="mb-4">Phone: +251-912-345-678</p>
-                <div class="flex gap-4">
-                    <a class="social-icon" href="https://facebook.com">
-                        <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                            <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
-                        </svg>
-                    </a>
-                    <a class="social-icon" href="https://x.com">
-                        <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
-                        </svg>
-                    </a>
-                    <a class="social-icon" href="https://instagram.com">
-                        <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
-                        </svg>
-                    </a>
-                </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee plus 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
             </div>
         </div>
-        <div class="mt-8 text-center">
-            <p class="mb-2">Join us with only 500 birr registration fee plus 200 birr/month</p>
-            <p>© 2025 Astegni. All rights reserved.</p>
-        </div>
-    </div>
-</footer>
-<script defer src="js/index.js"></script>
-    </body>
-    </html>
+    </footer>
+    <script defer src="js/index.js"></script>
+</body>
+</html>
