@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+THIS SHOULD BE A LINTER ERROR<!DOCTYPE html>
 <html data-theme="light" lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -9,7 +9,7 @@
     <link href="css/root_theme.css" rel="stylesheet"/>
     <script defer src="js/xlsx.full.min.js"></script>
     <script defer src="js/app.js"></script>
-    <script defer src="js/chart.min.js"></script>
+    <script defer src="js/chart.js"></script>
 </head>
 <body class="font-sans">
     <nav class="py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
@@ -41,11 +41,11 @@
                     </div>
                     <button id="advertise-btn" class="nav-link px-2 py-1 rounded" onclick="openAdvertiseModal()">Advertise</button>
                 </div>
-                <button id="notification-bell" class="relative focus:outline-none hidden" onclick="openNotificationModal()" aria-label="View notifications">
+                <button id="notification-bell-alt" class="relative focus:outline-none hidden" onclick="openNotificationModal()" aria-label="View notifications">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
                     </svg>
-                    <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                    <span id="notification-dot-alt" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
                 </button>
                 <button id="theme-toggle" class="focus:outline-none" aria-label="Toggle theme">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -74,10 +74,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </button>
-                <div id="profile-dropdown" class="hidden absolute top-10 right-0 bg-[var(--background)] border border-[var(--text)] rounded-lg shadow-lg p-2 w-48 z-50">
+                <div id="mobile-profile-dropdown" class="hidden absolute top-10 right-0 bg-[var(--background)] border border-[var(--text)] rounded-lg shadow-lg p-2 w-48 z-50">
                     <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="toggleVerification()">
                         Toggle Verify
-                        <span id="verify-icon">
+                        <span id="mobile-verify-icon">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
@@ -133,7 +133,7 @@
             <p class="text-center mb-6">Watch our videos to learn more about Astegni.</p>
             <div class="video-carousel" id="video-carousel">
                 <div class="video-container active">
-                    <video><source src="video1.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample1.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(1)">Like (<span id="likes-1">0</span>)</button>
@@ -145,7 +145,7 @@
                     </div>
                 </div>
                 <div class="video-container active">
-                    <video><source src="video2.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample2.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(2)">Like (<span id="likes-2">0</span>)</button>
@@ -157,7 +157,7 @@
                     </div>
                 </div>
                 <div class="video-container active">
-                    <video><source src="video3.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample3.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(3)">Like (<span id="likes-3">0</span>)</button>
@@ -169,7 +169,7 @@
                     </div>
                 </div>
                 <div class="video-container">
-                    <video><source src="video4.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample4.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(4)">Like (<span id="likes-4">0</span>)</button>
@@ -181,7 +181,7 @@
                     </div>
                 </div>
                 <div class="video-container">
-                    <video><source src="video5.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample5.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(5)">Like (<span id="likes-5">0</span>)</button>
@@ -193,7 +193,7 @@
                     </div>
                 </div>
                 <div class="video-container">
-                    <video><source src="video6.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample6.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(6)">Like (<span id="likes-6">0</span>)</button>
@@ -205,7 +205,7 @@
                     </div>
                 </div>
                 <div class="video-container">
-                    <video><source src="video7.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample7.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(7)">Like (<span id="likes-7">0</span>)</button>
@@ -217,7 +217,7 @@
                     </div>
                 </div>
                 <div class="video-container">
-                    <video><source src="video8.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample8.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(8)">Like (<span id="likes-8">0</span>)</button>
@@ -229,7 +229,7 @@
                     </div>
                 </div>
                 <div class="video-container">
-                    <video><source src="video9.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample9.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(9)">Like (<span id="likes-9">0</span>)</button>
@@ -241,7 +241,7 @@
                     </div>
                 </div>
                 <div class="video-container">
-                    <video><source src="video10.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
+                    <video controls><source src="Videos/sample10.mp4" type="video/mp4"/>Your browser does not support the video tag.</video>
                     <div class="video-controls">
                         <div class="interaction-buttons">
                             <button onclick="likeVideo(10)">Like (<span id="likes-10">0</span>)</button>
@@ -272,31 +272,31 @@
             <span class="modal-close" onclick="closeModal('share-modal')">×</span>
             <h3 class="text-2xl font-bold mb-4">Share Video</h3>
             <div class="share-modal-content">
-                <a href="#" id="share-social-media(1)" target="_blank">
+                <a href="https://www.facebook.com/sharer/sharer.php?u=" id="share-social-media(1)" target="_blank" rel="noopener noreferrer">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
                     </svg>
                     Share on Facebook
                 </a>
-                <a href="#" id="share-social-media(2)" target="_blank">
+                <a href="https://www.instagram.com/" id="share-social-media(2)" target="_blank" rel="noopener noreferrer">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"></path>
                     </svg>
                     Share on Instagram
                 </a>
-                <a href="#" id="share-social-media(3)" target="_blank">
+                <a href="https://twitter.com/intent/tweet?url=" id="share-social-media(3)" target="_blank" rel="noopener noreferrer">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M18.244 2.25h3.308l-7.227 8.645 8.502 9.855H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.411H5.117z"></path>
                     </svg>
                     Share on X
                 </a>
-                <a href="#" id="share-social-media(4)" target="_blank">
+                <a href="https://www.tiktok.com/" id="share-social-media(4)" target="_blank" rel="noopener noreferrer">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.89 2.89 0 01.88.15V9.24a6.34 6.34 0 00-1-.09A6.34 6.34 0 003 15.58a6.34 6.34 0 0010.86 4.43 6.34 6.34 0 001.81-4.43V8.91a8.28 8.28 0 004.92 1.56V6.69z"></path>
                     </svg>
                     Share on TikTok
                 </a>
-                <a href="#" id="share-social-media(5)" target="_blank">
+                <a href="https://www.youtube.com/" id="share-social-media(5)" target="_blank" rel="noopener noreferrer">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.016 3.016 0 0 0 .502 6.186 31.247 31.247 0 0 0 0 12a31.247 31.247 0 0 0 .502 5.814 3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.377.505 9.377.505s7.505 0 9.377-.505a3.016 3.016 0 0 0 2.122-2.136A31.247 31.247 0 0 0 24 12a31.247 31.247 0 0 0-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
                     </svg>
