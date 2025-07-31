@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor Market Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .chart-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        .tooltip {
+            position: relative;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 220px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        input[type="range"] {
+            width: 100%;
+            accent-color: #2563eb;
+            cursor: pointer;
+        }
+        tr {
+            transition: background-color 0.2s;
+        }
+        tr:hover {
+            background-color: #f1f5f9;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #2563eb;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+    <div class="container mx-auto p-6 max-w-5xl">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-8 text-center">Tutor Market Analysis</h1>
+        <div class="flex justify-center mb-8 space-x-4">
+            <button onclick="toggleView('graph')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="View market data as graph">See Market (Graph)</button>
+            <button onclick="toggleView('table')" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="View market data as table">See Market (Table)</button>
+            <button onclick="toggleView('price')" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Suggest hourly price">Suggest Price</button>
+        </div>
+
+        <!-- Graph View -->
+        <div id="graphContainer" class="hidden bg-white p-6 rounded-xl shadow-lg chart-container">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-700">Market Trends</h2>
+                <div class="w-1/3">
+                    <label class="block text-gray-700 mb-2 font-medium">Time Period (Months): <span id="timeValue" class="font-bold">3</span></label>
+                    <input type="range" id="timePeriod" min="1" max="12" step="1" value="3" oninput="updateTimePeriod(this.value)" class="w-full" aria-label="Select time period for market data">
+                    <select id="graphType" onchange="updateGraph()" class="border rounded-lg p-2 bg-gray-50 text-gray-700 mt-2 w-full" aria-label="Select graph type">
+                        <option value="line">Line Graph</option>
+                        <option value="bar">Bar Graph</option>
+                    </select>
+                </div>
+            </div>
+            <div id="spinner" class="spinner"></div>
+            <canvas id="marketChart" class="hidden"></canvas>
+            <div class="flex justify-center mt-4 space-x-4 flex-wrap">
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="0" onchange="toggleDataset(this)" class="mr-2"> Rating</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="1" onchange="toggleDataset(this)" class="mr-2"> Students</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="2" onchange="toggleDataset(this)" class="mr-2"> Result Change</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="3" onchange="toggleDataset(this)" class="mr-2"> Price</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="4" onchange="toggleDataset(this)" class="mr-2"> Certifications</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="5" onchange="toggleDataset(this)" class="mr-2"> Experience</label>
+            </div>
+        </div>
+
+        <!-- Table View -->
+        <div id="tableContainer" class="hidden bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Market Data Table</h2>
+            <div class="w-1/3 mb-4">
+                <label class="block text-gray-700 mb-2 font-medium">Time Period (Months): <span id="tableTimeValue" class="font-bold">3</span></label>
+                <input type="range" id="tableTimePeriod" min="1" max="12" step="1" value="3" oninput="updateTableTimePeriod(this.value)" class="w-full" aria-label="Select time period for table data">
+            </div>
+            <table class="min-w-full bg-white border rounded-lg">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="border-b text-gray-700 font-medium">Tutor</th>
+                        <th class="border-b text-gray-700 font-medium">Rating</th>
+                        <th class="border-b text-gray-700 font-medium">Students</th>
+                        <th class="border-b text-gray-700 font-medium">
+                            Result Change (%)
+                            <span class="tooltip inline-block ml-1">
+                                <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 0a10 10 0 100 20 10 10 0 000-20zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
+                                </svg>
+                                <span class="tooltip-text">Percentage improvement in student exam results before and after tutoring (e.g., score from 70% to 85% = 15% change).</span>
+                            </span>
+                        </th>
+                        <th class="border-b text-gray-700 font-medium">
+                            Certifications
+                            <span class="tooltip inline-block ml-1">
+                                <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 0a10 10 0 100 20 10 10 0 000-20zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
+                                </svg>
+                                <span class="tooltip-text">Number of teaching certifications or qualifications held by the tutor.</span>
+                            </span>
+                        </th>
+                        <th class="border-b text-gray-700 font-medium">
+                            Experience (Years)
+                            <span class="tooltip inline-block ml-1">
+                                <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 0a10 10 0 100 20 10 10 0 000-20zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
+                                </svg>
+                                <span class="tooltip-text">Years of tutoring experience.</span>
+                            </span>
+                        </th>
+                        <th class="border-b text-gray-700 font-medium">Price/Hour ($)</th>
+                    </tr>
+                </thead>
+                <tbody id="marketTableBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Price Suggestion View -->
+        <div id="priceContainer" class="hidden bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Suggest Your Hourly Price</h2>
+            <div class="grid grid-cols-1 gap-6">
+                <div>
+                    <label class="block text-gray-700 mb-2 font-medium">Time Period (Months): <span id="priceTimeValue" class="font-bold">3</span></label>
+                    <input type="range" id="priceTimePeriod" min="1" max="12" step="1" value="3" oninput="updatePriceTimePeriod(this.value)" class="w-full" aria-label="Select time period for price suggestion">
+                </div>
+                <button onclick="suggestPrice()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-500" aria-label="Calculate suggested price">Calculate Suggested Price</button>
+                <div id="priceResult" class="text-gray-700 mt-4 hidden"></div>
+            </div>
+        </div>
+
+        <!-- Market Insights -->
+        <div class="mt-8 bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Market Insights for New Tutors</h2>
+            <p class="text-gray-600">Tutors with ratings above 4.5, result improvements of 15%+, 2+ certifications, and 5+ years of experience can charge $50-$60/hour, especially with higher student counts. Longer time periods (9-12 months) show stronger trends, so building a consistent track record with qualifications is key to commanding higher rates.</p>
+        </div>
+    </div>
+
+    <script>
+        // Sample data for different time periods
+        const tutorDataByTime = {
+            3: [
+                { name: "Tutor A", rating: 4.8, students: 20, resultChange: 15, certifications: 2, experience: 5, pricePerHour: 50 },
+                { name: "Tutor B", rating: 4.2, students: 15, resultChange: 10, certifications: 1, experience: 3, pricePerHour: 40 },
+                { name: "Tutor C", rating: 4.5, students: 25, resultChange: 20, certifications: 3, experience: 7, pricePerHour: 60 },
+                { name: "Tutor D", rating: 3.9, students: 10, resultChange: 8, certifications: 0, experience: 2, pricePerHour: 35 },
+                { name: "Tutor E", rating: 4.7, students: 30, resultChange: 18, certifications: 2, experience: 6, pricePerHour: 55 }
+            ],
+            6: [
+                { name: "Tutor A", rating: 4.7, students: 22, resultChange: 16, certifications: 2, experience: 5.5, pricePerHour: 52 },
+                { name: "Tutor B", rating: 4.3, students: 18, resultChange: 12, certifications: 1, experience: 3.5, pricePerHour: 42 },
+                { name: "Tutor C", rating: 4.6, students: 28, resultChange: 22, certifications: 3, experience: 7.5, pricePerHour: 62 },
+                { name: "Tutor D", rating: 4.0, students: 12, resultChange: 9, certifications: 0, experience: 2.5, pricePerHour: 37 },
+                { name: "Tutor E", rating: 4.8, students: 32, resultChange: 19, certifications: 2, experience: 6.5, pricePerHour: 57 }
+            ],
+            9: [
+                { name: "Tutor A", rating: 4.9, students: 25, resultChange: 17, certifications: 3, experience: 6, pricePerHour: 55 },
+                { name: "Tutor B", rating: 4.4, students: 20, resultChange: 13, certifications: 1, experience: 4, pricePerHour: 45 },
+                { name: "Tutor C", rating: 4.7, students: 30, resultChange: 24, certifications: 4, experience: 8, pricePerHour: 65 },
+                { name: "Tutor D", rating: 4.1, students: 15, resultChange: 10, certifications: 1, experience: 3, pricePerHour: 40 },
+                { name: "Tutor E", rating: 4.9, students: 35, resultChange: 20, certifications: 3, experience: 7, pricePerHour: 60 }
+            ],
+            12: [
+                { name: "Tutor A", rating: 5.0, students: 28, resultChange: 18, certifications: 3, experience: 6.5, pricePerHour: 58 },
+                { name: "Tutor B", rating: 4.5, students: 22, resultChange: 14, certifications: 2, experience: 4.5, pricePerHour: 48 },
+                { name: "Tutor C", rating: 4.8, students: 33, resultChange: 25, certifications: 4, experience: 8.5, pricePerHour: 68 },
+                { name: "Tutor D", rating: 4.2, students: 18, resultChange: 11, certifications: 1, experience: 3.5, pricePerHour: 42 },
+                { name: "Tutor E", rating: 5.0, students: 38, resultChange: 22, certifications: 3, experience: 7.5, pricePerHour: 63 }
+            ]
+        };
+
+        let chartInstance = null;
+        let currentTimePeriod = 3;
+        let visibleDatasets = [true, true, true, true, true, true];
+
+        function toggleView(view) {
+            const graphContainer = document.getElementById('graphContainer');
+            const tableContainer = document.getElementById('tableContainer');
+            const priceContainer = document.getElementById('priceContainer');
+            graphContainer.classList.add('hidden');
+            tableContainer.classList.add('hidden');
+            priceContainer.classList.add('hidden');
+
+            if (view === 'graph') {
+                graphContainer.classList.remove('hidden');
+                graphContainer.classList.add('fade-in');
+                if (!chartInstance) updateGraph();
+            } else if (view === 'table') {
+                tableContainer.classList.remove('hidden');
+                tableContainer.classList.add('fade-in');
+                populateTable();
+            } else if (view === 'price') {
+                priceContainer.classList.remove('hidden');
+                priceContainer.classList.add('fade-in');
+                suggestPrice(); // Auto-calculate price on view load
+            }
+            setTimeout(() => {
+                graphContainer.classList.remove('fade-in');
+                tableContainer.classList.remove('fade-in');
+                priceContainer.classList.remove('fade-in');
+            }, 500);
+        }
+
+        function updateTimePeriod(value) {
+            currentTimePeriod = parseInt(value);
+            document.getElementById('timeValue').textContent = value;
+            document.getElementById('tableTimeValue').textContent = value;
+            document.getElementById('priceTimeValue').textContent = value;
+            updateGraph();
+            populateTable();
+            if (!document.getElementById('priceContainer').classList.contains('hidden')) {
+                suggestPrice();
+            }
+        }
+
+        function updateTableTimePeriod(value) {
+            currentTimePeriod = parseInt(value);
+            document.getElementById('timeValue').textContent = value;
+            document.getElementById('tableTimeValue').textContent = value;
+            document.getElementById('priceTimeValue').textContent = value;
+            populateTable();
+        }
+
+        function updatePriceTimePeriod(value) {
+            currentTimePeriod = parseInt(value);
+            document.getElementById('timeValue').textContent = value;
+            document.getElementById('tableTimeValue').textContent = value;
+            document.getElementById('priceTimeValue').textContent = value;
+            suggestPrice();
+        }
+
+        function toggleDataset(checkbox) {
+            const datasetIndex = parseInt(checkbox.dataset.dataset);
+            visibleDatasets[datasetIndex] = checkbox.checked;
+            updateGraph();
+        }
+
+        function updateGraph() {
+            const graphType = document.getElementById('graphType').value;
+            const ctx = document.getElementById('marketChart').getContext('2d');
+            const tutorData = tutorDataByTime[currentTimePeriod];
+            const spinner = document.getElementById('spinner');
+            const canvas = document.getElementById('marketChart');
+
+            spinner.style.display = 'block';
+            canvas.classList.add('hidden');
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            setTimeout(() => {
+                chartInstance = new Chart(ctx, {
+                    type: graphType,
+                    data: {
+                        labels: tutorData.map(tutor => tutor.name),
+                        datasets: [
+                            {
+                                label: 'Rating (out of 5)',
+                                data: visibleDatasets[0] ? tutorData.map(tutor => tutor.rating) : [],
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.4)',
+                                yAxisID: 'y',
+                                tension: graphType === 'line' ? 0.3 : 0,
+                                pointRadius: 5,
+                                datalabels: { display: visibleDatasets[0], align: 'top', color: '#374151', font: { size: 10 } }
+                            },
+                            {
+                                label: 'Number of Students',
+                                data: visibleDatasets[1] ? tutorData.map(tutor => tutor.students) : [],
+                                borderColor: 'rgba(255, 99, 132, 1)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.4)',
+                                yAxisID: 'y1',
+                                tension: graphType === 'line' ? 0.3 : 0,
+                                pointRadius: 5,
+                                datalabels: { display: visibleDatasets[1], align: 'top', color: '#374151', font: { size: 10 } }
+                            },
+                            {
+                                label: 'Result Change (%)',
+                                data: visibleDatasets[2] ? tutorData.map(tutor => tutor.resultChange) : [],
+                                borderColor: 'rgba(54, 162, 235, 1)',
+                                backgroundColor: 'rgba(54, 162, 235, 0.4)',
+                                yAxisID: 'y2',
+                                tension: graphType === 'line' ? 0.3 : 0,
+                                pointRadius: 5,
+                                datalabels: { display: visibleDatasets[2], align: 'top', color: '#374151', font: { size: 10 } }
+                            },
+                            {
+                                label: 'Price per Hour ($)',
+                                data: visibleDatasets[3] ? tutorData.map(tutor => tutor.pricePerHour) : [],
+                                borderColor: 'rgba(255, 206, 86, 1)',
+                                backgroundColor: 'rgba(255, 206, 86, 0.4)',
+                                yAxisID: 'y3',
+                                tension: graphType === 'line' ? 0.3 : 0,
+                                pointRadius: 5,
+                                datalabels: { display: visibleDatasets[3], align: 'top', color: '#374151', font: { size: 10 } }
+                            },
+                            {
+                                label: 'Certifications',
+                                data: visibleDatasets[4] ? tutorData.map(tutor => tutor.certifications) : [],
+                                borderColor: 'rgba(153, 102, 255, 1)',
+                                backgroundColor: 'rgba(153, 102, 255, 0.4)',
+                                yAxisID: 'y4',
+                                tension: graphType === 'line' ? 0.3 : 0,
+                                pointRadius: 5,
+                                datalabels: { display: visibleDatasets[4], align: 'top', color: '#374151', font: { size: 10 } }
+                            },
+                            {
+                                label: 'Experience (Years)',
+                                data: visibleDatasets[5] ? tutorData.map(tutor => tutor.experience) : [],
+                                borderColor: 'rgba(255, 159, 64, 1)',
+                                backgroundColor: 'rgba(255, 159, 64, 0.4)',
+                                yAxisID: 'y5',
+                                tension: graphType === 'line' ? 0.3 : 0,
+                                pointRadius: 5,
+                                datalabels: { display: visibleDatasets[5], align: 'top', color: '#374151', font: { size: 10 } }
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        animation: { duration: 1000, easing: 'easeInOutQuad' },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: visibleDatasets[0],
+                                position: 'left',
+                                title: { display: true, text: 'Rating' },
+                                min: 0,
+                                max: 5
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: visibleDatasets[1],
+                                position: 'right',
+                                title: { display: true, text: 'Students' },
+                                grid: { drawOnChartArea: false },
+                                min: 0
+                            },
+                            y2: {
+                                type: 'linear',
+                                display: visibleDatasets[2],
+                                position: 'right',
+                                title: { display: true, text: 'Result Change (%)', padding: { top: 10, bottom: 10 } },
+                                grid: { drawOnChartArea: false },
+                                min: 0
+                            },
+                            y3: {
+                                type: 'linear',
+                                display: visibleDatasets[3],
+                                position: 'right',
+                                title: { display: true, text: 'Price ($)' },
+                                grid: { drawOnChartArea: false },
+                                min: 0
+                            },
+                            y4: {
+                                type: 'linear',
+                                display: visibleDatasets[4],
+                                position: 'right',
+                                title: { display: true, text: 'Certifications' },
+                                grid: { drawOnChartArea: false },
+                                min: 0
+                            },
+                            y5: {
+                                type: 'linear',
+                                display: visibleDatasets[5],
+                                position: 'right',
+                                title: { display: true, text: 'Experience (Years)' },
+                                grid: { drawOnChartArea: false },
+                                min: 0
+                            }
+                        },
+                        plugins: {
+                            legend: { display: true, position: 'top' },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) label += ': ';
+                                        label += context.parsed.y;
+                                        return label;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                display: false // Handled per dataset
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+
+                spinner.style.display = 'none';
+                canvas.classList.remove('hidden');
+            }, 300);
+        }
+
+        function populateTable() {
+            const tableBody = document.getElementById('marketTableBody');
+            const tutorData = tutorDataByTime[currentTimePeriod];
+            tableBody.innerHTML = '';
+            tutorData.forEach(tutor => {
+                const row = document.createElement('tr');
+                row.classList.add('border-b');
+                row.innerHTML = `
+                    <td class="text-gray-700">${tutor.name}</td>
+                    <td class="text-gray-700">${tutor.rating}</td>
+                    <td class="text-gray-700">${tutor.students}</td>
+                    <td class="text-gray-700">${tutor.resultChange}</td>
+                    <td class="text-gray-700">${tutor.certifications}</td>
+                    <td class="text-gray-700">${tutor.experience}</td>
+                    <td class="text-gray-700">${tutor.pricePerHour}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function suggestPrice() {
+            const priceResult = document.getElementById('priceResult');
+            const tutorData = tutorDataByTime[currentTimePeriod];
+
+            // Simulate system data for the logged-in user by selecting a random tutor
+            const randomTutor = tutorData[Math.floor(Math.random() * tutorData.length)];
+            const username = randomTutor.name; // In a real system, this would come from user profile
+            const rating = randomTutor.rating;
+            const students = randomTutor.students;
+            const resultChange = randomTutor.resultChange;
+            const certifications = randomTutor.certifications;
+            const experience = randomTutor.experience;
+
+            // Calculate averages for comparison
+            const avgRating = tutorData.reduce((sum, t) => sum + t.rating, 0) / tutorData.length;
+            const avgStudents = tutorData.reduce((sum, t) => sum + t.students, 0) / tutorData.length;
+            const avgResultChange = tutorData.reduce((sum, t) => sum + t.resultChange, 0) / tutorData.length;
+            const avgCertifications = tutorData.reduce((sum, t) => sum + t.certifications, 0) / tutorData.length;
+            const avgExperience = tutorData.reduce((sum, t) => sum + t.experience, 0) / tutorData.length;
+            const avgPrice = tutorData.reduce((sum, t) => sum + t.pricePerHour, 0) / tutorData.length;
+
+            // Weights: 30% rating, 20% students, 20% result change, 15% certifications, 15% experience
+            const ratingFactor = (rating / avgRating) * 0.3;
+            const studentsFactor = (students / avgStudents) * 0.2;
+            const resultChangeFactor = (resultChange / avgResultChange) * 0.2;
+            const certificationsFactor = (certifications / (avgCertifications || 1)) * 0.15;
+            const experienceFactor = (experience / (avgExperience || 1)) * 0.15;
+
+            // Time period adjustment (longer periods increase price slightly)
+            const timeFactor = 1 + (currentTimePeriod - 3) * 0.05;
+
+            // Suggested price: Adjust average market price
+            const suggestedPrice = Math.round(avgPrice * (ratingFactor + studentsFactor + resultChangeFactor + certificationsFactor + experienceFactor) * timeFactor);
+
+            const finalPrice = Math.max(20, Math.min(suggestedPrice, 100));
+
+            // Personalized output
+            priceResult.innerHTML = `
+                <p class="text-green-600 font-semibold">Dear ${username},</p>
+                <p class="text-gray-600">Your Rating: ${rating.toFixed(1)}</p>
+                <p class="text-gray-600">Number of Students: ${students}</p>
+                <p class="text-gray-600">Result Change (%): ${resultChange}</p>
+                <p class="text-gray-600">Certifications: ${certifications}</p>
+                <p class="text-gray-600">Experience (Years): ${experience}</p>
+                <p class="text-green-600 font-semibold">Based on these results, your suggested hourly price is: $${finalPrice} (based on ${currentTimePeriod}-month market trends)</p>
+                <p class="text-gray-600 text-sm mt-2">Breakdown:</p>
+                <ul class="text-gray-600 text-sm list-disc list-inside">
+                    <li>Rating: ${Math.round(ratingFactor * 100)}% of market average (${avgRating.toFixed(1)})</li>
+                    <li>Students: ${Math.round(studentsFactor * 100)}% of market average (${avgStudents.toFixed(1)})</li>
+                    <li>Result Change: ${Math.round(resultChangeFactor * 100)}% of market average (${avgResultChange.toFixed(1)})</li>
+                    <li>Certifications: ${Math.round(certificationsFactor * 100)}% of market average (${avgCertifications.toFixed(1)})</li>
+                    <li>Experience: ${Math.round(experienceFactor * 100)}% of market average (${avgExperience.toFixed(1)})</li>
+                    <li>Time Adjustment: +${Math.round((timeFactor - 1) * 100)}% for ${currentTimePeriod}-month trends</li>
+                </ul>
+            `;
+            priceResult.classList.remove('hidden');
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+</body>
+</html>

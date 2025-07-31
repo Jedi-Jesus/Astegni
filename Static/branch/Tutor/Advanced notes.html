@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes App</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --heading: #1f2937;
+      --text: #4b5563;
+      --nav-link-hover: #2563eb;
+    }
+    .dark {
+      --heading: #f9fafb;
+      --text: #d1d5db;
+    }
+    /* Ensure modal content is scrollable */
+    .notes-modal-container {
+      display: flex;
+      gap: 1rem;
+      max-height: 80vh; /* Respect max height */
+      overflow-y: auto; /* Enable vertical scrolling */
+      flex-direction: row;
+    }
+    /* Main note input section */
+    .note-input-section {
+      flex: 1;
+      min-width: 0; /* Prevent flex item from overflowing */
+    }
+    /* History section */
+    .notes-history {
+      width: 33.3333%; /* Match w-1/3 */
+      max-height: 80vh; /* Same height as modal */
+      overflow-y: auto; /* Independent scrolling for history */
+    }
+    .note-card {
+      background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent for readability */
+      backdrop-filter: blur(5px); /* Optional: blur for contrast */
+    }
+    .dark .note-card {
+      background-color: rgba(31, 41, 55, 0.9);
+    }
+    .editor-toolbar button, .editor-toolbar select, .editor-toolbar input {
+      padding: 0.5rem;
+      margin-right: 0.5rem;
+      background-color: #f3f4f6;
+      border: 1px solid #d1d5db;
+      border-radius: 0.25rem;
+    }
+    .dark .editor-toolbar button, .dark .editor-toolbar select, .dark .editor-toolbar input {
+      background-color: #374151;
+      border-color: #4b5563;
+      color: #fff;
+    }
+    .background-image {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      cursor: pointer;
+      border-radius: 0.25rem;
+    }
+    #note-content {
+      min-height: 200px;
+      background-color: rgba(255, 255, 255, 0.9);
+    }
+    .dark #note-content {
+      background-color: rgba(31, 41, 55, 0.9);
+    }
+    /* Prevent body scroll when modal is open */
+    body.modal-open {
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+  <div class="container mx-auto p-4">
+    <nav class="mb-4">
+      <a href="#" onclick="openNotesModal()" class="hover:text-[var(--nav-link-hover)]">Notes</a>
+    </nav>
+
+    <!-- Notes Modal -->
+    <div id="notes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+      <div class="modal-content notes-modal-container p-6 rounded-lg w-full max-w-4xl bg-white dark:bg-gray-800 relative">
+        <div class="note-input-section">
+          <div class="flex justify-between items-center mb-4">
+            <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Take a Note</h3>
+            <div class="flex gap-2">
+              <button onclick="newNote()" class="new-note-btn cta-button p-2 rounded-lg" title="New Note">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <label class="block mb-2 text-gray-700 dark:text-gray-200">Date</label>
+          <input type="date" id="note-date" class="w-full p-2 border rounded-lg mb-4 text-gray-900 dark:text-white dark:bg-gray-700">
+          <label class="block mb-2 text-gray-700 dark:text-gray-200">Tutor Name</label>
+          <div class="relative mb-4">
+            <input type="text" id="note-tutor" class="w-full p-2 border rounded-lg text-gray-900 dark:text-white dark:bg-gray-700" placeholder="Search for tutor">
+            <div id="note-tutor-suggestions" class="school-suggestions hidden absolute z-30 w-full bg-white dark:bg-gray-800 border rounded-lg mt-1"></div>
+          </div>
+          <label class="block mb-2 text-gray-700 dark:text-gray-200">Course</label>
+          <div class="relative mb-4">
+            <input type="text" id="note-course" class="w-full p-2 border rounded-lg text-gray-900 dark:text-white dark:bg-gray-700" placeholder="Search for course">
+            <div id="note-course-suggestions" class="school-suggestions hidden absolute z-30 w-full bg-white dark:bg-gray-800 border rounded-lg mt-1"></div>
+          </div>
+          <label class="block mb-2 text-gray-700 dark:text-gray-200">Title</label>
+          <input type="text" id="note-title" class="w-full p-2 border rounded-lg mb-4 text-gray-900 dark:text-white dark:bg-gray-700" placeholder="Note title">
+          <label class="block mb-2 text-gray-700 dark:text-gray-200">Note</label>
+          <div class="editor-toolbar mb-2">
+            <button onclick="formatText('bold')" title="Bold"><b>B</b></button>
+            <button onclick="formatText('italic')" title="Italic"><i>I</i></button>
+            <button onclick="formatText('underline')" title="Underline"><u>U</u></button>
+            <button onclick="formatText('hiliteColor', '#FFFF00')" title="Highlight">H</button>
+            <button onclick="formatText('strikeThrough')" title="Strikethrough"><s>S</s></button>
+            <select onchange="formatText('fontSize', this.value)" title="Font Size">
+              <option value="">Font Size</option>
+              <option value="3">Normal</option>
+              <option value="4">Large</option>
+              <option value="5">Larger</option>
+            </select>
+            <input type="color" id="font-color" onchange="formatText('foreColor', this.value)" title="Font Color">
+            <button onclick="formatText('undo')" title="Undo">⟲</button>
+            <button onclick="formatText('redo')" title="Redo">⟳</button>
+            <button onclick="openBackgroundModal()" title="Background Image">🖼</button>
+            <button onclick="removeNoteBackground()" title="Remove Background">🗑</button>
+          </div>
+          <div id="note-content" contenteditable="true" class="w-full p-2 border rounded-lg mb-4 text-gray-900 dark:text-white"></div>
+          <div class="flex flex-col gap-2 mb-6">
+            <button onclick="saveNote()" class="cta-button px-4 py-2 rounded-lg w-full bg-blue-600 text-white hover:bg-blue-700">Save Note</button>
+            <button onclick="closeNotesModal()" class="cta-button px-3 py-1 rounded-lg w-full text-sm bg-gray-500 text-white hover:bg-gray-600">Close</button>
+          </div>
+        </div>
+        <div id="notes-history" class="notes-history bg-gray-100 dark:bg-gray-700 p-4 rounded-lg ml-4">
+          <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Notes History</h4>
+          <div id="notes-history-content"></div>
+        </div>
+        <button onclick="toggleNotesHistory()" class="history-toggle-btn p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none shadow-md absolute top-4 right-4" title="Toggle History">
+          <svg class="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Background Image Modal -->
+    <div id="background-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+      <div class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-800">
+        <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Select Background Image</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <img src="../pictures/Math wallpaper 1.jpeg" class="background-image" onclick="setNoteBackground('math')" alt="Math Background">
+          <img src="../pictures/Physics wall paper 1.jpeg" class="background-image" onclick="setNoteBackground('physics')" alt="Physics Background">
+          <img src="../pictures/Biology wallpaper 1.jpeg" class="background-image" onclick="setNoteBackground('biology')" alt="Biology Background">
+          <img src="../pictures/chemistry wall paper 2.jpeg" class="background-image" onclick="setNoteBackground('chemistry')" alt="Chemistry Background">
+          <img src="../pictures/Geography wallpaper 1.jpeg" class="background-image" onclick="setNoteBackground('geography')" alt="Geography Background">
+          <img src="../pictures/History wallpaper 1.jpeg" class="background-image" onclick="setNoteBackground('history')" alt="History Background">
+          <img src="../pictures/Music.jpeg" class="background-image" onclick="setNoteBackground('music')" alt="Music Background">
+          <div class="flex items-center justify-center">
+            <input type="file" id="upload-background" accept="image/*" class="hidden" onchange="uploadBackgroundImage()">
+            <button onclick="document.getElementById('upload-background').click()" class="cta-button px-4 py-2 rounded-lg">Upload Image</button>
+          </div>
+        </div>
+        <button onclick="closeBackgroundModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let notesArray = []; // Mock data storage
+    let currentNoteIndex = null; // Track note being edited
+
+    function openNotesModal() {
+      document.getElementById('notes-modal').classList.remove('hidden');
+      document.body.classList.add('modal-open'); // Prevent body scroll
+      newNote();
+      renderNotesHistory();
+    }
+
+    function closeNotesModal() {
+      document.getElementById('notes-modal').classList.add('hidden');
+      document.body.classList.remove('modal-open'); // Restore body scroll
+    }
+
+    function toggleNotesHistory() {
+      const history = document.getElementById('notes-history');
+      history.classList.toggle('hidden');
+    }
+
+    function newNote() {
+      document.getElementById('note-date').value = '';
+      document.getElementById('note-tutor').value = '';
+      document.getElementById('note-course').value = '';
+      document.getElementById('note-title').value = '';
+      document.getElementById('note-content').innerHTML = '';
+      document.getElementById('note-content').style.backgroundImage = '';
+      document.getElementById('note-content').dataset.background = '';
+      currentNoteIndex = null;
+    }
+
+    function formatText(command, value = null) {
+      document.execCommand(command, false, value);
+      document.getElementById('note-content').focus();
+    }
+
+    function openBackgroundModal() {
+      document.getElementById('background-modal').classList.remove('hidden');
+    }
+
+    function closeBackgroundModal() {
+      document.getElementById('background-modal').classList.add('hidden');
+    }
+
+    function setNoteBackground(background) {
+      const noteContent = document.getElementById('note-content');
+      const backgroundMap = {
+        math: 'pictures/math.jpg',
+        physics: 'pictures/physics.jpg',
+        biology: 'pictures/biology.jpg',
+        chemistry: 'pictures/chemistry.jpg',
+        geography: 'pictures/geography.jpg',
+        history: 'pictures/history.jpg',
+        music: 'pictures/music.jpg'
+      };
+      const backgroundUrl = backgroundMap[background] || background;
+      noteContent.style.backgroundImage = `url(${backgroundUrl})`;
+      noteContent.style.backgroundSize = 'cover';
+      noteContent.style.backgroundPosition = 'center';
+      noteContent.dataset.background = background;
+      closeBackgroundModal();
+    }
+
+    function uploadBackgroundImage() {
+      const fileInput = document.getElementById('upload-background');
+      const file = fileInput.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          setNoteBackground(e.target.result);
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function removeNoteBackground() {
+      const noteContent = document.getElementById('note-content');
+      noteContent.style.backgroundImage = '';
+      noteContent.dataset.background = '';
+    }
+
+    function saveNote() {
+      const note = {
+        date: document.getElementById('note-date').value,
+        tutor: document.getElementById('note-tutor').value,
+        course: document.getElementById('note-course').value,
+        title: document.getElementById('note-title').value,
+        content: document.getElementById('note-content').innerHTML,
+        background: document.getElementById('note-content').dataset.background || ''
+      };
+
+      if (currentNoteIndex !== null) {
+        notesArray[currentNoteIndex] = note;
+      } else {
+        notesArray.push(note);
+      }
+
+      renderNotesHistory();
+      closeNotesModal();
+    }
+
+    function renderNotesHistory() {
+      const historyContent = document.getElementById('notes-history-content');
+      historyContent.innerHTML = '';
+
+      notesArray.forEach((note, index) => {
+        const noteCard = document.createElement('div');
+        noteCard.className = 'note-card p-3 mb-2 rounded-lg bg-white dark:bg-gray-800 shadow-md';
+        
+        if (note.background) {
+          const backgroundMap = {
+            math: 'pictures/math.jpg',
+            physics: 'pictures/physics.jpg',
+            biology: 'pictures/biology.jpg',
+            chemistry: 'pictures/chemistry.jpg',
+            geography: 'pictures/geography.jpg',
+            history: 'pictures/history.jpg',
+            music: 'pictures/music.jpg'
+          };
+          const backgroundUrl = backgroundMap[note.background] || note.background;
+          noteCard.style.backgroundImage = `url(${backgroundUrl})`;
+          noteCard.style.backgroundSize = 'cover';
+          noteCard.style.backgroundPosition = 'center';
+        }
+
+        noteCard.innerHTML = `
+          <h5 class="font-semibold text-gray-900 dark:text-white">${note.title || 'Untitled'}</h5>
+          <p class="text-sm text-gray-600 dark:text-gray-300">${note.date || 'No date'}</p>
+          <p class="text-sm text-gray-600 dark:text-gray-300">${note.course || 'No course'}</p>
+          <button onclick="loadNote(${index})" class="text-blue-600 hover:underline">View</button>
+          <button onclick="deleteNote(${index})" class="text-red-600 hover:underline ml-2">Delete</button>
+        `;
+        historyContent.appendChild(noteCard);
+      });
+    }
+
+    function loadNote(index) {
+      const note = notesArray[index];
+      document.getElementById('note-date').value = note.date;
+      document.getElementById('note-tutor').value = note.tutor;
+      document.getElementById('note-course').value = note.course;
+      document.getElementById('note-title').value = note.title;
+      document.getElementById('note-content').innerHTML = note.content;
+
+      const noteContent = document.getElementById('note-content');
+      if (note.background) {
+        const backgroundMap = {
+          math: 'pictures/math.jpg',
+          physics: 'pictures/physics.jpg',
+          biology: 'pictures/biology.jpg',
+          chemistry: 'pictures/chemistry.jpg',
+          geography: 'pictures/geography.jpg',
+          history: 'pictures/history.jpg',
+          music: 'pictures/music.jpg'
+        };
+        const backgroundUrl = backgroundMap[note.background] || note.background;
+        noteContent.style.backgroundImage = `url(${backgroundUrl})`;
+        noteContent.style.backgroundSize = 'cover';
+        noteContent.style.backgroundPosition = 'center';
+        noteContent.dataset.background = note.background;
+      } else {
+        noteContent.style.backgroundImage = '';
+        noteContent.dataset.background = '';
+      }
+
+      currentNoteIndex = index;
+      document.getElementById('notes-modal').classList.remove('hidden');
+      document.body.classList.add('modal-open');
+    }
+
+    function deleteNote(index) {
+      notesArray.splice(index, 1);
+      renderNotesHistory();
+    }
+  </script>
+</body>
+</html>

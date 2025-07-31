@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Tutor Reels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link href="../css/root_theme.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: "Arial", sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        nav {
+            background-color: var(--nav-bg);
+            color: var(--nav-link);
+            transition: background-color 0.3s ease;
+        }
+
+        nav a {
+            color: var(--nav-link);
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        nav a:hover {
+            color: var(--nav-link-hover);
+            transform: translateY(-2px);
+        }
+
+        #mobile-menu {
+            background-color: var(--nav-bg);
+            transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        #mobile-menu.open {
+            max-height: 500px;
+            opacity: 1;
+            display: block;
+        }
+
+        #mobile-menu a:hover,
+        #mobile-theme-toggle-btn:hover {
+            background-color: var(--highlight-bg);
+            transform: translateX(5px);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: var(--heading);
+            transition: color 0.3s ease;
+        }
+
+        .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .cta-button:hover {
+            background-color: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        .cta-button:active {
+            background-color: var(--button-active);
+            transform: scale(0.95);
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+            transform: scale(0.7);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .modal-content.open {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .modal-content input,
+        .modal-content textarea {
+            background-color: var(--modal-input-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+            transition: border-color 0.2s ease;
+        }
+
+        .modal-content textarea::placeholder {
+            color: var(--modal-text);
+            opacity: 0.6;
+        }
+
+        #theme-toggle-btn,
+        #mobile-theme-toggle-btn {
+            background-color: transparent;
+            color: var(--nav-link);
+            transition: color 0.2s ease;
+        }
+
+        #theme-toggle-btn:hover,
+        #mobile-theme-toggle-btn:hover {
+            color: var(--nav-link-hover);
+        }
+
+        video {
+            background-color: var(--modal-bg);
+            border-radius: 1rem;
+        }
+
+        .reel-card {
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+
+        .reel-card:hover {
+            background-color: var(--highlight-bg);
+            transform: translateY(-5px);
+        }
+
+        .filter-button {
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .filter-button.active {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transform: scale(1.1);
+        }
+
+        .filter-button:hover {
+            background-color: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        .profile-dropdown {
+            transition: opacity 0.3s ease, max-height 0.3s ease-in-out;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .profile-dropdown.open {
+            max-height: 300px;
+            opacity: 1;
+        }
+
+        .nav-arrow {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease;
+        }
+
+        .nav-arrow:hover {
+            transform: scale(1.2);
+            opacity: 0.9;
+            background-color: var(--button-hover);
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            background-color: var(--button-bg);
+        }
+
+        #nav-search-input,
+        #mobile-search-input {
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        #nav-search-input:focus,
+        #mobile-search-input:focus {
+            border-color: var(--button-bg);
+            box-shadow: 0 0 0 3px rgba(var(--button-bg-rgb), 0.2);
+        }
+
+        #nav-search-input {
+            width: 200px;
+        }
+
+        @media (max-width: 768px) {
+            #nav-search-input {
+                display: none;
+            }
+        }
+
+        /* Enhanced Like/Dislike Buttons */
+        .like-button,
+        .dislike-button {
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+            position: relative;
+        }
+
+        .like-button:hover,
+        .dislike-button:hover {
+            background-color: var(--highlight-bg);
+            transform: scale(1.1);
+        }
+
+        .like-button:active,
+        .dislike-button:active {
+            transform: scale(0.9);
+        }
+
+        .like-button.liked svg {
+            fill: var(--button-bg);
+            stroke: var(--button-bg);
+        }
+
+        .dislike-button.disliked svg {
+            fill: red;
+            stroke: red;
+        }
+
+        /* Tooltip Styling */
+        .like-button::after,
+        .dislike-button::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-0.5rem);
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .like-button:hover::after,
+        .dislike-button:hover::after {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-1rem);
+        }
+
+        /* Comment Modal Z-Index */
+        #comment-modal {
+            z-index: 30; /* Higher than video-modal (z-20) */
+        }
+
+        /* Ad Placeholder */
+        .ad-placeholder {
+            position: relative;
+            width: 100%;
+            height: 100px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .ad-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+        .ad-image.active {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav
+        class="py-4 top-0 shadow-sm z-50 w-full fixed"
+        style="background-color: var(--footer-bg);"
+        role="navigation"
+        aria-label="Main navigation"
+    >
+        <div class="container mx-auto flex justify-between items-center px-4">
+            <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <input
+                    id="nav-search-input"
+                    class="p-2 border rounded-lg"
+                    type="text"
+                    placeholder="Search videos..."
+                    aria-label="Search videos"
+                />
+                <a href="news.html" class="hover:text-[var(--nav-link-hover)]">News</a>
+                <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]"
+                    >Find tutors</a
+                >
+                <a href="store.html" class="hover:text-[var(--nav-link-hover)]">Store</a>
+                <a href="find-jobs.html" class="hover:text-[var(--nav-link-hover)]"
+                    >Find a Job</a
+                >
+                <div id="profile-container" class="profile-container relative">
+                    <button
+                        class="flex items-center gap-2 focus:outline-none px-2 py-1 rounded transition-all duration-200"
+                        onclick="toggleProfileDropdown()"
+                        aria-expanded="false"
+                        aria-label="Profile menu"
+                    >
+                        <img
+                            id="profile-pic"
+                            class="profile-pic w-8 h-8 rounded-full"
+                            src="https://picsum.photos/32"
+                            alt="Profile Picture"
+                        />
+                        <span id="profile-name" class="nav-link text-sm"></span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M19 9l-7 7-7-7"
+                            />
+                        </svg>
+                    </button>
+                    <div
+                        id="profile-dropdown"
+                        class="profile-dropdown absolute top-full right-0 mt-2 w-48 bg-[var(--nav-bg)] shadow-lg rounded-lg"
+                    >
+                        <a
+                            href="profile.html"
+                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)]"
+                            >View Profile</a
+                        >
+                        <a
+                            href="notes.html"
+                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)]"
+                            >Notes</a
+                        >
+                        <a
+                            href="finances.html"
+                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)]"
+                            >Manage Finances</a
+                        >
+                        <a
+                            href="comment-rate.html"
+                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)]"
+                            >Comment and Rate</a
+                        >
+                        <button
+                            onclick="shareProfile()"
+                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)] w-full text-left"
+                        >
+                            Share
+                        </button>
+                    </div>
+                </div>
+                <button
+                    id="notification-bell"
+                    class="relative focus:outline-none"
+                    onclick="openNotificationModal()"
+                    aria-label="View notifications"
+                >
+                    <svg
+                        class="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"
+                        />
+                    </svg>
+                    <span
+                        id="notification-dot"
+                        class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"
+                    ></span>
+                </button>
+                <button
+                    id="theme-toggle-btn"
+                    class="focus:outline-none"
+                    aria-label="Toggle theme"
+                >
+                    <svg
+                        class="w-6 h-6"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                    </svg>
+                </button>
+            </div>
+            <button
+                id="menu-btn"
+                class="md:hidden focus:outline-none"
+                aria-label="Toggle menu"
+                aria-expanded="false"
+            >
+                <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M4 6h16M4 12h16m-7 6h7"
+                    />
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden">
+            <div class="px-4 py-2">
+                <input
+                    id="mobile-search-input"
+                    class="w-full p-2 border rounded-lg"
+                    type="text"
+                    placeholder="Search videos..."
+                    aria-label="Search videos"
+                />
+            </div>
+            <a
+                href="news.html"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)]"
+                >News</a
+            >
+            <a
+                href="find-tutors.html"
+                class="hover:text-[var(--nav-link-hover)] block py-2 px-4"
+                >Find tutors</a
+            >
+            <a
+                href="store.html"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)]"
+                >Store</a
+            >
+            <a
+                href="jobs.html"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)]"
+                >Find a Job</a
+            >
+            <button
+                id="mobile-notification-bell"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative"
+                onclick="openNotificationModal()"
+                aria-label="View notifications"
+            >
+                Notifications
+                <span
+                    id="mobile-notification-dot"
+                    class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"
+                ></span>
+            </button>
+            <button
+                id="mobile-theme-toggle-btn"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left"
+                aria-label="Toggle theme"
+            >
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <!-- Reels Section -->
+    <section class="py-16 mt-16">
+        <div class="container mx-auto px-4">
+            <!-- Ad Placeholder -->
+            <div id="ad-placeholder" class="ad-placeholder">
+                <img
+                    src="https://via.placeholder.com/728x90?text=Ad+1"
+                    alt="Advertisement 1"
+                    class="ad-image active"
+                />
+                <img
+                    src="https://via.placeholder.com/728x90?text=Ad+2"
+                    alt="Advertisement 2"
+                    class="ad-image"
+                />
+                <img
+                    src="https://via.placeholder.com/728x90?text=Ad+3"
+                    alt="Advertisement 3"
+                    class="ad-image"
+                />
+            </div>
+            <div class="flex flex-wrap gap-4 mb-8">
+                <button
+                    class="filter-button px-4 py-2 rounded-lg cta-button active"
+                    onclick="filterReels('all')"
+                    data-filter="all"
+                >
+                    All Videos
+                </button>
+                <button
+                    class="filter-button px-4 py-2 rounded-lg cta-button"
+                    onclick="filterReels('saved')"
+                    data-filter="saved"
+                >
+                    Saved
+                </button>
+                <button
+                    class="filter-button px-4 py-2 rounded-lg cta-button"
+                    onclick="filterReels('liked')"
+                    data-filter="liked"
+                >
+                    Liked Videos
+                </button>
+                <button
+                    class="filter-button px-4 py-2 rounded-lg cta-button"
+                    onclick="filterReels('history')"
+                    data-filter="history"
+                >
+                    History
+                </button>
+            </div>
+            <div
+                id="reels-grid"
+                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            ></div>
+        </div>
+    </section>
+
+    <!-- Comment Modal -->
+    <div
+        id="comment-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-30"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Comments"
+    >
+        <div
+            class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto"
+        >
+            <h3 class="text-2xl font-bold mb-4">Comments</h3>
+            <div id="comment-list" class="mb-4"></div>
+            <textarea
+                id="new-comment"
+                class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Add a comment..."
+                disabled
+            ></textarea>
+            <button
+                id="submit-comment"
+                class="cta-button px-4 py-2 rounded-lg w-full"
+                onclick="addComment()"
+                disabled
+            >
+                Add Comment
+            </button>
+            <button onclick="closeCommentModal()" class="mt-4 hover:underline">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div
+        id="notification-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Notifications"
+    >
+        <div
+            class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto"
+        >
+            <h3 class="text-2xl font-bold mb-4">Notifications</h3>
+            <div id="notification-content">You have no notifications.</div>
+            <button
+                onclick="closeNotificationModal()"
+                class="mt-4 hover:underline"
+            >
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Video View Modal -->
+    <div
+        id="video-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog"
+        aria-modal="true"
+        aria-label="View Video"
+    >
+        <div
+            class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative flex flex-col"
+        >
+            <div class="flex justify-between items-center mb-4">
+                <button
+                    id="prev-video-btn"
+                    class="nav-arrow"
+                    onclick="navigateVideo('prev')"
+                    aria-label="Previous video"
+                    disabled
+                >
+                    <svg
+                        class="w-8 h-8"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 19l-7-7 7-7"
+                        />
+                    </svg>
+                </button>
+                <button
+                    id="next-video-btn"
+                    class="nav-arrow"
+                    onclick="navigateVideo('next')"
+                    aria-label="Next video"
+                    disabled
+                >
+                    <svg
+                        class="w-8 h-8"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"
+                        />
+                    </svg>
+                </button>
+            </div>
+            <div id="video-content"></div>
+            <button onclick="closeVideoModal()" class="mt-4 hover:underline">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Playlist Modal -->
+    <div
+        id="playlist-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Create Playlist"
+    >
+        <div
+            class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto"
+        >
+            <h3 class="text-2xl font-bold mb-4">Add to Playlist</h3>
+            <input
+                id="new-playlist-name"
+                class="w-full p-2 border rounded-lg mb-4"
+                placeholder="New playlist name"
+                type="text"
+            />
+            <button
+                onclick="createPlaylist()"
+                class="cta-button px-4 py-2 rounded-lg w-full mb-4"
+            >
+                Create Playlist
+            </button>
+            <div id="existing-playlists" class="mb-4"></div>
+            <button onclick="closePlaylistModal()" class="mt-4 hover:underline">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center md:text-left">
+                    <h3
+                        class="text-lg font-semibold mb-4"
+                        style="color: var(--heading);"
+                    >
+                        Quick Links
+                    </h3>
+                    <ul class="space-y-2">
+                        <li>
+                            <a
+                                class="nav-link hover:underline"
+                                href="../index.html"
+                                >Home</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                class="nav-link hover:underline"
+                                href="#contact"
+                                >Contact Us</a
+                            >
+                        </li>
+                        <li>
+                            <button
+                                class="nav-link hover:underline bg-transparent border-none p-0"
+                                onclick="openLoginRegisterModal()"
+                            >
+                                Login/Register
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                class="nav-link hover:underline bg-transparent border-none p-0"
+                                onclick="openAdvertiseModal()"
+                            >
+                                Advertise
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3
+                        class="text-lg font-semibold mb-4"
+                        style="color: var(--heading);"
+                    >
+                        Newsletter
+                    </h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <div class="mt-4 flex flex-col items-center md:items-start">
+                        <input
+                            class="w-full max-w-xs p-2 border rounded-lg mb-4"
+                            placeholder="Enter your email"
+                            type="email"
+                        />
+                        <button
+                            class="cta-button px-4 py-2 rounded-lg w-full max-w-xs"
+                        >
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3
+                        class="text-lg font-semibold mb-4"
+                        style="color: var(--heading);"
+                    >
+                        Get in Touch
+                    </h3>
+                    <p class="mb-2">
+                        Email:
+                        <a
+                            class="nav-link hover:underline"
+                            href="mailto:info@astegni.et"
+                            >info@astegni.et</a
+                        >
+                    </p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg
+                                class="w-6 h-6"
+                                fill="var(--footer-text)"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
+                                />
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg
+                                class="w-6 h-6"
+                                fill="var(--footer-text)"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                                />
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg
+                                class="w-6 h-6"
+                                fill="var(--footer-text)"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"
+                                />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">
+                    Join us with only 500 birr registration fee and 200 birr/month
+                </p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Interactivity -->
+    <script type="text/javascript">
+        // XLSX File Handling
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+            return cell !== "" && cell != null;
+        }
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], {
+                        type: "base64",
+                    });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, {
+                        header: 1,
+                        blankrows: false,
+                        commentId: "",
+                    });
+                    var filteredData = jsonData.filter(row =>
+                        row.some(filledCell)
+                    );
+                    var headerRowIndex = filteredData.findIndex(
+                        (row, index) =>
+                            row.filter(filledCell).length >=
+                            filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    if (headerRowIndex === -1 || headerRowIndex >= 25) {
+                        headerRowIndex = 0;
+                    }
+                    var csv = XLSX.utils.sheet_to_csv(
+                        filteredData.slice(headerRowIndex),
+                        { header: 1 }
+                    );
+                    return csv;
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute("data-theme");
+            const newTheme = currentTheme === "light" ? "dark" : "light";
+            html.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+            updateThemeToggleIcon(newTheme);
+        }
+
+        function updateThemeToggleIcon(theme) {
+            const icon =
+                theme === "light"
+                    ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>`
+                    : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+            const themeToggle = document.getElementById("theme-toggle-btn");
+            themeToggle.querySelector("svg").innerHTML = icon;
+            const mobileThemeToggle = document.getElementById(
+                "mobile-theme-toggle-btn"
+            );
+            mobileThemeToggle.innerHTML = `Toggle Theme <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${icon}</svg>`;
+        }
+
+        // Data Objects
+        const currentUser = {
+            id: 1,
+            email: "user@astegni.et",
+            role: window.location.pathname.includes("tutor-profile.html")
+                ? "Tutor"
+                : window.location.pathname.includes("student-profile.html")
+                    ? "Student"
+                    : "User",
+        };
+        const tutors = {
+            1: {
+                id: 1,
+                name: "Abebe Kebede",
+                email: "abebe@tutor.et",
+                subject: "Mathematics",
+            },
+            2: {
+                id: 2,
+                name: "Mulu Alem",
+                email: "mulu@tutor.et",
+                subject: "Science",
+            },
+        };
+        const reels = {
+            1: {
+                id: 1,
+                tutorId: 1,
+                videoUrl:
+                    "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
+                title: "Math Tricks",
+                videoNumber: "#001",
+                description: "Fun math tricks!",
+                date: "2025-05-20",
+            },
+            2: {
+                id: 2,
+                tutorId: 2,
+                videoUrl:
+                    "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
+                title: "Science Experiments",
+                videoNumber: "#002",
+                description: "Science experiments!",
+                date: "2025-05-21",
+            },
+        };
+        const likes = {
+            1: { reelId: 1, userIds: [] },
+            2: { reelId: 2, userIds: [] },
+        };
+        const dislikes = {
+            1: { reelId: 1, userIds: [] },
+            2: { reelId: 2, userIds: [] },
+        };
+        const comments = {
+            1: {
+                reelId: 1,
+                comments: [
+                    { userId: 1, text: "Great video!", date: "2025-05-20" },
+                ],
+            },
+            2: { reelId: 2, comments: [] },
+        };
+        const follows = {
+            1: { tutorId: 1, userIds: [] },
+            2: { tutorId: 2, userIds: [] },
+        };
+        const savedVideos = {
+            1: { reelId: 1, userIds: [], playlists: {} },
+            2: { reelId: 2, userIds: [], playlists: {} },
+        };
+        const history = {
+            1: { reelId: 1, userIds: [] },
+            2: { reelId: 2, userIds: [] },
+        };
+        const playlists = {};
+        const notifications = {};
+        const logs = {};
+
+        // Video Navigation State
+        let currentVideoIndex = 0;
+        let currentFilter = "all";
+        let filteredReelIds = Object.keys(reels).map(Number);
+        let searchQuery = "";
+        let selectedReelId = null;
+        let focusBeforeModal = null;
+
+        // Ad Rotation
+        function rotateAds() {
+            const adContainer = document.getElementById("ad-placeholder");
+            const ads = adContainer.querySelectorAll(".ad-image");
+            let currentAdIndex = 0;
+
+            function showNextAd() {
+                ads[currentAdIndex].classList.remove("active");
+                currentAdIndex = (currentAdIndex + 1) % ads.length;
+                ads[currentAdIndex].classList.add("active");
+            }
+
+            ads[currentAdIndex].classList.add("active");
+            setInterval(showNextAd, 7000);
+        }
+
+        // Initialize
+        function init() {
+            if (currentUser) {
+                document.getElementById("new-comment").disabled = false;
+                document.getElementById("submit-comment").disabled = false;
+            }
+            updateProfileDropdown();
+            updateReels("all");
+            checkNotifications();
+            document
+                .getElementById("nav-search-input")
+                .addEventListener("input", handleSearch);
+            document
+                .getElementById("mobile-search-input")
+                .addEventListener("input", handleSearch);
+            rotateAds();
+        }
+
+        // Search Handler
+        function handleSearch(e) {
+            searchQuery = e.target.value.trim().toLowerCase();
+            updateReels(currentFilter);
+            document.getElementById("nav-search-input").value = searchQuery;
+            document.getElementById("mobile-search-input").value = searchQuery;
+        }
+
+        // Profile Dropdown
+        function updateProfileDropdown() {
+            const dropdown = document.getElementById("profile-dropdown");
+            let extraItems = "";
+            if (currentUser.role === "Tutor") {
+                extraItems = `
+                    <a href="quiz.html" class="block px-4 py-2 hover:bg-[var(--highlight-bg)]">Take a Quiz</a>
+                    <a href="tools.html" class="block px-4 py-2 hover:bg-[var(--highlight-bg)]">Tools</a>
+                `;
+            } else if (currentUser.role === "Student") {
+                extraItems = `
+                    <a href="tools.html" class="block px-2 py-4 hover:bg-[var(--highlight-bg)]">Tools</a>
+                    <a href="become-tutor.html" class="block px-2 py-4 hover:bg-[var(--highlight-bg)]">Become a Tutor</a>
+                    <a href="wishlist.html" class="block px-2 py-2 hover:bg-[var(--highlight-bg)]">Wishlist</a>
+                    <a href="favorites.html" class="block px-4 py-2 hover:bg-[var(--highlight-bg)]">Favorites</a>
+                    <a href="requested-courses.html" class="block px-2 py-4 hover:bg-[var(--highlight-bg)]">Requested Courses</a>
+                `;
+            }
+            dropdown.innerHTML = `
+                <a href="profile.html" class="block px-4 py-2 hover:bg-[var(--highlight-bg)]">View Profile</a>
+                <a href="notes.html" class="block px-4 py-2 hover:bg-[var(--highlight-bg)]">Notes</a>
+                <a href="finances.html" class="block px-4 py-2 hover:bg-[var(--highlight-bg)]">Manage Finances</a>
+                <a href="comment-rate.html" class="block px-4 py-2 hover:bg-[var(--highlight-bg)]">Comment and Rate</a>
+                <button onclick="shareProfile()" class="block px-4 py-2 hover:bg-[var(--highlight-bg)] w-full text-left">Share</button>
+                ${extraItems}
+            `;
+        }
+
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById("profile-dropdown");
+            const isOpen = dropdown.classList.contains("open");
+            dropdown.classList.toggle("open");
+            document
+                .querySelector("#profile-container button")
+                .setAttribute("aria-expanded", !isOpen);
+        }
+
+        function shareProfile() {
+            const url = `https://astegni.netlify.app/profile/${currentUser.id}`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert("Profile link copied to clipboard!");
+                logAction('Shared profile ${currentUser.id}');
+            });
+        }
+
+        // Filter Reels
+        function filterReels(filter) {
+            currentFilter = filter;
+            const buttons = document.querySelectorAll(".filter-button");
+            buttons.forEach(btn => {
+                btn.classList.toggle("active", btn.dataset.filter === filter);
+            });
+            updateReels(filter);
+        }
+
+        // Update Reels Grid
+        function updateReels(filter) {
+            const reelsGrid = document.getElementById("reels-grid");
+            reelsGrid.innerHTML = "";
+            let filteredReels = Object.values(reels);
+            filteredReelIds = Object.keys(reels).map(Number);
+            if (filter === "saved") {
+                filteredReels = filteredReels.filter(reel =>
+                    savedVideos[reel.id]?.userIds?.includes(currentUser?.id)
+                );
+                filteredReelIds = filteredReels.map(reel => reel.id);
+            } else if (filter === "liked") {
+                filteredReels = filteredReels.filter(reel =>
+                    likes[reel.id]?.userIds?.includes(currentUser?.id)
+                );
+                filteredReelIds = filteredReels.map(reel => reel.id);
+            } else if (filter === "history") {
+                filteredReels = filteredReels.filter(reel =>
+                    history[reel.id]?.userIds?.includes(currentUser?.id)
+                );
+                filteredReelIds = filteredReels.map(reel => reel.id);
+            }
+            if (searchQuery) {
+                filteredReels = filteredReels.filter(reel => {
+                    const tutor = tutors[reel.tutorId];
+                    return (
+                        tutor?.name?.toLowerCase().includes(searchQuery) ||
+                        reel?.title?.toLowerCase().includes(searchQuery) ||
+                        reel?.description?.toLowerCase().includes(searchQuery) ||
+                        tutor?.subject?.toLowerCase().includes(searchQuery) ||
+                        reel?.date?.toLowerCase().includes(searchQuery) ||
+                        reel?.videoNumber?.toLowerCase().includes(searchQuery)
+                    );
+                });
+                filteredReelIds = filteredReels.map(reel => reel.id);
+            }
+            if (filteredReels.length === 0) {
+                reelsGrid.innerHTML =
+                    '<p class="col-span-full text-center">No videos found.</p>';
+                return;
+            }
+            filteredReels.forEach(reel => {
+                const tutor = tutors[reel.tutorId];
+                const likeCount = likes[reel.id]?.userIds?.length || 0;
+                const dislikeCount = dislikes[reel.id]?.userIds?.length || 0;
+                const commentCount = comments[reel.id]?.comments?.length || 0;
+                const isLike = likes[reel.id]?.userIds?.includes(currentUser?.id);
+                const isDislike = dislikes[reel.id]?.userIds?.includes(currentUser?.id);
+                const isSaved = savedVideos[reel.id]?.userIds?.includes(currentUser?.id);
+                const isFollowed = follows[reel.tutorId]?.userIds?.includes(currentUser?.id);
+                const div = document.createElement("div");
+                div.className = "reel-card p-4 rounded-lg shadow-lg";
+                div.style.backgroundColor = "var(--highlight-bg)";
+                div.innerHTML = `
+                    <video class="w-full h-48 object-cover rounded-full cursor-pointer" onclick="openVideoModal(${reel.id})" style="aspect-ratio: 1;">
+                        <source src="${reel.videoUrl}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <h3 class="text-lg font-semibold">${reel.title} ${reel.videoNumber}</h3>
+                    <p class="text-sm"><a href="view-tutor.html?tutorId=${tutor.id}" class="hover:text-[var(--nav-link-hover)]">${tutor.name}</a> (${tutor.subject})</p>
+                    <p class="mb-4">${reel.description}</p>
+                    <p class="text-sm mb-4 opacity-70">${reel.date}</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button id="like-btn-${reel.id}" class="like-button flex items-center ${isLike ? "liked" : ""}" 
+                            onclick="toggleLike(${reel.id})" ${!currentUser ? "disabled" : ""} data-tooltip="${isLike ? "Unlike" : "Like"}">
+                            <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                            </svg>
+                            ${likeCount}
+                        </button>
+                        <button id="dislike-btn-${reel.id}" class="dislike-button flex items-center ${isDislike ? "disliked" : ""}" 
+                            onclick="toggleDislike(${reel.id})" ${!currentUser ? "disabled" : ""} data-tooltip="${isDislike ? "Undislike" : "Dislike"}">
+                            <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                            ${dislikeCount}
+                        </button>
+                        <button class="flex items-center hover:text-[var(--nav-link-hover)]" 
+                            onclick="openCommentModal(${reel.id})" aria-label="View comments">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.05M12 10h.05M16 10h.05M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                            </svg>
+                            ${commentCount}
+                        </button>
+                        <button class="flex items-center hover:text-[var(--nav-link-hover)]" 
+                            onclick="shareReel(${reel.id})" aria-label="Share reel">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                            </svg>
+                            Share
+                        </button>
+                        <button id="save-btn-${reel.id}" class="flex items-center hover:text-[var(--nav-link-hover)] ${isSaved ? "text-[var(--button-bg)]" : ""}" 
+                            onclick="openPlaylistModal(${reel.id})" ${!currentUser ? "disabled" : ""} aria-label="${isSaved ? "Unsave" : "Save"} reel">
+                            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                            </svg>
+                            Save
+                        </button>
+                        <button id="follow-btn-${reel.tutorId}" class="flex items-center px-3 py-1 rounded-lg ${isFollowed ? "bg-gray-600 text-white" : "cta-button"}" 
+                            onclick="toggleFollow(${reel.tutorId})" ${!currentUser ? "disabled" : ""} aria-label="${isFollowed ? "Unfollow" : "Follow"}">
+                            ${isFollowed ? "Unfollow" : "Follow"}
+                        </button>
+                    </div>
+                `;
+                reelsGrid.appendChild(div);
+            });
+            updateVideoNavigation();
+        }
+
+        // Toggle Like
+        function toggleLike(reelId) {
+            if (!likes[reelId]) likes[reelId] = { reelId, userIds: [] };
+            const userId = currentUser.id;
+            const isLiked = likes[reelId].userIds.includes(userId);
+            if (isLiked) {
+                likes[reelId].userIds = likes[reelId].userIds.filter(
+                    id => id !== userId
+                );
+            } else {
+                likes[reelId].userIds.push(userId);
+                if (dislikes[reelId]?.userIds.includes(userId)) {
+                    dislikes[reelId].userIds = dislikes[reelId].userIds.filter(
+                        id => id !== userId
+                    );
+                }
+            }
+            logAction(`${isLiked ? "Unliked" : "Liked"} reel ${reelId}`);
+            updateReels(currentFilter);
+            if (
+                !document.getElementById("video-modal").classList.contains("hidden")
+            ) {
+                updateVideoModal(filteredReelIds[currentVideoIndex]);
+            }
+        }
+
+        // Toggle Dislike
+        function toggleDislike(reelId) {
+            if (!dislikes[reelId])
+                dislikes[reelId] = { reelId, userIds: [] };
+            const userId = currentUser.id;
+            const isDisliked = dislikes[reelId].userIds.includes(userId);
+            if (isDisliked) {
+                dislikes[reelId].userIds = dislikes[reelId].userIds.filter(
+                    id => id !== userId
+                );
+            } else {
+                dislikes[reelId].userIds.push(userId);
+                if (likes[reelId]?.userIds.includes(userId)) {
+                    likes[reelId].userIds = likes[reelId].userIds.filter(
+                        id => id !== userId
+                    );
+                }
+            }
+            logAction(`${isDisliked ? "Undisliked" : "Disliked"} reel ${reelId}`);
+            updateReels(currentFilter);
+            if (
+                !document.getElementById("video-modal").classList.contains("hidden")
+            ) {
+                updateVideoModal(filteredReelIds[currentVideoIndex]);
+            }
+        }
+
+        // Open Comment Modal
+        function openCommentModal(reelId) {
+            selectedReelId = reelId;
+            updateCommentList();
+            document.getElementById("comment-modal").classList.remove("hidden");
+            document
+                .querySelector("#comment-modal .modal-content")
+                .classList.add("open");
+            trapFocus(document.getElementById("comment-modal"));
+        }
+
+        // Close Comment Modal
+        function closeCommentModal() {
+            document.getElementById("comment-modal").classList.add("hidden");
+            document
+                .querySelector("#comment-modal .modal-content")
+                .classList.remove("open");
+            restoreFocus();
+            selectedReelId = null;
+        }
+
+        // Share Reel
+        function shareReel(reelId) {
+            const reel = reels[reelId];
+            const url = `https://astegni.netlify.app/reel/${reelId}`;
+            navigator.clipboard.writeText(url).then(() => {
+                alert(`Reel "${reel.title}" link copied to clipboard!`);
+                logAction(`Shared reel ${reelId}`);
+            });
+        }
+
+        // Open Playlist Modal
+        function openPlaylistModal(reelId) {
+            selectedReelId = reelId;
+            updatePlaylistList();
+            document.getElementById("playlist-modal").classList.remove("hidden");
+            document
+                .querySelector("#playlist-modal .modal-content")
+                .classList.add("open");
+            trapFocus(document.getElementById("playlist-modal"));
+        }
+
+        // Close Playlist Modal
+        function closePlaylistModal() {
+            document.getElementById("playlist-modal").classList.add("hidden");
+            document
+                .querySelector("#playlist-modal .modal-content")
+                .classList.remove("open");
+            restoreFocus();
+            selectedReelId = null;
+        }
+
+        // Create Playlist
+        function createPlaylist() {
+            const playlistName = document
+                .getElementById("new-playlist-name")
+                .value.trim();
+            if (!playlistName) {
+                alert("Please enter a playlist name");
+                return;
+            }
+            const playlistId = Object.keys(playlists).length + 1;
+            playlists[playlistId] = {
+                id: playlistId,
+                name: playlistName,
+                reelIds: [selectedReelId],
+            };
+            savedVideos[selectedReelId].playlists[playlistId] = true;
+            savedVideos[selectedReelId].userIds.push(currentUser.id);
+            logAction(`Created playlist ${playlistName} with reel ${selectedReelId}`);
+            updatePlaylistList();
+            document.getElementById("new-playlist-name").value = "";
+            updateReels(currentFilter);
+        }
+
+        // Update Playlist List
+        function updatePlaylistList() {
+            const playlistList = document.getElementById("existing-playlists");
+            playlistList.innerHTML = "";
+            Object.values(playlists).forEach(playlist => {
+                const isInPlaylist =
+                    playlist.reelIds.includes(selectedReelId);
+                const div = document.createElement("div");
+                div.className = "flex items-center mb-2";
+                div.innerHTML = `
+                    <input type="checkbox" id="playlist-${playlist.id}" ${
+                        isInPlaylist ? "checked" : ""
+                    } class="mr-2" onchange="togglePlaylist(${playlist.id}, ${selectedReelId})">
+                    <label for="playlist-${playlist.id}">${playlist.name}</label>
+                `;
+                playlistList.appendChild(div);
+            });
+        }
+
+        // Toggle Playlist
+        function togglePlaylist(playlistId, reelId) {
+            const playlist = playlists[playlistId];
+            const isInPlaylist = playlist.reelIds.includes(reelId);
+            if (isInPlaylist) {
+                playlist.reelIds = playlist.reelIds.filter(id => id !== reelId);
+                delete savedVideos[reelId].playlists[playlistId];
+                if (!Object.keys(savedVideos[reelId].playlists).length) {
+                    savedVideos[reelId].userIds = savedVideos[
+                        reelId
+                    ].userIds.filter(id => id !== currentUser.id);
+                }
+            } else {
+                playlist.reelIds.push(reelId);
+                savedVideos[reelId].playlists[playlistId] = true;
+                if (!savedVideos[reelId].userIds.includes(currentUser.id)) {
+                    savedVideos[reelId].userIds.push(currentUser.id);
+                }
+            }
+            logAction(
+                `${isInPlaylist ? "Removed" : "Added"} reel ${reelId} ${
+                    isInPlaylist ? "from" : "to"
+                } playlist ${playlist.name}`
+            );
+            updateReels(currentFilter);
+        }
+
+        // Open Video Modal
+        function openVideoModal(reelId) {
+            currentVideoIndex = filteredReelIds.indexOf(reelId);
+            updateVideoModal(reelId);
+            document.getElementById("video-modal").classList.remove("hidden");
+            document
+                .querySelector("#video-modal .modal-content")
+                .classList.add("open");
+            trapFocus(document.getElementById("video-modal"));
+            if (!history[reelId]) history[reelId] = { reelId, userIds: [] };
+            if (!history[reelId].userIds.includes(currentUser.id)) {
+                history[reelId].userIds.push(currentUser.id);
+                logAction(`Viewed reel ${reelId}`);
+            }
+        }
+
+        // Update Video Modal
+        function updateVideoModal(reelId) {
+            const reel = reels[reelId];
+            const tutor = tutors[reel.tutorId];
+            const likeCount = likes[reelId]?.userIds?.length || 0;
+            const dislikeCount = dislikes[reelId]?.userIds?.length || 0;
+            const commentCount = comments[reelId]?.comments?.length || 0;
+            const isLiked = likes[reelId]?.userIds?.includes(currentUser?.id);
+            const isDisliked = dislikes[reelId]?.userIds?.includes(
+                currentUser?.id
+            );
+            const isSaved = savedVideos[reelId]?.userIds?.includes(
+                currentUser?.id
+            );
+            const isFollowed = follows[reel.tutorId]?.userIds?.includes(
+                currentUser?.id
+            );
+            const videoContent = document.getElementById("video-content");
+            videoContent.innerHTML = `
+                <video class="w-full h-auto rounded-lg" controls autoplay>
+                    <source src="${reel.videoUrl}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <h3 class="text-xl font-bold mt-4">${reel.title} ${reel.videoNumber}</h3>
+                <p class="text-sm"><a href="view-tutor.html?tutorId=${tutor.id}" class="hover:text-[var(--nav-link-hover)]">${tutor.name}</a> (${tutor.subject})</p>
+                <p class="mt-2">${reel.description}</p>
+                <p class="text-sm mt-2 opacity-70">${reel.date}</p>
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <button id="like-btn-modal-${reelId}" class="like-button flex items-center ${isLiked ? "liked" : ""}" 
+                        onclick="toggleLike(${reelId})" ${!currentUser ? "disabled" : ""} data-tooltip="${isLiked ? "Unlike" : "Like"}">
+                        <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                        </svg>
+                        ${likeCount}
+                    </button>
+                    <button id="dislike-btn-modal-${reelId}" class="dislike-button flex items-center ${isDisliked ? "disliked" : ""}" 
+                        onclick="toggleDislike(${reelId})" ${!currentUser ? "disabled" : ""} data-tooltip="${isDisliked ? "Undislike" : "Dislike"}">
+                        <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                        ${dislikeCount}
+                    </button>
+                    <button class="flex items-center hover:text-[var(--nav-link-hover)]" 
+                        onclick="openCommentModal(${reelId})" aria-label="View comments">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.05M12 10h.05M16 10h.05M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                        </svg>
+                        ${commentCount}
+                    </button>
+                    <button class="flex items-center hover:text-[var(--nav-link-hover)]" 
+                        onclick="shareReel(${reelId})" aria-label="Share reel">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                        </svg>
+                        Share
+                    </button>
+                    <button id="save-btn-modal-${reelId}" class="flex items-center hover:text-[var(--nav-link-hover)] ${isSaved ? "text-[var(--button-bg)]" : ""}" 
+                        onclick="openPlaylistModal(${reelId})" ${!currentUser ? "disabled" : ""} aria-label="${isSaved ? "Unsave" : "Save"} reel">
+                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                        </svg>
+                        Save
+                    </button>
+                    <button id="follow-btn-modal-${reel.tutorId}" class="flex items-center px-3 py-1 rounded-lg ${isFollowed ? "bg-gray-600 text-white" : "cta-button"}" 
+                        onclick="toggleFollow(${reel.tutorId})" ${!currentUser ? "disabled" : ""} aria-label="${isFollowed ? "Unfollow" : "Follow"}">
+                        ${isFollowed ? "Unfollow" : "Follow"}
+                    </button>
+                </div>
+            `;
+            updateVideoNavigation();
+        }
+
+        // Close Video Modal
+        function closeVideoModal() {
+            document.getElementById("video-modal").classList.add("hidden");
+            document
+                .querySelector("#video-modal .modal-content")
+                .classList.remove("open");
+            restoreFocus();
+        }
+
+        // Update Video Navigation
+        function updateVideoNavigation() {
+            const prevBtn = document.getElementById("prev-video-btn");
+            const nextBtn = document.getElementById("next-video-btn");
+            prevBtn.disabled = currentVideoIndex === 0;
+            nextBtn.disabled = currentVideoIndex === filteredReelIds.length - 1;
+        }
+
+        // Navigate Video
+        function navigateVideo(direction) {
+            if (direction === "prev" && currentVideoIndex > 0) {
+                currentVideoIndex--;
+            } else if (
+                direction === "next" &&
+                currentVideoIndex < filteredReelIds.length - 1
+            ) {
+                currentVideoIndex++;
+            }
+            const newReelId = filteredReelIds[currentVideoIndex];
+            updateVideoModal(newReelId);
+            if (!history[newReelId])
+                history[newReelId] = { reelId: newReelId, userIds: [] };
+            if (!history[newReelId].userIds.includes(currentUser?.id)) {
+                history[newReelId].userIds.push(currentUser?.id);
+                logAction(`viewed reel ${newReelId}`);
+            }
+        }
+
+        // Update Comment List
+        function updateCommentList() {
+            const commentList = document.getElementById("comment-list");
+            commentList.innerHTML = "";
+            const reelComments = comments[selectedReelId]?.comments || [];
+            if (reelComments.length === 0) {
+                commentList.innerHTML = "<p>No comments yet.</p>";
+                return;
+            }
+            reelComments.forEach(comment => {
+                const div = document.createElement("div");
+                div.className = "mb-2";
+                div.innerHTML = `
+                    <p class="comment-text">${comment.text}</p>
+                    <p class="text-sm opacity-70">By User ${comment.userId} on ${comment.date}</p>
+                `;
+                commentList.appendChild(div);
+            });
+        }
+
+        // Add Comment
+        function addComment() {
+            const text = document.getElementById("new-comment").value.trim();
+            if (!text) {
+                alert("Please enter a comment");
+                return;
+            }
+            if (!comments[selectedReelId])
+                comments[selectedReelId] = { reelId: selectedReelId, comments: [] };
+            comments[selectedReelId].comments.push({
+                userId: currentUser.id,
+                text: text,
+                date: new Date().toISOString().split("T")[0],
+            });
+            logAction(`Commented on reel ${selectedReelId}: ${text}`);
+            updateCommentList();
+            document.getElementById("new-comment").value = "";
+            updateReels(currentFilter);
+            if (
+                !document.getElementById("video-modal").classList.contains("hidden")
+            ) {
+                updateVideoModal(selectedReelId);
+            }
+        }
+
+        // Toggle Follow
+        function toggleFollow(tutorId) {
+            if (!follows[tutorId])
+                follows[tutorId] = { tutorId, userIds: [] };
+            const userId = currentUser.id;
+            const isFollowed = follows[tutorId].userIds.includes(userId);
+            if (isFollowed) {
+                follows[tutorId].userIds = follows[tutorId].userIds.filter(
+                    id => id !== userId
+                );
+            } else {
+                follows[tutorId].userIds.push(userId);
+            }
+            logAction(
+                `${isFollowed ? "Unfollowed" : "Followed"} tutor ${tutorId}`
+            );
+            updateReels(currentFilter);
+            if (
+                !document.getElementById("video-modal").classList.contains("hidden")
+            ) {
+                updateVideoModal(filteredReelIds[currentVideoIndex]);
+            }
+        }
+
+        // Logging
+        function logAction(action) {
+            const logId = Object.keys(logs).length + 1;
+            logs[logId] = {
+                id: logId,
+                action,
+                userId: currentUser.id,
+                user: currentUser.email,
+                date:
+                    new Date().toISOString().split("T")[0] +
+                    " " +
+                    new Date().toTimeString().split(" ")[0],
+            };
+        }
+
+        // Notification Bell
+        function checkNotifications() {
+            const hasNotifications = Object.values(notifications).length > 0;
+            document
+                .getElementById("notification-bell")
+                .classList.toggle("hidden", !hasNotifications);
+            document
+                .getElementById("mobile-notification-bell")
+                .classList.toggle("hidden", !hasNotifications);
+            document
+                .getElementById("notification-dot")
+                .classList.toggle("hidden", !hasNotifications);
+            document
+                .getElementById("mobile-notification-dot")
+                .classList.toggle("hidden", !hasNotifications);
+        }
+
+        // Open Notification Modal
+        function openNotificationModal() {
+            const notificationContent = document.getElementById(
+                "notification-content"
+            );
+            const notificationList = Object.values(notifications);
+            if (notificationList.length === 0) {
+                notificationContent.innerHTML = "<p>You have no notifications.</p>";
+            } else {
+                notificationContent.innerHTML = notificationList
+                    .map(
+                        n => `
+                    <div class="mb-2">
+                        <p>${n.message}</p>
+                        <p class="text-sm opacity-70// Continuation of openNotificationModal
+            ${n.date}</p>
+                    </div>
+                `
+                    )
+                    .join("");
+            }
+            document.getElementById("notification-modal").classList.remove("hidden");
+            document
+                .querySelector("#notification-modal .modal-content")
+                .classList.add("open");
+            trapFocus(document.getElementById("notification-modal"));
+        }
+
+        // Close Notification Modal
+        function closeNotificationModal() {
+            document.getElementById("notification-modal").classList.add("hidden");
+            document
+                .querySelector("#notification-modal .modal-content")
+                .classList.remove("open");
+            restoreFocus();
+        }
+
+        // Close Modal (Fixed Typo)
+        function closeModal(modalId) {
+            const closeFunction = {
+                "comment-modal": closeCommentModal,
+                "notification-modal": closeNotificationModal,
+                "video-modal": closeVideoModal, // Fixed from 'video-id' and 'closeModalModal'
+                "playlist-modal": closePlaylistModal,
+            }[modalId];
+            if (closeFunction) closeFunction();
+        }
+
+        // Focus Management for Accessibility
+        function restoreFocus() {
+            if (focusBeforeModal) focusBeforeModal.focus();
+            focusBeforeModal = null;
+        }
+
+        // Footer Button Functions
+        function openLoginRegisterModal() {
+            // Placeholder for login/register modal (not implemented in HTML)
+            alert("Login/Register modal not implemented yet.");
+            logAction("Opened login/register modal");
+        }
+
+        function openAdvertiseModal() {
+            // Placeholder for advertise modal (not implemented in HTML)
+            alert("Advertise modal not implemented yet.");
+            logAction("Opened advertise modal");
+        }
+
+        // Mobile Menu Toggle
+        document.getElementById("menu-btn").addEventListener("click", () => {
+            const mobileMenu = document.getElementById("mobile-menu");
+            const isOpen = mobileMenu.classList.contains("open");
+            mobileMenu.classList.toggle("open");
+            document.getElementById("menu-btn").setAttribute("aria-expanded", !isOpen);
+        });
+
+        // Theme Toggle Event Listeners
+        document.getElementById("theme-toggle-btn").addEventListener("click", toggleTheme);
+        document.getElementById("mobile-theme-toggle-btn").addEventListener("click", toggleTheme);
+
+        // Initialize Theme
+        const savedTheme = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", savedTheme);
+        updateThemeToggleIcon(savedTheme);
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - Astegni</title>
+    <link rel="stylesheet" href="../css/student-profile.css">
+    <script src="../js/student-profile.js" defer></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar slide-in">
+        <div class="nav-left">
+            <a href="../index.html" class="logo">Astegni</a>
+        </div>
+        <ul class="nav-links">
+            <li><a href="news.html">News</a></li>
+            <li><a href="find-tutors.html">Find Tutors</a></li>
+            <li><a href="reels.html">Reels</a></li>
+            <li><a href="store.html">Store</a></li>
+            <li><a href="find-jobs.html">Find Jobs</a></li>
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Profile</a>
+                <ul class="dropdown-menu">
+                    <li><a href="#">View Profile</a></li>
+                    <li><a href="#">Manage Finances</a></li>
+                    <li><a href="#">Notes</a></li>
+                    <li><a href="#">Tools</a></li>
+                    <li><a href="#">Followings</a></li>
+                    <li><a href="#">Wishlists</a></li>
+                    <li><a href="#">Favorites</a></li>
+                    <li><a href="#">Saved Items</a></li>
+                    <li><a href="#">My Products</a></li>
+                    <li class="dropdown-submenu">
+                        <a href="#">My Requests</a>
+                        <ul class="submenu">
+                            <li><a href="#">Requested Courses</a></li>
+                            <li><a href="#">Request Course - Parent</a></li>
+                            <li><a href="#">Request Course - Tutor</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">Become a Tutor</a></li>
+                    <li><a href="#">Comment and Rate Us</a></li>
+                    <li><a href="#">Share Us</a></li>
+                </ul>
+            </li>
+        </ul>
+        <div class="nav-icons">
+            <span class="notification-icon">🔔</span>
+            <span class="theme-toggle">🌙</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Profile Header -->
+        <section class="profile-header slide-in">
+            <div class="cover-photo">
+                <img src="placeholder-cover.jpg" alt="Cover Photo" class="cover-img">
+                <span class="edit-icon cover-edit">✏️</span>
+            </div>
+            <div class="profile-picture">
+                <img src="placeholder-profile.jpg" alt="Profile Picture" class="profile-img">
+                <span class="edit-icon profile-edit">✏️</span>
+            </div>
+            <div class="profile-info">
+                <h1 class="slide-in">John Doe</h1>
+                <span class="verified-badge slide-in">Verified</span>
+                <span class="rating slide-in">★★★★☆
+                    <div class="tooltip">
+                        <p>Class Activity: 80%</p>
+                        <p>Discipline: 85%</p>
+                        <p>Punctuality: 90%</p>
+                        <p>Communication Skills: 75%</p>
+                        <p>Subject Intake: 88%</p>
+                    </div>
+                </span>
+                <p class="slide-in"><strong>Phone:</strong> (123) 456-7890</p>
+                <p class="slide-in"><strong>Email:</strong> john.doe@example.com</p>
+                <p class="slide-in"><strong>Location:</strong> New York, NY</p>
+                <p class="slide-in"><strong>School:</strong> XYZ High School</p>
+                <p class="slide-in"><strong>Class:</strong> 12th Grade</p>
+                <p class="slide-in"><strong>Next Session:</strong> Math with Tutor Jane, 07/31/2025</p>
+                <p class="slide-in"><strong>Bio:</strong> Passionate about learning and technology.</p>
+                <p class="slide-in"><strong>Quote:</strong> "Knowledge is power."</p>
+                <button class="edit-profile-btn slide-in">Edit Profile</button>
+                <button class="sessions-btn slide-in">Sessions</button>
+                <button class="contact-parent-btn slide-in">Contact Parent</button>
+                <button class="certifications-btn slide-in">Certifications</button>
+            </div>
+        </section>
+
+        <!-- Ad Placeholder -->
+        <section class="ad-placeholder slide-in">
+            <div class="ad-card" data-ad-index="0">Ad Placeholder 1 (Responsive)</div>
+            <div class="ad-card" data-ad-index="1" style="display: none;">Ad Placeholder 2 (Responsive)</div>
+            <div class="ad-card" data-ad-index="2" style="display: none;">Ad Placeholder 3 (Responsive)</div>
+            <div class="ad-card" data-ad-index="3" style="display: none;">Ad Placeholder 4 (Responsive)</div>
+        </section>
+
+        <!-- My Tutors -->
+        <section class="my-tutors slide-in">
+            <h2 class="slide-in">My Tutors</h2>
+            <div class="search-bar slide-in">
+                <input type="text" placeholder="Search tutors..." id="tutor-search">
+                <button class="add-course-btn">Add Course</button>
+            </div>
+            <table id="tutor-table">
+                <thead>
+                    <tr>
+                        <th>Tutor</th>
+                        <th>Subjects</th>
+                        <th>Learning Method</th>
+                        <th>Progress</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Right Ad Placeholder -->
+        <aside class="right-ad-placeholder">
+            <div class="ad-card slide-in" data-ad-index="0">Ad Placeholder 1 (300x250)</div>
+            <div class="ad-card slide-in" data-ad-index="1">Ad Placeholder 2 (300x250)</div>
+        </aside>
+    </main>
+
+    <!-- Modals -->
+    <!-- Edit Profile Modal -->
+    <div class="modal edit-profile-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Edit Profile</h2>
+            <form>
+                <label>Name: <input type="text" value="John Doe"></label>
+                <label>Phone: <input type="tel" value="(123) 456-7890"></label>
+                <label>Email: <input type="email" value="john.doe@example.com"></label>
+                <label>Location: <input type="text" value="New York, NY"></label>
+                <label>School: <input type="text" value="XYZ High School"></label>
+                <label>Class: <input type="text" value="12th Grade"></label>
+                <label>Bio: <textarea>Passionate about learning and technology.</textarea></label>
+                <label>Quote: <input type="text" value="Knowledge is power."></label>
+                <label>Upload ID: <input type="file"></label>
+                <button type="button" class="face-scan-btn">Face Scan</button>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cover Photo Upload Modal -->
+    <div class="modal cover-upload-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Upload Cover Photo</h2>
+            <form>
+                <label>
+                    Select Image:
+                    <input type="file" accept="image/*" class="cover-upload-input">
+                </label>
+                <div class="image-preview" style="margin: 1rem 0;">
+                    <img src="placeholder-cover.jpg" alt="Cover Preview" class="cover-preview-img">
+                </div>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Picture Upload Modal -->
+    <div class="modal profile-upload-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Upload Profile Picture</h2>
+            <form>
+                <label>
+                    Select Image:
+                    <input type="file" accept="image/*" class="profile-upload-input">
+                </label>
+                <div class="image-preview" style="margin: 1rem 0;">
+                    <img src="placeholder-profile.jpg" alt="Profile Preview" class="profile-preview-img">
+                </div>
+                <button type="submit">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sessions Modal -->
+    <div class="modal sessions-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Sessions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Duration</th>
+                        <th>Tutor</th>
+                        <th>Subject</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="slide-in">
+                        <td>07/31/2025</td>
+                        <td>02:44 PM</td>
+                        <td>1 hr</td>
+                        <td><a href="view-tutor.html">Jane Smith</a></td>
+                        <td>Math</td>
+                        <td>
+                            <span class="time-late"></span>
+                            <button class="confirm-attendance-btn">Confirm Attendance</button>
+                            <button class="propose-makeup-btn">Propose Makeup</button>
+                        </td>
+                    </tr>
+                    <tr class="slide-in">
+                        <td>07/31/2025</td>
+                        <td>01:30 PM</td>
+                        <td>1 hr</td>
+                        <td><a href="view-tutor.html">John Brown</a></td>
+                        <td>Physics</td>
+                        <td>
+                            <span class="time-late"></span>
+                            <button class="confirm-attendance-btn">Confirm Attendance</button>
+                            <button class="propose-makeup-btn">Propose Makeup</button>
+                        </td>
+                    </tr>
+                    <tr class="slide-in">
+                        <td>08/01/2025</td>
+                        <td>10:00 AM</td>
+                        <td>1 hr</td>
+                        <td><a href="view-tutor.html">Alice Johnson</a></td>
+                        <td>Chemistry</td>
+                        <td>
+                            <span class="time-late"></span>
+                            <button class="confirm-attendance-btn">Confirm Attendance</button>
+                            <button class="propose-makeup-btn">Propose Makeup</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Contact Parent Modal -->
+    <div class="modal parent-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Parent Details</h2>
+            <div class="parent-info">
+                <img src="placeholder-parent.jpg" alt="Parent Profile Picture">
+                <p><strong>Name:</strong> Jane Doe</p>
+                <p><strong>Phone:</strong> (123) 456-7891</p>
+                <p><strong>Email:</strong> jane.doe@example.com</p>
+                <p><strong>Location:</strong> New York, NY</p>
+                <p><strong>Bio:</strong> Supportive parent.</p>
+                <p><strong>Quote:</strong> "Education is key."</p>
+                <button>Chat</button>
+                <button>Video Call</button>
+                <button class="request-parent-course-btn">Request Course</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certifications Modal -->
+    <div class="modal certifications-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Certifications</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>School</th>
+                        <th>Certified in</th>
+                        <th>Certification Type</th>
+                        <th>Date</th>
+                        <th>File</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="slide-in">
+                        <td>XYZ High School</td>
+                        <td>Physics</td>
+                        <td>BSc</td>
+                        <td>06/15/2024</td>
+                        <td><button class="view-file-btn">View File</button></td>
+                    </tr>
+                    <tr class="slide-in">
+                        <td>ABC University</td>
+                        <td>Math</td>
+                        <td>Certificate</td>
+                        <td>12/10/2023</td>
+                        <td><button class="view-file-btn">View File</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Request Tutor Course Modal -->
+    <div class="modal request-tutor-course-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Request Tutor Course</h2>
+            <p>This is request-tutor-course (to be implemented)</p>
+        </div>
+    </div>
+
+    <!-- Request Parent Course Modal -->
+    <div class="modal request-parent-course-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Request Parent Course</h2>
+            <p>This is request-parent-course (to be implemented)</p>
+        </div>
+    </div>
+
+    <!-- Add Course Modal -->
+    <div class="modal add-course-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Add Course</h2>
+            <div class="search-container">
+                <input type="text" placeholder="Search for a course..." id="course-search" class="course-search-input">
+            </div>
+            <div class="course-result" id="course-result">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutor Details Modal -->
+    <div class="modal tutor-details-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Tutor Details</h2>
+            <div class="tutor-info">
+                <!-- Populated by JavaScript -->
+            </div>
+            <h3>Sessions</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Duration</th>
+                        <th>Subject</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Request Session Modal -->
+    <div class="modal request-session-modal">
+        <div class="modal-content slide-in">
+            <span class="close">&times;</span>
+            <h2>Request a Session</h2>
+            <label class="block mb-2">Child Name</label>
+            <div class="relative mb-4">
+                <input type="text" id="session-child" class="w-full p-2 border rounded-lg" placeholder="Search for child">
+                <div id="session-child-suggestions" class="school-suggestions hidden absolute z-30 w-full bg-white dark:bg-gray-800 border rounded-lg mt-1"></div>
+            </div>
+            <label class="block mb-4">
+                <input type="checkbox" id="session-self" class="mr-1" onchange="toggleChildSearch()"> Self
+            </label>
+            <label class="block mb-2">Preferred Days</label>
+            <div class="grid grid-cols-3 gap-4 mb-4">
+                <div class="flex flex-col gap-2">
+                    <label><input type="checkbox" value="Monday" class="mr-1">Monday</label>
+                    <label><input type="checkbox" value="Wednesday" class="mr-1">Wednesday</label>
+                    <label><input type="checkbox" value="Friday" class="mr-1">Friday</label>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label><input type="checkbox" value="Tuesday" class="mr-1">Tuesday</label>
+                    <label><input type="checkbox" value="Thursday" class="mr-1">Thursday</label>
+                    <label><input type="checkbox" value="Saturday" class="mr-1">Saturday</label>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label><input type="checkbox" value="Sunday" class="mr-1">Sunday</label>
+                </div>
+            </div>
+            <label class="block mb-2">Preferred Date</label>
+            <input type="date" id="session-date" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Preferred Time</label>
+            <input type="time" id="session-time" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Duration (minutes)</label>
+            <input type="number" id="session-duration" class="w-full p-2 border rounded-lg mb-4" min="30" max="120">
+            <label class="block mb-2">Mode</label>
+            <select id="session-mode" class="w-full p-2 border rounded-lg mb-4">
+                <option value="In-Person">In-Person</option>
+                <option value="Online">Online</option>
+            </select>
+            <div class="flex flex-col gap-2">
+                <button class="view-packages-btn">View Packages</button>
+                <button class="submit-session-request-btn">Submit Request</button>
+                <button class="chat-btn">Chat</button>
+                <button class="video-call-btn">Video Call</button>
+                <button class="close-request-session-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Astegni. All rights reserved.</p>
+    </footer>
+</body>
+</html>

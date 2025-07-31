@@ -1,0 +1,2045 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Parent Profile</title>
+    <link href="../css/output.css" rel="stylesheet">
+    <link href="../css/parent-profile.css" rel="stylesheet">
+    <link href="../css/root_theme.css" rel="stylesheet" />
+    <script defer src="../js/xlsx.full.min.js"></script>
+    <script src="../js/app.js" defer></script>
+    <script defer src="../js/chart.min.js"></script>
+    <style>
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: sans-serif;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        nav {
+            background-color: var(--footer-bg);
+            color: var(--nav-link);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        nav a {
+            color: var(--nav-link);
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--nav-link-hover);
+            transform: scale(1.05);
+        }
+
+        #mobile-menu {
+            background-color: var(--nav-bg);
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        #mobile-menu.open {
+            max-height: 400px;
+        }
+
+        #mobile-menu a:hover,
+        #mobile-menu button:hover {
+            transform: scale(1.05);
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            color: var(--heading);
+        }
+
+        button:not(.modal-content button):not(#theme-toggle):not(#mobile-theme-toggle):not(#notification-bell):not(#mobile-notification-bell) {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        button:not(.modal-content button):not(#theme-toggle):not(#mobile-theme-toggle):hover {
+            background-color: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        button:not(.modal-content button):not(#theme-toggle):not(#mobile-theme-toggle):active {
+            background-color: var(--button-active);
+        }
+
+        #notification-bell,
+        #mobile-notification-bell {
+            background-color: transparent;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        #notification-bell:hover,
+        #mobile-notification-bell:hover {
+            transform: scale(1.05);
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            background-color: var(--modal-input-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input::placeholder,
+        .modal-content textarea::placeholder {
+            color: var(--modal-text);
+            opacity: 0.6;
+        }
+
+        .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .cta-button:hover {
+            background-color: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        .cta-button:active {
+            background-color: var(--button-active);
+        }
+
+        #child-search,
+        #child-details-search {
+            background-color: var(--highlight);
+            color: var(--text);
+            border-color: var(--modal-input-border);
+        }
+
+        #child-search::placeholder,
+        #child-details-search::placeholder {
+            color: var(--text);
+            opacity: 0.6;
+        }
+
+        .progress-circle {
+            stroke: var(--button-bg);
+        }
+
+        #theme-toggle,
+        #mobile-theme-toggle {
+            background-color: transparent;
+            color: var(--nav-link);
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        #theme-toggle:hover,
+        #mobile-theme-toggle:hover {
+            color: var(--nav-link-hover);
+            transform: scale(1.05);
+        }
+
+        .no-results {
+            color: var(--text);
+        }
+
+        #sponsorship-placeholder-1,
+        #sponsorship-placeholder-3 {
+            min-height: 200px;
+        }
+
+        /* Dropdown Styles */
+        #profile-dropdown-btn,
+        #mobile-profile-dropdown-btn {
+            background-color: transparent !important;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        #profile-dropdown-btn:hover,
+        #mobile-profile-dropdown-btn:hover {
+            color: var(--nav-link-hover);
+            transform: scale(1.05);
+        }
+
+        #profile-dropdown-btn span,
+        #mobile-profile-dropdown-btn span {
+            color: var(--nav-link);
+        }
+
+        #profile-dropdown-btn svg,
+        #mobile-profile-dropdown-btn svg {
+            stroke: var(--nav-link);
+        }
+
+        #myChildren table {
+            border-collapse: collapse;
+        }
+
+        #myChildren th,
+        #myChildren td {
+            border: 1px solid var(--modal-input-border);
+            padding: 0.75rem;
+        }
+
+        #myChildren th:nth-child(4),
+        #myChildren td:nth-child(4) {
+            padding-right: 2rem;
+            /* Add generous spacing before Action column */
+        }
+
+        #myChildren thead tr {
+            background-color: var(--highlight);
+        }
+
+        #myChildren tbody tr:hover {
+            background-color: var(--modal-bg);
+        }
+
+        /* Fixed Aside */
+        aside {
+            scrollbar-width: thin;
+        }
+
+        aside::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        aside::-webkit-scrollbar-thumb {
+            background-color: var(--nav-link);
+            border-radius: 4px;
+        }
+
+        aside::-webkit-scrollbar-track {
+            background-color: var(--highlight);
+        }
+
+        /* Two-Column Tutor Details */
+        .tutor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .tutor-grid {
+                grid-template-columns: 1fr;
+            }
+
+            aside {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+        }
+
+        #child-details-modal .modal-content {
+            max-width: calc(100vw - 40rem);
+            min-width: 32rem;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 768px) {
+            #child-details-modal .modal-content {
+                max-width: 90%;
+                padding: 1.5rem;
+            }
+        }
+
+        #child-details-modal .sticky {
+            background-color: var(--modal-bg);
+            padding: 1rem;
+            z-index: 10;
+            top: 0;
+        }
+
+        #child-details-search {
+            border: 1px solid var(--modal-input-border);
+            color: var(--modal-text);
+            background-color: var(--modal-input-bg);
+        }
+
+        #child-details-search::placeholder {
+            color: var(--modal-text);
+            opacity: 0.6;
+        }
+
+        #child-details {
+            margin-top: 2rem;
+        }
+
+        .profile-pic-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .edit-profile-pic {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .star-rating {
+            color: #FFD700;
+            font-size: 1.2rem;
+        }
+
+        /* Ad Rotation */
+        #advertise-placeholder-2 {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ad-slide {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ad-slide.active {
+            opacity: 1;
+            position: relative;
+        }
+
+        /* Align Register New Child and Actions */
+        .child-actions-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .child-actions-container input {
+            flex: 1;
+            max-width: 300px;
+            margin-right: 1rem;
+        }
+
+        .child-actions-container button {
+            flex-shrink: 0;
+            margin-left: 2rem;
+            /* Align with Actions column */
+        }
+
+        #myChildren td:last-child {
+            vertical-align: middle;
+            padding-left: 2rem;
+            /* Align Actions column with Register New Child button */
+        }
+
+        /* Progress Bar Popup */
+        .progress-container {
+            position: relative;
+        }
+
+        .progress-tooltip {
+            display: none;
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--modal-bg);
+            border: 1px solid var(--modal-input-border);
+            padding: 0.5rem;
+            border-radius: 4px;
+            z-index: 10;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .progress-container:hover .progress-tooltip {
+            display: block;
+        }
+
+        .progress-bar {
+            background-color: #e5e7eb;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--button-bg);
+            height: 100%;
+            transition: width 0.3s ease-in;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" style="background-color: var(--nav-bg);" role="navigation"
+        aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="news.html" class="hover:text-[var(--nav-link-hover)]">News</a>
+                <a href="reels.html" class="hover:text-[var(--nav-link-hover)]">Reels</a>
+                <a href="store.html" class="hover:text-[var(--nav-link-hover)]">Store</a>
+                <a href="find-job.html" class="hover:text-[var(--nav-link-hover)]">Find a Job</a>
+                <div class="relative group">
+                    <button id="profile-dropdown-btn"
+                        class="flex items-center space-x-2 focus:outline-none bg-transparent" aria-haspopup="true"
+                        aria-expanded="false">
+                        <img src="${parent.profilePicture}" class="w-8 h-8 rounded-full" alt="Parent Profile Picture">
+                        <span>Profile</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <div id="profile-dropdown"
+                        class="absolute right-0 mt-2 w-48 bg-[var(--modal-bg)] border border-[var(--nav-link)] rounded-lg shadow-lg hidden z-10">
+                        <a href="parent-profile.html"
+                            class="block w-full text-left px-4 py-2 hover:bg-[var(--highlight)]">View Profile</a>
+                        <button onclick="openNotesModal()"
+                            class="block w-full text-left px-4 py-2 hover:bg-[var(--highlight)]">Notes</button>
+                        <button onclick="openManageFinancesModal()"
+                            class="block w-full text-left px-4 py-2 hover:bg-[var(--highlight)]">Manage
+                            Finances</button>
+                        <button onclick="openRateAstegniModal()"
+                            class="block w-full text-left px-4 py-2 hover:bg-[var(--highlight)]">Comment and Rate
+                            Us</button>
+                        <button onclick="openShareModal()"
+                            class="block w-full text-left px-4 py-2 hover:bg-[var(--highlight)]">Share Us</button>
+                    </div>
+                </div>
+                <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()"
+                    aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span id="notification-dot"
+                        class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <button id="menu-btn" class="md:hidden focus:outline-none" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden">
+            <a href="news.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">News</a>
+            <a href="reels.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Reels</a>
+            <a href="store.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Store</a>
+            <a href="find-job.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Find a Job</a>
+            <div class="relative">
+                <button id="mobile-profile-dropdown-btn"
+                    class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left flex items-center space-x-2 bg-transparent"
+                    aria-haspopup="true" aria-expanded="false">
+                    <img src="${parent.profilePicture}" class="w-6 h-6 rounded-full" alt="Parent Profile Picture">
+                    <span>Profile</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="mobile-profile-dropdown" class="hidden pl-4">
+                    <a href="parent-profile.html"
+                        class="block w-full text-left py-2 px-4 hover:bg-[var(--highlight)]">View Profile</a>
+                    <button onclick="openNotesModal()"
+                        class="block w-full text-left py-2 px-4 hover:bg-[var(--highlight)]">Notes</button>
+                    <button onclick="openManageFinancesModal()"
+                        class="block w-full text-left py-2 px-4 hover:bg-[var(--highlight)]">Manage Finances</button>
+                    <button onclick="openRateAstegniModal()"
+                        class="block w-full text-left py-2 px-4 hover:bg-[var(--highlight)]">Comment and Rate
+                        Us</button>
+                    <button onclick="openShareModal()"
+                        class="block w-full text-left py-2 px-4 hover:bg-[var(--highlight)]">Share Us</button>
+                </div>
+            </div>
+            <button id="mobile-notification-bell"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative"
+                onclick="openNotificationModal()" aria-label="View notifications">
+                Notifications
+                <span id="mobile-notification-dot"
+                    class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button id="mobile-theme-toggle" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left"
+                aria-label="Toggle theme">
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <section class="py-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-[7fr_3fr] gap-6 auto-rows-min" id="profile-grid">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <!-- Parent Details -->
+                    <div id="parentDetails" class="p-6 rounded-lg shadow-lg" style="background-color: var(--highlight)">
+                        <div class="profile-pic-container">
+                            <img id="profile-pic-preview" src="https://via.placeholder.com/96"
+                                class="w-24 h-24 rounded-full mb-4" alt="Parent Profile">
+                            <button onclick="openEditProfilePicModal()" class="edit-profile-pic"
+                                aria-label="Edit profile picture">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.536L16.732 3.732z">
+                                    </path>
+                                </svg>
+                            </button>
+                        </div>
+                        <h3 class="text-xl font-semibold">Mulugeta Alemu</h3>
+                        <p id="verification-status" class="text-red-600 italic mb-2">Unverified</p>
+                        <p id="parent-rating" class="star-rating mb-2">★★★★☆ (4.0)</p>
+                        <p class="mb-2">Email: <span id="parent-email">mulugeta@example.com</span></p>
+                        <p class="mb-2">Phone: <span id="parent-phone">+251912345679</span></p>
+                        <p class="mb-2">Location: <span id="parent-location">Addis Ababa, Ethiopia</span></p>
+                        <div class="flex space-x-4 flex-wrap gap-y-2">
+                            <button onclick="openEditProfileModal()" class="px-4 py-2 rounded-lg cta-button">Edit
+                                Profile</button>
+                            <button onclick="openViewParentCommentsModal()" class="px-4 py-2 rounded-lg cta-button">View
+                                Comments</button>
+                        </div>
+                    </div>
+                    <!-- Rotating Ad Placeholder -->
+                    <div id="advertise-placeholder-2" class="md:col-span-2 rounded-lg shadow-lg p-4 text-center"
+                        style="background-color: var(--highlight); min-height: 200px;">
+                        <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Our Sponsors</h3>
+                        <div class="ad-slide active">
+                            <img src="https://via.placeholder.com/728x90?text=Ad+1" class="mx-auto mb-4 rounded"
+                                alt="Ad 1">
+                            <p class="text-[var(--text)]">Sponsor 1: Contact us at <a href="mailto:info@astegni.et"
+                                    class="underline">info@astegni.et</a>!</p>
+                        </div>
+                        <div class="ad-slide">
+                            <img src="https://via.placeholder.com/728x90?text=Ad+2" class="mx-auto mb-4 rounded"
+                                alt="Ad 2">
+                            <p class="text-[var(--text)]">Sponsor 2: Contact us at <a href="mailto:info@astegni.et"
+                                    class="underline">info@astegni.et</a>!</p>
+                        </div>
+                        <div class="ad-slide">
+                            <img src="https://via.placeholder.com/728x90?text=Ad+3" class="mx-auto mb-4 rounded"
+                                alt="Ad 3">
+                            <p class="text-[var(--text)]">Sponsor 3: Contact us at <a href="mailto:info@astegni.et"
+                                    class="underline">info@astegni.et</a>!</p>
+                        </div>
+                    </div>
+                    <!-- My Children -->
+                    <div id="myChildren" class="p-6 rounded-lg shadow-lg" style="background-color: var(--highlight)">
+                        <h3 class="text-xl font-semibold mb-4">My Children</h3>
+                        <div class="child-actions-container">
+                            <input id="child-search" type="text" class="p-2 border rounded-lg"
+                                placeholder="Search children by name or course" oninput="searchChildren()">
+                            <button onclick="openRegisterChildModal()" class="px-4 py-2 rounded-lg cta-button">Register
+                                New Child</button>
+                        </div>
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-gray-200 dark:bg-gray-700">
+                                    <th class="p-2">Name</th>
+                                    <th class="p-2">Gender</th>
+                                    <th class="p-2">Courses</th>
+                                    <th class="p-2">Progress</th>
+                                    <th class="p-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="child-table">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <!-- Right Column -->
+                <aside
+                    class="space-y-6 fixed top-16 right-0 w-80 h-[calc(100vh-4rem)] overflow-y-auto p-4 hidden md:block">
+                    <div class="ad-placeholder" style="width: 300px; height: 250px;">Advertisement (300x250)</div>
+                    <div class="ad-placeholder" style="width: 300px; height: 600px;">Advertisement (300x600)</div>
+                    <div class="ad-placeholder" style="width: 300px; height: 250px;">Advertisement (300x250)</div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Edit Profile">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Edit Profile</h3>
+            <label class="block mb-2">Name</label>
+            <input id="edit-name" type="text" class="w-full p-2 border rounded-lg mb-4" value="Mulugeta Alemu">
+            <label class="block mb-2">Email</label>
+            <input id="edit-email" type="email" class="w-full p-2 border rounded-lg mb-4" value="mulugeta@example.com">
+            <label class="block mb-2">Phone</label>
+            <input id="edit-phone" type="tel" class="w-full p-2 border rounded-lg mb-4" value="+251912345679">
+            <label class="block mb-2">Location</label>
+            <input id="edit-location" type="text" class="w-full p-2 border rounded-lg mb-4"
+                value="Addis Ababa, Ethiopia">
+            <button onclick="saveProfile()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeEditProfileModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Edit Profile Picture Modal -->
+    <div id="edit-profile-pic-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Edit Profile Picture">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Edit Profile Picture</h3>
+            <label class="block mb-2">Profile Picture</label>
+            <input id="edit-profile-pic" type="file" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <img id="profile-pic-preview-modal" src="https://via.placeholder.com/96" class="w-24 h-24 rounded-full mb-4"
+                alt="Profile Picture Preview">
+            <button onclick="saveProfilePic()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeEditProfilePicModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Register Child Modal -->
+    <div id="register-child-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Register New Child">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto"
+            style="background-color: var(--modal-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+            <h3 class="text-2xl font-bold mb-4">Register New Child</h3>
+            <label class="block mb-2">Name</label>
+            <input id="child-name" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter child's name"
+                style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+            <label class="block mb-2">Gender</label>
+            <select id="child-gender" class="w-full p-2 border rounded-lg mb-4"
+                style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <label class="block mb-2">Courses</label>
+            <input id="child-courses" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., Math, Physics"
+                style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+            <label class="block mb-2">Payment Method</label>
+            <select id="child-payment-method" class="w-full p-2 border rounded-lg mb-4"
+                style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+                <option value="" disabled selected>Select payment method</option>
+                <option value="CBE">CBE</option>
+                <option value="Tele Birr">Tele Birr</option>
+                <option value="Dashen Bank">Dashen Bank</option>
+                <option value="Abyssinia Bank">Abyssinia Bank</option>
+                <option value="NIB Bank">NIB Bank</option>
+                <option value="Awash Bank">Awash Bank</option>
+                <option value="Wegagen Bank">Wegagen Bank</option>
+                <option value="Amhara Bank">Amhara Bank</option>
+            </select>
+            <label class="block mb-2">Account Number</label>
+            <input id="child-account-number" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter account number"
+                style="background-color: var(--modal-input-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+            <button onclick="registerChild()" class="px-4 py-2 rounded-lg cta-button w-full"
+                style="background-color: var(--button-bg); color: var(--button-text);">Register</button>
+            <button onclick="closeRegisterChildModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Confirm Child Payment Modal -->
+    <div id="confirm-child-payment-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Confirm Child Registration Payment">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto"
+            style="background-color: var(--modal-bg); color: var(--modal-text); border: 1px solid var(--modal-input-border);">
+            <h3 class="text-2xl font-bold mb-4">Confirm Payment</h3>
+            <p id="confirm-child-payment-details" class="mb-4"></p>
+            <button onclick="confirmChildPayment()" class="px-4 py-2 rounded-lg cta-button w-full"
+                style="background-color: var(--button-bg); color: var(--button-text);">Confirm</button>
+            <button onclick="closeChildPaymentModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Child Details Modal -->
+    <div id="child-details-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Child Details">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto relative">
+            <div class="sticky top-0 z-10 bg-[var(--modal-bg)] p-4">
+                <h3 class="text-2xl font-bold mb-4">Child Details</h3>
+                <input id="child-details-search" type="text" class="w-full p-2 border rounded-lg mb-4"
+                    style="border: 1px solid var(--modal-input-border); color: var(--modal-text); background-color: var(--modal-input-bg);"
+                    placeholder="Search by tutor name" oninput="updateChildDetails()">
+            </div>
+            <div id="child-details" class="mt-2">
+                <!-- Populated by JavaScript -->
+            </div>
+            <button onclick="closeChildDetailsModal()"
+                class="px-4 py-2 rounded-lg cta-button mt-4 w-full">Close</button>
+        </div>
+    </div>
+
+    <!-- Rate Tutor Modal -->
+    <div id="rate-tutor-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog" aria-modal="true" aria-label="Rate Tutor">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Rate Tutor</h3>
+            <label class="block mb-2">Retention</label>
+            <select id="rating-retention" class="w-full p-2 border rounded-lg mb-4">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <label class="block mb-2">Punctuality</label>
+            <select id="rating-punctuality" class="w-full p-2 border rounded-lg mb-4">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <label class="block mb-2">Discipline</label>
+            <select id="rating-discipline" class="w-full p-2 border rounded-lg mb-4">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <label class="block mb-2">Communication</label>
+            <select id="rating-communication" class="w-full p-2 border rounded-lg mb-4">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <label class="block mb-2">Subject Matter</label>
+            <select id="rating-subject-matter" class="w-full p-2 border rounded-lg mb-4">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <label class="block mb-2">Comment</label>
+            <textarea id="rating-tutor-comment" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Your feedback"></textarea>
+            <button onclick="submitTutorRating()" class="px-4 py-2 rounded-lg cta-button w-full">Submit Rating</button>
+            <button onclick="closeRateTutorModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Session Sheet Modal -->
+    <div id="session-sheet-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Session Sheet">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Session Sheet</h3>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Date</th>
+                        <th class="p-2">Time</th>
+                        <th class="p-2">Duration</th>
+                        <th class="p-2">Tutor</th>
+                        <th class="p-2">Subjects</th>
+                        <th class="p-2">Cost</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="session-table">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+            <button onclick="closeSessionSheetModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- View Child Comments Modal -->
+    <div id="view-child-comments-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="View Child Comments">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Child Comments</h3>
+            <div id="child-comments-content">
+                <!-- Populated by JavaScript -->
+            </div>
+            <button onclick="closeViewChildCommentsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog" aria-modal="true" aria-label="Chat with Child">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Chat</h3>
+            <div id="chat-messages" class="border p-4 h-40 overflow-y-auto mb-4"></div>
+            <div class="flex">
+                <input type="text" id="chat-input" class="flex-1 p-2 border rounded-l-lg"
+                    placeholder="Type a message...">
+                <button onclick="sendMessage()" class="px-4 py-2 rounded-r-lg cta-button">Send</button>
+            </div>
+            <button onclick="closeChatModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Rate ASTEGNI Modal -->
+    <div id="rate-astegni-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Rate ASTEGNI">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Rate ASTEGNI</h3>
+            <label class="block mb-2">Platform Usability</label>
+            <select id="rating-usability" class="w-full p-2 border rounded-lg mb-4">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <label class="block mb-2">Customer Service</label>
+            <select id="rating-customer-service" class="w-full p-2 border rounded-lg mb-4">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <label class="block mb-2">Comment</label>
+            <textarea id="rating-astegni-comment" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Your feedback"></textarea>
+            <button onclick="submitAstegniRating()" class="px-4 py-2 rounded-lg cta-button w-full">Submit
+                Rating</button>
+            <button onclick="closeRateAstegniModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- View Parent Comments Modal -->
+    <div id="view-parent-comments-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="View Parent Comments">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Parent Comments</h3>
+            <div id="parent-comments-content">
+                <!-- Populated by JavaScript -->
+            </div>
+            <button onclick="closeViewParentCommentsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Notifications">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Notifications</h3>
+            <div id="notification-content">You have no notifications.</div>
+            <button onclick="closeNotificationModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Propose Makeup Modal -->
+    <div id="propose-makeup-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Propose Makeup Session">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Propose Makeup Session</h3>
+            <label class="block mb-2">Date</label>
+            <input type="date" id="makeup-date" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Time</label>
+            <input type="time" id="makeup-time" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Duration</label>
+            <select id="makeup-duration" class="w-full p-2 border rounded-lg mb-4">
+                <option>60 minutes</option>
+                <option>80 minutes</option>
+                <option>120 minutes</option>
+            </select>
+            <button onclick="submitMakeup()" class="px-4 py-2 rounded-lg cta-button w-full">Propose</button>
+            <button onclick="closeProposeMakeupModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Edit Subjects Modal -->
+    <div id="edit-subjects-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Edit Session Subjects">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Edit Session Subjects</h3>
+            <label class="block mb-2">Subjects</label>
+            <input type="text" id="edit-subjects-input" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., Math, Physics">
+            <button onclick="submitEditSubjects()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeEditSubjectsModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog" aria-modal="true" aria-label="Select Payment Method">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Select Payment Method</h3>
+            <div class="space-y-2">
+                <button onclick="selectBank('CBE')"
+                    class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="CBE Logo" class="w-6 h-6 mr-2">
+                    <span>CBE</span>
+                </button>
+                <button onclick="selectBank('Tele Birr')"
+                    class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Tele Birr Logo" class="w-6 h-6 mr-2">
+                    <span>Tele Birr</span>
+                </button>
+                <button onclick="selectBank('Dashen Bank')"
+                    class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Dashen Logo" class="w-6 h-6 mr-2">
+                    <span>Dashen Bank</span>
+                </button>
+                <button onclick="selectBank('Abyssinia Bank')"
+                    class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Abyssinia Logo" class="w-6 h-6 mr-2">
+                    <span>Abyssinia Bank</span>
+                </button>
+                <button onclick="selectBank('NIB Bank')"
+                    class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="NIB Logo" class="w-6 h-6 mr-2">
+                    <span>NIB Bank</span>
+                </button>
+                <button onclick="selectBank('Awash Bank')"
+                    class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Awash Logo" class="w-6 h-6 mr-2">
+                    <span>Awash Bank</span>
+                </button>
+                <button onclick="selectBank('Wegagen Bank')"
+                    class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Wegagen Logo" class="w-6 h-6 mr-2">
+                    <span>Wegagen Bank</span>
+                </button>
+                <button onclick="selectBank('Amhara Bank')"
+                    class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Amhara Logo" class="w-6 h-6 mr-2">
+                    <span>Amhara Bank</span>
+                </button>
+            </div>
+            <button onclick="closePaymentModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Share Profile Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog" aria-modal="true" aria-label="Share Profile">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Share Profile</h3>
+            <p class="mb-4">Share your parent profile with others.</p>
+            <input id="share-link" type="text" class="w-full p-2 border rounded-lg mb-4" readonly>
+            <div class="flex space-x-4 mb-4">
+                <button onclick="copyShareLink()" class="px-4 py-2 rounded-lg cta-button">Copy Link</button>
+                <button onclick="shareProfile()" class="px-4 py-2 rounded-lg cta-button">Share</button>
+            </div>
+            <button onclick="closeShareModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Notes Modal (Placeholder) -->
+    <div id="notes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog" aria-modal="true" aria-label="Notes">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Notes</h3>
+            <textarea id="notes-input" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter your notes..."></textarea>
+            <button onclick="saveNotes()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeNotesModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Manage Finances Modal (Placeholder) -->
+    <div id="manage-finances-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Manage Finances">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Manage Finances</h3>
+            <p class="mb-4">View and manage your financial transactions.</p>
+            <button onclick="closeManageFinancesModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="news.html">News</a></li>
+                        <li><a class="nav-link hover:underline" href="reels.html">Reels</a></li>
+                        <li><a class="nav-link hover:underline" href="store.html">Store</a></li>
+                        <li><a class="nav-link hover:underline" href="find-job.html">Find a Job</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0"
+                                onclick="openRateAstegniModal()">Rate ASTEGNI</button></li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <form class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email"
+                            type="email" />
+                        <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
+                    </form>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline"
+                            href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path
+                                    d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z">
+                                </path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path
+                                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z">
+                                </path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+
+        function filledCell(cell) {
+            return cell !== '' && cell != null;
+        }
+
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                    return csv;
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+
+        // Ad Rotation
+        function rotateAds() {
+            const adContainer = document.getElementById('advertise-placeholder-2');
+            const adSlides = adContainer.querySelectorAll('.ad-slide');
+            let currentAd = 0;
+
+            setInterval(() => {
+                adSlides[currentAd].classList.remove('active');
+                currentAd = (currentAd + 1) % adSlides.length;
+                adSlides[currentAd].classList.add('active');
+            }, 7000);
+        }
+
+
+        function toggleTheme() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeToggleIcon(newTheme);
+    // Force style recalculation
+    document.body.offsetHeight; // Trigger reflow to ensure styles apply
+}
+
+function updateThemeToggleIcon(theme) {
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    const sunIcon = `
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+        </svg>
+    `;
+    const moonIcon = `
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
+        </svg>
+    `;
+    if (themeToggle) themeToggle.innerHTML = theme === 'light' ? moonIcon : sunIcon;
+    if (mobileThemeToggle) mobileThemeToggle.innerHTML = theme === 'light' ? moonIcon : sunIcon;
+}
+
+
+
+        // Data Objects
+        const parent = {
+            id: 1,
+            name: 'Mulugeta Alemu',
+            email: 'mulugeta@example.com',
+            phone: '+251912345679',
+            location: 'Addis Ababa, Ethiopia',
+            verified: false,
+            profilePicture: 'https://via.placeholder.com/96',
+            rating: 4.0
+        };
+        const children = {
+            1: {
+                id: 1,
+                name: 'Abebe Kebede',
+                gender: 'Male',
+                profilePicture: 'https://via.placeholder.com/64',
+                coverPicture: 'https://via.placeholder.com/1200x300',
+                courses: ['Math', 'Physics'],
+                pendingCourses: [],
+                tutorIds: [1, 2],
+                progress: {
+                    tutors: {
+                        1: { subjects: { Math: 60, Physics: 40 }, overall: 50 },
+                        2: { subjects: { Chemistry: 70, Biology: 30 }, overall: 50 }
+                    },
+                    cumulative: 50
+                }
+            },
+            2: {
+                id: 2,
+                name: 'Selam Tesfaye',
+                gender: 'Female',
+                profilePicture: 'https://via.placeholder.com/64',
+                coverPicture: 'https://via.placeholder.com/1200x300',
+                courses: ['Chemistry', 'Biology'],
+                pendingCourses: ['English'],
+                tutorIds: [2],
+                progress: {
+                    tutors: {
+                        2: { subjects: { Chemistry: 70, Biology: 30 }, overall: 50 }
+                    },
+                    cumulative: 50
+                }
+            }
+        };
+        const tutors = {
+            1: { id: 1, name: 'Amanuel Tesfaye', subjects: ['Math', 'Physics'], availability: 'Weekdays', rating: 1.0, fee: 1000, profilePicture: 'https://via.placeholder.com/64', phone: '+251911111111', email: 'amanuel@example.com' },
+            2: { id: 2, name: 'Kebede Worku', subjects: ['Chemistry', 'Biology'], availability: 'Weekends', rating: 2.0, fee: 1200, profilePicture: 'https://via.placeholder.com/64', phone: '+251922222222', email: 'kebede@example.com' }
+        };
+        const sessions = {
+            1: {
+                sessionId: 1,
+                date: '2025-05-20',
+                time: '14:00',
+                duration: '80 minutes',
+                student: 'Abebe Kebede',
+                studentId: 1,
+                tutor: 'Amanuel Tesfaye',
+                tutorId: 1,
+                subjects: ['Math', 'Physics'],
+                cost: 1000,
+                status: 'Confirmed',
+                studentConfirmed: true,
+                tutorConfirmed: true,
+                waiting: { student: false, tutor: false },
+                missed: false,
+                makeup: null,
+                mode: 'Online'
+            },
+            2: {
+                sessionId: 2,
+                date: '2025-05-21',
+                time: '10:00',
+                duration: '60 minutes',
+                student: 'Selam Tesfaye',
+                studentId: 2,
+                tutor: 'Kebede Worku',
+                tutorId: 2,
+                subjects: ['Chemistry', 'Biology'],
+                cost: 1200,
+                status: 'Scheduled',
+                studentConfirmed: false,
+                tutorConfirmed: false,
+                waiting: { student: false, tutor: false },
+                missed: false,
+                makeup: null,
+                mode: 'Online'
+            }
+        };
+        const ratings = [];
+        const astegniRatings = [];
+        const parentRatings = [
+            { id: 1, tutorId: 1, rating: 4, comment: 'Great communication with our family.' },
+            { id: 2, tutorId: 2, rating: 4, comment: 'Very responsive parent.' }
+        ];
+        const childRatings = [
+            { id: 1, childId: 1, tutorId: 1, rating: 4, comment: 'Abebe is a diligent student.' },
+            { id: 2, childId: 2, tutorId: 2, rating: 3, comment: 'Selam needs to focus more in class.' }
+        ];
+        const videos = {
+            1: { intro: null, clips: [] },
+            2: { intro: null, clips: [] }
+        };
+        const payments = {};
+        const logs = {};
+
+        // Initialize Profile
+        function initProfile() {
+            document.getElementById('parent-email').textContent = parent.email;
+            document.getElementById('parent-phone').textContent = parent.phone;
+            document.getElementById('parent-location').textContent = parent.location || 'Not set';
+            document.querySelector('#parentDetails h3').textContent = parent.name;
+            document.querySelector('#profile-dropdown-btn img').src = parent.profilePicture;
+            document.querySelector('#mobile-profile-dropdown-btn img').src = parent.profilePicture;
+            document.querySelector('#parentDetails img').src = parent.profilePicture;
+            const verificationStatus = document.getElementById('verification-status');
+            verificationStatus.textContent = parent.verified ? 'Verified' : 'Unverified';
+            verificationStatus.className = parent.verified ? 'text-green-600 italic mb-2' : 'text-red-600 italic mb-2';
+            const parentRating = document.getElementById('parent-rating');
+            parentRating.textContent = `★★★★☆ (${parent.rating})`;
+            searchChildren();
+            rotateAds();
+        }
+
+        // Edit Profile Picture Modal
+        function openEditProfilePicModal() {
+            document.getElementById('profile-pic-preview-modal').src = parent.profilePicture;
+            document.getElementById('edit-profile-pic').value = '';
+            document.getElementById('edit-profile-pic-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('edit-profile-pic-modal'));
+        }
+        function closeEditProfilePicModal() {
+            document.getElementById('edit-profile-pic-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function saveProfilePic() {
+            const fileInput = document.getElementById('edit-profile-pic');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    parent.profilePicture = e.target.result;
+                    document.getElementById('profile-pic-preview').src = parent.profilePicture;
+                    document.getElementById('profile-pic-preview-modal').src = parent.profilePicture;
+                    initProfile();
+                    alert('Profile picture updated');
+                    closeEditProfilePicModal();
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                alert('Please select an image file.');
+            }
+        }
+
+        // Profile Picture Preview
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInput = document.getElementById('edit-profile-pic');
+            if (fileInput) {
+                fileInput.addEventListener('change', function (e) {
+                    if (e.target.files && e.target.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                            document.getElementById('profile-pic-preview-modal').src = e.target.result;
+                        };
+                        reader.readAsDataURL(e.target.files[0]);
+                    }
+                });
+            }
+        });
+
+        // Edit Profile Modal
+        function openEditProfileModal() {
+            document.getElementById('edit-email').value = parent.email;
+            document.getElementById('edit-phone').value = parent.phone;
+            document.getElementById('edit-location').value = parent.location || '';
+            document.getElementById('edit-name').value = parent.name;
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('edit-profile-modal'));
+        }
+        function closeEditProfileModal() {
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function saveProfile() {
+            parent.name = document.getElementById('edit-name').value.trim();
+            parent.email = document.getElementById('edit-email').value;
+            parent.phone = document.getElementById('edit-phone').value;
+            parent.location = document.getElementById('edit-location').value;
+            initProfile();
+            alert('Profile updated');
+            closeEditProfileModal();
+        }
+
+        // Share Profile Modal
+        function openShareModal() {
+            const shareLink = `https://astegni.et/parent/${parent.id}`;
+            document.getElementById('share-link').value = shareLink;
+            document.getElementById('share-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('share-modal'));
+        }
+        function closeShareModal() {
+            document.getElementById('share-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function copyShareLink() {
+            const shareLink = document.getElementById('share-link');
+            shareLink.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
+        }
+        function shareProfile() {
+            const shareLink = document.getElementById('share-link').value;
+            const shareData = {
+                title: 'My ASTEGNI Parent Profile',
+                text: `Check out my parent profile on ASTEGNI!`,
+                url: shareLink
+            };
+            if (navigator.share) {
+                navigator.share(shareData)
+                    .then(() => console.log('Profile shared successfully'))
+                    .catch((error) => console.error('Error sharing:', error));
+            } else {
+                copyShareLink();
+            }
+        }
+
+        // Register Child Modal
+        let pendingChild = null;
+        let pendingPaymentId = null;
+        function openRegisterChildModal() {
+            document.getElementById('register-child-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('register-child-modal'));
+        }
+        function closeRegisterChildModal() {
+            document.getElementById('register-child-modal').classList.add('hidden');
+            document.getElementById('child-name').value = '';
+            document.getElementById('child-gender').value = 'Male';
+            document.getElementById('child-courses').value = '';
+            document.getElementById('child-payment-method').value = '';
+            document.getElementById('child-account-number').value = '';
+            restoreFocus();
+        }
+        function registerChild() {
+            const name = document.getElementById('child-name').value.trim();
+            const gender = document.getElementById('child-gender').value;
+            const courses = document.getElementById('child-courses').value.split(',').map(c => c.trim()).filter(c => c);
+            const paymentMethod = document.getElementById('child-payment-method').value;
+            const accountNumber = document.getElementById('child-account-number').value.trim();
+
+            if (!name || !gender || !courses.length || !paymentMethod || !accountNumber) {
+                alert('Please fill in all required fields, including payment method and account number.');
+                return;
+            }
+
+            const newChildId = Object.keys(children).length + 1;
+            pendingChild = {
+                id: newChildId,
+                name,
+                gender,
+                profilePicture: 'https://via.placeholder.com/64',
+                coverPicture: 'https://via.placeholder.com/1200x300',
+                courses,
+                pendingCourses: [],
+                tutorIds: [],
+                progress: { tutors: {}, cumulative: 0 }
+            };
+
+            const newPaymentId = Object.keys(payments).length + 1;
+            pendingPaymentId = newPaymentId;
+            payments[newPaymentId] = {
+                id: newPaymentId,
+                type: 'Registration',
+                details: `Child Registration: ${name}`,
+                amount: 500,
+                status: 'Pending',
+                childId: newChildId,
+                paymentMethod,
+                accountNumber
+            };
+
+            document.getElementById('confirm-child-payment-details').textContent = `Confirm payment of 500 birr for registering ${name} using ${paymentMethod} (Account: ${accountNumber})?`;
+            document.getElementById('confirm-child-payment-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('confirm-child-payment-modal'));
+        }
+        function confirmChildPayment() {
+            if (pendingChild && pendingPaymentId) {
+                children[pendingChild.id] = pendingChild;
+                payments[pendingPaymentId].status = 'Confirmed';
+                alert(`Child ${pendingChild.name} registered successfully!`);
+                closeChildPaymentModal();
+                closeRegisterChildModal();
+                searchChildren();
+                pendingChild = null;
+                pendingPaymentId = null;
+            }
+        }
+        function closeChildPaymentModal() {
+            document.getElementById('confirm-child-payment-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        // Add CSS for seamless progress tooltip styling
+const style = document.createElement('style');
+style.textContent = `
+    .progress-container {
+        position: relative;
+        display: inline-block;
+    }
+.progress-tooltip {
+    display: none;
+    position: absolute;
+    top: 50%; /* Align vertically with the circle */
+    left: calc(100% + 10px); /* Position to the right with a 10px gap */
+    transform: translateY(-50%); /* Center vertically */
+    background-color: var(--modal-bg);
+    border: 1px solid var(--modal-input-border);
+    padding: 0.75rem;
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 20;
+    min-width: 200px;
+    text-align: left;
+    color: var(--modal-text);
+}
+.progress-container:hover .progress-tooltip {
+    display: block;
+}
+    .progress-bar {
+        background-color: #e5e7eb;
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+    }
+    .progress-bar-fill {
+        background-color: var(--button-bg);
+        height: 100%;
+        transition: width 0.3s ease-in;
+    }
+    .progress-tooltip p {
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
+    }
+`;
+document.head.appendChild(style);
+
+function searchChildren() {
+    const searchTerm = document.getElementById('child-search').value.toLowerCase();
+    const table = document.getElementById('child-table');
+    table.innerHTML = '';
+    Object.values(children).forEach(child => {
+        // Update child.courses to include all subjects from tutors
+        const allSubjects = new Set(child.courses || []);
+        Object.values(child.progress.tutors).forEach(tutorData => {
+            Object.keys(tutorData.subjects).forEach(subject => allSubjects.add(subject));
+        });
+        child.courses = Array.from(allSubjects);
+        
+        if (child.name.toLowerCase().includes(searchTerm) || child.courses.some(c => c.toLowerCase().includes(searchTerm))) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="p-2">${child.name}</td>
+                <td class="p-2">${child.gender}</td>
+                <td class="p-2">${child.courses.join(', ')}</td>
+                <td class="p-2">
+                    <div class="progress-container">
+                        <svg class="w-12 h-12" viewBox="0 0 36 36">
+                            <path class="progress-circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+                            <path class="progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--button-bg)" stroke-width="3" stroke-dasharray="${child.progress.cumulative}, 100"/>
+                            <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm">${child.progress.cumulative}%</span>
+                        </svg>
+                        <div class="progress-tooltip">
+                            ${Object.entries(child.progress.tutors).map(([tutorId, data]) => `
+                                ${Object.entries(data.subjects).map(([subject, percent]) => `
+                                    <p>${subject}: ${percent}%</p>
+                                    <div class="progress-bar">
+                                        <div class="progress-bar-fill" style="width: ${percent}%"></div>
+                                    </div>
+                                `).join('')}
+                            `).join('')}
+                        </div>
+                    </div>
+                </td>
+                <td class="p-2">
+                    <button onclick="openChildDetailsModal(${child.id})" class="px-2 py-1 rounded-lg cta-button">Details</button>
+                </td>
+            `;
+            table.appendChild(row);
+        }
+    });
+    if (!table.innerHTML) {
+        table.innerHTML = '<tr><td colspan="5" class="p-2 text-center no-results">No children found.</td></tr>';
+    }
+}        // Child Details Modal
+        function openChildDetailsModal(childId) {
+            const child = children[childId];
+            if (!child) {
+                console.error(`Child with ID ${childId} not found.`);
+                alert('Child not found.');
+                return;
+            }
+            const details = document.getElementById('child-details');
+            details.innerHTML = `
+                <div class="mb-4">
+                    <img src="${child.coverPicture}" class="w-full h-32 object-cover rounded-lg mb-4" alt="${child.name}'s Cover Picture"> 
+                    <img src="${child.profilePicture}" class="w-16 h-16 rounded-full mb-2" alt="${child.name}'s Profile Picture">
+                    <h4 class="text-lg font-semibold">${child.name}</h4>
+                    <p>Gender: ${child.gender}</p>
+                    <p>Courses: ${child.courses.join(', ') || 'None'}</p>
+                    <p>Pending Courses: ${child.pendingCourses.length ? child.pendingCourses.join(', ') : 'None'}</p>
+                </div>
+                <h4 class="text-lg font-semibold mb-2">Tutors</h4>
+                <div class="tutor-grid">
+                    ${child.tutorIds.length ? child.tutorIds.map(tutorId => {
+                const tutor = tutors[tutorId];
+                if (!tutor) return '';
+                const progress = child.progress.tutors[tutorId] || { subjects: {}, overall: 0 };
+                return `
+                            <div class="border p-4 rounded-lg" data-tutor-id="${tutorId}">
+                                <h5 class="font-semibold">${tutor.name}</h5>
+                                <p>Subjects: ${tutor.subjects.join(', ') || 'None'}</p>
+                                <p>Availability: ${tutor.availability || 'Not specified'}</p>
+                                <p>Fee: ${tutor.fee} birr</p>
+                                <p class="star-rating">Rating: ${'★'.repeat(Math.round(tutor.rating))}${'☆'.repeat(5 - Math.round(tutor.rating))} (${tutor.rating.toFixed(1)})</p>
+                                <p>Progress: ${progress.overall}%</p>
+                                ${Object.entries(progress.subjects).map(([subject, percent]) => `
+                                    <p>${subject}: ${percent}%</p>
+                                `).join('')}
+                                <button onclick="openSessionSheetModal(${childId}, ${tutorId})" class="px-2 py-1 rounded-lg cta-button mt-2">Session Sheet</button>
+                            </div>
+                        `;
+            }).join('') : '<p class="no-results">No tutors assigned.</p>'}
+                </div>
+            `;
+            document.getElementById('child-details-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('child-details-modal'));
+            updateChildDetails();
+        }
+        function closeChildDetailsModal() {
+            document.getElementById('child-details-modal').classList.add('hidden');
+            document.getElementById('child-details-search').value = '';
+            restoreFocus();
+        }
+        function updateChildDetails() {
+            const searchTerm = document.getElementById('child-details-search').value.toLowerCase();
+            const tutorDivs = document.querySelectorAll('#child-details .tutor-grid > div');
+            tutorDivs.forEach(div => {
+                const tutorName = div.querySelector('h5').textContent.toLowerCase();
+                div.style.display = tutorName.includes(searchTerm) ? 'block' : 'none';
+            });
+            const noResults = document.querySelector('#child-details .no-results');
+            if (noResults) {
+                noResults.style.display = searchTerm ? 'none' : 'block';
+            }
+        }
+
+        // Rate Tutor Modal
+        let currentTutorId = null;
+        let currentChildId = null;
+        function openRateTutorModal(tutorId, childId) {
+            currentTutorId = tutorId;
+            currentChildId = childId;
+            document.getElementById('rating-retention').value = 1;
+            document.getElementById('rating-punctuality').value = 1;
+            document.getElementById('rating-discipline').value = 1;
+            document.getElementById('rating-communication').value = 1;
+            document.getElementById('rating-subject-matter').value = 1;
+            document.getElementById('rating-tutor-comment').value = '';
+            document.getElementById('rate-tutor-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('rate-tutor-modal'));
+        }
+        function closeRateTutorModal() {
+            document.getElementById('rate-tutor-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function submitTutorRating() {
+            const retention = parseInt(document.getElementById('rating-retention').value);
+            const punctuality = parseInt(document.getElementById('rating-punctuality').value);
+            const discipline = parseInt(document.getElementById('rating-discipline').value);
+            const communication = parseInt(document.getElementById('rating-communication').value);
+            const subjectMatter = parseInt(document.getElementById('rating-subject-matter').value);
+            const comment = document.getElementById('rating-tutor-comment').value.trim();
+            if (!retention || !punctuality || !discipline || !communication || !subjectMatter) {
+                alert('Please provide all ratings.');
+                return;
+            }
+            const rating = (retention + punctuality + discipline + communication + subjectMatter) / 5;
+            ratings.push({
+                id: ratings.length + 1,
+                tutorId: currentTutorId,
+                childId: currentChildId,
+                rating,
+                comment
+            });
+            const tutor = tutors[currentTutorId];
+            const ratingsForTutor = ratings.filter(r => r.tutorId === currentTutorId);
+            tutor.rating = ratingsForTutor.reduce((sum, r) => sum + r.rating, 0) / ratingsForTutor.length;
+            alert('Rating submitted successfully!');
+            closeRateTutorModal();
+            openChildDetailsModal(currentChildId);
+        }
+
+        // Session Sheet Modal
+        function openSessionSheetModal(childId, tutorId) {
+            const table = document.getElementById('session-table');
+            table.innerHTML = '';
+            Object.values(sessions).forEach(session => {
+                if (session.studentId === childId && session.tutorId === tutorId) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="p-2">${session.date}</td>
+                        <td class="p-2">${session.time}</td>
+                        <td class="p-2">${session.duration}</td>
+                        <td class="p-2">${session.tutor}</td>
+                        <td class="p-2">${session.subjects.join(', ') || 'None'}</td>
+                        <td class="p-2">${session.cost} birr</td>
+                        <td class="p-2">${session.status}</td>
+                        <td class="p-2">
+                            ${session.status === 'Scheduled' ? `
+                                <button onclick="openPaymentModal(${session.sessionId})" class="px-2 py-1 rounded-lg cta-button">Pay</button>
+                                <button onclick="openProposeMakeupModal(${session.sessionId})" class="px-2 py-1 rounded-lg cta-button mt-2">Propose Makeup</button>
+                                <button onclick="openEditSubjectsModal(${session.sessionId})" class="px-2 py-1 rounded-lg cta-button mt-2">Edit Subjects</button>
+                            ` : ''}
+                            ${session.status === 'Confirmed' && !session.studentConfirmed ? `
+                                <button onclick="confirmSession(${session.sessionId}, 'student')" class="px-2 py-1 rounded-lg cta-button">Confirm</button>
+                            ` : ''}
+                            ${session.missed && !session.makeup ? `
+                                <button onclick="openProposeMakeupModal(${session.sessionId})" class="px-2 py-1 rounded-lg cta-button">Propose Makeup</button>
+                            ` : ''}
+                        </td>
+                    `;
+                    table.appendChild(row);
+                }
+            });
+            if (!table.innerHTML) {
+                table.innerHTML = '<tr><td colspan="8" class="p-2 text-center no-results">No sessions found.</td></tr>';
+            }
+            document.getElementById('session-sheet-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('session-sheet-modal'));
+        }
+        function closeSessionSheetModal() {
+            document.getElementById('session-sheet-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        // View Child Comments Modal
+        function openViewChildCommentsModal(childId, tutorId = null) {
+            const comments = childRatings.filter(r => r.childId === childId && (!tutorId || r.tutorId === tutorId));
+            const content = document.getElementById('child-comments-content');
+            content.innerHTML = comments.length ? comments.map(r => `
+                <div class="border-b py-2">
+                    <p class="star-rating">${'★'.repeat(Math.round(r.rating))}${'☆'.repeat(5 - Math.round(r.rating))} (${r.rating.toFixed(1)})</p>
+                    <p>${r.comment || 'No comment provided.'}</p>
+                    <p class="text-sm text-gray-500">By ${tutors[r.tutorId]?.name || 'Unknown Tutor'}</p>
+                </div>
+            `).join('') : '<p class="no-results">No comments available.</p>';
+            document.getElementById('view-child-comments-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('view-child-comments-modal'));
+        }
+        function closeViewChildCommentsModal() {
+            document.getElementById('view-child-comments-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        // Chat Modal
+        let currentChatId = null;
+        function openChatModal(id) {
+            currentChatId = id;
+            const messages = document.getElementById('chat-messages');
+            messages.innerHTML = logs[id]?.map(log => `
+                <p><strong>${log.sender}:</strong> ${log.message}</p>
+            `).join('') || '<p class="no-results">No messages yet.</p>';
+            document.getElementById('chat-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('chat-modal'));
+            document.getElementById('chat-input').focus();
+        }
+        function closeChatModal() {
+            document.getElementById('chat-modal').classList.add('hidden');
+            document.getElementById('chat-input').value = '';
+            restoreFocus();
+        }
+        function sendMessage() {
+            const message = document.getElementById('chat-input').value.trim();
+            if (!message) {
+                alert('Please enter a message.');
+                return;
+            }
+            if (!logs[currentChatId]) logs[currentChatId] = [];
+            logs[currentChatId].push({ sender: parent.name, message });
+            const messages = document.getElementById('chat-messages');
+            messages.innerHTML = logs[currentChatId].map(log => `
+                <p><strong>${log.sender}:</strong> ${log.message}</p>
+            `).join('');
+            document.getElementById('chat-input').value = '';
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        // Rate ASTEGNI Modal
+        function openRateAstegniModal() {
+            document.getElementById('rating-usability').value = 1;
+            document.getElementById('rating-customer-service').value = 1;
+            document.getElementById('rating-astegni-comment').value = '';
+            document.getElementById('rate-astegni-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('rate-astegni-modal'));
+        }
+        function closeRateAstegniModal() {
+            document.getElementById('rate-astegni-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function submitAstegniRating() {
+            const usability = parseInt(document.getElementById('rating-usability').value);
+            const customerService = parseInt(document.getElementById('rating-customer-service').value);
+            const comment = document.getElementById('rating-astegni-comment').value.trim();
+            if (!usability || !customerService) {
+                alert('Please provide all ratings.');
+                return;
+            }
+            const rating = (usability + customerService) / 2;
+            astegniRatings.push({ id: astegniRatings.length + 1, rating, comment });
+            alert('Thank you for rating ASTEGNI!');
+            closeRateAstegniModal();
+        }
+
+        /// View Parent Comments Modal
+        function openViewParentCommentsModal() {
+            const content = document.getElementById('parent-comments-content');
+            content.innerHTML = parentRatings.length ? parentRatings.map(r => `
+        <div class="border-b py-2">
+            <p class="star-rating">${'★'.repeat(Math.round(r.rating))}${'☆'.repeat(5 - Math.round(r.rating))} (${r.rating.toFixed(1)})</p>
+            <p>${r.comment || 'No comment provided.'}</p>
+            <p class="text-sm text-gray-500">By ${tutors[r.tutorId]?.name || 'Unknown Tutor'}</p>
+        </div>
+    `).join('') : '<p class="no-results">No comments available.</p>';
+            document.getElementById('view-parent-comments-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('view-parent-comments-modal'));
+        }
+        function closeViewParentCommentsModal() {
+            document.getElementById('view-parent-comments-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        // Notification Modal
+        function openNotificationModal() {
+            const content = document.getElementById('notification-content');
+            const notifications = Object.values(sessions).filter(s => s.status === 'Scheduled' && !s.studentConfirmed).map(s => `
+        <div class="border-b py-2">
+            <p>Session with ${s.tutor} on ${s.date} at ${s.time} is awaiting your confirmation.</p>
+            <button onclick="confirmSession(${s.sessionId}, 'student')" class="px-2 py-1 rounded-lg cta-button mt-2">Confirm</button>
+        </div>
+    `);
+            content.innerHTML = notifications.length ? notifications.join('') : '<p class="no-results">No notifications.</p>';
+            document.getElementById('notification-modal').classList.remove('hidden');
+            document.getElementById('notification-dot').classList.toggle('hidden', !notifications.length);
+            document.getElementById('mobile-notification-dot').classList.toggle('hidden', !notifications.length);
+            trapFocus(document.getElementById('notification-modal'));
+        }
+        function closeNotificationModal() {
+            document.getElementById('notification-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        // Propose Makeup Modal
+        let currentSessionId = null;
+        function openProposeMakeupModal(sessionId) {
+            currentSessionId = sessionId;
+            document.getElementById('makeup-date').value = '';
+            document.getElementById('makeup-time').value = '';
+            document.getElementById('makeup-duration').value = '60 minutes';
+            document.getElementById('propose-makeup-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('propose-makeup-modal'));
+        }
+        function closeProposeMakeupModal() {
+            document.getElementById('propose-makeup-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function submitMakeup() {
+            const date = document.getElementById('makeup-date').value;
+            const time = document.getElementById('makeup-time').value;
+            const duration = document.getElementById('makeup-duration').value;
+            if (!date || !time) {
+                alert('Please select a date and time.');
+                return;
+            }
+            sessions[currentSessionId].makeup = { date, time, duration, status: 'Proposed' };
+            alert('Makeup session proposed successfully!');
+            closeProposeMakeupModal();
+            openSessionSheetModal(sessions[currentSessionId].studentId, sessions[currentSessionId].tutorId);
+        }
+
+        // Edit Subjects Modal
+        function openEditSubjectsModal(sessionId) {
+            currentSessionId = sessionId;
+            document.getElementById('edit-subjects-input').value = sessions[sessionId].subjects.join(', ');
+            document.getElementById('edit-subjects-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('edit-subjects-modal'));
+        }
+        function closeEditSubjectsModal() {
+            document.getElementById('edit-subjects-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function submitEditSubjects() {
+            const subjects = document.getElementById('edit-subjects-input').value.split(',').map(s => s.trim()).filter(s => s);
+            if (!subjects.length) {
+                alert('Please enter at least one subject.');
+                return;
+            }
+            sessions[currentSessionId].subjects = subjects;
+            alert('Subjects updated successfully!');
+            closeEditSubjectsModal();
+            openSessionSheetModal(sessions[currentSessionId].studentId, sessions[currentSessionId].tutorId);
+        }
+
+        // Payment Modal
+        function openPaymentModal(sessionId) {
+            currentSessionId = sessionId;
+            document.getElementById('payment-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('payment-modal'));
+        }
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function selectBank(bank) {
+            const session = sessions[currentSessionId];
+            if (!session) {
+                alert('Invalid session.');
+                return;
+            }
+            const paymentId = Object.keys(payments).length + 1;
+            payments[paymentId] = {
+                id: paymentId,
+                type: 'Session',
+                details: `Session ${currentSessionId} with ${session.tutor}`,
+                amount: session.cost,
+                status: 'Confirmed',
+                childId: session.studentId,
+                paymentMethod: bank,
+                accountNumber: 'N/A'
+            };
+            session.studentConfirmed = true;
+            if (session.tutorConfirmed) {
+                session.status = 'Confirmed';
+            }
+            alert(`Payment of ${session.cost} birr confirmed via ${bank}!`);
+            closePaymentModal();
+            openSessionSheetModal(session.studentId, session.tutorId);
+            openNotificationModal();
+        }
+
+        // Confirm Session
+        function confirmSession(sessionId, role) {
+            const session = sessions[sessionId];
+            if (!session) {
+                alert('Invalid session.');
+                return;
+            }
+            if (role === 'student') {
+                session.studentConfirmed = true;
+            }
+            if (session.studentConfirmed && session.tutorConfirmed) {
+                session.status = 'Confirmed';
+            }
+            alert('Session confirmed successfully!');
+            openSessionSheetModal(session.studentId, session.tutorId);
+            openNotificationModal();
+        }
+
+        // Notes Modal
+        function openNotesModal() {
+            document.getElementById('notes-input').value = localStorage.getItem('parentNotes') || '';
+            document.getElementById('notes-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('notes-modal'));
+        }
+        function closeNotesModal() {
+            document.getElementById('notes-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function saveNotes() {
+            const notes = document.getElementById('notes-input').value.trim();
+            localStorage.setItem('parentNotes', notes);
+            alert('Notes saved successfully!');
+            closeNotesModal();
+        }
+
+        // Manage Finances Modal
+        function openManageFinancesModal() {
+            document.getElementById('manage-finances-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('manage-finances-modal'));
+        }
+        function closeManageFinancesModal() {
+            document.getElementById('manage-finances-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        // Accessibility: Trap Focus in Modal
+        function trapFocus(modal) {
+            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (!focusableElements.length) return;
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+            modal.focusedElementBeforeModal = document.activeElement;
+
+            const handleKeyDown = (e) => {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstElement) {
+                            e.preventDefault();
+                            lastElement.focus();
+                        }
+                    } else {
+                        if (document.activeElement === lastElement) {
+                            e.preventDefault();
+                            firstElement.focus();
+                        }
+                    }
+                }
+                if (e.key === 'Escape') {
+                    const closeButton = modal.querySelector('button[onclick*="close"]');
+                    if (closeButton) closeButton.click();
+                }
+            };
+
+            modal.addEventListener('keydown', handleKeyDown);
+            modal._handleKeyDown = handleKeyDown;
+            if (firstElement) firstElement.focus();
+        }
+
+        // Accessibility: Restore Focus
+        function restoreFocus() {
+            const modal = document.querySelector('.modal:not(.hidden)');
+            if (modal && modal.focusedElementBeforeModal) {
+                modal.focusedElementBeforeModal.focus();
+            }
+        }
+
+        // Mobile Menu Toggle
+        document.getElementById('menu-btn').addEventListener('click', () => {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const isOpen = mobileMenu.classList.contains('open');
+            mobileMenu.classList.toggle('open');
+            document.getElementById('menu-btn').setAttribute('aria-expanded', !isOpen);
+        });
+
+        // Profile Dropdown Toggle
+        function toggleProfileDropdown() {
+            const dropdown = document.getElementById('profile-dropdown');
+            const isOpen = !dropdown.classList.contains('hidden');
+            dropdown.classList.toggle('hidden');
+            document.getElementById('profile-dropdown-btn').setAttribute('aria-expanded', !isOpen);
+        }
+        function toggleMobileProfileDropdown() {
+            const dropdown = document.getElementById('mobile-profile-dropdown');
+            const isOpen = !dropdown.classList.contains('hidden');
+            dropdown.classList.toggle('hidden');
+            document.getElementById('mobile-profile-dropdown-btn').setAttribute('aria-expanded', !isOpen);
+        }
+        document.getElementById('profile-dropdown-btn').addEventListener('click', toggleProfileDropdown);
+        document.getElementById('mobile-profile-dropdown-btn').addEventListener('click', toggleMobileProfileDropdown);
+
+        // Theme Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeToggleIcon(savedTheme);
+            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+            document.getElementById('mobile-theme-toggle').addEventListener('click', toggleTheme);
+            initProfile();
+        });
+
+        // Close modals when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    const closeButton = modal.querySelector('button[onclick*="close"]');
+                    if (closeButton) closeButton.click();
+                }
+            });
+        });
+    </script>
+
+
+</body>
+
+</html>

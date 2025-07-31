@@ -1,0 +1,140 @@
+/* Navigation Bar Animation */
+nav {
+    animation: fadeInDown 1s ease-out;
+}
+
+/* Sidebar Styling */
+#sidebar {
+    transition: transform 0.3s ease-in-out;
+}
+
+#sidebar.open {
+    transform: translateX(0);
+}
+
+#sidebar:not(.open) {
+    transform: translateX(-100%);
+}
+
+#sidebar {
+    height: calc(100vh - 8rem - 6rem);
+}
+
+/* Main Content Styling */
+#mainContent {
+    transition: margin-left 0.3s ease-in-out;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    background-image: url('https://images.unsplash.com/photo-1523240791917-b2f376775811?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+}
+
+#mainContent > * {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.dark #mainContent > * {
+    background-color: rgba(31, 41, 55, 0.9);
+}
+
+@media (min-width: 768px) {
+    #mainContent.shifted {
+        margin-left: 17rem;
+    }
+    #mainContent:not(.shifted) {
+        margin-left: 1rem;
+    }
+}
+
+/* Hero Text Animation */
+#heroText {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+}
+
+#heroText, #heroText + p {
+    animation: bounceIn 1s ease-out;
+}
+
+/* Typing Animation */
+#typedText {
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#cursor {
+    display: inline;
+    font-weight: normal;
+    color: inherit;
+    animation: blink 0.7s step-end infinite;
+}
+
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+/* Ad Placeholder */
+#adPlaceholder, .ad-placeholder {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+#adPlaceholder .ad-text, .ad-placeholder .ad-text {
+    transition: opacity 0.5s ease-in-out;
+}
+
+/* Rating Tooltip */
+.rating-tooltip {
+    display: none;
+}
+
+.rating-stars:hover + .rating-tooltip {
+    display: block;
+}
+
+/* Footer Animation */
+footer {
+    animation: fadeInUp 1s ease-out;
+}
+
+/* Modal Animation */
+#requestCourseModal, #requestSchoolModal {
+    transition: all 0.3s ease-in-out;
+}
+
+#requestCourseModal:not(.hidden), #requestSchoolModal:not(.hidden) {
+    animation: zoomIn 0.3s ease-out;
+}
+
+#requestCourseModal.hidden, #requestSchoolModal.hidden {
+    animation: zoomOut 0.3s ease-out;
+}
+
+/* Keyframes for custom animations */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

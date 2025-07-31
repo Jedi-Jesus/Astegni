@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Super Admin Dashboard</title>
+    <link href="../css/output.css" rel="stylesheet">
+    <link href="../css/super-admin.html" rel = "stylesheet">
+    <link href="../css/root_theme.css" rel="stylesheet"/>
+    <script defer src="../js/xlsx.full.min.js"></script>
+    <script src="../js/app.js" defer></script>
+    <script defer src="../js/chart.min.js"></script>
+    
+
+    <style>
+
+:root {
+    color: #FFE082;
+    --text: #78350F;
+    --heading: #92400E;
+    --nav-link: #78350F;
+    --nav-link-hover: #F59E0B;
+    --button-bg: #F59E0B;
+    --button-text: #FFFFFF;
+    --button-hover: #D97706;
+    --button-active: #92400E;
+    --highlight: #FFFFFF;
+    --footer-bg: #E5E7EB;
+    --footer-text: #78350F;
+    --search-heading: #F59E0B;
+    --modal-bg: #FFFFFF;
+    --modal-text: #78350F;
+}
+
+[data-theme="dark"] {
+    --background: #1E1E1E;
+    --text: #E0E0E0;
+    --heading: #FBC02D;
+    --nav-link: #E0E0E0;
+    --nav-link-hover: #FFD54F;
+    --button-bg: #FFD54F;
+    --button-text: #1E1E1E;
+    --button-hover: #e6bf45;
+    --button-active: #FFB300;
+    --highlight: #424242;
+    --footer-bg: #424242;
+    --footer-text: #E0E0E0;
+    --search-heading: #FBC02D;
+    --modal-bg: #1E1E1E;
+    --modal-text: #E0E0E0;
+}
+
+[data-theme="light"] h1 {
+    color: var(--button-bg);
+}
+
+[data-theme="light"] .description {
+    color: #FFFFFF;
+}
+
+[data-theme="light"] .no-results {
+    color: #FFFFFF;
+}
+
+[data-theme="light"] input#search-input {
+    color: #FFFFFF;
+}
+
+[data-theme="light"] input#search-input::-webkit-input-placeholder {
+    color: #D1D5DB;
+}
+
+[data-theme="light"] input#search-input::-moz-placeholder {
+    color: #D1D5DB;
+}
+
+[data-theme="dark"] .modal-content {
+    background-color: rgba(0, 0, 0, 0.85);
+    color: #FFE082;
+    border: 1px solid #555;
+}
+
+[data-theme="light"] .modal-content {
+    background-color: #FFFFFF;
+    color: #78350F;
+    border: 1px solid #DDD;
+}
+
+[data-theme="dark"] .modal-content input,
+[data-theme="dark"] .modal-content select,
+[data-theme="dark"] .modal-content textarea {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #FFE082;
+    border: 1px solid #888;
+}
+
+[data-theme="light"] .modal-content input,
+[data-theme="light"] .modal-content select,
+[data-theme="light"] .modal-content textarea {
+    background-color: #FAFAFA;
+    color: #78350F;
+    border: 1px solid #ccc;
+}
+    /* Added placeholder styles for modal inputs */        
+        [data-theme="light"] .modal-content input::placeholder,
+        [data-theme="light"] .modal-content textarea::placeholder {
+            color: #A0AEC0;
+        }
+
+        [data-theme="dark"] .modal-content input::placeholder,
+        [data-theme="dark"] .modal-content textarea::placeholder {
+            color: #A0AEC0;
+        }
+[data-theme="dark"] .cta-button {
+    background-color: #FFD54F;
+    color: #1E1E1E;
+}
+
+[data-theme="light"] .cta-button {
+    background-color: #F59E0B;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] {
+    --button-active: #FFB300;
+}
+
+[data-theme="light"] {
+    --button-active: #92400E;
+}
+
+        /* Animation Keyframes */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Apply animations to sections */
+        section, .modal-content {
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        .cover-pic-container, .profile-pic-container, .dashboard-card, .tab-content {
+            animation: scaleIn 0.5s ease-out;
+        }
+
+        /* Cover Photo and Profile Picture Styles */
+        .cover-pic-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        .cover-pic {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+        }
+
+        .edit-cover-pic {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background-color: var(--button-bg);
+            border-radius: 50%;
+            padding: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .edit-cover-pic:hover {
+            background-color: var(--button-hover);
+        }
+
+        .profile-pic-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-pic {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .edit-profile-pic {
+            position: absolute;
+            bottom: 4px;
+            left: 4px;
+            background-color: var(--button-bg);
+            border-radius: 50%;
+            padding: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .edit-profile-pic:hover {
+            background-color: var(--button-hover);
+        }
+
+        .social-icons a {
+            transition: transform 0.2s;
+        }
+
+        .social-icons a:hover {
+            transform: scale(1.2);
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 200px;
+            margin-top: 1rem;
+            display: none;
+            border-radius: 8px;
+        }
+
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: sans-serif;
+        }
+        nav {
+            background-color: var(--highlight);
+            color: var(--nav-link);
+        }
+        nav a {
+            color: var(--nav-link);
+            transition: color 0.2s;
+        }
+        nav a:hover {
+            color: var(--nav-link-hover);
+        }
+        #mobile-menu {
+            background-color: var(--nav-bg);
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        #mobile-menu.open {
+            max-height: 300px;
+            display: block;
+        }
+        #mobile-menu a:hover, #mobile-theme-toggle-btn:hover {
+            background-color: var(--highlight-bg);
+        }
+        h1, h2, h3, h4 {
+            color: var(--heading);
+        }
+        .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s;
+        }
+        .cta-button:hover {
+            background-color: var(--button-hover);
+        }
+        .cta-button:active {
+            background-color: var(--button-active);
+        }
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+        }
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            background-color: var(--modal-input-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+        .modal-content input::placeholder,
+        .modal-content textarea::placeholder {
+            color: var(--modal-text);
+            opacity: 0.6;
+        }
+
+        .chart-container {
+    max-width: 100%;
+    max-height: 400px;
+    margin: 1rem auto;
+    animation: scaleIn 0.5s ease-out;
+}
+
+.report-visualization-modal .modal-content {
+    background-color: var(--modal-bg);
+    color: var(--modal-text);
+    border: 1px solid var(--modal-input-border);
+    border-radius: 8px;
+    animation: slideInUp 0.5s ease-out;
+}
+
+.report-visualization-modal select {
+    background-color: var(--modal-input-bg);
+    color: var(--modal-text);
+    border: 1px solid var(--modal-input-border);
+    border-radius: 4px;
+    padding: 0.5rem;
+}
+
+        #payment-search {
+            background-color: var(--highlight-bg);
+            color: var(--text);
+            border-color: var(--modal-input-border);
+        }
+        #payment-search::placeholder {
+            color: var(--text);
+            opacity: 0.6;
+        }
+        #theme-toggle-btn, #mobile-theme-toggle-btn {
+            background-color: transparent;
+            color: var(--nav-link);
+        }
+        #theme-toggle-btn:hover, #mobile-theme-toggle-btn:hover {
+            color: var(--nav-link-hover);
+        }
+        .tab-button {
+            color: var(--text);
+            transition: color 0.2s, border-color 0.2s;
+        }
+        .tab-button:hover {
+            color: var(--nav-link-hover);
+        }
+        .tab-button.active {
+            color: var(--button-bg);
+            border-bottom: 2px solid var(--button-bg);
+        }
+        canvas {
+            background-color: var(--modal-bg);
+        }
+        table tr:hover {
+            background-color: var(--highlight-bg);
+        }
+
+        
+        /* Responsive Adjustments */
+        @media (max-width: 640px) {
+            .cover-pic {
+                height: 150px;
+            }
+
+            .profile-pic {
+                width: 96px;
+                height: 96px;
+            }
+        }
+    </style>
+
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="../index.html" class="hover:text-[var(--nav-link-hover)]">Home</a>
+                <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+                <a href="admin.html" class="hover:text-[var(--nav-link-hover)]">Admin</a>
+                <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()" aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <button id="menu-btn" class="md:hidden focus:outline-none" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden">
+            <a href="index.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Home</a>
+            <a href="find-tutors.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+            <button id="mobile-notification-bell" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative" onclick="openNotificationModal()" aria-label="View notifications">
+                Notifications
+                <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button id="mobile-theme-toggle-btn" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left" aria-label="Toggle theme">
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <!-- Super Admin Dashboard -->
+    <section class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8">Super Admin Dashboard</h2>
+    <!-- Super Admin Details -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-6">Super Admin Profile</h3>
+        <div class="cover-pic-container">
+            <img id="super-admin-cover-pic" src="https://via.placeholder.com/600x200" alt="Super Admin Cover Photo" class="cover-pic">
+            <button class="edit-cover-pic" onclick="openCoverPicModal()" aria-label="Edit cover photo">
+                <i class="fas fa-pencil-alt text-white"></i>
+            </button>
+        </div>
+        <div class="profile-pic-container mb-6">
+            <img id="super-admin-profile-pic" src="https://via.placeholder.com/128" alt="Super Admin Profile" class="profile-pic">
+            <button class="edit-profile-pic" onclick="openProfilePicModal()" aria-label="Edit profile picture">
+                <i class="fas fa-pencil-alt text-white"></i>
+            </button>
+        </div>
+        <h3 id="super-admin-name" class="text-xl font-semibold mb-4">Super Admin Name</h3>
+        <p id="super-admin-phone" class="text-sm mb-4">Phone: +251-912-345-678</p>
+        <p id="super-admin-email" class="text-sm mb-4">Email: admin@astegni.et</p>
+        <p id="super-admin-location" class="text-sm mb-4">Location: Addis Ababa, Ethiopia</p>
+        <p id="super-admin-bio" class="text-sm mb-4">Bio: Dedicated super administrator overseeing the ASTEGNI platform.</p>
+        <p id="super-admin-quote" class="text-sm italic mb-6">"Empowering education through seamless management."</p>
+        <div class="social-icons flex gap-4 mb-6 justify-start">
+            <a href="https://facebook.com" aria-label="Facebook">
+                <svg class="w-6 h-6" fill="var(--text)" viewBox="0 0 24 24">
+                    <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                </svg>
+            </a>
+            <a href="https://x.com" aria-label="X">
+                <svg class="w-6 h-6" fill="var(--text)" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                </svg>
+            </a>
+            <a href="https://instagram.com" aria-label="Instagram">
+                <svg class="w-6 h-6" fill="var(--text)" viewBox="0 0 24 24">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                </svg>
+            </a>
+        </div>
+        <div class="flex space-x-4">
+            <button onclick="openEditSuperAdminModal()" class="px-4 py-2 rounded-lg cta-button">Edit Profile</button>
+            <button onclick="openSuperAdminCommentsModal()" class="px-4 py-2 rounded-lg cta-button">View Comments</button>
+        </div>
+    </div>
+
+
+           <!-- Dashboard Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+            </svg>
+            <h3 class="text-lg font-semibold">Total Advertisers</h3>
+        </div>
+        <p id="total-advertisers" class="text-2xl">0</p>
+    </div>
+    <div id="total-campaigns-card" class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold">Total Campaigns</h3>
+        </div>
+        <p id="total-campaigns" class="text-2xl">0</p>
+    </div>
+    <div id="total-revenue-card" class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold">Total Revenue</h3>
+        </div>
+        <p id="total-revenue" class="text-2xl">0 birr</p>
+    </div>
+    <div class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2"></path>
+            </svg>
+            <h3 class="text-lg font-semibold">Platform Analytics</h3>
+        </div>
+        <button onclick="generatePlatformReport()" class="px-4 py-2 rounded-lg cta-button">Generate Report</button>
+    </div>
+</div>
+
+            <!-- Tabs -->
+            <div class="p-6 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+                <div class="flex flex-wrap border-b mb-4">
+                    <button class="tab-button px-4 py-2 font-semibold active" onclick="showTab('payments')">Payments</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('settings')">Settings</button>
+                </div>
+
+                <!-- Payments Tab -->
+                <div id="payments" class="tab-content">
+                    <h3 class="text-xl font-semibold mb-4">Manage Payments</h3>
+                    <div class="flex items-center mb-4">
+                        <select id="payment-type-filter" class="p-2 border rounded-lg mr-4 bg-[var(--modal-input-bg)] text-[var(--modal-text)]" onchange="searchPayments()">
+                            <option value="all">All Payments</option>
+                            <option value="Ad Campaign">Ad Campaign</option>
+                            <option value="Registration">Registration</option>
+                            <option value="Subscription">Subscription</option>
+                        </select>
+                        <input id="payment-search" type="text" class="w-full max-w-md p-2 border rounded-lg" placeholder="Search payments by campaign, advertiser, or tutor" oninput="searchPayments()">
+                    </div>
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Type</th>
+                                <th class="p-2">Details</th>
+                                <th class="p-2">Amount</th>
+                                <th class="p-2">Duration</th>
+                                <th class="p-2">Status</th>
+                                <th class="p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment-table"></tbody>
+                    </table>
+                </div>
+
+
+                <!-- Settings Tab -->
+                <div id="settings" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">System Settings</h3>
+                    <button id="pricing-btn" onclick="openPricingModal()" class="px-4 py-2 rounded-lg cta-button mb-4">Update Pricing</button>
+                    <button id="reports-btn" onclick="openReportsModal()" class="px-4 py-2 rounded-lg cta-button mb-4">View Reports</button>
+                    <button onclick="openAdminModal()" class="px-4 py-2 rounded-lg cta-button mb-4">Manage Admins</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!--modals-->
+    <!-- Edit Cover Photo Modal -->
+    <div id="cover-pic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Upload Cover Photo">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Upload Cover Photo</h3>
+            <input type="file" id="cover-pic-upload" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <img id="cover-pic-preview" class="image-preview" alt="Cover photo preview">
+            <button onclick="uploadCoverPic()" class="px-4 py-2 rounded-lg cta-button w-full">Upload</button>
+            <button onclick="closeCoverPicModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Edit Profile Picture Modal -->
+    <div id="profile-pic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Upload Profile Picture">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Upload Profile Picture</h3>
+            <input type="file" id="profile-pic-upload" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <img id="profile-pic-preview" class="image-preview" alt="Profile picture preview">
+            <button onclick="uploadProfilePic()" class="px-4 py-2 rounded-lg cta-button w-full">Upload</button>
+            <button onclick="closeProfilePicModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Edit Super Admin Profile Modal -->
+    <div id="edit-super-admin-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Edit Super Admin Profile">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Edit Super Admin Profile</h3>
+            <label class="block mb-2">Name</label>
+            <input id="edit-super-admin-name" type="text" class="w-full p-2 border rounded-lg mb-4" value="Super Admin Name">
+            <label class="block mb-2">Phone</label>
+            <input id="edit-super-admin-phone" type="tel" class="w-full p-2 border rounded-lg mb-4" value="+251-912-345-678">
+            <label class="block mb-2">Email</label>
+            <input id="edit-super-admin-email" type="email" class="w-full p-2 border rounded-lg mb-4" value="admin@astegni.et">
+            <label class="block mb-2">Location</label>
+            <input id="edit-super-admin-location" type="text" class="w-full p-2 border rounded-lg mb-4" value="Addis Ababa, Ethiopia">
+            <label class="block mb-2">Bio</label>
+            <textarea id="edit-super-admin-bio" class="w-full p-2 border rounded-lg mb-4" rows="4">Dedicated super administrator overseeing the ASTEGNI platform.</textarea>
+            <label class="block mb-2">Quote</label>
+            <input id="edit-super-admin-quote" type="text" class="w-full p-2 border rounded-lg mb-4" value="Empowering education through seamless management.">
+            <label class="block mb-2">Facebook URL</label>
+            <input id="edit-super-admin-facebook" type="url" class="w-full p-2 border rounded-lg mb-4" value="https://facebook.com">
+            <label class="block mb-2">X URL</label>
+            <input id="edit-super-admin-x" type="url" class="w-full p-2 border rounded-lg mb-4" value="https://x.com">
+            <label class="block mb-2">Instagram URL</label>
+            <input id="edit-super-admin-instagram" type="url" class="w-full p-2 border rounded-lg mb-4" value="https://instagram.com">
+            <button onclick="saveSuperAdminProfile()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeEditSuperAdminModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Super Admin Comments Modal -->
+    <div id="super-admin-comments-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Super Admin Comments">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Comments</h3>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Commenter</th>
+                        <th class="p-2">Comment</th>
+                        <th class="p-2">Date</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="super-admin-comments-table"></tbody>
+            </table>
+            <button onclick="closeSuperAdminCommentsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+
+    <!-- Confirm Payment Modal -->
+    <div id="confirm-payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Confirm Payment">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Confirm Payment</h3>
+            <p id="confirm-payment-details" class="mb-4"></p>
+            <button onclick="confirmPayment()" class="px-4 py-2 rounded-lg cta-button w-full">Confirm</button>
+            <button onclick="closeConfirmPaymentModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div id="pricing-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Update Pricing">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Update Pricing</h3>
+            <label class="block mb-2">Pricing Type</label>
+            <select id="pricing-type" class="w-full p-2 border rounded-lg mb-4" onchange="updatePricingFields()">
+                <option value="campaign">Ad Campaign</option>
+                <option value="registration">Registration</option>
+                <option value="subscription">Subscription</option>
+            </select>
+            <div id="campaign-pricing">
+                <label class="block mb-2">1 Day (birr)</label>
+                <input id="price-1" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="1000">
+                <label class="block mb-2">3 Days (birr)</label>
+                <input id="price-3" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="2700">
+                <label class="block mb-2">1 Week (birr)</label>
+                <input id="price-7" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="5600">
+                <label class="block mb-2">2 Weeks (birr)</label>
+                <input id="price-15" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="11250">
+                <label class="block mb-2">1 Month (birr)</label>
+                <input id="price-30" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="19500">
+                <label class="block mb-2">Custom Rate (birr/day)</label>
+                <input id="price-custom" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="1000">
+            </div>
+            <div id="registration-pricing" class="hidden">
+                <label class="block mb-2">Registration Fee (birr)</label>
+                <input id="price-registration" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="500">
+            </div>
+            <div id="subscription-pricing" class="hidden">
+                <label class="block mb-2">Subscription Fee (birr/month)</label>
+                <input id="price-subscription" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="200">
+            </div>
+            <button onclick="savePricing()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closePricingModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Price Requests Modal -->
+    <div id="price-requests-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Price Update Requests">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <h3 class="text-2xl font-bold mb-4">Price Update Requests</h3>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Request ID</th>
+                        <th class="p-2">Type</th>
+                        <th class="p-2">Details</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="price-requests-table"></tbody>
+            </table>
+            <button onclick="closePriceRequestsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Reports Modal -->
+    <div id="reports-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Advertiser Reports">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Advertiser Reports</h3>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Advertiser</th>
+                        <th class="p-2">Reason</th>
+                        <th class="p-2">Reported By</th>
+                        <th class="p-2">Date</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-table"></tbody>
+            </table>
+            <button onclick="closeReportsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Manage Admins Modal -->
+    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Manage Admins">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Manage Admins</h3>
+            <label class="block mb-2">Admin Email</label>
+            <input id="admin-email" type="email" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., admin@astegni.et">
+            <label class="block mb-2">Role</label>
+            <select id="admin-role" class="w-full p-2 border rounded-lg mb-4">
+                <option value="Admin">Admin</option>
+                <option value="Super Admin">Super Admin</option>
+            </select>
+            <button onclick="addAdmin()" class="px-4 py-2 rounded-lg cta-button w-full">Add Admin</button>
+            <h4 class="text-lg font-semibold mt-6 mb-2">Current Admins</h4>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Email</th>
+                        <th class="p-2">Role</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-table"></tbody>
+            </table>
+            <button onclick="closeAdminModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+<!-- Generate Report Modal (updated with visualization button) -->
+<div id="generate-report-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Platform Report Data">
+    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-4">Platform Report Data</h3>
+        <div class="flex justify-between items-center mb-4">
+            <h4 class="text-lg font-semibold">Reports</h4>
+            <button onclick="openReportVisualizationModal()" class="px-4 py-2 rounded-lg cta-button">View Visualizations</button>
+        </div>
+        <!-- Payments Table -->
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="text-lg font-semibold">Payments</h4>
+                <button onclick="downloadReport('payments')" class="px-4 py-2 rounded-lg cta-button">Download Payments</button>
+            </div>
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2 text-left">Type</th>
+                        <th class="p-2 text-left">Details</th>
+                        <th class="p-2 text-left">Amount</th>
+                        <th class="p-2 text-left">Status</th>
+                        <th class="p-2 text-left">Date</th>
+                    </tr>
+                </thead>
+                <tbody id="payments-table"></tbody>
+            </table>
+        </div>
+        <!-- Advertisers, Tutors, Users Tables (unchanged) -->
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="text-lg font-semibold">Advertisers</h4>
+                <button onclick="downloadReport('advertisers')" class="px-4 py-2 rounded-lg cta-button">Download Advertisers</button>
+            </div>
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2 text-left">Name</th>
+                        <th class="p-2 text-left">Status</th>
+                        <th class="p-2 text-left">Registered</th>
+                        <th class="p-2 text-left">Left</th>
+                        <th class="p-2 text-left">Rating</th>
+                    </tr>
+                </thead>
+                <tbody id="advertisers-table"></tbody>
+            </table>
+        </div>
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="text-lg font-semibold">Tutors</h4>
+                <button onclick="downloadReport('tutors')" class="px-4 py-2 rounded-lg cta-button">Download Tutors</button>
+            </div>
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2 text-left">Name</th>
+                        <th class="p-2 text-left">Status</th>
+                        <th class="p-2 text-left">Registered</th>
+                        <th class="p-2 text-left">Left</th>
+                        <th class="p-2 text-left">Rating</th>
+                        <th class="p-2 text-left">Comment</th>
+                    </tr>
+                </thead>
+                <tbody id="tutors-table"></tbody>
+            </table>
+        </div>
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="text-lg font-semibold">Users</h4>
+                <button onclick="downloadReport('users')" class="px-4 py-2 rounded-lg cta-button">Download Users</button>
+            </div>
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2 text-left">Type</th>
+                        <th class="p-2 text-left">Email</th>
+                        <th class="p-2 text-left">Status</th>
+                        <th class="p-2 text-left">Registered</th>
+                        <th class="p-2 text-left">Left</th>
+                        <th class="p-2 text-left">Rating</th>
+                        <th class="p-2 text-left">Comment</th>
+                        <th class="p-2 text-left">Self-Registered</th>
+                    </tr>
+                </thead>
+                <tbody id="users-table"></tbody>
+            </table>
+        </div>
+        <div class="flex justify-end">
+            <button onclick="downloadReport('all')" class="px-4 py-2 rounded-lg cta-button">Download All</button>
+        </div>
+        <button onclick="closeGenerateReportModal()" class="mt-4 hover:underline">Close</button>
+    </div>
+</div>
+
+<!-- Report Visualization Modal -->
+<div id="report-visualization-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20 report-visualization-modal" role="dialog" aria-modal="true" aria-label="Report Visualizations">
+    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-4">Report Visualizations</h3>
+        <div class="flex flex-col sm:flex-row gap-4 mb-4">
+            <div>
+                <label class="block mb-2">Report Type</label>
+                <select id="report-type" class="w-full p-2 border rounded-lg" onchange="updateReportChart()">
+                    <option value="payments">Payments</option>
+                    <option value="advertisers">Advertisers</option>
+                    <option value="tutors">Tutors</option>
+                    <option value="users">Users</option>
+                </select>
+            </div>
+            <div>
+                <label class="block mb-2">Visualization Type</label>
+                <select id="visualization-type" class="w-full p-2 border rounded-lg" onchange="updateReportChart()">
+                    <option value="bar">Bar Graph</option>
+                    <option value="line">Line Graph</option>
+                    <option value="pie">Pie Chart</option>
+                </select>
+                <canvas id="report-chart"></canvas>
+            </div>
+            
+        </div>
+        <div class="chart-container">
+            <canvas id="report-chart"></canvas>
+        </div>
+        <button onclick="closeReportVisualizationModal()" class="mt-4 hover:underline">Close</button>
+    </div>
+</div>
+
+    <!-- Footer -->
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <form class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
+                    </form>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <script>
+    
+
+    // Data Objects
+const currentAdmin = { id: 1, email: 'admin@astegni.et', role: 'Super Admin' };
+const advertisers = {
+    1: { id: 1, name: 'EduAds Inc.', email: 'contact@eduads.com', status: 'Active', registered: '2025-01-10', rating: 4.5, left: null },
+    2: { id: 2, name: 'LearnEasy Ltd.', email: 'info@learneasy.et', status: 'Pending', registered: '2025-05-15', rating: 3.8, left: null },
+    3: { id: 3, name: 'StudyNow', email: 'info@studynow.et', status: 'Left', registered: '2024-12-01', rating: 2.5, left: '2025-06-01' }
+};
+const campaigns = {
+    1: { id: 1, advertiserId: 1, name: 'Math Tutoring Promo', duration: 30, price: 19500, adContent: { description: 'Promote math tutoring' }, reviewStatus: 'Under Review', moderationStatus: 'Pending', startDate: '2025-05-20' },
+    2: { id: 2, advertiserId: 1, name: 'Science Campaign', duration: 15, price: 11250, adContent: { description: 'Science tutoring ad' }, reviewStatus: 'Approved', moderationStatus: 'Approved', startDate: '2025-04-10' },
+    3: { id: 3, advertiserId: 2, name: 'English Promo', duration: 7, price: 5600, adContent: { description: 'English tutoring ad' }, reviewStatus: 'Active', moderationStatus: 'Approved', startDate: '2025-05-25' }
+};
+const payments = {
+    1: { id: 1, type: 'Ad Campaign', details: 'Math Tutoring Promo', amount: 19500, status: 'Pending', campaignId: 1, date: '2025-05-20' },
+    2: { id: 2, type: 'Registration', details: 'EduAds Inc.', amount: 500, status: 'Completed', date: '2025-01-10' },
+    3: { id: 3, type: 'Subscription', details: 'EduAds Inc. Monthly', amount: 200, status: 'Completed', date: '2025-05-01' },
+    4: { id: 4, type: 'Subscription', details: 'LearnEasy Ltd. Monthly', amount: 200, status: 'Completed', date: '2025-06-01' }
+};
+const priceRequests = {
+    1: { id: 1, type: 'campaign', details: 'Increase 1-day campaign price to 1200 birr', status: 'Pending', requestedBy: 'admin2@astegni.et' }
+};
+const reports = {
+    1: { id: 1, advertiserId: 2, reason: 'Inappropriate content', reportedBy: 'admin@astegni.et', date: '2025-05-20' }
+};
+const admins = {
+    1: { id: 1, email: 'admin@astegni.et', role: 'Super Admin' },
+    2: { id: 2, email: 'admin2@astegni.et', role: 'Admin' }
+};
+const notifications = {
+    1: { id: 1, message: 'New campaign submitted for review', recipient: 'Super Admin', date: '2025-05-20' }
+};
+const logs = {
+    1: { id: 1, action: 'Campaign 1 submitted for review', user: 'Admin', date: '2025-05-20 10:00' }
+};
+const pricing = {
+    campaign: { 1: 1000, 3: 2700, 7: 5600, 15: 11250, 30: 19500, custom: 1000 },
+    registration: 500,
+    subscription: 200
+};
+const tutors = {
+    1: { id: 1, name: 'Abebe Kebede', status: 'Confirmed', registered: '2025-02-01', rating: 4.7, comment: 'Great platform!', left: null },
+    2: { id: 2, name: 'Marta Tesfaye', status: 'Confirmed', registered: '2025-03-15', rating: 4.2, comment: 'Good experience', left: null },
+    3: { id: 3, name: 'Yared Alem', status: 'Left', registered: '2025-01-20', rating: 3.0, comment: 'Okay service', left: '2025-06-15' }
+};
+const users = {
+    1: { id: 1, type: 'Parent', email: 'parent1@astegni.et', registered: '2025-01-05', rating: 4.5, comment: 'Very helpful tutors', left: null },
+    2: { id: 2, type: 'Student', email: 'student1@astegni.et', registered: '2025-02-10', rating: 4.0, comment: 'Good platform', left: null, selfRegistered: true },
+    3: { id: 3, type: 'Student', email: 'student2@astegni.et', registered: '2025-03-01', rating: 3.5, comment: 'Needs improvement', left: '2025-06-20', selfRegistered: false }
+};
+// Data Objects (append to existing)
+        const superAdminComments = {
+            1: { id: 1, commenter: 'User1', comment: 'Great admin support!', date: '2025-05-20' },
+            2: { id: 2, commenter: 'User2', comment: 'Very responsive.', date: '2025-06-01' }
+        };
+
+        const colors = {
+    primary: visualizationType === 'pie' ? ['#F59E0B', '#D97706', '#92400E', '#78350F'] : '#F59E0B',
+    secondary: visualizationType === 'pie' ? ['#FFD54F', '#E6BF45', '#FFB300', '#E0E0E0'] : '#D97706'
+};
+
+// Initialize Dashboard (update existing)
+function initDashboard() {
+            document.getElementById('total-revenue-card').classList.remove('hidden');
+            updateSummary();
+            searchPayments();
+            updatePriceRequests();
+            updateReports();
+            updateAdmins();
+            checkNotifications();
+            updateSuperAdminComments();
+        }
+
+        // Cover Photo Functions
+        function openCoverPicModal() {
+            const modal = document.getElementById('cover-pic-modal');
+            modal.classList.remove('hidden');
+            const fileInput = document.getElementById('cover-pic-upload');
+            const preview = document.getElementById('cover-pic-preview');
+            fileInput.value = '';
+            preview.style.display = 'none';
+            preview.src = '';
+            trapFocus(modal);
+        }
+
+        function closeCoverPicModal() {
+            document.getElementById('cover-pic-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function uploadCoverPic() {
+            const fileInput = document.getElementById('cover-pic-upload');
+            const file = fileInput.files[0];
+            const coverPic = document.getElementById('super-admin-cover-pic');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    coverPic.src = e.target.result;
+                    closeCoverPicModal();
+                    logAction('Updated super admin cover photo');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select an image to upload.');
+            }
+        }
+
+        document.getElementById('cover-pic-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('cover-pic-preview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Profile Picture Functions
+        function openProfilePicModal() {
+            const modal = document.getElementById('profile-pic-modal');
+            modal.classList.remove('hidden');
+            const fileInput = document.getElementById('profile-pic-upload');
+            const preview = document.getElementById('profile-pic-preview');
+            fileInput.value = '';
+            preview.style.display = 'none';
+            preview.src = '';
+            trapFocus(modal);
+        }
+
+        function closeProfilePicModal() {
+            document.getElementById('profile-pic-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function uploadProfilePic() {
+            const fileInput = document.getElementById('profile-pic-upload');
+            const file = fileInput.files[0];
+            const profilePic = document.getElementById('super-admin-profile-pic');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    profilePic.src = e.target.result;
+                    closeProfilePicModal();
+                    logAction('Updated super admin profile picture');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                alert('Please select an image to upload.');
+            }
+        }
+
+        document.getElementById('profile-pic-upload').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const preview = document.getElementById('profile-pic-preview');
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Edit Super Admin Profile Functions
+        function openEditSuperAdminModal() {
+            document.getElementById('edit-super-admin-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('edit-super-admin-modal'));
+        }
+
+        function closeEditSuperAdminModal() {
+            document.getElementById('edit-super-admin-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function saveSuperAdminProfile() {
+            const name = document.getElementById('edit-super-admin-name').value.trim();
+            const phone = document.getElementById('edit-super-admin-phone').value.trim();
+            const email = document.getElementById('edit-super-admin-email').value.trim();
+            const location = document.getElementById('edit-super-admin-location').value.trim();
+            const bio = document.getElementById('edit-super-admin-bio').value.trim();
+            const quote = document.getElementById('edit-super-admin-quote').value.trim();
+            const facebook = document.getElementById('edit-super-admin-facebook').value.trim();
+            const x = document.getElementById('edit-super-admin-x').value.trim();
+            const instagram = document.getElementById('edit-super-admin-instagram').value.trim();
+
+            if (!name || !phone || !email || !location || !bio || !quote) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                alert('Please enter a valid email address.');
+                return;
+            }
+
+            document.getElementById('super-admin-name').textContent = name;
+            document.getElementById('super-admin-phone').textContent = `Phone: ${phone}`;
+            document.getElementById('super-admin-email').textContent = `Email: ${email}`;
+            document.getElementById('super-admin-location').textContent = `Location: ${location}`;
+            document.getElementById('super-admin-bio').textContent = `Bio: ${bio}`;
+            document.getElementById('super-admin-quote').textContent = `"${quote}"`;
+            document.querySelector('.social-icons a[href*="facebook.com"]').href = facebook;
+            document.querySelector('.social-icons a[href*="x.com"]').href = x;
+            document.querySelector('.social-icons a[href*="instagram.com"]').href = instagram;
+
+            logAction('Updated super admin profile');
+            alert('Profile updated successfully.');
+            closeEditSuperAdminModal();
+        }
+
+        // Super Admin Comments Functions
+        function updateSuperAdminComments() {
+            const commentsTable = document.getElementById('super-admin-comments-table');
+            commentsTable.innerHTML = '';
+            Object.values(superAdminComments).forEach(comment => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-2">${comment.commenter}</td>
+                    <td class="p-2">${comment.comment}</td>
+                    <td class="p-2">${comment.date}</td>
+                    <td class="p-2">
+                        <button onclick="deleteSuperAdminComment(${comment.id})" class="hover:underline">Delete</button>
+                    </td>
+                `;
+                commentsTable.appendChild(tr);
+            });
+        }
+
+        function openSuperAdminCommentsModal() {
+            updateSuperAdminComments();
+            document.getElementById('super-admin-comments-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('super-admin-comments-modal'));
+        }
+
+        function closeSuperAdminCommentsModal() {
+            document.getElementById('super-admin-comments-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function deleteSuperAdminComment(commentId) {
+            if (confirm('Are you sure you want to delete this comment?')) {
+                logAction(`Deleted super admin comment ${commentId}`);
+                delete superAdminComments[commentId];
+                alert('Comment deleted');
+                updateSuperAdminComments();
+            }
+        }
+
+// Report Visualization Functions
+let reportChart = null;
+
+function openReportVisualizationModal() {
+    const modal = document.getElementById('report-visualization-modal');
+    if (!modal) {
+        console.error('Report visualization modal not found.');
+        return;
+    }
+    modal.classList.remove('hidden');
+    updateReportChart();
+    trapFocus(modal);
+}
+
+function closeReportVisualizationModal() {
+    const modal = document.getElementById('report-visualization-modal');
+    if (!modal) return;
+    modal.classList.add('hidden');
+    if (reportChart) {
+        reportChart.destroy();
+        reportChart = null;
+    }
+    restoreFocus();
+}
+
+function updateReportChart() {
+    const reportType = document.getElementById('report-type')?.value;
+    const visualizationType = document.getElementById('visualization-type')?.value;
+    const canvas = document.getElementById('report-chart');
+    if (!canvas || !reportType || !visualizationType) {
+        console.error('Required elements for chart rendering are missing.', {
+            canvas: !!canvas,
+            reportType,
+            visualizationType
+        });
+        return;
+    }
+    const validChartTypes = ['bar', 'line', 'pie'];
+    if (!validChartTypes.includes(visualizationType)) {
+        console.error(`Invalid visualization type: ${visualizationType}. Expected one of: ${validChartTypes.join(', ')}`);
+        return;
+    }
+    const ctx = canvas.getContext('2d');
+
+    if (reportChart) {
+        reportChart.destroy();
+    }
+
+    let data = [], labels = [], datasetLabel = '';
+    const colors = {
+        primary: visualizationType === 'pie' ? ['#F59E0B', '#D97706', '#92400E', '#78350F'] : '#F59E0B',
+        secondary: visualizationType === 'pie' ? ['#FFD54F', '#E6BF45', '#FFB300', '#E0E0E0'] : '#D97706'
+    };
+
+    if (reportType === 'payments') {
+        const paymentData = Object.values(payments).reduce((acc, p) => {
+            acc[p.date] = (acc[p.date] || 0) + p.amount;
+            return acc;
+        }, {});
+        labels = Object.keys(paymentData).sort();
+        data = labels.map(date => paymentData[date]);
+        datasetLabel = 'Payment Amounts (Birr)';
+    } else if (reportType === 'advertisers') {
+        labels = Object.values(advertisers).map(a => a.name);
+        data = Object.values(advertisers).map(a => a.rating);
+        datasetLabel = 'Advertiser Ratings';
+    } else if (reportType === 'tutors') {
+        labels = Object.values(tutors).map(t => t.name);
+        data = Object.values(tutors).map(t => t.rating);
+        datasetLabel = 'Tutor Ratings';
+    } else if (reportType === 'users') {
+        const statusCounts = Object.values(users).reduce((acc, u) => {
+            const status = u.left ? 'Left' : 'Active';
+            acc[status] = (acc[status] || 0) + 1;
+            return acc;
+        }, {});
+        labels = Object.keys(statusCounts);
+        data = Object.values(statusCounts);
+        datasetLabel = 'User Status Counts';
+    }
+
+    if (!labels.length || !data.length) {
+        console.warn('No data available for the selected report type.', { reportType });
+        return;
+    }
+
+    const chartConfig = ```chartjs
+    {
+        type: "${visualizationType}",
+        data: {
+            labels: ${JSON.stringify(labels)},
+            datasets: [{
+                label: "${datasetLabel}",
+                data: ${JSON.stringify(data)},
+                backgroundColor: ${visualizationType === 'pie' ? JSON.stringify(colors.primary) : JSON.stringify(colors.primary)},
+                borderColor: ${visualizationType === 'pie' ? JSON.stringify(colors.secondary) : JSON.stringify(colors.secondary)},
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: ${visualizationType === 'pie'},
+                    labels: {
+                        color: "var(--modal-text)"
+                    }
+                },
+                title: {
+                    display: true,
+                    text: "${datasetLabel}",
+                    color: "var(--modal-text)"
+                }
+            },
+            scales: ${visualizationType === 'pie' ? '{}' : `{
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: "var(--modal-text)"
+                    },
+                    grid: {
+                        color: "var(--modal-input-border)"
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: "var(--modal-text)"
+                    },
+                    grid: {
+                        color: "var(--modal-input-border)"
+                    }
+                }
+            }`}
+        }
+    }
+    ```;
+
+    reportChart = new Chart(ctx, chartConfig);
+}
+
+
+
+// Update initDashboard to ensure Chart.js is ready
+function initDashboard() {
+document.getElementById('total-revenue-card')?.classList.remove('hidden');
+updateSummary();
+searchPayments();
+updatePriceRequests();
+updateReports();
+updateAdmins();
+checkNotifications();
+updateSuperAdminComments();
+// Ensure Chart.js is loaded
+if (typeof Chart !== 'undefined') {
+Chart.defaults.color = 'var(--modal-text)';
+Chart.defaults.borderColor = 'var(--modal-input-border)';
+} else {
+console.warn('Chart.js is not loaded.');
+}
+}
+
+
+// Update Summary
+function updateSummary() {
+    const totalAdvertisers = Object.values(advertisers).length;
+    const totalCampaigns = Object.values(campaigns).length;
+    const totalRevenue = Object.values(payments).reduce((sum, p) => p.status === 'Completed' ? sum + p.amount : sum, 0);
+    document.getElementById('total-advertisers').textContent = totalAdvertisers;
+    document.getElementById('total-campaigns').textContent = totalCampaigns;
+    document.getElementById('total-revenue').textContent = `${totalRevenue} birr`;
+}
+
+// Generate Report Modal
+function generatePlatformReport() {
+    populateReportTables();
+    document.getElementById('generate-report-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('generate-report-modal'));
+}
+function closeGenerateReportModal() {
+    document.getElementById('generate-report-modal').classList.add('hidden');
+    restoreFocus();
+}
+function populateReportTables() {
+    // Payments Table
+    const paymentsTable = document.getElementById('payments-table');
+    paymentsTable.innerHTML = '';
+    Object.values(payments).forEach(p => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="p-2 border">${p.type}</td>
+            <td class="p-2 border">${p.details}</td>
+            <td class="p-2 border">${p.amount}</td>
+            <td class="p-2 border">${p.status}</td>
+            <td class="p-2 border">${p.date}</td>
+        `;
+        paymentsTable.appendChild(tr);
+    });
+
+    // Advertisers Table
+    const advertisersTable = document.getElementById('advertisers-table');
+    advertisersTable.innerHTML = '';
+    Object.values(advertisers).forEach(a => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="p-2 border">${a.name}</td>
+            <td class="p-2 border">${a.status}</td>
+            <td class="p-2 border">${a.registered}</td>
+            <td class="p-2 border">${a.left || 'N/A'}</td>
+            <td class="p-2 border">${a.rating}</td>
+        `;
+        advertisersTable.appendChild(tr);
+    });
+
+    // Tutors Table
+    const tutorsTable = document.getElementById('tutors-table');
+    tutorsTable.innerHTML = '';
+    Object.values(tutors).forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="p-2 border">${t.name}</td>
+            <td class="p-2 border">${t.status}</td>
+            <td class="p-2 border">${t.registered}</td>
+            <td class="p-2 border">${t.left || 'N/A'}</td>
+            <td class="p-2 border">${t.rating}</td>
+            <td class="p-2 border">${t.comment}</td>
+        `;
+        tutorsTable.appendChild(tr);
+    });
+
+    // Users Table
+    const usersTable = document.getElementById('users-table');
+    usersTable.innerHTML = '';
+    Object.values(users).forEach(u => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="p-2 border">${u.type}</td>
+            <td class="p-2 border">${u.email}</td>
+            <td class="p-2 border">${u.left ? 'Left' : 'Active'}</td>
+            <td class="p-2 border">${u.registered}</td>
+            <td class="p-2 border">${u.left || 'N/A'}</td>
+            <td class="p-2 border">${u.rating}</td>
+            <td class="p-2 border">${u.comment}</td>
+            <td class="p-2 border">${u.type === 'Student' ? (u.selfRegistered ? 'Yes' : 'No') : 'N/A'}</td>
+        `;
+        usersTable.appendChild(tr);
+    });
+}
+function downloadReport(type) {
+    let data = [];
+    if (type === 'all' || type === 'payments') {
+        data = data.concat(Object.values(payments).map(p => ({
+            Type: p.type,
+            Details: p.details,
+            Amount: p.amount,
+            Status: p.status,
+            Date: p.date
+        })));
+    }
+    if (type === 'all' || type === 'advertisers') {
+        data = data.concat(Object.values(advertisers).map(a => ({
+            Type: 'Advertiser',
+            Details: a.name,
+            Status: a.status,
+            Registered: a.registered,
+            Left: a.left || 'N/A',
+            Rating: a.rating
+        })));
+    }
+    if (type === 'all' || type === 'tutors') {
+        data = data.concat(Object.values(tutors).map(t => ({
+            Type: 'Tutor',
+            Details: t.name,
+            Status: t.status,
+            Registered: t.registered,
+            Left: t.left || 'N/A',
+            Rating: t.rating,
+            Comment: t.comment
+        })));
+    }
+    if (type === 'all' || type === 'users') {
+        data = data.concat(Object.values(users).map(u => ({
+            Type: u.type,
+            Details: u.email,
+            Status: u.left ? 'Left' : 'Active',
+            Registered: u.registered,
+            Left: u.left || 'N/A',
+            Rating: u.rating,
+            Comment: u.comment,
+            SelfRegistered: u.type === 'Student' ? (u.selfRegistered ? 'Yes' : 'No') : 'N/A'
+        })));
+    }
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, `${type.charAt(0).toUpperCase() + type.slice(1)} Report`);
+    XLSX.write(wb, `${type}_report.xlsx`);
+    logAction(`Downloaded ${type} report`);
+    alert(`Downloaded ${type} report`);
+}
+
+// Payments Management
+let selectedPaymentId = null;
+function searchPayments() {
+    const searchTerm = document.getElementById('payment-search').value.trim().toLowerCase();
+    const typeFilter = document.getElementById('payment-type-filter').value;
+    const paymentTable = document.getElementById('payment-table');
+    paymentTable.innerHTML = '';
+    Object.values(payments).forEach(payment => {
+        const matchesSearch = searchTerm === '' || 
+            payment.details.toLowerCase().includes(searchTerm) ||
+            (payment.campaignId && campaigns[payment.campaignId]?.name.toLowerCase().includes(searchTerm)) ||
+            (payment.details.includes('EduAds') && advertisers[1]?.name.toLowerCase().includes(searchTerm));
+        const matchesType = typeFilter === 'all' || payment.type === typeFilter;
+        if (matchesSearch && matchesType) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="p-2">${payment.type}</td>
+                <td class="p-2">${payment.details}</td>
+                <td class="p-2">${payment.amount} birr</td>
+                <td class="p-2">${payment.campaignId ? campaigns[payment.campaignId]?.duration + ' days' : 'N/A'}</td>
+                <td class="p-2">${payment.status}</td>
+                <td class="p-2">
+                    ${payment.status === 'Pending' ? `<button onclick="openConfirmPaymentModal(${payment.id})" class="hover:underline">Confirm</button> | ` : ''}
+                    <button onclick="deletePayment(${payment.id})" class="hover:underline">Delete</button>
+                </td>
+            `;
+            paymentTable.appendChild(tr);
+        }
+    });
+}
+function openConfirmPaymentModal(paymentId) {
+    selectedPaymentId = paymentId;
+    const payment = payments[paymentId];
+    document.getElementById('confirm-payment-details').textContent = `Confirm payment of ${payment.amount} birr for ${payment.details}?`;
+    document.getElementById('confirm-payment-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('confirm-payment-modal'));
+}
+function closeConfirmPaymentModal() {
+    document.getElementById('confirm-payment-modal').classList.add('hidden');
+    selectedPaymentId = null;
+    restoreFocus();
+}
+function confirmPayment() {
+    const payment = payments[selectedPaymentId];
+    payment.status = 'Completed';
+    logAction(`Confirmed payment for ${payment.details}`);
+    alert('Payment confirmed');
+    searchPayments();
+    updateSummary();
+    closeConfirmPaymentModal();
+}
+function deletePayment(paymentId) {
+    if (confirm('Are you sure you want to delete this payment?')) {
+        logAction(`Deleted payment for ${payments[paymentId].details}`);
+        delete payments[paymentId];
+        alert('Payment deleted');
+        searchPayments();
+        updateSummary();
+    }
+}
+
+// Pricing Management
+function updatePricingFields() {
+    const pricingType = document.getElementById('pricing-type').value;
+    document.getElementById('campaign-pricing').classList.toggle('hidden', pricingType !== 'campaign');
+    document.getElementById('registration-pricing').classList.toggle('hidden', pricingType !== 'registration');
+    document.getElementById('subscription-pricing').classList.toggle('hidden', pricingType !== 'subscription');
+}
+function openPricingModal() {
+    document.getElementById('pricing-type').value = 'campaign';
+    updatePricingFields();
+    document.getElementById('pricing-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('pricing-modal'));
+}
+function closePricingModal() {
+    document.getElementById('pricing-modal').classList.add('hidden');
+    restoreFocus();
+}
+function savePricing() {
+    const pricingType = document.getElementById('pricing-type').value;
+    if (pricingType === 'campaign') {
+        pricing.campaign = {
+            1: parseInt(document.getElementById('price-1').value),
+            3: parseInt(document.getElementById('price-3').value),
+            7: parseInt(document.getElementById('price-7').value),
+            15: parseInt(document.getElementById('price-15').value),
+            30: parseInt(document.getElementById('price-30').value),
+            custom: parseInt(document.getElementById('price-custom').value)
+        };
+    } else if (pricingType === 'registration') {
+        pricing.registration = parseInt(document.getElementById('price-registration').value);
+    } else if (pricingType === 'subscription') {
+        pricing.subscription = parseInt(document.getElementById('price-subscription').value);
+    }
+    logAction(`Updated ${pricingType} pricing`);
+    alert('Pricing updated');
+    closePricingModal();
+}
+
+// Price Requests Management
+function updatePriceRequests() {
+    const priceRequestsTable = document.getElementById('price-requests-table');
+    priceRequestsTable.innerHTML = '';
+    Object.values(priceRequests).forEach(request => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="p-2">${request.id}</td>
+            <td class="p-2">${request.type}</td>
+            <td class="p-2">${request.details}</td>
+            <td class="p-2">${request.status}</td>
+            <td class="p-2">
+                <button onclick="approvePriceRequest(${request.id})" class="hover:underline">Approve</button> |
+                <button onclick="rejectPriceRequest(${request.id})" class="hover:underline">Reject</button>
+            </td>
+        `;
+        priceRequestsTable.appendChild(tr);
+    });
+}
+function closePriceRequestsModal() {
+    document.getElementById('price-requests-modal').classList.add('hidden');
+    restoreFocus();
+}
+function approvePriceRequest(requestId) {
+    const request = priceRequests[requestId];
+    request.status = 'Approved';
+    logAction(`Approved price request ${requestId}`);
+    alert('Price request approved');
+    updatePriceRequests();
+}
+function rejectPriceRequest(requestId) {
+    const request = priceRequests[requestId];
+    request.status = 'Rejected';
+    logAction(`Rejected price request ${requestId}`);
+    alert('Price request rejected');
+    updatePriceRequests();
+}
+
+// Reports Management
+function updateReports() {
+    const reportsTable = document.getElementById('reports-table');
+    reportsTable.innerHTML = '';
+    Object.values(reports).forEach(report => {
+        const advertiser = advertisers[report.advertiserId];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="p-2">${advertiser ? advertiser.name : 'Unknown'}</td>
+            <td class="p-2">${report.reason}</td>
+            <td class="p-2">${report.reportedBy}</td>
+            <td class="p-2">${report.date}</td>
+            <td class="p-2">
+                <button onclick="resolveReport(${report.id})" class="hover:underline">Resolve</button>
+            </td>
+        `;
+        reportsTable.appendChild(tr);
+    });
+}
+function openReportsModal() {
+    updateReports();
+    document.getElementById('reports-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('reports-modal'));
+}
+function closeReportsModal() {
+    document.getElementById('reports-modal').classList.add('hidden');
+    restoreFocus();
+}
+function resolveReport(reportId) {
+    logAction(`Resolved report ${reportId}`);
+    delete reports[reportId];
+    alert('Report resolved');
+    updateReports();
+}
+
+// Admins Management
+function updateAdmins() {
+    const adminTable = document.getElementById('admin-table');
+    adminTable.innerHTML = '';
+    Object.values(admins).forEach(admin => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="p-2">${admin.email}</td>
+            <td class="p-2">${admin.role}</td>
+            <td class="p-2">
+                <button onclick="deleteAdmin(${admin.id})" class="hover:underline">Delete</button>
+            </td>
+        `;
+        adminTable.appendChild(tr);
+    });
+}
+function openAdminModal() {
+    document.getElementById('admin-email').value = '';
+    document.getElementById('admin-role').value = 'Admin';
+    updateAdmins();
+    document.getElementById('admin-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('admin-modal'));
+}
+function closeAdminModal() {
+    document.getElementById('admin-modal').classList.add('hidden');
+    restoreFocus();
+}
+function addAdmin() {
+    const email = document.getElementById('admin-email').value.trim();
+    const role = document.getElementById('admin-role').value;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Please enter a valid email address');
+        return;
+    }
+    const newId = Object.keys(admins).length + 1;
+    admins[newId] = { id: newId, email, role };
+    logAction(`Added admin ${email} as ${role}`);
+    alert('Admin added');
+    updateAdmins();
+    document.getElementById('admin-email').value = '';
+}
+function deleteAdmin(adminId) {
+    if (confirm('Are you sure you want to delete this admin?')) {
+        logAction(`Deleted admin ${admins[adminId].email}`);
+        delete admins[adminId];
+        alert('Admin deleted');
+        updateAdmins();
+    }
+}
+
+// Notifications
+function checkNotifications() {
+    const hasNotifications = Object.values(notifications).some(n => n.recipient === 'Super Admin');
+    document.getElementById('notification-dot').classList.toggle('hidden', !hasNotifications);
+    document.getElementById('mobile-notification-dot').classList.toggle('hidden', !hasNotifications);
+    const notificationContent = document.getElementById('notification-content');
+    const adminNotifications = Object.values(notifications).filter(n => n.recipient === 'Super Admin');
+    if (adminNotifications.length === 0) {
+        notificationContent.textContent = 'You have no notifications.';
+    } else {
+        notificationContent.innerHTML = adminNotifications.map(n => `<p>${n.message} (${n.date})</p>`).join('');
+    }
+}
+function openNotificationModal() {
+    document.getElementById('notification-modal').classList.remove('hidden');
+    trapFocus(document.getElementById('notification-modal'));
+}
+function closeNotificationModal() {
+    document.getElementById('notification-modal').classList.add('hidden');
+    restoreFocus();
+}
+
+// Logs
+function logAction(action) {
+    const newId = Object.keys(logs).length + 1;
+    logs[newId] = {
+        id: newId,
+        action,
+        user: currentAdmin.email,
+        date: new Date().toLocaleString()
+    };
+}
+function showTab(tabId) {
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.add('hidden');
+    });
+
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('active');
+    });
+
+    // Show the selected tab content
+    document.getElementById(tabId).classList.remove('hidden');
+
+    // Add active class to the clicked tab button
+    document.querySelector(`.tab-button[onclick="showTab('${tabId}')"]`).classList.add('active');
+}
+// Theme Toggle
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeToggleIcon(newTheme);
+}
+function updateThemeToggleIcon(theme) {
+    const icon = theme === 'light' ?
+        `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>` :
+        `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+    const themeToggle = document.getElementById('theme-toggle-btn');
+    themeToggle.querySelector('svg').innerHTML = icon;
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle-btn');
+    mobileThemeToggle.innerHTML = `Toggle Theme <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${icon}</svg>`;
+}
+
+// Menu Toggle
+document.getElementById('menu-btn').addEventListener('click', () => {
+    const menu = document.getElementById('mobile-menu');
+    const isOpen = menu.classList.contains('open');
+    menu.classList.toggle('open');
+    document.getElementById('menu-btn').setAttribute('aria-expanded', !isOpen);
+});
+
+// Accessibility
+let focusableElements = [];
+let firstFocusableElement = null;
+let lastFocusableElement = null;
+let lastFocusedElement = null;
+function trapFocus(modal) {
+    focusableElements = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'));
+    firstFocusableElement = focusableElements[0];
+    lastFocusableElement = focusableElements[focusableElements.length - 1];
+    lastFocusedElement = document.activeElement;
+    firstFocusableElement.focus();
+    modal.addEventListener('keydown', handleFocusTrap);
+}
+function handleFocusTrap(e) {
+    if (e.key === 'Tab') {
+        if (e.shiftKey) {
+            if (document.activeElement === firstFocusableElement) {
+                e.preventDefault();
+                lastFocusableElement.focus();
+            }
+        } else {
+            if (document.activeElement === lastFocusableElement) {
+                e.preventDefault();
+                firstFocusableElement.focus();
+            }
+        }
+    } else if (e.key === 'Escape') {
+        closeAllModals();
+    }
+}
+function restoreFocus() {
+    if (lastFocusedElement) lastFocusedElement.focus();
+    document.querySelectorAll('.modal').forEach(modal => modal.removeEventListener('keydown', handleFocusTrap));
+}
+function closeAllModals() {
+    document.querySelectorAll('.modal').forEach(modal => modal.classList.add('hidden'));
+    restoreFocus();
+}
+
+// Initialize
+initDashboard();
+    
+    </script>
+    <!-- <script defer src="../js/supper-admin.js"></script> -->
+</body>
+</html>

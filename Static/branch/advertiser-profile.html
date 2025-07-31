@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Advertiser Profile</title>
+    <link href="../css/output.css" rel="stylesheet">
+    <link href="../css/advertise-profile.css" rel="stylesheet">
+    <link href="../css/root_theme.css" rel="stylesheet"/>
+    <script defer src="../js/xlsx.full.min.js"></script>
+    <script src="../js/app.js" defer></script>
+    <script defer src="../js/chart.min.js"></script>
+
+    <style>
+        :root {
+            --background: #FFFFFF;
+            --text: #78350F;
+            --heading: #92400E;
+            --nav-link: #78350F;
+            --nav-link-hover: #F59E0B;
+            --button-bg: #F59E0B;
+            --button-text: #FFFFFF;
+            --button-hover: #D97706;
+            --button-active: #92400E;
+            --highlight: #FFFFFF;
+            --footer-bg: #E5E7EB;
+            --footer-text: #78350F;
+            --search-heading: #F59E0B;
+            --modal-bg: #FFFFFF;
+            --modal-text: #78350F;
+            --modal-input-border: #CCC;
+            --modal-input-bg: #FAFAFA;
+        }
+
+        [data-theme="dark"] {
+            --background: #1E1E1E;
+            --text: #E0E0E0;
+            --heading: #FBC02D;
+            --nav-link: #E0E0E0;
+            --nav-link-hover: #FFD54F;
+            --button-bg: #FFD54F;
+            --button-text: #1E1E1E;
+            --button-hover: #E6BF45;
+            --button-active: #FFB300;
+            --highlight: #424242;
+            --footer-bg: #424242;
+            --footer-text: #E0E0E0;
+            --search-heading: #FBC02D;
+            --modal-bg: #1E1E1E;
+            --modal-text: #E0E0E0;
+            --modal-input-border: #888;
+            --modal-input-bg: rgba(0, 0, 0, 0.7);
+        }
+
+        /* Enhanced heading colors for light theme */
+        [data-theme="light"] h1,
+        [data-theme="light"] h2,
+        [data-theme="light"] h3,
+        [data-theme="light"] h4 {
+            color: #F59E0B;
+        }
+
+        [data-theme="light"] .description,
+        [data-theme="light"] .no-results,
+        [data-theme="light"] input#search-input,
+        [data-theme="light"] input#search-input::-webkit-input-placeholder,
+        [data-theme="light"] input#search-input::-moz-placeholder {
+            color: #D1D5DB;
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            background-color: var(--modal-input-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input::placeholder,
+        .modal-content textarea::placeholder {
+            color: #A0AEC0;
+        }
+
+        [data-theme="dark"] .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+
+        [data-theme="light"] .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: sans-serif;
+        }
+
+        nav {
+            background-color: var(--highlight);
+            color: var(--nav-link);
+        }
+
+        nav a {
+            color: var(--nav-link);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--nav-link-hover);
+        }
+
+        #mobile-menu {
+            background-color: var(--highlight);
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        #mobile-menu.open {
+            max-height: 300px;
+            display: block;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--heading);
+        }
+        #profile-dropdown, #mobile-profile-dropdown {
+    background-color: transparent;
+    border: 1px solid var(--modal-input-border);
+}
+#notification-bell, #mobile-notification-bell {
+    background-color: transparent;
+}
+#notification-bell:hover, #mobile-notification-bell:hover {
+    background-color: transparent;
+    transform: scale(1.05);
+}
+        button:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s;
+        }
+
+        button:hover:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-hover);
+        }
+
+        button:active:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-active);
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+        }
+
+        .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+
+        .cta-button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .cta-button:active {
+            background-color: var(--button-active);
+        }
+
+        #campaign-search {
+            background-color: var(--highlight);
+            color: var(--text);
+            border-color: var(--modal-input-border);
+        }
+
+        #campaign-search::placeholder {
+            color: var(--text);
+            opacity: 0.6;
+        }
+
+        #theme-toggle-btn, #mobile-theme-toggle-btn {
+            background-color: transparent;
+            color: var(--nav-link);
+        }
+
+        #theme-toggle-btn:hover, #mobile-theme-toggle-btn:hover {
+            color: var(--nav-link-hover);
+        }
+
+        #notification-bell, #profile-container button {
+            background-color: transparent;
+        }
+
+        .no-results {
+            color: var(--text);
+        }
+
+        canvas {
+            background-color: var(--modal-bg);
+        }
+
+        /* Enhanced table styling for dark theme */
+        [data-theme="dark"] table thead tr {
+            background-color: #1E1E1E !important;
+            color: var(--text);
+        }
+
+        [data-theme="dark"] table thead th {
+            color: var(--text);
+        }
+
+        /* Light theme table styling */
+        [data-theme="light"] table thead tr {
+            background-color: #F3F4F6 !important;
+            color: var(--text);
+        }
+
+        /* Table row hover effects */
+        [data-theme="light"] table tbody tr:hover {
+            background-color: #F9FAFB;
+        }
+
+        [data-theme="dark"] table tbody tr:hover {
+            background-color: #2D2D2D;
+        }
+
+        /* Table border styling */
+        [data-theme="light"] table {
+            border: 1px solid #E5E7EB;
+        }
+
+        [data-theme="dark"] table {
+            border: 1px solid #404040;
+        }
+
+        .ad-placeholder {
+            background-color: var(--background);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .image-container {
+            position: relative;
+            display: inline-block;
+        }
+
+
+        .video-call-button {
+            background-color: #EF4444;
+            color: #FFFFFF;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .video-call-button:hover {
+            background-color: #DC2626;
+        }
+
+        .video-call-button:active {
+            background-color: #B91C1C;
+        }
+
+        .chat-admin-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .chat-admin-button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .chat-admin-button:active {
+            background-color: var(--button-active);
+        }
+
+        .chat-view {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--modal-input-border);
+            padding: 10px;
+            margin-bottom: 1rem;
+            background-color: var(--modal-input-bg);
+        }
+
+        .chat-message {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            background-color: var(--highlight);
+        }
+
+/* Make the cover photo fill the entire Advertiser Profile section */
+    /* Ensure Advertiser Profile and My Campaigns fill full width */
+    .w-full.space-y-6 > .p-6.rounded-lg.shadow-lg {
+        width: 100%;
+        max-width: none;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+
+
+    /* Cover photo styling */
+    .cover-image-container {
+        position: relative;
+        width: 100%;
+        height: 12rem;
+        overflow: hidden;
+    }
+
+    .cover-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    /* Position cover photo edit icon just outside bottom-right */
+    .pencil-icon.cover {
+        position: absolute;
+        top: 12rem; /* Matches cover photo height */
+        right: 1rem;
+        background-color: var(--button-bg);
+        border-radius: 50%;
+        padding: 4px;
+        cursor: pointer;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2;
+    }
+
+    .pencil-icon.cover:hover {
+        background-color: var(--button-hover);
+    }
+
+    /* Profile image styling with 25% overlap on cover photo */
+    .profile-image-container {
+        position: relative;
+        width: fit-content;
+        margin-top: -3rem;
+        margin-left: 1rem;
+        z-index: 1;
+    }
+
+    .profile-image-container img {
+        width: 8rem;
+        height: 8rem;
+        border-radius: 50%;
+        border: 2px solid var(--modal-bg);
+    }
+
+    /* Profile image edit icon */
+    .pencil-icon {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        background-color: var(--button-bg);
+        border-radius: 50%;
+        padding: 4px;
+        cursor: pointer;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pencil-icon:hover {
+        background-color: var(--button-hover);
+    }
+
+    /* Ensure content below is not overlapped */
+    .pt-4 {
+        padding-top: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Cover photo preview styling */
+    #cover-pic-preview img {
+        width: 100%;
+        height: 8rem;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    /* Left-align Advertiser Profile and My Campaigns */
+    .lg\:w-3\/4.space-y-6 > .p-6.rounded-lg.shadow-lg.max-w-4xl {
+        margin-left: 0;
+        margin-right: auto;
+    }
+
+
+.p-6.rounded-lg.shadow-lg.max-w-4xl {
+    position: relative;
+    overflow: hidden;
+}
+
+#advertiser-name, 
+.pt-8 {
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.8); /* Optional: semi-transparent background for readability */
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+    </style>
+</head>
+<body class="font-sans">
+   <!-- Navigation -->
+<!-- Navigation -->
+<!-- Navigation -->
+<nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+    <div class="container mx-auto flex justify-between items-center">
+        <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
+        <div class="hidden md:flex space-x-6 items-center">
+            <a href="news.html" class="hover:text-[var(--nav-link-hover)]">News</a>
+            <a href="reels.html" class="hover:text-[var(--nav-link-hover)]">Reels</a>
+            <a href="store.html" class="hover:text-[var(--nav-link-hover)]">Store</a>
+            <a href="find-job.html" class="hover:text-[var(--nav-link-hover)]">Find a Job</a>
+            <div id="profile-container" class="profile-container relative">
+                <button class="flex items-center gap-2 focus:outline-none px-2 py-1 rounded transition-all duration-200" onclick="toggleProfileDropdown()">
+                    <img id="profile-pic" class="profile-pic w-8 h-8 rounded-full" src="https://via.placeholder.com/32" alt="Profile Picture">
+                    <span id="profile-name" class="nav-link text-sm">EduAds Inc.</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="profile-dropdown" class="hidden absolute top-10 right-0 bg-[var(--modal-bg)] rounded-lg shadow-lg w-48 z-50 border border-[var(--modal-input-border)]">
+                    <ul class="py-2">
+                        <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="window.location.href='advertise-profile.html'">View Profile</li>
+                        <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="openNotesModal()">Notes</li>
+                        <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="openManageFinancesModal()">Manage Finances</li>
+                        <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="openCommentRateModal()">Comment and Rate Us</li>
+                        <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="shareProfile()">Share Us</li>
+                    </ul>
+                </div>
+            </div>
+            <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()" aria-label="View notifications">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                </svg>
+                <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </button>
+        </div>
+        <button id="menu-btn" class="md:hidden focus:outline-none" aria-label="Toggle menu" aria-expanded="false">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+        </button>
+    </div>
+    <div id="mobile-menu" class="md:hidden hidden">
+        <a href="news.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">News</a>
+        <a href="reels.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Reels</a>
+        <a href="store.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Store</a>
+        <a href="find-job.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Find a Job</a>
+        <div id="mobile-profile-container" class="profile-container relative">
+            <button class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left flex items-center gap-2" onclick="toggleMobileProfileDropdown()">
+                <img id="mobile-profile-pic" class="profile-pic w-8 h-8 rounded-full" src="https://via.placeholder.com/32" alt="Profile Picture">
+                <span id="mobile-profile-name" class="nav-link text-sm">EduAds Inc.</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </button>
+            <div id="mobile-profile-dropdown" class="hidden pl-4 bg-[var(--modal-bg)] border border-[var(--modal-input-border)] rounded-lg">
+                <ul class="py-2">
+                    <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="window.location.href='advertise-profile.html'">View Profile</li>
+                    <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="openNotesModal()">Notes</li>
+                    <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="openManageFinancesModal()">Manage Finances</li>
+                    <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="openCommentRateModal()">Comment and Rate Us</li>
+                    <li class="px-4 py-2 hover:bg-[var(--button-hover)] cursor-pointer" onclick="shareProfile()">Share Us</li>
+                </ul>
+            </div>
+        </div>
+        <button id="mobile-notification-bell" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative" onclick="openNotificationModal()" aria-label="View notifications">
+            Notifications
+            <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+        </button>
+        <button id="mobile-theme-toggle-btn" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left" aria-label="Toggle theme">
+            Toggle Theme
+        </button>
+    </div>
+</nav>
+
+<!-- Profile Section -->
+<!-- Profile Section -->
+<section class="py-16">
+    <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
+        <!-- Main Content (Advertiser Profile and Campaigns) -->
+        <div class="w-full space-y-6">
+            <!-- Advertiser Profile -->
+            <div class="p-6 rounded-lg shadow-lg relative" style="background-color: var(--modal-bg)">
+                <!-- Cover Image -->
+                <div class="cover-image-container">
+                    <div class="image-container">
+                        <img id="advertiser-cover" src="https://via.placeholder.com/1200x150" class="w-full h-48 object-cover rounded-t-lg" alt="Advertiser Cover">
+                    </div>
+                </div>
+                <!-- Cover Photo Edit Icon -->
+                <div class="pencil-icon cover" onclick="openCoverPictureUploader()" title="Edit Cover Picture">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                    </svg>
+                </div>
+                <!-- Profile Image -->
+                <div class="profile-image-container">
+                    <div class="image-container">
+                        <img id="advertiser-profile-pic" src="https://via.placeholder.com/64" class="w-24 h-24 rounded-full" alt="Advertiser Profile">
+                        <div class="pencil-icon" onclick="openProfilePictureUploader()" title="Edit Profile Picture">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- Advertiser Name and Details -->
+                <div class="pt-4">
+                    <h3 class="text-xl font-semibold" id="advertiser-name">EduAds Inc.</h3>
+                    <!-- Contact Info and Buttons -->
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-4 sm:space-y-0 mt-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+                            <p class="mb-2">Phone: <span id="advertiser-phone">+251912345680</span></p>
+                            <p class="mb-2">Email: <span id="advertiser-email">contact@eduads.com</span></p>
+                            <p class="mb-2">Location: <span id="advertiser-location">Addis Ababa, Ethiopia</span></p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="openEditProfileModal()" class="px-4 py-2 rounded-lg cta-button">Edit Profile</button>
+                            <button onclick="openChatAdminModal()" class="px-4 py-2 rounded-lg chat-admin-button">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                </svg>
+                                Chat with Admin
+                            </button>
+                            <button onclick="initiateVideoCall()" class="px-4 py-2 rounded-lg video-call-button">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                </svg>
+                                Video Call Admin
+                            </button>
+                            <button onclick="openCommentRateModal()" class="px-4 py-2 rounded-lg cta-button">Comment and Rate Astegni</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Sponsorship Placeholder (Second Instance) -->
+            <div id="sponsorship-placeholder-2" class="rounded-lg shadow-lg p-4 text-center bg-[var(--highlight)]">
+                <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Sponsor Our Platform</h3>
+                <img src="https://via.placeholder.com/728x150" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder 2">
+                <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a>!</p>
+            </div>
+            <!-- My Campaigns -->
+            <div class="p-6 rounded-lg shadow-lg" style="background-color: var(--modal-bg)">
+                <h3 class="text-xl font-semibold mb-4">My Campaigns</h3>
+                <div class="flex justify-between items-center mb-4">
+                    <input id="campaign-search" type="text" class="w-full max-w-md p-2 border rounded-lg" placeholder="Search campaigns by name or description" oninput="searchCampaigns()">
+                    <button onclick="openCreateCampaignModal()" class="px-4 py-2 rounded-lg cta-button">Create New Campaign</button>
+                </div>
+                <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="p-2">Campaign ID</th>
+                            <th class="p-2">Campaign Name</th>
+                            <th class="p-2">Status</th>
+                            <th class="p-2">Action</th>
+                            <th class="p-2">Analysis</th>
+                            <th class="p-2">View</th>
+                        </tr>
+                    </thead>
+                    <tbody id="campaign-table">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Advertisement Sidebar -->
+        <aside class="lg:w-1/4 hidden lg:block sticky top-20 self-start">
+            <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                Advertisement (300x250)
+            </div>
+            <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                Advertisement (300x250)
+            </div>
+            <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                Advertisement (300x250)
+            </div>
+        </aside>
+    </div>
+</section>
+
+<!-- Edit Profile Modal -->
+<div id="edit-profile-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-[var(--modal-bg)] rounded-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Edit Profile</h2>
+        <div class="mb-4">
+            <label for="edit-name" class="block text-sm font-medium mb-2">Name</label>
+            <input type="text" id="edit-name" value="EduAds Inc." class="w-full p-2 border rounded-lg">
+        </div>
+        <div class="mb-4">
+            <label for="edit-phone" class="block text-sm font-medium mb-2">Phone</label>
+            <input type="tel" id="edit-phone" value="+251912345680" class="w-full p-2 border rounded-lg">
+        </div>
+        <div class="mb-4">
+            <label for="edit-email" class="block text-sm font-medium mb-2">Email</label>
+            <input type="email" id="edit-email" value="contact@eduads.com" class="w-full p-2 border rounded-lg">
+        </div>
+        <div class="mb-4">
+            <label for="edit-location" class="block text-sm font-medium mb-2">Location</label>
+            <input type="text" id="edit-location" value="Addis Ababa, Ethiopia" class="w-full p-2 border rounded-lg" placeholder="Enter your location">
+        </div>
+        <div class="flex justify-end space-x-2">
+            <button onclick="closeModal('edit-profile-modal')" class="px-4 py-2 rounded-lg bg-[var(--button-bg)] hover:bg-[var(--button-hover)]">Cancel</button>
+            <button onclick="saveProfileChanges()" class="px-4 py-2 rounded-lg cta-button">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Cover Photo Upload Modal -->
+<div id="cover-pic-upload-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-[var(--modal-bg)] rounded-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Upload Cover Picture</h2>
+        <div class="mb-4">
+            <label for="cover-pic-input" class="block text-sm font-medium mb-2">Select Image</label>
+            <input type="file" id="cover-pic-input" accept="image/*" class="w-full p-2 border rounded-lg" onchange="previewCoverPicture(event)">
+        </div>
+        <div id="cover-pic-preview" class="mb-4 hidden">
+            <p class="text-sm font-medium mb-2">Preview</p>
+            <img id="cover-preview-img" src="#" class="w-full h-32 object-cover rounded-lg" alt="Cover Preview">
+        </div>
+        <div class="flex justify-end space-x-2">
+            <button onclick="closeModal('cover-pic-upload-modal')" class="px-4 py-2 rounded-lg bg-[var(--button-bg)] hover:bg-[var(--button-hover)]">Cancel</button>
+            <button onclick="uploadCoverPicture()" class="px-4 py-2 rounded-lg cta-button">Upload</button>
+        </div>
+    </div>
+</div>
+
+<!-- Profile Picture Upload Modal -->
+<div id="profile-pic-upload-modal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-[var(--modal-bg)] rounded-lg p-6 w-full max-w-md">
+        <h2 class="text-xl font-semibold mb-4">Upload Profile Picture</h2>
+        <div class="mb-4">
+            <label for="profile-pic-input" class="block text-sm font-medium mb-2">Select Image</label>
+            <input type="file" id="profile-pic-input" accept="image/*" class="w-full p-2 border rounded-lg" onchange="previewProfilePicture(event)">
+        </div>
+        <div id="profile-pic-preview" class="mb-4 hidden">
+            <p class="text-sm font-medium mb-2">Preview</p>
+            <img id="profile-preview-img" src="#" class="w-24 h-24 rounded-full object-cover" alt="Profile Preview">
+        </div>
+        <div class="flex justify-end space-x-2">
+            <button onclick="closeModal('profile-pic-upload-modal')" class="px-4 py-2 rounded-lg bg-[var(--button-bg)] hover:bg-[var(--button-hover)]">Cancel</button>
+            <button onclick="uploadProfilePicture()" class="px-4 py-2 rounded-lg cta-button">Upload</button>
+        </div>
+    </div>
+</div>
+
+    <!-- Comment and Rate Astegni Modal -->
+    <div id="comment-rate-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Comment and Rate Astegni">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Comment and Rate Astegni</h3>
+            <label class="block mb-2">Platform Usability Comment</label>
+            <textarea id="comment-usability-text" class="w-full p-2 border rounded-lg mb-4" placeholder="Comment on platform usability..."></textarea>
+            <label class="block mb-2">Platform Usability Rating</label>
+            <select id="comment-usability-value" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+            </select>
+            <label class="block mb-2">Customer Service Comment</label>
+            <textarea id="comment-service-text" class="w-full p-2 border rounded-lg mb-4" placeholder="Comment on customer service..."></textarea>
+            <label class="block mb-2">Customer Service Rating</label>
+            <select id="comment-service-value" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1 Star</option>
+                <option value="2">2 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="5">5 Stars</option>
+            </select>
+            <button onclick="submitCommentAndRate()" class="px-4 py-2 rounded-lg cta-button w-full">Submit</button>
+            <button onclick="closeCommentRateModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Chat with Admin Modal -->
+    <div id="chat-admin-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Chat with Admin">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Chat with Admin</h3>
+            <label class="block mb-2">Search Campaign by ID or Name</label>
+            <input id="chat-campaign-search" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter campaign ID or name" oninput="searchChatCampaigns()">
+            <div id="chat-campaign-results" class="mb-4"></div>
+            <label class="block mb-2">Your Message</label>
+            <textarea id="chat-message" class="w-full p-2 border rounded-lg mb-4" placeholder="Type your message here..."></textarea>
+            <div id="chat-view" class="chat-view"></div>
+            <button onclick="sendChatMessage()" class="px-4 py-2 rounded-lg cta-button w-full">Send</button>
+            <button onclick="closeChatAdminModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Create Campaign Modal -->
+    <div id="create-campaign-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Create New Campaign">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Create New Campaign</h3>
+            <label class="block mb-2">Campaign Name</label>
+            <input id="campaign-name" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Coca-Cola Tutoring Promo">
+            <label class="block mb-2">Duration</label>
+            <select id="campaign-duration-package" class="w-full p-2 border rounded-lg mb-4" onchange="toggleCustomDuration()">
+                <option value="1">1 Day (1000 birr)</option>
+                <option value="3">3 Days (2700 birr)</option>
+                <option value="7">1 Week (5600 birr)</option>
+                <option value="15">2 Weeks (11,250 birr)</option>
+                <option value="30">1 Month (19,500 birr)</option>
+                <option value="custom">Custom Duration</option>
+            </select>
+            <div id="custom-duration-container" class="hidden">
+                <label class="block mb-2">Custom Duration (days)</label>
+                <input id="campaign-custom-duration" type="number" min="1" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., 5">
+            </div>
+            <p id="campaign-price" class="mb-4">Price: 1000 birr</p>
+            <label class="block mb-2">Ad Content (Image/Video)</label>
+            <input id="campaign-ad-content" type="file" accept="image/*,video/mp4" class="hidden">
+            <button onclick="document.getElementById('campaign-ad-content').click()" class="px-4 py-2 rounded-lg cta-button w-full mb-4">Upload Image/Video</button>
+            <label class="block mb-2">Ad Description</label>
+            <textarea id="campaign-ad-description" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Promote tutoring with Coca-Cola"></textarea>
+            <button onclick="createCampaign()" class="px-4 py-2 rounded-lg cta-button w-full">Save Draft</button>
+            <button onclick="closeCreateCampaignModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- View Campaign Modal -->
+    <div id="view-campaign-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Campaign Details">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Campaign Details</h3>
+            <div id="view-campaign-content">
+                <!-- Populated by JavaScript -->
+            </div>
+            <button onclick="closeViewCampaignModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Analytics Modal -->
+    <div id="analytics-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Campaign Analytics">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Campaign Analytics</h3>
+            <div id="analytics-content">
+                <!-- Populated by JavaScript -->
+            </div>
+            <canvas id="analytics-chart" class="my-4"></canvas>
+            <button onclick="closeAnalyticsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Select Payment Method">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Select Payment Method</h3>
+            <label class="block mb-2">Select Bank</label>
+            <select id="payment-bank" class="w-full p-2 border rounded-lg mb-4">
+                <option value="CBE">CBE</option>
+                <option value="Telebirr">Telebirr</option>
+                <option value="Dashen">Dashen</option>
+                <option value="Wegagen">Wegagen</option>
+                <option value="Oromia">Oromia</option>
+            </select>
+            <label class="block mb-2">Account Number</label>
+            <input id="payment-account" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter account number">
+            <button onclick="processPayment()" class="px-4 py-2 rounded-lg cta-button w-full">Pay</button>
+            <button onclick="closePaymentModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Congratulations Modal -->
+    <div id="congratulations-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Congratulations">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4" id="congratulations-title">Congratulations</h3>
+            <p id="congratulations-message">Your campaign is now live!</p>
+            <button onclick="closeCongratulationsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Notifications">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Notifications</h3>
+            <div id="notification-content">You have no notifications.</div>
+            <button onclick="closeNotificationModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Quick Links -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <!-- Newsletter -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <div class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
+                    </div>
+                </div>
+                <!-- Get in Touch -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+            return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                    return csv;
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+
+        // Theme Toggle
+        function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme') || 'light';
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeToggleIcon(newTheme);
+    // Force style recalculation
+    document.body.offsetHeight; // Trigger reflow to ensure styles apply
+}
+
+function updateThemeToggleIcon(theme) {
+    const iconPath = theme === 'light' ?
+        `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>` :
+        `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+    const themeToggle = document.getElementById('theme-toggle-btn');
+    if (themeToggle) {
+        themeToggle.querySelector('svg').innerHTML = iconPath;
+    }
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle-btn');
+    if (mobileThemeToggle) {
+        mobileThemeToggle.innerHTML = `Toggle Theme <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${iconPath}</svg>`;
+    }
+}
+
+        // Video Call Admin
+        function initiateVideoCall() {
+            alert('Initiating video call with admin... (This is a placeholder function)');
+        }
+
+        // Chat with Admin
+        let chatMessages = [];
+        function openChatAdminModal() {
+            document.getElementById('chat-admin-modal').classList.remove('hidden');
+            searchChatCampaigns();
+            updateChatView();
+            trapFocus(document.getElementById('chat-admin-modal'));
+        }
+        function closeChatAdminModal() {
+            document.getElementById('chat-admin-modal').classList.add('hidden');
+            document.getElementById('chat-campaign-search').value = '';
+            document.getElementById('chat-message').value = '';
+            searchChatCampaigns();
+            restoreFocus();
+        }
+        function searchChatCampaigns() {
+            const searchTerm = document.getElementById('chat-campaign-search').value.trim().toLowerCase();
+            const resultsDiv = document.getElementById('chat-campaign-results');
+            resultsDiv.innerHTML = '';
+            Object.values(campaigns).forEach(campaign => {
+                const matchesId = searchTerm === '' || campaign.id.toString().includes(searchTerm);
+                const matchesName = searchTerm === '' || campaign.name.toLowerCase().includes(searchTerm);
+                if (matchesId || matchesName) {
+                    const p = document.createElement('p');
+                    p.textContent = `ID: ${campaign.id} - ${campaign.name}`;
+                    p.className = 'cursor-pointer hover:underline';
+                    p.onclick = () => {
+                        document.getElementById('chat-campaign-search').value = `ID: ${campaign.id}`;
+                        searchChatCampaigns();
+                    };
+                    resultsDiv.appendChild(p);
+                }
+            });
+            if (resultsDiv.innerHTML === '') {
+                resultsDiv.textContent = 'No campaigns found.';
+            }
+        }
+        function sendChatMessage() {
+            const message = document.getElementById('chat-message').value.trim();
+            const campaignSearch = document.getElementById('chat-campaign-search').value.trim();
+            if (!message) {
+                alert('Please enter a message');
+                return;
+            }
+            chatMessages.push({
+                campaign: campaignSearch || 'General',
+                message,
+                timestamp: new Date().toLocaleString()
+            });
+            document.getElementById('chat-message').value = '';
+            updateChatView();
+            alert('Message sent to admin');
+        }
+        function updateChatView() {
+            const chatView = document.getElementById('chat-view');
+            chatView.innerHTML = '';
+            chatMessages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'chat-message';
+                div.innerHTML = `<strong>${msg.campaign}</strong> (${msg.timestamp}): ${msg.message}`;
+                chatView.appendChild(div);
+            });
+            chatView.scrollTop = chatView.scrollHeight;
+        }
+
+        // Comment and Rate Astegni
+        function openCommentRateModal() {
+            document.getElementById('comment-rate-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('comment-rate-modal'));
+        }
+        function closeCommentRateModal() {
+            document.getElementById('comment-rate-modal').classList.add('hidden');
+            document.getElementById('comment-usability-text').value = '';
+            document.getElementById('comment-usability-value').value = '1';
+            document.getElementById('comment-service-text').value = '';
+            document.getElementById('comment-service-value').value = '1';
+            restoreFocus();
+        }
+        function submitCommentAndRate() {
+            const usabilityComment = document.getElementById('comment-usability-text').value.trim();
+            const usabilityRating = document.getElementById('comment-usability-value').value;
+            const serviceComment = document.getElementById('comment-service-text').value.trim();
+            const serviceRating = document.getElementById('comment-service-value').value;
+            if (!usabilityComment || !serviceComment) {
+                alert('Please enter both usability and customer service comments');
+                return;
+            }
+            alert(`Usability Comment: "${usabilityComment}"\nUsability Rating: ${usabilityRating} star${usabilityRating > 1 ? 's' : ''}\nCustomer Service Comment: "${serviceComment}"\nCustomer Service Rating: ${serviceRating} star${serviceRating > 1 ? 's' : ''}`);
+            closeCommentRateModal();
+        }
+
+        
+    // Open cover picture upload modal
+    function openCoverPictureUploader() {
+        document.getElementById('cover-pic-upload-modal').classList.remove('hidden');
+    }
+
+    // Open profile picture upload modal
+    function openProfilePictureUploader() {
+        document.getElementById('profile-pic-upload-modal').classList.remove('hidden');
+    }
+
+    // Preview cover picture in upload modal
+    function previewCoverPicture(event) {
+        const input = event.target;
+        const previewContainer = document.getElementById('cover-pic-preview');
+        const previewImg = document.getElementById('cover-preview-img');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            previewContainer.classList.add('hidden');
+            previewImg.src = '#';
+        }
+    }
+
+    // Preview profile picture in upload modal
+    function previewProfilePicture(event) {
+        const input = event.target;
+        const previewContainer = document.getElementById('profile-pic-preview');
+        const previewImg = document.getElementById('profile-preview-img');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                previewContainer.classList.remove('hidden');
+            };
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            previewContainer.classList.add('hidden');
+            previewImg.src = '#';
+        }
+    }
+
+    // Upload cover picture (placeholder function, implement actual upload logic)
+    function uploadCoverPicture() {
+        const input = document.getElementById('cover-pic-input');
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('advertiser-cover').src = e.target.result;
+                closeModal('cover-pic-upload-modal');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Upload profile picture (placeholder function, implement actual upload logic)
+    function uploadProfilePicture() {
+        const input = document.getElementById('profile-pic-input');
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('advertiser-profile-pic').src = e.target.result;
+                closeModal('profile-pic-upload-modal');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Close modal and reset preview
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.add('hidden');
+        if (modalId === 'cover-pic-upload-modal') {
+            document.getElementById('cover-pic-input').value = '';
+            document.getElementById('cover-pic-preview').classList.add('hidden');
+            document.getElementById('cover-preview-img').src = '#';
+        } else if (modalId === 'profile-pic-upload-modal') {
+            document.getElementById('profile-pic-input').value = '';
+            document.getElementById('profile-pic-preview').classList.add('hidden');
+            document.getElementById('profile-preview-img').src = '#';
+        }
+        restoreFocus();
+    }
+
+        // Data Objects
+    // Sample advertiser data (replace with actual data source)
+    const advertiser = {
+        name: 'EduAds Inc.',
+        email: 'contact@eduads.com',
+        location: 'Addis Ababa, Ethiopia',
+        phone: '+251912345680',
+        profilePic: 'https://via.placeholder.com/64',
+        coverPic: 'https://via.placeholder.com/1200x150'
+    };
+
+        const campaigns = {
+            1: {
+                id: 1,
+                name: 'Math Tutoring Promo',
+                duration: 30,
+                price: 19500,
+                adContent: { url: 'https://via.placeholder.com/150', description: 'Promote math tutoring with fun visuals' },
+                reviewStatus: 'Under Review',
+                analytics: { impressions: 1000, clicks: 50, conversions: 5 }
+            },
+            2: {
+                id: 2,
+                name: 'Science Campaign',
+                duration: 15,
+                price: 11250,
+                adContent: { url: 'https://via.placeholder.com/150', description: 'Science tutoring ad for all grades' },
+                reviewStatus: 'Approved',
+                analytics: { impressions: 2000, clicks: 120, conversions: 15 }
+            }
+        };
+
+
+// Toggle profile dropdown
+    
+function toggleMobileProfileDropdown() {
+    const dropdown = document.getElementById('mobile-profile-dropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+    // Share profile (placeholder function)
+    function shareProfile() {
+        alert('Share functionality not implemented. Add logic to share profile (e.g., copy link or social media).');
+        toggleProfileDropdown();
+    }
+
+    // Unsubscribe (placeholder function)
+    function unsubscribe() {
+        alert('Unsubscribe functionality not implemented. Add logic to handle subscription cancellation.');
+        toggleProfileDropdown();
+    }
+
+    // Delete account (placeholder function)
+    function deleteAccount() {
+        if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            alert('Delete account functionality not implemented. Add logic to delete account.');
+        }
+        toggleProfileDropdown();
+    }
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuBtn = document.getElementById('menu-btn');
+        const isExpanded = mobileMenu.classList.toggle('hidden');
+        menuBtn.setAttribute('aria-expanded', !isExpanded);
+    }
+
+    // Event listener for mobile menu button
+    document.getElementById('menu-btn').addEventListener('click', toggleMobileMenu);
+
+
+    // Initialize profile data
+    function initProfile() {
+        document.getElementById('advertiser-name').textContent = advertiser.name;
+        document.getElementById('advertiser-email').textContent = advertiser.email;
+        document.getElementById('advertiser-location').textContent = advertiser.location;
+        document.getElementById('advertiser-phone').textContent = advertiser.phone;
+        document.getElementById('advertiser-profile-pic').src = advertiser.profilePic;
+        document.getElementById('advertiser-cover').src = advertiser.coverPic;
+        document.getElementById('profile-name').textContent = advertiser.name;
+        document.getElementById('profile-pic').src = advertiser.profilePic;
+    }
+
+    // Open edit profile modal with current values
+    function openEditProfileModal() {
+        document.getElementById('edit-name').value = advertiser.name;
+        document.getElementById('edit-email').value = advertiser.email;
+        document.getElementById('edit-location').value = advertiser.location;
+        document.getElementById('edit-phone').value = advertiser.phone;
+        document.getElementById('edit-profile-modal').classList.remove('hidden');
+    }
+
+    // Save profile changes
+    function saveProfileChanges() {
+        advertiser.name = document.getElementById('edit-name').value;
+        advertiser.email = document.getElementById('edit-email').value;
+        advertiser.location = document.getElementById('edit-location').value;
+        advertiser.phone = document.getElementById('edit-phone').value;
+        initProfile();
+        closeModal('edit-profile-modal');
+    }
+
+        // Create Campaign Modal
+        function openCreateCampaignModal() {
+            document.getElementById('create-campaign-modal').classList.remove('hidden');
+            updateCampaignPrice();
+            trapFocus(document.getElementById('create-campaign-modal'));
+        }
+        function closeCreateCampaignModal() {
+            document.getElementById('create-campaign-modal').classList.add('hidden');
+            document.getElementById('campaign-name').value = '';
+            document.getElementById('campaign-duration-package').value = '1';
+            document.getElementById('campaign-custom-duration').value = '';
+            document.getElementById('custom-duration-container').classList.add('hidden');
+            document.getElementById('campaign-ad-content').value = '';
+            document.getElementById('campaign-ad-description').value = '';
+            document.getElementById('campaign-price').textContent = 'Price: 1000 birr';
+            restoreFocus();
+        }
+        function toggleCustomDuration() {
+            const packageSelect = document.getElementById('campaign-duration-package').value;
+            const customContainer = document.getElementById('custom-duration-container');
+            if (packageSelect === 'custom') {
+                customContainer.classList.remove('hidden');
+            } else {
+                customContainer.classList.add('hidden');
+            }
+            updateCampaignPrice();
+        }
+        function updateCampaignPrice() {
+            const packageSelect = document.getElementById('campaign-duration-package').value;
+            let duration = parseInt(packageSelect);
+            let price;
+            const packages = {
+                1: 1000,
+                3: 2700,
+                7: 5600,
+                15: 11250,
+                30: 19500
+            };
+            if (packageSelect === 'custom') {
+                duration = parseInt(document.getElementById('campaign-custom-duration').value) || 1;
+                price = duration * 1000;
+            } else {
+                price = packages[duration];
+            }
+            document.getElementById('campaign-price').textContent = `Price: ${price} birr`;
+        }
+        function createCampaign() {
+            const name = document.getElementById('campaign-name').value.trim();
+            const packageSelect = document.getElementById('campaign-duration-package').value;
+            let duration = parseInt(packageSelect);
+            let price;
+            const packages = {
+                1: 1000,
+                3: 2700,
+                7: 5600,
+                15: 11250,
+                30: 19500
+            };
+            if (packageSelect === 'custom') {
+                duration = parseInt(document.getElementById('campaign-custom-duration').value);
+                if (!duration || duration < 1) {
+                    alert('Please enter a valid custom duration');
+                    return;
+                }
+                price = duration * 1000;
+            } else {
+                price = packages[duration];
+            }
+            const adContent = document.getElementById('campaign-ad-content').files[0];
+            const description = document.getElementById('campaign-ad-description').value.trim();
+            if (!name || !adContent || !description) {
+                alert('Please fill in all fields, upload an ad image or video, and provide a description');
+                return;
+            }
+            const newId = Object.keys(campaigns).length + 1;
+            campaigns[newId] = {
+                id: newId,
+                name,
+                duration,
+                price,
+                adContent: { url: URL.createObjectURL(adContent), description },
+                reviewStatus: 'Draft',
+                analytics: { impressions: 0, clicks: 0, conversions: 0 }
+            };
+            searchCampaigns();
+            checkNotifications();
+            alert('Campaign draft saved');
+            closeCreateCampaignModal();
+        }
+
+        // View Campaign Modal
+        let selectedCampaignId = null;
+        function openViewCampaignModal(campaignId) {
+            selectedCampaignId = campaignId;
+            document.getElementById('view-campaign-modal').classList.remove('hidden');
+            updateViewCampaign();
+            trapFocus(document.getElementById('view-campaign-modal'));
+        }
+        function closeViewCampaignModal() {
+            document.getElementById('view-campaign-modal').classList.add('hidden');
+            selectedCampaignId = null;
+            restoreFocus();
+        }
+        function updateViewCampaign() {
+            const campaign = campaigns[selectedCampaignId];
+            const content = document.getElementById('view-campaign-content');
+            content.innerHTML = `
+                <h4 class="text-xl font-semibold mb-2">${campaign.name}</h4>
+                <a href="${campaign.adContent.url}" target="_blank">
+                    <img src="${campaign.adContent.url}" alt="${campaign.name}" class="w-full h-48 object-cover rounded-lg mb-4">
+                </a>
+                <p class="mb-2"><strong>Description:</strong> ${campaign.adContent.description}</p>
+                <p class="mb-2"><strong>Duration:</strong> ${campaign.duration} days</p>
+                <p class="mb-2"><strong>Price:</strong> ${campaign.price} birr</p>
+            `;
+        }
+
+        // Analytics Modal
+        function openAnalyticsModal(campaignId) {
+            selectedCampaignId = campaignId;
+            document.getElementById('analytics-modal').classList.remove('hidden');
+            updateAnalytics();
+            trapFocus(document.getElementById('analytics-modal'));
+        }
+        function closeAnalyticsModal() {
+            document.getElementById('analytics-modal').classList.add('hidden');
+            selectedCampaignId = null;
+            const chartCanvas = document.getElementById('analytics-chart');
+            const chart = Chart.getChart(chartCanvas);
+            if (chart) chart.destroy();
+            restoreFocus();
+        }
+        function updateAnalytics() {
+            const campaign = campaigns[selectedCampaignId];
+            const content = document.getElementById('analytics-content');
+            content.innerHTML = `
+                <h4 class="text-xl font-semibold mb-2">${campaign.name}</h4>
+                <p class="mb-2">Impressions: ${campaign.analytics.impressions}</p>
+                <p class="mb-2">Clicks: ${campaign.analytics.clicks}</p>
+                <p class="mb-2">Conversions: ${campaign.analytics.conversions}</p>
+                <p class="mb-2">Click-Through Rate: ${(campaign.analytics.clicks / (campaign.analytics.impressions || 1) * 100).toFixed(2)}%</p>
+                <p class="mb-2">Ad Content: <a href="${campaign.adContent.url}" target="_blank" class="underline">View</a></p>
+                <p class="mb-2">Ad Description: ${campaign.adContent.description}</p>
+            `;
+            renderAnalyticsChart();
+        }
+
+        // Render Analytics Chart
+        function renderAnalyticsChart() {
+            const campaign = campaigns[selectedCampaignId];
+            const ctx = document.getElementById('analytics-chart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Impressions', 'Clicks', 'Conversions'],
+                    datasets: [{
+                        label: 'Campaign Metrics',
+                        data: [campaign.analytics.impressions, campaign.analytics.clicks, campaign.analytics.conversions],
+                        backgroundColor: ['var(--button-bg)', 'var(--button-hover)', 'var(--button-active)'],
+                        borderColor: ['var(--button-active)', 'var(--button-active)', 'var(--button-hover)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: 'var(--modal-text)' } },
+                        x: { ticks: { color: 'var(--modal-text)' } }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { backgroundColor: 'var(--modal-bg)', titleColor: 'var(--modal-text)', bodyColor: 'var(--modal-text)' }
+                    }
+                }
+            });
+        }
+
+        // Search Campaigns
+        function searchCampaigns() {
+            const searchTerm = document.getElementById('campaign-search').value.trim().toLowerCase();
+            const campaignTable = document.getElementById('campaign-table');
+            campaignTable.innerHTML = '';
+            Object.values(campaigns).forEach(campaign => {
+                const matchesName = searchTerm === '' || campaign.name.toLowerCase().includes(searchTerm);
+                const matchesDescription = searchTerm === '' || campaign.adContent.description.toLowerCase().includes(searchTerm);
+                if (matchesName || matchesDescription) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-2">${campaign.id}</td>
+                        <td class="p-2">${campaign.name}</td>
+                        <td class="p-2">${campaign.reviewStatus}</td>
+                        <td class="p-2">
+                            ${campaign.reviewStatus === 'Draft' ? `<button onclick="submitForReview(${campaign.id})" class="px-2 py-1 rounded-lg cta-button">Submit for Review</button>` : ''}
+                            ${campaign.reviewStatus === 'Approved' ? `<button onclick="openPaymentModal(${campaign.id})" class="px-2 py-1 rounded-lg cta-button">Pay Now</button>` : ''}
+                        </td>
+                        <td class="p-2">
+                            ${campaign.reviewStatus === 'Active' || campaign.reviewStatus === 'Approved' ? `<button onclick="openAnalyticsModal(${campaign.id})" class="px-2 py-1 rounded-lg cta-button">View Analytics</button>` : 'N/A'}
+                        </td>
+                        <td class="p-2">
+                            <button onclick="openViewCampaignModal(${campaign.id})" class="px-2 py-1 rounded-lg cta-button">View</button>
+                        </td>
+                    `;
+                    campaignTable.appendChild(tr);
+                }
+            });
+        }
+
+        // Campaign Review
+        function submitForReview(campaignId) {
+            campaigns[campaignId].reviewStatus = 'Under Review';
+            alert(`Campaign "${campaigns[campaignId].name}" submitted for review`);
+            searchCampaigns();
+            checkNotifications();
+        }
+        function reviewCampaign(campaignId, approve) {
+            campaigns[campaignId].reviewStatus = approve ? 'Approved' : 'Rejected';
+            alert(`Campaign "${campaigns[campaignId].name}" ${approve ? 'approved' : 'rejected'}`);
+            searchCampaigns();
+            checkNotifications();
+        }
+
+        // Payment Modal
+        function openPaymentModal(campaignId) {
+            if (campaigns[campaignId].reviewStatus !== 'Approved') {
+                alert('Campaign must be approved before payment');
+                return;
+            }
+            document.getElementById('payment-modal').dataset.campaignId = campaignId;
+            document.getElementById('payment-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('payment-modal'));
+        }
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            document.getElementById('payment-bank').value = 'CBE';
+            document.getElementById('payment-account').value = '';
+            restoreFocus();
+        }
+        function processPayment() {
+            const campaignId = document.getElementById('payment-modal').dataset.campaignId;
+            const bank = document.getElementById('payment-bank').value;
+            const account = document.getElementById('payment-account').value.trim();
+            if (!account) {
+                alert('Please enter an account number');
+                return;
+            }
+            campaigns[campaignId].reviewStatus = 'Active';
+            console.log(`Payment processed for Campaign ${campaignId} via ${bank} (Account: ${account})`);
+            closePaymentModal();
+            openCongratulationsModal(campaignId);
+            searchCampaigns();
+            checkNotifications();
+        }
+
+        // Congratulations Modal
+        function openCongratulationsModal(campaignId) {
+            selectedCampaignId = campaignId;
+            const campaign = campaigns[campaignId];
+            document.getElementById('congratulations-title').textContent = `Congratulations ${advertiser.name}`;
+            document.getElementById('congratulations-message').textContent = `Your campaign "${campaign.name}" is now live!`;
+            document.getElementById('congratulations-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('congratulations-modal'));
+        }
+        function closeCongratulationsModal() {
+            document.getElementById('congratulations-modal').classList.add('hidden');
+            selectedCampaignId = null;
+            restoreFocus();
+        }
+
+        // Notification Modal
+        function openNotificationModal() {
+            document.getElementById('notification-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('notification-modal'));
+        }
+        function closeNotificationModal() {
+            document.getElementById('notification-modal').classList.add('hidden');
+            restoreFocus();
+        }
+        function checkNotifications() {
+            let hasNotifications = false;
+            const notificationContent = document.getElementById('notification-content');
+            notificationContent.innerHTML = '';
+            Object.values(campaigns).forEach(campaign => {
+                if (campaign.reviewStatus === 'Draft') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.innerHTML = `Campaign "${campaign.name}" is in draft. <button onclick="submitForReview(${campaign.id})" class="px-2 py-1 rounded-lg cta-button">Submit</button>`;
+                    notificationContent.appendChild(p);
+                } else if (campaign.reviewStatus === 'Under Review') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.textContent = `Campaign "${campaign.name}" is under review.`;
+                    notificationContent.appendChild(p);
+                } else if (campaign.reviewStatus === 'Approved') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.innerHTML = `Campaign "${campaign.name}" is approved. <button onclick="openPaymentModal(${campaign.id});closeNotificationModal()" class="px-2 py-1 rounded-lg cta-button"><svg class="w-5 h-5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path></svg> Pay Now</button>`;
+                    notificationContent.appendChild(p);
+                } else if (campaign.reviewStatus === 'Active') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.innerHTML = `Campaign "${campaign.name}" is now active! <button onclick="openAnalyticsModal(${campaign.id})" class="px-2 py-1 rounded-lg cta-button">View Analytics</button>`;
+                    notificationContent.appendChild(p);
+                } else if (campaign.reviewStatus === 'Rejected') {
+                    hasNotifications = true;
+                    const p = document.createElement('p');
+                    p.textContent = `Campaign "${campaign.name}" was rejected. Please revise and resubmit.`;
+                    notificationContent.appendChild(p);
+                }
+            });
+            if (!hasNotifications) {
+                notificationContent.textContent = 'You have no notifications.';
+            }
+            const dot = document.getElementById('notification-dot');
+            const mobileDot = document.getElementById('mobile-notification-dot');
+            if (hasNotifications) {
+                dot.classList.remove('hidden');
+                mobileDot.classList.remove('hidden');
+            } else {
+                dot.classList.add('hidden');
+                mobileDot.classList.add('hidden');
+            }
+        }
+
+        // Focus Management
+        let lastFocusedElement = null;
+        function trapFocus(modal) {
+            lastFocusedElement = document.activeElement;
+            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (focusableElements.length === 0) return;
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            const handleKeydown = (e) => {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            };
+
+            modal.addEventListener('keydown', handleKeydown);
+            modal._trapFocusHandler = handleKeydown;
+            firstElement.focus();
+        }
+
+        function restoreFocus() {
+            const modals = document.querySelectorAll('.fixed:not(.hidden)');
+            modals.forEach(modal => {
+                if (modal._trapFocusHandler) {
+                    modal.removeEventListener('keydown', modal._trapFocusHandler);
+                    delete modal._trapFocusHandler;
+                }
+            });
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+        }
+
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuBtn = document.getElementById('menu-btn');
+            const isOpen = mobileMenu.classList.contains('open');
+            if (isOpen) {
+                mobileMenu.classList.remove('open');
+                menuBtn.setAttribute('aria-expanded', 'false');
+            } else {
+                mobileMenu.classList.add('open');
+                menuBtn.setAttribute('aria-expanded', 'true');
+            }
+        }
+
+        // Initialize
+        function initialize() {
+            localStorage.setItem('theme', 'light');
+            document.documentElement.setAttribute('data-theme', 'light');
+            updateThemeToggleIcon('light');
+            initProfile();
+            setInterval(checkNotifications, 60000);
+            document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+            document.getElementById('mobile-theme-toggle-btn').addEventListener('click', toggleTheme);
+            document.getElementById('menu-btn').addEventListener('click', toggleMobileMenu);
+            const durationPackage = document.getElementById('campaign-duration-package');
+            if (durationPackage) durationPackage.addEventListener('change', updateCampaignPrice);
+            const customDuration = document.getElementById('campaign-custom-duration');
+            if (customDuration) customDuration.addEventListener('input', updateCampaignPrice);
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', initialize);
+
+                // Close Modals on Escape Key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modals = [
+                    'edit-profile-modal', 
+                    'profile-pic-upload-modal', 
+                    'cover-pic-upload-modal',
+                    'comment-rate-modal', 
+                    'chat-admin-modal',
+                    'create-campaign-modal',
+                    'view-campaign-modal',
+                    'analytics-modal',
+                    'payment-modal',
+                    'congratulations-modal',
+                    'notification-modal'
+                ];
+                modals.forEach(modalId => {
+                    const modal = document.getElementById(modalId);
+                    if (modal && !modal.classList.contains('hidden')) {
+                        modal.classList.add('hidden');
+                        restoreFocus();
+                    }
+                });
+            }
+        });
+
+        function toggleMobileProfileDropdown() {
+    const dropdown = document.getElementById('mobile-profile-dropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+function openNotesModal() {
+    alert('Notes functionality not implemented. Add logic to open notes modal.');
+}
+
+function openManageFinancesModal() {
+    alert('Manage Finances functionality not implemented. Add logic to open finances modal.');
+}
+
+function initProfile() {
+    document.getElementById('advertiser-name').textContent = advertiser.name;
+    document.getElementById('advertiser-email').textContent = advertiser.email;
+    document.getElementById('advertiser-location').textContent = advertiser.location;
+    document.getElementById('advertiser-phone').textContent = advertiser.phone;
+    document.getElementById('advertiser-profile-pic').src = advertiser.profilePic;
+    document.getElementById('advertiser-cover').src = advertiser.coverPic;
+    document.getElementById('profile-name').textContent = advertiser.name;
+    document.getElementById('profile-pic').src = advertiser.profilePic;
+    document.getElementById('mobile-profile-name').textContent = advertiser.name;
+    document.getElementById('mobile-profile-pic').src = advertiser.profilePic;
+}
+
+function saveProfileChanges() {
+    advertiser.name = document.getElementById('edit-name').value;
+    advertiser.email = document.getElementById('edit-email').value;
+    advertiser.location = document.getElementById('edit-location').value;
+    advertiser.phone = document.getElementById('edit-phone').value;
+    initProfile();
+    closeModal('edit-profile-modal');
+}
+
+function initialize() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    updateThemeToggleIcon(savedTheme);
+    initProfile();
+    setInterval(checkNotifications, 60000);
+    document.getElementById('theme-toggle-btn').addEventListener('click', toggleTheme);
+    document.getElementById('mobile-theme-toggle-btn').addEventListener('click', toggleTheme);
+    document.getElementById('menu-btn').addEventListener('click', toggleMobileMenu);
+    const durationPackage = document.getElementById('campaign-duration-package');
+    if (durationPackage) durationPackage.addEventListener('change', updateCampaignPrice);
+    const customDuration = document.getElementById('campaign-custom-duration');
+    if (customDuration) customDuration.addEventListener('input', updateCampaignPrice);
+}
+
+
+
+        
+// Toggle profile dropdown
+    function toggleProfileDropdown() {
+        const dropdown = document.getElementById('profile-dropdown');
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Share profile (placeholder function)
+    function shareProfile() {
+        alert('Share functionality not implemented. Add logic to share profile (e.g., copy link or social media).');
+        toggleProfileDropdown();
+    }
+
+    // Unsubscribe (placeholder function)
+    function unsubscribe() {
+        alert('Unsubscribe functionality not implemented. Add logic to handle subscription cancellation.');
+        toggleProfileDropdown();
+    }
+
+    // Delete account (placeholder function)
+    function deleteAccount() {
+        if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+            alert('Delete account functionality not implemented. Add logic to delete account.');
+        }
+        toggleProfileDropdown();
+    }
+    // Toggle mobile menu
+    function toggleMobileMenu() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuBtn = document.getElementById('menu-btn');
+        const isExpanded = mobileMenu.classList.toggle('hidden');
+        menuBtn.setAttribute('aria-expanded', !isExpanded);
+    }
+
+    // Event listener for mobile menu button
+    document.getElementById('menu-btn').addEventListener('click', toggleMobileMenu);
+
+    
+        // Re-attach Event Listener for DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>

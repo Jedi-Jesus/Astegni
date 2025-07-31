@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Tutor Reels</title>
+    <link href='css/root_theme.css' rel='stylesheet'>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --color: #FFE082;
+            --text: #78350F;
+            --heading: #92400E;
+            --nav-link: #78350F;
+            --nav-link-hover: #F59E0B;
+            --button-bg: #F59E0B;
+            --button-text: #FFFFFF;
+            --button-hover: #D97706;
+            --button-active: #92400E;
+            --highlight: #FFFFFF;
+            --footer-bg: #E5E7EB;
+            --footer-text: #78350F;
+            --search-heading: #F59E0B;
+            --modal-bg: #FFFFFF;
+            --modal-text: #78350F;
+        }
+
+        [data-theme="dark"] {
+            --background: #1E1E1E;
+            --text: #E0E0E0;
+            --heading: #FBC02D;
+            --nav-link: #E0E0E0;
+            --nav-link-hover: #FFD54F;
+            --button-bg: #FFD54F;
+            --button-text: #1E1E1E;
+            --button-hover: #e6bf45;
+            --button-active: #FFB300;
+            --highlight: #424242;
+            --footer-bg: #424242;
+            --footer-text: #E0E0E0;
+            --search-heading: #FBC02D;
+            --modal-bg: #1E1E1E;
+            --modal-text: #E0E0E0;
+        }
+
+        * {
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        nav {
+            background: linear-gradient(135deg, var(--footer-bg) 0%, rgba(229, 231, 235, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            color: var(--nav-link);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        [data-theme="dark"] nav {
+            background: linear-gradient(135deg, var(--footer-bg) 0%, rgba(66, 66, 66, 0.95) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        nav a {
+            color: var(--nav-link);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        nav a:hover {
+            color: var(--nav-link-hover);
+            background: rgba(245, 158, 11, 0.1);
+            transform: translateY(-2px);
+        }
+
+        nav a.active {
+            color: var(--nav-link-hover);
+            background: rgba(245, 158, 11, 0.2);
+        }
+
+        /* Mobile Menu */
+        #mobile-menu {
+            background: linear-gradient(135deg, var(--footer-bg) 0%, rgba(229, 231, 235, 0.98) 100%);
+            backdrop-filter: blur(15px);
+            max-height: 0;
+            overflow: hidden;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        [data-theme="dark"] #mobile-menu {
+            background: linear-gradient(135deg, var(--footer-bg) 0%, rgba(66, 66, 66, 0.98) 100%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #mobile-menu.open {
+            max-height: 400px;
+        }
+
+        #mobile-menu a, #mobile-menu button {
+            display: block;
+            padding: 1rem 1.5rem;
+            margin: 0.25rem 1rem;
+            border-radius: 0.75rem;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideInUp 0.4s ease forwards;
+        }
+
+        @keyframes slideInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Reel Cards */
+        .reel-card {
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--highlight) 0%, rgba(255, 255, 255, 0.9) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+            animation: popIn 0.5s ease-out forwards;
+        }
+
+        [data-theme="dark"] .reel-card {
+            background: linear-gradient(135deg, var(--highlight) 0%, rgba(66, 66, 66, 0.9) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes popIn {
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .reel-card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .reel-card video {
+            border-radius: 0.75rem;
+            transform: scale(1);
+        }
+
+        .reel-card:hover video {
+            transform: scale(1.02);
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            border-radius: 0.75rem;
+        }
+
+        .reel-card:hover .video-overlay {
+            opacity: 1;
+        }
+
+        .play-icon {
+            width: 3rem;
+            height: 3rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: scale(0.9);
+        }
+
+        .reel-card:hover .play-icon {
+            transform: scale(1.1);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1.1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1.1); }
+        }
+
+        /* Video Modal */
+        .video-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+        }
+
+        .video-modal.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            animation: modalFadeIn 0.4s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .video-modal-content {
+            position: relative;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            background: var(--modal-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            transform: translateY(50px);
+        }
+
+        .video-modal.active .video-modal-content {
+            transform: translateY(0);
+            animation: slideUp 0.4s ease-out;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); }
+            to { transform: translateY(0); }
+        }
+
+        .video-modal video {
+            width: 100%;
+            max-height: 60vh;
+            border-radius: 0.75rem;
+            background: #000;
+        }
+
+        .video-navigation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 1rem;
+            gap: 0.5rem;
+        }
+
+        .nav-button {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-button:hover {
+            background: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        .nav-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-button:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.1);
+        }
+
+        /* Buttons */
+        .action-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 0.5rem;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .action-button:hover {
+            background: rgba(245, 158, 11, 0.15);
+            transform: scale(1.05);
+        }
+
+        .action-button.liked {
+            color: var(--button-bg);
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .action-button.disliked {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .action-button.saved {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .follow-button {
+            background: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .follow-button:hover {
+            background: var(--button-hover);
+            transform: scale(1.05);
+        }
+
+        .follow-button.following {
+            background: #6b7280;
+        }
+
+        /* Responsive Grid */
+        .reels-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        }
+
+        @media (max-width: 640px) {
+            .reels-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .video-modal-content {
+                width: 95%;
+                padding: 1rem;
+            }
+
+            .video-navigation {
+                gap: 0.75rem;
+            }
+
+            .nav-button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--button-bg);
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Modal */
+        .modal-content {
+            background: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            width: 100%;
+            max-width: 28rem;
+            max-height: 75vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        [data-theme="dark"] .modal-content {
+            background: rgba(30, 30, 30, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Theme Toggle */
+        #theme-toggle-btn, #mobile-theme-toggle-btn {
+            background: transparent;
+            color: var(--nav-link);
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+        }
+
+        #theme-toggle-btn:hover, #mobile-theme-toggle-btn:hover {
+            color: var(--nav-link-hover);
+            background: rgba(245, 158, 11, 0.1);
+            transform: rotate(180deg);
+        }
+
+        /* Footer */
+        footer {
+            background: linear-gradient(135deg, var(--footer-bg) 0%, rgba(229, 231, 235, 0.9) 100%);
+            color: var(--footer-text);
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        [data-theme="dark"] footer {
+            background: linear-gradient(135deg, var(--footer-bg) 0%, rgba(66, 66, 66, 0.9) 100%);
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="py-4 top-0 shadow-sm z-50 w-full fixed" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="hidden md:flex space-x-4 items-center">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="find-tutors.html" class="nav-link">Find Tutors</a>
+                <a href="reels.html" class="nav-link active">Reels</a>
+                <div id="profile-container" class="profile-container relative">
+                    <button class="flex items-center gap-2 focus:outline-none px-2 py-1 rounded transition-all duration-200" onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic w-8 h-8 rounded-full" src="https://picsum.photos/32" alt="Profile Picture">
+                        <span id="profile-name" class="nav-link text-sm">User</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                </div>
+                <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()" aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <button id="menu-btn" class="md:hidden focus:outline-none" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="find-tutors.html" class="nav-link">Find Tutors</a>
+            <a href="reels.html" class="nav-link active">Reels</a>
+            <button id="mobile-notification-bell" class="nav-link w-full text-left relative" onclick="openNotificationModal()" aria-label="View notifications">
+                Notifications
+                <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button id="mobile-theme-toggle-btn" class="nav-link w-full text-left" aria-label="Toggle theme">
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <!-- Reels Section -->
+    <section class="py-20" style="margin-top: 2rem;">
+        <div class="container mx-auto px-4">
+            <h2 class="text-4xl font-bold mb-12 text-center" style="color: var(--heading);">Tutor Reels</h2>
+            <div id="reels-grid" class="reels-grid"></div>
+        </div>
+    </section>
+
+    <!-- Video Modal -->
+    <div id="video-modal" class="video-modal">
+        <div class="video-modal-content">
+            <button class="close-button" onclick="closeVideoModal()" aria-label="Close video">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            
+            <video id="modal-video" controls autoplay>
+                <source src="" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+            
+            <div class="mt-6">
+                <h3 id="modal-title" class="text-2xl font-bold mb-2"></h3>
+                <p id="modal-description" class="text-lg mb-4"></p>
+                <p id="modal-date" class="text-sm opacity-70 mb-4"></p>
+                
+                <div id="modal-actions" class="flex flex-wrap gap-3 mb-6">
+                    <!-- Action buttons will be inserted here -->
+                </div>
+            </div>
+            
+            <div class="video-navigation">
+                <button id="prev-video" class="nav-button" onclick="navigateVideo('prev')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                    </svg>
+                    Previous
+                </button>
+                
+                <div class="flex items-center gap-2">
+                    <span id="current-video" class="text-sm opacity-70">1</span>
+                    <span class="text-sm opacity-70">of</span>
+                    <span id="total-videos" class="text-sm opacity-70">2</span>
+                </div>
+                
+                <button id="next-video" class="nav-button" onclick="navigateVideo('next')">
+                    Next
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 9l7 7 7-7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comment Modal -->
+    <div id="comment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Comments">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold mb-4">Comments</h3>
+            <div id="comment-list" class="mb-4 max-h-60 overflow-y-auto"></div>
+            <textarea id="new-comment" class="w-full p-3 border rounded-lg mb-4 resize-none" placeholder="Add a comment..." rows="3" disabled></textarea>
+            <div class="flex gap-3">
+                <button id="submit-comment" class="follow-button flex-1" onclick="addComment()" disabled>Add Comment</button>
+                <button onclick="closeCommentModal()" class="action-button">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50" role="dialog" aria-modal="true" aria-label="Notifications">
+        <div class="modal-content">
+            <h3 class="text-2xl font-bold mb-4">Notifications</h3>
+            <div id="notification-content" class="mb-4">You have no notifications.</div>
+            <button onclick="closeNotificationModal()" class="follow-button w-full">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <div class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-3 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="follow-button w-full max-w-xs">Subscribe</button>
+                    </div>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon transition-transform hover:scale-110" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon transition-transform hover:scale-110" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon transition-transform hover:scale-110" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script type="text/javascript">
+        // Data Objects
+        const currentUser = { id: 1, email: 'user@astegni.et', role: 'User' };
+        const tutors = {
+            1: { id: 1, name: 'Abebe Kebede', email: 'abebe@tutor.et', subject: 'Mathematics' },
+            2: { id: 2, name: 'Mulu Alem', email: 'mulu@tutor.et', subject: 'Science' },
+            3: { id: 3, name: 'Sara Ahmed', email: 'sara@tutor.et', subject: 'English' },
+            4: { id: 4, name: 'Dawit Tesfaye', email: 'dawit@tutor.et', subject: 'Physics' }
+        };
+        const reels = {
+            1: { id: 1, tutorId: 1, videoUrl: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4', description: 'Fun math tricks that will blow your mind!', date: '2025-07-20' },
+            2: { id: 2, tutorId: 2, videoUrl: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4', description: 'Amazing science experiments you can do at home!', date: '2025-07-21' },
+            3: { id: 3, tutorId: 3, videoUrl: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4', description: 'English grammar made simple and fun!', date: '2025-07-22' },
+            4: { id: 4, tutorId: 4, videoUrl: 'https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4', description: 'Physics concepts explained with real-world examples!', date: '2025-07-23' }
+        };
+        const likes = {
+            1: { reelId: 1, userIds: [2, 3] },
+            2: { reelId: 2, userIds: [1] },
+            3: { reelId: 3, userIds: [] },
+            4: { reelId: 4, userIds: [1, 2] }
+        };
+        const dislikes = {
+            1: { reelId: 1, userIds: [] },
+            2: { reelId: 2, userIds: [] },
+            3: { reelId: 3, userIds: [] },
+            4: { reelId: 4, userIds: [] }
+        };
+        const comments = {
+            1: { reelId: 1, comments: [
+                { userId: 1, text: 'Great video! Very helpful.', date: '2025-07-20' },
+                { userId: 2, text: 'Thanks for sharing this!', date: '2025-07-21' }
+            ]},
+            2: { reelId: 2, comments: [
+                { userId: 3, text: 'Amazing experiments!', date: '2025-07-21' }
+            ]},
+            3: { reelId: 3, comments: [] },
+            4: { reelId: 4, comments: [
+                { userId: 1, text: 'Physics made easy!', date: '2025-07-23' }
+            ]}
+        };
+        const follows = {
+            1: { tutorId: 1, userIds: [1] },
+            2: { tutorId: 2, userIds: [] },
+            3: { tutorId: 3, userIds: [1] },
+            4: { tutorId: 4, userIds: [] }
+        };
+        const savedReels = JSON.parse(localStorage.getItem('savedReels')) || {};
+        const notifications = {
+            1: { id: 1, message: 'New reel from Abebe Kebede', date: '2025-07-20', read: false },
+            2: { id: 2, message: 'Sara Ahmed posted a new video', date: '2025-07-22', read: false }
+        };
+        
+        let currentVideoIndex = 0;
+        let reelIds = [];
+
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeToggleIcon(newTheme);
+        }
+
+        function updateThemeToggleIcon(theme) {
+            const icon = theme === 'light' ?
+                `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>` :
+                `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+            const themeToggle = document.getElementById('theme-toggle-btn');
+            themeToggle.querySelector('svg').innerHTML = icon;
+            const mobileThemeToggle = document.getElementById('mobile-theme-toggle-btn');
+            mobileThemeToggle.innerHTML = `Toggle Theme <svg class="w-4 h-4 inline ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${icon}</svg>`;
+        }
+
+        // Initialize
+        function initReels() {
+            reelIds = Object.keys(reels).map(Number);
+            if (currentUser) {
+                document.getElementById('new-comment').disabled = false;
+                document.getElementById('submit-comment').disabled = false;
+            }
+            updateReels();
+            checkNotifications();
+        }
+
+        // Update Reels Grid
+        function updateReels() {
+            const reelsGrid = document.getElementById('reels-grid');
+            reelsGrid.innerHTML = '';
+            
+            Object.values(reels).forEach((reel, index) => {
+                const tutor = tutors[reel.tutorId];
+                const likeCount = likes[reel.id]?.userIds.length || 0;
+                const dislikeCount = dislikes[reel.id]?.userIds.length || 0;
+                const commentCount = comments[reel.id]?.comments.length || 0;
+                const isLiked = likes[reel.id]?.userIds.includes(currentUser?.id);
+                const isDisliked = dislikes[reel.id]?.userIds.includes(currentUser?.id);
+                const isFollowed = follows[reel.tutorId]?.userIds.includes(currentUser?.id);
+                const isSaved = savedReels[reel.id]?.includes(currentUser?.id);
+                
+                const div = document.createElement('div');
+                div.className = 'reel-card';
+                div.style.animationDelay = `${index * 0.15}s`;
+                
+                div.innerHTML = `
+                    <div class="relative">
+                        <video class="w-full h-48 object-cover rounded-lg mb-4" 
+                               onclick="openVideoModal(${reel.id})"
+                               onmouseenter="this.play()" 
+                               onmouseleave="this.pause()"
+                               data-src="${reel.videoUrl}">
+                            <source src="" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="video-overlay">
+                            <div class="play-icon">
+                                <svg class="w-8 h-8 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-xl font-bold mb-2">
+                        <a href="view-tutor.html?tutorId=${tutor.id}" 
+                           class="hover:text-[var(--nav-link-hover)] transition-colors">
+                            ${tutor.name}
+                        </a>
+                        <span class="text-sm font-normal opacity-70 ml-2">(${tutor.subject})</span>
+                    </h3>
+                    
+                    <p class="mb-4 text-sm leading-relaxed">${reel.description}</p>
+                    <p class="text-xs mb-6 opacity-70">${formatDate(reel.date)}</p>
+                    
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button class="action-button ${isLiked ? 'liked' : ''}" 
+                                onclick="toggleLike(${reel.id})" 
+                                ${!currentUser ? 'disabled' : ''} 
+                                aria-label="${isLiked ? 'Unlike' : 'Like'} reel">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                            ${likeCount}
+                        </button>
+                        
+                        <button class="action-button ${isDisliked ? 'disliked' : ''}" 
+                                onclick="toggleDislike(${reel.id})" 
+                                ${!currentUser ? 'disabled' : ''} 
+                                aria-label="${isDisliked ? 'Undislike' : 'Dislike'} reel">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 13l3 3 7-7"></path>
+                            </svg>
+                            ${dislikeCount}
+                        </button>
+                        
+                        <button class="action-button" 
+                                onclick="openCommentModal(${reel.id})" 
+                                aria-label="View comments">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            ${commentCount}
+                        </button>
+                        
+                        <button class="action-button" 
+                                onclick="shareReel(${reel.id})" 
+                                aria-label="Share reel">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                            </svg>
+                            Share
+                        </button>
+                        
+                        <button class="action-button ${isSaved ? 'saved' : ''}" 
+                                onclick="toggleSave(${reel.id})" 
+                                ${!currentUser ? 'disabled' : ''} 
+                                aria-label="${isSaved ? 'Unsave' : 'Save'} reel">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                            </svg>
+                            Save
+                        </button>
+                    </div>
+                    
+                    <button class="follow-button ${isFollowed ? 'following' : ''} w-full"
+                            onclick="toggleFollow(${reel.tutorId})" 
+                            ${!currentUser ? 'disabled' : ''} 
+                            aria-label="${isFollowed ? 'Unfollow' : 'Follow'} tutor">
+                        ${isFollowed ? '✓ Following' : '+ Follow'}
+                    </button>
+                `;
+                reelsGrid.appendChild(div);
+            });
+            lazyLoadVideos();
+        }
+
+        // Video Modal Functions
+        function openVideoModal(reelId) {
+            const reel = reels[reelId];
+            const tutor = tutors[reel.tutorId];
+            currentVideoIndex = reelIds.indexOf(reelId);
+            
+            document.getElementById('modal-video').src = reel.videoUrl;
+            document.getElementById('modal-title').textContent = `${tutor.name} (${tutor.subject})`;
+            document.getElementById('modal-description').textContent = reel.description;
+            document.getElementById('modal-date').textContent = formatDate(reel.date);
+            document.getElementById('current-video').textContent = currentVideoIndex + 1;
+            document.getElementById('total-videos').textContent = reelIds.length;
+            
+            updateModalActions(reelId);
+            updateNavigationButtons();
+            
+            const modal = document.getElementById('video-modal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            trapFocus(modal);
+        }
+
+        function closeVideoModal() {
+            const modal = document.getElementById('video-modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            document.getElementById('modal-video').pause();
+            restoreFocus();
+        }
+
+        function updateModalActions(reelId) {
+            const reel = reels[reelId];
+            const likeCount = likes[reelId]?.userIds.length || 0;
+            const dislikeCount = dislikes[reelId]?.userIds.length || 0;
+            const commentCount = comments[reelId]?.comments.length || 0;
+            const isLiked = likes[reelId]?.userIds.includes(currentUser?.id);
+            const isDisliked = dislikes[reelId]?.userIds.includes(currentUser?.id);
+            const isFollowed = follows[reel.tutorId]?.userIds.includes(currentUser?.id);
+            const isSaved = savedReels[reelId]?.includes(currentUser?.id);
+            
+            const actionsContainer = document.getElementById('modal-actions');
+            actionsContainer.innerHTML = `
+                <button class="action-button ${isLiked ? 'liked' : ''}" 
+                        onclick="toggleLike(${reelId}); updateModalActions(${reelId}); updateReels();" 
+                        ${!currentUser ? 'disabled' : ''} 
+                        aria-label="${isLiked ? 'Unlike' : 'Like'} reel">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                    ${likeCount}
+                </button>
+                <button class="action-button ${isDisliked ? 'disliked' : ''}" 
+                        onclick="toggleDislike(${reelId}); updateModalActions(${reelId}); updateReels();" 
+                        ${!currentUser ? 'disabled' : ''} 
+                        aria-label="${isDisliked ? 'Undislike' : 'Dislike'} reel">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 13l3 3 7-7"></path>
+                    </svg>
+                    ${dislikeCount}
+                </button>
+                <button class="action-button" 
+                        onclick="openCommentModal(${reelId})" 
+                        aria-label="View comments">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    ${commentCount}
+                </button>
+                <button class="action-button" 
+                        onclick="shareReel(${reelId})" 
+                        aria-label="Share reel">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                    </svg>
+                    Share
+                </button>
+                <button class="action-button ${isSaved ? 'saved' : ''}" 
+                        onclick="toggleSave(${reelId}); updateModalActions(${reelId}); updateReels();" 
+                        ${!currentUser ? 'disabled' : ''} 
+                        aria-label="${isSaved ? 'Unsave' : 'Save'} reel">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                    </svg>
+                    Save
+                </button>
+                <button class="follow-button ${isFollowed ? 'following' : ''}" 
+                        onclick="toggleFollow(${reel.tutorId}); updateModalActions(${reelId}); updateReels();">
+                    ${isFollowed ? '✓ Following' : '+ Follow'}
+                </button>
+            `;
+        }
+
+        function navigateVideo(direction) {
+            const modal = document.getElementById('video-modal');
+            const video = document.getElementById('modal-video');
+            
+            if (direction === 'next' && currentVideoIndex < reelIds.length - 1) {
+                currentVideoIndex++;
+            } else if (direction === 'prev' && currentVideoIndex > 0) {
+                currentVideoIndex--;
+            }
+            
+            const reelId = reelIds[currentVideoIndex];
+            const reel = reels[reelId];
+            const tutor = tutors[reel.tutorId];
+            
+            video.style.opacity = '0.5';
+            video.classList.add('scale-95');
+            
+            setTimeout(() => {
+                video.src = reel.videoUrl;
+                document.getElementById('modal-title').textContent = `${tutor.name} (${tutor.subject})`;
+                document.getElementById('modal-description').textContent = reel.description;
+                document.getElementById('modal-date').textContent = formatDate(reel.date);
+                document.getElementById('current-video').textContent = currentVideoIndex + 1;
+                
+                updateModalActions(reelId);
+                updateNavigationButtons();
+                
+                video.style.opacity = '1';
+                video.classList.remove('scale-95');
+                video.classList.add('scale-100');
+            }, 300);
+        }
+
+        function updateNavigationButtons() {
+            const prevBtn = document.getElementById('prev-video');
+            const nextBtn = document.getElementById('next-video');
+            
+            prevBtn.disabled = currentVideoIndex === 0;
+            nextBtn.disabled = currentVideoIndex === reelIds.length - 1;
+        }
+
+        // Save Reel
+        function toggleSave(reelId) {
+            if (!savedReels[reelId]) savedReels[reelId] = [];
+            const userId = currentUser.id;
+            const isSaved = savedReels[reelId].includes(userId);
+            
+            if (isSaved) {
+                savedReels[reelId] = savedReels[reelId].filter(id => id !== userId);
+                showNotification('Reel removed from saved', 'info');
+            } else {
+                savedReels[reelId].push(userId);
+                showNotification('Reel saved!', 'success');
+                createSaveAnimation();
+            }
+            
+            localStorage.setItem('savedReels', JSON.stringify(savedReels));
+            logAction(`${isSaved ? 'Unsaved' : 'Saved'} reel ${reelId}`);
+        }
+
+        function createSaveAnimation() {
+            const save = document.createElement('div');
+            save.innerHTML = '📑';
+            save.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 2.5rem;
+                pointer-events: none;
+                z-index: 9999;
+                animation: savePop 1s ease-out forwards;
+            `;
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes savePop {
+                    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+                    50% { transform: translate(-50%, -50%) scale(1.3); }
+                    100% { transform: translate(-50%, -50%) scale(0) translateY(-40px); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            document.body.appendChild(save);
+            
+            setTimeout(() => {
+                document.body.removeChild(save);
+                document.head.removeChild(style);
+            }, 1000);
+        }
+
+        // Like/Dislike
+        function toggleLike(reelId) {
+            if (!likes[reelId]) likes[reelId] = { reelId, userIds: [] };
+            if (!dislikes[reelId]) dislikes[reelId] = { reelId, userIds: [] };
+            
+            const userId = currentUser.id;
+            const isLiked = likes[reelId].userIds.includes(userId);
+            
+            if (isLiked) {
+                likes[reelId].userIds = likes[reelId].userIds.filter(id => id !== userId);
+            } else {
+                likes[reelId].userIds.push(userId);
+                dislikes[reelId].userIds = dislikes[reelId].userIds.filter(id => id !== userId);
+                createHeartAnimation();
+            }
+            
+            logAction(`${isLiked ? 'Unliked' : 'Liked'} reel ${reelId}`);
+            updateReels();
+        }
+
+        function toggleDislike(reelId) {
+            if (!likes[reelId]) likes[reelId] = { reelId, userIds: [] };
+            if (!dislikes[reelId]) dislikes[reelId] = { reelId, userIds: [] };
+            
+            const userId = currentUser.id;
+            const isDisliked = dislikes[reelId].userIds.includes(userId);
+            
+            if (isDisliked) {
+                dislikes[reelId].userIds = dislikes[reelId].userIds.filter(id => id !== userId);
+            } else {
+                dislikes[reelId].userIds.push(userId);
+                likes[reelId].userIds = likes[reelId].userIds.filter(id => id !== userId);
+            }
+            
+            logAction(`${isDisliked ? 'Undisliked' : 'Disliked'} reel ${reelId}`);
+            updateReels();
+        }
+
+        function createHeartAnimation() {
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤️';
+            heart.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 2.5rem;
+                pointer-events: none;
+                z-index: 9999;
+                animation: heartPop 1s ease-out forwards;
+            `;
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes heartPop {
+                    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+                    50% { transform: translate(-50%, -50%) scale(1.3); }
+                    100% { transform: translate(-50%, -50%) scale(0) translateY(-40px); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            document.body.appendChild(heart);
+            
+            setTimeout(() => {
+                document.body.removeChild(heart);
+                document.head.removeChild(style);
+            }, 1000);
+        }
+
+        // Comments
+        let selectedReelId = null;
+
+        function openCommentModal(reelId) {
+            selectedReelId = reelId;
+            updateCommentList();
+            document.getElementById('new-comment').value = '';
+            document.getElementById('comment-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('comment-modal'));
+        }
+
+        function closeCommentModal() {
+            document.getElementById('comment-modal').classList.add('hidden');
+            selectedReelId = null;
+            restoreFocus();
+        }
+
+        function updateCommentList() {
+            const commentList = document.getElementById('comment-list');
+            commentList.innerHTML = '';
+            const reelComments = comments[selectedReelId]?.comments || [];
+            
+            if (reelComments.length === 0) {
+                commentList.innerHTML = '<p class="text-center opacity-70 py-8">No comments yet. Be the first to comment!</p>';
+            } else {
+                reelComments.forEach((comment, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 rounded-lg mb-3';
+                    div.style.backgroundColor = 'var(--highlight)';
+                    div.style.animationDelay = `${index * 0.1}s`;
+                    div.style.opacity = '0';
+                    div.style.transform = 'translateY(10px)';
+                    div.style.animation = 'commentSlideIn 0.4s ease-out forwards';
+                    div.innerHTML = `
+                        <p class="mb-2">${comment.text}</p>
+                        <p class="text-xs opacity-70">By User ${comment.userId} • ${formatDate(comment.date)}</p>
+                    `;
+                    commentList.appendChild(div);
+                });
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes commentSlideIn {
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                `;
+                document.head.appendChild(style);
+                setTimeout(() => document.head.removeChild(style), 1000);
+            }
+        }
+
+        function addComment() {
+            const text = document.getElementById('new-comment').value.trim();
+            if (!text) {
+                showNotification('Please enter a comment', 'error');
+                return;
+            }
+            
+            if (!comments[selectedReelId]) {
+                comments[selectedReelId] = { reelId: selectedReelId, comments: [] };
+            }
+            
+            comments[selectedReelId].comments.push({
+                userId: currentUser.id,
+                text,
+                date: new Date().toISOString().split('T')[0]
+            });
+            
+            logAction(`Commented on reel ${selectedReelId}: ${text}`);
+            updateCommentList();
+            document.getElementById('new-comment').value = '';
+            updateReels();
+            showNotification('Comment added successfully!', 'success');
+        }
+
+        // Share
+        function shareReel(reelId) {
+            const reel = reels[reelId];
+            const tutor = tutors[reel.tutorId];
+            const url = `https://astegni.et/reels/${reelId}`;
+            const text = `Check out this amazing reel by ${tutor.name}: ${reel.description}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: `Reel by ${tutor.name}`,
+                    text: text,
+                    url: url
+                }).then(() => {
+                    showNotification('Reel shared successfully!', 'success');
+                    logAction(`Shared reel ${reelId}`);
+                }).catch((error) => {
+                    console.log('Error sharing:', error);
+                    fallbackShare(url, text);
+                });
+            } else {
+                fallbackShare(url, text);
+            }
+        }
+
+        function fallbackShare(url, text) {
+            navigator.clipboard.writeText(`${text}\n${url}`).then(() => {
+                showNotification('Reel link copied to clipboard!', 'success');
+                logAction(`Shared reel via clipboard`);
+            }).catch(() => {
+                showNotification('Unable to copy link', 'error');
+            });
+        }
+
+        // Follow
+        function toggleFollow(tutorId) {
+            if (!follows[tutorId]) follows[tutorId] = { tutorId, userIds: [] };
+            
+            const userId = currentUser.id;
+            const isFollowed = follows[tutorId].userIds.includes(userId);
+            
+            if (isFollowed) {
+                follows[tutorId].userIds = follows[tutorId].userIds.filter(id => id !== userId);
+                showNotification('Unfollowed tutor', 'info');
+            } else {
+                follows[tutorId].userIds.push(userId);
+                showNotification('Following tutor!', 'success');
+                createFollowAnimation();
+            }
+            
+            logAction(`${isFollowed ? 'Unfollowed' : 'Followed'} tutor ${tutorId}`);
+            updateReels();
+        }
+
+        function createFollowAnimation() {
+            const follow = document.createElement('div');
+            follow.innerHTML = '✨';
+            follow.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 2.5rem;
+                pointer-events: none;
+                z-index: 9999;
+                animation: followPop 1s ease-out forwards;
+            `;
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes followPop {
+                    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+                    50% { transform: translate(-50%, -50%) scale(1.3); }
+                    100% { transform: translate(-50%, -50%) scale(0) translateY(-40px); opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            document.body.appendChild(follow);
+            
+            setTimeout(() => {
+                document.body.removeChild(follow);
+                document.head.removeChild(style);
+            }, 1000);
+        }
+
+        // Notifications
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-20 right-4 p-4 rounded-lg shadow-lg z-50`;
+            
+            const colors = {
+                success: 'bg-green-500 text-white',
+                error: 'bg-red-500 text-white',
+                info: 'bg-blue-500 text-white',
+                warning: 'bg-yellow-500 text-black'
+            };
+            
+            notification.className += ` ${colors[type] || colors.info}`;
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(20px)';
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.opacity = '1';
+                notification.style.transform = 'translateX(0)';
+                notification.style.animation = 'notifySlideIn 0.3s ease-out';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                notification.style.transform = 'translateX(20px)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes notifySlideIn {
+                    from { opacity: 0; transform: translateX(20px); }
+                    to { opacity: 1; transform: translateX(0); }
+                }
+            `;
+            document.head.appendChild(style);
+            setTimeout(() => document.head.removeChild(style), 3300);
+        }
+
+        function checkNotifications() {
+            const unreadCount = Object.values(notifications).filter(n => !n.read).length;
+            document.getElementById('notification-dot').classList.toggle('hidden', unreadCount === 0);
+            document.getElementById('mobile-notification-dot').classList.toggle('hidden', unreadCount === 0);
+        }
+
+        function openNotificationModal() {
+            const notificationContent = document.getElementById('notification-content');
+            const notificationList = Object.values(notifications);
+            
+            if (notificationList.length === 0) {
+                notificationContent.innerHTML = '<p class="text-center opacity-70 py-8">You have no notifications.</p>';
+            } else {
+                notificationContent.innerHTML = notificationList.map((n, index) => `
+                    <div class="p-3 rounded-lg mb-3" 
+                         style="background-color: var(--highlight); animation: notifyItemSlideIn ${0.1 * index}s ease-out forwards; opacity: 0; transform: translateY(10px);">
+                        <p class="mb-1">${n.message}</p>
+                        <p class="text-xs opacity-70">${formatDate(n.date)}</p>
+                        ${!n.read ? '<div class="w-2 h-2 bg-blue-500 rounded-full float-right mt-1"></div>' : ''}
+                    </div>
+                `).join('');
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes notifyItemSlideIn {
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                `;
+                document.head.appendChild(style);
+                setTimeout(() => document.head.removeChild(style), 1000);
+                
+                Object.values(notifications).forEach(n => n.read = true);
+                checkNotifications();
+            }
+            
+            document.getElementById('notification-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('notification-modal'));
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notification-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        // Utility Functions
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
+            return date.toLocaleDateString();
+        }
+
+        function logAction(action) {
+            console.log(`[${new Date().toISOString()}] ${currentUser.email}: ${action}`);
+        }
+
+        // Focus Management
+        let focusBeforeModal = null;
+
+        function trapFocus(modal) {
+            focusBeforeModal = document.activeElement;
+            const focusableElements = modal.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+            
+            if (firstFocusable) firstFocusable.focus();
+            
+            const handleTabKey = (e) => {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey && document.activeElement === firstFocusable) {
+                        e.preventDefault();
+                        lastFocusable.focus();
+                    } else if (!e.shiftKey && document.activeElement === lastFocusable) {
+                        e.preventDefault();
+                        firstFocusable.focus();
+                    }
+                } else if (e.key === 'Escape') {
+                    closeModal(modal.id);
+                }
+            };
+            
+            modal.addEventListener('keydown', handleTabKey);
+            modal.setAttribute('data-trap-focus', 'true');
+        }
+
+        function restoreFocus() {
+            if (focusBeforeModal) {
+                focusBeforeModal.focus();
+                focusBeforeModal = null;
+            }
+        }
+
+        function closeModal(modalId) {
+            const closeFunctions = {
+                'comment-modal': closeCommentModal,
+                'notification-modal': closeNotificationModal,
+                'video-modal': closeVideoModal
+            };
+            
+            const closeFunction = closeFunctions[modalId];
+            if (closeFunction) closeFunction();
+        }
+
+        // Mobile Menu
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuBtn = document.getElementById('menu-btn');
+            const isOpen = mobileMenu.classList.contains('open');
+            
+            mobileMenu.classList.toggle('open');
+            menuBtn.setAttribute('aria-expanded', !isOpen);
+            
+            const svg = menuBtn.querySelector('svg');
+            if (!isOpen) {
+                svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+            } else {
+                svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>';
+            }
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            const videoModal = document.getElementById('video-modal');
+            
+            if (videoModal.classList.contains('active')) {
+                switch(e.key) {
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        navigateVideo('prev');
+                        break;
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        navigateVideo('next');
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        const video = document.getElementById('modal-video');
+                        if (video.paused) {
+                            video.play();
+                        } else {
+                            video.pause();
+                        }
+                        break;
+                }
+            }
+        });
+    // ... (Previous JavaScript code remains unchanged up to the cutoff point)
+
+    // Smooth Scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Lazy Load Videos
+    function lazyLoadVideos() {
+        const videos = document.querySelectorAll('video[data-src]');
+        const observer = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const video = entry.target;
+                    const source = video.querySelector('source');
+                    source.src = video.dataset.src;
+                    video.load();
+                    observer.unobserve(video);
+                }
+            });
+        }, { rootMargin: '100px' });
+
+        videos.forEach(video => observer.observe(video));
+    }
+
+    // Profile Dropdown (Stub for completeness)
+    function toggleProfileDropdown() {
+        // Placeholder: Implement dropdown logic if needed
+        console.log('Profile dropdown toggled');
+    }
+
+    // Login/Register Modal (Stub)
+    function openLoginRegisterModal() {
+        showNotification('Login/Register modal not implemented', 'info');
+    }
+
+    // Advertise Modal (Stub)
+    function openAdvertiseModal() {
+        showNotification('Advertise modal not implemented', 'info');
+    }
+
+    // Event Listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        initReels();
+
+        // Theme Toggle
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+        const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle-btn');
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeToggleIcon(savedTheme);
+
+        themeToggleBtn.addEventListener('click', toggleTheme);
+        mobileThemeToggleBtn.addEventListener('click', toggleTheme);
+
+        // Mobile Menu
+        document.getElementById('menu-btn').addEventListener('click', toggleMobileMenu);
+
+        // Close modals on overlay click
+        document.getElementById('video-modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeVideoModal();
+        });
+        document.getElementById('comment-modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeCommentModal();
+        });
+        document.getElementById('notification-modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeNotificationModal();
+        });
+    });
+
+</script>
+</body>
+</html>

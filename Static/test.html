@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html data-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Astegni</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/xlsx.full.min.js"></script>
+    <link href="css/root_theme.css" rel="stylesheet" />
+    <link href="css/test.css" rel="stylesheet" />
+</head>
+
+<body class="font-sans">
+    <nav class="py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a class="text-2xl font-bold" href="index.html" style="color: var(--heading);">Astegni</a>
+            <div class="hidden md:flex items-center gap-4">
+                <a class="nav-link px-2 py-1 rounded" href="news.html">News</a>
+                <a id="find-tutors-link" class="nav-link px-2 py-1 rounded hidden" href="branch/find-tutors.html">Find Tutors</a>
+                <a id="reels-link" class="nav-link px-2 py-1 rounded hidden" href="branch/reels.html">Reels</a>
+                <a id="store-link" class="nav-link px-2 py-1 rounded hidden" href="branch/store.html">Store</a>
+                <a id="find-jobs-link" class="nav-link px-2 py-1 rounded hidden" href="branch/find-jobs.html">Find a Job</a>
+                <button id="login-btn" class="nav-link px-2 py-1 rounded" onclick="openModal('login-modal')">Login</button>
+                <button id="register-btn" class="nav-link px-2 py-1 rounded" onclick="openModal('register-modal')">Register</button>
+                <div id="profile-container" class="profile-container hidden relative">
+                    <button class="flex items-center gap-2 focus:outline-none" onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic" src="https://picsum.photos/32" alt="Profile Picture">
+                        <span id="profile-name" class="nav-link"></span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="profile-dropdown" class="hidden absolute top-10 right-0 bg-[var(--background)] border border-[var(--text)] rounded-lg shadow-lg p-2 w-48 z-50">
+                        <a id="view-profile" href="#" class="mr-4">View Profile</a>
+                        <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="openModal('notes-modal')">Notes</button>
+                        <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="openModal('finance-modal')">Manage Finances</button>
+                        <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="openModal('comment-rate-modal')">Comment and Rate Us</button>
+                        <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="openModal('share-us-modal')">Share Us</button>
+                        <button id="tutor-tools" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2 hidden" onclick="openModal('tools-modal')">Tools</button>
+                        <button id="tutor-quiz" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2 hidden" onclick="openModal('quiz-modal')">Take a Quiz</button>
+                        <button id="student-tools" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2 hidden" onclick="openModal('tools-modal')">Tools</button>
+                        <button id="student-become-tutor" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2 hidden" onclick="openModal('become-tutor-modal')">Become a Tutor</button>
+                    </div>
+                </div>
+                <button id="notification-bell" class="relative focus:outline-none hidden" onclick="openModal('notification-modal')" aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <button class="md:hidden focus:outline-none" id="menu-btn">
+                <svg class="w-6 h-6" fill="none" stroke="var(--text)" viewBox="0 0 24 24">
+                    <path d="M4 6h16M4 12h16m-7 6h7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="hidden md:hidden" id="mobile-menu" style="background-color: var(--footer-bg);">
+            <a class="block py-2 px-4 nav-link" href="news.html">News</a>
+            <a id="mobile-find-tutors-link" class="block py-2 px-4 nav-link hidden" href="branch/find-tutors.html">Find Tutors</a>
+            <a id="mobile-reels-link" class="block py-2 px-4 nav-link hidden" href="branch/reels.html">Reels</a>
+            <a id="mobile-store-link" class="block py-2 px-4 nav-link hidden" href="branch/store.html">Store</a>
+            <a id="mobile-find-jobs-link" class="block py-2 px-4 nav-link hidden" href="branch/find-jobs.html">Find a Job</a>
+            <button id="mobile-notification-bell" class="block py-2 px-4 nav-link hidden w-full text-left" onclick="openModal('notification-modal')">Notifications</button>
+            <button id="mobile-login-btn" class="block py-2 px-4 nav-link w-full text-left" onclick="openModal('login-modal')">Login</button>
+            <button id="mobile-register-btn" class="block py-2 px-4 nav-link w-full text-left" onclick="openModal('register-modal')">Register</button>
+            <div id="mobile-profile-container" class="block py-2 px-4 nav-link hidden relative">
+                <button class="flex items-center gap-2" onclick="toggleProfileDropdown()">
+                    <img id="mobile-profile-pic" class="profile-pic inline-block mr-2" src="https://picsum.photos/32" alt="Profile Picture">
+                    <span id="mobile-profile-name"></span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+                <div id="mobile-profile-dropdown" class="hidden absolute top-10 right-0 bg-[var(--background)] border border-[var(--text)] rounded-lg shadow-lg p-2 w-48 z-50">
+                    <a id="mobile-view-profile-link" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" href="javascript:void(0)">View Profile</a>
+                    <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="openModal('notes-modal')">Notes</button>
+                    <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="openModal('finance-modal')">Manage Finances</button>
+                    <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="openModal('comment-rate-modal')">Comment and Rate Us</button>
+                    <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="openModal('share-us-modal')">Share Us</button>
+                    <button id="mobile-tutor-tools" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2 hidden" onclick="openModal('tools-modal')">Tools</button>
+                    <button id="mobile-tutor-quiz" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2 hidden" onclick="openModal('quiz-modal')">Take a Quiz</button>
+                    <button id="mobile-student-tools" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2 hidden" onclick="openModal('tools-modal')">Tools</button>
+                    <button id="mobile-student-become-tutor" class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2 hidden" onclick="openModal('become-tutor-modal')">Become a Tutor</button>
+                    <button class="nav-link px-2 py-1 rounded text-sm w-full text-left flex items-center gap-2" onclick="toggleVerification()">
+                        Toggle Verify
+                        <span id="mobile-verify-icon">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </span>
+                    </button>
+                </div>
+            </div>
+            <button id="mobile-theme-toggle-btn" class="block py-2 px-4 nav-link w-full text-left" aria-label="Toggle theme">
+                <svg id="mobile-theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <section class="py-16 hero-slideshow text-center" id="hero-slideshow">
+        <div class="container mx-auto px-4">
+            <h1 id="hero-text" class="text-4xl mb-4 font-bold mt-24 md:mt-32"></h1>
+            <p class="text-white text-lg mb-6">Join Ethiopia’s leading platform to connect with top tutors for online or in-person learning. Start your journey to success today!</p>
+            <div class="counter-grid-top">
+                <div class="counter-card">
+                    <h3 id="counter-parents">0+</h3>
+                    <p>Registered Parents</p>
+                </div>
+                <div class="counter-card">
+                    <h3 id="counter-students">0+</h3>
+                    <p>Self-Registered Students</p>
+                </div>
+                <div class="counter-card">
+                    <h3 id="counter-tutors">0+</h3>
+                    <p>Tutors</p>
+                </div>
+                <div class="counter-card">
+                    <h3 id="counter-centers">0+</h3>
+                    <p>Training Centers</p>
+                </div>
+            </div>
+            <div class="counter-grid-bottom">
+                <div class="counter-card">
+                    <h3 id="counter-books">0+</h3>
+                    <p>Books</p>
+                </div>
+                <div class="counter-card">
+                    <h3 id="counter-jobs">0+</h3>
+                    <p>Jobs</p>
+                </div>
+            </div>
+            <div class="flex justify-center items-center gap-4 mb-6 mt-6 max-w-4xl mx-auto">
+                <button id="hero-login-btn" class="cta-button px-6 py-3 rounded-lg font-semibold text-[var(--button-text)] bg-[var(--button-bg)] hover:bg-[var(--button-hover)] transition-all duration-300" onclick="openModal('login-modal')">Login</button>
+                <button id="hero-register-btn" class="cta-button px-6 py-3 rounded-lg font-semibold text-[var(--button-text)] bg-[var(--button-bg)] hover:bg-[var(--button-hover)] transition-all duration-300" onclick="openModal('register-modal')">Register</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-8" style="background-color: var(--background);">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Advertise</h2>
+            <div class="flex justify-center">
+                <div class="grid grid-cols-1 w-full" id="ad-container">
+                    <!-- Ads will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16" style="background-color: var(--background);">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Astegni News</h2>
+            <p class="text-center mb-6">Stay updated with the latest from Astegni.</p>
+            <div class="flex justify-center">
+                <div class="grid grid-cols-1 w-full">
+                    <div class="news-card active" id="news-card">
+                        <div>
+                            <h3 id="news-title"></h3>
+                            <p id="news-content"></p>
+                        </div>
+                        <a href="news.html" class="more-news-btn cta-button px-4 py-2 rounded-lg font-semibold">More News</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16" style="background-color: var(--background);">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Explore Astegni</h2>
+            <p class="text-center mb-6">Watch our videos to learn more about Astegni.</p>
+            <div class="flex justify-center">
+                <div class="video-carousel" id="video-carousel">
+                    <!-- Videos will be populated dynamically -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-16" style="background-color: var(--background);">
+        <div class="container mx-auto px-4">
+            <h2 class="text-2xl font-semibold mb-4 text-center">Our Partners</h2>
+            <div class="flex justify-center">
+                <div class="partners-container">
+                    <div class="partners-wrapper" id="partners-wrapper">
+                        <!-- Partners will be populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modals -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('login-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4" style="color: var(--heading);">Login</h3>
+            <div id="login-form">
+                <div class="form-group">
+                    <label>Login Method</label>
+                    <div class="flex gap-4 mb-4">
+                        <label><input type="radio" name="login-type" value="email" class="mr-2" checked onclick="toggleInput('login', 'email')">Email</label>
+                        <label><input type="radio" name="login-type" value="phone" class="mr-2" onclick="toggleInput('login', 'phone')">Phone</label>
+                        <label><input type="radio" name="login-type" value="social" class="mr-2" onclick="toggleInput('login', 'social')">Social Media</label>
+                    </div>
+                </div>
+                <div class="social-login-button form-group" id="login-email-button">
+                    <button class="bg-red-600 text-white hover:bg-red-700" onclick="socialLogin('gmail')">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.51h5.84c-.25 1.35-.98 2.49-2.06 3.24v2.69h3.34c1.95-1.8 3.08-4.45 3.08-7.69z"></path>
+                            <path d="M12 23c2.97 0 5.46-1.01 7.28-2.73l-3.34-2.69c-1.01.68-2.3 1.09-3.94 1.09-3.03 0-5.6-2.05-6.51-4.81H2.07v3.02C3.88 20.26 7.77 23 12 23z"></path>
+                            <path d="M5.49 14.18c-.23-.68-.36-1.41-.36-2.18s.13-1.5.36-2.18V6.8H2.07C1.38 8.29 1 9.98 1 12s.38 3.71 1.07 5.2l3.42-2.02z"></path>
+                            <path d="M12 4.95c1.64 0 3.11.56 4.27 1.66l3.2-3.2C17.46 1.74 14.97.73 12 .73 7.77.73 3.88 3.47 2.07 6.8l3.42 2.02c.91-2.76 3.48-4.81 6.51-4.81z"></path>
+                        </svg>
+                        Gmail
+                    </button>
+                </div>
+                <div class="form-group hidden" id="login-country-container">
+                    <select id="login-country" class="w-full" onchange="updatePhonePlaceholder('login')">
+                        <option value="+251">Ethiopia (+251)</option>
+                        <option value="+1">USA (+1)</option>
+                        <option value="+44">UK (+44)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="login-email" placeholder="login@example.com">
+                </div>
+                <div class="form-group hidden" id="login-phone-container">
+                    <input type="text" id="login-phone" placeholder="+251912345678">
+                </div>
+                <div class="form-group hidden" id="login-social-fields">
+                    <label>Social Media Platform</label>
+                    <select id="login-social-platform" onchange="updateSocialPlaceholder('login')">
+                        <option value="" disabled selected>Select Social Media</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="snapchat">Snapchat</option>
+                        <option value="x">X</option>
+                    </select>
+                    <label>Social Media Address</label>
+                    <input type="text" id="login-social-address" placeholder="Enter social media address">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="Enter password">
+                </div>
+                <div class="form-group">
+                    <label class="flex items-center">
+                        <input type="checkbox" onclick="togglePassword('login-password')"> Show Password
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="flex items-center">
+                        <input type="checkbox"> Remember Me
+                    </label>
+                </div>
+                <div class="form-group">
+                    <a href="#forgot-password" class="nav-link hover:underline">Forgot Password?</a>
+                </div>
+                <div class="form-actions">
+                    <button class="cta-button px-4 py-2 rounded-lg w-full" onclick="login()">Login</button>
+                    <button class="text-[--text] hover:text-[--nav-link-hover] w-full text-center" onclick="closeModal('login-modal')">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('register-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4" style="color: var(--heading);">Register</h3>
+            <div id="register-form">
+                <div class="form-group">
+                    <label>Name (Required)</label>
+                    <input type="text" id="register-name" placeholder="Enter your name" required>
+                </div>
+                <div class="form-group">
+                    <label>Register As</label>
+                    <select id="register-as" onchange="toggleRegisterFields()">
+                        <option value="tutor">Tutor</option>
+                        <option value="student">Student</option>
+                        <option value="guardian">Guardian</option>
+                        <option value="institute">Training Institute</option>
+                        <option value="bookstore">Bookstore</option>
+                        <option value="delivery">Delivery</option>
+                        <option value="advertiser">Advertiser</option>
+                        <option value="employer">Employer</option>
+                        <option value="partner">Partner</option>
+                    </select>
+                </div>
+                <div id="gender-field" class="form-group hidden">
+                    <label>Gender (Required)</label>
+                    <select id="register-gender" required>
+                        <option value="" disabled selected>Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div id="guardian-type-field" class="form-group hidden">
+                    <label>Guardian Type (Required)</label>
+                    <select id="register-guardian-type" required>
+                        <option value="" disabled selected>Select Guardian Type</option>
+                        <option value="father">Father</option>
+                        <option value="mother">Mother</option>
+                        <option value="guardian">Guardian</option>
+                    </select>
+                </div>
+                <div id="institute-type" class="form-group hidden">
+                    <label>Institution Type (Required)</label>
+                    <select id="register-institute-type" required>
+                        <option value="" disabled selected>Select Institution Type</option>
+                        <option value="dance">Dance</option>
+                        <option value="music">Music</option>
+                        <option value="school">School</option>
+                        <option value="college">College</option>
+                        <option value="computer">Computer</option>
+                        <option value="sport">Sport</option>
+                        <option value="language">Language</option>
+                        <option value="art">Art School</option>
+                        <option value="modeling">Modeling</option>
+                        <option value="circus">Circus</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Registration Method</label>
+                    <div class="flex gap-4 mb-4">
+                        <label><input type="radio" name="register-type" value="email" class="mr-2" checked onclick="toggleInput('register', 'email')">Email</label>
+                        <label><input type="radio" name="register-type" value="phone" class="mr-2" onclick="toggleInput('register', 'phone')">Phone</label>
+                        <label><input type="radio" name="register-type" value="social" class="mr-2" onclick="toggleInput('register', 'social')">Social Media</label>
+                    </div>
+                </div>
+                <div class="social-login-button form-group" id="register-email-button">
+                    <button class="bg-red-600 text-white hover:bg-red-700" onclick="socialLogin('gmail')">
+                        <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.51h5.84c-.25 1.35-.98 2.49-2.06 3.24v2.69h3.34c1.95-1.8 3.08-4.45 3.08-7.69z"></path>
+                            <path d="M12 23c2.97 0 5.46-1.01 7.28-2.73l-3.34-2.69c-1.01.68-2.3 1.09-3.94 1.09-3.03 0-5.6-2.05-6.51-4.81H2.07v3.02C3.88 20.26 7.77 23 12 23z"></path>
+                            <path d="M5.49 14.18c-.23-.68-.36-1.41-.36-2.18s.13-1.5.36-2.18V6.8H2.07C1.38 8.29 1 9.98 1 12s.38 3.71 1.07 5.2l3.42-2.02z"></path>
+                            <path d="M12 4.95c1.64 0 3.11.56 4.27 1.66l3.2-3.2C17.46 1.74 14.97.73 12 .73 7.77.73 3.88 3.47 2.07 6.8l3.42 2.02c.91-2.76 3.48-4.81 6.51-4.81z"></path>
+                        </svg>
+                        Gmail
+                    </button>
+                </div>
+                <div class="form-group hidden" id="register-country-container">
+                    <select id="register-country" onchange="updatePhonePlaceholder('register')">
+                        <option value="+251">Ethiopia (+251)</option>
+                        <option value="+1">USA (+1)</option>
+                        <option value="+44">UK (+44)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="text" id="register-email" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <input type="text" id="register-phone" placeholder="+251912345678">
+                </div>
+                <div class="form-group hidden" id="register-social-fields">
+                    <label>Social Media Platform</label>
+                    <select id="register-social-platform" onchange="updateSocialPlaceholder('register')">
+                        <option value="" disabled selected>Select Social Media</option>
+                        <option value="facebook">Facebook</option>
+                        <option value="tiktok">TikTok</option>
+                        <option value="instagram">Instagram</option>
+                        <option value="snapchat">Snapchat</option>
+                        <option value="x">X</option>
+                    </select>
+                    <label>Social Media Address</label>
+                    <input type="text" id="register-social-address" placeholder="Enter social media address">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="register-password" placeholder="Enter password">
+                </div>
+                <div class="form-group">
+                    <label class="flex items-center">
+                        <input type="checkbox" onclick="togglePassword('register-password')"> Show Password
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label>Repeat Password</label>
+                    <input type="password" id="register-repeat-password" placeholder="Repeat password">
+                </div>
+                <div class="form-group">
+                    <label class="flex items-center">
+                        <input type="checkbox" onclick="togglePassword('register-repeat-password')"> Show Password
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="flex items-center">
+                        <input type="checkbox"> Accept Terms
+                    </label>
+                </div>
+                <div class="form-actions">
+                    <button class="cta-button px-4 py-2 rounded-lg w-full" onclick="submitRegistration()">Register</button>
+                    <button class="text-[--text] hover:text-[--nav-link-hover] w-full text-center" onclick="closeModal('register-modal')">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="share-modal">
+        <div class="rounded-lg max-w-lg modal-content mx-auto p-6 w-full">
+            <span class="modal-close" onclick="closeModal('share-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">Share Video</h3>
+            <div class="share-modal-content">
+                <a href="#" id="share-social-media(1)" target="_blank">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                    </svg>
+                    Share on Facebook
+                </a>
+                <a href="#" id="share-social-media(2)" target="_blank">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.071 1.266.058 1.645.07 4.849.07s3.668-.012 4.948-.07c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"></path>
+                    </svg>
+                    Share on Instagram
+                </a>
+                <a href="#" id="share-social-media(3)" target="_blank">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                    </svg>
+                    Share on X
+                </a>
+                <a href="#" id="share-social-media(4)" target="_blank">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.89 2.89 0 01.88.15V9.24a6.34 6.34 0 00-1-.09A6.34 6.34 0 003 15.58a6.34 6.34 0 0010.86 4.43 6.34 6.34 0 001.81-4.43V8.91a8.28 8.28 0 004.92 1.56V6.69z"></path>
+                    </svg>
+                    Share on TikTok
+                </a>
+                <a href="#" id="share-social-media(5)" target="_blank">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.016 3.016 0 0 0 .502 6.186 31.247 31.247 0 0 0 0 12a31.247 31.247 0 0 0 .502 5.814 3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.377.505 9.377.505s7.505 0 9.377-.505a3.016 3.016 0 0 0 2.122-2.136A31.247 31.247 0 0 0 24 12a31.247 31.247 0 0 0-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"></path>
+                    </svg>
+                    Share on YouTube
+                </a>
+                <a href="#" id="share-social-media(6)" target="_blank">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 20.364c-2.73 0-5.09-.727-6.818-2.182-.545-.455-1.091-1.091-1.455-1.818-.182-.364-.182-.727 0-1.091.182-.364.545-.545.909-.545.364 0 .727.182 1.091.545 1.091.909 2.182 1.455 3.818 1.455 1.091 0 2.182-.364 3.091-1.091.364-.273.727-.545 1.091-.818.364-.364.727-.727 1.091-.545.364.182.545.545.364 1.091-.364.727-.909 1.364-1.455 1.818-1.727 1.455-4.091 2.182-6.727 2.182zm7.455-4.727c-.364.182-.727.182-1.091 0-.364-.182-.545-.545-.364-1.091.727-1.818 1.091-3.818 1.091-5.818s-.364-4-1.091-5.818c-.182-.545 0-.909.364-1.091.364-.182.727-.182 1.091 0 .909 2.182 1.455 4.727 1.455 7.273s-.545 5.091-1.455 7.545zm-15.818 0c-.909-2.455-1.455-5-1.455-7.545s.545-5.091 1.455-7.273c.364-.182.727-.182 1.091 0 .364.182.545.545.364 1.091-.727 1.818-1.091 3.818-1.091 5.818s.364 4 1.091 5.818c.182.545 0 .909-.364 1.091-.364.182-.727.182-.001-.001z"></path>
+                    </svg>
+                    Share on Snapchat
+                </a>
+                <button class="mt-4 cta-button px-4 py-2 rounded-lg w-full" onclick="copyLink()">Copy Link</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="comment-modal">
+        <div class="rounded-lg max-w-lg modal-content mx-auto p-6">
+            <span class="modal-close" onclick="closeModal('comment-modal')">×</span>
+            <h3 class="text-2xl font-semibold mb-4">Comments</h3>
+            <div class="comment-modal-content" id="modal-comment-list"></div>
+            <input class="modal-comment-input w-full" id="modal-comment-input" placeholder="Enter a comment" type="text" />
+            <button class="mt-4 cta-button" onclick="addModalComment()">Submit Comment</button>
+        </div>
+    </div>
+
+    <div class="modal" id="notes-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('notes-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">This is 'Notes' modal</h3>
+        </div>
+    </div>
+
+    <div class="modal" id="finance-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('finance-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">This is 'Manage Finances' modal</h3>
+        </div>
+    </div>
+
+    <div class="modal" id="comment-rate-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('comment-rate-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">This is 'Comment and Rate Us' modal</h3>
+        </div>
+    </div>
+
+    <div class="modal" id="share-us-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('share-us-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">This is 'Share Us' modal</h3>
+        </div>
+    </div>
+
+    <div class="modal" id="notification-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('notification-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">This is 'Notifications' modal</h3>
+        </div>
+    </div>
+
+    <div class="modal" id="tools-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('tools-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">This is 'Tools' modal</h3>
+        </div>
+    </div>
+
+    <div class="modal" id="quiz-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('quiz-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">This is 'Take a Quiz' modal</h3>
+        </div>
+    </div>
+
+    <div class="modal" id="become-tutor-modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal('become-tutor-modal')">×</span>
+            <h3 class="text-2xl font-bold mb-4">This is 'Become a Tutor' modal</h3>
+        </div>
+    </div>
+
+    <footer class="py-6" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div class="flex flex-col">
+                    <h3 class="text-lg font-semibold mb-2" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="flex flex-row flex-wrap gap-4" id="quick-links">
+                        <li><a class="nav-link hover:underline" href="news.html">News</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openModal('login-modal')">Login</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openModal('register-modal')">Register</button></li>
+                    </ul>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-lg font-semibold mb-2" style="color: var(--heading);">Get in Touch</h3>
+                    <div class="flex flex-row flex-wrap gap-4 items-center">
+                        <p class="mb-0">Phone: +251-912-345-678</p>
+                        <p class="mb-0">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <h3 class="text-lg font-semibold mb-2" style="color: var(--heading);">Follow Us</h3>
+                    <div class="flex flex-row flex-wrap gap-2">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.071 1.266.058 1.645.07 4.849.07s3.668-.012 4.948-.07c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://linkedin.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"></path>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p style="color: var(--footer-text);">&copy; 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src ='js/test.js'></script>
+</body>
+</html>

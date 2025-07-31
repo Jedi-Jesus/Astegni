@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookstore Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .main-content {
+      flex: 1 0 auto;
+    }
+    footer {
+      flex-shrink: 0;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 0.5rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .modal-content-wide {
+      max-width: 800px;
+      width: 90%;
+    }
+    .book-card, .video-card {
+      transition: transform 0.2s;
+    }
+    .book-card:hover, .video-card:hover {
+      transform: scale(1.05);
+    }
+    .favorite-icon {
+      cursor: pointer;
+    }
+    .favorite-icon.filled {
+      color: #ff4d4f;
+    }
+    .tab {
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-bottom: 2px solid transparent;
+    }
+    .tab.active {
+      border-bottom-color: #2563eb;
+      font-weight: bold;
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-sans">
+  <!-- Header -->
+  <header class="bg-white shadow">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-gray-800">Bookstore Profile</h1>
+      <button id="sidebar-toggle" class="md:hidden text-gray-800" aria-label="Toggle sidebar">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-content container mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
+    <!-- Bookstore Profile Section -->
+    <div class="lg:w-3/4">
+      <!-- Cover Photo -->
+      <div class="relative">
+        <img src="https://picsum.photos/seed/bookstore-cover/1200/400" alt="Bookstore cover photo" class="w-full h-64 object-cover rounded-lg">
+        <img src="https://picsum.photos/seed/bookstore-profile/150/150" alt="Bookstore profile photo" class="absolute -bottom-16 left-8 w-32 h-32 rounded-full border-4 border-white shadow">
+      </div>
+
+      <!-- Profile Info -->
+      <div class="mt-20 bg-white p-6 rounded-lg shadow">
+        <div class="flex justify-between items-center">
+          <h2 id="bookstore-name" class="text-3xl font-bold text-gray-800">Knowledge Hub</h2>
+          <div class="flex items-center">
+            <div class="flex text-yellow-400">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+            </div>
+            <span class="ml-2 text-gray-600">4.2 (128 reviews)</span>
+          </div>
+        </div>
+        <div class="mt-4">
+          <p id="bookstore-phone" class="text-gray-600"><strong>Phone:</strong> +1 (555) 123-4567</p>
+          <p id="bookstore-email" class="text-gray-600"><strong>Email:</strong> contact@knowledgehub.com</p>
+          <p class="text-gray-600"><strong>Locations:</strong></p>
+          <ul id="bookstore-locations" class="list-disc pl-6 text-gray-600">
+            <li>123 Main St, New York, NY 10001</li>
+            <li>456 Oak Ave, Los Angeles, CA 90001</li>
+            <li>789 Pine Rd, Chicago, IL 60601</li>
+          </ul>
+          <p id="bookstore-bio" class="text-gray-600 mt-2"><strong>Bio:</strong> Knowledge Hub is a premier bookstore offering a diverse collection of books and games, fostering a love for learning and entertainment.</p>
+          <p id="bookstore-quote" class="text-gray-600 mt-2"><strong>Quote:</strong> "Books are the gateways to new worlds and endless possibilities."</p>
+          <div id="bookstore-socials" class="flex gap-4 mt-4">
+            <strong>Socials:</strong>
+            <a href="https://facebook.com/knowledgehub" target="_blank" class="text-blue-600 hover:underline" aria-label="Facebook">Facebook</a>
+            <a href="https://twitter.com/knowledgehub" target="_blank" class="text-blue-600 hover:underline" aria-label="Twitter">Twitter</a>
+            <a href="https://instagram.com/knowledgehub" target="_blank" class="text-blue-600 hover:underline" aria-label="Instagram">Instagram</a>
+          </div>
+        </div>
+        <div class="mt-6 flex gap-4">
+          <button id="follow-bookstore-btn" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700" aria-label="Follow Knowledge Hub">Follow</button>
+          <button id="edit-profile-btn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Edit profile">Edit Profile</button>
+          <button id="view-comments-btn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700" aria-label="View comments">View Comments</button>
+          <button id="upload-book-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" aria-label="Upload book">Upload Book</button>
+          <button id="upload-video-btn" class="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700" aria-label="Upload video">Upload Video</button>
+        </div>
+      </div>
+
+      <!-- Books and Videos (Tabbed) -->
+      <div class="mt-8">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Content</h2>
+        <div class="flex border-b mb-4">
+          <div class="tab active" onclick="switchContentTab('books-tab', this, 'content')">Books</div>
+          <div class="tab" onclick="switchContentTab('videos-tab', this, 'content')">Videos</div>
+        </div>
+        <!-- Books Tab -->
+        <div id="books-tab" class="tab-content active">
+          <!-- Fiction -->
+          <div class="genre-row mb-8">
+            <div class="flex justify-between items-center">
+              <h3 class="text-xl font-semibold text-gray-800">Fiction</h3>
+              <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="filterByGenre('Fiction')" aria-label="See all Fiction books">See All</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-4">
+              <div class="book-card bg-white p-4 rounded-lg shadow">
+                <img src="https://picsum.photos/seed/fantasy1/200/300" alt="The Dragon’s Quest cover" class="w-full h-48 object-cover rounded">
+                <h4 class="text-lg font-semibold mt-2">The Dragon’s Quest</h4>
+                <p class="text-gray-600"><a href="#" onclick="openAuthorDetailModal('author1', 'b1')" class="text-blue-600 hover:underline" aria-label="View Elara Stone's profile">Elara Stone</a></p>
+                <p class="text-gray-600">$19.99</p>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="openBookDetailModal('b1')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of The Dragon’s Quest">View Details</button>
+                  <button onclick="buyBook('b1')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Buy The Dragon’s Quest">Buy</button>
+                  <svg class="w-6 h-6 favorite-icon" data-book-id="b1" onclick="toggleFavorite('b1')" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Add The Dragon’s Quest to favorites"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </div>
+              </div>
+              <div class="book-card bg-white p-4 rounded-lg shadow">
+                <img src="https://picsum.photos/seed/scifi1/200/300" alt="Starship Chronicles cover" class="w-full h-48 object-cover rounded">
+                <h4 class="text-lg font-semibold mt-2">Starship Chronicles</h4>
+                <p class="text-gray-600"><a href="#" onclick="openAuthorDetailModal('author2', 'b2')" class="text-blue-600 hover:underline" aria-label="View Jaxon Reed's profile">Jaxon Reed</a></p>
+                <p class="text-gray-600">$24.99</p>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="openBookDetailModal('b2')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of Starship Chronicles">View Details</button>
+                  <button onclick="buyBook('b2')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Buy Starship Chronicles">Buy</button>
+                  <svg class="w-6 h-6 favorite-icon" data-book-id="b2" onclick="toggleFavorite('b2')" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Add Starship Chronicles to favorites"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </div>
+              </div>
+              <div class="book-card bg-white p-4 rounded-lg shadow">
+                <img src="https://picsum.photos/seed/mystery1/200/300" alt="The Hidden Clue cover" class="w-full h-48 object-cover rounded">
+                <h4 class="text-lg font-semibold mt-2">The Hidden Clue</h4>
+                <p class="text-gray-600"><a href="#" onclick="openAuthorDetailModal('author3', 'b3')" class="text-blue-600 hover:underline" aria-label="View Mira Holt's profile">Mira Holt</a></p>
+                <p class="text-gray-600">$22.99</p>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="openBookDetailModal('b3')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of The Hidden Clue">View Details</button>
+                  <button onclick="buyBook('b3')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Buy The Hidden Clue">Buy</button>
+                  <svg class="w-6 h-6 favorite-icon" data-book-id="b3" onclick="toggleFavorite('b3')" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Add The Hidden Clue to favorites"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Non-Fiction -->
+          <div class="genre-row mb-8">
+            <div class="flex justify-between items-center">
+              <h3 class="text-xl font-semibold text-gray-800">Non-Fiction</h3>
+              <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" onclick="filterByGenre('Non-Fiction')" aria-label="See all Non-Fiction books">See All</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-4">
+              <div class="book-card bg-white p-4 rounded-lg shadow">
+                <img src="https://picsum.photos/seed/quantum/200/300" alt="Quantum Mechanics cover" class="w-full h-48 object-cover rounded">
+                <h4 class="text-lg font-semibold mt-2">Quantum Mechanics</h4>
+                <p class="text-gray-600"><a href="#" onclick="openAuthorDetailModal('author10', 'b10')" class="text-blue-600 hover:underline" aria-label="View John Doe's profile">John Doe</a></p>
+                <p class="text-gray-600">$29.99</p>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="openBookDetailModal('b10')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of Quantum Mechanics">View Details</button>
+                  <button onclick="buyBook('b10')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Buy Quantum Mechanics">Buy</button>
+                  <svg class="w-6 h-6 favorite-icon" data-book-id="b10" onclick="toggleFavorite('b10')" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Add Quantum Mechanics to favorites"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </div>
+              </div>
+              <div class="book-card bg-white p-4 rounded-lg shadow">
+                <img src="https://picsum.photos/seed/history1/200/300" alt="Ancient Civilizations cover" class="w-full h-48 object-cover rounded">
+                <h4 class="text-lg font-semibold mt-2">Ancient Civilizations</h4>
+                <p class="text-gray-600"><a href="#" onclick="openAuthorDetailModal('author11', 'b11')" class="text-blue-600 hover:underline" aria-label="View Laura King's profile">Laura King</a></p>
+                <p class="text-gray-600">$27.99</p>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="openBookDetailModal('b11')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of Ancient Civilizations">View Details</button>
+                  <button onclick="buyBook('b11')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Buy Ancient Civilizations">Buy</button>
+                  <svg class="w-6 h-6 favorite-icon" data-book-id="b11" onclick="toggleFavorite('b11')" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Add Ancient Civilizations to favorites"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </div>
+              </div>
+              <div class="book-card bg-white p-4 rounded-lg shadow">
+                <img src="https://picsum.photos/seed/astronomy1/200/300" alt="Stargazing Guide cover" class="w-full h-48 object-cover rounded">
+                <h4 class="text-lg font-semibold mt-2">Stargazing Guide</h4>
+                <p class="text-gray-600"><a href="#" onclick="openAuthorDetailModal('author12', 'b12')" class="text-blue-600 hover:underline" aria-label="View Mark Star's profile">Mark Star</a></p>
+                <p class="text-gray-600">$26.99</p>
+                <div class="flex gap-2 mt-2">
+                  <button onclick="openBookDetailModal('b12')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of Stargazing Guide">View Details</button>
+                  <button onclick="buyBook('b12')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Buy Stargazing Guide">Buy</button>
+                  <svg class="w-6 h-6 favorite-icon" data-book-id="b12" onclick="toggleFavorite('b12')" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Add Stargazing Guide to favorites"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Videos Tab -->
+        <div id="videos-tab" class="tab-content">
+          <div class="video-card bg-white p-4 rounded-lg shadow mb-4">
+            <iframe class="w-full h-64" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Bookstore Introduction" frameborder="0" allowfullscreen></iframe>
+            <p class="mt-2 text-gray-600">Welcome to Knowledge Hub!</p>
+          </div>
+          <div class="flex border-b mb-4">
+            <div class="tab active" onclick="switchContentTab('video-shorts-tab', this, 'video')">Shorts</div>
+            <div class="tab" onclick="switchContentTab('video-videos-tab', this, 'video')">Videos</div>
+            <div class="tab" onclick="switchContentTab('video-playlists-tab', this, 'video')">Playlists</div>
+          </div>
+          <div id="video-shorts-tab" class="tab-content active">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <div class="video-card bg-white p-4 rounded-lg shadow">
+                <iframe class="w-full h-48" src="https://www.youtube.com/embed/abc123" title="Book Recommendation" frameborder="0" allowfullscreen></iframe>
+                <p class="mt-2 text-gray-600">Quick Book Recommendation</p>
+              </div>
+              <div class="video-card bg-white p-4 rounded-lg shadow">
+                <iframe class="w-full h-48" src="https://www.youtube.com/embed/def456" title="Store Tour" frameborder="0" allowfullscreen></iframe>
+                <p class="mt-2 text-gray-600">Tour Our Store</p>
+              </div>
+            </div>
+          </div>
+          <div id="video-videos-tab" class="tab-content">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <div class="video-card bg-white p-4 rounded-lg shadow">
+                <iframe class="w-full h-48" src="https://www.youtube.com/embed/ghi789" title="Author Interview" frameborder="0" allowfullscreen></iframe>
+                <p class="mt-2 text-gray-600">Interview with Elara Stone</p>
+              </div>
+              <div class="video-card bg-white p-4 rounded-lg shadow">
+                <iframe class="w-full h-48" src="https://www.youtube.com/embed/jkl012" title="Book Launch" frameborder="0" allowfullscreen></iframe>
+                <p class="mt-2 text-gray-600">The Dragon’s Quest Launch</p>
+              </div>
+            </div>
+          </div>
+          <div id="video-playlists-tab" class="tab-content">
+            <div class="space-y-4">
+              <div class="video-card bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Sci-Fi Favorites</h3>
+                <iframe class="w-full h-48" src="https://www.youtube.com/embed/vid7891" title="Sci-Fi Favorites" frameborder="0" allowfullscreen onclick="openPlaylistModal('Sci-Fi Favorites', ['https://www.youtube.com/embed/vid7891', 'https://www.youtube.com/embed/vid7892'])"></iframe>
+                <div class="mt-2 space-y-2">
+                  <p class="text-gray-600 cursor-pointer" onclick="openPlaylistModal('Sci-Fi Favorites', ['https://www.youtube.com/embed/vid7891', 'https://www.youtube.com/embed/vid7892'], 'https://www.youtube.com/embed/vid7891')">Video 1</p>
+                  <p class="text-gray-600 cursor-pointer" onclick="openPlaylistModal('Sci-Fi Favorites', ['https://www.youtube.com/embed/vid7891', 'https://www.youtube.com/embed/vid7892'], 'https://www.youtube.com/embed/vid7892')">Video 2</p>
+                </div>
+              </div>
+              <div class="video-card bg-white p-4 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">Non-Fiction Insights</h3>
+                <iframe class="w-full h-48" src="https://www.youtube.com/embed/vid0121" title="Non-Fiction Insights" frameborder="0" allowfullscreen onclick="openPlaylistModal('Non-Fiction Insights', ['https://www.youtube.com/embed/vid0121', 'https://www.youtube.com/embed/vid0122'])"></iframe>
+                <div class="mt-2 space-y-2">
+                  <p class="text-gray-600 cursor-pointer" onclick="openPlaylistModal('Non-Fiction Insights', ['https://www.youtube.com/embed/vid0121', 'https://www.youtube.com/embed/vid0122'], 'https://www.youtube.com/embed/vid0121')">Video 1</p>
+                  <p class="text-gray-600 cursor-pointer" onclick="openPlaylistModal('Non-Fiction Insights', ['https://www.youtube.com/embed/vid0121', 'https://www.youtube.com/embed/vid0122'], 'https://www.youtube.com/embed/vid0122')">Video 2</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ad Placeholder -->
+    <div class="lg:w-1/4 flex justify-end">
+      <div class="bg-gray-200 p-4 rounded-lg shadow sticky top-8 w-full lg:w-72">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Advertisement</h3>
+        <div class="bg-gray-300 h-96 flex items-center justify-center">
+          <p class="text-gray-600">Ad Placeholder (300x600)</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comments Modal -->
+  <div id="comments-modal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Bookstore Comments</h2>
+      <div id="comments-list">
+        <div class="mb-4">
+          <p class="text-gray-600"><strong>John D.</strong> - 5/5</p>
+          <p class="text-gray-600">Amazing selection and friendly staff!</p>
+          <p class="text-sm text-gray-500">Posted on July 20, 2025</p>
+        </div>
+        <div class="mb-4">
+          <p class="text-gray-600"><strong>Sarah M.</strong> - 4/5</p>
+          <p class="text-gray-600">Great bookstore, but could use more seating.</p>
+          <p class="text-sm text-gray-500">Posted on July 18, 2025</p>
+        </div>
+      </div>
+      <button id="close-comments-btn" class="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" aria-label="Close comments modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="edit-profile-modal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Edit Bookstore Profile</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-600">Name</label>
+          <input id="edit-name" type="text" class="w-full p-2 border rounded" value="Knowledge Hub">
+        </div>
+        <div>
+          <label class="block text-gray-600">Phone</label>
+          <input id="edit-phone" type="text" class="w-full p-2 border rounded" value="+1 (555) 123-4567">
+        </div>
+        <div>
+          <label class="block text-gray-600">Email</label>
+          <input id="edit-email" type="email" class="w-full p-2 border rounded" value="contact@knowledgehub.com">
+        </div>
+        <div>
+          <label class="block text-gray-600">Locations</label>
+          <div id="edit-locations" class="space-y-2">
+            <input type="text" class="w-full p-2 border rounded" value="123 Main St, New York, NY 10001">
+            <input type="text" class="w-full p-2 border rounded" value="456 Oak Ave, Los Angeles, CA 90001">
+            <input type="text" class="w-full p-2 border rounded" value="789 Pine Rd, Chicago, IL 60601">
+          </div>
+          <button id="add-location-btn" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Add new location">+</button>
+        </div>
+        <div>
+          <label class="block text-gray-600">Bio</label>
+          <textarea id="edit-bio" class="w-full p-2 border rounded" rows="4">Knowledge Hub is a premier bookstore offering a diverse collection of books and games, fostering a love for learning and entertainment.</textarea>
+        </div>
+        <div>
+          <label class="block text-gray-600">Quote</label>
+          <input id="edit-quote" type="text" class="w-full p-2 border rounded" value="Books are the gateways to new worlds and endless possibilities.">
+        </div>
+        <div>
+          <label class="block text-gray-600">Socials</label>
+          <input id="edit-facebook" type="url" class="w-full p-2 border rounded mb-2" placeholder="Facebook URL" value="https://facebook.com/knowledgehub">
+          <input id="edit-twitter" type="url" class="w-full p-2 border rounded mb-2" placeholder="Twitter URL" value="https://twitter.com/knowledgehub">
+          <input id="edit-instagram" type="url" class="w-full p-2 border rounded" placeholder="Instagram URL" value="https://instagram.com/knowledgehub">
+        </div>
+      </div>
+      <div class="mt-4 flex gap-4">
+        <button id="save-profile-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" aria-label="Save profile changes">Save</button>
+        <button id="cancel-edit-profile-btn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" aria-label="Cancel profile changes">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Book Modal -->
+  <div id="upload-book-modal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Upload Book</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-600">Cover Photo URL</label>
+          <input id="book-cover" type="url" class="w-full p-2 border rounded" placeholder="Enter cover photo URL">
+        </div>
+        <div>
+          <label class="block text-gray-600">Title</label>
+          <input id="book-title" type="text" class="w-full p-2 border rounded" placeholder="Enter book title">
+        </div>
+        <div>
+          <label class="block text-gray-600">Author</label>
+          <input id="book-author" type="text" class="w-full p-2 border rounded" placeholder="Enter author name">
+        </div>
+        <div>
+          <label class="block text-gray-600">Description</label>
+          <textarea id="book-description" class="w-full p-2 border rounded" rows="4" placeholder="Enter book description"></textarea>
+        </div>
+        <div>
+          <label class="block text-gray-600">Published Year</label>
+          <input id="book-year" type="number" class="w-full p-2 border rounded" placeholder="Enter published year">
+        </div>
+        <div>
+          <label class="block text-gray-600">Age Restrictions</label>
+          <input id="book-age" type="text" class="w-full p-2 border rounded" placeholder="Enter age restrictions (e.g., 13+)">
+        </div>
+        <div>
+          <label class="block text-gray-600">Price</label>
+          <input id="book-price" type="number" step="0.01" class="w-full p-2 border rounded" placeholder="Enter price">
+        </div>
+      </div>
+      <div class="mt-4 flex gap-4">
+        <button id="save-book-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" aria-label="Save book">Save</button>
+        <button id="cancel-upload-book-btn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" aria-label="Cancel book upload">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upload Video Modal -->
+  <div id="upload-video-modal" class="modal">
+    <div class="modal-content">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Upload Video</h2>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-600">Video URL</label>
+          <input id="video-url" type="url" class="w-full p-2 border rounded" placeholder="Enter video URL">
+        </div>
+        <div>
+          <label class="block text-gray-600">Video Type</label>
+          <select id="video-type" class="w-full p-2 border rounded">
+            <option value="Introduction">Introduction</option>
+            <option value="Short">Short</option>
+            <option value="Video">Video</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-600">Playlist (Optional)</label>
+          <div class="flex items-center gap-2">
+            <input type="checkbox" id="add-to-playlist" class="h-4 w-4">
+            <label for="add-to-playlist">Add to Playlist</label>
+          </div>
+          <div id="playlist-options" class="hidden mt-2">
+            <select id="existing-playlist" class="w-full p-2 border rounded mb-2">
+              <option value="">Select Existing Playlist</option>
+              <option value="Sci-Fi Favorites">Sci-Fi Favorites</option>
+              <option value="Non-Fiction Insights">Non-Fiction Insights</option>
+            </select>
+            <div class="flex items-center gap-2">
+              <input type="checkbox" id="create-new-playlist" class="h-4 w-4">
+              <label for="create-new-playlist">Create New Playlist</label>
+            </div>
+            <input id="new-playlist-title" type="text" class="w-full p-2 border rounded mt-2 hidden" placeholder="Enter new playlist title">
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 flex gap-4">
+        <button id="save-video-btn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" aria-label="Save video">Save</button>
+        <button id="cancel-upload-video-btn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" aria-label="Cancel video upload">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Book Detail Modal -->
+  <div id="book-detail-modal" class="modal">
+    <div class="modal-content">
+      <h2 id="book-detail-title" class="text-2xl font-bold text-gray-800 mb-4"></h2>
+      <img id="book-detail-cover" src="" alt="Book cover" class="w-full h-64 object-cover rounded mb-4">
+      <p id="book-detail-author" class="text-gray-600 mb-2"></p>
+      <p id="book-detail-description" class="text-gray-600 mb-2"></p>
+      <p id="book-detail-rating" class="text-gray-600 mb-2"></p>
+      <p id="book-detail-price" class="text-gray-600 mb-2"></p>
+      <button id="book-detail-reviews-btn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 mb-4" aria-label="View book reviews">View Reviews</button>
+      <div class="flex gap-4">
+        <button id="book-detail-wishlist" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700" aria-label="Add to wishlist">Add to Wishlist</button>
+        <button id="book-detail-buy" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700" aria-label="Buy book">Buy</button>
+        <button id="close-book-detail-btn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" aria-label="Close book details modal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Author Detail Modal -->
+  <div id="author-detail-modal" class="modal">
+    <div class="modal-content">
+      <div class="relative">
+        <img id="author-cover-photo" src="" alt="Author cover photo" class="w-full h-48 object-cover rounded">
+        <img id="author-profile-pic" src="" alt="Author profile picture" class="absolute -bottom-12 left-4 w-24 h-24 rounded-full border-4 border-white shadow">
+      </div>
+      <h2 id="author-name" class="text-2xl font-bold text-gray-800 mt-16 mb-4"></h2>
+      <p id="author-about" class="text-gray-600 mb-2"></p>
+      <p id="author-quote" class="text-gray-600 mb-2"></p>
+      <div id="author-socials" class="flex gap-4 mb-4"></div>
+      <button id="author-reviews-btn" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 mb-4" aria-label="View author reviews">View Author Reviews</button>
+      <button id="follow-author-btn" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 mb-4" aria-label="Follow author">Follow</button>
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">Current Book</h3>
+      <div id="author-current-book" class="book-card bg-white p-4 rounded-lg shadow mb-4"></div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">Other Books</h3>
+      <div id="author-books" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4"></div>
+      <h3 class="text-xl font-semibold text-gray-800 mb-2">Videos</h3>
+      <div class="video-card bg-white p-4 rounded-lg shadow mb-4">
+        <iframe id="author-intro-video" class="w-full h-48" src="" title="Author Introduction" frameborder="0" allowfullscreen></iframe>
+        <p id="author-intro-title" class="mt-2 text-gray-600"></p>
+      </div>
+      <div class="flex border-b mb-4">
+        <div class="tab active" onclick="switchContentTab('author-shorts-tab', this, 'author')">Shorts</div>
+        <div class="tab" onclick="switchContentTab('author-videos-tab', this, 'author')">Videos</div>
+        <div class="tab" onclick="switchContentTab('author-playlists-tab', this, 'author')">Playlists</div>
+      </div>
+      <div id="author-shorts-tab" class="tab-content active"></div>
+      <div id="author-videos-tab" class="tab-content"></div>
+      <div id="author-playlists-tab" class="tab-content"></div>
+      <button id="close-author-detail-btn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 mt-4" aria-label="Close author details modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Reviews Modal -->
+  <div id="reviews-modal" class="modal">
+    <div class="modal-content">
+      <h2 id="reviews-modal-title" class="text-2xl font-bold text-gray-800 mb-4"></h2>
+      <div id="reviews-list" class="mb-4"></div>
+      <button id="close-reviews-btn" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" aria-label="Close reviews modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Playlist Video Modal -->
+  <div id="playlist-video-modal" class="modal">
+    <div class="modal-content modal-content-wide">
+      <h2 id="playlist-title" class="text-2xl font-bold text-gray-800 mb-4"></h2>
+      <div class="flex flex-col md:flex-row gap-4">
+        <div class="md:w-2/3">
+          <iframe id="playlist-main-video" class="w-full h-64" src="" title="Playlist Video" frameborder="0" allowfullscreen></iframe>
+        </div>
+        <div class="md:w-1/3">
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">Playlist Videos</h3>
+          <div id="playlist-video-list" class="space-y-2"></div>
+        </div>
+      </div>
+      <button id="close-playlist-video-btn" class="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700" aria-label="Close playlist video modal">Close</button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-6 mt-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <p>© 2025 Knowledge Hub. All rights reserved.</p>
+        <div class="flex gap-4 mt-4 md:mt-0">
+          <a href="#" class="hover:underline" aria-label="Privacy Policy">Privacy Policy</a>
+          <a href="#" class="hover:underline" aria-label="Terms of Service">Terms of Service</a>
+          <a href="#" class="hover:underline" aria-label="Contact Us">Contact Us</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+
+// Mock Data
+const bookstore = {
+      id: 'bookstore1',
+      name: 'Knowledge Hub',
+      coverPhoto: 'https://picsum.photos/seed/bookstore-cover/1200/400',
+      profilePic: 'https://picsum.photos/seed/bookstore-profile/150/150',
+      rating: '4.2 (128 reviews)',
+      phone: '+1 (555) 123-4567',
+      email: 'contact@knowledgehub.com',
+      locations: [
+        '123 Main St, New York, NY 10001',
+        '456 Oak Ave, Los Angeles, CA 90001',
+        '789 Pine Rd, Chicago, IL 60601'
+      ],
+      bio: 'Knowledge Hub is a premier bookstore offering a diverse collection of books and games, fostering a love for learning and entertainment.',
+      quote: 'Books are the gateways to new worlds and endless possibilities.',
+      socials: {
+        facebook: 'https://facebook.com/knowledgehub',
+        twitter: 'https://twitter.com/knowledgehub',
+        instagram: 'https://instagram.com/knowledgehub'
+      },
+      videos: {
+        intro: { url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', title: 'Welcome to Knowledge Hub!' },
+        shorts: [
+          { url: 'https://www.youtube.com/embed/abc123', title: 'Quick Book Recommendation' },
+          { url: 'https://www.youtube.com/embed/def456', title: 'Tour Our Store' }
+        ],
+        videos: [
+          { url: 'https://www.youtube.com/embed/ghi789', title: 'Interview with Elara Stone' },
+          { url: 'https://www.youtube.com/embed/jkl012', title: 'The Dragon’s Quest Launch' }
+        ],
+        playlists: [
+          { title: 'Sci-Fi Favorites', videos: ['https://www.youtube.com/embed/vid7891', 'https://www.youtube.com/embed/vid7892'] },
+          { title: 'Non-Fiction Insights', videos: ['https://www.youtube.com/embed/vid0121', 'https://www.youtube.com/embed/vid0122'] }
+        ]
+      }
+    };
+
+    const books = [
+      { id: 'b1', title: 'The Dragon’s Quest', author: 'Elara Stone', authorId: 'author1', genre: 'Fiction', price: 19.99, image: 'https://picsum.photos/seed/fantasy1/200/300', description: 'A thrilling fantasy adventure following a young hero’s quest to slay a dragon.', rating: '4.5 (50 reviews)', publishedYear: 2023, ageRestriction: '13+', reviews: [{ user: 'Alice', rating: 5, comment: 'Epic story!', date: 'July 15, 2025' }, { user: 'Bob', rating: 4, comment: 'Loved the characters.', date: 'July 10, 2025' }] },
+      { id: 'b2', title: 'Starship Chronicles', author: 'Jaxon Reed', authorId: 'author2', genre: 'Fiction', price: 24.99, image: 'https://picsum.photos/seed/scifi1/200/300', description: 'A sci-fi epic exploring interstellar wars and human survival.', rating: '4.7 (60 reviews)', publishedYear: 2024, ageRestriction: '16+', reviews: [{ user: 'Charlie', rating: 5, comment: 'Mind-blowing!', date: 'July 12, 2025' }] },
+      { id: 'b3', title: 'The Hidden Clue', author: 'Mira Holt', authorId: 'author3', genre: 'Fiction', price: 22.99, image: 'https://picsum.photos/seed/mystery1/200/300', description: 'A gripping mystery unraveling a detective’s toughest case.', rating: '4.3 (40 reviews)', publishedYear: 2022, ageRestriction: '13+', reviews: [{ user: 'Diana', rating: 4, comment: 'Kept me guessing!', date: 'July 18, 2025' }] },
+      { id: 'b10', title: 'Quantum Mechanics', author: 'John Doe', authorId: 'author10', genre: 'Non-Fiction', price: 29.99, image: 'https://picsum.photos/seed/quantum/200/300', description: 'An in-depth exploration of quantum theory for enthusiasts.', rating: '4.8 (30 reviews)', publishedYear: 2021, ageRestriction: '18+', reviews: [{ user: 'Eve', rating: 5, comment: 'Very informative.', date: 'July 20, 2025' }] },
+      { id: 'b11', title: 'Ancient Civilizations', author: 'Laura King', authorId: 'author11', genre: 'Non-Fiction', price: 27.99, image: 'https://picsum.photos/seed/history1/200/300', description: 'A comprehensive guide to the world’s ancient cultures.', rating: '4.4 (25 reviews)', publishedYear: 2020, ageRestriction: 'All Ages', reviews: [{ user: 'Frank', rating: 4, comment: 'Fascinating read.', date: 'July 19, 2025' }] },
+      { id: 'b12', title: 'Stargazing Guide', author: 'Mark Star', authorId: 'author12', genre: 'Non-Fiction', price: 26.99, image: 'https://picsum.photos/seed/astronomy1/200/300', description: 'A beginner’s guide to exploring the night sky.', rating: '4.6 (20 reviews)', publishedYear: 2023, ageRestriction: 'All Ages', reviews: [{ user: 'Sophie', rating: 5, comment: 'Perfect for beginners.', date: 'July 17, 2025' }] }
+    ];
+
+    const authors = [
+      {
+        id: 'author1',
+        name: 'Elara Stone',
+        coverPhoto: 'https://picsum.photos/seed/author1-cover/1200/300',
+        profilePic: 'https://picsum.photos/seed/author1/100/100',
+        about: 'Elara Stone is a renowned fantasy author known for her vivid world-building.',
+        quote: 'Imagination is the key to unlocking epic adventures.',
+        socials: { facebook: 'https://facebook.com/elara', twitter: 'https://twitter.com/elara', instagram: 'https://instagram.com/elara' },
+        reviews: [{ user: 'Jane', rating: 5, comment: 'Her books are magical!', date: 'July 10, 2025' }],
+        videos: {
+          intro: { url: 'https://www.youtube.com/embed/xyz123', title: 'Elara Stone Introduction' },
+          shorts: [{ url: 'https://www.youtube.com/embed/short1', title: 'Fantasy Writing Tips' }],
+          videos: [{ url: 'https://www.youtube.com/embed/video1', title: 'World-Building Secrets' }],
+          playlists: [
+            { title: 'Fantasy Worlds', videos: ['https://www.youtube.com/embed/vid7891', 'https://www.youtube.com/embed/vid7892'] }
+          ]
+        }
+      },
+      {
+        id: 'author2',
+        name: 'Jaxon Reed',
+        coverPhoto: 'https://picsum.photos/seed/author2-cover/1200/300',
+        profilePic: 'https://picsum.photos/seed/author2/100/100',
+        about: 'Jaxon Reed crafts thrilling sci-fi narratives with a focus on human resilience.',
+        quote: 'The stars are just the beginning of our story.',
+        socials: { facebook: 'https://facebook.com/jaxon', twitter: 'https://twitter.com/jaxon', instagram: 'https://instagram.com/jaxon' },
+        reviews: [{ user: 'Mike', rating: 4, comment: 'Great sci-fi author.', date: 'July 12, 2025' }],
+        videos: {
+          intro: { url: 'https://www.youtube.com/embed/xyz456', title: 'Jaxon Reed Introduction' },
+          shorts: [{ url: 'https://www.youtube.com/embed/short2', title: 'Sci-Fi Concepts' }],
+          videos: [{ url: 'https://www.youtube.com/embed/video2', title: 'Interstellar Travel' }],
+          playlists: [
+            { title: 'Sci-Fi Epics', videos: ['https://www.youtube.com/embed/vid0121', 'https://www.youtube.com/embed/vid0122'] }
+          ]
+        }
+      },
+      {
+        id: 'author3',
+        name: 'Mira Holt',
+        coverPhoto: 'https://picsum.photos/seed/author3-cover/1200/300',
+        profilePic: 'https://picsum.photos/seed/author3/100/100',
+        about: 'Mira Holt is a master of mystery, weaving intricate plots.',
+        quote: 'Every clue leads to a new mystery.',
+        socials: { facebook: 'https://facebook.com/mira', twitter: 'https://twitter.com/mira', instagram: 'https://instagram.com/mira' },
+        reviews: [{ user: 'Lily', rating: 5, comment: 'Her mysteries are gripping.', date: 'July 15, 2025' }],
+        videos: {
+          intro: { url: 'https://www.youtube.com/embed/xyz789', title: 'Mira Holt Introduction' },
+          shorts: [{ url: 'https://www.youtube.com/embed/short3', title: 'Mystery Writing' }],
+          videos: [{ url: 'https://www.youtube.com/embed/video3', title: 'Crafting a Mystery' }],
+          playlists: [
+            { title: 'Mystery Tales', videos: ['https://www.youtube.com/embed/vid3451', 'https://www.youtube.com/embed/vid3452'] }
+          ]
+        }
+      },
+      {
+        id: 'author10',
+        name: 'John Doe',
+        coverPhoto: 'https://picsum.photos/seed/author10-cover/1200/300',
+        profilePic: 'https://picsum.photos/seed/author10/100/100',
+        about: 'John Doe is an expert in quantum physics, making complex concepts accessible.',
+        quote: 'The universe is a puzzle waiting to be solved.',
+        socials: { facebook: 'https://facebook.com/john', twitter: 'https://twitter.com/john', instagram: 'https://instagram.com/john' },
+        reviews: [{ user: 'Tom', rating: 5, comment: 'Clear and insightful.', date: 'July 20, 2025' }],
+        videos: {
+          intro: { url: 'https://www.youtube.com/embed/xyz101', title: 'John Doe Introduction' },
+          shorts: [{ url: 'https://www.youtube.com/embed/short10', title: 'Quantum Basics' }],
+          videos: [{ url: 'https://www.youtube.com/embed/video10', title: 'Quantum Theory Explained' }],
+          playlists: [
+            { title: 'Physics Insights', videos: ['https://www.youtube.com/embed/vid1011', 'https://www.youtube.com/embed/vid1012'] }
+          ]
+        }
+      },
+      {
+        id: 'author11',
+        name: 'Laura King',
+        coverPhoto: 'https://picsum.photos/seed/author11-cover/1200/300',
+        profilePic: 'https://picsum.photos/seed/author11/100/100',
+        about: 'Laura King is a historian passionate about ancient civilizations.',
+        quote: 'History is the story of who we are.',
+        socials: { facebook: 'https://facebook.com/laura', twitter: 'https://twitter.com/laura', instagram: 'https://instagram.com/laura' },
+        reviews: [{ user: 'Emma', rating: 4, comment: 'Engaging historical accounts.', date: 'July 19, 2025' }],
+        videos: {
+          intro: { url: 'https://www.youtube.com/embed/xyz111', title: 'Laura King Introduction' },
+          shorts: [{ url: 'https://www.youtube.com/embed/short11', title: 'Ancient History Tips' }],
+          videos: [{ url: 'https://www.youtube.com/embed/video11', title: 'Civilizations Uncovered' }],
+          playlists: [
+            { title: 'Historical Journeys', videos: ['https://www.youtube.com/embed/vid1111', 'https://www.youtube.com/embed/vid1112'] }
+          ]
+        }
+      },
+      {
+        id: 'author12',
+        name: 'Mark Star',
+        coverPhoto: 'https://picsum.photos/seed/author12-cover/1200/300',
+        profilePic: 'https://picsum.photos/seed/author12/100/100',
+        about: 'Mark Star is an astronomer dedicated to making stargazing accessible.',
+        quote: 'The stars are within everyone’s reach.',
+        socials: { facebook: 'https://facebook.com/mark', twitter: 'https://twitter.com/mark', instagram: 'https://instagram.com/mark' },
+        reviews: [{ user: 'Sophie', rating: 5, comment: 'Perfect for stargazers.', date: 'July 17, 2025' }],
+        videos: {
+          intro: { url: 'https://www.youtube.com/embed/xyz121', title: 'Mark Star Introduction' },
+          shorts: [{ url: 'https://www.youtube.com/embed/short12', title: 'Stargazing Basics' }],
+          videos: [{ url: 'https://www.youtube.com/embed/video12', title: 'Exploring the Night Sky' }],
+          playlists: [
+            { title: 'Astronomy Guides', videos: ['https://www.youtube.com/embed/vid1211', 'https://www.youtube.com/embed/vid1212'] }
+          ]
+        }
+      }
+    ];
+
+    let wishlist = JSON.parse(localStorage.getItem('wishlist')) || [];
+    let followedBookstores = JSON.parse(localStorage.getItem('followedBookstores')) || [];
+    let followedAuthors = JSON.parse(localStorage.getItem('followedAuthors')) || [];
+
+    // Utility Functions
+    function generateUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+
+    function sanitizeInput(input) {
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    }
+
+    function showNotification(message, type = 'success') {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow text-white ${type === 'success' ? 'bg-green-600' : 'bg-red-600'}`;
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => notification.remove(), 3000);
+    }
+
+    // Modal Functions
+    function openCommentsModal() {
+      const commentsModal = document.getElementById('comments-modal');
+      if (commentsModal) commentsModal.style.display = 'flex';
+    }
+
+    function closeCommentsModal() {
+      const commentsModal = document.getElementById('comments-modal');
+      if (commentsModal) commentsModal.style.display = 'none';
+    }
+
+    function openEditProfileModal() {
+      const modal = document.getElementById('edit-profile-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeEditProfileModal() {
+      const modal = document.getElementById('edit-profile-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function openUploadBookModal() {
+      const modal = document.getElementById('upload-book-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeUploadBookModal() {
+      const modal = document.getElementById('upload-book-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function openUploadVideoModal() {
+      const modal = document.getElementById('upload-video-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeUploadVideoModal() {
+      const modal = document.getElementById('upload-video-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function openBookDetailModal(bookId) {
+      const book = books.find(b => b.id === bookId);
+      if (!book) return;
+      const modal = document.getElementById('book-detail-modal');
+      const title = document.getElementById('book-detail-title');
+      const cover = document.getElementById('book-detail-cover');
+      const author = document.getElementById('book-detail-author');
+      const description = document.getElementById('book-detail-description');
+      const rating = document.getElementById('book-detail-rating');
+      const price = document.getElementById('book-detail-price');
+      const reviewsBtn = document.getElementById('book-detail-reviews-btn');
+      const wishlistBtn = document.getElementById('book-detail-wishlist');
+      const buyBtn = document.getElementById('book-detail-buy');
+      if (!modal || !title || !cover || !author || !description || !rating || !price || !reviewsBtn || !wishlistBtn || !buyBtn) return;
+
+      title.textContent = sanitizeInput(book.title);
+      cover.src = book.image;
+      cover.alt = `${sanitizeInput(book.title)} cover`;
+      author.innerHTML = `Author: <a href="#" onclick="openAuthorDetailModal('${book.authorId}', '${book.id}')" class="text-blue-600 hover:underline" aria-label="View ${sanitizeInput(book.author)}'s profile">${sanitizeInput(book.author)}</a>`;
+      description.textContent = `Description: ${sanitizeInput(book.description)}`;
+      rating.textContent = `Rating: ${sanitizeInput(book.rating)}`;
+      price.textContent = `Price: $${book.price.toFixed(2)}`;
+      reviewsBtn.onclick = () => openReviewsModal('book', bookId);
+      wishlistBtn.onclick = () => addToWishlist(bookId);
+      buyBtn.onclick = () => buyBook(bookId);
+      modal.style.display = 'flex';
+    }
+
+    function closeBookDetailModal() {
+      const modal = document.getElementById('book-detail-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function openAuthorDetailModal(authorId, bookId) {
+      const author = authors.find(a => a.id === authorId);
+      const book = books.find(b => b.id === bookId);
+      if (!author) return;
+      const modal = document.getElementById('author-detail-modal');
+      const coverPhoto = document.getElementById('author-cover-photo');
+      const profilePic = document.getElementById('author-profile-pic');
+      const name = document.getElementById('author-name');
+      const about = document.getElementById('author-about');
+      const quote = document.getElementById('author-quote');
+      const socials = document.getElementById('author-socials');
+      const reviewsBtn = document.getElementById('author-reviews-btn');
+      const followBtn = document.getElementById('follow-author-btn');
+      const currentBook = document.getElementById('author-current-book');
+      const booksDiv = document.getElementById('author-books');
+      const introVideo = document.getElementById('author-intro-video');
+      const introTitle = document.getElementById('author-intro-title');
+      const shortsTab = document.getElementById('author-shorts-tab');
+      const videosTab = document.getElementById('author-videos-tab');
+      const playlistsTab = document.getElementById('author-playlists-tab');
+      if (!modal || !coverPhoto || !profilePic || !name || !about || !quote || !socials || !reviewsBtn || !followBtn || !currentBook || !booksDiv || !introVideo || !introTitle || !shortsTab || !videosTab || !playlistsTab) return;
+
+      coverPhoto.src = author.coverPhoto;
+      coverPhoto.alt = `${sanitizeInput(author.name)} cover photo`;
+      profilePic.src = author.profilePic;
+      profilePic.alt = `${sanitizeInput(author.name)} profile picture`;
+      name.textContent = sanitizeInput(author.name);
+      about.textContent = `About: ${sanitizeInput(author.about)}`;
+      quote.textContent = `Quote: ${sanitizeInput(author.quote)}`;
+      socials.innerHTML = Object.entries(author.socials).map(([key, url]) => `
+        <a href="${url}" target="_blank" class="text-blue-600 hover:underline" aria-label="${key}">${key.charAt(0).toUpperCase() + key.slice(1)}</a>
+      `).join('');
+      reviewsBtn.onclick = () => openReviewsModal('author', authorId);
+      followBtn.textContent = followedAuthors.includes(authorId) ? 'Unfollow' : 'Follow';
+      followBtn.onclick = () => toggleFollowAuthor(authorId);
+      currentBook.innerHTML = book ? `
+        <img src="${book.image}" alt="${sanitizeInput(book.title)} cover" class="w-full h-48 object-cover rounded">
+        <h4 class="text-lg font-semibold mt-2">${sanitizeInput(book.title)}</h4>
+        <p class="text-gray-600">$${book.price.toFixed(2)}</p>
+        <button onclick="openBookDetailModal('${book.id}')" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of ${sanitizeInput(book.title)}">View Details</button>
+      ` : '';
+      booksDiv.innerHTML = books.filter(b => b.authorId === authorId && b.id !== bookId).map(book => `
+        <div class="book-card bg-white p-4 rounded-lg shadow">
+          <img src="${book.image}" alt="${sanitizeInput(book.title)} cover" class="w-full h-48 object-cover rounded">
+          <h4 class="text-lg font-semibold mt-2">${sanitizeInput(book.title)}</h4>
+          <p class="text-gray-600">$${book.price.toFixed(2)}</p>
+          <button onclick="openBookDetailModal('${book.id}')" class="mt-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of ${sanitizeInput(book.title)}">View Details</button>
+        </div>
+      `).join('');
+      introVideo.src = author.videos.intro.url;
+      introVideo.title = sanitizeInput(author.videos.intro.title);
+      introTitle.textContent = sanitizeInput(author.videos.intro.title);
+      shortsTab.innerHTML = author.videos.shorts.map(v => `
+        <div class="video-card bg-white p-4 rounded-lg shadow">
+          <iframe class="w-full h-48" src="${v.url}" title="${sanitizeInput(v.title)}" frameborder="0" allowfullscreen></iframe>
+          <p class="mt-2 text-gray-600">${sanitizeInput(v.title)}</p>
+        </div>
+      `).join('');
+      videosTab.innerHTML = author.videos.videos.map(v => `
+        <div class="video-card bg-white p-4 rounded-lg shadow">
+          <iframe class="w-full h-48" src="${v.url}" title="${sanitizeInput(v.title)}" frameborder="0" allowfullscreen></iframe>
+          <p class="mt-2 text-gray-600">${sanitizeInput(v.title)}</p>
+        </div>
+      `).join('');
+      playlistsTab.innerHTML = author.videos.playlists.map(p => `
+        <div class="video-card bg-white p-4 rounded-lg shadow">
+          <h3 class="text-lg font-semibold text-gray-800 mb-2">${sanitizeInput(p.title)}</h3>
+          <iframe class="w-full h-48" src="${p.videos[0]}" title="${sanitizeInput(p.title)}" frameborder="0" allowfullscreen onclick="openPlaylistModal('${sanitizeInput(p.title)}', ${JSON.stringify(p.videos)})"></iframe>
+          <div class="mt-2 space-y-2">
+            ${p.videos.map((v, i) => `
+              <p class="text-gray-600 cursor-pointer" onclick="openPlaylistModal('${sanitizeInput(p.title)}', ${JSON.stringify(p.videos)}, '${v}')">Video ${i + 1}</p>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+      modal.style.display = 'flex';
+    }
+
+    function closeAuthorDetailModal() {
+      const modal = document.getElementById('author-detail-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function openReviewsModal(type, id) {
+      const modal = document.getElementById('reviews-modal');
+      const title = document.getElementById('reviews-modal-title');
+      const reviewsList = document.getElementById('reviews-list');
+      if (!modal || !title || !reviewsList) return;
+
+      let reviews = [];
+      if (type === 'book') {
+        const book = books.find(b => b.id === id);
+        if (book) {
+          title.textContent = `Reviews for ${sanitizeInput(book.title)}`;
+          reviews = book.reviews || [];
+        }
+      } else if (type === 'author') {
+        const author = authors.find(a => a.id === id);
+        if (author) {
+          title.textContent = `Reviews for ${sanitizeInput(author.name)}`;
+          reviews = author.reviews || [];
+        }
+      }
+      reviewsList.innerHTML = reviews.map(r => `
+        <div class="mb-4">
+          <p class="text-gray-600"><strong>${sanitizeInput(r.user)}</strong> - ${r.rating}/5</p>
+          <p class="text-gray-600">${sanitizeInput(r.comment)}</p>
+          <p class="text-sm text-gray-500">Posted on ${sanitizeInput(r.date)}</p>
+        </div>
+      `).join('') || '<p class="text-gray-600">No reviews available.</p>';
+      modal.style.display = 'flex';
+    }
+
+    function closeReviewsModal() {
+      const modal = document.getElementById('reviews-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function openPlaylistModal(title, videos, selectedVideo = videos[0]) {
+      const modal = document.getElementById('playlist-video-modal');
+      const playlistTitle = document.getElementById('playlist-title');
+      const mainVideo = document.getElementById('playlist-main-video');
+      const videoList = document.getElementById('playlist-video-list');
+      if (!modal || !playlistTitle || !mainVideo || !videoList) return;
+
+      playlistTitle.textContent = sanitizeInput(title);
+      mainVideo.src = selectedVideo;
+      mainVideo.title = sanitizeInput(title);
+      videoList.innerHTML = videos.map((v, i) => `
+        <p class="text-gray-600 cursor-pointer ${v === selectedVideo ? 'font-bold' : ''}" onclick="openPlaylistModal('${sanitizeInput(title)}', ${JSON.stringify(videos)}, '${v}')">Video ${i + 1}</p>
+      `).join('');
+      modal.style.display = 'flex';
+    }
+
+    function closePlaylistModal() {
+      const modal = document.getElementById('playlist-video-modal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    // Tab Switching
+    function switchContentTab(tabId, element, context) {
+      const tabs = document.querySelectorAll(`#${context === 'content' ? '' : context + '-'}${tabId.split('-')[0]}-tab .tab`);
+      const contents = document.querySelectorAll(`#${context === 'content' ? '' : context + '-'}${tabId.split('-')[0]}-tab .tab-content`);
+      
+      tabs.forEach(tab => tab.classList.remove('active'));
+      contents.forEach(content => content.classList.remove('active'));
+
+      element.classList.add('active');
+      const targetContent = document.getElementById(tabId);
+      if (targetContent) targetContent.classList.add('active');
+
+      // For top-level content tabs (Books/Videos)
+      if (context === 'content') {
+        const allContentTabs = document.querySelectorAll('.tab-content[id$="-tab"]');
+        allContentTabs.forEach(tab => {
+          if (tab.id !== tabId) tab.classList.remove('active');
+        });
+
+        // Clear active state from all top-level tabs
+        const contentTabs = document.querySelectorAll('.tab');
+        contentTabs.forEach(tab => tab.classList.remove('active'));
+        element.classList.add('active');
+
+        // If Videos tab is clicked, default to Shorts
+        if (tabId === 'videos-tab') {
+          const shortsTab = document.querySelector('#videos-tab .tab[onclick*="video-shorts-tab"]');
+          const shortsContent = document.getElementById('video-shorts-tab');
+          if (shortsTab && shortsContent) {
+            switchContentTab('video-shorts-tab', shortsTab, 'video');
+          }
+        }
+      }
+      
+      // For video sub-tabs (Shorts/Videos/Playlists)
+      if (context === 'video') {
+        const videoTabs = document.querySelectorAll('#videos-tab .tab');
+        const videoContents = document.querySelectorAll('#videos-tab .tab-content');
+        videoTabs.forEach(tab => tab.classList.remove('active'));
+        videoContents.forEach(content => content.classList.remove('active'));
+        element.classList.add('active');
+        if (targetContent) targetContent.classList.add('active');
+      }
+    }
+
+    // Action Functions
+    function followBookstore() {
+      if (followedBookstores.includes(bookstore.id)) {
+        followedBookstores = followedBookstores.filter(id => id !== bookstore.id);
+        showNotification('Unfollowed Bookstore');
+      } else {
+        followedBookstores.push(bookstore.id);
+        showNotification('Followed Bookstore');
+      }
+      localStorage.setItem('followedBookstores', JSON.stringify(followedBookstores));
+      const followBtn = document.getElementById('follow-bookstore-btn');
+      if (followBtn) followBtn.textContent = followedBookstores.includes(bookstore.id) ? 'Unfollow' : 'Follow';
+    }
+
+    function toggleFollowAuthor(authorId) {
+      if (followedAuthors.includes(authorId)) {
+        followedAuthors = followedAuthors.filter(id => id !== authorId);
+        showNotification('Unfollowed author');
+      } else {
+        followedAuthors.push(authorId);
+        showNotification('Followed author');
+      }
+      localStorage.setItem('followedAuthors', JSON.stringify(followedAuthors));
+      const followBtn = document.getElementById('follow-author-btn');
+      if (followBtn) followBtn.textContent = followedAuthors.includes(authorId) ? 'Unfollow' : 'Follow';
+    }
+
+    function toggleFavorite(bookId) {
+      const icon = document.querySelector(`.favorite-icon[data-book-id="${bookId}"]`);
+      if (!icon) return;
+      if (wishlist.includes(bookId)) {
+        wishlist = wishlist.filter(id => id !== bookId);
+        icon.classList.remove('filled');
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>`;
+        showNotification('Removed from favorites');
+      } else {
+        wishlist.push(bookId);
+        icon.classList.add('filled');
+        icon.innerHTML = `<path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L12 8.343l3.172-3.171a4 4 0 115.656 5.656L12 18.343l-8.828-8.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>`;
+        showNotification('Added to favorites');
+      }
+      localStorage.setItem('wishlist', JSON.stringify(wishlist));
+    }
+
+    function addToWishlist(bookId) {
+      if (!wishlist.includes(bookId)) {
+        wishlist.push(bookId);
+        localStorage.setItem('wishlist', JSON.stringify(wishlist));
+        showNotification('Added to wishlist');
+      } else {
+        showNotification('Already in wishlist', 'error');
+      }
+    }
+
+    function buyBook(bookId) {
+      const book = books.find(b => b.id === bookId);
+      if (book) {
+        showNotification(`Purchased ${sanitizeInput(book.title)} for $${book.price.toFixed(2)}`);
+      }
+    }
+
+    function filterByGenre(genre) {
+      const fictionRow = document.querySelector('.genre-row:nth-child(1) .grid');
+      const nonFictionRow = document.querySelector('.genre-row:nth-child(2) .grid');
+      if (!fictionRow || !nonFictionRow) return;
+
+      if (genre === 'Fiction') {
+        fictionRow.innerHTML = books.filter(b => b.genre === 'Fiction').map(book => `
+          <div class="book-card bg-white p-4 rounded-lg shadow">
+            <img src="${book.image}" alt="${sanitizeInput(book.title)} cover" class="w-full h-48 object-cover rounded">
+            <h4 class="text-lg font-semibold mt-2">${sanitizeInput(book.title)}</h4>
+            <p class="text-gray-600"><a href="#" onclick="openAuthorDetailModal('${book.authorId}', '${book.id}')" class="text-blue-600 hover:underline" aria-label="View ${sanitizeInput(book.author)}'s profile">${sanitizeInput(book.author)}</a></p>
+            <p class="text-gray-600">$${book.price.toFixed(2)}</p>
+            <div class="flex gap-2 mt-2">
+              <button onclick="openBookDetailModal('${book.id}')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of ${sanitizeInput(book.title)}">View Details</button>
+              <button onclick="buyBook('${book.id}')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Buy ${sanitize.title}">Buy</button>
+              <svg class="w-6 h-6 favorite-icon ${wishlist.includes(book.id) ? 'filled' : ''}" data-book-id="${book.id}" onclick="toggleFavorite('${book.id}')" fill="${wishlist.includes(book.id) ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24" aria-label="Add ${sanitizeInput(book.title)} to favorites">
+                ${wishlist.includes(book.id) ? 
+                  `<path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L12 8.343l3.172-3.171a4 4 0 115.656 5.656L12 18.343l-8.828-8.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>` :
+                  `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>`
+                }
+              </svg>
+            </div>
+          </div>
+        `).join('');
+        nonFictionRow.innerHTML = '';
+      } else if (genre === 'Non-Fiction') {
+        nonFictionRow.innerHTML = books.filter(b => b.genre === 'Non-Fiction').map(book => `
+          <div class="book-card bg-white p-4 rounded-lg shadow">
+            <img src="${book.image}" alt="${sanitizeInput(book.title)} cover" class="w-full h-48 object-cover rounded">
+            <h4 class="text-lg font-semibold mt-2">${sanitizeInput(book.title)}</h4>
+            <p class="text-gray-600"><a href="#" onclick="openAuthorDetailModal('${book.authorId}', '${book.id}')" class="text-blue-600 hover:underline" aria-label="View ${sanitizeInput(book.author)}'s profile">${sanitizeInput(book.author)}</a></p>
+            <p class="text-gray-600">$${book.price.toFixed(2)}</p>
+            <div class="flex gap-2 mt-2">
+              <button onclick="openBookDetailModal('${book.id}')" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="View details of ${sanitizeInput(book.title)}">View Details</button>
+              <button onclick="buyBook('${book.id}')" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-blue-green" aria-label="Buy ${sanitize.title}">Buy</button>
+              <svg class="w-6 h-6 favorite-icon ${wishlist.includes(book.id) ? 'filled' : ''}" data-book-id="${book.id}" onclick="toggleFavorite('${book.id}')" fill="${wishlist.includes(book.id) ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24" aria-label="Add ${sanitizeInput(book.title)} to favorites">
+                ${wishlist.includes(book.id) ? 
+                  `<path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L12 8.343l3.172-3.171a4 4 0 115.656 5.656L12 18.343l-8.828-8.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>` :
+                  `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>`
+                }
+              </svg>
+            </div>
+          </div>
+        `).join('');
+        fictionRow.innerHTML = '';
+      }
+    }
+
+    function saveProfile() {
+      const name = document.getElementById('edit-name').value;
+      const phone = document.getElementById('edit-phone').value;
+      const email = document.getElementById('edit-email').value;
+      const locations = Array.from(document.querySelectorAll('#edit-locations input')).map(input => input.value).filter(v => v.trim());
+      const bio = document.getElementById('edit-bio').value;
+      const quote = document.getElementById('edit-quote').value;
+      const facebook = document.getElementById('edit-facebook').value;
+      const twitter = document.getElementById('edit-twitter').value;
+      const instagram = document.getElementById('edit-instagram').value;
+
+      document.getElementById('bookstore-name').textContent = sanitizeInput(name);
+      document.getElementById('bookstore-phone').innerHTML = `<strong>Phone:</strong> ${sanitizeInput(phone)}`;
+      document.getElementById('bookstore-email').innerHTML = `<strong>Email:</strong> ${sanitizeInput(email)}`;
+      document.getElementById('bookstore-locations').innerHTML = locations.map(loc => `<li>${sanitizeInput(loc)}</li>`).join('');
+      document.getElementById('bookstore-bio').innerHTML = `<strong>Bio:</strong> ${sanitizeInput(bio)}`;
+      document.getElementById('bookstore-quote').innerHTML = `<strong>Quote:</strong> ${sanitizeInput(quote)}`;
+      document.getElementById('bookstore-socials').innerHTML = `
+        <strong>Socials:</strong>
+        ${facebook ? `<a href="${facebook}" target="_blank" class="text-blue-600 hover:underline" aria-label="Facebook">Facebook</a>` : ''}
+        ${twitter ? `<a href="${twitter}" target="_blank" class="text-blue-600 hover:underline" aria-label="Twitter">Twitter</a>` : ''}
+        ${instagram ? `<a href="${instagram}" target="_blank" class="text-blue-600 hover:underline" aria-label="Instagram">Instagram</a>` : ''}
+      `;
+
+      showNotification('Profile updated successfully');
+      closeEditProfileModal();
+    }
+
+    function saveBook() {
+      const cover = document.getElementById('book-cover').value;
+      const title = document.getElementById('book-title').value;
+      const author = document.getElementById('book-author').value;
+      const description = document.getElementById('book-description').value;
+      const year = document.getElementById('book-year').value;
+      const age = document.getElementById('book-age').value;
+      const price = document.getElementById('book-price').value;
+
+      if (!cover || !title || !author || !description || !year || !age || !price) {
+        showNotification('Please fill in all fields', 'error');
+        return;
+      }
+
+      const newBook = {
+        id: generateUUID(),
+        title,
+        author,
+        authorId: `author-${Math.random().toString(36).substr(2, 9)}`,
+        genre: 'Fiction',
+        price: parseFloat(price),
+        image: cover,
+        description,
+        rating: '0.0 (0 reviews)',
+        publishedYear: parseInt(year),
+        ageRestriction: age,
+        reviews: []
+      };
+
+      books.push(newBook);
+      showNotification('Book uploaded successfully');
+      closeUploadBookModal();
+    }
+
+    function saveVideo() {
+      const videoUrl = document.getElementById('video-url').value;
+      const videoType = document.getElementById('video-type').value;
+      const addToPlaylist = document.getElementById('add-to-playlist').checked;
+      const createNewPlaylist = document.getElementById('create-new-playlist').checked;
+      const newPlaylistTitle = document.getElementById('new-playlist-title').value;
+      const existingPlaylist = document.getElementById('existing-playlist').value;
+
+      if (!videoUrl || !videoType) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+      }
+
+      if (addToPlaylist && createNewPlaylist && newPlaylistTitle) {
+        bookstore.videos.playlists.push({
+          title: newPlaylistTitle,
+          videos: [videoUrl]
+        });
+      } else if (addToPlaylist && existingPlaylist) {
+        const playlist = bookstore.videos.playlists.find(p => p.title === existingPlaylist);
+        if (playlist) {
+          playlist.videos.push(videoUrl);
+        }
+      } else {
+        bookstore.videos[videoType.toLowerCase()].push({
+          url: videoUrl,
+          title: `New ${videoType} Video`
+        });
+      }
+
+      showNotification('Video uploaded successfully');
+      closeUploadVideoModal();
+    }
+
+    // Event Listeners
+    document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.toggle('hidden');
+    });
+
+    document.getElementById('follow-bookstore-btn')?.addEventListener('click', followBookstore);
+    document.getElementById('view-comments-btn')?.addEventListener('click', openCommentsModal);
+    document.getElementById('close-comments-btn')?.addEventListener('click', closeCommentsModal);
+    document.getElementById('edit-profile-btn')?.addEventListener('click', openEditProfileModal);
+    document.getElementById('save-profile-btn')?.addEventListener('click', saveProfile);
+    document.getElementById('cancel-edit-profile-btn')?.addEventListener('click', closeEditProfileModal);
+    document.getElementById('upload-book-btn')?.addEventListener('click', openUploadBookModal);
+    document.getElementById('save-book-btn')?.addEventListener('click', saveBook);
+    document.getElementById('cancel-upload-book-btn')?.addEventListener('click', closeUploadBookModal);
+    document.getElementById('upload-video-btn')?.addEventListener('click', openUploadVideoModal);
+    document.getElementById('save-video-btn')?.addEventListener('click', saveVideo);
+    document.getElementById('cancel-upload-video-btn')?.addEventListener('click', closeUploadVideoModal);
+    document.getElementById('close-book-detail-btn')?.addEventListener('click', closeBookDetailModal);
+    document.getElementById('close-author-detail-btn')?.addEventListener('click', closeAuthorDetailModal);
+    document.getElementById('close-reviews-btn')?.addEventListener('click', closeReviewsModal);
+    document.getElementById('close-playlist-video-btn')?.addEventListener('click', closePlaylistModal);
+    document.getElementById('add-location-btn')?.addEventListener('click', () => {
+      const locationsDiv = document.getElementById('edit-locations');
+      if (locationsDiv) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'w-full p-2 border rounded mt-2';
+        input.placeholder = 'Enter new location';
+        locationsDiv.appendChild(input);
+      }
+    });
+
+    document.getElementById('add-to-playlist')?.addEventListener('change', (e) => {
+      const playlistOptions = document.getElementById('playlist-options');
+      if (playlistOptions) playlistOptions.classList.toggle('hidden', !e.target.checked);
+    });
+
+    document.getElementById('create-new-playlist')?.addEventListener('change', (e) => {
+      const newPlaylistTitle = document.getElementById('new-playlist-title');
+      const existingPlaylist = document.getElementById('existing-playlist');
+      if (!newPlaylistTitle || !existingPlaylist) return;
+      newPlaylistTitle.classList.toggle('hidden', !e.target.checked);
+      existingPlaylist.disabled = e.target.checked;
+    });
+
+    // Initialize Favorites
+    document.querySelectorAll('.favorite-icon').forEach(icon => {
+      const bookId = icon.getAttribute('data-id');
+      if (wishlist.includes(bookId)) {
+        icon.classList.add('favorite');
+        icon.innerHTML = `<path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L12 8.343l3.172-3.171a4 4 0 115.656 5.656L12 18.343l-8.828-8.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>`;
+      }
+    });
+
+// Initialize Follow Button
+    const followBtn = document.getElementById('follow-bookstore-btn');
+    if (followBtn) followBtn.textContent = followedBookstores.includes(bookstore.id) ? 'Unfollow' : 'Follow';
+
+    // Initialize Videos Tab Content
+    function initializeVideosTab() {
+      const videosTab = document.getElementById('videos-tab');
+      if (!videosTab) return;
+
+      // Default to Shorts tab when Videos is clicked
+      const shortsTab = document.querySelector('#videos-tab .tab[onclick*="video-shorts-tab"]');
+      const shortsContent = document.getElementById('video-shorts-tab');
+      if (shortsTab && shortsContent) {
+        switchContentTab('video-shorts-tab', shortsTab, 'video');
+      }
+    }
+
+    // Call initialization
+    initializeVideosTab();
+
+  </script>
+</body>
+</html>

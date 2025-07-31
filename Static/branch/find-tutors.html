@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find Tutors - Astegni</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/find-tutors.css">
+    <link rel ='stylesheet' href = '../css/root_theme.css'>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Navigation Bar -->
+    <nav class="bg-white dark:bg-gray-800 shadow-md p-4 fixed w-full top-0 z-30">
+        <div class="container mx-auto flex items-center justify-between">
+            <button id="hamburger" class="text-gray-600 dark:text-gray-300 focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            <h1 class="text-xl font-bold text-gray-800 dark:text-white">Astegni</h1>
+            <div class="flex-1 mx-4">
+                <input type="text" id="searchBar" class="w-full p-2 rounded-lg border dark:border-gray-700 dark:bg-gray-800 dark:text-white" placeholder="Search tutors, courses, grades, or schools...">
+            </div>
+            <div class="flex items-center space-x-4">
+                <a href="news.html" class="text-gray-600 dark:text-gray-300 hover:text-blue-500">News</a>
+                <a href="reels.html" class="text-gray-600 dark:text-gray-300 hover:text-blue-500">Reels</a>
+                <a href="store.html" class="text-gray-600 dark:text-gray-300 hover:text-blue-500">Store</a>
+                <a href="find-jobs.html" class="text-gray-600 dark:text-gray-300 hover:text-blue-500">Find Jobs</a>
+                <div class="relative">
+                    <button id="profileBtn" class="text-gray-600 dark:text-gray-300 focus:outline-none">Profile</button>
+                    <div id="profileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 shadow-lg rounded-lg py-2">
+                        <a href="#" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">View Profile</a>
+                        <a href="#" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Notes</a>
+                        <a href="#" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Manage Finances</a>
+                        <a href="#" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Comment and Rate</a>
+                        <a href="#" class="block px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">Share Profile</a>
+                    </div>
+                </div>
+                <button aria-label="Notifications" class="text-gray-600 dark:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a3 3 0 10-6 0v1.083A6 6 0 002 11v3.159c0 .538-.214 1.055-.595 1.436L0 17h5m10 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                    </svg>
+                </button>
+                <button id="themeToggle" class="text-gray-600 dark:text-gray-300">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar Filter -->
+    <div id="sidebar" class="fixed top-16 left-0 h-[calc(100vh-8rem-6rem)] w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 z-20 overflow-y-auto open">
+        <div class="p-4">
+            <h2 class="text-lg font-bold text-gray-800 dark:text-white">Filters</h2>
+            <div class="mt-4">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Gender</h3>
+                <label class="block"><input type="checkbox" class="mr-2" name="gender" value="Male"> Male</label>
+                <label class="block"><input type="checkbox" class="mr-2" name="gender" value="Female"> Female</label>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Location</h3>
+                <label class="block"><input type="checkbox" class="mr-2" name="nearMe" value="true"> Near my location</label>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Favorites</h3>
+                <label class="block"><input type="checkbox" class="mr-2" name="favorite" value="true"> Favorite</label>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Search History</h3>
+                <label class="block"><input type="checkbox" class="mr-2" name="searchHistory" value="true"> Include search history</label>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Rating</h3>
+                <select class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white" name="rating">
+                    <option value="">All</option>
+                    <option value=">=4.5">>= 4.5</option>
+                    <option value=">=4.0&&<4.5">>= 4.0 && < 4.5</option>
+                    <option value=">=3.5&&<4.0">>= 3.5 && < 4.0</option>
+                    <option value=">=3.0&&<3.5">>= 3.0 && < 3.5</option>
+                    <option value=">=2.5&&<3.0">>= 2.5 && < 3.0</option>
+                    <option value=">=2.0&&<2.5">>= 2.0 && < 2.5</option>
+                </select>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Learning Method</h3>
+                <select class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white" name="learningMethod">
+                    <option value="">All</option>
+                    <option value="Online">Online</option>
+                    <option value="In-person">In-person</option>
+                    <option value="Hybrid">Hybrid</option>
+                </select>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Grade</h3>
+                <select class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white" name="grade">
+                    <option value="">All</option>
+                    <option value="KG">KG</option>
+                    <option value="Grade 1">Grade 1</option>
+                    <option value="Grade 2">Grade 2</option>
+                    <option value="High School">High School</option>
+                    <option value="College">College</option>
+                    <option value="Graduate">Graduate</option>
+                    <option value="PhD">PhD</option>
+                </select>
+            </div>
+            <div class="mt-4">
+                <h3 class="font-semibold text-gray-700 dark:text-gray-300">Price</h3>
+                <input type="number" placeholder="Min" class="w-full p-2 border rounded-lg mb-2 dark:bg-gray-700 dark:text-white" name="minPrice">
+                <input type="number" placeholder="Max" class="w-full p-2 border rounded-lg dark:bg-gray-700 dark:text-white" name="maxPrice">
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div id="mainContent" class="container mx-auto mt-20 mb-20 transition-all duration-300 shifted">
+        <div id="adPlaceholder" class="h-48 bg-gray-300 dark:bg-gray-700 flex items-center justify-center mb-4 transition-all duration-300 pl-4">
+            <span class="ad-text text-gray-600 dark:text-gray-300">Ad Placeholder</span>
+        </div>
+        <div class="text-center mb-8">
+            <h2 id="heroText" class="text-3xl font-bold text-gray-800 dark:text-white"><span id="typedText"></span><span id="cursor" class="animate-blink">|</span></h2>
+            <p class="text-gray-600 dark:text-gray-300">Discover top tutors tailored to your needs.</p>
+        </div>
+        <div id="searchResults" class="mb-8 pl-4 transition-all duration-300">
+            <div class="flex justify-between items-center">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white">Tutors</h3>
+                <div>
+                    <button id="requestCourse" class="text-blue-500 hover:underline hidden">Request Course</button>
+                    <button id="requestSchool" class="text-blue-500 hover:underline ml-4 hidden">Request School</button>
+                </div>
+            </div>
+        </div>
+        <div id="tutorCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pl-4 transition-all duration-300">
+            <!-- Tutor cards generated via JavaScript -->
+        </div>
+        <div id="requestCourseModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-40">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Request a New Course</h3>
+                <form>
+                    <input type="text" id="courseName" placeholder="Course Name" class="w-full p-2 border rounded-lg mb-4 dark:bg-gray-700 dark:text-white">
+                    <input type="text" id="courseType" placeholder="Course Type" class="w-full p-2 border rounded-lg mb-4 dark:bg-gray-700 dark:text-white">
+                    <textarea id="courseDescription" placeholder="Course Description" class="w-full p-2 border rounded-lg mb-4 dark:bg-gray-700 dark:text-white"></textarea>
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancelCourseBtn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg">Cancel</button>
+                        <button type="button" id="submitCourseBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="requestSchoolModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-40">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">Request a New School</h3>
+                <form>
+                    <input type="text" id="schoolName" placeholder="School Name" class="w-full p-2 border rounded-lg mb-4 dark:bg-gray-700 dark:text-white">
+                    <input type="text" id="phone" placeholder="Phone" class="w-full p-2 border rounded-lg mb-4 dark:bg-gray-700 dark:text-white">
+                    <input type="email" id="email" placeholder="Email" class="w-full p-2 border rounded-lg mb-4 dark:bg-gray-700 dark:text-white">
+                    <input type="text" id="location" placeholder="Location" class="w-full p-2 border rounded-lg mb-4 dark:bg-gray-700 dark:text-white">
+                    <div class="flex justify-end space-x-4">
+                        <button type="button" id="cancelSchoolBtn" class="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded-lg">Cancel</button>
+                        <button type="button" id="submitSchoolBtn" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 p-4 fixed bottom-0 w-full z-30">
+        <div class="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 text-center md:text-left">
+            <div>
+                <h3 class="font-semibold text-gray-800 dark:text-white">Quick Links</h3>
+                <div class="mt-2 text-gray-600 dark:text-gray-300 grid grid-cols-2 gap-2">
+                    <a href="news.html" class="hover:text-blue-500">News</a>
+                    <a href="#" class="hover:text-blue-500">Login</a>
+                    <a href="#" class="hover:text-blue-500">Register</a>
+                </div>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-800 dark:text-white">Get in Touch</h3>
+                <p class="mt-2 text-gray-600 dark:text-gray-300">Phone: +251-912-345-678</p>
+                <p class="text-gray-600 dark:text-gray-300">Email: <a href="mailto:info@astegni.et" class="hover:text-blue-500">info@astegni.et</a></p>
+            </div>
+            <div>
+                <h3 class="font-semibold text-gray-800 dark:text-white">Follow Us</h3>
+                <div class="mt-2 flex justify-center md:justify-start space-x-4">
+                    <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-500">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+                    </a>
+                    <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-500">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                    </a>
+                    <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-500">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2.04c-5.5 0-9.96 4.46-9.96 9.96 0 5.5 4.46 9.96 9.96 9.96s9.96-4.46 9.96-9.96c0-5.5-4.46-9.96-9.96-9.96zm0 2.04c1.66 0 3.14.68 4.22 1.78.02.02.04.04.06.06l-6.12 3.06v-.12c0-1.66 1.34-3 3-3zm0 15.92c-1.66 0-3.14-.68-4.22-1.78-.02-.02-.04-.04-.06-.06l6.12-3.06v.12c0 1.66-1.34 3-3 3zm-7.96-4.22c-.68-1.08-1.08-2.3-1.08-3.74 0-1.44.4-2.66 1.08-3.74.02-.02.04-.04.06-.06l3.06 6.12h-.12c-1.66 0-3-1.34-3-3s1.34-3 3-3h.12l-3.06 6.12c-.02-.02-.04-.04-.06-.06zm15.92 0c-.68 1.08-1.08 2.3-1.08 3.74 0 1.44.4 2.66 1.08 3.74.02.02.04.04.06.06l-3.06-6.12h.12c1.66 0 3 1.34 3 3s-1.34 3-3 3h-.12l3.06-6.12c.02.02.04.04.06.06z"></path></svg>
+                    </a>
+                    <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-blue-500">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15h-2v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c4.56-.92 8-4.95 8-9.95z"></path></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <p class="text-center text-gray-600 dark:text-gray-300 mt-2">&copy; 2025 Astegni. All rights reserved.</p>
+    </footer>
+
+    <script src="../js/find-tutors.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+</body>
+</html>

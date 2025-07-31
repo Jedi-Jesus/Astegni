@@ -1,0 +1,3242 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ASTEGNI - Tutor Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Preload cover photo for faster loading -->
+  <link rel="preload" href="../pictures/cover_photo.png" as="image">
+  <!-- Font Awesome 4.x for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link href="css/root_theme.css" rel="stylesheet" />
+  <style>
+    :root {
+      --color: #FFE082;
+      --text: #78350F;
+      --heading: #92400E;
+      --nav-link: #78350F;
+      --nav-link-hover: #F59E0B;
+      --button-bg: #F59E0B;
+      --button-text: #FFFFFF;
+      --button-hover: #D97706;
+      --button-active: #92400E;
+      --highlight: #FFFFFF;
+      --footer-bg: #E5E7EB;
+      --footer-text: #78350F;
+      --search-heading: #F59E0B;
+      --modal-bg: #FFFFFF;
+      --modal-text: #78350F;
+    }
+
+    [data-theme="dark"] {
+      --background: #1E1E1E;
+      --text: #E0E0E0;
+      --heading: #FBC02D;
+      --nav-link: #E0E0E0;
+      --nav-link-hover: #FFD54F;
+      --button-bg: #FFD54F;
+      --button-text: #1E1E1E;
+      --button-hover: #e6bf45;
+      --button-active: #FFB300;
+      --highlight: #424242;
+      --footer-bg: #424242;
+      --footer-text: #E0E0E0;
+      --search-heading: #FBC02D;
+      --modal-bg: #1E1E1E;
+      --modal-text: #E0E0E0;
+    }
+
+    [data-theme="light"] h1 {
+      color: var(--button-bg);
+    }
+
+    [data-theme="light"] .description {
+      color: #FFFFFF;
+    }
+
+    [data-theme="light"] .no-results {
+      color: #FFFFFF;
+    }
+
+    [data-theme="light"] input#search-input {
+      color: #FFFFFF;
+    }
+
+    [data-theme="light"] input#search-input::-webkit-input-placeholder {
+      color: #D1D5DB;
+    }
+
+    [data-theme="light"] input#search-input::-moz-placeholder {
+      color: #D1D5DB;
+    }
+
+    [data-theme="light"] .modal-content {
+      background-color: #FFFFFF;
+      color: #78350F;
+      border: 1px solid #DDD;
+    }
+
+    [data-theme="light"] .modal-content input,
+    [data-theme="light"] .modal-content select,
+    [data-theme="light"] .modal-content textarea {
+      background-color: #FAFAFA;
+      color: #78350F;
+      border: 1px solid #ccc;
+    }
+
+    [data-theme="light"] .modal-content input::placeholder,
+    [data-theme="light"] .modal-content textarea::placeholder {
+      color: #A0AEC0;
+    }
+
+    [data-theme="light"] .cta-button {
+      background-color: #F59E0B;
+      color: #FFFFFF;
+    }
+
+    [data-theme="light"] {
+      --button-active: #92400E;
+    }
+
+    [data-theme="dark"] .modal-content {
+      background-color: rgba(0, 0, 0, 0.85);
+      color: #FFE082;
+      border: 1px solid #555;
+    }
+
+    [data-theme="dark"] .modal-content input,
+    [data-theme="dark"] .modal-content select,
+    [data-theme="dark"] .modal-content textarea {
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #FFE082;
+      border: 1px solid #888;
+    }
+
+    [data-theme="dark"] .modal-content input::placeholder,
+    [data-theme="dark"] .modal-content textarea::placeholder {
+      color: #A0AEC0;
+    }
+
+    [data-theme="dark"] .cta-button {
+      background-color: #FFD54F;
+      color: #1E1E1E;
+    }
+
+    [data-theme="dark"] {
+      --button-active: #FFB300;
+    }
+
+
+    body {
+      background-color: var(--background);
+      color: var(--text);
+      font-family: sans-serif;
+    }
+
+    nav {
+      background-color: var(--highlight);
+    }
+
+    nav a,
+    nav button {
+      color: var(--nav-link);
+    }
+
+    nav a:hover,
+    nav button:hover {
+      color: var(--nav-link-hover);
+    }
+
+    button.cta-button {
+      background-color: var(--button-bg);
+      color: var(--button-text);
+    }
+
+    button.cta-button:hover {
+      background-color: var(--button-hover);
+    }
+
+    footer {
+      background-color: var(--footer-bg);
+      color: var(--footer-text);
+    }
+
+    .modal-content {
+      background-color: var(--modal-bg);
+      color: var(--modal-text);
+    }
+
+    /* Notes Modal Styling */
+    .notes-modal-container {
+      display: flex;
+      gap: 1rem;
+      max-width: 90vw;
+      max-height: 80vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .notes-modal-container>.flex-1 {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 1rem;
+    }
+
+    .notes-history {
+      width: 33%;
+      max-height: 70vh;
+      overflow-y: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .notes-history.hidden {
+      transform: translateX(100%);
+    }
+
+    .history-toggle-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+    }
+
+    .editor-toolbar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+    }
+
+    .editor-toolbar button,
+    .editor-toolbar select,
+    .editor-toolbar input {
+      padding: 0.5rem;
+      border: none;
+      background: var(--button-bg);
+      color: var(--text);
+      border-radius: 0.25rem;
+      cursor: pointer;
+    }
+
+    #note-content {
+      min-height: 200px;
+      background-size: cover;
+      background-position: center;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+    }
+
+    .dark .editor-toolbar {
+      background: var(--bg-dark);
+    }
+
+    #cover-photo {
+      height: 150px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      border-radius: 8px;
+    }
+
+    #profile-picture {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      position: absolute;
+      bottom: -40px;
+      left: 20px;
+      border: 4px solid var(--background);
+      object-fit: cover;
+    }
+
+    /* Cover photo image */
+    #cover-image {
+      width: 100%;
+      /* Tailwind: w-full */
+      height: 150px;
+      /* Matches container height */
+      object-fit: cover;
+      /* Tailwind: object-cover */
+      object-position: center;
+      /* Centers image */
+      display: block;
+      /* Removes bottom gap */
+    }
+
+    /* Profile picture */
+    #profile-picture {
+      width: 7rem;
+      /* Tailwind: w-12 (12 * 0.25rem = 3rem) */
+      height: 7rem;
+      /* Tailwind: h-12 */
+      border-radius: 9999px;
+      /* Tailwind: rounded-full */
+      border: 4px solid white;
+      /* Tailwind: border-4 border-white */
+      position: absolute;
+      /* Tailwind: absolute */
+      bottom: -2.25rem;
+      /* 25% overlap: 0.75rem on cover, 2.25rem below */
+      left: 0.5rem;
+      /* Tailwind: left-2 (2 * 0.25rem = 0.5rem) */
+    }
+
+    /* Cover photo container */
+    #cover-photo {
+      margin-bottom: 1.5rem;
+      /* Tailwind: mb-6 (6 * 0.25rem = 1.5rem) */
+      position: relative;
+      /* Tailwind: relative */
+      background-color: #e5e7eb;
+      /* Fallback color (Tailwind gray-200) */
+      height: 150px;
+      /* Matches original height */
+    }
+
+    .section-title {
+      position: relative;
+      display: inline-block;
+    }
+
+    .social-links {
+      margin-top: 1rem;
+    }
+
+    .certification-section {
+      margin-top: 1rem;
+    }
+
+    .school-suggestions {
+      position: absolute;
+      background-color: var(--modal-bg);
+      border: 1px solid #e5e7eb;
+      width: 100%;
+      max-height: 150px;
+      overflow-y: auto;
+      z-index: 10;
+    }
+
+    .school-suggestions div {
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+
+    .school-suggestions div:hover {
+      background-color: var(--button-hover);
+    }
+
+    /* Icon wrapper for positioning and tooltip */
+    .icon-wrapper {
+      position: absolute;
+      display: inline-block;
+      /* Contains icon and tooltip */
+    }
+
+    /* Font Awesome pencil icons */
+    .pencil-icon {
+      font-size: 1.25rem;
+      /* Tailwind: w-5 h-5 (5 * 0.25rem = 1.25rem) */
+      width: 1.25rem;
+      height: 1.25rem;
+      color: currentColor;
+      /* Matches SVG stroke="currentColor" */
+      cursor: pointer;
+      /* Indicates clickability */
+    }
+
+    /* Cover photo edit icon (bottom-right edge of cover photo) */
+    #cover-photo .icon-wrapper:first-of-type {
+      bottom: -1.25rem;
+      /* Below cover photo (150px height + 1.25rem icon height) */
+      right: 0;
+      /* Aligned with right edge */
+    }
+
+    /* Profile picture edit icon (bottom-right edge of profile picture) */
+    #cover-photo .icon-wrapper:last-of-type {
+      bottom: -3.25rem;
+      /* Below profile picture (2.25rem below cover + 1.25rem icon height) */
+      left: 3rem;
+      /* Right edge of profile picture (0.5rem left + 3rem width - 0.5rem to align icon) */
+    }
+
+    /* Tooltip styling (from your provided CSS) */
+    .tooltip {
+      display: none;
+      position: absolute;
+      z-index: 10;
+      background-color: var(--modal-bg);
+      color: var(--modal-text);
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      font-size: 0.75rem;
+      /* Consistent with previous */
+      white-space: nowrap;
+      /* Prevent wrapping */
+      bottom: 1.75rem;
+      /* Above icon (1.25rem icon height + 0.5rem gap) */
+      left: 50%;
+      transform: translateX(-50%);
+      /* Center horizontally */
+    }
+
+    /* Show tooltip on hover */
+    .icon-wrapper:hover .tooltip {
+      display: block;
+    }
+
+    .edit-btn {
+      position: absolute;
+      bottom: -0.5rem;
+      right: -1.5rem;
+      font-size: 0.875rem;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .ad-placeholder {
+      background-color: var(--background);
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+
+    canvas {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+    }
+
+    video.preview {
+      max-height: 100px;
+    }
+
+
+    /* Private Video Label */
+    .private-label {
+      position: absolute;
+      bottom: 0.5rem;
+      left: 0.5rem;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.25rem;
+      font-size: 0.75rem;
+    }
+
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #e5e7eb;
+      margin-bottom: 1rem;
+    }
+
+    .tab {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--text);
+    }
+
+    .tab.active {
+      border-bottom: 2px solid var(--button-bg);
+      color: var(--button-bg);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* More Dropdown Styling */
+    .more-menu {
+      position: relative;
+      display: inline-block;
+    }
+
+    .more-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      background: var(--button-bg);
+      color: var(--text);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .more-button:hover {
+      background: var(--button-hover);
+    }
+
+    .more-button::after {
+      content: '▼';
+      font-size: 0.75rem;
+    }
+
+    .more-menu-content {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      min-width: 150px;
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 0.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      z-index: 10;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+
+    .more-menu-content.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .more-menu-content div {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      color: var(--text);
+    }
+
+    .more-menu-content div:hover {
+      background: var(--button-hover);
+    }
+
+    .dark .more-menu-content {
+      background: var(--bg-dark);
+    }
+
+    /* Playlist Video Cards */
+    #playlist-videos .video-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    #playlist-videos .video-card:hover {
+      background: var(--button-hover);
+    }
+
+    .dark #playlist-videos .video-card {
+      background: var(--bg-dark);
+    }
+
+
+    .video-player-modal {
+      position: relative;
+      max-width: 900px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .video-player-modal .video-container {
+      position: relative;
+      padding-bottom: 62.5%;
+      /* Increased from 56.25% to make video taller */
+      height: 0;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 16px;
+    }
+
+    .video-player-modal video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .video-player-modal .controls {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 8px;
+      background: rgba(0, 0, 0, 0.5);
+      border-radius: 0 0 0 8px;
+    }
+
+    .video-player-modal .controls button {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .video-player-modal .controls button:hover {
+      color: var(--highlight);
+    }
+
+    .video-player-modal .more-menu {
+      position: relative;
+    }
+
+    .video-player-modal .more-menu-content {
+      display: none;
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: var(--modal-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      z-index: 50;
+      min-width: 150px;
+      padding: 8px 0;
+    }
+
+    .video-player-modal .more-menu-content button {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      text-align: left;
+      font-size: 1rem;
+      color: var(--text);
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+
+    .video-player-modal .more-menu-content button:hover {
+      background: var(--button-hover);
+    }
+
+    .video-player-modal .more-menu.active .more-menu-content {
+      display: block;
+    }
+
+    .video-title {
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      color: var(--heading);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <!-- Navigation -->
+  <nav class="p-4 sticky top-0 z-10 shadow-sm">
+    <div class="container mx-auto flex justify-between items-center">
+      <a href="index.html" class="text-2xl font-bold">ASTEGNI</a>
+      <div class="hidden md:flex space-x-6 items-center" id="desktop-nav">
+        <a href="index.html" class="hover:text-[var(--nav-link-hover)]">Home</a>
+        <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+        <a href="reels.html" class="hover:text-[var(--nav-link-hover)]">Reels</a>
+        <a href="store.html" class="hover:text-[var(--nav-link-hover)]">Store</a>
+        <div class="relative">
+          <button id="profile-dropdown-btn" class="hover:text-[var(--nav-link-hover)]">My Profile</button>
+          <div id="profile-dropdown"
+            class="hidden absolute right-0 mt-2 w-48 bg-[var(--modal-bg)] rounded-lg shadow-lg">
+            <button onclick="openNotesModal()"
+              class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Notes</button>
+            <button onclick="openToolsModal()"
+              class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Tools</button>
+            <button onclick="openShareProfileModal()"
+              class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Manage finances</button>
+            <button onclick="openQuizModal()"
+              class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Take a Quiz</button>
+            <button onclick="openRateAstegniModal()"
+              class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Comment and Rate ASTEGNI</button>
+            <button onclick="openShareProfileModal()"
+              class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Share</button>
+              
+          </div>
+        </div>
+        <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9">
+            </path>
+          </svg>
+          <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+        </button>
+        <button id="theme-toggle" class="cta-button px-4 py-2 rounded-lg">Toggle Theme</button>
+      </div>
+      <button id="menu-btn" class="md:hidden focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden bg-[var(--highlight)] mt-2 rounded-lg shadow">
+      <a href="index.html" class="block py-2 px-4 hover:bg-[var(--button-hover)]">Home</a>
+      <a href="find-tutors.html" class="block py-2 px-4 hover:bg-[var(--button-hover)]">Find tutors</a>
+      <a href="reels.html" class="block py-2 px-4 hover:bg-[var(--button-hover)]">Reels</a>
+      <button onclick="openNotesModal()"
+        class="block py-2 px-4 hover:bg-[var(--button-hover)] w-full text-left">Notes</button>
+      <button onclick="openToolsModal()"
+        class="block py-2 px-4 hover:bg-[var(--button-hover)] w-full text-left">Tools</button>
+      <button id="mobile-profile-dropdown-btn"
+        class="block py-2 px-4 hover:bg-[var(--button-hover)] w-full text-left">My Profile</button>
+      <div id="mobile-profile-dropdown" class="hidden bg-[var(--modal-bg)] mt-1 rounded-lg">
+        <button onclick="openQuizModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Take a
+          Quiz</button>
+        <button onclick="openRateAstegniModal()"
+          class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Comment and Rate ASTEGNI</button>
+        <button onclick="openShareProfileModal()"
+          class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Share Profile</button>
+      </div>
+      <button id="mobile-notification-bell"
+        class="block py-2 px-4 hover:bg-[var(--button-hover)] w-full text-left relative"
+        onclick="openNotificationModal()">
+        Notifications
+        <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+      </button>
+      <button id="mobile-theme-toggle" class="cta-button block py-2 px-4 w-full text-left">Toggle Theme</button>
+    </div>
+  </nav>
+
+  <!-- Tutor Profile Section -->
+  <section class="py-16">
+    <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
+      <!-- Main Content (Tutor Profile) -->
+      <div class="lg:w-3/4">
+        <!-- Cover and profile Photo -->
+        <div id="cover-photo" class="mb-6 relative">
+          <img src="../pictures/cover_photo.png" id="cover-image" alt="Cover Photo"
+            class="w-full h-[150px] object-cover" loading="lazy">
+          <img src="../pictures/profile_picture.png" id="profile-picture" alt="Tutor Profile Picture"
+            class="w-24 h-24 rounded-full border-4 border-white absolute" loading="lazy">
+          <span class="icon-wrapper absolute">
+            <i class="fa fa-pencil pencil-icon" onclick="openUploadCoverPhotoModal()"></i>
+            <span class="tooltip">Edit Cover Photo</span>
+          </span>
+
+          <span class="icon-wrapper absolute">
+            <i class="fa fa-pencil pencil-icon" onclick="openUploadProfilePhotoModal()"></i>
+            <span class="tooltip">Edit Profile Picture</span>
+          </span>
+        </div>
+        <div class="p-6 bg-[var(--modal-bg)] rounded-lg shadow-lg">
+          <div class="flex flex-col md:flex-row gap-4 mb-4">
+            <div class="profile-details w-full">
+              <h2 id="tutor-name" class="text-2xl font-bold inline-flex items-center">
+                Your name
+                <span class="ml-2 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center"
+                  title="Verified Tutor">
+                  <svg class="w-4 h-4" fill="white" viewBox="0 0 20 20">
+                    <path
+                      d="M16.707 5.293a1 1 0 00-1.414 0L8 12.586l-3.293-3.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l8-8a1 1 0 000-1.414z" />
+                  </svg>
+                </span>
+              </h2>
+              <div class="flex gap-4">
+                <p id="verification-status" class="text-sm italic text-red-500">Unverified</p>
+                <p id="activation-status" class="text-sm italic text-red-500">Deactivated</p>
+              </div>
+              <div class="flex flex-col items-start mb-4">
+                <div class="relative w-16 h-16 progress-circle">
+                  <svg class="w-full h-full" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" stroke="#e5e7eb" stroke-width="8" fill="none" />
+                    <circle id="rating-arc" cx="50" cy="50" r="45" stroke="#EF4444" stroke-width="8" fill="none"
+                      stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="283" />
+                  </svg>
+                  <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-[var(--text)]"
+                    id="rating-label">N/A</div>
+                </div>
+                <span id="tutor-rating-stars" class="text-yellow-500 mt-1">No rating</span>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="flex flex-col">
+                  <p class="text-[var(--text)]"><span id="follower-number">0</span> Followers</p>
+                  <p id="tutor-gender" class="text-[var(--text)]">Gender: Male</p>
+                  <p id="tutor-phone" class="text-[var(--text)]">Phone: Not set</p>
+                  <p id="tutor-email" class="text-[var(--text)]">Email: Not set</p>
+                  <p id="tutor-address" class="text-[var(--text)]">Address: Not set</p>
+                </div>
+                <div class="flex flex-col">
+                  <p id="tutor-school" class="text-[var(--text)]">Teaches at: Under verification</p>
+                  <p id="courses" class="text-[var(--text)]">Courses: Not set</p>
+                </div>
+                <div class="flex flex-col">
+                  <p id="tutor-payment-method" class="text-[var(--text)]">Payment Method: Not set</p>
+                  <p id="tutor-bank" class="text-[var(--text)]">Bank: Not set</p>
+                  <p id="payment-account" class="text-[var(--text)]">Account Number: Not set</p>
+                </div>
+              </div>
+              <div class="w-full md:w-2/3">
+                <div class="section-title-container">
+                  <h3 class="text-2xl font-bold text-[var(--heading)]">About Me</h3>
+                  <span class="icon-wrapper absolute">
+                    <i class="fa fa-pencil pencil-icon" onclick="openEditAboutMeModal()"></i>
+                    <span class="tooltip">Edit bio</span>
+                  </span>
+                </div>
+                <p id="tutor-bio" class="text-[var(--text)] mt-4">Experienced tutor with a passion for teaching Math and
+                  Physics.</p>
+
+                <div class="section-title-container mt-6">
+                  <h3 class="text-2xl font-bold text-[var(--heading)]">Certifications</h3>
+                  <span class="icon-wrapper absolute">
+                    <i class="fa fa-pencil pencil-icon" onclick="openEditCertificationsModal()"></i>
+                    <span class="tooltip">Add certifications</span>
+                  </span>
+                </div>
+                <div id="tutor-certifications" class="text-[var(--text)] mt-4">
+                  <p>BSc in Physics from School A (2020)</p>
+                </div>
+
+                <div class="section-title-container mt-6">
+                  <h3 class="text-2xl font-bold text-[var(--heading)]">Socials</h3>
+                  <span class="icon-wrapper absolute">
+                    <i class="fa fa-pencil pencil-icon" onclick="openEditSocialsModal()"></i>
+                    <span class="tooltip">Add socials</span>
+                  </span>
+                </div>
+                <div id="view-profile-socials" class="text-[var(--text)] mt-4"></div>
+
+                <div class="section-title-container mt-6">
+                  <h3 class="text-2xl font-bold text-[var(--heading)]">My Quote</h3>
+                  <span class="icon-wrapper absolute">
+                    <i class="fa fa-pencil pencil-icon" onclick="openQuoteModal()"></i>
+                    <span class="tooltip">Update Quote</span>
+                  </span>
+                </div>
+                <p id="quote" class="text-[var(--text)] mt-4 italic">"Education is the key to success."</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 mb-6">
+            <button onclick="openEditProfileModal()" class="cta-button px-4 py-2 rounded-lg flex items-center">
+              <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                </path>
+              </svg>
+              Edit Profile
+            </button>
+            <button onclick="openRequestedSessionsModal()" class="cta-button px-4 py-2 rounded-lg">Requested
+              Sessions</button>
+            <button onclick="openStudentsModal()" class="cta-button px-4 py-2 rounded-lg">My Students</button>
+            <button onclick="openCommentModal()" class="cta-button px-4 py-2 rounded-lg">View Comments</button>
+          </div>
+
+          <!-- Sponsorship Placeholder -->
+          <div id="sponsorship-placeholder-2" class="rounded-lg shadow-lg p-4 text-center bg-[var(--highlight)]">
+            <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Sponsor Our Platform</h3>
+            <img src="https://via.placeholder.com/728x90" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder">
+            <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a
+                href="mailto:info@astegni.et" class="underline">info@astegni.et</a> Sunspear!</p>
+          </div>
+
+          <!-- Introduction Video -->
+          <div class="mt-8">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-xl font-semibold text-[var(--heading)]">Introduction Video</h3>
+              <div class="flex gap-2">
+                <button onclick="openUploadVideoModal('intro')" class="cta-button px-4 py-2 rounded-lg">Upload
+                  Video</button>
+              </div>
+            </div>
+
+            <div class="video-player-container" onclick="openVideoPlayerModal('intro')">
+              <p class="video-title">Introduction to My Teaching Style</p>
+              <video controls class="w-full rounded-lg" id="intro">
+                <source src="https://via.placeholder.com/640x360.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+              <p id="intro-desc" class="text-[var(--text)] mt-2">Introduction to my teaching style.</p>
+            </div>
+
+            <div class="flex gap-2 mt-2">
+              <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+              <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+              <button onclick="openVideoCommentModal('intro')"
+                class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+              <button onclick="openShareModal('intro')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗
+                Share</button>
+              <button onclick="openAdvertiseModal('intro')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">📢
+                Advertise</button>
+              <div class="more-menu">
+                <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">⋯ More</button>
+                <div class="more-menu-content">
+                  <button onclick="openChangeIntroVideoModal()">Change Video</button>
+                  <button onclick="makeVideoPrivate('intro')">🔒 Make Private</button>
+                  <button onclick="deleteVideo('intro')" class="text-red-500">🗑 Delete</button>
+                </div>
+              </div>
+            </div>
+            <div id="intro-comments" class="text-[var(--text)] mt-2">
+              <p>No comments yet.</p>
+            </div>
+            <button onclick="openVideoDescModal('intro')" class="cta-button px-4 py-2 rounded-lg mt-4">Video
+              Description</button>
+            <!-- Video Tabs -->
+            <div class="mt-8">
+              <input type="text" id="video-search" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Search videos...">
+              <div class="tabs">
+                <div class="tab active" data-tab="shorts">Shorts</div>
+                <div class="tab" data-tab="videos">Videos</div>
+                <div class="tab" data-tab="playlists">Playlists</div>
+              </div>
+              <div id="shorts" class="tab-content active">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p class="video-title">Quick Math Tip</p>
+                    <div class="video-player-container" onclick="openVideoPlayerModal('clip-1')">
+                      <video controls class="w-full rounded-lg" id="clip-1">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                      <p id="clip-1-desc" class="text-[var(--text)] mt-2">Quick Math tip.</p>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                      <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+                      <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+                      <button onclick="openVideoCommentModal('clip1')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+                      <button onclick="openShareModal('clip1')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
+                      <button onclick="openAdvertiseModal('clip1')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">📢 Advertise</button>
+                      <div class="more-menu">
+                        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">⋯ More</button>
+                        <div class="more-menu-content">
+                          <button onclick="makeIntroductionVideo('clip1')">MIV</button>
+                          <button onclick="makeVideoPrivate('clip1')">🔒 Make Private</button>
+                          <button onclick="deleteVideo('clip1')" class="text-red-500">🗑 Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="clip1-comments" class="text-[var(--text)] mt-2">
+                      <p>No comments yet.</p>
+                    </div>
+                    <button onclick="openVideoDescModal('clip1')" class="cta-button px-4 py-2 rounded-lg mt-4">Video
+                      Description</button>
+                  </div>
+                  <div>
+                    <p class="video-title">Physics Concept Explained</p>
+                    <div class="video-player-container" onclick="openVideoPlayerModal('clip-2')">
+                      <video controls class="w-full rounded-lg" id="clip-2">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                      <p id="clip-2-desc" class="text-[var(--text)] mt-2">Physics concept explained.</p>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                      <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+                      <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+                      <button onclick="openVideoCommentModal('clip2')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+                      <button onclick="openShareModal('clip2')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
+                      <button onclick="openAdvertiseModal('clip2')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">📢 Advertise</button>
+                      <div class="more-menu">
+                        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">⋯ More</button>
+                        <div class="more-menu-content">
+                          <button onclick="makeIntroductionVideo('clip2')">MIV</button>
+                          <button onclick="makeVideoPrivate('clip2')">🔒 Make Private</button>
+                          <button onclick="deleteVideo('clip2')" class="text-red-500">🗑 Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="clip2-comments" class="text-[var(--text)] mt-2">
+                      <p>No comments yet.</p>
+                    </div>
+                    <button onclick="openVideoDescModal('clip2')" class="cta-button px-4 py-2 rounded-lg mt-4">Video
+                      Description</button>
+                  </div>
+                </div>
+              </div>
+              <div id="videos" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <p class="video-title">Algebra Basics</p>
+                    <div class="video-player-container" onclick="openVideoPlayerModal('video-1')">
+                      <video controls class="w-full rounded-lg" id="video-1">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                      <p id="video-1-desc" class="text-[var(--text)] mt-2">Algebra Basics</p>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                      <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+                      <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+                      <button onclick="openVideoCommentModal('video1')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+                      <button onclick="openShareModal('video1')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
+                      <button onclick="openAdvertiseModal('video1')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">📢 Advertise</button>
+                      <div class="more-menu">
+                        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">⋯ More</button>
+                        <div class="more-menu-content">
+                          <button onclick="makeIntroductionVideo('video1')">MIV</button>
+                          <button onclick="makeVideoPrivate('video1')">🔒 Make Private</button>
+                          <button onclick="deleteVideo('video1')" class="text-red-500">🗑 Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="video1-comments" class="text-[var(--text)] mt-2">
+                      <p>No comments yet.</p>
+                    </div>
+                    <button onclick="openVideoDescModal('video1')" class="cta-button px-4 py-2 rounded-lg mt-4">Video
+                      Description</button>
+                  </div>
+                  <div>
+                    <p class="video-title">Physics Fundamentals</p>
+                    <div class="video-player-container" onclick="openVideoPlayerModal('video-2')">
+                      <video controls class="w-full rounded-lg" id="video-2">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                      <p id="video-2-desc" class="text-[var(--text)] mt-2">Physics Fundamentals</p>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                      <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+                      <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+                      <button onclick="openVideoCommentModal('video2')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+                      <button onclick="openShareModal('video2')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗ Share</button>
+                      <button onclick="openAdvertiseModal('video2')"
+                        class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">📢 Advertise</button>
+                      <div class="more-menu">
+                        <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">⋯ More</button>
+                        <div class="more-menu-content">
+                          <button onclick="makeIntroductionVideo('video2')">MIV</button>
+                          <button onclick="makeVideoPrivate('video2')">🔒 Make Private</button>
+                          <button onclick="deleteVideo('video2')" class="text-red-500">�┴ Delete</button>
+                        </div>
+                      </div>
+                    </div>
+                    <div id="video2-comments" class="text-[var(--text)] mt-2">
+                      <p>No comments yet.</p>
+                    </div>
+                    <button onclick="openVideoDescModal('video2')" class="cta-button px-4 py-2 rounded-lg mt-4">Video
+                      Description</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="playlists" class="tab-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="bg-gray-200 p-4 rounded-lg">
+                    <h4 class="text-lg font-semibold mb-2">Math Essentials</h4>
+                    <div class="video-player-container" onclick="openPlaylistModal('math-essentials')">
+                      <video controls class="rounded-lg" id="math-essentials-preview">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <div class="video-player-container" onclick="openPlaylistModal('math-essentials')">
+                      <video controls class="rounded-lg" id="math-essentials-preview">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <div class="video-player-container" onclick="openPlaylistModal('math-essentials')">
+                      <video controls class="rounded-lg" id="math-essentials-preview">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <p class="text-[var(--text)] mt-2">Math Essentials Playlist</p>
+                  </div>
+                  <div class="bg-gray-200 p-4 rounded-lg">
+                    <h4 class="text-lg font-semibold mb-2">Physics Series</h4>
+                    <div class="video-player-container" onclick="openPlaylistModal('physics-series')">
+                      <video controls class="rounded-lg" id="physics-series-preview">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <div class="video-player-container" onclick="openPlaylistModal('physics-series')">
+                      <video controls class="rounded-lg" id="physics-series-preview">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <div class="video-player-container" onclick="openPlaylistModal('physics-series')">
+                      <video controls class="rounded-lg" id="physics-series-preview">
+                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                    <p class="text-[var(--text)] mt-2">Physics Series Playlist</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Advertisement Sidebar -->
+      <aside class="lg:w-1/4 hidden lg:block sticky top-20 self-start">
+        <div class="ad-placeholder" style="width: 300px; height: 250px;">Advertisement (300x250)</div>
+        <div class="ad-placeholder" style="width: 300px; height: 250px;">Advertisement (300x250)</div>
+        <div class="ad-placeholder" style="width: 300px; height: 250px;">Advertisement (300x250)</div>
+      </aside>
+    </div>
+  </section>
+
+
+  <!-- Modals -->
+  <!-- Notes Modal -->
+  <div id="notes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div
+      class="modal-content notes-modal-container p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto bg-white dark:bg-gray-800 relative">
+      <div class="flex-1">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-2xl font-bold text-gray-900 dark:text-white">Take a Note</h3>
+          <div class="flex gap-2">
+            <button onclick="newNote()" class="new-note-btn cta-button p-2 rounded-lg" title="New Note">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <label class="block mb-2 text-gray-700 dark:text-gray-200">Date</label>
+        <input type="date" id="note-date"
+          class="w-full p-2 border rounded-lg mb-4 text-gray-900 dark:text-white dark:bg-gray-700">
+        <label class="block mb-2 text-gray-700 dark:text-gray-200">Tutor Name</label>
+        <div class="relative mb-4">
+          <input type="text" id="note-tutor"
+            class="w-full p-2 border rounded-lg text-gray-900 dark:text-white dark:bg-gray-700"
+            placeholder="Search for tutor">
+          <div id="note-tutor-suggestions"
+            class="school-suggestions hidden absolute z-30 w-full bg-white dark:bg-gray-800 border rounded-lg mt-1">
+          </div>
+        </div>
+        <label class="block mb-2 text-gray-700 dark:text-gray-200">Course</label>
+        <div class="relative mb-4">
+          <input type="text" id="note-course"
+            class="w-full p-2 border rounded-lg text-gray-900 dark:text-white dark:bg-gray-700"
+            placeholder="Search for course">
+          <div id="note-course-suggestions"
+            class="school-suggestions hidden absolute z-30 w-full bg-white dark:bg-gray-800 border rounded-lg mt-1">
+          </div>
+        </div>
+        <label class="block mb-2 text-gray-700 dark:text-gray-200">Title</label>
+        <input type="text" id="note-title"
+          class="w-full p-2 border rounded-lg mb-4 text-gray-900 dark:text-white dark:bg-gray-700"
+          placeholder="Note title">
+        <label class="block mb-2 text-gray-700 dark:text-gray-200">Note</label>
+        <div class="editor-toolbar">
+          <button onclick="formatText('bold')" title="Bold"><b>B</b></button>
+          <button onclick="formatText('italic')" title="Italic"><i>I</i></button>
+          <button onclick="formatText('underline')" title="Underline"><u>U</u></button>
+          <button onclick="formatText('hiliteColor', '#FFFF00')" title="Highlight">H</button>
+          <button onclick="formatText('strikeThrough')" title="Strikethrough"><s>S</s></button>
+          <select onchange="formatText('fontSize', this.value)" title="Font Size">
+            <option value="">Font Size</option>
+            <option value="3">Normal</option>
+            <option value="4">Large</option>
+            <option value="5">Larger</option>
+          </select>
+          <input type="color" id="font-color" onchange="formatText('foreColor', this.value)" title="Font Color">
+          <button onclick="formatText('undo')" title="Undo">⟲</button>
+          <button onclick="formatText('redo')" title="Redo">⟳</button>
+          <button onclick="openBackgroundModal()" title="Background Image">🖼</button>
+          <button onclick="removeNoteBackground()" title="Remove Background">🗑</button>
+        </div>
+        <div id="note-content" contenteditable="true"
+          class="w-full p-2 border rounded-lg mb-4 text-gray-900 dark:text-white"></div>
+        <div class="flex flex-col gap-2 mb-6">
+          <button onclick="saveNote()"
+            class="cta-button px-4 py-2 rounded-lg w-full bg-blue-600 text-white hover:bg-blue-700">Save Note</button>
+          <button onclick="closeNotesModal()"
+            class="cta-button px-3 py-1 rounded-lg w-full text-sm bg-gray-500 text-white hover:bg-gray-600">Close</button>
+        </div>
+      </div>
+      <div id="notes-history"
+        class="notes-history w-1/3 bg-gray-100 dark:bg-gray-700 p-4 rounded-lg ml-4 overflow-y-auto">
+        <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Notes History</h4>
+        <div id="notes-history-content"></div>
+      </div>
+      <button onclick="toggleNotesHistory()"
+        class="history-toggle-btn p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 focus:outline-none shadow-md absolute top-4 right-4"
+        title="Toggle History">
+        <svg class="w-6 h-6" fill="none" stroke="white" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <!-- Background Image Modal -->
+  <div id="background-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Select Background Image</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+        <img src="pictures/math.jpg" class="background-image" onclick="setNoteBackground('math')" alt="Math Background">
+        <img src="pictures/physics.jpg" class="background-image" onclick="setNoteBackground('physics')"
+          alt="Physics Background">
+        <img src="pictures/biology.jpg" class="background-image" onclick="setNoteBackground('biology')"
+          alt="Biology Background">
+        <img src="pictures/chemistry.jpg" class="background-image" onclick="setNoteBackground('chemistry')"
+          alt="Chemistry Background">
+        <img src="pictures/geography.jpg" class="background-image" onclick="setNoteBackground('geography')"
+          alt="Geography Background">
+        <img src="pictures/history.jpg" class="background-image" onclick="setNoteBackground('history')"
+          alt="History Background">
+        <img src="pictures/music.jpg" class="background-image" onclick="setNoteBackground('music')"
+          alt="Music Background">
+        <div class="flex items-center justify-center">
+          <input type="file" id="upload-background" accept="image/*" class="hidden" onchange="uploadBackgroundImage()">
+          <button onclick="document.getElementById('upload-background').click()"
+            class="cta-button px-4 py-2 rounded-lg">Upload Image</button>
+        </div>
+      </div>
+      <button onclick="closeBackgroundModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Tools Modal -->
+  <div id="tools-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Tools</h3>
+      <p class="text-[var(--text)] mb-4">Coming soon!</p>
+      <button onclick="closeToolsModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  
+
+
+
+  <!-- Quiz Modal -->
+  <div id="quiz-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Take a Quiz</h3>
+      <p class="text-[var(--text)] mb-4">Are you ready to take your quiz? This test takes up to 30 minutes and elevates
+        your portfolio.</p>
+      <div class="flex gap-2">
+        <button onclick="startQuiz()" class="cta-button px-4 py-2 rounded-lg flex-1">Ready</button>
+        <button onclick="closeQuizModal()"
+          class="bg-gray-700 text-white px-4 py-2 rounded-lg flex-1 hover:bg-gray-800">Next Time</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comment and Rate ASTEGNI Modal -->
+  <div id="rate-astegni-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Comment and Rate ASTEGNI</h3>
+      <label class="block mb-2 text-[var(--text)]">Platform Usability</label>
+      <div class="flex gap-2 mb-4">
+        <input type="number" id="usability-rating" min="1" max="5" class="w-full p-2 border rounded-lg"
+          placeholder="Rate 1-5">
+      </div>
+      <label class="block mb-2 text-[var(--text)]">Customer Service</label>
+      <div class="flex gap-2 mb-4">
+        <input type="number" id="service-rating" min="1" max="5" class="w-full p-2 border rounded-lg"
+          placeholder="Rate 1-5">
+      </div>
+      <label class="block mb-2 text-[var(--text)]">Comment</label>
+      <textarea id="astegni-comment" class="w-full p-2 border rounded-lg mb-4" rows="5"
+        placeholder="Your comment about ASTEGNI"></textarea>
+      <button onclick="submitAstegniRating()" class="cta-button px-4 py-2 rounded-lg w-full">Submit</button>
+      <button onclick="closeRateAstegniModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Share Profile Modal -->
+<div id="share-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+  <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto bg-white bg-cover bg-center" style="background-image: url('../pictures/share_img.png')">
+    <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Share Your Profile</h3>
+    <div class="text-[var(--text)] mb-4">
+      <p class="mb-2">Invite friends and earn:</p>
+      <ul class="list-disc pl-5">
+        <li>10% upon their verification</li>
+        <li>5% upon their friends’ verification</li>
+      </ul>
+    </div>
+    <input type="text" id="profile-link" class="w-full p-2 border rounded-lg mb-4 bg-white bg-opacity-90" readonly>
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <a id="profile-share-facebook" href="#" target="_blank" class="cta-button px-4 py-2 rounded-lg text-center">Facebook</a>
+      <a id="profile-share-telegram" href="#" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-center">Telegram</a>
+      <button id="copy-profile-link" class="cta-button px-4 py-2 rounded-lg">Copy Link</button>
+    </div>
+    <button id="close-share-profile-modal" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+  </div>
+</div>
+
+
+
+  <!-- Modified Notification Modal -->
+  <div id="notification-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Notifications</h3>
+      <div id="notification-content" class="text-[var(--text)] mb-4"></div>
+      <button onclick="openPaymentModal()" class="cta-button px-4 py-2 rounded-lg w-full mb-2">Pay Now</button>
+      <button onclick="closeNotificationModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+
+  <!-- Upload Cover Photo Modal -->
+  <div id="upload-cover-photo-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Upload Cover Photo</h3>
+      <input type="file" id="cover-photo-file" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+      <p id="cover-photo-error" class="text-red-500 text-sm mb-2 hidden">Invalid file (max 5MB, JPEG/PNG).</p>
+      <div id="cover-photo-preview" class="mb-4"></div>
+      <button onclick="submitCoverPhoto()" class="cta-button px-4 py-2 rounded-lg w-full">Upload</button>
+      <button onclick="closeUploadCoverPhotoModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Upload Profile Photo Modal -->
+  <div id="upload-profile-photo-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Upload Profile Photo</h3>
+      <input type="file" id="profile-photo-file" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+      <p id="profile-photo-error" class="text-red-500 text-sm mb-2 hidden">Invalid file (max 5MB, JPEG/PNG).</p>
+      <div id="profile-photo-preview" class="mb-4"></div>
+      <button onclick="submitProfilePhoto()" class="cta-button px-4 py-2 rounded-lg w-full">Upload</button>
+      <button onclick="closeUploadProfilePhotoModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+
+  <!-- Edit About Me Modal -->
+  <div id="edit-about-me-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit About Me</h3>
+      <textarea id="about-me-input" class="w-full p-2 border rounded-lg mb-4" rows="5"
+        placeholder="Write something about yourself"></textarea>
+      <button onclick="submitAboutMe()" class="cta-button px-4 py-2 rounded-lg w-full">Save</button>
+      <button onclick="closeEditAboutMeModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Edit Certifications Modal -->
+  <div id="edit-certifications-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Upload Certifications</h3>
+      <div id="certifications-container" class="mb-4">
+        <div class="certification-entry flex flex-col gap-2 mb-4">
+          <input type="text" class="cert-school w-full p-2 border rounded-lg" placeholder="Search for school">
+          <div class="school-suggestions cert-school-suggestions hidden"></div>
+          <input type="text" class="cert-subject w-full p-2 border rounded-lg"
+            placeholder="Certified in (e.g., Physics)">
+          <input type="text" class="cert-type w-full p-2 border rounded-lg"
+            placeholder="Certification type (e.g., BSc)">
+          <input type="date" class="cert-date w-full p-2 border rounded-lg" placeholder="Date issued">
+          <input type="file" class="cert-file w-full p-2 border rounded-lg" accept="image/*,application/pdf">
+          <button onclick="removeCertification(this)"
+            class="bg-red-600 text-white px-2 py-1 rounded-lg hover:bg-red-700 hidden">−</button>
+        </div>
+      </div>
+      <p id="certifications-error" class="text-red-500 text-sm mb-2 hidden">Invalid file (max 5MB, JPEG/PNG/GIF/PDF).
+      </p>
+      <div id="certification-documents-preview" class="mb-4"></div>
+      <button onclick="addCertification()" class="cta-button px-4 py-2 rounded-lg mb-4">Add Certification</button>
+      <button onclick="submitCertifications()" class="cta-button px-4 py-2 rounded-lg w-full">Save</button>
+      <button onclick="closeEditCertificationsModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Edit Socials Modal -->
+  <div id="edit-socials-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Social Links</h3>
+      <div id="socials-container" class="mb-4">
+        <div class="social-entry flex gap-2 mb-2">
+          <input type="url" class="social-link w-full p-2 border rounded-lg" placeholder="Enter social media link">
+          <button onclick="removeSocialLink(0)"
+            class="bg-red-600 text-white px-2 py-1 rounded-lg hover:bg-red-700 hidden">−</button>
+        </div>
+      </div>
+      <button onclick="addSocialLink()" class="cta-button px-4 py-2 rounded-lg mb-4">Add Social Link</button>
+      <button onclick="submitSocials()" class="cta-button px-4 py-2 rounded-lg w-full">Save</button>
+      <button onclick="closeEditSocialsModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+
+
+
+  <!-- Edit Profile Modal -->
+  <div id="edit-profile-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Profile</h3>
+      <label class="block mb-2 text-[var(--text)]">Name</label>
+      <input type="text" id="profile-name" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter your name">
+      <label class="block mb-2 text-[var(--text)]">Gender</label>
+      <select id="profile-gender" class="w-full p-2 border rounded-lg mb-4">
+        <option value="" disabled selected>Select gender</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+      </select>
+      <label class="block mb-2 text-[var(--text)]">Phone Number</label>
+      <input type="tel" id="profile-phone" class="w-full p-2 border rounded-lg mb-4" placeholder="+251912345678">
+      <label class="block mb-2 text-[var(--text)]">Email Address</label>
+      <input type="email" id="profile-email" class="w-full p-2 border rounded-lg mb-4"
+        placeholder="example@astegni.com">
+      <p id="school-error" class="text-red-500 text-sm mb-2 hidden">Invalid school name. Please select a valid school or
+        request listing.</p>
+      <label class="block mb-2 text-[var(--text)]">What's Your Quote</label>
+      <textarea id="profile-quote" class="w-full p-2 border rounded-lg mb-4" rows="3"
+        placeholder="Enter your quote"></textarea>
+      <label class="block mb-2 text-[var(--text)]">Address</label>
+      <div class="flex gap-2 mb-4">
+        <input type="text" id="profile-address" class="w-full p-2 border rounded-lg" placeholder="Enter your address"
+          readonly>
+        <button id="use-my-location" onclick="getLocation()" class="cta-button px-4 py-2 rounded-lg">Use My
+          Location</button>
+      </div>
+      <p id="location-error" class="text-red-500 text-sm mb-2 hidden">Unable to get location.</p>
+      <label class="block mb-2 text-[var(--text)]">Teaches at</label>
+      <div class="relative mb-4">
+        <input type="text" id="profile-school" class="w-full p-2 border rounded-lg" placeholder="Search for school">
+        <div id="school-suggestions" class="school-suggestions hidden"></div>
+      </div>
+      <label class="block mb-2 text-[var(--text)]">ID Document (Passport, Driver’s License, FIDA, etc.)</label>
+      <input type="file" id="id-input" accept="image/*,application/pdf" class="w-full p-2 border rounded-lg mb-2">
+      <p id="id-error" class="text-red-500 text-sm mb-2 hidden">Invalid file (max 5MB, JPEG/PNG/GIF/PDF).</p>
+      <div id="id-preview" class="mb-4"></div>
+      <label class="block mb-2 text-[var(--text)]">Face Scan (Selfie via Webcam)</label>
+      <button id="face-scan-btn" onclick="captureSelfie()" class="cta-button px-4 py-2 rounded-lg mb-2">Capture
+        Selfie</button>
+      <button onclick="openVerifyConfirmModal()" class="cta-button px-4 py-2 rounded-lg w-full">Submit</button>
+      <button onclick="closeEditProfileModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Verification Confirmation Modal -->
+  <div id="verify-confirm-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-30">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Confirm Profile Details</h3>
+      <p id="verify-name" class="text-[var(--text)] mb-2">Name: Not set</p>
+      <p id="verify-gender" class="text-[var(--text)] mb-2">Gender: Not set</p>
+      <p id="verify-phone" class="text-[var(--text)] mb-2">Phone: Not set</p>
+      <p id="verify-email" class="text-[var(--text)] mb-2">Email: Not set</p>
+      <p id="verify-quote" class="text-[var(--text)] mb-2">Quote: Not set</p>
+      <p id="verify-address" class="text-[var(--text)] mb-2">Address: Not set</p>
+      <p id="verify-school" class="text-[var(--text)] mb-2">Teaches at: Not set</p>
+      <p id="verify-courses" class="text-[var(--text)] mb-2">Courses: Not set</p>
+      <p id="verify-bank" class="text-[var(--text)] mb-2">Bank: Not set</p>
+      <p id="verify-account" class="text-[var(--text)] mb-2">Account: Not set</p>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeVerifyConfirmModal()"
+          class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">Cancel</button>
+        <button onclick="submitVerification()" class="cta-button px-4 py-2 rounded-lg">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Requested Sessions Modal -->
+  <div id="requested-sessions-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Requested Sessions</h3>
+      <div id="session-requests" class="mb-4">
+        <div class="session-entry border-b py-2">
+          <p class="font-semibold">Parent: Abebe Kebede</p>
+          <p>Student: Yohannes Abebe</p>
+          <p>Course: Algebra</p>
+          <p>Date: 2025-07-20</p>
+          <div class="flex gap-2 mt-2">
+            <button onclick="openChatModal('abebe')" class="cta-button px-4 py-2 rounded-lg">Chat</button>
+            <button onclick="startVideoCall('abebe')" class="cta-button px-4 py-2 rounded-lg">Video Call</button>
+            <button onclick="viewParentDetails('abebe')" class="cta-button px-4 py-2 rounded-lg">View Parent</button>
+            <button onclick="viewStudentDetails('yohannes')" class="cta-button px-4 py-2 rounded-lg">View
+              Student</button>
+            <button onclick="confirmSession('abebe')"
+              class="cta-button px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700">Confirm</button>
+            <button onclick="rejectSession('abebe')"
+              class="cta-button px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700">Reject</button>
+          </div>
+        </div>
+        <div class="session-entry border-b py-2">
+          <p class="font-semibold">Student: Selam Tesfaye</p>
+          <p>Course: Physics</p>
+          <p>Date: 2025-07-22</p>
+          <div class="flex gap-2 mt-2">
+            <button onclick="openChatModal('selam')" class="cta-button px-4 py-2 rounded-lg">Chat</button>
+            <button onclick="startVideoCall('selam')" class="cta-button px-4 py-2 rounded-lg">Video Call</button>
+            <button onclick="viewStudentDetails('selam')" class="cta-button px-4 py-2 rounded-lg">View Student</button>
+            <button onclick="confirmSession('selam')"
+              class="cta-button px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700">Confirm</button>
+            <button onclick="rejectSession('selam')"
+              class="cta-button px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700">Reject</button>
+          </div>
+        </div>
+      </div>
+      <button onclick="closeRequestedSessionsModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Chat Modal -->
+  <div id="chat-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="chat-student-name" class="text-2xl font-bold text-[var(--heading)]">Chat</h3>
+        <div class="flex gap-2">
+          <button onclick="viewSenderDetails()" class="cta-button px-2 py-1 rounded-lg">View Sender</button>
+          <button id="view-child-btn" onclick="viewChildDetails()" class="cta-button px-2 py-1 rounded-lg hidden">View
+            Child</button>
+        </div>
+      </div>
+      <div id="chat-messages" class="mb-4 max-h-64 overflow-y-auto"></div>
+      <textarea id="chat-input" class="w-full p-2 border rounded-lg mb-4" rows="3"
+        placeholder="Type your message"></textarea>
+      <button onclick="sendMessage()" class="cta-button px-4 py-2 rounded-lg w-full">Send</button>
+      <button onclick="closeChatModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Students Modal -->
+  <div id="students-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">My Students</h3>
+      <input type="text" id="student-search" class="w-full p-2 border rounded-lg mb-4" placeholder="Search students...">
+      <table id="student-table" class="w-full text-left">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2">Name</th>
+            <th class="p-2">Subjects</th>
+            <th class="p-2">Next Session</th>
+            <th class="p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="p-2">Abebe Kebede</td>
+            <td class="p-2">Math, Physics</td>
+            <td class="p-2">May 20, 2025, 2:00 PM</td>
+            <td class="p-2">
+              <button onclick="openStudentDetailsModal('student1')"
+                class="cta-button px-2 py-1 rounded-lg">Details</button>
+              <button onclick="openSessionSheetModal('student1')"
+                class="bg-green-600 text-white px-2 py-1 rounded-lg hover:bg-green-700">Session Sheet</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button onclick="closeStudentsModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Student Details Modal -->
+  <div id="student-details-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Student Details</h3>
+      <p id="student-detail-name" class="text-[var(--text)] mb-2"></p>
+      <div id="student-rating-stars" class="text-yellow-500 mb-2">★★★★☆</div>
+      <p id="student-detail-phone" class="text-[var(--text)] mb-2">Phone: +251912345678</p>
+      <p id="student-detail-email" class="text-[var(--text)] mb-2">Email: abe@example.com</p>
+      <p id="student-detail-subjects" class="text-[var(--text)] mb-2"></p>
+      <p id="student-detail-session" class="text-[var(--text)] mb-4"></p>
+      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Overall Progress</h4>
+      <div class="relative w-24 h-24 progress-circle mb-4">
+        <svg class="w-full h-full">
+          <circle cx="50%" cy="50%" r="45%" stroke="#e5e7eb" stroke-width="8" fill="none" />
+          <circle id="detail-progress-arc" cx="50%" cy="50%" r="45%" stroke="#3B82F6" stroke-width="8" fill="none"
+            stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="0" />
+        </svg>
+        <div class="absolute inset-0 flex items-center justify-center font-bold text-lg text-[var(--text)]"
+          id="detail-progress-label">0%</div>
+      </div>
+      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Detailed Progress</h4>
+      <div class="mb-4">
+        <div class="mb-2">
+          <span>Math: <span id="detail-subj-math">0%</span></span>
+          <div class="bg-gray-200 h-2 rounded">
+            <div id="detail-bar-math" class="bg-blue-600 h-2 rounded" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="mb-2">
+          <span>Physics: <span id="detail-subj-physics">0%</span></span>
+          <div class="bg-gray-200 h-2 rounded">
+            <div id="detail-bar-physics" class="bg-green-600 h-2 rounded" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+      <h4 class="text-lg font-semibold mb-2 text-[var(--heading)]">Session History</h4>
+      <table id="student-session-history" class="w-full text-left mb-4">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2">Date</th>
+            <th class="p-2">Time</th>
+            <th class="p-2">Subjects</th>
+            <th class="p-2">Cost</th>
+            <th class="p-2">Status</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div class="flex gap-2">
+        <button onclick="openChatModal(document.getElementById('student-details-modal').dataset.studentId)"
+          class="cta-button px-4 py-2 rounded-lg flex-1">Chat</button>
+        <button onclick="openVideoCallModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Video Call</button>
+        <button onclick="openStudentCommentRateModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Rate and
+          comment</button>
+        <button onclick="openParentModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Parent</button>
+        <button onclick="closeStudentDetailsModal()"
+          class="bg-gray-700 text-white px-4 py-2 rounded-lg flex-1 hover:bg-gray-800">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Rate and Comment Modal -->
+  <div id="student-rate-comment-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Rate and Comment on Student</h3>
+      <!-- Rating Section -->
+      <div class="mb-6">
+        <h4 class="text-lg font-semibold mb-2 text-[var(--text)]">Rate Student</h4>
+        <label class="block mb-2 text-[var(--text)]">Discipline</label>
+        <div class="flex mb-4">
+          <input type="range" id="student-discipline-rating" min="1" max="5" value="3" class="w-full">
+          <span id="student-discipline-value" class="ml-2 text-[var(--text)]">3</span>
+        </div>
+        <label class="block mb-2 text-[var(--text)]">Punctuality</label>
+        <div class="flex mb-4">
+          <input type="range" id="student-punctuality-rating" min="1" max="5" value="3" class="w-full">
+          <span id="student-punctuality-value" class="ml-2 text-[var(--text)]">3</span>
+        </div>
+        <label class="block mb-2 text-[var(--text)]">Subject Intake</label>
+        <div class="flex mb-4">
+          <input type="range" id="student-intake-rating" min="1" max="5" value="3" class="w-full">
+          <span id="student-intake-value" class="ml-2 text-[var(--text)]">3</span>
+        </div>
+        <label class="block mb-2 text-[var(--text)]">Communication Skills</label>
+        <div class="flex mb-4">
+          <input type="range" id="student-communication-rating" min="1" max="5" value="3" class="w-full">
+          <span id="student-communication-value" class="ml-2 text-[var(--text)]">3</span>
+        </div>
+      </div>
+      <!-- Comment Section -->
+      <div class="mb-6">
+        <h4 class="text-lg font-semibold mb-2 text-[var(--text)]">Add Comment</h4>
+        <textarea id="student-comment-input" class="w-full p-2 border rounded-lg mb-4" rows="5"
+          placeholder="Write your comment about the student"></textarea>
+        <button onclick="submitStudentComment()" class="cta-button px-4 py-2 rounded-lg w-full mb-2">Submit
+          Comment</button>
+        <h4 class="text-lg font-semibold mb-2 text-[var(--text)]">Student Comments</h4>
+        <div id="student-comments-list" class="text-[var(--text)] mb-4">
+          <p>No comments yet.</p>
+        </div>
+      </div>
+      <!-- Action Buttons -->
+      <button onclick="submitStudentRating()" class="cta-button px-4 py-2 rounded-lg w-full mb-2">Submit Rating</button>
+      <button onclick="closeStudentRateCommentModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Parent Modal -->
+  <div id="parent-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Parent Details</h3>
+      <img src="https://via.placeholder.com/80" id="parent-profile-picture" alt="Parent Profile Picture"
+        class="w-20 h-20 rounded-full mb-4">
+      <div id="parent-rating-stars" class="text-yellow-500 mb-2">★★★★☆</div>
+      <p id="parent-name" class="text-[var(--text)] mb-2">Name: Kebede Alemu</p>
+      <p id="parent-phone" class="text-[var(--text)] mb-2">Phone: +251987654321</p>
+      <p id="parent-email" class="text-[var(--text)] mb-2">Email: kebede@example.com</p>
+      <div class="flex gap-2">
+        <button onclick="openParentCommentModal()" class="cta-button px-4 py-2 rounded-lg flex-1">View Comments</button>
+        <button onclick="openChatModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Chat</button>
+        <button onclick="openVideoCallModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Video Call</button>
+        <button onclick="openParentRateModal()" class="cta-button px-4 py-2 rounded-lg flex-1">Rate and comment</button>
+        <button onclick="openSendProgressModal()" class="cta-button px-4 py-2 rounded-lg flex-1">send progress</button>
+        <button onclick="closeParentModal()"
+          class="bg-gray-700 text-white px-4 py-2 rounded-lg flex-1 hover:bg-gray-800">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parent Rate and Comment Modal -->
+  <div id="parent-rate-comment-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Rate and Comment on Parent</h3>
+      <!-- Rating Section -->
+      <div class="mb-6">
+        <h4 class="text-lg font-semibold mb-2 text-[var(--text)]">Rate Parent</h4>
+        <label class="block mb-2 text-[var(--text)]">On-Time Payment</label>
+        <div class="flex mb-4">
+          <input type="range" id="parent-payment-rating" min="1" max="5" value="3" class="w-full">
+          <span id="parent-payment-value" class="ml-2 text-[var(--text)]">3</span>
+        </div>
+        <label class="block mb-2 text-[var(--text)]">Hospitality</label>
+        <div class="flex mb-4">
+          <input type="range" id="parent-hospitality-rating" min="1" max="5" value="3" class="w-full">
+          <span id="parent-hospitality-value" class="ml-2 text-[var(--text)]">3</span>
+        </div>
+      </div>
+      <!-- Comment Section -->
+      <div class="mb-6">
+        <h4 class="text-lg font-semibold mb-2 text-[var(--text)]">Add Comment</h4>
+        <textarea id="parent-comment-input" class="w-full p-2 border rounded-lg mb-4" rows="5"
+          placeholder="Write your comment about the parent"></textarea>
+        <button onclick="submitParentComment()" class="cta-button px-4 py-2 rounded-lg w-full mb-2">Submit
+          Comment</button>
+        <h4 class="text-lg font-semibold mb-2 text-[var(--text)]">Parent Comments</h4>
+        <div id="parent-comments-list" class="text-[var(--text)] mb-4">
+          <p>No comments yet.</p>
+        </div>
+      </div>
+      <!-- Action Buttons -->
+      <button onclick="submitParentRating()" class="cta-button px-4 py-2 rounded-lg w-full mb-2">Submit Rating</button>
+      <button onclick="closeParentRateCommentModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Video Call Modal -->
+  <div id="video-call-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Video Call</h3>
+      <p class="text-[var(--text)]">Video call functionality to be implemented.</p>
+      <button onclick="closeVideoCallModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Report Student Modal -->
+  <div id="report-student-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Report Student</h3>
+      <label class="block mb-2 text-[var(--text)]">Reason</label>
+      <textarea id="report-reason" class="w-full p-2 border rounded-lg mb-4" rows="4"
+        placeholder="Describe the issue"></textarea>
+      <button onclick="submitReport()" class="cta-button px-4 py-2 rounded-lg w-full">Submit Report</button>
+      <button onclick="closeReportStudentModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Session Sheet Modal -->
+  <div id="session-sheet-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Session Sheet</h3>
+      <table class="w-full text-left mb-4">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="p-2">Date</th>
+            <th class="p-2">Time</th>
+            <th class="p-2">Subjects</th>
+            <th class="p-2">Cost</th>
+            <th class="p-2">Status</th>
+            <th class="p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr id="session-1">
+            <td class="p-2">May 20, 2025</td>
+            <td class="p-2">2:00 PM</td>
+            <td class="p-2">Math</td>
+            <td class="p-2">350 ETB</td>
+            <td class="p-2" id="session-1-status">Pending</td>
+            <td class="p-2">
+              <button id="session-1-confirm" onclick="confirmAttendance('1', 'Tutor')"
+                class="cta-button px-2 py-1 rounded-lg">Confirm</button>
+              <button id="session-1-wait" onclick="confirmWaiting('1', 'Tutor')"
+                class="bg-yellow-600 text-white px-2 py-1 rounded-lg hover:bg-yellow-700 hidden">Waiting</button>
+              <button id="session-1-makeup" onclick="proposeMakeup('1')"
+                class="bg-blue-600 text-white px-2 py-1 rounded-lg hover:bg-blue-700 hidden">Propose Makeup</button>
+              <button onclick="openSubjectsModal('1')"
+                class="bg-green-600 text-white px-2 py-1 rounded-lg hover:bg-green-700">Subjects</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button onclick="closeSessionSheetModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Subjects Modal -->
+  <div id="subjects-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Select Subjects</h3>
+      <div class="mb-4">
+        <label class="block mb-2 text-[var(--text)]"><input type="checkbox" value="Math" class="mr-2"> Math</label>
+        <label class="block mb-2 text-[var(--text)]"><input type="checkbox" value="Physics" class="mr-2">
+          Physics</label>
+        <label class="block mb-2 text-[var(--text)]"><input type="checkbox" value="Chemistry" class="mr-2">
+          Chemistry</label>
+      </div>
+      <button onclick="submitSubjects()" class="cta-button px-4 py-2 rounded-lg w-full">Save</button>
+      <button onclick="closeSubjectsModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Makeup Session Modal -->
+  <div id="makeup-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Propose Makeup Session</h3>
+      <label class="block mb-2 text-[var(--text)]">Date</label>
+      <input type="date" id="makeup-date" class="w-full p-2 border rounded-lg mb-4">
+      <label class="block mb-2 text-[var(--text)]">Time</label>
+      <input type="time" id="makeup-time" class="w-full p-2 border rounded-lg mb-4">
+      <button onclick="submitMakeup()" class="cta-button px-4 py-2 rounded-lg w-full">Propose</button>
+      <button onclick="closeMakeupModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Upload Video Modal -->
+  <div id="upload-video-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Upload Video</h3>
+      <label class="block mb-2 text-[var(--text)]">Select Video</label>
+      <select id="video-select" class="w-full p-2 border rounded-lg mb-4">
+        <option value="intro">Introduction Video</option>
+        <option value="short">Short</option>
+        <option value="video">Video</option>
+      </select>
+      <label class="block mb-2 text-[var(--text)]">Course</label>
+      <input type="text" id="video-course" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Algebra">
+      <label class="block mb-2 text-[var(--text)]">Description</label>
+      <textarea id="upload-video-desc-input" class="w-full p-2 border rounded-lg mb-4" rows="3"></textarea>
+      <input type="file" id="upload-video-input" accept="video/mp4" class="w-full p-2 border rounded-lg mb-2">
+      <p id="upload-video-error" class="text-red-500 text-sm mb-2 hidden">Invalid file (max 10MB, MP4).</p>
+      <video id="upload-video-preview" controls class="w-full rounded-lg mb-4 hidden preview"></video>
+      <div class="flex gap-2">
+        <button onclick="saveVideo()" class="cta-button px-4 py-2 rounded-lg flex-1">Save</button>
+        <button onclick="publishVideo()" class="cta-button px-4 py-2 rounded-lg flex-1">Publish</button>
+        <button onclick="advertiseAndPublishVideo()"
+          class="bg-blue-600 text-white px-4 py-2 rounded-lg flex-1 hover:bg-green-700">Publish & Advertise</button>
+      </div>
+      <button onclick="closeUploadVideoModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+
+
+
+  <!-- Change Introduction Video Modal -->
+  <div id="change-intro-video-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto relative">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Select Introduction Video</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <input type="radio" name="intro-video" id="clip-1-radio" class="video-radio">
+            <label for="clip-1-radio" class="video-title font-bold text-[var(--heading)]">Quick Math Tip</label>
+          </div>
+          <video controls class="w-full rounded-lg" id="clip-1-preview" onclick="openVideoPlayerModal('clip-1')">
+            <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <input type="radio" name="intro-video" id="clip-2-radio" class="video-radio">
+            <label for="clip-2-radio" class="video-title font-bold text-[var(--heading)]">Physics Concept
+              Explained</label>
+          </div>
+          <video controls class="w-full rounded-lg" id="clip-2-preview" onclick="openVideoPlayerModal('clip-2')">
+            <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <input type="radio" name="intro-video" id="video-1-radio" class="video-radio">
+            <label for="video-1-radio" class="video-title font-bold text-[var(--heading)]">Algebra Basics</label>
+          </div>
+          <video controls class="w-full rounded-lg" id="video-1-preview" onclick="openVideoPlayerModal('video-1')">
+            <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <input type="radio" name="intro-video" id="video-2-radio" class="video-radio">
+            <label for="video-2-radio" class="video-title font-bold text-[var(--heading)]">Physics Fundamentals</label>
+          </div>
+          <video controls class="w-full rounded-lg" id="video-2-preview" onclick="openVideoPlayerModal('video-2')">
+            <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+      </div>
+      <button onclick="makeIntroductionVideoFromModal()"
+        class="cta-button px-4 py-2 rounded-lg absolute bottom-4 right-4">MIV</button>
+      <button onclick="closeChangeIntroVideoModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Modified Video Player Modal -->
+  <div id="video-player-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content video-player-modal p-6 rounded-lg">
+      <p id="video-player-title" class="video-title text-2xl mb-4"></p>
+      <div class="video-container">
+        <video controls autoplay class="rounded-lg" id="video-player">
+          <source src="" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div class="controls">
+          <button onclick="navigateVideo('up')" title="Previous Video">↑</button>
+          <button onclick="likeVideo()" title="Like">👍</button>
+          <button onclick="dislikeVideo()" title="Dislike">👎</button>
+          <button onclick="openVideoCommentModal('video-player')" title="Comment">💬</button>
+          <button onclick="openShareModal('video-player')" title="Share">↗</button>
+          <div class="more-menu">
+            <button class="more-button" onclick="toggleMoreMenu(event)">⋯ More</button>
+            <div class="more-menu-content hidden">
+              <!-- Options hidden as per requirement -->
+            </div>
+          </div>
+          <button onclick="navigateVideo('down')" title="Next Video">↓</button>
+        </div>
+      </div>
+      <p id="video-player-desc" class="text-[var(--text)] mt-2 video-desc"></p>
+      <button onclick="closeVideoPlayerModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+
+
+  <!-- Modified Playlist Modal -->
+  <div id="playlist-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div
+      class="modal-content p-6 rounded-lg w-full max-w-5xl max-h-[80vh] overflow-y-auto flex bg-white dark:bg-gray-800">
+      <div class="w-2/3">
+        <div class="flex justify-between items-center mb-4">
+          <h3 id="playlist-modal-title" class="text-2xl font-bold text-[var(--heading)]"></h3>
+          <button onclick="closePlaylistModal()" class="text-[var(--text)] hover:underline">Close</button>
+        </div>
+        <div class="video-player-container">
+          <video controls autoplay class="rounded-lg" id="playlist-video-player">
+            <source src="" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+        </div>
+        <p id="playlist-video-desc" class="text-[var(--text)] mt-2"></p>
+        <div class="flex gap-2 mt-2">
+          <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👍 Like</button>
+          <button class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">👎 Dislike</button>
+          <button onclick="openVideoCommentModal('playlist-video')"
+            class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">💬 Comment</button>
+          <button onclick="openShareModal('playlist-video')" class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">↗
+            Share</button>
+          <button onclick="openAdvertiseModal('playlist-video')"
+            class="px-2 py-1 rounded hover:bg-[var(--button-hover)]">📢 Advertise</button>
+          <div class="more-menu">
+            <button class="more-button" onclick="toggleMoreMenu(event)">⋯ More</button>
+            <div class="more-menu-content hidden">
+              <!-- Options hidden as per requirement -->
+            </div>
+          </div>
+        </div>
+        <div id="playlist-video-comments" class="text-[var(--text)] mt-2">
+          <p>No comments yet.</p>
+        </div>
+        <button onclick="openVideoDescModal('playlist-video')" class="cta-button px-4 py-2 rounded-lg mt-4">Video
+          Description</button>
+      </div>
+      <div class="w-1/3 bg-gray-100 dark:bg-gray-700 p-4 rounded-lg ml-4 overflow-y-auto">
+        <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">Playlist Videos</h4>
+        <div id="playlist-videos" class="flex flex-col gap-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Description Modal -->
+  <div id="video-desc-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Edit Video Description</h3>
+      <textarea id="video-desc-input" class="w-full p-2 border rounded-lg mb-4" rows="5"></textarea>
+      <button onclick="submitVideoDesc()" class="cta-button px-4 py-2 rounded-lg w-full">Save</button>
+      <button onclick="closeVideoDescModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+  <!-- Video Comment Modal -->
+  <div id="video-comment-modal"
+    class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Add Comment</h3>
+      <textarea id="video-comment-input" class="w-full p-2 border rounded-lg mb-4" rows="5"
+        placeholder="Write your comment"></textarea>
+      <button onclick="submitVideoComment()" class="cta-button px-4 py-2 rounded-lg w-full">Submit</button>
+      <button onclick="closeVideoCommentModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="share-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Share Video</h3>
+      <input type="text" id="share-url" class="w-full p-2 border rounded-lg mb-4" readonly>
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <a id="share-facebook" href="#" target="_blank" class="cta-button px-4 py-2 rounded-lg text-center">Facebook</a>
+        <a id="share-instagram" href="#" target="_blank"
+          class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 text-center">Instagram</a>
+        <a id="share-youtube" href="#" target="_blank"
+          class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-center">YouTube</a>
+        <a id="share-tiktok" href="#" target="_blank"
+          class="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 text-center">TikTok</a>
+        <a id="share-telegram" href="#" target="_blank"
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-center">Telegram</a>
+        <button onclick="copyLink()" class="cta-button px-4 py-2 rounded-lg">Copy Link</button>
+      </div>
+      <button onclick="closeShareModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  <!-- Referral Modal -->
+  <div id="referral-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Refer a Friend</h3>
+      <p class="text-[var(--text)] mb-4">Referral Code: <span id="referral-code-value" class="font-bold"></span></p>
+      <input type="text" id="referral-link" class="w-full p-2 border rounded-lg mb-4" readonly>
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <a id="referral-share-facebook" href="#" target="_blank"
+          class="cta-button px-4 py-2 rounded-lg text-center">Facebook</a>
+        <a id="referral-share-telegram" href="#" target="_blank"
+          class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-center">Telegram</a>
+        <button onclick="copyReferralLink()" class="cta-button px-4 py-2 rounded-lg">Copy Link</button>
+      </div>
+      <button onclick="closeReferralModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
+    </div>
+  </div>
+
+  
+  <!-- Footer -->
+  <footer class="bg-[var(--footer-bg)] text-[var(--footer-text)] py-8">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <h4 class="text-lg font-semibold mb-4">About ASTEGNI</h4>
+          <p>ASTEGNI is a platform connecting students with qualified tutors for personalized learning experiences.</p>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+          <ul>
+            <li><a href="index.html" class="hover:underline">Home</a></li>
+            <li><a href="find-tutors.html" class="hover:underline">Find Tutors</a></li>
+            <li><a href="#" onclick="openNotesModal()" class="hover:underline">Notes</a></li>
+            <li><a href="#" onclick="openToolsModal()" class="hover:underline">Tools</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Contact Us</h4>
+          <p>Email: <a href="mailto:info@astegni.et" class="hover:underline">info@astegni.et</a></p>
+          <p>Phone: +251-912-345-678</p>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4">Follow Us</h4>
+          <div class="flex gap-4">
+            <a href="#" class="hover:text-[var(--nav-link-hover)]">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.5 7.09h-2.07c-.28 0-.5.22-.5.5v1.41h2.57l-.34 2.59h-2.23v6.41h-2.59v-6.41H9.5v-2.59h1.84V9.59c0-1.81 1.1-2.8 2.71-2.8h1.95v2.3z" />
+              </svg>
+            </a>
+            <a href="#" class="hover:text-[var(--nav-link-hover)]">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2.5 16.5h-2v-7h2v7zm-1-7.9c-.7 0-1.2-.6-1.2-1.3s.5-1.3 1.2-1.3 1.2.6 1.2 1.3-.5 1.3-1.2 1.3zm9.5 7.9h-2v-4c0-.9-.3-1.5-1.1-1.5-.6 0-1 .4-1.1 1v4.5h-2v-7h2v1.1c.3-.5.9-.8 1.6-.8 1.2 0 2.1.7 2.1 2.2v4.5z" />
+              </svg>
+            </a>
+            <a href="#" class="hover:text-[var(--nav-link-hover)]">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="mt-8 text-center">
+        <p>&copy; 2025 ASTEGNI. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+    const html = document.documentElement;
+
+    function toggleTheme() {
+      const currentTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', currentTheme);
+      localStorage.setItem('theme', currentTheme);
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+    mobileThemeToggle.addEventListener('click', toggleTheme);
+
+    // Initialize theme based on localStorage or system preference
+    const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    html.setAttribute('data-theme', savedTheme);
+
+    // Mobile Menu Toggle
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Profile Dropdown
+    const profileDropdownBtn = document.getElementById('profile-dropdown-btn');
+    const profileDropdown = document.getElementById('profile-dropdown');
+    const mobileProfileDropdownBtn = document.getElementById('mobile-profile-dropdown-btn');
+    const mobileProfileDropdown = document.getElementById('mobile-profile-dropdown');
+
+    profileDropdownBtn.addEventListener('click', () => {
+      profileDropdown.classList.toggle('hidden');
+    });
+
+    mobileProfileDropdownBtn.addEventListener('click', () => {
+      mobileProfileDropdown.classList.toggle('hidden');
+    });
+
+    // Modal Functions
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // Notes Modal
+    function openNotesModal() {
+      openModal('notes-modal');
+    }
+
+    function closeNotesModal() {
+      closeModal('notes-modal');
+    }
+
+    function newNote() {
+      document.getElementById('note-content').innerHTML = '';
+      document.getElementById('note-title').value = '';
+      document.getElementById('note-date').value = '';
+      document.getElementById('note-tutor').value = '';
+      document.getElementById('note-course').value = '';
+    }
+
+    function saveNote() {
+      const note = {
+        date: document.getElementById('note-date').value,
+        tutor: document.getElementById('note-tutor').value,
+        course: document.getElementById('note-course').value,
+        title: document.getElementById('note-title').value,
+        content: document.getElementById('note-content').innerHTML,
+      };
+      // Simulate saving note
+      const history = document.getElementById('notes-history-content');
+      const noteDiv = document.createElement('div');
+      noteDiv.className = 'p-2 border-b';
+      noteDiv.innerHTML = `<p><strong>${note.title}</strong> - ${note.date}</p><p>${note.content}</p>`;
+      history.appendChild(noteDiv);
+      closeNotesModal();
+    }
+
+    function toggleNotesHistory() {
+      const history = document.getElementById('notes-history');
+      history.classList.toggle('hidden');
+    }
+
+    // Background Image Modal
+    function openBackgroundModal() {
+      openModal('background-modal');
+    }
+
+    function closeBackgroundModal() {
+      closeModal('background-modal');
+    }
+
+    function setNoteBackground(subject) {
+      document.getElementById('note-content').style.backgroundImage = `url('pictures/${subject}.jpg')`;
+      closeBackgroundModal();
+    }
+
+    function removeNoteBackground() {
+      document.getElementById('note-content').style.backgroundImage = 'none';
+    }
+
+    function uploadBackgroundImage() {
+      const fileInput = document.getElementById('upload-background');
+      const file = fileInput.files[0];
+      if (file && file.size <= 5 * 1024 * 1024 && ['image/jpeg', 'image/png'].includes(file.type)) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById('note-content').style.backgroundImage = `url(${reader.result})`;
+        };
+        reader.readAsDataURL(file);
+        closeBackgroundModal();
+      } else {
+        alert('Invalid file (max 5MB, JPEG/PNG).');
+      }
+    }
+
+    // Tools Modal
+    function openToolsModal() {
+      openModal('tools-modal');
+    }
+
+    function closeToolsModal() {
+      closeModal('tools-modal');
+    }
+
+    // Advertise Modal
+    function openAdvertiseModal() {
+      openModal('advertise-modal');
+    }
+
+    function closeAdvertiseModal() {
+      closeModal('advertise-modal');
+    }
+
+    function openEnhanceConfirmationModal() {
+      closeAdvertiseModal();
+      openModal('enhance-confirmation-modal');
+    }
+
+    function closeEnhanceConfirmationModal() {
+      closeModal('enhance-confirmation-modal');
+    }
+
+    // Quiz Modal
+    function openQuizModal() {
+      openModal('quiz-modal');
+    }
+
+    function closeQuizModal() {
+      closeModal('quiz-modal');
+    }
+
+    function startQuiz() {
+      alert('Quiz started!');
+      closeQuizModal();
+    }
+
+    // Rate ASTEGNI Modal
+    function openRateAstegniModal() {
+      openModal('rate-astegni-modal');
+    }
+
+    function closeRateAstegniModal() {
+      closeModal('rate-astegni-modal');
+    }
+
+    function submitAstegniRating() {
+      const usability = document.getElementById('usability-rating').value;
+      const service = document.getElementById('service-rating').value;
+      const comment = document.getElementById('astegni-comment').value;
+      // Simulate submission
+      alert(`Rating submitted: Usability ${usability}/5, Service ${service}/5, Comment: ${comment}`);
+      closeRateAstegniModal();
+    }
+
+    // Share Profile Modal
+    function openShareProfileModal() {
+       openModal('share-profile-modal');
+    }
+
+    function closeShareProfileModal() {
+      closeModal('share-profile-modal');
+    }
+
+    function copyProfileLink() {
+      const link = document.getElementById('profile-link');
+      link.select();
+      document.execCommand('copy');
+      alert('Profile link copied!');
+    }
+
+    // Notification Modal
+    function openNotificationModal() {
+      document.getElementById('notification-dot').classList.add('hidden');
+      document.getElementById('mobile-notification-dot').classList.add('hidden');
+      openModal('notification-modal');
+    }
+
+    function closeNotificationModal() {
+      closeModal('notification-modal');
+    }
+
+    function openUploadCoverPhotoModal() {
+      openModal('upload-cover-photo-modal');
+      const fileInput = document.getElementById('cover-photo-file');
+      fileInput.value = '';
+      const preview = document.getElementById('cover-photo-preview');
+      preview.innerHTML = '';
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (file && file.size <= 5 * 1024 * 1024 && ['image/jpeg', 'image/png'].includes(file.type)) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            preview.innerHTML = `<img src="${reader.result}" alt="Cover Preview">`;
+          };
+          reader.readAsDataURL(file);
+          document.getElementById('cover-photo-error').classList.add('hidden');
+        } else {
+          preview.innerHTML = '';
+          document.getElementById('cover-photo-error').classList.remove('hidden');
+        }
+      });
+    }
+
+
+
+
+    function closeUploadCoverPhotoModal() {
+      closeModal('upload-cover-photo-modal');
+    }
+
+    function submitCoverPhoto() {
+      const fileInput = document.getElementById('cover-photo-file');
+      const file = fileInput.files[0];
+      if (file && file.size <= 5 * 1024 * 1024 && ['image/jpeg', 'image/png'].includes(file.type)) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById('cover-photo').style.backgroundImage = `url(${reader.result})`;
+        };
+        reader.readAsDataURL(file);
+        closeUploadCoverPhotoModal();
+      } else {
+        document.getElementById('cover-photo-error').classList.remove('hidden');
+      }
+    }
+
+    // Upload Profile Photo Modal
+    function openUploadProfilePhotoModal() {
+      openModal('upload-profile-photo-modal');
+      const fileInput = document.getElementById('profile-photo-file');
+      fileInput.value = '';
+      const preview = document.getElementById('profile-photo-preview');
+      preview.innerHTML = '';
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files[0];
+        if (file && file.size <= 5 * 1024 * 1024 && ['image/jpeg', 'image/png'].includes(file.type)) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            preview.innerHTML = `<img src="${reader.result}" alt="Profile Preview">`;
+          };
+          reader.readAsDataURL(file);
+          document.getElementById('profile-photo-error').classList.add('hidden');
+        } else {
+          preview.innerHTML = '';
+          document.getElementById('profile-photo-error').classList.remove('hidden');
+        }
+      });
+    }
+
+    function closeUploadProfilePhotoModal() {
+      closeModal('upload-profile-photo-modal');
+    }
+
+    function submitProfilePhoto() {
+      const fileInput = document.getElementById('profile-photo-file');
+      const file = fileInput.files[0];
+      if (file && file.size <= 5 * 1024 * 1024 && ['image/jpeg', 'image/png'].includes(file.type)) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById('profile-picture').src = reader.result;
+        };
+        reader.readAsDataURL(file);
+        closeUploadProfilePhotoModal();
+      } else {
+        document.getElementById('profile-photo-error').classList.remove('hidden');
+      }
+    }
+
+    // Edit About Me Modal
+    function openEditAboutMeModal() {
+      document.getElementById('about-me-input').value = document.getElementById('tutor-bio').textContent;
+      openModal('edit-about-me-modal');
+    }
+
+    function closeEditAboutMeModal() {
+      closeModal('edit-about-me-modal');
+    }
+
+    function submitAboutMe() {
+      const bio = document.getElementById('about-me-input').value;
+      document.getElementById('tutor-bio').textContent = bio;
+      closeEditAboutMeModal();
+    }
+
+    // Edit Certifications Modal
+    function openEditCertificationsModal() {
+      openModal('edit-certifications-modal');
+    }
+
+    function closeEditCertificationsModal() {
+      closeModal('edit-certifications-modal');
+    }
+
+    function addCertification() {
+      const container = document.getElementById('certifications-container');
+      const entry = container.querySelector('.certification-entry').cloneNode(true);
+      entry.querySelector('.cert-school').value = '';
+      entry.querySelector('.cert-subject').value = '';
+      entry.querySelector('.cert-type').value = '';
+      entry.querySelector('.cert-date').value = '';
+      entry.querySelector('.cert-file').value = '';
+      entry.querySelector('button').classList.remove('hidden');
+      container.appendChild(entry);
+    }
+
+    function removeCertification(btn) {
+      if (document.querySelectorAll('.certification-entry').length > 1) {
+        btn.parentElement.remove();
+      }
+    }
+
+    function submitCertifications() {
+      const entries = document.querySelectorAll('.certification-entry');
+      const certifications = Array.from(entries).map(entry => ({
+        school: entry.querySelector('.cert-school').value,
+        subject: entry.querySelector('.cert-subject').value,
+        type: entry.querySelector('.cert-type').value,
+        date: entry.querySelector('.cert-date').value,
+        file: entry.querySelector('.cert-file').files[0],
+      }));
+      // Simulate submission
+      const certContainer = document.getElementById('tutor-certifications');
+      certContainer.innerHTML = certifications.map(c => `<p>${c.type} in ${c.subject} from ${c.school} (${c.date})</p>`).join('');
+      closeEditCertificationsModal();
+    }
+
+    // Edit Socials Modal
+    function openEditSocialsModal() {
+      openModal('edit-socials-modal');
+    }
+
+    function closeEditSocialsModal() {
+      closeModal('edit-socials-modal');
+    }
+
+    function addSocialLink() {
+      const container = document.getElementById('socials-container');
+      const entry = container.querySelector('.social-entry').cloneNode(true);
+      entry.querySelector('.social-link').value = '';
+      entry.querySelector('button').classList.remove('hidden');
+      container.appendChild(entry);
+    }
+
+    function removeSocialLink(index) {
+      const entries = document.querySelectorAll('.social-entry');
+      if (entries.length > 1) {
+        entries[index].remove();
+      }
+    }
+
+    function submitSocials() {
+      const links = Array.from(document.querySelectorAll('.social-link')).map(input => input.value).filter(link => link);
+      const socialsContainer = document.getElementById('view-profile-socials');
+      socialsContainer.innerHTML = links.map(link => `<a href="${link}" target="_blank" class="text-blue-500 hover:underline">${link}</a>`).join('');
+      closeEditSocialsModal();
+    }
+
+    // Edit Quote Modal
+    function openQuoteModal() {
+      document.getElementById('quote-input').value = document.getElementById('quote').textContent;
+      openModal('edit-quote-modal');
+    }
+
+
+
+    // Edit Profile Modal
+    function openEditProfileModal() {
+      document.getElementById('profile-name').value = document.getElementById('tutor-name').textContent;
+      document.getElementById('profile-gender').value = document.getElementById('tutor-gender').textContent.replace('Gender: ', '');
+      document.getElementById('profile-phone').value = document.getElementById('tutor-phone').textContent.replace('Phone: ', '');
+      document.getElementById('profile-email').value = document.getElementById('tutor-email').textContent.replace('Email: ', '');
+      document.getElementById('profile-address').value = document.getElementById('tutor-address').textContent.replace('Address: ', '');
+      document.getElementById('profile-school').value = document.getElementById('tutor-school').textContent.replace('Teaches at: ', '');
+      document.getElementById('profile-quote').value = document.getElementById('quote').textContent;
+      openModal('edit-profile-modal');
+    }
+
+    function closeEditProfileModal() {
+      closeModal('edit-profile-modal');
+    }
+
+    function getLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            document.getElementById('profile-address').value = `Lat: ${position.coords.latitude}, Lon: ${position.coords.longitude}`;
+            document.getElementById('location-error').classList.add('hidden');
+          },
+          () => {
+            document.getElementById('location-error').classList.remove('hidden');
+          }
+        );
+      } else {
+        document.getElementById('location-error').classList.remove('hidden');
+      }
+    }
+
+    function captureSelfie() {
+      alert('Selfie capture not implemented.');
+      document.getElementById('face-scan-status').textContent = 'Selfie captured.';
+    }
+
+    
+
+    function openVerifyConfirmModal() {
+      document.getElementById('verify-name').textContent = `Name: ${document.getElementById('profile-name').value}`;
+      document.getElementById('verify-gender').textContent = `Gender: ${document.getElementById('profile-gender').value}`;
+      document.getElementById('verify-phone').textContent = `Phone: ${document.getElementById('profile-phone').value}`;
+      document.getElementById('verify-email').textContent = `Email: ${document.getElementById('profile-email').value}`;
+      document.getElementById('verify-quote').textContent = `Quote: ${document.getElementById('profile-quote').value}`;
+      document.getElementById('verify-address').textContent = `Address: ${document.getElementById('profile-address').value}`;
+      document.getElementById('verify-school').textContent = `Teaches at: ${document.getElementById('profile-school').value}`;
+      const courses = Array.from(document.querySelectorAll('.course-entry')).map(entry =>
+        `${entry.querySelector('.course-name').value} (${entry.querySelector('.course-fee').value} ${entry.querySelector('.course-fee-type').value})`
+      ).join(', ');
+      document.getElementById('verify-courses').textContent = `Courses: ${courses || 'Not set'}`;
+      document.getElementById('verify-bank').textContent = `Bank: ${document.getElementById('bank-select').value}`;
+      document.getElementById('verify-account').textContent = `Account: ${document.getElementById('bank-account').value}`;
+      openModal('verify-confirm-modal');
+    }
+
+    function closeVerifyConfirmModal() {
+      closeModal('verify-confirm-modal');
+    }
+
+    function submitVerification() {
+      document.getElementById('tutor-name').textContent = document.getElementById('profile-name').value;
+      document.getElementById('tutor-gender').textContent = `Gender: ${document.getElementById('profile-gender').value}`;
+      document.getElementById('tutor-phone').textContent = `Phone: ${document.getElementById('profile-phone').value}`;
+      document.getElementById('tutor-email').textContent = `Email: ${document.getElementById('profile-email').value}`;
+      document.getElementById('tutor-address').textContent = `Address: ${document.getElementById('profile-address').value}`;
+      document.getElementById('tutor-school').textContent = `Teaches at: ${document.getElementById('profile-school').value}`;
+      document.getElementById('quote').textContent = document.getElementById('profile-quote').value;
+      const courses = Array.from(document.querySelectorAll('.course-entry')).map(entry =>
+        `${entry.querySelector('.course-name').value} (${entry.querySelector('.course-fee').value} ${entry.querySelector('.course-fee-type').value})`
+      ).join(', ');
+      document.getElementById('courses').textContent = `Courses: ${courses || 'Not set'}`;
+      document.getElementById('tutor-bank').textContent = `Bank: ${document.getElementById('bank-select').value}`;
+      document.getElementById('payment-account').textContent = `Account Number: ${document.getElementById('bank-account').value}`;
+      closeVerifyConfirmModal();
+      closeEditProfileModal();
+      openPaymentModal();
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    // Requested Sessions Modal
+    function openRequestedSessionsModal() {
+      openModal('requested-sessions-modal');
+    }
+
+    function closeRequestedSessionsModal() {
+      closeModal('requested-sessions-modal');
+    }
+
+    function openChatModal(studentId) {
+      document.getElementById('chat-student-name').textContent = `Chat with ${studentId}`;
+      document.getElementById('chat-modal').dataset.studentId = studentId;
+      openModal('chat-modal');
+    }
+
+    function closeChatModal() {
+      closeModal('chat-modal');
+    }
+
+    function sendMessage() {
+      const message = document.getElementById('chat-input').value;
+      const chatMessages = document.getElementById('chat-messages');
+      const messageDiv = document.createElement('div');
+      messageDiv.className = 'p-2 border-b';
+      messageDiv.textContent = `You: ${message}`;
+      chatMessages.appendChild(messageDiv);
+      document.getElementById('chat-input').value = '';
+    }
+
+    function viewSenderDetails() {
+      alert('Viewing sender details for ' + document.getElementById('chat-modal').dataset.studentId);
+    }
+
+    function viewChildDetails() {
+      alert('Viewing child details');
+    }
+
+    function startVideoCall(studentId) {
+      alert(`Starting video call with ${studentId}`);
+    }
+
+    function viewParentDetails(parentId) {
+      document.getElementById('parent-name').textContent = `Name: ${parentId}`;
+      openModal('parent-modal');
+    }
+
+    function viewStudentDetails(studentId) {
+      document.getElementById('student-details-modal').dataset.studentId = studentId;
+      document.getElementById('student-detail-name').textContent = `Name: ${studentId}`;
+      closeRequestedSessionsModal(); // Close the requested sessions modal
+      openModal('student-details-modal');
+    }
+
+    function confirmSession(studentId) {
+      alert(`Session confirmed for ${studentId}`);
+    }
+
+    function rejectSession(studentId) {
+      alert(`Session rejected for ${studentId}`);
+    }
+
+    // Students Modal
+    function openStudentsModal() {
+      openModal('students-modal');
+    }
+
+    function closeStudentsModal() {
+      closeModal('students-modal');
+    }
+
+    function openStudentDetailsModal(studentId) {
+      document.getElementById('student-detail-name').textContent = `Name: ${studentId}`;
+      document.getElementById('student-details-modal').dataset.studentId = studentId;
+      closeStudentsModal(); // Close the students modal when opening details
+      openModal('student-details-modal');
+    }
+
+    function closeStudentDetailsModal() {
+      closeModal('student-details-modal');
+    }
+
+    // Student Rate & Comment Modal
+    function openStudentRateCommentModal() {
+      document.getElementById('student-rate-comment-modal').classList.remove('hidden');
+      updateRatingValues();
+    }
+
+    function closeStudentRateCommentModal() {
+      document.getElementById('student-rate-comment-modal').classList.add('hidden');
+    }
+
+    function submitStudentRating() {
+      const discipline = document.getElementById('student-discipline-rating').value;
+      const punctuality = document.getElementById('student-punctuality-rating').value;
+      const intake = document.getElementById('student-intake-rating').value;
+      const communication = document.getElementById('student-communication-rating').value;
+      console.log(`Submitting ratings: Discipline=${discipline}, Punctuality=${punctuality}, Subject Intake=${intake}, Communication=${communication}`);
+      // Add logic to handle rating submission
+      closeStudentRateCommentModal();
+    }
+
+    function submitStudentComment() {
+      const comment = document.getElementById('student-comment-input').value;
+      if (comment.trim()) {
+        const commentsList = document.getElementById('student-comments-list');
+        const commentElement = document.createElement('p');
+        commentElement.textContent = comment;
+        commentsList.innerHTML = ''; // Clear "No comments yet" message
+        commentsList.appendChild(commentElement);
+        document.getElementById('student-comment-input').value = ''; // Clear textarea
+        console.log('Submitting comment:', comment);
+        // Add logic to handle comment submission
+      }
+    }
+
+    // Update rating values display
+    function updateRatingValues() {
+      const ratings = [
+        { input: 'student-discipline-rating', output: 'student-discipline-value' },
+        { input: 'student-punctuality-rating', output: 'student-punctuality-value' },
+        { input: 'student-intake-rating', output: 'student-intake-value' },
+        { input: 'student-communication-rating', output: 'student-communication-value' }
+      ];
+      ratings.forEach(({ input, output }) => {
+        const inputElement = document.getElementById(input);
+        const outputElement = document.getElementById(output);
+        outputElement.textContent = inputElement.value;
+        inputElement.addEventListener('input', () => {
+          outputElement.textContent = inputElement.value;
+        });
+      });
+    }
+
+
+    // Update sliders
+    document.querySelectorAll('#student-rate-modal input[type="range"]').forEach(slider => {
+      slider.addEventListener('input', () => {
+        document.getElementById(`${slider.id}-value`).textContent = slider.value;
+      });
+    });
+
+    function openParentRateCommentModal() {
+      document.getElementById('parent-rate-comment-modal').classList.remove('hidden');
+      updateRatingValues();
+    }
+
+    function closeParentRateCommentModal() {
+      document.getElementById('parent-rate-comment-modal').classList.add('hidden');
+    }
+
+    function submitParentRating() {
+      const payment = document.getElementById('parent-payment-rating').value;
+      const hospitality = document.getElementById('parent-hospitality-rating').value;
+      console.log(`Submitting ratings: On-Time Payment=${payment}, Hospitality=${hospitality}`);
+      // Add logic to handle rating submission
+      closeParentRateCommentModal();
+    }
+
+    function submitParentComment() {
+      const comment = document.getElementById('parent-comment-input').value;
+      if (comment.trim()) {
+        const commentsList = document.getElementById('parent-comments-list');
+        const commentElement = document.createElement('p');
+        commentElement.textContent = comment;
+        commentsList.innerHTML = ''; // Clear "No comments yet" message
+        commentsList.appendChild(commentElement);
+        document.getElementById('parent-comment-input').value = ''; // Clear textarea
+        console.log('Submitting comment:', comment);
+        // Add logic to handle comment submission
+      }
+    }
+
+    // Update rating values display
+    function updateRatingValues() {
+      const ratings = [
+        { input: 'parent-payment-rating', output: 'parent-payment-value' },
+        { input: 'parent-hospitality-rating', output: 'parent-hospitality-value' }
+      ];
+      ratings.forEach(({ input, output }) => {
+        const inputElement = document.getElementById(input);
+        const outputElement = document.getElementById(output);
+        outputElement.textContent = inputElement.value;
+        inputElement.addEventListener('input', () => {
+          outputElement.textContent = inputElement.value;
+        });
+      });
+    }
+
+    // Update parent sliders
+    document.querySelectorAll('#parent-rate-modal input[type="range"]').forEach(slider => {
+      slider.addEventListener('input', () => {
+        document.getElementById(`${slider.id}-value`).textContent = slider.value;
+      });
+    });
+
+    function sendStudentProgress() {
+      alert('Sending student progress report.');
+    }
+
+    // Video Call Modal
+    function openVideoCallModal() {
+      openModal('video-call-modal');
+    }
+
+    function closeVideoCallModal() {
+      closeModal('video-call-modal');
+    }
+
+    // Session Sheet Modal
+    function openSessionSheetModal(sessionId) {
+      openModal('session-sheet-modal');
+    }
+
+    function closeSessionSheetModal() {
+      closeModal('session-sheet-modal');
+    }
+
+    function confirmAttendance(sessionId, role) {
+      document.getElementById(`session-${sessionId}-status`).textContent = 'Confirmed';
+      document.getElementById(`session-${sessionId}-confirm`).classList.add('hidden');
+      document.getElementById(`session-${sessionId}-wait`).classList.remove('hidden');
+      document.getElementById(`session-${sessionId}-makeup`).classList.remove('hidden');
+    }
+
+    function confirmWaiting(sessionId, role) {
+      document.getElementById(`session-${sessionId}-status`).textContent = 'Waiting';
+    }
+
+    function proposeMakeup(sessionId) {
+      document.getElementById('session-sheet-modal').dataset.sessionId = sessionId;
+      openModal('makeup-modal');
+    }
+
+    // Subjects Modal
+    function openSubjectsModal(sessionId) {
+      document.getElementById('subjects-modal').dataset.sessionId = sessionId;
+      openModal('subjects-modal');
+    }
+
+    function closeSubjectsModal() {
+      closeModal('subjects-modal');
+    }
+
+    function submitSubjects() {
+      const subjects = Array.from(document.querySelectorAll('#subjects-modal input[type="checkbox"]:checked')).map(input => input.value);
+      alert(`Subjects selected: ${subjects.join(', ')}`);
+      closeSubjectsModal();
+    }
+
+    // Makeup Session Modal
+    function openMakeupModal() {
+      openModal('makeup-modal');
+    }
+
+    function closeMakeupModal() {
+      closeModal('makeup-modal');
+    }
+
+    function submitMakeup() {
+      const date = document.getElementById('makeup-date').value;
+      const time = document.getElementById('makeup-time').value;
+      alert(`Makeup session proposed for ${date} at ${time}`);
+      closeMakeupModal();
+    }
+
+    // Upload Video Modal
+    function openUploadVideoModal(videoId) {
+      document.getElementById('video-select').value = videoId;
+      openModal('upload-video-modal');
+    }
+
+    function closeUploadVideoModal() {
+      closeModal('upload-video-modal');
+    }
+
+    function publishVideo() {
+      const videoId = document.getElementById('video-select').value;
+      const desc = document.getElementById('upload-video-desc-input').value;
+      const fileInput = document.getElementById('upload-video-input');
+      const file = fileInput.files[0];
+      if (file && file.size <= 10 * 1024 * 1024 && file.type === 'video/mp4') {
+        const reader = new FileReader();
+        reader.onload = () => {
+          document.getElementById(videoId).querySelector('source').src = reader.result;
+          document.getElementById(`${videoId}-desc`).textContent = desc;
+          document.getElementById(videoId).load();
+        };
+        reader.readAsDataURL(file);
+        closeUploadVideoModal();
+      } else {
+        document.getElementById('upload-video-error').classList.remove('hidden');
+      }
+    }
+
+    function advertiseAndPublishVideo() {
+      publishVideo();
+      alert('Video published and advertised!');
+    }
+
+    // Change Introduction Video Modal
+    function openChangeIntroVideoModal() {
+      openModal('change-intro-video-modal');
+    }
+
+    function closeChangeIntroVideoModal() {
+      closeModal('change-intro-video-modal');
+    }
+
+    function makeIntroductionVideoFromModal() {
+      const selected = document.querySelector('input[name="intro-video"]:checked');
+      if (selected) {
+        const videoId = selected.id.replace('-radio', '');
+        const videoSrc = document.getElementById(`${videoId}-preview`).querySelector('source').src;
+        const desc = document.getElementById(`${videoId}-desc`).textContent;
+        document.getElementById('intro').querySelector('source').src = videoSrc;
+        document.getElementById('intro-desc').textContent = desc;
+        document.getElementById('intro').load();
+        closeChangeIntroVideoModal();
+      } else {
+        alert('Please select a video.');
+      }
+    }
+
+    // Video Player Modal
+    function openVideoPlayerModal(videoId) {
+      const video = document.getElementById(videoId);
+      const src = video.querySelector('source').src;
+      const title = document.querySelector(`#${videoId} + p.video-title, p.video-title + .video-player-container #${videoId}`).previousElementSibling?.textContent || '';
+      const desc = document.getElementById(`${videoId}-desc`)?.textContent || '';
+      document.getElementById('video-player').querySelector('source').src = src;
+      document.getElementById('video-player-title').textContent = title;
+      document.getElementById('video-player-desc').textContent = desc;
+      document.getElementById('video-player').load();
+      document.getElementById('video-player-modal').dataset.videoId = videoId;
+      openModal('video-player-modal');
+    }
+
+    function closeVideoPlayerModal() {
+      document.getElementById('video-player').pause();
+      closeModal('video-player-modal');
+    }
+
+    function navigateVideo(direction) {
+      const currentVideoId = document.getElementById('video-player-modal').dataset.videoId;
+      const videos = ['intro', 'clip-1', 'clip-2', 'video-1', 'video-2'];
+      const currentIndex = videos.indexOf(currentVideoId);
+      let newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      if (newIndex < 0) newIndex = videos.length - 1;
+      if (newIndex >= videos.length) newIndex = 0;
+      openVideoPlayerModal(videos[newIndex]);
+    }
+
+    function likeVideo() {
+      alert('Video liked!');
+    }
+
+    function dislikeVideo() {
+      alert('Video disliked!');
+    }
+
+    function toggleMoreMenu(event) {
+      const moreMenu = event.target.nextElementSibling;
+      moreMenu.classList.toggle('hidden');
+    }
+
+    // Playlist Modal
+    function openPlaylistModal(playlistId) {
+      document.getElementById('playlist-modal-title').textContent = playlistId === 'math-essentials' ? 'Math Essentials' : 'Physics Series';
+      const videos = playlistId === 'math-essentials' ? ['video-1', 'clip-1'] : ['video-2', 'clip-2'];
+      const playlistVideos = document.getElementById('playlist-videos');
+      playlistVideos.innerHTML = videos.map(id => `
+        <div class="p-2 border-b cursor-pointer" onclick="playPlaylistVideo('${id}')">
+            <p>${document.getElementById(id).previousElementSibling.textContent}</p>
+        </div>
+    `).join('');
+      playPlaylistVideo(videos[0]);
+      openModal('playlist-modal');
+    }
+
+    function closePlaylistModal() {
+      document.getElementById('playlist-video-player').pause();
+      closeModal('playlist-modal');
+    }
+
+    function playPlaylistVideo(videoId) {
+      const video = document.getElementById(videoId);
+      const src = video.querySelector('source').src;
+      const desc = document.getElementById(`${videoId}-desc`).textContent;
+      document.getElementById('playlist-video-player').querySelector('source').src = src;
+      document.getElementById('playlist-video-desc').textContent = desc;
+      document.getElementById('playlist-video-player').load();
+      document.getElementById('playlist-video-player').play();
+    }
+    function openPlaylistModal(playlistId) {
+      document.getElementById('playlist-modal-title').textContent = playlistId === 'math-essentials' ? 'Math Essentials' : 'Physics Series';
+      const videos = playlistId === 'math-essentials' ? ['video-1', 'clip-1'] : ['video-2', 'clip-2'];
+      const playlistVideos = document.getElementById('playlist-videos');
+      playlistVideos.innerHTML = videos.map(id => `
+        <div class="video-card p-2 border-b cursor-pointer" onclick="playPlaylistVideo('${id}')">
+            <p>${document.getElementById(id).previousElementSibling.textContent}</p>
+        </div>
+    `).join('');
+      playPlaylistVideo(videos[0]);
+      openModal('playlist-modal');
+    }
+
+    // Video Description Modal
+    function openVideoDescModal(videoId) {
+      document.getElementById('video-desc-input').value = document.getElementById(`${videoId}-desc`).textContent;
+      document.getElementById('video-desc-modal').dataset.videoId = videoId;
+      openModal('video-desc-modal');
+    }
+
+    function closeVideoDescModal() {
+      closeModal('video-desc-modal');
+    }
+
+    function submitVideoDesc() {
+      const videoId = document.getElementById('video-desc-modal').dataset.videoId;
+      const desc = document.getElementById('video-desc-input').value;
+      document.getElementById(`${videoId}-desc`).textContent = desc;
+      closeVideoDescModal();
+    }
+
+    // Video Comment Modal
+    function openVideoCommentModal(videoId) {
+      document.getElementById('video-comment-modal').dataset.videoId = videoId;
+      openModal('video-comment-modal');
+    }
+
+    function closeVideoCommentModal() {
+      closeModal('video-comment-modal');
+    }
+
+    function submitVideoComment() {
+      const videoId = document.getElementById('video-comment-modal').dataset.videoId;
+      const comment = document.getElementById('video-comment-input').value;
+      const comments = document.getElementById(`${videoId}-comments`);
+      comments.innerHTML = `<p>${comment}</p>`;
+      closeVideoCommentModal();
+    }
+
+    // Share Modal
+    function openShareModal(videoId) {
+      const link = `https://astegni.et/video/${videoId}`;
+      document.getElementById('share-url').value = link;
+      document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
+      document.getElementById('share-instagram').href = `https://www.instagram.com/?url=${encodeURIComponent(link)}`;
+      document.getElementById('share-youtube').href = `https://www.youtube.com/share?url=${encodeURIComponent(link)}`;
+      document.getElementById('share-tiktok').href = `https://www.tiktok.com/share?url=${encodeURIComponent(link)}`;
+      document.getElementById('share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(link)}`;
+      openModal('share-modal');
+    }
+
+    function closeShareModal() {
+      closeModal('share-modal');
+    }
+
+    function copyLink() {
+      const link = document.getElementById('share-url');
+      link.select();
+      document.execCommand('copy');
+      alert('Link copied!');
+    }
+
+    // Referral Modal
+    function openReferralModal() {
+      const code = 'REF123';
+      const link = `https://astegni.et/referral/${code}`;
+      document.getElementById('referral-code-value').textContent = code;
+      document.getElementById('referral-link').value = link;
+      document.getElementById('referral-share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}`;
+      document.getElementById('referral-share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(link)}`;
+      openModal('referral-modal');
+    }
+
+    function closeReferralModal() {
+      closeModal('referral-modal');
+    }
+
+    function copyReferralLink() {
+      const link = document.getElementById('referral-link');
+      link.select();
+      document.execCommand('copy');
+      alert('Referral link copied!');
+    }
+
+    // Unsubscribe and Delete Account
+    // Unsubscribe flow
+
+    // Unsubscribe flow
+    function unsubscribe() {
+      closeModal('mainModal');
+      showModal('unsubscribeModal1');
+    }
+
+    function showUnsubscribeConfirm() {
+      closeModal('unsubscribeModal1');
+      showModal('unsubscribeModal2');
+    }
+
+    function completeUnsubscribe() {
+      closeModal('unsubscribeModal2');
+      showModal('3');
+    }
+
+    // Delete flow
+    let isAccountDeleted = false;
+    function deleteAccount() {
+      closeModal('mainModal');
+      if (isAccountDeleted) {
+        showModal('deletePageModal1');
+      } else {
+        showModal('deleteModal1');
+      }
+    }
+
+    function showDeleteConfirm() {
+      closeModal('deleteModal1');
+      showModal('deleteModal2');
+    }
+
+    function completeDelete() {
+      closeModal('deleteModal2');
+      showModal('deleteModal3');
+      isAccountDeleted = true;
+      document.getElementById('deleteBtn').textContent = 'Delete Page';
+    }
+
+    // Delete Page flow
+    function showDeletePageReasons() {
+      closeModal('deletePageModal1');
+      showModal('deletePageModal2');
+    }
+
+    function completeDeletePage() {
+      closeModal('deletePageModal2');
+      showModal('deletePageModal3');
+    }
+
+    // Show/hide "Other" text box for unsubscribe
+    document.getElementById('unsubscribeOther').addEventListener('change', function () {
+      document.getElementById('otherText').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Show/hide "Other" text box for delete
+    document.getElementById('deleteOther').addEventListener('change', function () {
+      document.getElementById('otherTextDelete').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Show/hide "Other" text box for delete page
+    document.getElementById('deletePageOther').addEventListener('change', function () {
+      document.getElementById('otherTextDeletePage').style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Text Formatting for Notes
+    function formatText(command, value = null) {
+      document.execCommand(command, false, value);
+    }
+
+    // Video Tabs
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    // Video Search
+    document.getElementById('video-search').addEventListener('input', (e) => {
+      const search = e.target.value.toLowerCase();
+      document.querySelectorAll('.video-player-container').forEach(container => {
+        const title = container.querySelector('.video-title').textContent.toLowerCase();
+        container.parentElement.style.display = title.includes(search) ? 'block' : 'none';
+      });
+    });
+
+    // Student Search
+    document.getElementById('student-search').addEventListener('input', (e) => {
+      const search = e.target.value.toLowerCase();
+      document.querySelectorAll('#student-table tbody tr').forEach(row => {
+        const name = row.cells[0].textContent.toLowerCase();
+        row.style.display = name.includes(search) ? '' : 'none';
+      });
+    });
+
+    // School Suggestions (Mock)
+    document.querySelectorAll('.cert-school, #profile-school, #note-tutor, #note-course').forEach(input => {
+      input.addEventListener('input', (e) => {
+        const suggestions = e.target.nextElementSibling;
+        suggestions.classList.remove('hidden');
+        suggestions.innerHTML = ['School A', 'School B', 'School C']
+          .filter(s => s.toLowerCase().includes(e.target.value.toLowerCase()))
+          .map(s => `<div onclick="selectSuggestion(this, '${e.target.id}')">${s}</div>`).join('');
+      });
+    });
+
+    function selectSuggestion(element, inputId) {
+      document.getElementById(inputId).value = element.textContent;
+      element.parentElement.classList.add('hidden');
+    }
+
+    // Make Video Private or Delete
+    function makeVideoPrivate(videoId) {
+      alert(`Video ${videoId} set to private.`);
+    }
+
+    function deleteVideo(videoId) {
+      if (confirm(`Are you sure you want to delete ${videoId}?`)) {
+        alert(`Video ${videoId} deleted.`);
+      }
+    }
+
+    function makeIntroductionVideo(videoId) {
+      const video = document.getElementById(videoId);
+      const src = video.querySelector('source').src;
+      const desc = document.getElementById(`${videoId}-desc`).textContent;
+      document.getElementById('intro').querySelector('source').src = src;
+      document.getElementById('intro-desc').textContent = desc;
+      document.getElementById('intro').load();
+    }
+
+    function toggleMoreMenu(event) {
+      const moreMenu = event.target.nextElementSibling;
+      moreMenu.classList.toggle('hidden');
+      // Close other open dropdowns
+      document.querySelectorAll('.more-menu-content').forEach(menu => {
+        if (menu !== moreMenu && !menu.classList.contains('hidden')) {
+          menu.classList.add('hidden');
+        }
+      });
+      // Close dropdown on outside click
+      document.addEventListener('click', function closeDropdown(e) {
+        if (!moreMenu.contains(e.target) && !event.target.contains(e.target)) {
+          moreMenu.classList.add('hidden');
+          document.removeEventListener('click', closeDropdown);
+        }
+      });
+    }
+
+    // Add MIV conditionally for video grid
+    function updateMoreMenuOptions(videoId) {
+      const isIntro = videoId === 'intro';
+      const moreMenuContent = document.querySelector(`#${videoId}`).closest('.video-player-container').querySelector('.more-menu-content');
+      if (moreMenuContent && !moreMenuContent.closest('#video-player-modal') && !moreMenuContent.closest('#playlist-modal')) {
+        moreMenuContent.innerHTML = `
+            ${!isIntro ? `<div onclick="makeIntroductionVideo('${videoId}')">Make Introduction Video</div>` : ''}
+            <div onclick="makeVideoPrivate('${videoId}')">Make Private</div>
+            <div onclick="deleteVideo('${videoId}')">Delete</div>
+        `;
+      }
+    }
+
+    // Call updateMoreMenuOptions for each video on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      ['intro', 'clip-1', 'clip-2', 'video-1', 'video-2'].forEach(videoId => {
+        updateMoreMenuOptions(videoId);
+      });
+    });
+
+
+  </script>
+</body>
+
+</html>
+
+
+Playlist, nav bar profile picture and name,
