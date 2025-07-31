@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tutor Confirmation Admin Panel</title>
+<link href="../css/output.css" rel="stylesheet">
+<link href = "../css/confirm-tutor.css" rel = "stylesheet">
+    <link href="../css/root_theme.css" rel="stylesheet"/>
+    <script defer src="../js/xlsx.full.min.js"></script>
+    <script src="../js/app.js" defer></script>
+    <script defer src="../js/chart.min.js"></script>
+    
+</head>
+<body class="bg-gray-100 min-h-screen p-8">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">Tutor Confirmation Admin Panel</h1>
+    <div class="mb-6">
+      <input
+        type="text"
+        id="searchBar"
+        placeholder="Search by tutor name, school, or tutor phone..."
+        class="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+    <div class="filter-section">
+      <label>
+        <input type="checkbox" id="confirmedFilter"> Sort by Confirmed First
+      </label>
+      <label>
+        <input type="checkbox" id="sortSchoolAsc" checked> School (Asc)
+      </label>
+      <label>
+        <input type="checkbox" id="sortRatingAsc"> School Rating (Asc)
+      </label>
+    </div>
+    <div id="tutorList">
+      <!-- Tutor 1 -->
+      <div class="tutor-card" data-name="John Doe" data-school="Central Prep" data-status="Pending" data-rating="4.2" data-phone="+1-555-123-4567">
+        <div class="tutor-info">
+          <img src="https://via.placeholder.com/150" alt="John Doe">
+          <div class="tutor-details">
+            <h3>Tutor: John Doe</h3>
+            <p>Phone: +1-555-123-4567</p>
+            <p>Email: john.doe@example.com</p>
+          </div>
+        </div>
+        <div class="school-info">
+          <h3>School: Central Prep</h3>
+          <p>School Rating: 4.2</p>
+          <p>School Phone: +1-555-000-1111</p>
+        </div>
+        <div class="status-info">
+          <p>Status: Pending</p>
+          <div class="tutor-actions">
+            <button class="confirm-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Confirm</button>
+            <button class="deny-btn px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Deny</button>
+          </div>
+        </div>
+      </div>
+      <!-- Tutor 2 -->
+      <div class="tutor-card" data-name="Bob Wilson" data-school="Central Prep" data-status="Pending" data-rating="4.2" data-phone="+1-555-321-9876">
+        <div class="tutor-info">
+          <img src="https://via.placeholder.com/150" alt="Bob Wilson">
+          <div class="tutor-details">
+            <h3>Tutor: Bob Wilson</h3>
+            <p>Phone: +1-555-321-9876</p>
+            <p>Email: bob.wilson@example.com</p>
+          </div>
+        </div>
+        <div class="school-info">
+          <h3>School: Central Prep</h3>
+          <p>School Rating: 4.2</p>
+          <p>School Phone: +1-555-000-1111</p>
+        </div>
+        <div class="status-info">
+          <p>Status: Pending</p>
+          <div class="tutor-actions">
+            <button class="confirm-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Confirm</button>
+            <button class="deny-btn px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Deny</button>
+          </div>
+        </div>
+      </div>
+      <!-- Tutor 3 -->
+      <div class="tutor-card" data-name="Jane Smith" data-school="Riverside Academy" data-status="Confirmed" data-rating="3.8" data-phone="+1-555-987-6543">
+        <div class="tutor-info">
+          <img src="https://via.placeholder.com/150" alt="Jane Smith">
+          <div class="tutor-details">
+            <h3>Tutor: Jane Smith</h3>
+            <p>Phone: +1-555-987-6543</p>
+            <p>Email: jane.smith@example.com</p>
+          </div>
+        </div>
+        <div class="school-info">
+          <h3>School: Riverside Academy</h3>
+          <p>School Rating: 3.8</p>
+          <p>School Phone: +1-555-000-2222</p>
+        </div>
+        <div class="status-info">
+          <p>Status: Confirmed</p>
+          <div class="tutor-actions">
+            <button class="confirm-btn px-4 py-2 bg-gray-400 text-white rounded-md" disabled>Confirm</button>
+            <button class="deny-btn px-4 py-2 bg-gray-400 text-white rounded-md" disabled>Deny</button>
+          </div>
+        </div>
+      </div>
+      <!-- Tutor 4 -->
+      <div class="tutor-card" data-name="Alice Johnson" data-school="Springfield High" data-status="Pending" data-rating="4.5" data-phone="+1-555-456-7890">
+        <div class="tutor-info">
+          <img src="https://via.placeholder.com/150" alt="Alice Johnson">
+          <div class="tutor-details">
+            <h3>Tutor: Alice Johnson</h3>
+            <p>Phone: +1-555-456-7890</p>
+            <p>Email: alice.johnson@example.com</p>
+          </div>
+        </div>
+        <div class="school-info">
+          <h3>School: Springfield High</h3>
+          <p>School Rating: 4.5</p>
+          <p>School Phone: +1-555-000-3333</p>
+        </div>
+        <div class="status-info">
+          <p>Status: Pending</p>
+          <div class="tutor-actions">
+            <button class="confirm-btn px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Confirm</button>
+            <button class="deny-btn px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">Deny</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script defer src="./js/confirm-tutor.js"></script>
+</body>
+</html>

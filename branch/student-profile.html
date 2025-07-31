@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Student Profile</title>
+    <link href="../css/output.css" rel="stylesheet">
+    <link href="../css/root_theme.css" rel="stylesheet"/>
+    <script defer src="../js/xlsx.full.min.js"></script>
+    <script src="../js/app.js" defer></script>
+    <script defer src="../js/chart.min.js"></script>
+    <style>
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: sans-serif;
+        }
+        nav {
+            background-color: var(--highlight);
+            color: var(--nav-link);
+        }
+        nav a {
+            color: var(--nav-link);
+            transition: color 0.2s;
+        }
+        nav a:hover {
+            color: var(--nav-link-hover);
+        }
+        #mobile-menu {
+            background-color: var(--nav-bg);
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+        #mobile-menu.open {
+            max-height: 500px;
+        }
+        #mobile-menu a:hover, #mobile-menu button:hover {
+            background-color: var(--highlight);
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            background-color: var(--nav-bg);
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+        .dropdown-menu a, .dropdown-menu button {
+            color: var(--nav-link);
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+        .dropdown-menu a:hover, .dropdown-menu button:hover {
+            background-color: var(--highlight);
+        }
+        h1, h2, h3, h4 {
+            color: var(--heading);
+        }
+        button:not(.modal-content button):not(#theme-toggle) {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s;
+        }
+        button:not(.modal-content button):not(#theme-toggle):hover {
+            background-color: var(--button-hover);
+        }
+        button:not(.modal-content button):not(#theme-toggle):active {
+            background-color: var(--button-active);
+        }
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+        }
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            background-color: var(--modal-input-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+        .modal-content input::placeholder,
+        .modal-content textarea::placeholder {
+            color: var(--modal-text);
+            opacity: 0.6;
+        }
+        .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+        .cta-button:hover {
+            background-color: var(--button-hover);
+        }
+        .cta-button:active {
+            background-color: var(--button-active);
+        }
+        #tutor-search, #tutor-details-search {
+            background-color: var(--highlight);
+            color: var(--text);
+            border-color: var(--text);
+        }
+        #tutor-search::placeholder, #tutor-details-search::placeholder {
+            color: var(--text);
+            opacity: 0.6;
+        }
+        .progress-circle {
+            stroke: var(--button-bg);
+        }
+        #theme-toggle {
+            background-color: transparent;
+            color: var(--nav-link);
+        }
+        #theme-toggle:hover {
+            color: var(--nav-link-hover);
+        }
+        .no-results {
+            color: var(--text);
+        }
+        .description {
+            color: var(--text);
+        }
+        .ad-placeholder {
+            background-color: var(--background);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+        .edit-icon {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            padding: 6px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .edit-icon svg {
+            fill: white;
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="../index.html" class="hover:text-[var(--nav-link-hover)]">Home</a>
+                <div class="dropdown relative">
+                    <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+                    <div class="dropdown-menu">
+                        <a href="wishlist-courses.html">Wishlist Courses</a>
+                        <a href="requested-courses.html">Requested Courses</a>
+                    </div>
+                </div>
+                <div class="dropdown relative">
+                    <a href="referral.html" class="hover:text-[var(--nav-link-hover)]">Referral</a>
+                    <div class="dropdown-menu">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=https://astegni.et" target="_blank">Facebook</a>
+                        <a href="https://www.youtube.com/share?url=https://astegni.et" target="_blank">YouTube</a>
+                        <a href="https://www.instagram.com/?url=https://astegni.et" target="_blank">Instagram</a>
+                        <a href="https://www.snapchat.com/share?url=https://astegni.et" target="_blank">Snapchat</a>
+                        <a href="https://www.tiktok.com/share?url=https://astegni.et" target="_blank">TikTok</a>
+                        <a href="https://x.com/intent/tweet?url=https://astegni.et" target="_blank">X</a>
+                        <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://astegni.et" target="_blank">LinkedIn</a>
+                        <a href="https://t.me/share/url?url=https://astegni.et" target="_blank">Telegram</a>
+                        <button onclick="copyReferralLink()">Copy Link</button>
+                    </div>
+                </div>
+                <a href="become-tutor.html" class="hover:text-[var(--nav-link-hover)]">Become a Tutor</a>
+                <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()" aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle" class="focus:outline-none" onclick="toggleTheme()" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <button id="menu-btn" class="md:hidden focus:outline-none" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden">
+            <a href="../index.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Home</a>
+            <div class="dropdown relative">
+                <a href="find-tutors.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+                <div class="dropdown-menu ml-4">
+                    <a href="wishlist-courses.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Wishlist Courses</a>
+                    <a href="requested-courses.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Requested Courses</a>
+                </div>
+            </div>
+            <div class="dropdown relative">
+                <a href="referral.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Referral</a>
+                <div class="dropdown-menu ml-4">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://astegni.et" target="_blank" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Facebook</a>
+                    <a href="https://www.youtube.com/share?url=https://astegni.et" target="_blank" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">YouTube</a>
+                    <a href="https://www.instagram.com/?url=https://astegni.et" target="_blank" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Instagram</a>
+                    <a href="https://www.snapchat.com/share?url=https://astegni.et" target="_blank" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Snapchat</a>
+                    <a href="https://www.tiktok.com/share?url=https://astegni.et" target="_blank" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">TikTok</a>
+                    <a href="https://x.com/intent/tweet?url=https://astegni.et" target="_blank" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">X</a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://astegni.et" target="_blank" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">LinkedIn</a>
+                    <a href="https://t.me/share/url?url=https://astegni.et" target="_blank" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Telegram</a>
+                    <button onclick="copyReferralLink()" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Copy Link</button>
+                </div>
+            </div>
+            <a href="become-tutor.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Become a Tutor</a>
+            <button id="mobile-notification-bell" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative" onclick="openNotificationModal()" aria-label="View notifications">
+                Notifications
+                <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button id="mobile-theme-toggle" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left" onclick="toggleTheme()" aria-label="Toggle theme">
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <section class="py-16">
+        <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
+            <!-- Main Content (Student Profile) -->
+            <div class="lg:w-3/4 space-y-6">
+                <!-- Cover Photo -->
+                <div class="relative">
+                    <img src="https://via.placeholder.com/1200x300" id="cover-picture" alt="Abebe Kebede cover photo" class="w-full h-64 object-cover rounded-lg">
+                    <button class="edit-icon bottom-2 right-2" onclick="editCoverPhoto()" aria-label="Edit cover photo">
+                        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    </button>
+                    <img src="https://via.placeholder.com/64" id="profile-picture" alt="Abebe Kebede profile photo" class="absolute -bottom-16 left-8 w-32 h-32 rounded-full border-4 border-white">
+                    <button class="edit-icon bottom-2 right-2" onclick="editProfilePhoto()" aria-label="Edit profile photo">
+                        <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                    </button>
+                </div>
+                <!-- Profile Details -->
+                <div class="p-6 rounded-lg shadow-lg max-w-4xl mx-auto bg-[var(--modal-bg)]">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <!-- Student Details -->
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold" style="margin-top: 1.5rem;">Abebe Kebede</h3>
+                            <p id="verification-status" class="text-red-600 italic mb-2">Unverified</p>
+                            <!-- Cumulative Progress -->
+                            <div class="relative inline-block group mb-4">
+                                <div class="relative w-16 h-16">
+                                    <svg class="w-full h-full" viewBox="0 0 100 100">
+                                        <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
+                                        <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="141.5" transform="rotate(-90 50 50)"/>
+                                    </svg>
+                                    <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm font-bold">50%</span>
+                                </div>
+                                <div class="absolute hidden group-hover:block p-4 rounded-lg shadow-lg z-10 w-64 -left-20 top-16">
+                                    <h4 class="text-sm font-semibold mb-2">Progress by Tutor</h4>
+                                    <div class="mb-2">
+                                        <p class="text-sm">Amanuel Tesfaye: 50%</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: 50%"></div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm">Kebede Worku: 50%</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div class="bg-green-600 h-2.5 rounded-full" style="width: 50%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="mb-2">Email: <span id="student-email">abebe@example.com</span></p>
+                            <p class="mb-2">Phone: <span id="student-phone">+251912345678</span></p>
+                            <p class="mb-2">School: <span id="student-school">None</span></p>
+                            <p class="mb-2">Next Session: May 20, 2025, 2:00 PM</p>
+                            <p class="mb-2">Classes: <span id="student-classes">None</span> <span class="text-sm text-gray-500">(Highly recommended to add classes for better tutor recommendations)</span></p>
+                            <button id="edit-profile-btn" class="px-4 py-2 rounded-lg cta-button" onclick="openEditProfileModal()">Edit Profile</button>
+                        </div>
+                        <!-- Guardian Details -->
+                        <div class="flex-1">
+                            <h3 class="text-xl font-semibold mb-4">Guardian Details</h3>
+                            <div class="flex items-center gap-6 mb-4">
+                                <img src="https://via.placeholder.com/64" id="guardian-picture" alt="Guardian profile photo" class="w-16 h-16 rounded-full">
+                                <div>
+                                    <p class="font-semibold mb-2" id="guardian-name">Mulugeta Kebede</p>
+                                    <p class="mb-2">Email: <span id="guardian-email">mulugeta@example.com</span></p>
+                                    <p class="mb-2">Phone: <span id="guardian-phone">+251987654321</span></p>
+                                </div>
+                            </div>
+                            <div class="flex space-x-4">
+                                <button onclick="openGuardianVideoCall()" class="px-4 py-2 rounded-lg cta-button">Video Call</button>
+                                <button onclick="openGuardianChat()" class="px-4 py-2 rounded-lg cta-button">Chat</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Certifications -->
+                <div class="p-6 rounded-lg shadow-lg max-w-4xl mx-auto bg-[var(--modal-bg)]">
+                    <h3 class="text-xl font-semibold mb-4">Certifications</h3>
+                    <ul id="certifications-list" class="list-disc pl-5 mb-4">
+                        <li>No certifications received</li>
+                    </ul>
+                </div>
+                <!-- Sponsorship Placeholder -->
+                <div id="sponsorship-placeholder-2" class="rounded-lg shadow-lg p-4 text-center bg-[var(--highlight)]">
+                    <h3 class="text-xl font-semibold mb-2" style="color: var(--heading)">Sponsor Our Platform</h3>
+                    <img src="https://via.placeholder.com/728x90" class="mx-auto mb-4 rounded" alt="Sponsorship Placeholder 2">
+                    <p class="text-[var(--text)]">Interested in sponsoring ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a>!</p>
+                </div>
+                <!-- My Tutors -->
+                <div class="p-6 rounded-lg shadow-lg max-w-4xl mx-auto bg-[var(--modal-bg)]">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-semibold">My Tutors</h3>
+                        <button id="add-course-btn" class="px-4 py-2 rounded-lg cta-button" onclick="openAddCourseModal()">Add Course</button>
+                    </div>
+                    <input id="tutor-search" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Search My tutors by name or subject" oninput="searchTutorsProfile()">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Tutor</th>
+                                <th class="p-2">Subjects</th>
+                                <th class="p-2">Learning Preference</th>
+                                <th class="p-2">Progress</th>
+                                <th class="p-2">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tutor-table">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Upcoming Sessions -->
+                <div class="p-6 rounded-lg shadow-lg max-w-4xl mx-auto bg-[var(--modal-bg)]">
+                    <h3 class="text-xl font-semibold mb-4">Upcoming Sessions</h3>
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Date</th>
+                                <th class="p-2">Time</th>
+                                <th class="p-2">Tutor</th>
+                                <th class="p-2">Subjects</th>
+                                <th class="p-2">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="p-2">May 20, 2025</td>
+                                <td class="p-2">2:00 PM</td>
+                                <td class="p-2">Amanuel Tesfaye</td>
+                                <td class="p-2">Math, Physics</td>
+                                <td class="p-2">
+                                    <button onclick="confirmAttendance(1)" class="px-2 py-1 rounded cta-button">Confirm Attendance</button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="p-2">May 21, 2025</td>
+                                <td class="p-2">10:00 AM</td>
+                                <td class="p-2">Kebede Worku</td>
+                                <td class="p-2">Chemistry, Biology</td>
+                                <td class="p-2">
+                                    <button onclick="confirmAttendance(2)" class="px-2 py-1 rounded cta-button">Confirm Attendance</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Advertisement Sidebar -->
+            <aside class="lg:w-1/4 hidden lg:block sticky top-20 self-start">
+                <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                    Advertisement (300x250)
+                </div>
+                <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                    Advertisement (300x250)
+                </div>
+                <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                    Advertisement (300x250)
+                </div>
+                <div class="ad-placeholder" style="width: 300px; height: 250px;">
+                    Advertisement (300x250)
+                </div>
+            </aside>
+        </div>
+    </section>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Edit Profile">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Edit Profile</h3>
+            <label class="block mb-2">Email</label>
+            <input id="edit-email" type="email" class="w-full p-2 border rounded-lg mb-4" value="abebe@example.com">
+            <label class="block mb-2">Phone</label>
+            <input id="edit-phone" type="tel" class="w-full p-2 border rounded-lg mb-4" value="+251912345678">
+            <label class="block mb-2">School</label>
+            <input id="edit-school" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Menelik II School">
+            <label class="block mb-2">Classes (comma-separated)</label>
+            <input id="edit-classes" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Grade 10, Mathematics">
+            <button onclick="saveProfile()" class="cta-button px-4 py-2 rounded-lg w-full">Save</button>
+            <button onclick="closeEditProfileModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div id="add-subject-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Add Subject">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4" id="add-subject-title">Add Subject</h3>
+            <input id="new-subject" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter subject name">
+            <button onclick="addSubject()" class="cta-button px-4 py-2 rounded-lg w-full">Add</button>
+            <button onclick="closeAddSubjectModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Report Subject Modal -->
+    <div id="report-subject-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Report Missing Subject">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Report Missing Subject</h3>
+            <input id="report-subject" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter subject name">
+            <button onclick="reportSubject()" class="cta-button px-4 py-2 rounded-lg w-full">Report</button>
+            <button onclick="closeReportSubjectModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Referral Modal -->
+    <div id="referral-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Manage Referrals">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Manage Referrals</h3>
+            <label class="block mb-2">Invite via Email</label>
+            <input id="referral-email" type="email" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter email">
+            <button onclick="sendReferral()" class="cta-button px-4 py-2 rounded-lg w-full">Send Invite</button>
+            <h4 class="text-lg font-semibold mt-4 mb-2">Referral Status</h4>
+            <ul id="referral-list" class="list-disc pl-5 mb-4">
+                <li>No referrals yet</li>
+            </ul>
+            <button onclick="closeReferralModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- My Tutor Modal -->
+    <div id="my-tutor-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="My Tutor">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">My Tutor</h3>
+            <input id="tutor-details-search" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Search tutors by name or subject" oninput="updateTutorDetails()">
+            <div id="tutor-details">
+                <!-- Populated by JavaScript -->
+            </div>
+            <h4 class="text-xl font-semibold mb-4 mt-6">Session Sheet</h4>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Date</th>
+                        <th class="p-2">Time</th>
+                        <th class="p-2">Duration</th>
+                        <th class="p-2">Tutor</th>
+                        <th class="p-2">Subjects</th>
+                        <th class="p-2">Cost</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="session-table">
+                    <!-- Populated by JavaScript -->
+                </tbody>
+            </table>
+            <button onclick="closeMyTutorModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Video Call Modal -->
+    <div id="video-call-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Start Video Call">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Start Video Call</h3>
+            <label class="block mb-2">Tutor</label>
+            <select id="video-call-tutor" class="w-full p-2 border rounded-lg mb-4" disabled>
+                <!-- Populated dynamically -->
+            </select>
+            <label class="block mb-2">Subject</label>
+            <select id="video-call-subject" class="w-full p-2 border rounded-lg mb-4">
+                <option>Math</option>
+                <option>Physics</option>
+                <option>Chemistry</option>
+                <option>Biology</option>
+            </select>
+            <label class="block mb-2">Duration</label>
+            <select id="video-call-duration" class="w-full p-2 border rounded-lg mb-4">
+                <option>60 minutes</option>
+                <option>80 minutes</option>
+                <option>120 minutes</option>
+            </select>
+            <button onclick="startVideoCall()" class="cta-button px-4 py-2 rounded-lg w-full">Start Call</button>
+            <button onclick="closeVideoCallModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Guardian Chat Modal -->
+    <div id="guardian-chat-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Chat with Guardian">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Chat with Guardian</h3>
+            <div id="guardian-chat-messages" class="border p-4 h-40 overflow-y-auto mb-4"></div>
+            <div class="flex">
+                <input type="text" id="guardian-chat-input" class="flex-1 p-2 border rounded-l-lg" placeholder="Type a message...">
+                <button onclick="sendGuardianMessage()" class="cta-button px-4 py-2 rounded-r-lg">Send</button>
+            </div>
+            <button onclick="closeGuardianChatModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Chat with Tutor">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Chat with Tutor</h3>
+            <div id="chat-messages" class="border p-4 h-40 overflow-y-auto mb-4"></div>
+            <div class="flex">
+                <input type="text" id="chat-input" class="flex-1 p-2 border rounded-l-lg" placeholder="Type a message...">
+                <button onclick="sendMessage()" class="cta-button px-4 py-2 rounded-r-lg">Send</button>
+            </div>
+            <button onclick="closeChatModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Rating Modal -->
+    <div id="rating-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Rate Tutor">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Rate Tutor</h3>
+            <label class="block mb-2">Rating</label>
+            <select id="rating-value" class="w-full p-2 border rounded-lg mb-4">
+                <option>1</option>
+                <option>2</option>
+                <option>3</option>
+                <option>4</option>
+                <option>5</option>
+            </select>
+            <label class="block mb-2">Comment</label>
+            <textarea id="rating-comment" class="w-full p-2 border rounded-lg mb-4" placeholder="Your feedback"></textarea>
+            <label class="block mb-4">
+                <input type="checkbox" id="rating-dislike" class="mr-2"> Dislike
+            </label>
+            <button onclick="submitRating()" class="cta-button px-4 py-2 rounded-lg w-full">Submit Rating</button>
+            <button onclick="closeRatingModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Notifications">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Notifications</h3>
+            <div id="notification-content">You have no notifications.</div>
+            <button onclick="closeNotificationModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Propose Makeup Modal -->
+    <div id="propose-makeup-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Propose Makeup Session">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Propose Makeup Session</h3>
+            <label class="block mb-2">Date</label>
+            <input type="date" id="makeup-date" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Time</label>
+            <input type="time" id="makeup-time" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Duration</label>
+            <select id="makeup-duration" class="w-full p-2 border rounded-lg mb-4">
+                <option>60 minutes</option>
+                <option>80 minutes</option>
+                <option>120 minutes</option>
+            </select>
+            <button onclick="submitMakeup()" class="cta-button px-4 py-2 rounded-lg w-full">Propose</button>
+            <button onclick="closeProposeMakeupModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Edit Subjects Modal -->
+    <div id="edit-subjects-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Edit Session Subjects">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Edit Session Subjects</h3>
+            <label class="block mb-2">Subjects</label>
+            <input type="text" id="edit-subjects-input" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., Math, Physics">
+            <button onclick="submitEditSubjects()" class="cta-button px-4 py-2 rounded-lg w-full">Save</button>
+            <button onclick="closeEditSubjectsModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Select Payment Method">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Select Payment Method</h3>
+            <div class="space-y-2">
+                <button onclick="selectBank('CBE')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="CBE Logo" class="w-6 h-6 mr-2">
+                    <span>CBE</span>
+                </button>
+                <button onclick="selectBank('Telebirr')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Telebirr Logo" class="w-6 h-6 mr-2">
+                    <span>Telebirr</span>
+                </button>
+                <button onclick="selectBank('Dashen')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Dashen Logo" class="w-6 h-6 mr-2">
+                    <span>Dashen</span>
+                </button>
+                <button onclick="selectBank('Wegagen')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Wegagen Logo" class="w-6 h-6 mr-2">
+                    <span>Wegagen</span>
+                </button>
+                <button onclick="selectBank('Oromia')" class="flex items-center w-full p-2 border rounded-lg hover:bg-gray-100">
+                    <img src="https://via.placeholder.com/24" alt="Oromia Logo" class="w-6 h-6 mr-2">
+                    <span>Oromia</span>
+                </button>
+            </div>
+            <button onclick="closePaymentModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Learning Preference Change Modal -->
+    <div id="preference-change-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Request Learning Preference Change">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Request Learning Preference Change</h3>
+            <label class="block mb-2">New Preference</label>
+            <select id="new-preference" class="w-full p-2 border rounded-lg mb-4">
+                <option value="Online">Online</option>
+                <option value="In Person">In Person</option>
+                <option value="Both">Both</option>
+            </select>
+            <button onclick="submitPreferenceChange()" class="cta-button px-4 py-2 rounded-lg w-full">Submit Request</button>
+            <button onclick="closePreferenceChangeModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Add Course Modal -->
+    <div id="add-course-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Add Course">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Add Course</h3>
+            <label class="block mb-2">Course Name</label>
+            <input id="new-course" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter course name">
+            <button onclick="addCourse()" class="cta-button px-4 py-2 rounded-lg w-full">Add</button>
+            <button onclick="closeAddCourseModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Quick Links -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <!-- Newsletter -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <div class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
+                    </div>
+                </div>
+                <!-- Get in Touch -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript for Interactivity -->
+    <script type="text/javascript">
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeToggleIcon(newTheme);
+        }
+
+        function updateThemeToggleIcon(theme) {
+            const icon = theme === 'light' ?
+                `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>` :
+                `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>`;
+            const themeToggle = document.getElementById('theme-toggle');
+            themeToggle.querySelector('svg').innerHTML = icon;
+            const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+            mobileThemeToggle.innerHTML = `Toggle Theme <svg class="w-6 h-6 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">${icon}</svg>`;
+        }
+
+        // Data Objects
+        const schoolDatabase = [
+            'Addis Ababa University',
+            'Menelik II School',
+            'St. Joseph School',
+            'Ethiopian International School',
+            'Lycee Guebre-Mariam'
+        ];
+        const tutors = {
+            1: { id: 1, name: 'Amanuel Tesfaye', subjects: ['Math', 'Physics'], availability: 'Weekdays', rating: 4.5, fee: 1000, profilePicture: 'https://via.placeholder.com/64' },
+            2: { id: 2, name: 'Kebede Worku', subjects: ['Chemistry', 'Biology'], availability: 'Weekends', rating: 4.0, fee: 1200, profilePicture: 'https://via.placeholder.com/64' }
+        };
+        const students = {
+            1: {
+                name: 'Abebe Kebede',
+                email: 'abebe@example.com',
+                phone: '+251912345678',
+                classes: [],
+                school: '',
+                verified: false,
+                wishlistSubjects: [],
+                registeredSubjects: [],
+                reportedSubjects: [],
+                referrals: [],
+                certifications: [],
+                nextSession: '2025-05-20 14:00',
+                progress: {
+                    tutors: {
+                        1: { subjects: { Math: 60, Physics: 40 }, overall: 50 },
+                        2: { subjects: { Chemistry: 70, Biology: 30 }, overall: 50 }
+                    },
+                    cumulative: 50
+                },
+                preferences: {
+                    1: 'Online',
+                    2: 'In Person'
+                },
+                guardian: {
+                    name: 'Mulugeta Kebede',
+                    email: 'mulugeta@example.com',
+                    phone: '+251987654321',
+                    profilePicture: 'https://via.placeholder.com/64'
+                }
+            }
+        };
+        const sessions = {
+            1: {
+                sessionId: 1,
+                date: '2025-05-20',
+                time: '14:00',
+                duration: '60 minutes',
+                student: 'Abebe Kebede',
+                studentId: 1,
+                tutor: 'Amanuel Tesfaye',
+                tutorId: 1,
+                subjects: ['Math', 'Physics'],
+                cost: 1000,
+                status: 'Scheduled',
+                studentConfirmed: false,
+                tutorConfirmed: true,
+                waiting: { student: false, tutor: false },
+                missed: false,
+                makeup: null,
+                mode: 'Online'
+            },
+            2: {
+                sessionId: 2,
+                date: '2025-05-21',
+                time: '10:00',
+                duration: '60 minutes',
+                student: 'Abebe Kebede',
+                studentId: 1,
+                tutor: 'Kebede Worku',
+                tutorId: 2,
+                subjects: ['Chemistry', 'Biology'],
+                cost: 1200,
+                status: 'Scheduled',
+                studentConfirmed: false,
+                tutorConfirmed: false,
+                waiting: { student: false, tutor: false },
+                missed: false,
+                makeup: null,
+                mode: 'In Person'
+            }
+        };
+
+        // Initialize Profile
+        function initProfile() {
+            const student = students[1];
+            document.getElementById('student-email').textContent = student.email;
+            document.getElementById('student-phone').textContent = student.phone;
+            document.getElementById('student-school').textContent = student.school || 'None';
+            document.getElementById('student-classes').textContent = student.classes.length > 0 ? student.classes.join(', ') : 'None';
+            document.getElementById('guardian-name').textContent = student.guardian.name;
+            document.getElementById('guardian-email').textContent = student.guardian.email;
+            document.getElementById('guardian-phone').textContent = student.guardian.phone;
+            document.getElementById('guardian-picture').src = student.guardian.profilePicture;
+            const verificationStatus = document.getElementById('verification-status');
+            verificationStatus.textContent = student.verified ? 'Verified' : 'Unverified';
+            verificationStatus.className = student.verified ? 'text-green-600 italic mb-2' : 'text-red-600 italic mb-2';
+            updateSubjectLists();
+            updateCertificationsList();
+            updateReferralList();
+        }
+
+        // Update Subject Lists
+        function updateSubjectLists() {
+            const student = students[1];
+            const wishlist = document.getElementById('wishlist-subjects');
+            const registered = document.getElementById('registered-subjects');
+            wishlist.innerHTML = student.wishlistSubjects.length > 0 ? student.wishlistSubjects.map(s => `<li>${s}</li>`).join('') : '<li>No subjects added</li>';
+            registered.innerHTML = student.registeredSubjects.length > 0 ? student.registeredSubjects.map(s => `<li>${s}</li>`).join('') : '<li>No subjects added</li>';
+        }
+
+        // Update Certifications List
+        function updateCertificationsList() {
+            const student = students[1];
+            const certificationsList = document.getElementById('certifications-list');
+            certificationsList.innerHTML = student.certifications.length > 0 ? student.certifications.map(c => `<li>${c.title} by ${tutors[c.tutorId].name} (${c.date})</li>`).join('') : '<li>No certifications received</li>';
+        }
+
+        // Update Referral List
+        function updateReferralList() {
+            const student = students[1];
+            const referralList = document.getElementById('referral-list');
+            referralList.innerHTML = student.referrals.length > 0 ? student.referrals.map(r => `<li>${r.email} - ${r.status}</li>`).join('') : '<li>No referrals yet</li>';
+        }
+
+        // Validate School
+        function validateSchool(school) {
+            return schoolDatabase.includes(school) || school === '' ? '' : 'Invalid school name';
+        }
+
+        // Edit Profile Modal
+        function openEditProfileModal() {
+            const student = students[1];
+            document.getElementById('edit-email').value = student.email;
+            document.getElementById('edit-phone').value = student.phone;
+            document.getElementById('edit-school').value = student.school || '';
+            document.getElementById('edit-classes').value = student.classes.join(', ');
+            document.getElementById('edit-profile-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('edit-profile-modal'));
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('edit-profile-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function saveProfile() {
+            const student = students[1];
+            const school = document.getElementById('edit-school').value.trim();
+            const schoolError = validateSchool(school);
+            if (schoolError) {
+                alert(schoolError);
+                return;
+            }
+            student.email = document.getElementById('edit-email').value;
+            student.phone = document.getElementById('edit-phone').value;
+            student.school = school;
+            student.classes = document.getElementById('edit-classes').value.split(',').map(c => c.trim()).filter(c => c);
+            initProfile();
+            alert('Profile updated successfully');
+            closeEditProfileModal();
+        }
+
+        // Edit Photo Functions
+        function editCoverPhoto() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('cover-picture').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+
+        function editProfilePhoto() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('profile-picture').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+
+        // Add Subject Modal
+        let currentSubjectType = '';
+        function openAddSubjectModal(type) {
+            currentSubjectType = type;
+            document.getElementById('add-subject-title').textContent = `Add ${type.charAt(0).toUpperCase() + type.slice(1)} Subject`;
+            document.getElementById('add-subject-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('add-subject-modal'));
+        }
+
+        function closeAddSubjectModal() {
+            document.getElementById('add-subject-modal').classList.add('hidden');
+            document.getElementById('new-subject').value = '';
+            restoreFocus();
+        }
+
+        function addSubject() {
+            const subject = document.getElementById('new-subject').value.trim();
+            if (subject) {
+                const student = students[1];
+                if (currentSubjectType === 'wishlist' && !student.wishlistSubjects.includes(subject)) {
+                    student.wishlistSubjects.push(subject);
+                } else if (currentSubjectType === 'registered' && !student.registeredSubjects.includes(subject)) {
+                    student.registeredSubjects.push(subject);
+                }
+                updateSubjectLists();
+                closeAddSubjectModal();
+                alert(`${subject.charAt(0).toUpperCase() + subject.slice(1)} subject added`);
+            }
+        }
+
+        // Report Subject Modal
+        function openReportSubjectModal() {
+            document.getElementById('report-subject-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('report-subject-modal'));
+        }
+
+        function closeReportSubjectModal() {
+            document.getElementById('report-subject-modal').classList.add('hidden');
+            document.getElementById('report-subject').value = '';
+            restoreFocus();
+        }
+
+        function reportSubject() {
+            const subject = document.getElementById('report-subject').value.trim();
+            if (subject) {
+                students[1].reportedSubjects.push(subject);
+                closeReportSubjectModal();
+                alert('Subject reported successfully!');
+            }
+        }
+
+        // Referral Modal
+        function openReferralModal() {
+            document.getElementById('referral-modal').classList.remove('hidden');
+            updateReferralList();
+            trapFocus(document.getElementById('referral-modal'));
+        }
+
+        function closeReferralModal() {
+            document.getElementById('referral-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function sendReferral() {
+            const email = document.getElementById('referral-email').value.trim();
+            if (!email) {
+                alert('Please enter a valid email');
+                return;
+            }
+            students[1].referrals.push({ email, status: 'Invited' });
+            updateReferralList();
+            alert('Referral invite sent successfully!');
+            document.getElementById('referral-email').value = '';
+            closeReferralModal();
+        }
+
+        // Copy Referral Link
+        function copyReferralLink() {
+            const referralLink = 'https://astegni.et';
+            navigator.clipboard.writeText(referralLink).then(() => {
+                alert('Referral link copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy link. Please try again.');
+            });
+        }
+
+        // Add Course Modal
+        function openAddCourseModal() {
+            document.getElementById('add-course-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('add-course-modal'));
+        }
+
+        function closeAddCourseModal() {
+            document.getElementById('add-course-modal').classList.add('hidden');
+            document.getElementById('new-course').value = '';
+            restoreFocus();
+        }
+
+        function addCourse() {
+            const course = document.getElementById('new-course').value.trim();
+            if (course) {
+                students[1].registeredSubjects.push(course);
+                updateSubjectLists();
+                closeAddCourseModal();
+                alert(`Course ${course} added successfully!`);
+            } else {
+                alert('Please enter a course name');
+            }
+        }
+
+        // My Tutor Modal
+        let selectedTutorId = null;
+        function openMyTutorModal(tutorId) {
+            selectedTutorId = tutorId;
+            document.getElementById('my-tutor-modal').classList.remove('hidden');
+            updateTutorDetails();
+            trapFocus(document.getElementById('my-tutor-modal'));
+        }
+
+        function closeMyTutorModal() {
+            document.getElementById('my-tutor-modal').classList.add('hidden');
+            selectedTutorId = null;
+            document.querySelector('#tutor-details-search').value = '';
+            restoreFocus();
+        }
+
+        // Video Call Modal
+        function openVideoCallModal() {
+            if (!document.getElementById('video-call-btn').disabled) {
+                const tutorSelect = document.getElementById('video-call-tutor');
+                tutorSelect.innerHTML = `<option value="${tutors[selectedTutorId].name}">${tutors[selectedTutorId].name}</option>`;
+                document.getElementById('video-call-modal').classList.remove('hidden');
+                trapFocus(document.getElementById('video-call-modal'));
+            }
+        }
+
+        function closeVideoCallModal() {
+            document.getElementById('video-call-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function startVideoCall() {
+            const tutor = document.getElementById('video-call-tutor').value;
+            const subject = document.getElementById('video-call-subject').value;
+            const duration = document.getElementById('video-call-duration').value;
+            alert('Starting video call...');
+            console.log(`Video call started: Tutor=${tutor}, Subject=${subject}, Duration=${duration}`);
+            closeVideoCallModal();
+        }
+
+        function checkVideoCallAvailability(tutorId) {
+            const now = new Date();
+            let sessionFound = false;
+            Object.values(sessions).forEach(session => {
+                if (session.tutorId === tutorId && session.status === 'Scheduled') {
+                    const sessionTime = new Date(`${session.date}T${session.time}:00`);
+                    const timeDiff = (now - sessionTime) / (1000 * 60);
+                    const videoCallBtn = document.getElementById('video-call-btn');
+                    if (Math.abs(timeDiff) <= 5) {
+                        sessionFound = true;
+                        videoCallBtn.disabled = false;
+                    }
+                }
+            });
+            if (!sessionFound) {
+                const videoCallBtn = document.getElementById('video-call-btn');
+                videoCallBtn.disabled = true;
+            }
+        }
+
+        // Guardian Video Call and Chat
+        function openGuardianVideoCall() {
+            alert('Starting video call with guardian...');
+            console.log(`Video call started with guardian: ${students[1].guardian.name}`);
+        }
+
+        function openGuardianChat() {
+            document.getElementById('guardian-chat-modal').classList.remove('hidden');
+            document.getElementById('guardian-chat-modal').querySelector('h3').textContent = `Chat with ${students[1].guardian.name}`;
+            trapFocus(document.getElementById('guardian-chat-modal'));
+        }
+
+        function closeGuardianChatModal() {
+            document.getElementById('guardian-chat-modal').classList.add('hidden');
+            document.getElementById('guardian-chat-input').value = '';
+            restoreFocus();
+        }
+
+        function sendGuardianMessage() {
+            const message = document.getElementById('guardian-chat-input').value.trim();
+            if (!message) return;
+            const messages = document.getElementById('guardian-chat-messages');
+            const p = document.createElement('p');
+            p.textContent = `You: ${message}`;
+            messages.appendChild(p);
+            messages.scrollTop = messages.scrollHeight;
+            document.getElementById('guardian-chat-input').value = '';
+            console.log(`Message sent to guardian ${students[1].guardian.name}: ${message}`);
+        }
+        // Update Tutor Details
+        function updateTutorDetails() {
+            const searchTerm = document.getElementById('tutor-details-search').value.trim().toLowerCase();
+            const tutor = tutors[selectedTutorId];
+            const tutorDetails = document.getElementById('tutor-details');
+            const matchesName = searchTerm === '' || tutor.name.toLowerCase().includes(searchTerm);
+            const matchesSubject = searchTerm === '' || tutor.subjects.some(subject => subject.toLowerCase().includes(searchTerm));
+            
+            if (matchesName || matchesSubject) {
+                const progress = students[1].progress.tutors[tutor.id];
+                const strokeDashoffset = 283 * (1 - progress.overall / 100);
+                tutorDetails.innerHTML = `
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="${tutor.profilePicture}" alt="${tutor.name} profile picture" class="w-16 h-16 rounded-full">
+                        <div>
+                            <h4 class="text-lg font-semibold">${tutor.name}</h4>
+                            <p class="mb-1">Subjects: ${tutor.subjects.join(', ')}</p>
+                            <p class="mb-1">Availability: ${tutor.availability}</p>
+                            <p class="mb-1">Rating: ${tutor.rating}/5</p>
+                            <p class="mb-1">Fee: ${tutor.fee} ETB/hour</p>
+                            <p class="mb-1">Learning Preference: ${students[1].preferences[tutor.id] || 'Not set'}</p>
+                        </div>
+                    </div>
+                    <div class="relative inline-block group mb-4">
+                        <div class="relative w-16 h-16">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
+                                <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="${strokeDashoffset}" transform="rotate(-90 50 50)"/>
+                            </svg>
+                            <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm font-bold">${progress.overall}%</span>
+                        </div>
+                        <div class="absolute hidden group-hover:block p-4 rounded-lg shadow-lg z-10 w-64 -left-20 top-16">
+                            <h4 class="text-sm font-semibold mb-2">Subject Progress</h4>
+                            ${tutor.subjects.map(subject => `
+                                <div class="mb-2">
+                                    <p class="text-sm">${subject}: ${progress.subjects[subject]}%</p>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="h-2.5 rounded-full" style="width: ${progress.subjects[subject]}%; background-color: var(--button-bg)"></div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button id="video-call-btn" class="px-4 py-2 rounded-lg cta-button" onclick="openVideoCallModal()">Video Call</button>
+                        <button onclick="openChatModal(${tutor.id})" class="px-4 py-2 rounded-lg cta-button">Chat</button>
+                        <button onclick="openRatingModal(${tutor.id})" class="px-4 py-2 rounded-lg cta-button">Rate</button>
+                        <button onclick="openPreferenceChangeModal(${tutor.id})" class="px-4 py-2 rounded-lg cta-button">Change Preference</button>
+                    </div>
+                `;
+                checkVideoCallAvailability(tutor.id);
+            } else {
+                tutorDetails.innerHTML = '<p class="no-results">No results found</p>';
+            }
+            updateSessionTable();
+        }
+
+        // Update Session Table
+        function updateSessionTable() {
+            const searchTerm = document.getElementById('tutor-details-search').value.trim().toLowerCase();
+            const sessionTable = document.getElementById('session-table');
+            const filteredSessions = Object.values(sessions).filter(session => 
+                session.tutorId === selectedTutorId &&
+                (searchTerm === '' || 
+                 session.tutor.toLowerCase().includes(searchTerm) || 
+                 session.subjects.some(subject => subject.toLowerCase().includes(searchTerm))
+                )
+            );
+            sessionTable.innerHTML = filteredSessions.length > 0 ? filteredSessions.map(session => `
+                <tr>
+                    <td class="p-2">${session.date}</td>
+                    <td class="p-2">${session.time}</td>
+                    <td class="p-2">${session.duration}</td>
+                    <td class="p-2">${session.tutor}</td>
+                    <td class="p-2">${session.subjects.join(', ')}</td>
+                    <td class="p-2">${session.cost} ETB</td>
+                    <td class="p-2">${session.status}</td>
+                    <td class="p-2">
+                        ${session.status === 'Scheduled' && !session.studentConfirmed ? 
+                            `<button onclick="confirmAttendance(${session.sessionId})" class="px-2 py-1 rounded cta-button">Confirm Attendance</button>` :
+                            session.status === 'Missed' && !session.makeup ? 
+                            `<button onclick="openProposeMakeupModal(${session.sessionId})" class="px-2 py-1 rounded cta-button">Propose Makeup</button>` :
+                            session.status === 'Scheduled' && session.studentConfirmed ? 
+                            `<button onclick="openEditSubjectsModal(${session.sessionId})" class="px-2 py-1 rounded cta-button">Edit Subjects</button>` :
+                            ''}
+                        ${session.status !== 'Missed' && session.status !== 'Completed' ? 
+                            `<button onclick="openPaymentModal(${session.sessionId})" class="px-2 py-1 rounded cta-button mt-1">Pay</button>` : 
+                            ''}
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="8" class="p-2 text-center no-results">No sessions found</td></tr>';
+        }
+
+        // Search Tutors in Profile
+        function searchTutorsProfile() {
+            const searchTerm = document.getElementById('tutor-search').value.trim().toLowerCase();
+            const tutorTable = document.getElementById('tutor-table');
+            const filteredTutors = Object.values(tutors).filter(tutor => 
+                tutor.name.toLowerCase().includes(searchTerm) || 
+                tutor.subjects.some(subject => subject.toLowerCase().includes(searchTerm))
+            );
+            tutorTable.innerHTML = filteredTutors.length > 0 ? filteredTutors.map(tutor => `
+                <tr>
+                    <td class="p-2">${tutor.name}</td>
+                    <td class="p-2">${tutor.subjects.join(', ')}</td>
+                    <td class="p-2">${students[1].preferences[tutor.id] || 'Not set'}</td>
+                    <td class="p-2">
+                        <div class="relative inline-block group">
+                            <div class="relative w-12 h-12">
+                                <svg class="w-full h-full" viewBox="0 0 100 100">
+                                    <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50"/>
+                                    <circle class="progress-circle" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" stroke-dasharray="283" stroke-dashoffset="${283 * (1 - students[1].progress.tutors[tutor.id].overall / 100)}" transform="rotate(-90 50 50)"/>
+                                </svg>
+                                <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs font-bold">${students[1].progress.tutors[tutor.id].overall}%</span>
+                            </div>
+                            <div class="absolute hidden group-hover:block p-4 rounded-lg shadow-lg z-10 w-64 -left-20 top-12">
+                                <h4 class="text-sm font-semibold mb-2">Subject Progress</h4>
+                                ${tutor.subjects.map(subject => `
+                                    <div class="mb-2">
+                                        <p class="text-sm">${subject}: ${students[1].progress.tutors[tutor.id].subjects[subject]}%</p>
+                                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                            <div class="h-2.5 rounded-full" style="width: ${students[1].progress.tutors[tutor.id].subjects[subject]}%; background-color: var(--button-bg)"></div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-2">
+                        <button onclick="openMyTutorModal(${tutor.id})" class="px-2 py-1 rounded cta-button">View</button>
+                    </td>
+                </tr>
+            `).join('') : '<tr><td colspan="5" class="p-2 text-center no-results">No tutors found</td></tr>';
+        }
+
+        // Chat Modal
+        function openChatModal(tutorId) {
+            selectedTutorId = tutorId;
+            document.getElementById('chat-modal').classList.remove('hidden');
+            document.getElementById('chat-modal').querySelector('h3').textContent = `Chat with ${tutors[tutorId].name}`;
+            trapFocus(document.getElementById('chat-modal'));
+        }
+
+        function closeChatModal() {
+            document.getElementById('chat-modal').classList.add('hidden');
+            document.getElementById('chat-input').value = '';
+            restoreFocus();
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('chat-input').value.trim();
+            if (!message) return;
+            const messages = document.getElementById('chat-messages');
+            const p = document.createElement('p');
+            p.textContent = `You: ${message}`;
+            messages.appendChild(p);
+            messages.scrollTop = messages.scrollHeight;
+            document.getElementById('chat-input').value = '';
+            console.log(`Message sent to tutor ${tutors[selectedTutorId].name}: ${message}`);
+        }
+
+        // Rating Modal
+        function openRatingModal(tutorId) {
+            selectedTutorId = tutorId;
+            document.getElementById('rating-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('rating-modal'));
+        }
+
+        function closeRatingModal() {
+            document.getElementById('rating-modal').classList.add('hidden');
+            document.getElementById('rating-value').value = '1';
+            document.getElementById('rating-comment').value = '';
+            document.getElementById('rating-dislike').checked = false;
+            restoreFocus();
+        }
+
+        function submitRating() {
+            const rating = document.getElementById('rating-value').value;
+            const comment = document.getElementById('rating-comment').value.trim();
+            const dislike = document.getElementById('rating-dislike').checked;
+            console.log(`Rating submitted for tutor ${tutors[selectedTutorId].name}: ${rating}/5, Comment: ${comment}, Dislike: ${dislike}`);
+            alert('Rating submitted successfully!');
+            closeRatingModal();
+        }
+
+        // Notification Modal
+        function openNotificationModal() {
+            const notificationContent = document.getElementById('notification-content');
+            const notifications = [
+                { id: 1, message: 'New session scheduled with Amanuel Tesfaye on May 20, 2025.', read: false },
+                { id: 2, message: 'Your profile verification is pending.', read: false }
+            ];
+            notificationContent.innerHTML = notifications.length > 0 ? notifications.map(n => `
+                <div class="p-2 ${n.read ? '' : 'bg-gray-100'}">
+                    ${n.message}
+                    ${!n.read ? `<button onclick="markNotificationRead(${n.id})" class="ml-2 text-sm text-blue-600 hover:underline">Mark as read</button>` : ''}
+                </div>
+            `).join('') : 'You have no notifications.';
+            document.getElementById('notification-modal').classList.remove('hidden');
+            updateNotificationDot(notifications);
+            trapFocus(document.getElementById('notification-modal'));
+        }
+
+        function closeNotificationModal() {
+            document.getElementById('notification-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function markNotificationRead(id) {
+            console.log(`Notification ${id} marked as read`);
+            openNotificationModal();
+        }
+
+        function updateNotificationDot(notifications) {
+            const hasUnread = notifications.some(n => !n.read);
+            document.getElementById('notification-dot').classList.toggle('hidden', !hasUnread);
+            document.getElementById('mobile-notification-dot').classList.toggle('hidden', !hasUnread);
+        }
+
+        // Propose Makeup Modal
+        function openProposeMakeupModal(sessionId) {
+            selectedSessionId = sessionId;
+            document.getElementById('propose-makeup-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('propose-makeup-modal'));
+        }
+
+        function closeProposeMakeupModal() {
+            document.getElementById('propose-makeup-modal').classList.add('hidden');
+            document.getElementById('makeup-date').value = '';
+            document.getElementById('makeup-time').value = '';
+            document.getElementById('makeup-duration').value = '60 minutes';
+            restoreFocus();
+        }
+
+        function submitMakeup() {
+            const date = document.getElementById('makeup-date').value;
+            const time = document.getElementById('makeup-time').value;
+            const duration = document.getElementById('makeup-duration').value;
+            if (!date || !time) {
+                alert('Please select date and time');
+                return;
+            }
+            sessions[selectedSessionId].makeup = { date, time, duration };
+            alert('Makeup session proposed successfully!');
+            closeProposeMakeupModal();
+            updateSessionTable();
+        }
+
+        // Edit Subjects Modal
+        function openEditSubjectsModal(sessionId) {
+            selectedSessionId = sessionId;
+            document.getElementById('edit-subjects-input').value = sessions[sessionId].subjects.join(', ');
+            document.getElementById('edit-subjects-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('edit-subjects-modal'));
+        }
+
+        function closeEditSubjectsModal() {
+            document.getElementById('edit-subjects-modal').classList.add('hidden');
+            document.getElementById('edit-subjects-input').value = '';
+            restoreFocus();
+        }
+
+        function submitEditSubjects() {
+            const subjects = document.getElementById('edit-subjects-input').value.split(',').map(s => s.trim()).filter(s => s);
+            if (subjects.length === 0) {
+                alert('Please enter at least one subject');
+                return;
+            }
+            sessions[selectedSessionId].subjects = subjects;
+            alert('Session subjects updated successfully!');
+            closeEditSubjectsModal();
+            updateSessionTable();
+        }
+
+        // Payment Modal
+        let selectedSessionId = null;
+        function openPaymentModal(sessionId) {
+            selectedSessionId = sessionId;
+            document.getElementById('payment-modal').classList.remove('hidden');
+            trapFocus(document.getElementById('payment-modal'));
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function selectBank(bank) {
+            console.log(`Payment initiated for session ${selectedSessionId} via ${bank}`);
+            alert(`Payment via ${bank} initiated!`);
+            closePaymentModal();
+        }
+
+        // Learning Preference Change
+        function openPreferenceChangeModal(tutorId) {
+            selectedTutorId = tutorId;
+            document.getElementById('preference-change-modal').classList.remove('hidden');
+            document.getElementById('new-preference').value = students[1].preferences[tutorId] || 'Online';
+            trapFocus(document.getElementById('preference-change-modal'));
+        }
+
+        function closePreferenceChangeModal() {
+            document.getElementById('preference-change-modal').classList.add('hidden');
+            restoreFocus();
+        }
+
+        function submitPreferenceChange() {
+            const newPreference = document.getElementById('new-preference').value;
+            students[1].preferences[selectedTutorId] = newPreference;
+            alert('Learning preference change requested successfully!');
+            closePreferenceChangeModal();
+            updateTutorDetails();
+            searchTutorsProfile();
+        }
+
+        // Confirm Attendance
+        function confirmAttendance(sessionId) {
+            sessions[sessionId].studentConfirmed = true;
+            alert('Attendance confirmed!');
+            updateSessionTable();
+        }
+
+        // Accessibility: Trap Focus in Modals
+        let lastFocusedElement = null;
+        function trapFocus(modal) {
+            lastFocusedElement = document.activeElement;
+            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            modal.addEventListener('keydown', function(e) {
+                if (e.key === 'Tab') {
+                    if (e.shiftKey) {
+                        if (document.activeElement === firstElement) {
+                            e.preventDefault();
+                            lastElement.focus();
+                        }
+                    } else {
+                        if (document.activeElement === lastElement) {
+                            e.preventDefault();
+                            firstElement.focus();
+                        }
+                    }
+                }
+                if (e.key === 'Escape') {
+                    closeModal(modal.id);
+                }
+            });
+
+            firstElement.focus();
+        }
+
+        function restoreFocus() {
+            if (lastFocusedElement) {
+                lastFocusedElement.focus();
+            }
+        }
+
+        function closeModal(modalId) {
+            const modalFunctions = {
+                'edit-profile-modal': closeEditProfileModal,
+                'add-subject-modal': closeAddSubjectModal,
+                'report-subject-modal': closeReportSubjectModal,
+                'referral-modal': closeReferralModal,
+                'my-tutor-modal': closeMyTutorModal,
+                'video-call-modal': closeVideoCallModal,
+                'guardian-chat-modal': closeGuardianChatModal,
+                'chat-modal': closeChatModal,
+                'rating-modal': closeRatingModal,
+                'notification-modal': closeNotificationModal,
+                'propose-makeup-modal': closeProposeMakeupModal,
+                'edit-subjects-modal': closeEditSubjectsModal,
+                'payment-modal': closePaymentModal,
+                'preference-change-modal': closePreferenceChangeModal,
+                'add-course-modal': closeAddCourseModal
+            };
+            if (modalFunctions[modalId]) {
+                modalFunctions[modalId]();
+            }
+        }
+
+        // Mobile Menu Toggle
+        document.getElementById('menu-btn').addEventListener('click', () => {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const isOpen = mobileMenu.classList.contains('open');
+            mobileMenu.classList.toggle('open');
+            document.getElementById('menu-btn').setAttribute('aria-expanded', !isOpen);
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeToggleIcon(savedTheme);
+            initProfile();
+            searchTutorsProfile();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+body {
+            background-color: var(--background);
+            color: var(--text);
+            font-family: sans-serif;
+        }
+
+        nav {
+            background-color: var(--highlight);
+            color: var(--nav-link);
+        }
+
+        nav a {
+            color: var(--nav-link);
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--nav-link-hover);
+        }
+
+        #mobile-menu {
+            background-color: var(--nav-bg);
+            transition: max-height 0.3s ease-in-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        #mobile-menu.open {
+            max-height: 300px;
+            display: block;
+        }
+
+        #mobile-menu a:hover, #mobile-menu-mobile-theme-toggle:hover {
+            background-color: var(--highlight);
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--heading);
+        }
+
+        button:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            transition: background-color 0.2s;
+        }
+
+        button:hover:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-hover);
+        }
+
+        button:active:not(.modal-content button):not(#theme-toggle-btn):not(#mobile-theme-toggle-btn) {
+            background-color: var(--button-active);
+        }
+
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+        }
+
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            background-color: var(--modal-input-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input::placeholder,
+        .modal-content textarea::placeholder {
+            color: var(--modal-text);
+            opacity: 0.6;
+        }
+
+        .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+
+        .cta-button:hover {
+            background-color: var(--button-hover);
+        }
+
+        .cta-button:active {
+            background-color: var(--button-active);
+        }
+
+        #campaign-search {
+            background-color: var(--highlight);
+            color: var(--text);
+            border-color: var(--modal-input-border);
+        }
+
+        #campaign-search::placeholder {
+            color: var(--text);
+            opacity: 0.6;
+        }
+
+        #theme-toggle-btn, #mobile-theme-toggle-btn {
+            background-color: transparent;
+            color: var(--nav-link);
+        }
+
+        #theme-toggle-btn:hover, #mobile-theme-toggle-btn:hover {
+            color: var(--nav-link-hover);
+        }
+
+        .no-results {
+            color: var(--text);
+        }
+
+        canvas {
+            background-color: var(--modal-bg);
+        }
+
+        .ad-placeholder {
+            background-color: var(--background);
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #888;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-align: center;
+        }

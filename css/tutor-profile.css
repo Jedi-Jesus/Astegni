@@ -1,0 +1,82 @@
+body {
+      background-color: var(--background);
+      color: var(--text);
+      font-family: sans-serif;
+    }
+    nav { background-color: var(--highlight); }
+    nav a { color: var(--nav-link); }
+    nav a:hover { color: var(--nav-link-hover); }
+    button.cta-button { background-color: var(--button-bg); color: var(--button-text); }
+    button.cta-button:hover { background-color: var(--button-hover); }
+    footer { background-color: var(--footer-bg); color: var(--footer-text); }
+    .modal-content { background-color: var(--modal-bg); color: var(--modal-text); }
+    .progress-circle:hover .tooltip { display: block; }
+    .tooltip {
+      display: none;
+      position: absolute;
+      z-index: 10;
+      background-color: var(--modal-bg);
+      color: var(--modal-text);
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    canvas { border: 1px solid #e5e7eb; border-radius: 8px; }
+    video.preview { max-height: 100px; }
+    .ad-placeholder {
+      background-color: var(--background);
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #888;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    #cover-photo {
+      height: 150px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      border-radius: 8px;
+    }
+    #profile-picture {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      position: absolute;
+      bottom: -40px;
+      left: 20px;
+      border: 4px solid var(--background);
+      object-fit: cover;
+    }
+    #school-suggestions {
+      position: absolute;
+      z-index: 20;
+      background-color: var(--modal-bg);
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      max-height: 200px;
+      overflow-y: auto;
+      width: 100%;
+      display: none;
+    }
+    #school-suggestions div {
+      padding: 8px;
+      cursor: pointer;
+    }
+    #school-suggestions div:hover {
+      background-color: var(--button-hover);
+      color: var(--button-text);
+    }
+    .edit-icon {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      margin-left: 8px;
+    }
+    .edit-field-hidden {
+      display: none;
+    }

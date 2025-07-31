@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Super Admin Dashboard</title>
+    <link href="../css/output.css" rel="stylesheet">
+    <link href="../css/super-admin.html" rel = "stylesheet">
+    <link href="../css/root_theme.css" rel="stylesheet"/>
+    <script defer src="../js/xlsx.full.min.js"></script>
+    <script src="../js/app.js" defer></script>
+    <script defer src="../js/chart.min.js"></script>
+
+</head>
+<body class="font-sans">
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="../index.html" class="hover:text-[var(--nav-link-hover)]">Home</a>
+                <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+                <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()" aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+            </div>
+            <button id="menu-btn" class="md:hidden focus:outline-none" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden">
+            <a href="index.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Home</a>
+            <a href="find-tutors.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+            <button id="mobile-notification-bell" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative" onclick="openNotificationModal()" aria-label="View notifications">
+                Notifications
+                <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button id="mobile-theme-toggle-btn" class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left" aria-label="Toggle theme">
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <!-- Super Admin Dashboard -->
+    <section class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8">Super Admin Dashboard</h2>
+    
+
+            I love this icon, but i want a storefront for advertisers and a megaphone and a funnel for the total campain.
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold">Total Advertisers</h3>
+        </div>
+        <p id="total-advertisers" class="text-2xl">2</p>
+    </div>
+    <div id="total-campaigns-card" class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold">Total Campaigns</h3>
+        </div>
+        <p id="total-campaigns" class="text-2xl">0</p>
+    </div>
+    <div id="total-revenue-card" class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold">Total Revenue</h3>
+        </div>
+        <p id="total-revenue" class="text-2xl">0 birr</p>
+    </div>
+    <div class="p-4 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+        <div class="flex items-center">
+            <svg class="w-6 h-6 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 012-2h2a2 2 0 012 2v12a2 2 0 01-2 2h-2a2 2 0 01-2-2"></path>
+            </svg>
+            <h3 class="text-lg font-semibold">Platform Analytics</h3>
+        </div>
+        <button onclick="generatePlatformReport()" class="px-4 py-2 rounded-lg cta-button">Generate Report</button>
+    </div>
+</div>
+
+            <!-- Tabs -->
+            <div class="p-6 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+                <div class="flex flex-wrap border-b mb-4">
+                    <button class="tab-button px-4 py-2 font-semibold active" onclick="showTab('payments')">Payments</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('settings')">Settings</button>
+                </div>
+
+                <!-- Payments Tab -->
+                <div id="payments" class="tab-content">
+                    <h3 class="text-xl font-semibold mb-4">Manage Payments</h3>
+                    <div class="flex items-center mb-4">
+                        <select id="payment-type-filter" class="p-2 border rounded-lg mr-4 bg-[var(--modal-input-bg)] text-[var(--modal-text)]" onchange="searchPayments()">
+                            <option value="all">All Payments</option>
+                            <option value="Ad Campaign">Ad Campaign</option>
+                            <option value="Registration">Registration</option>
+                            <option value="Subscription">Subscription</option>
+                        </select>
+                        <input id="payment-search" type="text" class="w-full max-w-md p-2 border rounded-lg" placeholder="Search payments by campaign, advertiser, or tutor" oninput="searchPayments()">
+                    </div>
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Type</th>
+                                <th class="p-2">Details</th>
+                                <th class="p-2">Amount</th>
+                                <th class="p-2">Duration</th>
+                                <th class="p-2">Status</th>
+                                <th class="p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment-table"></tbody>
+                    </table>
+                </div>
+
+
+                <!-- Settings Tab -->
+                <div id="settings" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">System Settings</h3>
+                    <button id="pricing-btn" onclick="openPricingModal()" class="px-4 py-2 rounded-lg cta-button mb-4">Update Pricing</button>
+                    <button id="reports-btn" onclick="openReportsModal()" class="px-4 py-2 rounded-lg cta-button mb-4">View Reports</button>
+                    <button onclick="openAdminModal()" class="px-4 py-2 rounded-lg cta-button mb-4">Manage Admins</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Confirm Payment Modal -->
+    <div id="confirm-payment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Confirm Payment">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Confirm Payment</h3>
+            <p id="confirm-payment-details" class="mb-4"></p>
+            <button onclick="confirmPayment()" class="px-4 py-2 rounded-lg cta-button w-full">Confirm</button>
+            <button onclick="closeConfirmPaymentModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Pricing Modal -->
+    <div id="pricing-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Update Pricing">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Update Pricing</h3>
+            <label class="block mb-2">Pricing Type</label>
+            <select id="pricing-type" class="w-full p-2 border rounded-lg mb-4" onchange="updatePricingFields()">
+                <option value="campaign">Ad Campaign</option>
+                <option value="registration">Registration</option>
+                <option value="subscription">Subscription</option>
+            </select>
+            <div id="campaign-pricing">
+                <label class="block mb-2">1 Day (birr)</label>
+                <input id="price-1" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="1000">
+                <label class="block mb-2">3 Days (birr)</label>
+                <input id="price-3" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="2700">
+                <label class="block mb-2">1 Week (birr)</label>
+                <input id="price-7" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="5600">
+                <label class="block mb-2">2 Weeks (birr)</label>
+                <input id="price-15" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="11250">
+                <label class="block mb-2">1 Month (birr)</label>
+                <input id="price-30" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="19500">
+                <label class="block mb-2">Custom Rate (birr/day)</label>
+                <input id="price-custom" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="1000">
+            </div>
+            <div id="registration-pricing" class="hidden">
+                <label class="block mb-2">Registration Fee (birr)</label>
+                <input id="price-registration" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="500">
+            </div>
+            <div id="subscription-pricing" class="hidden">
+                <label class="block mb-2">Subscription Fee (birr/month)</label>
+                <input id="price-subscription" type="number" min="0" class="w-full p-2 border rounded-lg mb-4" value="200">
+            </div>
+            <button onclick="savePricing()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closePricingModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Price Requests Modal -->
+    <div id="price-requests-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Price Update Requests">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+                        <h3 class="text-2xl font-bold mb-4">Price Update Requests</h3>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Request ID</th>
+                        <th class="p-2">Type</th>
+                        <th class="p-2">Details</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="price-requests-table"></tbody>
+            </table>
+            <button onclick="closePriceRequestsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Reports Modal -->
+    <div id="reports-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Advertiser Reports">
+        <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Advertiser Reports</h3>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Advertiser</th>
+                        <th class="p-2">Reason</th>
+                        <th class="p-2">Reported By</th>
+                        <th class="p-2">Date</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-table"></tbody>
+            </table>
+            <button onclick="closeReportsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Manage Admins Modal -->
+    <div id="admin-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Manage Admins">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Manage Admins</h3>
+            <label class="block mb-2">Admin Email</label>
+            <input id="admin-email" type="email" class="w-full p-2 border rounded-lg mb-4" placeholder="e.g., admin@astegni.et">
+            <label class="block mb-2">Role</label>
+            <select id="admin-role" class="w-full p-2 border rounded-lg mb-4">
+                <option value="Admin">Admin</option>
+                <option value="Super Admin">Super Admin</option>
+            </select>
+            <button onclick="addAdmin()" class="px-4 py-2 rounded-lg cta-button w-full">Add Admin</button>
+            <h4 class="text-lg font-semibold mt-6 mb-2">Current Admins</h4>
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="p-2">Email</th>
+                        <th class="p-2">Role</th>
+                        <th class="p-2">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-table"></tbody>
+            </table>
+            <button onclick="closeAdminModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Admin Notifications">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Admin Notifications</h3>
+            <div id="notification-content">You have no notifications.</div>
+            <button onclick="closeNotificationModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="py-8" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a class="nav-link hover:underline" href="index.html">Home</a></li>
+                        <li><a class="nav-link hover:underline" href="#contact">Contact Us</a></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openLoginRegisterModal()">Login/Register</button></li>
+                        <li><button class="nav-link hover:underline bg-transparent border-none p-0" onclick="openAdvertiseModal()">Advertise</button></li>
+                    </ul>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Newsletter</h3>
+                    <p class="mb-4">Stay updated with our latest news and offers.</p>
+                    <form class="mt-4 flex flex-col items-center md:items-start">
+                        <input class="w-full max-w-xs p-2 border rounded-lg mb-4" placeholder="Enter your email" type="email"/>
+                        <button class="cta-button px-4 py-2 rounded-lg w-full max-w-xs">Subscribe</button>
+                    </form>
+                </div>
+                <div class="text-center md:text-left">
+                    <h3 class="text-lg font-semibold mb-4" style="color: var(--heading);">Get in Touch</h3>
+                    <p class="mb-2">Email: <a class="nav-link hover:underline" href="mailto:info@astegni.et">info@astegni.et</a></p>
+                    <p class="mb-4">Phone: +251-912-345-678</p>
+                    <div class="flex justify-center md:justify-start gap-4">
+                        <a class="social-icon" href="https://facebook.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://x.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
+                            </svg>
+                        </a>
+                        <a class="social-icon" href="https://instagram.com">
+                            <svg class="w-6 h-6" fill="var(--footer-text)" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
+                <p>© 2025 Astegni. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script defer src="../js/supper-admin.js"></script>
+</body>
+</html>
