@@ -1,0 +1,49 @@
+
+    body {
+      font-family: 'Arial', sans-serif;
+      color: var(--text);
+      background-color: var(--modal-bg);
+    }
+
+    nav {
+      background-color: var(--modal-bg);
+    }
+
+    .modal-content {
+      background-color: var(--modal-bg);
+      color: var(--text);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .news-card {
+      transition: transform 0.2s;
+    }
+
+    .news-card:hover {
+      transform: translateY(-5px);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .typewriter {
+      overflow: hidden;
+      border-right: 0.15em solid var(--text);
+      white-space: nowrap;
+      animation: blinkCursor 0.7s step-end infinite;
+    }
+
+    @keyframes blinkCursor {
+      50% {
+        border-color: transparent;
+      }
+    }
+  

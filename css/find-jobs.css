@@ -1,0 +1,43 @@
+
+    
+
+    body {
+      font-family: 'Arial', sans-serif;
+      color: var(--text);
+      background-color: var(--modal-bg);
+    }
+
+    nav {
+      background-color: var(--modal-bg);
+    }
+
+    .modal-content {
+      background-color: var(--modal-bg);
+      color: var(--text);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .job-card {
+      transition: transform 0.2s;
+    }
+
+    .job-card:hover {
+      transform: translateY(-5px);
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-50px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .tab-active {
+      border-bottom: 2px solid #2563eb;
+      color: #2563eb;
+    }
+  

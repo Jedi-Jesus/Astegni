@@ -14,6 +14,7 @@
     --search-heading: #F59E0B;
     --modal-bg: #FFFFFF;
     --modal-text: #78350F;
+      --transition: all 0.3s ease-in-out;
 }
 
 [data-theme="dark"] {
@@ -116,3 +117,50 @@
 [data-theme="light"] {
     --button-active: #92400E;
 }
+
+        /* Enhanced heading colors for light theme */
+        [data-theme="light"] h1,
+        [data-theme="light"] h2,
+        [data-theme="light"] h3,
+        [data-theme="light"] h4 {
+            color: #F59E0B;
+        }
+
+        [data-theme="light"] .description,
+        [data-theme="light"] .no-results,
+        [data-theme="light"] input#search-input,
+        [data-theme="light"] input#search-input::-webkit-input-placeholder,
+        [data-theme="light"] input#search-input::-moz-placeholder {
+            color: #D1D5DB;
+        }
+
+
+        
+        .modal-content {
+            background-color: var(--modal-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input,
+        .modal-content select,
+        .modal-content textarea {
+            background-color: var(--modal-input-bg);
+            color: var(--modal-text);
+            border: 1px solid var(--modal-input-border);
+        }
+
+        .modal-content input::placeholder,
+        .modal-content textarea::placeholder {
+            color: #A0AEC0;
+        }
+
+        [data-theme="dark"] .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }
+
+        [data-theme="light"] .cta-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+        }

@@ -1,368 +1,393 @@
-let gk_fileData = {};
-        let gk_xlsxFileLookup = {};
-        let gk_isXlsx = false;
-        // Track following status for tutors
-let followingStatus = {};
 
-        function loadFileData(fileName) {
-            if (!gk_xlsxFileLookup[fileName]) return '';
-            const workbook = XLSX.read(gk_fileData[fileName], { type: 'base64' });
-            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            return XLSX.utils.sheet_to_csv(firstSheet);
-        }
+    let followingStatus = {};
+    let followerCount = 0;
 
-        const tutors = [
-            {
-                id: 1,
-                name: "John Doe",
-                profilePicture: "pictures/profile_picture.png",
-                coverPhoto: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&h=150&q=80",
-                rating: 4.5,
-                gender: "Male",
-                subjects: ["Algebra", "Geometry", "Physics"],
-                school: "Springfield High School",
-                location: "Springfield, USA",
-                bio: "Experienced tutor with 5 years of teaching high school math and physics.",
-                paymentMethod: "Hourly",
-                socialLinks: {
-                    facebook: "https://facebook.com/johndoe",
-                    linkedin: "https://linkedin.com/in/johndoe",
-                    x: "https://x.com/johndoe"
-                },
-                introVideo: "https://via.placeholder.com/640x360.mp4",
-                clips: [
-                    "https://via.placeholder.com/320x180.mp4",
-                    "https://via.placeholder.com/320x180.mp4"
-                ],
-                followers: 0,
-                comments: [
-                    { author: "Jane Smith", text: "Great tutor, very patient!", date: "2025-06-20" },
-                    { author: "Mike Johnson", text: "Helped my son ace his exams.", date: "2025-06-15" }
-                ]
-            }
-        ];
+    document.addEventListener('DOMContentLoaded', () => {
+      const desktopNav = document.getElementById('desktop-nav');
+      const mobileMenu = document.getElementById('mobile-menu');
 
-        let currentTutor = null;
-        let isLoggedIn = false;
-        let currentVideoId = null;
-        const notifications = {
-            1: { message: "New session request received!", date: "2025-06-23" },
-            2: { message: "John Doe posted a new clip.", date: "2025-06-22" }
-        };
-
-
-// Notification Modal Functions
-function openNotificationModal() {
-    const notificationContent = document.getElementById('notification-content');
-    const notificationList = Object.values(notifications); // Assuming 'notifications' is defined
-    notificationContent.innerHTML = notificationList.length ? notificationList.map(n => `
-        <div class="mb-2">
-            <p class="text-[var(--text)]">${n.message}</p>
-            <p class="text-sm text-gray-500">${n.date}</p>
+      const navLinks = `
+        <a href="news.html" class="hover:text-[var(--nav-link-hover)]">News</a>
+        <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]">Find tutors</a>
+        <a href="reels.html" class="hover:text-[var(--nav-link-hover)]">Reels</a>
+        <a href="store.html" class="hover:text-[var(--nav-link-hover)]">Store</a>
+        <a href="find-a-job.html" class="hover:text-[var(--nav-link-hover)]">Find a Job</a>
+        <div class="relative">
+          <button id="profile-dropdown-btn" class="flex items-center hover:text-[var(--nav-link-hover)]">
+            Profile
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div id="profile-dropdown" class="hidden absolute z-30 bg-[var(--modal-bg)] rounded-lg shadow-lg mt-2 w-48">
+            <a href="view-profile.html" class="block px-4 py-2 hover:bg-[var(--button-hover)]">View Profile</a>
+            <button onclick="openNotesModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Notes</button>
+            <button onclick="openManageFinancesModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Manage Finances</button>
+            <button onclick="openCommentRateModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Comment & Rate</button>
+            <button onclick="openShareProfileModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Share Us</button>
+          </div>
         </div>
-    `).join('') : '<p class="text-[var(--text)]">You have no notifications.</p>';
-    document.getElementById('notification-modal').style.display = 'flex';
-}
+        <a href="#" onclick="openNotificationModal()" class="relative hover:text-[var(--nav-link-hover)]">
+          Notifications
+          <span id="notification-dot" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+        </a>
+        <button id="theme-toggle" class="flex items-center">
+          <span id="theme-icon" class="text-2xl">☀</span>
+        </button>
+      `;
 
-function closeNotificationModal() {
-    document.getElementById('notification-modal').style.display = 'none';
-}
-
-// Comments Modal Functions
-function openCommentsModal() {
-    const commentsList = document.getElementById('comments-list');
-    commentsList.innerHTML = currentTutor.comments?.length ? currentTutor.comments.map(comment => `
-        <div class="mb-2">
-            <p class="font-semibold text-[var(--text)]">${comment.author}</p>
-            <p class="text-[var(--text)]">${comment.text}</p>
-            <p class="text-sm text-gray-500">${comment.date}</p>
+      const mobileNavLinks = `
+        <a href="news.html" class="block py-2 px-4 hover:bg-[var(--button-hover)]">News</a>
+        <a href="reels.html" class="block py-2 px-4 hover:bg-[var(--button-hover)]">Reels</a>
+        <a href="store.html" class="block py-2 px-4 hover:bg-[var(--button-hover)]">Store</a>
+        <a href="find-a-job.html" class="block py-2 px-4 hover:bg-[var(--button-hover)]">Find a Job</a>
+        <div class="relative">
+          <button id="mobile-profile-dropdown-btn" class="flex items-center w-full py-2 px-4 hover:bg-[var(--button-hover)]">
+            Profile
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div id="mobile-profile-dropdown" class="hidden bg-[var(--modal-bg)] rounded-lg shadow-lg mt-2 w-full">
+            <a href="view-profile.html" class="block px-4 py-2 hover:bg-[var(--button-hover)]">View Profile</a>
+            <button onclick="openNotesModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Notes</button>
+            <button onclick="openManageFinancesModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Manage Finances</button>
+            <button onclick="openCommentRateModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Comment & Rate</button>
+            <button onclick="openShareProfileModal()" class="block w-full text-left px-4 py-2 hover:bg-[var(--button-hover)]">Share Us</button>
+          </div>
         </div>
-    `).join('') : '<p class="text-[var(--text)]">No comments yet. Be the first to leave a review!</p>';
-    document.getElementById('comments-modal').style.display = 'flex';
-}
+        <button onclick="openNotificationModal()" class="block py-2 px-4 hover:bg-[var(--button-hover)] w-full text-left relative">
+          Notifications
+          <span id="mobile-notification-dot" class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+        </button>
+      `;
 
-function closeCommentsModal() {
-    document.getElementById('comments-modal').style.display = 'none';
-}
+      desktopNav.innerHTML = navLinks;
+      mobileMenu.innerHTML = mobileNavLinks;
 
-        function openShareModal(videoId) {
-            currentVideoId = videoId;
-            document.getElementById('share-modal').classList.remove('hidden');
-            // trapFocus(document.getElementById('share-modal'));
-        }
+      // Theme Toggle
+      const themeToggle = document.getElementById('theme-toggle');
+      const themeIcon = document.getElementById('theme-icon');
+      const currentTheme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', currentTheme);
+      themeIcon.textContent = currentTheme === 'light' ? '☀' : '🌙';
 
-        function closeShareModal() {
-            document.getElementById('share-modal').classList.add('hidden');
-            // restoreFocus();
-        }
+      themeToggle.addEventListener('click', () => {
+        const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        themeIcon.textContent = newTheme === 'light' ? '☀' : '🌙';
+      });
 
-        function openCommentModal(videoId) {
-            currentVideoId = videoId;
-            document.getElementById('comment-modal').classList.remove('hidden');
-            // trapFocus(document.getElementById('comment-modal'));
-        }
+      // Mobile Menu Toggle
+      const menuBtn = document.getElementById('menu-btn');
+      menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
 
-        function closeCommentModal() {
-            document.getElementById('comment-modal').classList.add('hidden');
-            // restoreFocus();
-        }
+      // Profile Dropdown Toggle
+      const profileDropdownBtn = document.getElementById('profile-dropdown-btn');
+      const profileDropdown = document.getElementById('profile-dropdown');
+      const mobileProfileDropdownBtn = document.getElementById('mobile-profile-dropdown-btn');
+      const mobileProfileDropdown = document.getElementById('mobile-profile-dropdown');
 
-// Request Session Modal Functions
-function openRequestSessionModal() {
-    document.getElementById('request-session-modal').style.display = 'flex';
-}
+      function toggleProfileDropdown() {
+        profileDropdown.classList.toggle('hidden');
+      }
 
-function closeRequestSessionModal() {
-    document.getElementById('request-session-modal').style.display = 'none';
-}
+      function toggleMobileProfileDropdown() {
+        mobileProfileDropdown.classList.toggle('hidden');
+      }
 
-// Chat Modal Functions
-function openChatModal() {
-    document.getElementById('chat-modal').style.display = 'flex';
-}
+      profileDropdownBtn.addEventListener('click', toggleProfileDropdown);
+      mobileProfileDropdownBtn.addEventListener('click', toggleMobileProfileDropdown);
 
-function closeChatModal() {
-    document.getElementById('chat-modal').style.display = 'none';
-}
+      // Video Tabs
+      const tabs = document.querySelectorAll('.tab');
+      const tabContents = document.querySelectorAll('.tab-content');
 
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tabContents.forEach(content => content.classList.remove('active'));
 
-// Function to update the theme icon
-function updateThemeIcon(theme) {
-    const sunPath = "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z";
-    const moonPath = "M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z";
-    const desktopPath = document.getElementById('desktop-theme-path');
-    const mobilePath = document.getElementById('mobile-theme-path'); // Optional, if using mobile icon
-
-    if (desktopPath) {
-        desktopPath.setAttribute('d', theme === 'dark' ? moonPath : sunPath);
-    }
-    if (mobilePath) {
-        mobilePath.setAttribute('d', theme === 'dark' ? moonPath : sunPath);
-    }
-}
-
-// Theme toggle function
-function toggleTheme() {
-    const html = document.documentElement;
-    const currentTheme = html.getAttribute('data-theme') || 'light';
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    html.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcon(newTheme);
-}
-        // Load Theme
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeIcon(savedTheme);
-            loadTutorProfile();
-            checkLoginStatus();
-            checkNotifications();
+          tab.classList.add('active');
+          document.getElementById(tab.dataset.tab).classList.add('active');
         });
+      });
 
- 
+      // Video Search
+      const videoSearch = document.getElementById('video-search');
+      videoSearch.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const videos = document.querySelectorAll('.tab-content.active video');
+        const videoDescriptions = document.querySelectorAll('.tab-content.active p[id$="-desc"]');
 
-        // Check Login Status
-        function checkLoginStatus() {
-            isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            if (isLoggedIn) {
-                document.getElementById('profile-name').textContent = localStorage.getItem('userName') || 'User';
-                document.getElementById('mobile-my-profile-link').classList.remove('hidden');
-                document.getElementById('profile-pic').src = tutors[0].profilePicture;
-            } else {
-                document.getElementById('profile-container').innerHTML = `
-                    <button onclick="openLoginRegisterModal()" class="cta-button px-4 py-2 rounded-lg">Login</button>
-                `;
-            }
-        }
+        videos.forEach((video, index) => {
+          const desc = videoDescriptions[index].textContent.toLowerCase();
+          const parentDiv = video.closest('div');
+          parentDiv.style.display = desc.includes(searchTerm) ? 'block' : 'none';
+        });
+      });
 
+      // Mock data for tutor profile
+      const tutorData = {
+        name: "John Doe",
+        rating: 4.5,
+        raters: 50,
+        followers: 120,
+        courses: ["Mathematics", "Physics", "Chemistry"],
+        grades: ["Grade 9", "Grade 10", "Grade 11"],
+        experiences: ["5 years teaching Mathematics", "3 years tutoring Physics"],
+        teachesAt: "Addis Ababa University",
+        tutoringMode: "Online and In-Person",
+        bio: "Experienced tutor specializing in Math and Physics with over 5 years of teaching experience.",
+        certifications: ["Mathematics Certification", "Physics Teaching License"],
+        achievements: ["Best Tutor Award 2023", "Outstanding Educator 2024"],
+        socials: [
+          { platform: "LinkedIn", url: "https://linkedin.com/in/johndoe" },
+          { platform: "Twitter", url: "https://twitter.com/johndoe" }
+        ]
+      };
 
-        function loadTutorProfile() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tutorId = parseInt(urlParams.get('id'));
-    currentTutor = tutors.find(t => t.id === tutorId) || tutors[0];
+      // Initialize follower count
+      followerCount = tutorData.followers;
 
-    if (currentTutor) {
-        document.getElementById('cover-photo').style.backgroundImage = `url('${currentTutor.coverPhoto}')`;
-        document.getElementById('profile-picture').src = currentTutor.profilePicture;
-        document.getElementById('tutor-name').firstChild.textContent = currentTutor.name || 'Tutor Name';
+      // Populate tutor profile
+      document.getElementById('tutor-name').textContent = tutorData.name;
+      document.getElementById('tutor-rating-stars').textContent = '★★★★☆';
+      document.getElementById('tutor-rating-count').textContent = `(${tutorData.raters} people)`;
+      document.getElementById('follower-number').textContent = tutorData.followers;
+      document.getElementById('tutor-courses').textContent = `Courses: ${tutorData.courses.join(', ')}`;
+      document.getElementById('tutor-grades').textContent = `Grades: ${tutorData.grades.join(', ')}`;
+      document.getElementById('tutor-experiences').textContent = `Experiences: ${tutorData.experiences.join(', ')}`;
+      document.getElementById('tutor-school').textContent = `Teaches at: ${tutorData.teachesAt}`;
+      document.getElementById('tutor-mode').textContent = `Tutoring Mode: ${tutorData.tutoringMode}`;
+      document.getElementById('tutor-bio').textContent = tutorData.bio;
+      document.getElementById('view-profile-socials').innerHTML = tutorData.socials.map(social => `
+        <a href="${social.url}" target="_blank" class="text-blue-500 hover:underline">${social.platform}</a>
+      `).join('');
 
-        const rating = currentTutor.rating || 0;
-        const ratingArc = document.getElementById('rating-arc');
-        const radius = 45;
-        const circumference = 2 * Math.PI * radius; // Approx. 282.74
-        const percentage = rating > 0 ? (rating / 5) * 100 : 0;
-        const dashOffset = circumference * (1 - percentage / 100);
+      // Update rating arc
+      const ratingArc = document.getElementById('rating-arc');
+      const ratingLabel = document.getElementById('rating-label');
+      const rating = tutorData.rating;
+      const circumference = 2 * Math.PI * 45;
+      const offset = circumference - (rating / 5) * circumference;
+      ratingArc.style.strokeDashoffset = offset;
+      ratingLabel.textContent = rating.toFixed(1);
 
-        ratingArc.setAttribute('stroke-dasharray', circumference);
-        ratingArc.setAttribute('stroke-dashoffset', dashOffset);
+      // Populate modals with mock data
+      document.getElementById('certifications-list').innerHTML = tutorData.certifications.map(cert => `<p class="text-[var(--text)]">${cert}</p>`).join('');
+      document.getElementById('achievements-list').innerHTML = tutorData.achievements.map(ach => `<p class="text-[var(--text)]">${ach}</p>`).join('');
+    });
 
-        // Set stroke color based on rating
-        let color;
-        if (rating > 4) {
-            color = '#10B981'; // Green
-        } else if (rating > 3) {
-            color = '#FBBF24'; // Yellow
-        } else if (rating > 2) {
-            color = '#EF4444'; // Red
-        } else if (rating > 1) {
-            color = '#3B82F6'; // Blue
-        } else {
-            color = '#6B7280'; // Gray
-        }
-        ratingArc.setAttribute('stroke', color);
-
-        document.getElementById('rating-label').textContent = rating > 0 ? `${rating.toFixed(1)}/5` : 'N/A';
-
-        const stars = rating > 0 ? '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating)) : 'No rating';
-        document.getElementById('tutor-rating-stars').textContent = stars;
-
-        document.getElementById('tutor-gender').textContent = `Gender: ${currentTutor.gender || 'Not specified'}`;
-        document.getElementById('tutor-subjects').textContent = `Subjects: ${currentTutor.subjects?.join(', ') || 'None listed'}`;
-        document.getElementById('tutor-school').textContent = `School: ${currentTutor.school || 'Not specified'}`;
-        document.getElementById('tutor-location').textContent = `Location: ${currentTutor.location || 'Not specified'}`;
-        document.getElementById('tutor-bio').textContent = `Bio: ${currentTutor.bio || 'No bio provided'}`;
-        document.getElementById('tutor-payment-method').textContent = `Payment Method: ${currentTutor.paymentMethod || 'Not specified'}`;
-
-        const socialLinks = currentTutor.socialLinks || {};
-        const facebookLink = document.querySelector('a[href="https://facebook.com"]');
-        const linkedinLink = document.querySelector('a[href="https://linkedin.com"]');
-        const xLink = document.querySelector('a[href="https://x.com"]');
-        facebookLink.href = socialLinks.facebook || 'https://facebook.com';
-        linkedinLink.href = socialLinks.linkedin || 'https://linkedin.com';
-        xLink.href = socialLinks.x || 'https://x.com';
-
-        document.getElementById('follower-number').textContent = currentTutor.followers || 0;
-
-        document.getElementById('intro-video').src = currentTutor.introVideo || 'https://via.placeholder.com/640x360.mp4';
-        const clip1 = document.getElementById('clip-1');
-        const clip2 = document.getElementById('clip-2');
-        clip1.src = currentTutor.clips?.[0] || 'https://via.placeholder.com/320x180.mp4';
-        clip2.src = currentTutor.clips?.[1] || 'https://via.placeholder.com/320x180.mp4';
-
-        const followButton = document.getElementById('follow-button');
-        if (followingStatus[currentTutor.id]) {
-            followButton.textContent = 'Unfollow';
-        } else {
-            followButton.textContent = 'Follow';
-        }
-        document.getElementById('follower-number').textContent = currentTutor.followers;
+    // Modal Functions
+    function openToolsModal() {
+      document.getElementById('tools-modal').classList.remove('hidden');
     }
-}
 
-// Follow/Unfollow Toggle Function
-function followTutor() {
-    if (!isLoggedIn) { // Assuming 'isLoggedIn' is defined
-        alert('Please log in to follow this tutor.');
-        return;
+    function closeToolsModal() {
+      document.getElementById('tools-modal').classList.add('hidden');
     }
-    const tutorId = currentTutor.id; // Assuming 'currentTutor' is defined
-    if (followingStatus[tutorId]) {
-        // Unfollow
-        currentTutor.followers -= 1;
+
+    function openNotificationModal() {
+      document.getElementById('notification-modal').classList.remove('hidden');
+    }
+
+    function closeNotificationModal() {
+      document.getElementById('notification-modal').classList.add('hidden');
+    }
+
+    function openNotesModal() {
+      alert('This is notes modal');
+    }
+
+    function openCertificationsModal() {
+      document.getElementById('certifications-modal').classList.remove('hidden');
+    }
+
+    function closeCertificationsModal() {
+      document.getElementById('certifications-modal').classList.add('hidden');
+    }
+
+    function openAchievementsModal() {
+      document.getElementById('achievements-modal').classList.remove('hidden');
+    }
+
+    function closeAchievementsModal() {
+      document.getElementById('achievements-modal').classList.add('hidden');
+    }
+    function openCommentModal() {
+      document.getElementById('comment-modal').classList.remove('hidden');
+      document.getElementById('comments-list').innerHTML = '<p class="text-[var(--text)]">No comments yet.</p>';
+    }
+
+    function closeCommentModal() {
+      document.getElementById('comment-modal').classList.add('hidden');
+    }
+    
+    function openPackagesModal() {
+      document.getElementById('packagesModal').classList.remove('hidden');
+    }
+
+    function closePackages() {
+      document.getElementById('packagesModal').classList.add('hidden');
+    }
+
+    function openPlaylistModal(playlistId) {
+      const modal = document.getElementById('playlist-modal');
+      const title = document.getElementById('playlist-modal-title');
+      const videoPlayer = document.getElementById('playlist-video-player');
+      const videoDesc = document.getElementById('playlist-video-desc');
+      const videoList = document.getElementById('playlist-video-list');
+
+      title.textContent = playlistId.replace('-', ' ').toUpperCase();
+      videoPlayer.querySelector('source').src = `https://via.placeholder.com/640x360.mp4`;
+      videoPlayer.load();
+      videoDesc.textContent = `${playlistId.replace('-', ' ')} Playlist Video`;
+      videoList.innerHTML = `
+        <div class="mb-2 cursor-pointer" onclick="playVideo('video1')">${playlistId} Video 1</div>
+        <div class="mb-2 cursor-pointer" onclick="playVideo('video2')">${playlistId} Video 2</div>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    function playVideo(videoId) {
+      const videoPlayer = document.getElementById('playlist-video-player');
+      videoPlayer.querySelector('source').src = `https://via.placeholder.com/640x360.mp4?${videoId}`;
+      videoPlayer.load();
+      videoPlayer.play();
+    }
+
+    function closePlaylistModal() {
+      document.getElementById('playlist-modal').classList.add('hidden');
+    }
+
+    function openCommentRateModal() {
+      const modal = document.getElementById('comment-rate-modal');
+      modal.classList.remove('hidden');
+      document.getElementById('usability-rating').addEventListener('input', () => {
+        document.getElementById('usability-value').textContent = document.getElementById('usability-rating').value;
+      });
+      document.getElementById('service-rating').addEventListener('input', () => {
+        document.getElementById('service-value').textContent = document.getElementById('service-rating').value;
+      });
+    }
+
+    function closeCommentRateModal() {
+      document.getElementById('comment-rate-modal').classList.add('hidden');
+    }
+
+    function submitCommentRate() {
+      const comment = document.getElementById('comment-input').value;
+      const usability = document.getElementById('usability-rating').value;
+      const service = document.getElementById('service-rating').value;
+      alert(`Submitted: Comment - ${comment || 'No comment'}, Usability ${usability}/5, Service ${service}/5`);
+      closeCommentRateModal();
+    }
+
+    function openShareProfileModal() {
+      const modal = document.getElementById('share-profile-modal');
+      const profileLink = document.getElementById('profile-link');
+      profileLink.value = window.location.href;
+      document.getElementById('profile-share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+      document.getElementById('profile-share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}`;
+      modal.classList.remove('hidden');
+    }
+
+    function closeShareProfileModal() {
+      document.getElementById('share-profile-modal').classList.add('hidden');
+    }
+
+    function copyProfileLink() {
+      const profileLink = document.getElementById('profile-link');
+      profileLink.select();
+      document.execCommand('copy');
+      alert('Profile link copied to clipboard!');
+    }
+
+    function openRequestSessionModal() {
+      document.getElementById('request-session-modal').classList.remove('hidden');
+    }
+
+    function closeRequestSessionModal() {
+      document.getElementById('request-session-modal').classList.add('hidden');
+    }
+
+    function toggleChildSearch() {
+      const childInput = document.getElementById('session-child');
+      const childSuggestions = document.getElementById('session-child-suggestions');
+      const selfCheckbox = document.getElementById('session-self');
+      childInput.disabled = selfCheckbox.checked;
+      if (selfCheckbox.checked) {
+        childSuggestions.classList.add('hidden');
+      }
+    }
+
+    function submitSessionRequest() {
+      const child = document.getElementById('session-child').value;
+      const courses = Array.from(document.querySelectorAll('.session-course:checked')).map(cb => cb.value);
+      const days = Array.from(document.querySelectorAll('input[type="checkbox"]:not(.session-course):checked')).map(cb => cb.value);
+      const date = document.getElementById('session-date').value;
+      const time = document.getElementById('session-time').value;
+      const duration = document.getElementById('session-duration').value;
+      const mode = document.getElementById('session-mode').value;
+
+      alert(`Session requested: ${child}, Courses: ${courses.join(', ') || 'None'}, ${days.join(', ') || 'No days'}, ${date}, ${time}, ${duration} minutes, ${mode}`);
+      closeRequestSessionModal();
+    }
+
+    function openVideoCallModal() {
+      document.getElementById('video-call-modal').classList.remove('hidden');
+    }
+
+    function closeVideoCallModal() {
+      document.getElementById('video-call-modal').classList.add('hidden');
+    }
+
+    function openShareModal(videoId) {
+      const modal = document.getElementById('share-modal');
+      const shareUrl = document.getElementById('share-url');
+      shareUrl.value = `${window.location.href}#${videoId}`;
+      document.getElementById('share-facebook').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl.value)}`;
+      document.getElementById('share-telegram').href = `https://t.me/share/url?url=${encodeURIComponent(shareUrl.value)}`;
+      modal.classList.remove('hidden');
+    }
+
+    function closeShareModal() {
+      document.getElementById('share-modal').classList.add('hidden');
+    }
+
+    function copyLink() {
+      const shareUrl = document.getElementById('share-url');
+      shareUrl.select();
+      document.execCommand('copy');
+      alert('Link copied to clipboard!');
+    }
+
+    function openManageFinancesModal() {
+      alert('Manage Finances modal to be implemented.');
+    }
+
+    function followTutor() {
+      const followIcon = document.getElementById('follow-icon');
+      const tutorId = 'tutor123'; // Mock tutor ID
+      const followerNumber = document.getElementById('follower-number');
+
+      if (followingStatus[tutorId]) {
         followingStatus[tutorId] = false;
-        document.getElementById('follow-button').textContent = 'Follow';
-    } else {
-        // Follow
-        currentTutor.followers += 1;
+        followerCount--;
+        followIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+        `;
+      } else {
         followingStatus[tutorId] = true;
-        document.getElementById('follow-button').textContent = 'Unfollow';
+        followerCount++;
+        followIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+        `;
+      }
+      followerNumber.textContent = followerCount;
     }
-    document.getElementById('follower-number').textContent = currentTutor.followers;
-}
-
-
-        // Notification Bell
-        function checkNotifications() {
-            const hasNotifications = Object.values(notifications).length > 0;
-            document.getElementById('notification-dot').classList.toggle('hidden', !hasNotifications);
-            document.getElementById('mobile-notification-dot').classList.toggle('hidden', !hasNotifications);
-        }
-
-        // Toggle Admin Section
-        function toggleAdminSection() {
-            const adminSection = document.getElementById('admin-section');
-            adminSection.classList.toggle('hidden');
-        }
-
-        // Load Tutor File
-        function loadTutorFile() {
-            const fileInput = document.getElementById('tutor-file');
-            const file = fileInput.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const data = e.target.result;
-                    gk_fileData[file.name] = data.split(',')[1];
-                    gk_xlsxFileLookup[file.name] = true;
-                    gk_isXlsx = true;
-                    const csv = loadFileData(file.name);
-                    console.log('Parsed CSV:', csv);
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Mobile Menu Toggle
-        document.getElementById('menu-btn').addEventListener('click', () => {
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        // Profile Dropdown Toggle
-        function toggleProfileDropdown() {
-            // Implement dropdown if needed
-        }
-
-        // Video Interactions
-        function likeVideo(videoId) {
-            const likeCount = document.getElementById(`likes-${videoId}`);
-            likeCount.textContent = parseInt(likeCount.textContent) + 1;
-        }
-
-        function dislikeVideo(videoId) {
-            const dislikeCount = document.getElementById(`dislikes-${videoId}`);
-            dislikeCount.textContent = parseInt(dislikeCount.textContent) + 1;
-        }
-
-        function submitComment() {
-            const commentText = document.getElementById('comment-text').value;
-            if (commentText && currentVideoId) {
-                const commentList = document.getElementById(`comments-${currentVideoId}`);
-                const comment = document.createElement('p');
-                comment.textContent = commentText;
-                commentList.appendChild(comment);
-                document.getElementById(`comment-input-${currentVideoId}`).value = '';
-                document.getElementById('comment-text').value = '';
-                closeCommentModal();
-            }
-        }
-
-        // Session Request
-        function submitSessionRequest() {
-            const course = document.getElementById('session-course').value;
-            const date = document.getElementById('session-date').value;
-            const time = document.getElementById('session-time').value;
-            const duration = document.getElementById('session-duration').value;
-            const mode = document.getElementById('session-mode').value;
-
-            if (course && date && time && duration && mode) {
-                alert('Session request submitted successfully!');
-                closeRequestSessionModal();
-            } else {
-                alert('Please fill in all fields.');
-            }
-        }
-
-        // Chat
-        function sendMessage() {
-            const message = document.getElementById('chat-input').value;
-            if (message) {
-                const chatMessages = document.getElementById('chat-messages');
-                const messageElement = document.createElement('p');
-                messageElement.textContent = `You: ${message}`;
-                chatMessages.appendChild(messageElement);
-                document.getElementById('chat-input').value = '';
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
+  
