@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Notes App - Enhanced</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/root_theme.css">
+  <link rel="stylesheet" href="../css/advanced-notes.css">
+  <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+  <div class="container mx-auto p-4">
+    <!-- Header with Theme Toggle -->
+    <header class="mb-6 flex justify-between items-center">
+      <nav>
+        <button onclick="openNotesModal()" class="nav-link font-semibold text-lg hover:opacity-80 transition-opacity" aria-label="Open notes modal">
+          📝 My Notes
+        </button>
+      </nav>
+      <button onclick="toggleTheme()" class="theme-toggle p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors" aria-label="Toggle theme">
+        <span class="dark:hidden">🌙</span>
+        <span class="hidden dark:inline">☀️</span>
+      </button>
+    </header>
+
+    <!-- Enhanced Notes Modal -->
+    <div id="notes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20 animate-fadeIn" role="dialog" aria-modal="true" aria-labelledby="notes-modal-title">
+      <div class="modal-content notes-modal-container p-6 rounded-xl w-full max-w-6xl relative shadow-2xl">
+        <!-- Modal Header -->
+        <div class="modal-header border-b pb-4 mb-4">
+          <div class="flex justify-between items-center">
+            <h3 id="notes-modal-title" class="text-2xl font-bold flex items-center gap-2">
+              <span class="text-3xl">📚</span>
+              <span>Advanced Notes</span>
+            </h3>
+            <div class="flex gap-2 items-center">
+              <!-- Status Indicator -->
+              <span id="save-status" class="text-sm opacity-0 transition-opacity duration-300"></span>
+              <!-- Action Buttons -->
+              <div class="flex gap-2">
+                <button onclick="newNote()" class="action-btn new-note-btn" title="New Note" aria-label="Create new note">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                  </svg>
+                  <span class="hidden sm:inline ml-1">New</span>
+                </button>
+                <button onclick="duplicateCurrentNote()" class="action-btn" title="Duplicate Note" aria-label="Duplicate current note">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                  </svg>
+                </button>
+                <div class="relative export-dropdown">
+                  <button onclick="toggleExportMenu()" class="action-btn" title="Export Options" aria-label="Export options">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <span class="hidden sm:inline ml-1">Export</span>
+                  </button>
+                  <div id="export-menu" class="hidden absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                    <button onclick="exportNoteAsPDF()" class="export-option">
+                      <span>📄</span> Export as PDF
+                    </button>
+                    <button onclick="exportNoteAsDoc()" class="export-option">
+                      <span>📝</span> Export as Word
+                    </button>
+                    <button onclick="exportNoteAsMarkdown()" class="export-option">
+                      <span>📋</span> Export as Markdown
+                    </button>
+                    <button onclick="exportNoteAsHTML()" class="export-option">
+                      <span>🌐</span> Export as HTML
+                    </button>
+                  </div>
+                </div>
+                <!-- Toggle History Button (moved to header) -->
+                <button onclick="toggleNotesHistory()" class="action-btn ml-4" title="Toggle History" aria-label="Toggle notes history">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body flex gap-4">
+          <!-- Main Note Section -->
+          <div class="note-input-section flex-1">
+            <!-- Note Metadata -->
+            <div class="note-metadata grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label class="input-label" for="note-date">Date</label>
+                <input type="datetime-local" id="note-date" class="input-field">
+              </div>
+              <div>
+                <label class="input-label" for="note-tutor">Tutor/Instructor</label>
+                <div class="relative">
+                  <input type="text" id="note-tutor" class="input-field" placeholder="Search or enter name" aria-autocomplete="list">
+                  <div id="note-tutor-suggestions" class="suggestions-dropdown hidden"></div>
+                </div>
+              </div>
+              <div>
+                <label class="input-label" for="note-course">Course/Subject</label>
+                <div class="relative">
+                  <input type="text" id="note-course" class="input-field" placeholder="Search or enter course" aria-autocomplete="list">
+                  <div id="note-course-suggestions" class="suggestions-dropdown hidden"></div>
+                </div>
+              </div>
+              <div>
+                <label class="input-label" for="note-tags">Tags (comma-separated)</label>
+                <input type="text" id="note-tags" class="input-field" placeholder="e.g., important, exam, review">
+              </div>
+            </div>
+
+            <!-- Note Title -->
+            <div class="mb-4">
+              <label class="input-label" for="note-title">Title</label>
+              <input type="text" id="note-title" class="input-field text-lg font-semibold" placeholder="Enter a descriptive title">
+            </div>
+
+            <!-- Enhanced Editor Toolbar -->
+            <div class="editor-toolbar-wrapper mb-3">
+              <div class="editor-toolbar flex flex-wrap gap-1 p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
+                <!-- Text Formatting -->
+                <div class="toolbar-group">
+                  <button id="bold-btn" onclick="formatText('bold')" title="Bold (Ctrl+B)" class="editor-btn">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M12.5 9.5c1.19 0 2-.81 2-2s-.81-2-2-2H8v4h4.5zm1.5 1.5c1.19 0 2 .81 2 2s-.81 2-2 2H8v-4h6zM6 4h6.5c2.21 0 4 1.79 4 4 0 1.11-.53 2.11-1.3 2.81 1.07.65 1.8 1.84 1.8 3.19 0 2.21-1.79 4-4 4H6V4z"/>
+                    </svg>
+                  </button>
+                  <button id="italic-btn" onclick="formatText('italic')" title="Italic (Ctrl+I)" class="editor-btn">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 4v2h2.21l-3.42 8H6v2h8v-2h-2.21l3.42-8H18V4h-8z"/>
+                    </svg>
+                  </button>
+                  <button id="underline-btn" onclick="formatText('underline')" title="Underline (Ctrl+U)" class="editor-btn">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 17c3.31 0 6-2.69 6-6V3h-2v8c0 2.21-1.79 4-4 4s-4-1.79-4-4V3H4v8c0 3.31 2.69 6 6 6zm-6 2v2h12v-2H4z"/>
+                    </svg>
+                  </button>
+                  <button id="strikethrough-btn" onclick="formatText('strikeThrough')" title="Strikethrough" class="editor-btn">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M10 2v6H7V2h3zm0 8v8h-3v-8h3zM3 9h14v2H3V9z"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Text Position -->
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-group">
+                  <button id="subscript-btn" onclick="formatText('subscript')" title="Subscript" class="editor-btn">X₂</button>
+                  <button id="superscript-btn" onclick="formatText('superscript')" title="Superscript" class="editor-btn">X²</button>
+                </div>
+
+                <!-- Highlighting -->
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-group">
+                  <button id="highlight-btn" onclick="showHighlightColors()" title="Highlight" class="editor-btn relative">
+                    <span class="highlight-preview">H</span>
+                  </button>
+                  <div id="highlight-colors" class="hidden absolute z-20 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-2 grid grid-cols-5 gap-1">
+                    <button onclick="formatText('hiliteColor', '#FFEB3B')" class="color-btn" style="background: #FFEB3B"></button>
+                    <button onclick="formatText('hiliteColor', '#FFC107')" class="color-btn" style="background: #FFC107"></button>
+                    <button onclick="formatText('hiliteColor', '#4CAF50')" class="color-btn" style="background: #4CAF50"></button>
+                    <button onclick="formatText('hiliteColor', '#2196F3')" class="color-btn" style="background: #2196F3"></button>
+                    <button onclick="formatText('hiliteColor', '#E91E63')" class="color-btn" style="background: #E91E63"></button>
+                  </div>
+                </div>
+
+                <!-- Lists and Alignment -->
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-group">
+                  <button onclick="formatText('insertUnorderedList')" title="Bullet List" class="editor-btn">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 6h12v2H4zm0 5h12v2H4zm0 5h12v2H4z"/>
+                    </svg>
+                  </button>
+                  <button onclick="formatText('insertOrderedList')" title="Numbered List" class="editor-btn">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2 8h2v2H2zm0 4h2v2H2zm0-8h2v2H2zm4-2h12v2H6zm0 4h12v2H6zm0 4h12v2H6zm0 4h12v2H6z"/>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Text Size and Color -->
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-group">
+                  <select onchange="formatText('fontSize', this.value)" title="Font Size" class="editor-select">
+                    <option value="">Size</option>
+                    <option value="1">Small</option>
+                    <option value="3">Normal</option>
+                    <option value="5">Large</option>
+                    <option value="7">Huge</option>
+                  </select>
+                  <div class="relative">
+                    <button onclick="document.getElementById('font-color').click()" class="editor-btn flex items-center gap-1" title="Text Color">
+                      <span>A</span>
+                      <div id="color-indicator" class="w-full h-1 bg-black rounded"></div>
+                    </button>
+                    <input type="color" id="font-color" class="hidden" onchange="formatText('foreColor', this.value); document.getElementById('color-indicator').style.backgroundColor = this.value">
+                  </div>
+                </div>
+
+                <!-- Background and Actions -->
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-group">
+                  <button onclick="openBackgroundModal()" title="Background Image" class="editor-btn">🖼️</button>
+                  <button onclick="removeNoteBackground()" title="Remove Background" class="editor-btn">🗑️</button>
+                </div>
+
+                <!-- Undo/Redo -->
+                <div class="toolbar-separator"></div>
+                <div class="toolbar-group">
+                  <button onclick="formatText('undo')" title="Undo (Ctrl+Z)" class="editor-btn">↶</button>
+                  <button onclick="formatText('redo')" title="Redo (Ctrl+Y)" class="editor-btn">↷</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Note Content Editor -->
+            <div class="editor-container">
+              <div id="note-content" contenteditable="true" class="note-editor" aria-label="Note content" spellcheck="true"></div>
+              <div class="editor-footer">
+                <span id="word-count" class="text-sm opacity-60">0 words</span>
+                <span id="char-count" class="text-sm opacity-60 ml-3">0 characters</span>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="modal-actions mt-6 flex gap-3">
+              <button onclick="saveNote()" class="btn-primary flex-1">
+                <span>💾</span> Save Note
+              </button>
+              <button onclick="saveAndClose()" class="btn-secondary flex-1">
+                Save & Close
+              </button>
+              <button onclick="closeNotesModal()" class="btn-tertiary">
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          <!-- Notes History Sidebar -->
+          <div id="notes-history" class="notes-history">
+            <div class="history-header mb-4">
+              <h4 class="text-lg font-semibold mb-3">Notes Library</h4>
+              <div class="history-controls">
+                <input type="text" id="history-search" class="search-input" placeholder="Search notes...">
+                <div class="filter-controls mt-2">
+                  <select id="sort-by" class="filter-select" onchange="sortNotes()">
+                    <option value="date-desc">Newest First</option>
+                    <option value="date-asc">Oldest First</option>
+                    <option value="title">Title A-Z</option>
+                    <option value="course">Course</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div id="notes-history-content" class="history-content"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enhanced Background Modal -->
+    <div id="background-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-30" role="dialog" aria-modal="true">
+      <div class="modal-content bg-white dark:bg-gray-800 p-6 rounded-xl w-full max-w-3xl max-h-[80vh] overflow-y-auto">
+        <h3 class="text-2xl font-bold mb-4">Select Background Pattern</h3>
+        <div class="background-categories">
+          <div class="mb-6">
+            <h4 class="text-lg font-semibold mb-3">Academic Themes</h4>
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-3">
+              <div class="background-option" onclick="setNoteBackground('math')">
+                <img src="../pictures/Math wallpaper 1.jpeg" alt="Math">
+                <span>Mathematics</span>
+              </div>
+              <div class="background-option" onclick="setNoteBackground('physics')">
+                <img src="../pictures/Physics wall paper 1.jpeg" alt="Physics">
+                <span>Physics</span>
+              </div>
+              <div class="background-option" onclick="setNoteBackground('biology')">
+                <img src="../pictures/Biology wallpaper 1.jpeg" alt="Biology">
+                <span>Biology</span>
+              </div>
+              <div class="background-option" onclick="setNoteBackground('chemistry')">
+                <img src="../pictures/chemistry wall paper 2.jpeg" alt="Chemistry">
+                <span>Chemistry</span>
+              </div>
+              <div class="background-option" onclick="setNoteBackground('geography')">
+                <img src="../pictures/Geography wallpaper 1.jpeg" alt="Geography">
+                <span>Geography</span>
+              </div>
+              <div class="background-option" onclick="setNoteBackground('history')">
+                <img src="../pictures/History wallpaper 1.jpeg" alt="History">
+                <span>History</span>
+              </div>
+              <div class="background-option" onclick="setNoteBackground('music')">
+                <img src="../pictures/Music.jpeg" alt="Music">
+                <span>Music</span>
+              </div>
+              <div class="background-option upload-option">
+                <input type="file" id="upload-background" accept="image/*" class="hidden" onchange="uploadBackgroundImage()">
+                <button onclick="document.getElementById('upload-background').click()">
+                  <span>📤</span>
+                  <span>Upload Custom</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer mt-6 flex justify-end gap-3">
+          <button onclick="closeBackgroundModal()" class="btn-tertiary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/advanced-notes.js"></script>
+</body>
+</html>

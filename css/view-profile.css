@@ -1,4 +1,9 @@
- body {
+
+    :root {
+      --transition: all 0.3s ease-in-out;
+    }
+
+    body {
       background-color: var(--background);
       color: var(--text);
       font-family: 'Inter', sans-serif;
@@ -270,3 +275,4 @@
         transform: translateX(-50%);
       }
     }
+  

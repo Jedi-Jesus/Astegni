@@ -1,0 +1,2 @@
+Add 
+Bold, italic, underline, strock, highlight, bulleten, numbered, font size, text-color, subscript, superscript, background image, delete bg-image, undo, redo. in open ended answering and correcting rich text boxes.

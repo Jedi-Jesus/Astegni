@@ -74,6 +74,12 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        .positive {
+            color: #16a34a; /* Tailwind green-600 */
+        }
+        .negative {
+            color: #dc2626; /* Tailwind red-600 */
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans antialiased">
@@ -88,7 +94,7 @@
         <!-- Graph View -->
         <div id="graphContainer" class="hidden bg-white p-6 rounded-xl shadow-lg chart-container">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-semibold text-gray-700">Market Trends</h2>
+                <h2 class="text-2xl font-semibold text-gray-700">Market Trends by Rating</h2>
                 <div class="w-1/3">
                     <label class="block text-gray-700 mb-2 font-medium">Time Period (Months): <span id="timeValue" class="font-bold">3</span></label>
                     <input type="range" id="timePeriod" min="1" max="12" step="1" value="3" oninput="updateTimePeriod(this.value)" class="w-full" aria-label="Select time period for market data">
@@ -101,18 +107,18 @@
             <div id="spinner" class="spinner"></div>
             <canvas id="marketChart" class="hidden"></canvas>
             <div class="flex justify-center mt-4 space-x-4 flex-wrap">
-                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="0" onchange="toggleDataset(this)" class="mr-2"> Rating</label>
-                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="1" onchange="toggleDataset(this)" class="mr-2"> Students</label>
-                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="2" onchange="toggleDataset(this)" class="mr-2"> Result Change</label>
-                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="3" onchange="toggleDataset(this)" class="mr-2"> Price</label>
-                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="4" onchange="toggleDataset(this)" class="mr-2"> Certifications</label>
-                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="5" onchange="toggleDataset(this)" class="mr-2"> Experience</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="0" onchange="toggleDataset(this)" class="mr-2"> No. of Tutors</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="1" onchange="toggleDataset(this)" class="mr-2"> Avg Students</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="2" onchange="toggleDataset(this)" class="mr-2"> Avg Achievement</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="3" onchange="toggleDataset(this)" class="mr-2"> Avg Price</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="4" onchange="toggleDataset(this)" class="mr-2"> Avg Certifications</label>
+                <label class="flex items-center m-1"><input type="checkbox" checked data-dataset="5" onchange="toggleDataset(this)" class="mr-2"> Avg Experience</label>
             </div>
         </div>
 
         <!-- Table View -->
         <div id="tableContainer" class="hidden bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Market Data Table</h2>
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Market Data by Rating</h2>
             <div class="w-1/3 mb-4">
                 <label class="block text-gray-700 mb-2 font-medium">Time Period (Months): <span id="tableTimeValue" class="font-bold">3</span></label>
                 <input type="range" id="tableTimePeriod" min="1" max="12" step="1" value="3" oninput="updateTableTimePeriod(this.value)" class="w-full" aria-label="Select time period for table data">
@@ -120,37 +126,37 @@
             <table class="min-w-full bg-white border rounded-lg">
                 <thead class="bg-gray-100">
                     <tr>
-                        <th class="border-b text-gray-700 font-medium">Tutor</th>
                         <th class="border-b text-gray-700 font-medium">Rating</th>
-                        <th class="border-b text-gray-700 font-medium">Students</th>
+                        <th class="border-b text-gray-700 font-medium">No. of Tutors</th>
+                        <th class="border-b text-gray-700 font-medium">Avg Students</th>
                         <th class="border-b text-gray-700 font-medium">
-                            Result Change (%)
+                            Avg Achievement (%)
                             <span class="tooltip inline-block ml-1">
                                 <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M10 0a10 10 0 100 20 10 10 0 000-20zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
                                 </svg>
-                                <span class="tooltip-text">Percentage improvement in student exam results before and after tutoring (e.g., score from 70% to 85% = 15% change).</span>
+                                <span class="tooltip-text">Average percentage improvement or decline in student exam results for tutors with this rating.</span>
                             </span>
                         </th>
                         <th class="border-b text-gray-700 font-medium">
-                            Certifications
+                            Avg Certifications
                             <span class="tooltip inline-block ml-1">
                                 <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M10 0a10 10 0 100 20 10 10 0 000-20zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
                                 </svg>
-                                <span class="tooltip-text">Number of teaching certifications or qualifications held by the tutor.</span>
+                                <span class="tooltip-text">Average number of teaching certifications held by tutors with this rating.</span>
                             </span>
                         </th>
                         <th class="border-b text-gray-700 font-medium">
-                            Experience (Years)
+                            Avg Experience (Years)
                             <span class="tooltip inline-block ml-1">
                                 <svg class="w-4 h-4 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M10 0a10 10 0 100 20 10 10 0 000-20zm1 15H9v-2h2v2zm0-4H9V5h2v6z"/>
                                 </svg>
-                                <span class="tooltip-text">Years of tutoring experience.</span>
+                                <span class="tooltip-text">Average years of tutoring experience for tutors with this rating.</span>
                             </span>
                         </th>
-                        <th class="border-b text-gray-700 font-medium">Price/Hour ($)</th>
+                        <th class="border-b text-gray-700 font-medium">Avg Price/Hour ($)</th>
                     </tr>
                 </thead>
                 <tbody id="marketTableBody"></tbody>
@@ -173,7 +179,7 @@
         <!-- Market Insights -->
         <div class="mt-8 bg-white p-6 rounded-xl shadow-lg">
             <h2 class="text-2xl font-semibold text-gray-700 mb-4">Market Insights for New Tutors</h2>
-            <p class="text-gray-600">Tutors with ratings above 4.5, result improvements of 15%+, 2+ certifications, and 5+ years of experience can charge $50-$60/hour, especially with higher student counts. Longer time periods (9-12 months) show stronger trends, so building a consistent track record with qualifications is key to commanding higher rates.</p>
+            <p class="text-gray-600">Tutors with ratings above 4.5 can charge $50-$60/hour, while those with ratings around 4.2–4.5 typically charge $40-$50/hour. Tutors with ratings below 4.2 may charge $35-$40/hour. Longer time periods (9-12 months) show stronger trends, so building a consistent track record with high ratings is key to commanding higher rates.</p>
         </div>
     </div>
 
@@ -181,38 +187,56 @@
         // Sample data for different time periods
         const tutorDataByTime = {
             3: [
-                { name: "Tutor A", rating: 4.8, students: 20, resultChange: 15, certifications: 2, experience: 5, pricePerHour: 50 },
-                { name: "Tutor B", rating: 4.2, students: 15, resultChange: 10, certifications: 1, experience: 3, pricePerHour: 40 },
-                { name: "Tutor C", rating: 4.5, students: 25, resultChange: 20, certifications: 3, experience: 7, pricePerHour: 60 },
-                { name: "Tutor D", rating: 3.9, students: 10, resultChange: 8, certifications: 0, experience: 2, pricePerHour: 35 },
-                { name: "Tutor E", rating: 4.7, students: 30, resultChange: 18, certifications: 2, experience: 6, pricePerHour: 55 }
+                { name: "Tutor A", rating: 4.8, students: 20, achievement: 15, certifications: 2, experience: 5, pricePerHour: 50 },
+                { name: "Tutor B", rating: 4.2, students: 15, achievement: 10, certifications: 1, experience: 3, pricePerHour: 40 },
+                { name: "Tutor C", rating: 4.5, students: 25, achievement: 20, certifications: 3, experience: 7, pricePerHour: 60 },
+                { name: "Tutor D", rating: 3.9, students: 10, achievement: -8, certifications: 0, experience: 2, pricePerHour: 35 },
+                { name: "Tutor E", rating: 4.7, students: 30, achievement: 18, certifications: 2, experience: 6, pricePerHour: 55 }
             ],
             6: [
-                { name: "Tutor A", rating: 4.7, students: 22, resultChange: 16, certifications: 2, experience: 5.5, pricePerHour: 52 },
-                { name: "Tutor B", rating: 4.3, students: 18, resultChange: 12, certifications: 1, experience: 3.5, pricePerHour: 42 },
-                { name: "Tutor C", rating: 4.6, students: 28, resultChange: 22, certifications: 3, experience: 7.5, pricePerHour: 62 },
-                { name: "Tutor D", rating: 4.0, students: 12, resultChange: 9, certifications: 0, experience: 2.5, pricePerHour: 37 },
-                { name: "Tutor E", rating: 4.8, students: 32, resultChange: 19, certifications: 2, experience: 6.5, pricePerHour: 57 }
+                { name: "Tutor A", rating: 4.7, students: 22, achievement: 16, certifications: 2, experience: 5.5, pricePerHour: 52 },
+                { name: "Tutor B", rating: 4.3, students: 18, achievement: 12, certifications: 1, experience: 3.5, pricePerHour: 42 },
+                { name: "Tutor C", rating: 4.6, students: 28, achievement: 22, certifications: 3, experience: 7.5, pricePerHour: 62 },
+                { name: "Tutor D", rating: 4.0, students: 12, achievement: -9, certifications: 0, experience: 2.5, pricePerHour: 37 },
+                { name: "Tutor E", rating: 4.8, students: 32, achievement: 19, certifications: 2, experience: 6.5, pricePerHour: 57 }
             ],
             9: [
-                { name: "Tutor A", rating: 4.9, students: 25, resultChange: 17, certifications: 3, experience: 6, pricePerHour: 55 },
-                { name: "Tutor B", rating: 4.4, students: 20, resultChange: 13, certifications: 1, experience: 4, pricePerHour: 45 },
-                { name: "Tutor C", rating: 4.7, students: 30, resultChange: 24, certifications: 4, experience: 8, pricePerHour: 65 },
-                { name: "Tutor D", rating: 4.1, students: 15, resultChange: 10, certifications: 1, experience: 3, pricePerHour: 40 },
-                { name: "Tutor E", rating: 4.9, students: 35, resultChange: 20, certifications: 3, experience: 7, pricePerHour: 60 }
+                { name: "Tutor A", rating: 4.9, students: 25, achievement: 17, certifications: 3, experience: 6, pricePerHour: 55 },
+                { name: "Tutor B", rating: 4.4, students: 20, achievement: 13, certifications: 1, experience: 4, pricePerHour: 45 },
+                { name: "Tutor C", rating: 4.7, students: 30, achievement: 24, certifications: 4, experience: 8, pricePerHour: 65 },
+                { name: "Tutor D", rating: 4.1, students: 15, achievement: -10, certifications: 1, experience: 3, pricePerHour: 40 },
+                { name: "Tutor E", rating: 4.9, students: 35, achievement: 20, certifications: 3, experience: 7, pricePerHour: 60 }
             ],
             12: [
-                { name: "Tutor A", rating: 5.0, students: 28, resultChange: 18, certifications: 3, experience: 6.5, pricePerHour: 58 },
-                { name: "Tutor B", rating: 4.5, students: 22, resultChange: 14, certifications: 2, experience: 4.5, pricePerHour: 48 },
-                { name: "Tutor C", rating: 4.8, students: 33, resultChange: 25, certifications: 4, experience: 8.5, pricePerHour: 68 },
-                { name: "Tutor D", rating: 4.2, students: 18, resultChange: 11, certifications: 1, experience: 3.5, pricePerHour: 42 },
-                { name: "Tutor E", rating: 5.0, students: 38, resultChange: 22, certifications: 3, experience: 7.5, pricePerHour: 63 }
+                { name: "Tutor A", rating: 5.0, students: 28, achievement: 18, certifications: 3, experience: 6.5, pricePerHour: 58 },
+                { name: "Tutor B", rating: 4.5, students: 22, achievement: 14, certifications: 2, experience: 4.5, pricePerHour: 48 },
+                { name: "Tutor C", rating: 4.8, students: 33, achievement: 25, certifications: 4, experience: 8.5, pricePerHour: 68 },
+                { name: "Tutor D", rating: 4.2, students: 18, achievement: -11, certifications: 1, experience: 3.5, pricePerHour: 42 },
+                { name: "Tutor E", rating: 5.0, students: 38, achievement: 22, certifications: 3, experience: 7.5, pricePerHour: 63 }
             ]
         };
 
         let chartInstance = null;
         let currentTimePeriod = 3;
         let visibleDatasets = [true, true, true, true, true, true];
+
+        function aggregateDataByRating(tutorData) {
+            const ratingRange = 0.1;
+            const ratings = [...new Set(tutorData.map(t => Math.round(t.rating * 10) / 10))].sort((a, b) => a - b);
+            return ratings.map(rating => {
+                const similarTutors = tutorData.filter(t => t.rating >= rating - ratingRange && t.rating <= rating + ratingRange);
+                const count = similarTutors.length;
+                return {
+                    rating: rating.toFixed(1),
+                    count: count,
+                    avgStudents: count ? (similarTutors.reduce((sum, t) => sum + t.students, 0) / count).toFixed(1) : 0,
+                    avgAchievement: count ? (similarTutors.reduce((sum, t) => sum + t.achievement, 0) / count).toFixed(1) : 0,
+                    avgCertifications: count ? (similarTutors.reduce((sum, t) => sum + t.certifications, 0) / count).toFixed(1) : 0,
+                    avgExperience: count ? (similarTutors.reduce((sum, t) => sum + t.experience, 0) / count).toFixed(1) : 0,
+                    avgPrice: count ? (similarTutors.reduce((sum, t) => sum + t.pricePerHour, 0) / count).toFixed(2) : 0
+                };
+            });
+        }
 
         function toggleView(view) {
             const graphContainer = document.getElementById('graphContainer');
@@ -233,7 +257,7 @@
             } else if (view === 'price') {
                 priceContainer.classList.remove('hidden');
                 priceContainer.classList.add('fade-in');
-                suggestPrice(); // Auto-calculate price on view load
+                suggestPrice();
             }
             setTimeout(() => {
                 graphContainer.classList.remove('fade-in');
@@ -280,6 +304,7 @@
             const graphType = document.getElementById('graphType').value;
             const ctx = document.getElementById('marketChart').getContext('2d');
             const tutorData = tutorDataByTime[currentTimePeriod];
+            const aggregatedData = aggregateDataByRating(tutorData);
             const spinner = document.getElementById('spinner');
             const canvas = document.getElementById('marketChart');
 
@@ -294,11 +319,11 @@
                 chartInstance = new Chart(ctx, {
                     type: graphType,
                     data: {
-                        labels: tutorData.map(tutor => tutor.name),
+                        labels: aggregatedData.map(data => data.rating),
                         datasets: [
                             {
-                                label: 'Rating (out of 5)',
-                                data: visibleDatasets[0] ? tutorData.map(tutor => tutor.rating) : [],
+                                label: 'Number of Tutors',
+                                data: visibleDatasets[0] ? aggregatedData.map(data => data.count) : [],
                                 borderColor: 'rgba(75, 192, 192, 1)',
                                 backgroundColor: 'rgba(75, 192, 192, 0.4)',
                                 yAxisID: 'y',
@@ -307,8 +332,8 @@
                                 datalabels: { display: visibleDatasets[0], align: 'top', color: '#374151', font: { size: 10 } }
                             },
                             {
-                                label: 'Number of Students',
-                                data: visibleDatasets[1] ? tutorData.map(tutor => tutor.students) : [],
+                                label: 'Average Students',
+                                data: visibleDatasets[1] ? aggregatedData.map(data => data.avgStudents) : [],
                                 borderColor: 'rgba(255, 99, 132, 1)',
                                 backgroundColor: 'rgba(255, 99, 132, 0.4)',
                                 yAxisID: 'y1',
@@ -317,8 +342,8 @@
                                 datalabels: { display: visibleDatasets[1], align: 'top', color: '#374151', font: { size: 10 } }
                             },
                             {
-                                label: 'Result Change (%)',
-                                data: visibleDatasets[2] ? tutorData.map(tutor => tutor.resultChange) : [],
+                                label: 'Average Achievement (%)',
+                                data: visibleDatasets[2] ? aggregatedData.map(data => data.avgAchievement) : [],
                                 borderColor: 'rgba(54, 162, 235, 1)',
                                 backgroundColor: 'rgba(54, 162, 235, 0.4)',
                                 yAxisID: 'y2',
@@ -327,8 +352,8 @@
                                 datalabels: { display: visibleDatasets[2], align: 'top', color: '#374151', font: { size: 10 } }
                             },
                             {
-                                label: 'Price per Hour ($)',
-                                data: visibleDatasets[3] ? tutorData.map(tutor => tutor.pricePerHour) : [],
+                                label: 'Average Price per Hour ($)',
+                                data: visibleDatasets[3] ? aggregatedData.map(data => data.avgPrice) : [],
                                 borderColor: 'rgba(255, 206, 86, 1)',
                                 backgroundColor: 'rgba(255, 206, 86, 0.4)',
                                 yAxisID: 'y3',
@@ -337,8 +362,8 @@
                                 datalabels: { display: visibleDatasets[3], align: 'top', color: '#374151', font: { size: 10 } }
                             },
                             {
-                                label: 'Certifications',
-                                data: visibleDatasets[4] ? tutorData.map(tutor => tutor.certifications) : [],
+                                label: 'Average Certifications',
+                                data: visibleDatasets[4] ? aggregatedData.map(data => data.avgCertifications) : [],
                                 borderColor: 'rgba(153, 102, 255, 1)',
                                 backgroundColor: 'rgba(153, 102, 255, 0.4)',
                                 yAxisID: 'y4',
@@ -347,8 +372,8 @@
                                 datalabels: { display: visibleDatasets[4], align: 'top', color: '#374151', font: { size: 10 } }
                             },
                             {
-                                label: 'Experience (Years)',
-                                data: visibleDatasets[5] ? tutorData.map(tutor => tutor.experience) : [],
+                                label: 'Average Experience (Years)',
+                                data: visibleDatasets[5] ? aggregatedData.map(data => data.avgExperience) : [],
                                 borderColor: 'rgba(255, 159, 64, 1)',
                                 backgroundColor: 'rgba(255, 159, 64, 0.4)',
                                 yAxisID: 'y5',
@@ -366,15 +391,14 @@
                                 type: 'linear',
                                 display: visibleDatasets[0],
                                 position: 'left',
-                                title: { display: true, text: 'Rating' },
-                                min: 0,
-                                max: 5
+                                title: { display: true, text: 'No. of Tutors' },
+                                min: 0
                             },
                             y1: {
                                 type: 'linear',
                                 display: visibleDatasets[1],
                                 position: 'right',
-                                title: { display: true, text: 'Students' },
+                                title: { display: true, text: 'Avg Students' },
                                 grid: { drawOnChartArea: false },
                                 min: 0
                             },
@@ -382,15 +406,14 @@
                                 type: 'linear',
                                 display: visibleDatasets[2],
                                 position: 'right',
-                                title: { display: true, text: 'Result Change (%)', padding: { top: 10, bottom: 10 } },
-                                grid: { drawOnChartArea: false },
-                                min: 0
+                                title: { display: true, text: 'Avg Achievement (%)', padding: { top: 10, bottom: 10 } },
+                                grid: { drawOnChartArea: false }
                             },
                             y3: {
                                 type: 'linear',
                                 display: visibleDatasets[3],
                                 position: 'right',
-                                title: { display: true, text: 'Price ($)' },
+                                title: { display: true, text: 'Avg Price ($)' },
                                 grid: { drawOnChartArea: false },
                                 min: 0
                             },
@@ -398,7 +421,7 @@
                                 type: 'linear',
                                 display: visibleDatasets[4],
                                 position: 'right',
-                                title: { display: true, text: 'Certifications' },
+                                title: { display: true, text: 'Avg Certifications' },
                                 grid: { drawOnChartArea: false },
                                 min: 0
                             },
@@ -406,9 +429,12 @@
                                 type: 'linear',
                                 display: visibleDatasets[5],
                                 position: 'right',
-                                title: { display: true, text: 'Experience (Years)' },
+                                title: { display: true, text: 'Avg Experience (Years)' },
                                 grid: { drawOnChartArea: false },
                                 min: 0
+                            },
+                            x: {
+                                title: { display: true, text: 'Rating' }
                             }
                         },
                         plugins: {
@@ -426,7 +452,7 @@
                                 }
                             },
                             datalabels: {
-                                display: false // Handled per dataset
+                                display: false
                             }
                         }
                     },
@@ -441,18 +467,23 @@
         function populateTable() {
             const tableBody = document.getElementById('marketTableBody');
             const tutorData = tutorDataByTime[currentTimePeriod];
+            const aggregatedData = aggregateDataByRating(tutorData);
             tableBody.innerHTML = '';
-            tutorData.forEach(tutor => {
+            aggregatedData.forEach(data => {
                 const row = document.createElement('tr');
                 row.classList.add('border-b');
+                const achievement = parseFloat(data.avgAchievement);
+                const signClass = achievement >= 0 ? 'positive' : 'negative';
+                const sign = achievement >= 0 ? '+' : '−';
+                const achievementDisplay = `${sign}${Math.abs(achievement).toFixed(1)}`;
                 row.innerHTML = `
-                    <td class="text-gray-700">${tutor.name}</td>
-                    <td class="text-gray-700">${tutor.rating}</td>
-                    <td class="text-gray-700">${tutor.students}</td>
-                    <td class="text-gray-700">${tutor.resultChange}</td>
-                    <td class="text-gray-700">${tutor.certifications}</td>
-                    <td class="text-gray-700">${tutor.experience}</td>
-                    <td class="text-gray-700">${tutor.pricePerHour}</td>
+                    <td class="text-gray-700">${data.rating}</td>
+                    <td class="text-gray-700">${data.count}</td>
+                    <td class="text-gray-700">${data.avgStudents}</td>
+                    <td class="text-gray-700"><span class="${signClass}">${achievementDisplay}</span></td>
+                    <td class="text-gray-700">${data.avgCertifications}</td>
+                    <td class="text-gray-700">${data.avgExperience}</td>
+                    <td class="text-gray-700">${data.avgPrice}</td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -464,52 +495,38 @@
 
             // Simulate system data for the logged-in user by selecting a random tutor
             const randomTutor = tutorData[Math.floor(Math.random() * tutorData.length)];
-            const username = randomTutor.name; // In a real system, this would come from user profile
+            const username = randomTutor.name;
             const rating = randomTutor.rating;
-            const students = randomTutor.students;
-            const resultChange = randomTutor.resultChange;
-            const certifications = randomTutor.certifications;
-            const experience = randomTutor.experience;
 
-            // Calculate averages for comparison
-            const avgRating = tutorData.reduce((sum, t) => sum + t.rating, 0) / tutorData.length;
-            const avgStudents = tutorData.reduce((sum, t) => sum + t.students, 0) / tutorData.length;
-            const avgResultChange = tutorData.reduce((sum, t) => sum + t.resultChange, 0) / tutorData.length;
-            const avgCertifications = tutorData.reduce((sum, t) => sum + t.certifications, 0) / tutorData.length;
-            const avgExperience = tutorData.reduce((sum, t) => sum + t.experience, 0) / tutorData.length;
-            const avgPrice = tutorData.reduce((sum, t) => sum + t.pricePerHour, 0) / tutorData.length;
+            // Find tutors with similar ratings (within ±0.1)
+            const ratingRange = 0.1;
+            const similarTutors = tutorData.filter(tutor => 
+                tutor.rating >= rating - ratingRange && tutor.rating <= rating + ratingRange
+            );
 
-            // Weights: 30% rating, 20% students, 20% result change, 15% certifications, 15% experience
-            const ratingFactor = (rating / avgRating) * 0.3;
-            const studentsFactor = (students / avgStudents) * 0.2;
-            const resultChangeFactor = (resultChange / avgResultChange) * 0.2;
-            const certificationsFactor = (certifications / (avgCertifications || 1)) * 0.15;
-            const experienceFactor = (experience / (avgExperience || 1)) * 0.15;
+            // Calculate average price of tutors with similar ratings
+            const avgPrice = similarTutors.length > 0
+                ? similarTutors.reduce((sum, tutor) => sum + tutor.pricePerHour, 0) / similarTutors.length
+                : tutorData.reduce((sum, tutor) => sum + tutor.pricePerHour, 0) / tutorData.length;
 
             // Time period adjustment (longer periods increase price slightly)
             const timeFactor = 1 + (currentTimePeriod - 3) * 0.05;
 
-            // Suggested price: Adjust average market price
-            const suggestedPrice = Math.round(avgPrice * (ratingFactor + studentsFactor + resultChangeFactor + certificationsFactor + experienceFactor) * timeFactor);
+            // Suggested price: Adjust average price by time factor
+            const suggestedPrice = Math.round(avgPrice * timeFactor);
 
+            // Ensure price is within a reasonable range
             const finalPrice = Math.max(20, Math.min(suggestedPrice, 100));
 
             // Personalized output
             priceResult.innerHTML = `
                 <p class="text-green-600 font-semibold">Dear ${username},</p>
                 <p class="text-gray-600">Your Rating: ${rating.toFixed(1)}</p>
-                <p class="text-gray-600">Number of Students: ${students}</p>
-                <p class="text-gray-600">Result Change (%): ${resultChange}</p>
-                <p class="text-gray-600">Certifications: ${certifications}</p>
-                <p class="text-gray-600">Experience (Years): ${experience}</p>
-                <p class="text-green-600 font-semibold">Based on these results, your suggested hourly price is: $${finalPrice} (based on ${currentTimePeriod}-month market trends)</p>
+                <p class="text-green-600 font-semibold">Based on your rating, your suggested hourly price is: $${finalPrice} (based on ${currentTimePeriod}-month market trends)</p>
                 <p class="text-gray-600 text-sm mt-2">Breakdown:</p>
                 <ul class="text-gray-600 text-sm list-disc list-inside">
-                    <li>Rating: ${Math.round(ratingFactor * 100)}% of market average (${avgRating.toFixed(1)})</li>
-                    <li>Students: ${Math.round(studentsFactor * 100)}% of market average (${avgStudents.toFixed(1)})</li>
-                    <li>Result Change: ${Math.round(resultChangeFactor * 100)}% of market average (${avgResultChange.toFixed(1)})</li>
-                    <li>Certifications: ${Math.round(certificationsFactor * 100)}% of market average (${avgCertifications.toFixed(1)})</li>
-                    <li>Experience: ${Math.round(experienceFactor * 100)}% of market average (${avgExperience.toFixed(1)})</li>
+                    <li>Matched with ${similarTutors.length} tutor(s) with ratings between ${Math.max(0, rating - ratingRange).toFixed(1)} and ${(rating + ratingRange).toFixed(1)}</li>
+                    <li>Average price of similar tutors: $${avgPrice.toFixed(2)}</li>
                     <li>Time Adjustment: +${Math.round((timeFactor - 1) * 100)}% for ${currentTimePeriod}-month trends</li>
                 </ul>
             `;

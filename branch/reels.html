@@ -10,534 +10,491 @@
     <link href="../css/reels.css" rel="stylesheet">
 </head>
 <body class="font-sans">
-    <!-- Navigation -->
+    <!-- Enhanced Navigation -->
     <nav
-        class="py-4 top-0 shadow-sm z-50 w-full fixed"
-        style="background-color: var(--footer-bg);"
+        class="py-2 sm:py-3 md:py-4 top-0 shadow-lg z-50 w-full fixed backdrop-blur-md"
+        style="background-color: rgba(var(--footer-bg-rgb), 0.95);"
         role="navigation"
         aria-label="Main navigation"
     >
-        <div class="container mx-auto flex justify-between items-center px-4">
-            <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
-            <div class="hidden md:flex space-x-6 items-center">
-                <input
-                    id="nav-search-input"
-                    class="p-2 border rounded-lg"
-                    type="text"
-                    placeholder="Search videos..."
-                    aria-label="Search videos"
-                />
-                <a href="news.html" class="hover:text-[var(--nav-link-hover)]">News</a>
-                <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]"
-                    >Find tutors</a
-                >
-                <a href="store.html" class="hover:text-[var(--nav-link-hover)]">Store</a>
-                <a href="find-jobs.html" class="hover:text-[var(--nav-link-hover)]"
-                    >Find a Job</a
-                >
-                <div id="profile-container" class="profile-container relative">
-                    <button
-                        class="flex items-center gap-2 focus:outline-none px-2 py-1 rounded transition-all duration-200"
-                        onclick="toggleProfileDropdown()"
-                        aria-expanded="false"
-                        aria-label="Profile menu"
-                    >
-                        <img
-                            id="profile-pic"
-                            class="profile-pic w-8 h-8 rounded-full"
-                            src="https://picsum.photos/32"
-                            alt="Profile Picture"
-                        />
-                        <span id="profile-name" class="nav-link text-sm"></span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M19 9l-7 7-7-7"
-                            />
-                        </svg>
-                    </button>
-                    <div
-                        id="profile-dropdown"
-                        class="profile-dropdown absolute top-full right-0 mt-2 w-48 bg-[var(--nav-bg)] shadow-lg rounded-lg"
-                    >
-                        <a
-                            href="profile.html"
-                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)]"
-                            >View Profile</a
-                        >
-                        <a
-                            href="notes.html"
-                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)]"
-                            >Notes</a
-                        >
-                        <a
-                            href="finances.html"
-                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)]"
-                            >Manage Finances</a
-                        >
-                        <a
-                            href="comment-rate.html"
-                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)]"
-                            >Comment and Rate</a
-                        >
-                        <button
-                            onclick="shareProfile()"
-                            class="block px-4 py-2 hover:bg-[var(--highlight-bg)] w-full text-left"
-                        >
-                            Share
-                        </button>
-                    </div>
+        <div class="container mx-auto flex justify-between items-center px-3 sm:px-4">
+            <a href="../index.html" class="text-xl sm:text-2xl font-bold animate-glow">ASTEGNI</a>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex flex-1 items-center justify-center space-x-4 lg:space-x-6 mx-4">
+                <div class="relative flex-1 max-w-lg">
+                    <input
+                        id="nav-search-input"
+                        class="w-full p-2.5 pl-10 pr-4 border-2 rounded-full transition-all duration-300 search-input-glow"
+                        type="text"
+                        placeholder="Search videos, tutors, subjects..."
+                        aria-label="Search videos"
+                    />
+                    <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
                 </div>
+                <a href="news.html" class="nav-link hover-lift">News</a>
+                <a href="find-tutors.html" class="nav-link hover-lift">Find tutors</a>
+                <a href="store.html" class="nav-link hover-lift">Store</a>
+                <a href="find-jobs.html" class="nav-link hover-lift">Find a Job</a>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-3">
+                <a href="profile.html" id="profile-link" class="flex items-center gap-2 px-3 py-2 rounded-full hover-glow transition-all duration-300">
+                    <img
+                        id="profile-pic"
+                        class="w-9 h-9 rounded-full ring-2 ring-[var(--button-bg)] ring-offset-2 transition-all duration-300 hover:ring-4"
+                        src="https://picsum.photos/32"
+                        alt="Profile Picture"
+                    />
+                    <span id="profile-name" class="text-sm font-semibold"></span>
+                </a>
                 <button
                     id="notification-bell"
-                    class="relative focus:outline-none"
+                    class="relative p-2 rounded-full hover-glow transition-all duration-300"
                     onclick="openNotificationModal()"
                     aria-label="View notifications"
                 >
-                    <svg
-                        class="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"
-                        />
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
                     </svg>
-                    <span
-                        id="notification-dot"
-                        class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"
-                    ></span>
+                    <span id="notification-dot" class="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full hidden animate-bounce"></span>
                 </button>
                 <button
                     id="theme-toggle-btn"
-                    class="focus:outline-none"
+                    class="p-2 rounded-full hover-glow transition-all duration-500"
                     aria-label="Toggle theme"
                 >
-                    <svg
-                        class="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
                 </button>
             </div>
-            <button
-                id="menu-btn"
-                class="md:hidden focus:outline-none"
-                aria-label="Toggle menu"
-                aria-expanded="false"
-            >
-                <svg
-                    class="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M4 6h16M4 12h16m-7 6h7"
+            
+            <!-- Mobile Navigation -->
+            <div class="flex md:hidden items-center space-x-2">
+                <div class="relative flex-1 max-w-[200px]">
+                    <input
+                        id="mobile-search-input"
+                        class="w-full p-2 pl-8 pr-2 border rounded-full text-sm transition-all duration-300"
+                        type="text"
+                        placeholder="Search..."
+                        aria-label="Search"
                     />
-                </svg>
-            </button>
-        </div>
-        <div id="mobile-menu" class="md:hidden">
-            <div class="px-4 py-2">
-                <input
-                    id="mobile-search-input"
-                    class="w-full p-2 border rounded-lg"
-                    type="text"
-                    placeholder="Search videos..."
-                    aria-label="Search videos"
-                />
+                    <svg class="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <button
+                    id="mobile-notification-bell"
+                    class="relative p-2"
+                    onclick="openNotificationModal()"
+                    aria-label="Notifications"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <span id="mobile-notification-dot" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full hidden animate-bounce"></span>
+                </button>
+                <button
+                    id="mobile-theme-toggle-btn"
+                    class="p-2"
+                    aria-label="Theme"
+                    onclick="toggleTheme()"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </button>
+                <button
+                    id="menu-btn"
+                    class="p-2 hamburger-menu"
+                    aria-label="Menu"
+                    aria-expanded="false"
+                >
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
             </div>
-            <a
-                href="news.html"
-                class="block py-2 px-4 hover:text-[var(--nav-link-hover)]"
-                >News</a
-            >
-            <a
-                href="find-tutors.html"
-                class="hover:text-[var(--nav-link-hover)] block py-2 px-4"
-                >Find tutors</a
-            >
-            <a
-                href="store.html"
-                class="block py-2 px-4 hover:text-[var(--nav-link-hover)]"
-                >Store</a
-            >
-            <a
-                href="jobs.html"
-                class="block py-2 px-4 hover:text-[var(--nav-link-hover)]"
-                >Find a Job</a
-            >
-            <button
-                id="mobile-notification-bell"
-                class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative"
-                onclick="openNotificationModal()"
-                aria-label="View notifications"
-            >
-                Notifications
-                <span
-                    id="mobile-notification-dot"
-                    class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"
-                ></span>
-            </button>
-            <button
-                id="mobile-theme-toggle-btn"
-                class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left"
-                aria-label="Toggle theme"
-            >
-                Toggle Theme
-            </button>
+        </div>
+        
+        <!-- Mobile Dropdown Menu -->
+        <div id="mobile-menu" class="md:hidden">
+            <a href="news.html" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
+                <span class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path>
+                    </svg>
+                    News
+                </span>
+            </a>
+            <a href="find-tutors.html" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
+                <span class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    Find tutors
+                </span>
+            </a>
+            <a href="store.html" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
+                <span class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    Store
+                </span>
+            </a>
+            <a href="find-jobs.html" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
+                <span class="flex items-center gap-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Find a Job
+                </span>
+            </a>
+            <a href="profile.html" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
+                <span class="flex items-center gap-3">
+                    <img class="w-6 h-6 rounded-full" src="https://picsum.photos/32" alt="Profile">
+                    Profile
+                </span>
+            </a>
         </div>
     </nav>
 
-    <!-- Reels Section -->
-    <section class="py-16 mt-16">
-        <div class="container mx-auto px-4">
-            <!-- Ad Placeholder -->
-            <div id="ad-placeholder" class="ad-placeholder">
-                <img
-                    src="https://via.placeholder.com/728x90?text=Ad+1"
-                    alt="Advertisement 1"
-                    class="ad-image active"
-                />
-                <img
-                    src="https://via.placeholder.com/728x90?text=Ad+2"
-                    alt="Advertisement 2"
-                    class="ad-image"
-                />
-                <img
-                    src="https://via.placeholder.com/728x90?text=Ad+3"
-                    alt="Advertisement 3"
-                    class="ad-image"
-                />
+    <!-- Enhanced Reels Section -->
+    <section class="py-8 sm:py-12 md:py-16 mt-14 sm:mt-16">
+        <div class="container mx-auto px-3 sm:px-4">
+            <!-- Enhanced Ad Placeholder -->
+            <div id="ad-placeholder" class="ad-container mb-8">
+                <div class="ad-wrapper">
+                    <div class="ad-slide active" data-bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
+                        <div class="ad-content">
+                            <h3 class="ad-title">Premium Tutoring</h3>
+                            <p class="ad-text">Get 50% off your first month</p>
+                            <button class="ad-cta">Learn More</button>
+                        </div>
+                        <div class="ad-particles"></div>
+                    </div>
+                    <div class="ad-slide" data-bg="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
+                        <div class="ad-content">
+                            <h3 class="ad-title">Become a Tutor</h3>
+                            <p class="ad-text">Start earning today</p>
+                            <button class="ad-cta">Apply Now</button>
+                        </div>
+                        <div class="ad-particles"></div>
+                    </div>
+                    <div class="ad-slide" data-bg="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
+                        <div class="ad-content">
+                            <h3 class="ad-title">Special Offer</h3>
+                            <p class="ad-text">Limited time discount</p>
+                            <button class="ad-cta">Get Started</button>
+                        </div>
+                        <div class="ad-particles"></div>
+                    </div>
+                </div>
+                <div class="ad-indicators">
+                    <span class="indicator active" onclick="showAd(0)"></span>
+                    <span class="indicator" onclick="showAd(1)"></span>
+                    <span class="indicator" onclick="showAd(2)"></span>
+                </div>
+                <div class="ad-progress"></div>
             </div>
-            <div class="flex flex-wrap gap-4 mb-8">
+            
+            <!-- Enhanced Filter Buttons -->
+            <div class="filter-container mb-8">
                 <button
-                    class="filter-button px-4 py-2 rounded-lg cta-button active"
+                    class="filter-btn active"
                     onclick="filterReels('all')"
                     data-filter="all"
                 >
-                    All Videos
+                    <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                    <span>All Videos</span>
+                    <span class="filter-badge" id="all-count">0</span>
                 </button>
                 <button
-                    class="filter-button px-4 py-2 rounded-lg cta-button"
+                    class="filter-btn"
+                    onclick="filterReels('favorites')"
+                    data-filter="favorites"
+                >
+                    <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                    <span>Favorites</span>
+                    <span class="filter-badge" id="favorites-count">0</span>
+                </button>
+                <button
+                    class="filter-btn"
                     onclick="filterReels('saved')"
                     data-filter="saved"
                 >
-                    Saved
+                    <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                    </svg>
+                    <span>Saved</span>
+                    <span class="filter-badge" id="saved-count">0</span>
                 </button>
                 <button
-                    class="filter-button px-4 py-2 rounded-lg cta-button"
+                    class="filter-btn"
                     onclick="filterReels('liked')"
                     data-filter="liked"
                 >
-                    Liked Videos
+                    <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h1.652a3 3 0 002.121-.879l1.414-1.414A3 3 0 0021 3.464V3a1 1 0 00-1-1h-4a3 3 0 00-3 3v5m1 0H9m5 0v10a1 1 0 01-1 1h-2a1 1 0 01-1-1V10m-5 0H3.348a3 3 0 00-2.121.879l-1.414 1.414A3 3 0 00-1 16.536V17a1 1 0 001 1h4a3 3 0 003-3v-5"></path>
+                    </svg>
+                    <span>Liked</span>
+                    <span class="filter-badge" id="liked-count">0</span>
                 </button>
                 <button
-                    class="filter-button px-4 py-2 rounded-lg cta-button"
+                    class="filter-btn"
                     onclick="filterReels('history')"
                     data-filter="history"
                 >
-                    History
+                    <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span>History</span>
+                    <span class="filter-badge" id="history-count">0</span>
                 </button>
             </div>
+            
+            <!-- Reels Grid -->
             <div
                 id="reels-grid"
-                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6"
             ></div>
+            
+            <!-- Loading Skeleton -->
+            <div id="loading-skeleton" class="hidden">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                    <div class="skeleton-card"></div>
+                </div>
+            </div>
         </div>
     </section>
 
-    <!-- Comment Modal -->
+    <!-- Enhanced Comment Modal -->
     <div
         id="comment-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-30"
+        class="modal-overlay"
         role="dialog"
         aria-modal="true"
         aria-label="Comments"
     >
-        <div
-            class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto"
-        >
-            <h3 class="text-2xl font-bold mb-4">Comments</h3>
-            <div id="comment-list" class="mb-4"></div>
-            <textarea
-                id="new-comment"
-                class="w-full p-2 border rounded-lg mb-4"
-                placeholder="Add a comment..."
-                disabled
-            ></textarea>
-            <button
-                id="submit-comment"
-                class="cta-button px-4 py-2 rounded-lg w-full"
-                onclick="addComment()"
-                disabled
-            >
-                Add Comment
-            </button>
-            <button onclick="closeCommentModal()" class="mt-4 hover:underline">
-                Close
-            </button>
+        <div class="modal-container comment-modal animate-modal-slide">
+            <div class="modal-header">
+                <h3 class="modal-title">Comments</h3>
+                <button onclick="closeCommentModal()" class="modal-close-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="comment-list" class="comment-list"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="comment-input-wrapper">
+                    <textarea
+                        id="new-comment"
+                        class="comment-input"
+                        placeholder="Add a comment..."
+                        rows="3"
+                        disabled
+                    ></textarea>
+                    <button
+                        id="submit-comment"
+                        class="comment-submit-btn"
+                        onclick="addComment()"
+                        disabled
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Notification Modal -->
+    <!-- Enhanced Notification Modal -->
     <div
         id="notification-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        class="modal-overlay"
         role="dialog"
         aria-modal="true"
         aria-label="Notifications"
     >
-        <div
-            class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto"
-        >
-            <h3 class="text-2xl font-bold mb-4">Notifications</h3>
-            <div id="notification-content">You have no notifications.</div>
-            <button
-                onclick="closeNotificationModal()"
-                class="mt-4 hover:underline"
-            >
-                Close
-            </button>
+        <div class="modal-container notification-modal animate-modal-slide">
+            <div class="modal-header">
+                <h3 class="modal-title">Notifications</h3>
+                <button onclick="closeNotificationModal()" class="modal-close-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="notification-content" class="notification-list">
+                    <div class="empty-state">
+                        <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                        </svg>
+                        <p class="text-center opacity-70">No new notifications</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Video View Modal -->
+    <!-- Enhanced Video Modal -->
     <div
         id="video-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        class="video-modal-overlay"
         role="dialog"
         aria-modal="true"
         aria-label="View Video"
     >
-        <div
-            class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto relative flex flex-col"
-        >
-            <div class="flex justify-between items-center mb-4">
-                <button
-                    id="prev-video-btn"
-                    class="nav-arrow"
-                    onclick="navigateVideo('prev')"
-                    aria-label="Previous video"
-                    disabled
-                >
-                    <svg
-                        class="w-8 h-8"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 19l-7-7 7-7"
-                        />
-                    </svg>
-                </button>
-                <button
-                    id="next-video-btn"
-                    class="nav-arrow"
-                    onclick="navigateVideo('next')"
-                    aria-label="Next video"
-                    disabled
-                >
-                    <svg
-                        class="w-8 h-8"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M9 5l7 7-7 7"
-                        />
-                    </svg>
-                </button>
+        <div class="video-modal-container">
+            <div class="video-player-section">
+                <div class="video-wrapper">
+                    <video id="modal-video" class="modal-video" controls autoplay>
+                        <source src="" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    
+                    <!-- Floating Navigation Controls -->
+                    <div class="video-nav-controls">
+                        <button
+                            id="prev-video-btn"
+                            class="video-nav-btn prev-btn"
+                            onclick="navigateVideo('prev')"
+                            aria-label="Previous video"
+                            disabled
+                        >
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
+                            </svg>
+                        </button>
+                        <button
+                            id="next-video-btn"
+                            class="video-nav-btn next-btn"
+                            onclick="navigateVideo('next')"
+                            aria-label="Next video"
+                            disabled
+                        >
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div id="video-content"></div>
-            <button onclick="closeVideoModal()" class="mt-4 hover:underline">
-                Close
-            </button>
+            
+            <div class="video-info-sidebar">
+                <button onclick="closeVideoModal()" class="sidebar-close-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <div id="video-sidebar-content" class="video-sidebar-content">
+                    <!-- Content will be dynamically inserted here -->
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Playlist Modal -->
+    <!-- Enhanced Playlist Modal -->
     <div
         id="playlist-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        class="modal-overlay"
         role="dialog"
         aria-modal="true"
         aria-label="Create Playlist"
     >
-        <div
-            class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto"
-        >
-            <h3 class="text-2xl font-bold mb-4">Add to Playlist</h3>
-            <input
-                id="new-playlist-name"
-                class="w-full p-2 border rounded-lg mb-4"
-                placeholder="New playlist name"
-                type="text"
-            />
-            <button
-                onclick="createPlaylist()"
-                class="cta-button px-4 py-2 rounded-lg w-full mb-4"
-            >
-                Create Playlist
-            </button>
-            <div id="existing-playlists" class="mb-4"></div>
-            <button onclick="closePlaylistModal()" class="mt-4 hover:underline">
-                Close
-            </button>
+        <div class="modal-container playlist-modal animate-modal-slide">
+            <div class="modal-header">
+                <h3 class="modal-title">Add to Playlist</h3>
+                <button onclick="closePlaylistModal()" class="modal-close-btn">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="playlist-create-section">
+                    <input
+                        id="new-playlist-name"
+                        class="playlist-input"
+                        placeholder="Create new playlist..."
+                        type="text"
+                    />
+                    <button
+                        onclick="createPlaylist()"
+                        class="playlist-create-btn"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                        </svg>
+                        Create
+                    </button>
+                </div>
+                <div id="existing-playlists" class="playlist-list"></div>
+            </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="py-8" style="background-color: var(--footer-bg);">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="text-center md:text-left">
-                    <h3
-                        class="text-lg font-semibold mb-4"
-                        style="color: var(--heading);"
-                    >
-                        Quick Links
-                    </h3>
-                    <ul class="space-y-2">
-                        <li>
-                            <a
-                                class="nav-link hover:underline"
-                                href="../index.html"
-                                >Home</a
-                            >
-                        </li>
-                        <li>
-                            <a
-                                class="nav-link hover:underline"
-                                href="#contact"
-                                >Contact Us</a
-                            >
-                        </li>
-                        <li>
-                            <button
-                                class="nav-link hover:underline bg-transparent border-none p-0"
-                                onclick="openLoginRegisterModal()"
-                            >
-                                Login/Register
-                            </button>
-                        </li>
-                        <li>
-                            <button
-                                class="nav-link hover:underline bg-transparent border-none p-0"
-                                onclick="openAdvertiseModal()"
-                            >
-                                Advertise
-                            </button>
-                        </li>
+    <!-- Enhanced Footer -->
+    <footer class="footer-section">
+        <div class="footer-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+            </svg>
+        </div>
+        <div class="container mx-auto px-3 sm:px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+               
+                <div class="text-center md:text-left footer-column">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="../index.html" class="footer-link">Home</a></li>
+                        <li><a href="#contact" class="footer-link">Contact Us</a></li>
+                        <li><button onclick="openLoginRegisterModal()" class="footer-link-btn">Login/Register</button></li>
+                        <li><button onclick="openAdvertiseModal()" class="footer-link-btn">Advertise</button></li>
                     </ul>
                 </div>
-                <div class="text-center md:text-left">
-                    <h3
-                        class="text-lg font-semibold mb-4"
-                        style="color: var(--heading);"
-                    >
-                        Newsletter
-                    </h3>
-                    <p class="mb-4">Stay updated with our latest news and offers.</p>
-                    <div class="mt-4 flex flex-col items-center md:items-start">
-                        <input
-                            class="w-full max-w-xs p-2 border rounded-lg mb-4"
-                            placeholder="Enter your email"
-                            type="email"
-                        />
-                        <button
-                            class="cta-button px-4 py-2 rounded-lg w-full max-w-xs"
-                        >
-                            Subscribe
-                        </button>
-                    </div>
+                <div class="text-center md:text-left footer-column">
+                    <h3 class="footer-title">Contact Info</h3>
+                    <p class="footer-text">📞 +251-912-345-678</p>
+                    <p class="footer-text">✉️ <a href="mailto:info@astegni.et" class="footer-link">info@astegni.et</a></p>
+                    <p class="footer-text">📍 Addis Ababa, Ethiopia</p>
                 </div>
-                <div class="text-center md:text-left">
-                    <h3
-                        class="text-lg font-semibold mb-4"
-                        style="color: var(--heading);"
-                    >
-                        Get in Touch
-                    </h3>
-                    <p class="mb-2">
-                        Email:
-                        <a
-                            class="nav-link hover:underline"
-                            href="mailto:info@astegni.et"
-                            >info@astegni.et</a
-                        >
-                    </p>
-                    <p class="mb-4">Phone: +251-912-345-678</p>
-                    <div class="flex justify-center md:justify-start gap-4">
-                        <a class="social-icon" href="https://facebook.com">
-                            <svg
-                                class="w-6 h-6"
-                                fill="var(--footer-text)"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z"
-                                />
-                            </svg>
+                <div class="text-center md:text-left footer-column">
+                    <h3 class="footer-title">Follow Us</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
                         </a>
-                        <a class="social-icon" href="https://x.com">
-                            <svg
-                                class="w-6 h-6"
-                                fill="var(--footer-text)"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-                                />
-                            </svg>
+                        <a href="#" aria-label="Twitter" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
                         </a>
-                        <a class="social-icon" href="https://instagram.com">
-                            <svg
-                                class="w-6 h-6"
-                                fill="var(--footer-text)"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.148 3.227-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.148-4.771-1.691-4.919-4.919-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.332.014 7.052.072 2.951.227.228 2.996.073 7.052.014 8.332 0 8.741 0 12c0 3.259.014 3.668.072 4.948.225 4.053 2.992 6.776 7.048 6.931 1.28.058 1.689.072 4.948.072s3.668-.014 4.948-.072c4.056-.155 6.824-2.878 6.979-6.931.058-1.28.072-1.689.072-4.948s-.014-3.668-.072-4.948c-.155-4.053-2.923-6.776-6.979-6.931C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zm0 10.162a3.999 3.999 0 110-7.998 3.999 3.999 0 010 7.998zm6.406-11.845a1.44 1.44 0 11-2.88 0 1.44 1.44 0 012.88 0z"
-                                />
-                            </svg>
+                        <a href="#" aria-label="LinkedIn" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"></path></svg>
                         </a>
                     </div>
                 </div>
             </div>
-            <div class="mt-8 text-center">
-                <p class="mb-2">
-                    Join us with only 500 birr registration fee and 200 birr/month
-                </p>
+            <div class="footer-bottom">
+                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
                 <p>© 2025 Astegni. All rights reserved.</p>
             </div>
         </div>

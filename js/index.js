@@ -1,425 +1,566 @@
+// Global state
+let isLoggedIn = false;
+let currentAdIndex = 0;
+let currentVideoIndex = 0;
 
-        // Theme toggle
-        const themeToggleBtn = document.getElementById('theme-toggle-btn');
-        const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle-btn');
-        themeToggleBtn.addEventListener('click', toggleTheme);
-        mobileThemeToggleBtn.addEventListener('click', toggleTheme);
+// Theme toggle
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
+const mobileThemeToggleBtn = document.getElementById('mobile-theme-toggle-btn');
+if (themeToggleBtn) themeToggleBtn.addEventListener('click', toggleTheme);
+if (mobileThemeToggleBtn) mobileThemeToggleBtn.addEventListener('click', toggleTheme);
 
-        function toggleTheme() {
-            const html = document.documentElement;
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            html.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
 
-            // Update theme icons
-            const themeIcon = document.getElementById('theme-icon');
-            const mobileThemeIcon = document.getElementById('mobile-theme-icon');
-            if (newTheme === 'light') {
-                themeIcon.querySelector('path').setAttribute('d', 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z');
-                mobileThemeIcon.querySelector('path').setAttribute('d', 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z');
-            } else {
-                themeIcon.querySelector('path').setAttribute('d', 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z');
-                mobileThemeIcon.querySelector('path').setAttribute('d', 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z');
-            }
-        }
+    // Update theme icons
+    const themeIcon = document.getElementById('theme-icon');
+    const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+    const iconPath = newTheme === 'light' 
+        ? 'M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z'
+        : 'M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z';
+    
+    if (themeIcon) themeIcon.querySelector('path').setAttribute('d', iconPath);
+    if (mobileThemeIcon) mobileThemeIcon.querySelector('path').setAttribute('d', iconPath);
+}
 
-        // Load theme from localStorage
-        const savedTheme = localStorage.getItem('theme') || 'light';
-        document.documentElement.setAttribute('data-theme', savedTheme);
+// Load theme from localStorage
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Initialize all animations
+    initHeroTyping();
+    initNewsTyping();
+    initAdRotation();
+    initVideoCarousel();
+    initCounters();
+});
 
-        // Mobile menu toggle
-        const menuBtn = document.getElementById('menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        menuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
+// Mobile menu toggle
+const menuBtn = document.getElementById('menu-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+if (menuBtn) {
+    menuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+}
+
+// Modal handling
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Close modals when clicking outside
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal(modal.id);
+    });
+});
+
+// Profile dropdown toggle
+function toggleProfileDropdown() {
+    const dropdown = document.getElementById('profile-dropdown');
+    const mobileDropdown = document.getElementById('mobile-profile-dropdown');
+    if (dropdown) dropdown.classList.toggle('hidden');
+    if (mobileDropdown) mobileDropdown.classList.toggle('hidden');
+}
+
+// Login function
+function login() {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    if (email && password) {
+        isLoggedIn = true;
+        
+        // Hide login/register buttons
+        ['login-btn', 'register-btn', 'mobile-login-btn', 'mobile-register-btn',
+         'hero-login-btn', 'hero-register-btn'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
         });
-
-        // Modal handling
-        function openModal(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-            document.body.style.overflow = 'auto';
-        }
-
-        // Close modals when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) closeModal(modal.id);
-            });
+        
+        // Show profile and notifications
+        ['profile-container', 'mobile-profile-container', 'notification-bell', 'mobile-notification-bell'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.remove('hidden');
         });
-
-        // Profile dropdown toggle
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profile-dropdown');
-            const mobileDropdown = document.getElementById('mobile-profile-dropdown');
-            dropdown.classList.toggle('hidden');
-            mobileDropdown.classList.toggle('hidden');
-        }
-
-
-        function login() {
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            console.log('Login attempted with:', email, password);
-
-            // Show hidden nav links
-            document.getElementById('find-tutors-link').classList.remove('hidden');
-            document.getElementById('reels-link').classList.remove('hidden');
-            document.getElementById('store-link').classList.remove('hidden');
-            document.getElementById('find-jobs-link').classList.remove('hidden');
-            document.getElementById('mobile-find-tutors-link').classList.contains('hidden');
-            document.getElementById('mobile-reels-link').classList.remove('hidden');
-            document.getElementById('mobile-store-link').classList.remove('hidden');
-            // Hide login/register buttons
-            document.getElementById('login-btn').classList.add('hidden');
-            document.getElementById('register-btn').classList.add('hidden');
-            document.getElementById('mobile-login-btn').classList.add('hidden');
-            document.getElementById('mobile-register-btn').classList.add('hidden');
-            document.getElementById('hero-login-btn').classList.add('hidden');
-            document.getElementById('hero-register-btn').classList.add('hidden');
-            document.getElementById('profile-container').classList.remove('hidden');
-            document.getElementById('mobile-profile-container').classList.remove('hidden');
-            document.getElementById('notification-bell').classList.remove('hidden');
-            document.getElementById('mobile-notification-bell').classList.remove('hidden');
-
-            // Update quick links
-            const quickLinks = document.getElementById('quick-links');
+        
+        // Set profile name
+        const profileName = document.getElementById('profile-name');
+        const mobileProfileName = document.getElementById('mobile-profile-name');
+        if (profileName) profileName.textContent = 'John Doe'; // Set actual user name
+        if (mobileProfileName) mobileProfileName.textContent = 'John Doe';
+        
+        // Update quick links
+        const quickLinks = document.getElementById('quick-links');
+        if (quickLinks) {
             quickLinks.innerHTML = `
-        <li><a class="nav-link hover:underline" href="news.html">News</a></li>
-        <li><a class="nav-link hover:underline" href="branch/find-tutors.html">Find Tutors</a></li>
-        <li><a class="nav-link hover:underline" href="branch/reels.html">Reels</a></li>
-        <li><a class="nav-link hover:underline" href="branch/store.html">Store</a></li>
-    `;
-            quickLinks.classList.add('flex', 'flex-row', 'flex-wrap', 'gap-4');
-            quickLinks.classList.remove('space-y-2');
-            closeModal('login-modal');
+                <li><a class="nav-link hover:underline" href="news.html">News</a></li>
+                <li><a class="nav-link hover:underline" href="branch/find-tutors.html">Find Tutors</a></li>
+                <li><a class="nav-link hover:underline" href="branch/reels.html">Reels</a></li>
+                <li><a class="nav-link hover:underline" href="branch/store.html">Store</a></li>
+            `;
         }
+        
+        closeModal('login-modal');
+    }
+}
 
-        // Registration function
-        function submitRegistration() {
-            const registerAs = document.getElementById('register-as').value;
-            const email = document.getElementById('register-email').value;
-            const password = document.getElementById('register-password').value;
-            const repeatPassword = document.getElementById('register-repeat-password').value;
-            if (password !== repeatPassword) {
-                alert('Passwords do not match!');
-                return;
+// Handle nav link clicks
+function handleNavLinkClick(e, link) {
+    if (!isLoggedIn && link !== 'store') {
+        e.preventDefault();
+        openModal('login-modal');
+    }
+}
+
+// Hero Text Typing Animation
+function initHeroTyping() {
+    const heroTexts = [
+        'Discover Expert Tutors with Astegni',
+        'Are you a tutor?',
+        'Join us and connect with millions of students worldwide!',
+        'Astegni',
+        'Pride of Black Lion',
+        'Advertise with us',
+        'and',
+        'reach highly targeted audiences',
+        'Astegni - Ethiopia\'s first social media platform!',
+        'Learn with us',
+        'Connect with tutors and training centers!',
+        'Want to become a tutor?',
+        'Join, learn and earn!',
+        'Looking for a job?',
+        'Same!',
+        'Expert tutors?',
+        'Just one click away!',
+        'Learn Anytime, Anywhere',
+        'Top Educators, books and jobs!',
+        'Astegni - Your Learning Partner',
+        'Empowering Education in Ethiopia'
+    ];
+    
+    let currentIndex = 0;
+    const textElement = document.getElementById('hero-text-content');
+    
+    if (!textElement) return;
+    
+    function typeText(text, callback) {
+        let charIndex = 0;
+        textElement.textContent = '';
+        
+        const typeInterval = setInterval(() => {
+            if (charIndex < text.length) {
+                textElement.textContent += text[charIndex];
+                charIndex++;
+            } else {
+                clearInterval(typeInterval);
+                setTimeout(callback, 2000);
             }
-            console.log('Registration attempted as:', registerAs, 'with:', email, password);
-            closeModal('register-modal');
-        }
-
-        // Toggle input fields for login/register
-        function toggleInput(type, method) {
-            const emailInput = document.getElementById(`${type}-email`);
-            const phoneInput = document.getElementById(`${type}-phone`);
-            const countryContainer = document.getElementById(`${type}-country-container`);
-            const socialFields = document.getElementById(`${type}-social-fields`);
-            const socialButton = document.getElementById(`${type}-social-button`);
-            emailInput.classList.add('hidden');
-            phoneInput.classList.add('hidden');
-            countryContainer.classList.add('hidden');
-            socialFields.classList.add('hidden');
-            socialButton.classList.add('hidden');
-            if (method === 'email') {
-                emailInput.classList.remove('hidden');
-            } else if (method === 'phone') {
-                phoneInput.classList.remove('hidden');
-                countryContainer.classList.remove('hidden');
-            } else if (method === 'social') {
-                socialFields.classList.remove('hidden');
-                socialButton.classList.remove('hidden');
+        }, 100);
+    }
+    
+    function backspaceText(callback) {
+        let text = textElement.textContent;
+        
+        const backspaceInterval = setInterval(() => {
+            if (text.length > 0) {
+                text = text.slice(0, -1);
+                textElement.textContent = text;
+            } else {
+                clearInterval(backspaceInterval);
+                callback();
             }
-        }
-
-        // Update phone placeholder based on country code
-        function updatePhonePlaceholder(type) {
-            const countrySelect = document.getElementById(`${type}-country`);
-            const phoneInput = document.getElementById(`${type}-phone`);
-            phoneInput.placeholder = `${countrySelect.value}912345678`;
-        }
-
-        // Update social media placeholder
-        function updateSocialPlaceholder(type) {
-            const platformSelect = document.getElementById(`${type}-social-platform`);
-            const addressInput = document.getElementById(`${type}-social-address`);
-            addressInput.placeholder = `Enter ${platformSelect.value} address`;
-        }
-
-        // Toggle password visibility
-        function togglePassword(id) {
-            const input = document.getElementById(id);
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
-
-        // Toggle registration fields based on role
-        function toggleRegisterFields() {
-            const registerAs = document.getElementById('register-as').value;
-            const genderField = document.getElementById('gender-field');
-            const guardianTypeField = document.getElementById('guardian-type-field');
-            const instituteTypeField = document.getElementById('institute-type');
-            genderField.classList.add('hidden');
-            guardianTypeField.classList.add('hidden');
-            instituteTypeField.classList.add('hidden');
-            if (['tutor', 'student'].includes(registerAs)) {
-                genderField.classList.remove('hidden');
-            } else if (registerAs === 'guardian') {
-                guardianTypeField.classList.remove('hidden');
-            } else if (registerAs === 'institute') {
-                instituteTypeField.classList.remove('hidden');
-            }
-        }
-
-        // Social login placeholder
-        function socialLogin(platform) {
-            console.log(`Logging in with ${platform}`);
-        }
-
-        // Video interaction functions
-        function likeVideo(id) {
-            const likes = document.getElementById(`likes-${id}`);
-            likes.textContent = parseInt(likes.textContent) + 1;
-        }
-
-        function dislikeVideo(id) {
-            const dislikes = document.getElementById(`dislikes-${id}`);
-            dislikes.textContent = parseInt(dislikes.textContent) + 1;
-        }
-
-        function openShareModal(id) {
-            openModal('share-modal');
-            const shareLinks = document.querySelectorAll('#share-modal a');
-            shareLinks.forEach(link => {
-                link.href = `https://example.com/video/${id}`;
+        }, 50);
+    }
+    
+    function animateHeroText() {
+        const currentText = heroTexts[currentIndex];
+        
+        typeText(currentText, () => {
+            backspaceText(() => {
+                currentIndex = (currentIndex + 1) % heroTexts.length;
+                animateHeroText();
             });
-        }
+        });
+    }
+    
+    animateHeroText();
+}
 
-        function copyLink() {
-            navigator.clipboard.write('https://example.com/video');
-            alert('Link copied to clipboard!');
-        }
+// Ad Rotation (Slower - every 12 seconds)
+function initAdRotation() {
+    const ads = document.querySelectorAll('.ad-card');
+    if (ads.length === 0) return;
+    
+    function rotateAds() {
+        // Hide current ad
+        ads[currentAdIndex].classList.remove('active');
+        
+        // Move to next ad
+        currentAdIndex = (currentAdIndex + 1) % ads.length;
+        
+        // Show new ad
+        ads[currentAdIndex].classList.add('active');
+    }
+    
+    // Rotate ads every 12 seconds (slower duration)
+    setInterval(rotateAds, 12000);
+}
 
-        function openCommentModal(id) {
-            const input = document.getElementById(`comment-input-${id}`);
-            if (input.value.trim()) {
-                openModal('comment-modal');
-                const commentList = document.getElementById('modal-comment-list');
-                commentList.innerHTML = '';
-                const comment = document.createElement('div');
-                comment.textContent = input.value;
-                commentList.appendChild(comment);
-                document.getElementById('modal-comment-input').dataset.videoId = id;
-                input.value = '';
+// News Typing Animation (Slower)
+function initNewsTyping() {
+    const newsItems = [
+        {
+            title: 'New Tutor Program Launched!',
+            content: 'Join our innovative tutoring program designed to connect students with expert educators across Ethiopia. Register now for exclusive benefits and early access.'
+        },
+        {
+            title: 'Partnership with Local Schools',
+            content: 'We\'re proud to announce partnerships with over 50 schools to enhance educational opportunities. This collaboration brings quality education closer to every student.'
+        },
+        {
+            title: 'Upcoming Learning Webinar',
+            content: 'Register now for our free webinar on effective online learning strategies and study techniques. Limited seats available for this exclusive event.'
+        },
+        {
+            title: 'New Online Courses Available',
+            content: 'Explore 20+ new courses in technology, languages, and creative arts starting this month. Special discounts for early enrollments.'
+        }
+    ];
+    
+    let currentNewsIndex = 0;
+    const titleElement = document.getElementById('news-title-content');
+    const contentElement = document.getElementById('news-content-text');
+    
+    if (!titleElement || !contentElement) return;
+    
+    function typeNewsText(element, text, speed, callback) {
+        let charIndex = 0;
+        element.textContent = '';
+        
+        const typeInterval = setInterval(() => {
+            if (charIndex < text.length) {
+                element.textContent += text[charIndex];
+                charIndex++;
+            } else {
+                clearInterval(typeInterval);
+                if (callback) callback();
             }
-        }
-
-        function addModalComment() {
-            const input = document.getElementById('modal-comment-input');
-            const videoId = input.dataset.videoId;
-            if (input.value.trim()) {
-                const commentList = document.getElementById(`comments-${videoId}`);
-                const comment = document.createElement('div');
-                comment.textContent = input.value;
-                commentList.appendChild(comment);
-                input.value = '';
-                closeModal('comment-modal');
+        }, speed);
+    }
+    
+    function backspaceNewsText(element, speed, callback) {
+        let text = element.textContent;
+        
+        const backspaceInterval = setInterval(() => {
+            if (text.length > 0) {
+                text = text.slice(0, -1);
+                element.textContent = text;
+            } else {
+                clearInterval(backspaceInterval);
+                if (callback) callback();
             }
-        }
-
-        // Hero text rotation with backspace and typing animations
-        const heroText = document.getElementById('hero-text');
-        const heroTexts = [
-            'Discover Expert Tutors with Astegni',
-            'Advertise with us and .... ',
-            'reach a highly diverse yet precisely targeted audiences',
-            'Learn with us',
-            ' connect with tutors, training centers, books and jobs!',
-            'Advertise with us to ... ',
-            'Connect with a highly diverse yet precisely targeted audience',
-            'Expert tutors?',
-            'Just one click away!',
-            'Astegni - Ethiopia\'s first social media platform!',
-            'Advertise',
-            'access a broad spectrum of audiences, all sharply aligned with your goals',
-            'Learn Anytime, Anywhere',
-            'Astegni - your goto to Connect with',
-            'Top Educators, training centers, books and jobs!'
-        ];
-        let currentHeroIndex = 0;
-
-
-        function calculateTextWidth(text) {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.font = window.getComputedStyle(heroText).font; // Match font for accurate width
-            return ctx.measureText(text).width;
-        }
-
-        function typeHeroText() {
-            const currentText = heroTexts[currentHeroIndex];
-            const nextIndex = (currentHeroIndex + 1) % heroTexts.length;
-            const nextText = heroTexts[nextIndex];
-
-            // Ensure current text is set and visible
-            heroText.textContent = currentText;
-            heroText.style.setProperty('--text-width', `${calculateTextWidth(currentText)}px`);
-            heroText.style.width = 'var(--text-width)'; // Ensure full width after typing
-            heroText.style.animation = 'typing 3s steps(40, end), blink-caret 0.5s step-end infinite';
-
-            // Apply backspace animation after pause
+        }, speed);
+    }
+    
+    function animateNews() {
+        const currentNews = newsItems[currentNewsIndex];
+        
+        // Type title slowly
+        typeNewsText(titleElement, currentNews.title, 150, () => {
+            // Type content slowly
             setTimeout(() => {
-                heroText.style.animation = 'backspace 1.5s steps(40, end), blink-caret 0.5s step-end infinite';
+                typeNewsText(contentElement, currentNews.content, 100, () => {
+                    // Wait, then backspace
+                    setTimeout(() => {
+                        backspaceNewsText(contentElement, 50, () => {
+                            backspaceNewsText(titleElement, 50, () => {
+                                currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
+                                setTimeout(animateNews, 500);
+                            });
+                        });
+                    }, 3000);
+                });
+            }, 500);
+        });
+    }
+    
+    animateNews();
+}
 
-                // Switch to next text and type
-                setTimeout(() => {
-                    heroText.textContent = nextText;
-                    heroText.style.setProperty('--text-width', `${calculateTextWidth(nextText)}px`);
-                    heroText.style.width = '0'; // Reset width for typing
-                    heroText.style.animation = 'typing 3s steps(40, end), blink-caret 0.5s step-end infinite';
+// Video Carousel with Continuous Loop
+function initVideoCarousel() {
+    const carousel = document.getElementById('video-carousel');
+    if (!carousel) return;
+    
+    // No need to clone - handled in HTML
+}
 
-                    // Update index for next iteration
-                    currentHeroIndex = nextIndex;
+// Video Player Functions
+let currentPlayingVideo = 0;
+const videoData = [
+    { title: 'Introduction to Astegni', src: 'video1.mp4', description: 'Learn about our platform and services' },
+    { title: 'How to Find Tutors', src: 'video2.mp4', description: 'Step-by-step guide to finding the perfect tutor' },
+    { title: 'Success Stories', src: 'video3.mp4', description: 'Hear from our successful students' },
+    { title: 'Online Learning Tips', src: 'video4.mp4', description: 'Maximize your online learning experience' },
+    { title: 'Become a Tutor', src: 'video5.mp4', description: 'Join our community of expert educators' },
+    { title: 'Course Overview', src: 'video6.mp4', description: 'Explore our diverse course offerings' },
+    { title: "Parent's Guide", src: 'video7.mp4', description: 'How parents can support their children' },
+    { title: 'Study Techniques', src: 'video8.mp4', description: 'Effective study methods for better results' },
+    { title: 'Mobile App Tutorial', src: 'video9.mp4', description: 'Using Astegni on your mobile device' },
+    { title: 'Community Features', src: 'video10.mp4', description: 'Connect with other learners' }
+];
 
-                    // Schedule next transition
-                    setTimeout(typeHeroText, 3000); // Wait 3s after typing
-                }, 1500); // Wait 1.5s for backspace animation
-            }, 3000); // Wait 3s after typing before backspacing
-        }
+function openVideoPlayer(videoIndex) {
+    currentPlayingVideo = videoIndex;
+    const modal = document.getElementById('video-player-modal');
+    const videoPlayer = document.getElementById('main-video-player');
+    const videoTitle = document.getElementById('video-title');
+    const videoDescription = document.getElementById('video-description');
+    
+    if (videoPlayer && videoData[videoIndex]) {
+        videoPlayer.src = videoData[videoIndex].src;
+        if (videoTitle) videoTitle.textContent = videoData[videoIndex].title;
+        if (videoDescription) videoDescription.textContent = videoData[videoIndex].description;
+        openModal('video-player-modal');
+    }
+}
 
-        // Initialize first text
-        heroText.textContent = heroTexts[0];
-        heroText.style.setProperty('--text-width', `${calculateTextWidth(heroTexts[0])}px`);
-        heroText.style.width = '0';
-        heroText.style.animation = 'typing 3s steps(40, end), blink-caret 0.5s step-end infinite';
-        setTimeout(() => {
-            heroText.style.width = 'var(--text-width)'; // Ensure full width after initial typing
-            setTimeout(typeHeroText, 3000); // Start cycle after initial 3s pause
-        }, 3000); // Wait for initial typing
+function navigateVideo(direction) {
+    if (direction === 'prev') {
+        currentPlayingVideo = currentPlayingVideo > 0 ? currentPlayingVideo - 1 : videoData.length - 1;
+    } else {
+        currentPlayingVideo = (currentPlayingVideo + 1) % videoData.length;
+    }
+    
+    const videoPlayer = document.getElementById('main-video-player');
+    const videoTitle = document.getElementById('video-title');
+    const videoDescription = document.getElementById('video-description');
+    
+    if (videoPlayer && videoData[currentPlayingVideo]) {
+        videoPlayer.src = videoData[currentPlayingVideo].src;
+        if (videoTitle) videoTitle.textContent = videoData[currentPlayingVideo].title;
+        if (videoDescription) videoDescription.textContent = videoData[currentPlayingVideo].description;
+    }
+}
 
+// Navigate carousel videos
+function navigateCarousel(direction) {
+    const carousel = document.getElementById('video-carousel');
+    if (!carousel) return;
+    
+    // Pause animation
+    carousel.style.animationPlayState = 'paused';
+    
+    // Calculate scroll amount (width of one video container)
+    const scrollAmount = 320; // 300px width + 20px margin
+    
+    if (direction === 'left') {
+        carousel.scrollLeft -= scrollAmount;
+    } else {
+        carousel.scrollLeft += scrollAmount;
+    }
+    
+    // Resume animation after a short delay
+    setTimeout(() => {
+        carousel.style.animationPlayState = 'running';
+    }, 500);
+}
 
+function likeVideo() {
+    console.log('Video liked!');
+    // Implement like functionality
+}
 
-        const newsItems = [
-            {
-                title: 'New Tutor Program Launched!',
-                content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-            },
-            {
-                title: 'Partnership with Local Schools',
-                content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-            },
-            {
-                title: 'Upcoming Learning Webinar',
-                content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-            },
-            {
-                title: 'New Online Courses Available',
-                content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-            },
-            {
-                title: 'Expanded Tutoring Services',
-                content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-            },
-            {
-                title: 'Community Learning Event',
-                content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
-            }
-        ];
+function dislikeVideo() {
+    console.log('Video disliked!');
+    // Implement dislike functionality
+}
 
-        const newsCard = document.getElementById('news-card');
-        const newsTitle = document.getElementById('news-title');
-        const newsContent = document.getElementById('news-content');
-        let currentNewsIndex = 0;
+function shareOn(platform) {
+    const url = window.location.href;
+    const text = 'Check out this amazing video on Astegni!';
+    
+    const shareUrls = {
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
+        instagram: `https://www.instagram.com/`,
+        tiktok: `https://www.tiktok.com/`,
+        snapchat: `https://www.snapchat.com/`,
+        twitter: `https://twitter.com/intent/tweet?url=${url}&text=${text}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
+        telegram: `https://t.me/share/url?url=${url}&text=${text}`
+    };
+    
+    if (shareUrls[platform]) {
+        window.open(shareUrls[platform], '_blank');
+    }
+}
 
-        function getAnimationDuration(text) {
-            // 50ms per character for title, 15ms for content (faster)
-            return text === newsTitle.textContent ? text.length * 50 : text.length * 15;
-        }
+function copyLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Link copied to clipboard!');
+    });
+}
 
+// Handle View More Courses button
+function handleViewMoreCourses() {
+    if (!isLoggedIn) {
+        openModal('course-access-modal');
+    } else {
+        // Navigate to courses page or show more courses
+        console.log('Showing more courses...');
+    }
+}
 
+// Handle course click
+function handleCourseClick() {
+    if (!isLoggedIn) {
+        openModal('course-access-modal');
+    } else {
+        // Navigate to course or show course details
+        console.log('Accessing course...');
+    }
+}
 
+// Counter Animation
+function initCounters() {
+    animateCounter('counter-parents', 1000);
+    animateCounter('counter-students', 5000);
+    animateCounter('counter-tutors', 300);
+    animateCounter('counter-centers', 50);
+    animateCounter('counter-books', 100);
+    animateCounter('counter-jobs', 10);
+}
 
-        function showContent() {
-            newsContent.classList.add('visible');
-            const contentDuration = getAnimationDuration(newsContent.textContent);
-            newsContent.style.animation = `typing ${contentDuration}ms steps(40, end) forwards`;
-        }
+function animateCounter(id, end) {
+    const element = document.getElementById(id);
+    if (!element) return;
+    
+    let start = 0;
+    const duration = 2000;
+    const stepTime = Math.abs(Math.floor(duration / end));
+    
+    const timer = setInterval(() => {
+        start++;
+        element.textContent = start + '+';
+        if (start >= end) clearInterval(timer);
+    }, stepTime);
+}
 
-        function rotateNews() {
-            // Fade out and hide content
-            newsCard.classList.remove('active');
-            newsContent.classList.remove('visible');
-            setTimeout(() => {
-                // Update content
-                currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
-                newsTitle.textContent = newsItems[currentNewsIndex].title;
-                newsContent.textContent = newsItems[currentNewsIndex].content;
-                // Reset animations
-                newsTitle.style.animation = 'none';
-                newsContent.style.animation = 'none';
-                void newsTitle.offsetWidth; // Trigger reflow
-                void newsContent.offsetWidth; // Trigger reflow
-                const titleDuration = getAnimationDuration(newsTitle.textContent);
-                newsTitle.style.animation = `typing ${titleDuration}ms steps(40, end) forwards`;
-                newsContent.classList.remove('visible'); // Ensure content is hidden
-                // Fade in
-                newsCard.classList.add('active');
-                // Schedule content to appear after title
-                setTimeout(showContent, titleDuration);
-            }, 500); // Match fade-out duration
-        }
+// Registration and other form functions
+function submitRegistration() {
+    const registerAs = document.getElementById('register-as').value;
+    const email = document.getElementById('register-email').value;
+    const password = document.getElementById('register-password').value;
+    const repeatPassword = document.getElementById('register-repeat-password').value;
+    
+    if (password !== repeatPassword) {
+        alert('Passwords do not match!');
+        return;
+    }
+    
+    console.log('Registration attempted as:', registerAs);
+    closeModal('register-modal');
+}
 
-        // Initial setup
-        if (newsCard && newsTitle && newsContent) {
-            const titleDuration = getAnimationDuration(newsTitle.textContent);
-            newsTitle.style.animation = `typing ${titleDuration}ms steps(40, end) forwards`;
-            newsContent.classList.remove('visible'); // Ensure content is hidden initially
-            setTimeout(showContent, titleDuration);
-            // Rotate after title + 0.5s gap + content + 0.5s fade-out
-            setInterval(() => {
-                const titleDuration = getAnimationDuration(newsItems[currentNewsIndex].title);
-                const contentDuration = getAnimationDuration(newsItems[currentNewsIndex].content);
-                const totalDuration = titleDuration + 500 + contentDuration + 500;
-                rotateNews();
-                // Update interval dynamically
-                clearInterval(window.newsRotationInterval);
-                window.newsRotationInterval = setInterval(rotateNews, totalDuration);
-            }, getAnimationDuration(newsItems[0].title) + 500 + getAnimationDuration(newsItems[0].content) + 500);
-        } else {
-            console.error('News card elements not found in the DOM');
-        }
+function toggleInput(type, method) {
+    const emailInput = document.getElementById(`${type}-email`);
+    const phoneInput = document.getElementById(`${type}-phone`);
+    const countryContainer = document.getElementById(`${type}-country-container`);
+    const socialFields = document.getElementById(`${type}-social-fields`);
+    const socialButton = document.getElementById(`${type}-social-button`);
+    
+    // Hide all inputs first
+    [emailInput, phoneInput, countryContainer, socialFields, socialButton].forEach(el => {
+        if (el) el.classList.add('hidden');
+    });
+    
+    // Show selected input
+    if (method === 'email' && emailInput) {
+        emailInput.classList.remove('hidden');
+    } else if (method === 'phone') {
+        if (phoneInput) phoneInput.classList.remove('hidden');
+        if (countryContainer) countryContainer.classList.remove('hidden');
+    } else if (method === 'social') {
+        if (socialFields) socialFields.classList.remove('hidden');
+        if (socialButton) socialButton.classList.remove('hidden');
+    }
+}
 
+function updatePhonePlaceholder(type) {
+    const countrySelect = document.getElementById(`${type}-country`);
+    const phoneInput = document.getElementById(`${type}-phone`);
+    if (countrySelect && phoneInput) {
+        phoneInput.placeholder = `${countrySelect.value}912345678`;
+    }
+}
 
-        // Counter animation
-        function animateCounter(id, end) {
-            let start = 0;
-            const element = document.getElementById(id);
-            const duration = 2000;
-            const stepTime = Math.abs(Math.floor(duration / end));
-            const timer = setInterval(() => {
-                start++;
-                element.textContent = start + '+';
-                if (start >= end) clearInterval(timer);
-            }, stepTime);
-        }
+function updateSocialPlaceholder(type) {
+    const platformSelect = document.getElementById(`${type}-social-platform`);
+    const addressInput = document.getElementById(`${type}-social-address`);
+    if (platformSelect && addressInput) {
+        addressInput.placeholder = `Enter ${platformSelect.value} address`;
+    }
+}
 
-        animateCounter('counter-parents', 1000);
-        animateCounter('counter-students', 5000);
-        animateCounter('counter-tutors', 300);
-        animateCounter('counter-centers', 50);
-        animateCounter('counter-advertisers', 20);
-        animateCounter('counter-books', 100);
-        animateCounter('counter-jobs', 10);
+function togglePassword(id) {
+    const input = document.getElementById(id);
+    if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+    }
+}
 
-        // Placeholder functions
-        function goToProfile() {
-            console.log('Navigating to profile');
-        }
+function toggleRegisterFields() {
+    const registerAs = document.getElementById('register-as').value;
+    const genderField = document.getElementById('gender-field');
+    const guardianTypeField = document.getElementById('guardian-type-field');
+    const instituteTypeField = document.getElementById('institute-type');
+    
+    // Hide all conditional fields
+    [genderField, guardianTypeField, instituteTypeField].forEach(field => {
+        if (field) field.classList.add('hidden');
+    });
+    
+    // Show relevant fields
+    if (['tutor', 'student'].includes(registerAs) && genderField) {
+        genderField.classList.remove('hidden');
+    } else if (registerAs === 'guardian' && guardianTypeField) {
+        guardianTypeField.classList.remove('hidden');
+    } else if (registerAs === 'institute' && instituteTypeField) {
+        instituteTypeField.classList.remove('hidden');
+    }
+}
 
-        function toggleVerification() {
-            console.log('Toggling verification');
-        }
+function socialLogin(platform) {
+    console.log(`Logging in with ${platform}`);
+    // Implement social login logic
+}
+
+function goToProfile() {
+    console.log('Navigating to profile');
+    // Implement profile navigation
+}
+
+function toggleVerification() {
+    console.log('Toggling verification');
+    // Implement verification toggle
+}
