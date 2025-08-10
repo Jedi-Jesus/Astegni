@@ -1,956 +1,1058 @@
+// parent-profile.js - Enhanced JavaScript for Parent Profile Page
 
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
+// ===========================
+// Global Variables
+// ===========================
 
-        function filledCell(cell) {
-            return cell !== '' && cell != null;
-        }
+let currentUser = {
+    id: 1,
+    name: 'Mulugeta Alemu',
+    email: 'mulugeta@example.com',
+    phone: '+251912345679',
+    location: 'Addis Ababa, Ethiopia',
+    verified: true,
+    profilePicture: 'https://via.placeholder.com/150',
+    coverPicture: 'https://via.placeholder.com/1920x400',
+    rating: 4.8,
+    bio: 'Passionate about my children\'s education and their future success.',
+    gender: 'male' // Add gender for share image selection
+};
 
-        function loadFileData(filename) {
-            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-                try {
-                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                    var firstSheetName = workbook.SheetNames[0];
-                    var worksheet = workbook.Sheets[firstSheetName];
-                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                    var filteredData = jsonData.filter(row => row.some(filledCell));
-                    var headerRowIndex = filteredData.findIndex((row, index) =>
-                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                    );
-                    if (headerRowIndex === -1 || headerRowIndex > 25) {
-                        headerRowIndex = 0;
-                    }
-                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-                    csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                    return csv;
-                } catch (e) {
-                    console.error(e);
-                    return "";
-                }
-            }
-            return gk_fileData[filename] || "";
-        }
+let children = {
+    1: {
+        id: 1,
+        name: 'Abebe Kebede',
+        gender: 'Male',
+        age: 12,
+        grade: 6,
+        profilePicture: 'https://via.placeholder.com/150',
+        courses: ['Math', 'Physics', 'Chemistry'],
+        progress: 75,
+        nextSession: '2025-01-15 14:00',
+        tutor: 'Amanuel Tesfaye'
+    },
+    2: {
+        id: 2,
+        name: 'Selam Tesfaye',
+        gender: 'Female',
+        age: 14,
+        grade: 8,
+        profilePicture: 'https://via.placeholder.com/150',
+        courses: ['Biology', 'Chemistry', 'English'],
+        progress: 82,
+        nextSession: '2025-01-16 10:00',
+        tutor: 'Kebede Worku'
+    },
+    3: {
+        id: 3,
+        name: 'Yonas Alemu',
+        gender: 'Male',
+        age: 10,
+        grade: 4,
+        profilePicture: 'https://via.placeholder.com/150',
+        courses: ['Math', 'English'],
+        progress: 68,
+        nextSession: '2025-01-17 15:00',
+        tutor: 'Sara Tadesse'
+    }
+};
 
-        // Ad Rotation
-        function rotateAds() {
-            const adContainer = document.getElementById('advertise-placeholder-2');
-            const adSlides = adContainer.querySelectorAll('.ad-slide');
-            let currentAd = 0;
+let sessions = [];
+let notifications = 3;
+let chartInstance = null;
 
-            setInterval(() => {
-                adSlides[currentAd].classList.remove('active');
-                currentAd = (currentAd + 1) % adSlides.length;
-                adSlides[currentAd].classList.add('active');
-            }, 7000);
-        }
+// ===========================
+// Initialization
+// ===========================
 
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM Content Loaded'); // Debug log
+    
+    try {
+        initializeApp();
+        setupEventListeners();
+        loadUserProfile();
+        loadChildren();
+        loadUpcomingSessions();
+        checkNotifications();
+    } catch (error) {
+        console.error('Initialization error:', error);
+    } finally {
+        // Always hide loading overlay
+        hideLoadingOverlay();
+    }
+});
 
-        function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeToggleIcon(newTheme);
-    // Force style recalculation
-    document.body.offsetHeight; // Trigger reflow to ensure styles apply
+function initializeApp() {
+    // Initialize theme
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Initialize tooltips
+    initializeTooltips();
+    
+    // Initialize animations
+    initializeAnimations();
 }
 
-function updateThemeToggleIcon(theme) {
-    const themeToggle = document.getElementById('theme-toggle');
-    const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
-    const sunIcon = `
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-        </svg>
-    `;
-    const moonIcon = `
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path>
-        </svg>
-    `;
-    if (themeToggle) themeToggle.innerHTML = theme === 'light' ? moonIcon : sunIcon;
-    if (mobileThemeToggle) mobileThemeToggle.innerHTML = theme === 'light' ? moonIcon : sunIcon;
+function hideLoadingOverlay() {
+    setTimeout(() => {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) {
+            loadingOverlay.style.display = 'none';
+        }
+    }, 500);
 }
 
+// ===========================
+// Event Listeners
+// ===========================
 
+function setupEventListeners() {
+    // Navigation
+    setupNavigationListeners();
+    
+    // Sidebar
+    setupSidebarListeners();
+    
+    // Theme toggle
+    setupThemeToggle();
+    
+    // Profile dropdown
+    setupProfileDropdown();
+    
+    // Mobile menu
+    setupMobileMenu();
+    
+    // Forms
+    setupFormListeners();
+    
+    // Search
+    setupSearchListeners();
+    
+    // Window resize
+    setupResizeListener();
+}
 
-        // Data Objects
-        const parent = {
-            id: 1,
-            name: 'Mulugeta Alemu',
-            email: 'mulugeta@example.com',
-            phone: '+251912345679',
-            location: 'Addis Ababa, Ethiopia',
-            verified: false,
-            profilePicture: 'https://via.placeholder.com/96',
-            rating: 4.0
-        };
-        const children = {
-            1: {
-                id: 1,
-                name: 'Abebe Kebede',
-                gender: 'Male',
-                profilePicture: 'https://via.placeholder.com/64',
-                coverPicture: 'https://via.placeholder.com/1200x300',
-                courses: ['Math', 'Physics'],
-                pendingCourses: [],
-                tutorIds: [1, 2],
-                progress: {
-                    tutors: {
-                        1: { subjects: { Math: 60, Physics: 40 }, overall: 50 },
-                        2: { subjects: { Chemistry: 70, Biology: 30 }, overall: 50 }
-                    },
-                    cumulative: 50
+function setupNavigationListeners() {
+    const hamburger = document.getElementById('hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const sidebarClose = document.getElementById('sidebar-close');
+    
+    if (hamburger) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            sidebar.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+        });
+    }
+    
+    if (sidebarClose) {
+        sidebarClose.addEventListener('click', () => {
+            closeSidebar();
+        });
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            closeSidebar();
+        });
+    }
+}
+
+function closeSidebar() {
+    document.getElementById('hamburger').classList.remove('active');
+    document.getElementById('sidebar').classList.remove('show');
+    document.getElementById('sidebar-overlay').classList.remove('show');
+}
+
+function setupSidebarListeners() {
+    const sidebarLinks = document.querySelectorAll('.sidebar-link');
+    
+    sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            if (!this.classList.contains('sidebar-parent')) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+                
+                // Close sidebar on mobile
+                if (window.innerWidth < 768) {
+                    closeSidebar();
                 }
-            },
-            2: {
-                id: 2,
-                name: 'Selam Tesfaye',
-                gender: 'Female',
-                profilePicture: 'https://via.placeholder.com/64',
-                coverPicture: 'https://via.placeholder.com/1200x300',
-                courses: ['Chemistry', 'Biology'],
-                pendingCourses: ['English'],
-                tutorIds: [2],
-                progress: {
-                    tutors: {
-                        2: { subjects: { Chemistry: 70, Biology: 30 }, overall: 50 }
-                    },
-                    cumulative: 50
-                }
-            }
-        };
-        const tutors = {
-            1: { id: 1, name: 'Amanuel Tesfaye', subjects: ['Math', 'Physics'], availability: 'Weekdays', rating: 1.0, fee: 1000, profilePicture: 'https://via.placeholder.com/64', phone: '+251911111111', email: 'amanuel@example.com' },
-            2: { id: 2, name: 'Kebede Worku', subjects: ['Chemistry', 'Biology'], availability: 'Weekends', rating: 2.0, fee: 1200, profilePicture: 'https://via.placeholder.com/64', phone: '+251922222222', email: 'kebede@example.com' }
-        };
-        const sessions = {
-            1: {
-                sessionId: 1,
-                date: '2025-05-20',
-                time: '14:00',
-                duration: '80 minutes',
-                student: 'Abebe Kebede',
-                studentId: 1,
-                tutor: 'Amanuel Tesfaye',
-                tutorId: 1,
-                subjects: ['Math', 'Physics'],
-                cost: 1000,
-                status: 'Confirmed',
-                studentConfirmed: true,
-                tutorConfirmed: true,
-                waiting: { student: false, tutor: false },
-                missed: false,
-                makeup: null,
-                mode: 'Online'
-            },
-            2: {
-                sessionId: 2,
-                date: '2025-05-21',
-                time: '10:00',
-                duration: '60 minutes',
-                student: 'Selam Tesfaye',
-                studentId: 2,
-                tutor: 'Kebede Worku',
-                tutorId: 2,
-                subjects: ['Chemistry', 'Biology'],
-                cost: 1200,
-                status: 'Scheduled',
-                studentConfirmed: false,
-                tutorConfirmed: false,
-                waiting: { student: false, tutor: false },
-                missed: false,
-                makeup: null,
-                mode: 'Online'
-            }
-        };
-        const ratings = [];
-        const astegniRatings = [];
-        const parentRatings = [
-            { id: 1, tutorId: 1, rating: 4, comment: 'Great communication with our family.' },
-            { id: 2, tutorId: 2, rating: 4, comment: 'Very responsive parent.' }
-        ];
-        const childRatings = [
-            { id: 1, childId: 1, tutorId: 1, rating: 4, comment: 'Abebe is a diligent student.' },
-            { id: 2, childId: 2, tutorId: 2, rating: 3, comment: 'Selam needs to focus more in class.' }
-        ];
-        const videos = {
-            1: { intro: null, clips: [] },
-            2: { intro: null, clips: [] }
-        };
-        const payments = {};
-        const logs = {};
-
-        // Initialize Profile
-        function initProfile() {
-            document.getElementById('parent-email').textContent = parent.email;
-            document.getElementById('parent-phone').textContent = parent.phone;
-            document.getElementById('parent-location').textContent = parent.location || 'Not set';
-            document.querySelector('#parentDetails h3').textContent = parent.name;
-            document.querySelector('#profile-dropdown-btn img').src = parent.profilePicture;
-            document.querySelector('#mobile-profile-dropdown-btn img').src = parent.profilePicture;
-            document.querySelector('#parentDetails img').src = parent.profilePicture;
-            const verificationStatus = document.getElementById('verification-status');
-            verificationStatus.textContent = parent.verified ? 'Verified' : 'Unverified';
-            verificationStatus.className = parent.verified ? 'text-green-600 italic mb-2' : 'text-red-600 italic mb-2';
-            const parentRating = document.getElementById('parent-rating');
-            parentRating.textContent = `★★★★☆ (${parent.rating})`;
-            searchChildren();
-            rotateAds();
-        }
-
-        // Edit Profile Picture Modal
-        function openEditProfilePicModal() {
-            document.getElementById('profile-pic-preview-modal').src = parent.profilePicture;
-            document.getElementById('edit-profile-pic').value = '';
-            document.getElementById('edit-profile-pic-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('edit-profile-pic-modal'));
-        }
-        function closeEditProfilePicModal() {
-            document.getElementById('edit-profile-pic-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function saveProfilePic() {
-            const fileInput = document.getElementById('edit-profile-pic');
-            if (fileInput.files && fileInput.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    parent.profilePicture = e.target.result;
-                    document.getElementById('profile-pic-preview').src = parent.profilePicture;
-                    document.getElementById('profile-pic-preview-modal').src = parent.profilePicture;
-                    initProfile();
-                    alert('Profile picture updated');
-                    closeEditProfilePicModal();
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                alert('Please select an image file.');
-            }
-        }
-
-        // Profile Picture Preview
-        document.addEventListener('DOMContentLoaded', () => {
-            const fileInput = document.getElementById('edit-profile-pic');
-            if (fileInput) {
-                fileInput.addEventListener('change', function (e) {
-                    if (e.target.files && e.target.files[0]) {
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                            document.getElementById('profile-pic-preview-modal').src = e.target.result;
-                        };
-                        reader.readAsDataURL(e.target.files[0]);
-                    }
-                });
             }
         });
+    });
+}
 
-        // Edit Profile Modal
-        function openEditProfileModal() {
-            document.getElementById('edit-email').value = parent.email;
-            document.getElementById('edit-phone').value = parent.phone;
-            document.getElementById('edit-location').value = parent.location || '';
-            document.getElementById('edit-name').value = parent.name;
-            document.getElementById('edit-profile-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('edit-profile-modal'));
-        }
-        function closeEditProfileModal() {
-            document.getElementById('edit-profile-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function saveProfile() {
-            parent.name = document.getElementById('edit-name').value.trim();
-            parent.email = document.getElementById('edit-email').value;
-            parent.phone = document.getElementById('edit-phone').value;
-            parent.location = document.getElementById('edit-location').value;
-            initProfile();
-            alert('Profile updated');
-            closeEditProfileModal();
-        }
+function setupThemeToggle() {
+    const themeToggle = document.getElementById('theme-toggle');
+    
+    if (themeToggle) {
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    }
+}
 
-        // Share Profile Modal
-        function openShareModal() {
-            const shareLink = `https://astegni.et/parent/${parent.id}`;
-            document.getElementById('share-link').value = shareLink;
-            document.getElementById('share-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('share-modal'));
+function setupProfileDropdown() {
+    const dropdownBtn = document.getElementById('profile-dropdown-btn');
+    const dropdown = document.getElementById('profile-dropdown');
+    
+    if (dropdownBtn && dropdown) {
+        dropdownBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dropdown.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+            dropdown.classList.remove('show');
+        });
+    }
+}
+
+function setupMobileMenu() {
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    if (mobileMenuBtn && mobileMenu) {
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('show');
+        });
+    }
+}
+
+function setupFormListeners() {
+    // Prevent form submission on enter
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+        });
+    });
+    
+    // Add input validation
+    const inputs = document.querySelectorAll('.form-input, .form-select, .form-textarea');
+    inputs.forEach(input => {
+        input.addEventListener('blur', () => {
+            validateInput(input);
+        });
+    });
+}
+
+function setupSearchListeners() {
+    const searchInput = document.getElementById('child-search');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce((e) => {
+            searchChildren(e.target.value);
+        }, 300));
+    }
+}
+
+function setupResizeListener() {
+    let resizeTimer;
+    
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            // Close mobile menu on resize to desktop
+            if (window.innerWidth > 768) {
+                document.getElementById('mobile-menu')?.classList.remove('show');
+                closeSidebar();
+            }
+        }, 250);
+    });
+}
+
+// ===========================
+// User Profile Functions
+// ===========================
+
+function loadUserProfile() {
+    // Update profile elements
+    document.getElementById('profile-name').textContent = currentUser.name;
+    
+    // Update verification badge
+    const verificationBadge = document.getElementById('verification-badge');
+    if (verificationBadge) {
+        verificationBadge.style.display = currentUser.verified ? 'block' : 'none';
+    }
+    
+    // Update profile images
+    const profileAvatars = document.querySelectorAll('.profile-avatar, .profile-avatar-large');
+    profileAvatars.forEach(avatar => {
+        avatar.src = currentUser.profilePicture;
+    });
+    
+    const coverImages = document.querySelectorAll('.cover-image');
+    coverImages.forEach(cover => {
+        cover.src = currentUser.coverPicture;
+    });
+}
+
+function openEditProfileModal() {
+    const modal = document.getElementById('edit-profile-modal');
+    
+    // Populate form fields
+    document.getElementById('edit-name').value = currentUser.name;
+    document.getElementById('edit-email').value = currentUser.email;
+    document.getElementById('edit-phone').value = currentUser.phone;
+    document.getElementById('edit-location').value = currentUser.location;
+    document.getElementById('edit-bio').value = currentUser.bio;
+    
+    showModal(modal);
+}
+
+function closeEditProfileModal() {
+    const modal = document.getElementById('edit-profile-modal');
+    hideModal(modal);
+}
+
+function saveProfile() {
+    // Get form values
+    currentUser.name = document.getElementById('edit-name').value;
+    currentUser.email = document.getElementById('edit-email').value;
+    currentUser.phone = document.getElementById('edit-phone').value;
+    currentUser.location = document.getElementById('edit-location').value;
+    currentUser.bio = document.getElementById('edit-bio').value;
+    
+    // Update UI
+    loadUserProfile();
+    
+    // Show success message
+    showNotification('Profile updated successfully!', 'success');
+    
+    // Close modal
+    closeEditProfileModal();
+}
+
+// ===========================
+// Share Modal Functions
+// ===========================
+
+function openShareModal() {
+    const modal = document.getElementById('share-modal');
+    const shareImage = document.getElementById('share-image');
+    
+    // Select image based on user gender
+    const imagePath = currentUser.gender === 'female' 
+        ? '../pictures/share_woman.png' 
+        : '../pictures/share_man.png';
+    
+    shareImage.src = imagePath;
+    
+    showModal(modal);
+}
+
+function closeShareModal() {
+    const modal = document.getElementById('share-modal');
+    hideModal(modal);
+}
+
+function copyShareLink() {
+    // Generate a share link (you can customize this)
+    const shareLink = window.location.origin + '/profile/' + currentUser.id;
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(shareLink).then(() => {
+        showNotification('Link copied to clipboard!', 'success');
+        
+        // Change button text temporarily
+        const copyBtn = document.querySelector('.copy-link-btn');
+        const originalHTML = copyBtn.innerHTML;
+        copyBtn.innerHTML = '<svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Copied!';
+        
+        setTimeout(() => {
+            copyBtn.innerHTML = originalHTML;
+        }, 2000);
+    }).catch(err => {
+        showNotification('Failed to copy link', 'error');
+    });
+}
+
+// ===========================
+// Children Functions
+// ===========================
+
+function loadChildren() {
+    const childrenGrid = document.getElementById('children-grid');
+    
+    if (!childrenGrid) return;
+    
+    childrenGrid.innerHTML = '';
+    
+    Object.values(children).forEach(child => {
+        const childCard = createChildCard(child);
+        childrenGrid.appendChild(childCard);
+    });
+}
+
+function createChildCard(child) {
+    const card = document.createElement('div');
+    card.className = 'child-card';
+    card.onclick = () => openChildDetails(child.id);
+    
+    const circumference = 2 * Math.PI * 45;
+    const offset = circumference - (child.progress / 100) * circumference;
+    
+    // Calculate additional stats
+    const totalSessions = child.courses.length * 4; // Example: 4 sessions per course
+    const completedSessions = Math.floor(totalSessions * (child.progress / 100));
+    
+    card.innerHTML = `
+        <div class="child-avatar-container">
+            <img src="${child.profilePicture}" alt="${child.name}" class="child-avatar">
+            <div class="child-status-indicator">✓</div>
+        </div>
+        <h4 class="child-name">${child.name}</h4>
+        <p class="child-grade">Grade ${child.grade}</p>
+        <div class="child-progress">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+                <defs>
+                    <linearGradient id="progress-gradient-${child.id}" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:var(--button-bg);stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:var(--button-hover);stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <circle class="progress-circle-bg" cx="60" cy="60" r="45"></circle>
+                <circle class="progress-circle-fill" cx="60" cy="60" r="45"
+                    stroke="url(#progress-gradient-${child.id})"
+                    stroke-dasharray="${circumference}"
+                    stroke-dashoffset="${offset}">
+                </circle>
+            </svg>
+            <div class="progress-text">${child.progress}%</div>
+        </div>
+        <div class="child-quick-stats">
+            <div class="child-stat-item">
+                <span class="child-stat-number">${child.courses.length}</span>
+                <span class="child-stat-label">Courses</span>
+            </div>
+            <div class="child-stat-item">
+                <span class="child-stat-number">${completedSessions}</span>
+                <span class="child-stat-label">Sessions</span>
+            </div>
+            <div class="child-stat-item">
+                <span class="child-stat-number">${child.age}</span>
+                <span class="child-stat-label">Age</span>
+            </div>
+        </div>
+        <button class="child-action-btn">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+            View Details
+        </button>
+    `;
+    
+    return card;
+}
+
+function searchChildren(searchTerm = '') {
+    const childrenGrid = document.getElementById('children-grid');
+    
+    if (!childrenGrid) return;
+    
+    childrenGrid.innerHTML = '';
+    
+    const filteredChildren = Object.values(children).filter(child => {
+        const searchLower = searchTerm.toLowerCase();
+        return child.name.toLowerCase().includes(searchLower) ||
+               child.courses.some(course => course.toLowerCase().includes(searchLower));
+    });
+    
+    if (filteredChildren.length === 0) {
+        childrenGrid.innerHTML = '<p class="no-results">No children found matching your search.</p>';
+        return;
+    }
+    
+    filteredChildren.forEach(child => {
+        const childCard = createChildCard(child);
+        childrenGrid.appendChild(childCard);
+    });
+}
+
+function openRegisterChildModal() {
+    const modal = document.getElementById('register-child-modal');
+    
+    // Reset form
+    document.getElementById('child-name').value = '';
+    document.getElementById('child-gender').value = 'Male';
+    document.getElementById('child-age').value = '';
+    document.getElementById('child-grade').value = '';
+    document.getElementById('child-courses').value = '';
+    document.getElementById('child-payment-method').value = '';
+    document.getElementById('child-account-number').value = '';
+    
+    showModal(modal);
+}
+
+function closeRegisterChildModal() {
+    const modal = document.getElementById('register-child-modal');
+    hideModal(modal);
+}
+
+function registerChild() {
+    // Get form values
+    const name = document.getElementById('child-name').value;
+    const gender = document.getElementById('child-gender').value;
+    const age = document.getElementById('child-age').value;
+    const grade = document.getElementById('child-grade').value;
+    const courses = document.getElementById('child-courses').value.split(',').map(c => c.trim());
+    const paymentMethod = document.getElementById('child-payment-method').value;
+    const accountNumber = document.getElementById('child-account-number').value;
+    
+    // Validate
+    if (!name || !age || !grade || !courses.length || !paymentMethod || !accountNumber) {
+        showNotification('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    // Create new child
+    const newId = Object.keys(children).length + 1;
+    children[newId] = {
+        id: newId,
+        name,
+        gender,
+        age: parseInt(age),
+        grade: parseInt(grade),
+        profilePicture: 'https://via.placeholder.com/150',
+        courses,
+        progress: 0,
+        nextSession: null,
+        tutor: null
+    };
+    
+    // Reload children
+    loadChildren();
+    
+    // Show success message
+    showNotification(`${name} has been registered successfully!`, 'success');
+    
+    // Close modal
+    closeRegisterChildModal();
+}
+
+function openChildDetails(childId) {
+    const child = children[childId];
+    if (!child) return;
+    
+    const modal = document.getElementById('child-details-modal');
+    
+    // Populate modal header
+    document.getElementById('child-modal-avatar').src = child.profilePicture;
+    document.getElementById('child-modal-avatar').alt = child.name;
+    document.getElementById('child-modal-name').textContent = child.name;
+    document.getElementById('child-modal-grade').textContent = `Grade ${child.grade} • ${child.gender}`;
+    
+    // Populate stats
+    document.getElementById('child-modal-age').textContent = `${child.age} years`;
+    document.getElementById('child-modal-progress').textContent = `${child.progress}%`;
+    document.getElementById('child-modal-courses-count').textContent = child.courses.length;
+    document.getElementById('child-modal-next-session').textContent = child.nextSession ? 
+        new Date(child.nextSession).toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        }) : 'Not scheduled';
+    
+    // Populate courses
+    const coursesContainer = document.getElementById('child-modal-courses');
+    coursesContainer.innerHTML = '';
+    
+    const courseIcons = {
+        'Math': '📐',
+        'Physics': '⚛️',
+        'Chemistry': '🧪',
+        'Biology': '🧬',
+        'English': '📚',
+        'History': '📜',
+        'Geography': '🌍'
+    };
+    
+    child.courses.forEach(course => {
+        const courseCard = document.createElement('div');
+        courseCard.className = 'course-card';
+        courseCard.innerHTML = `
+            <div class="course-icon">${courseIcons[course] || '📖'}</div>
+            <div class="course-name">${course}</div>
+        `;
+        coursesContainer.appendChild(courseCard);
+    });
+    
+    // Populate upcoming sessions
+    const sessionsContainer = document.getElementById('child-modal-sessions');
+    sessionsContainer.innerHTML = '';
+    
+    // Sample sessions for the child
+    const childSessions = [
+        {
+            subject: child.courses[0],
+            tutor: child.tutor,
+            date: 'Today',
+            time: '2:00 PM - 3:30 PM'
+        },
+        {
+            subject: child.courses[1] || child.courses[0],
+            tutor: child.tutor,
+            date: 'Tomorrow',
+            time: '4:00 PM - 5:30 PM'
+        },
+        {
+            subject: child.courses[2] || child.courses[0],
+            tutor: child.tutor,
+            date: 'Jan 20',
+            time: '3:00 PM - 4:30 PM'
         }
-        function closeShareModal() {
-            document.getElementById('share-modal').classList.add('hidden');
-            restoreFocus();
+    ];
+    
+    childSessions.forEach(session => {
+        const sessionCard = document.createElement('div');
+        sessionCard.className = 'session-item-card';
+        sessionCard.innerHTML = `
+            <div class="session-icon">${courseIcons[session.subject] || '📖'}</div>
+            <div class="session-details">
+                <div class="session-subject">${session.subject}</div>
+                <div class="session-tutor">with ${session.tutor}</div>
+            </div>
+            <div class="session-time-info">
+                <div class="session-date">${session.date}</div>
+                <div class="session-time">${session.time}</div>
+            </div>
+        `;
+        sessionsContainer.appendChild(sessionCard);
+    });
+    
+    // Initialize or update progress chart
+    initializeChildProgressChart(child);
+    
+    // Show modal
+    showModal(modal);
+}
+
+function closeChildDetailsModal() {
+    const modal = document.getElementById('child-details-modal');
+    hideModal(modal);
+    
+    // Destroy chart instance if exists
+    if (window.childChartInstance) {
+        window.childChartInstance.destroy();
+        window.childChartInstance = null;
+    }
+}
+
+function editChildDetails() {
+    // Close child details modal
+    closeChildDetailsModal();
+    
+    // Open edit modal (you can implement this)
+    showNotification('Edit child details functionality coming soon!', 'info');
+}
+
+function initializeChildProgressChart(child) {
+    const ctx = document.getElementById('child-progress-chart');
+    if (!ctx) return;
+    
+    // Destroy existing chart if any
+    if (window.childChartInstance) {
+        window.childChartInstance.destroy();
+    }
+    
+    const isDarkMode = document.documentElement.getAttribute('data-theme') === 'dark';
+    
+    // Sample progress data for the child
+    const progressData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: child.courses.map((course, index) => ({
+            label: course,
+            data: [
+                65 + Math.random() * 20,
+                70 + Math.random() * 20,
+                75 + Math.random() * 15,
+                72 + Math.random() * 18,
+                78 + Math.random() * 12,
+                child.progress + Math.random() * 10
+            ],
+            borderColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'][index % 4],
+            backgroundColor: ['rgba(59, 130, 246, 0.1)', 'rgba(16, 185, 129, 0.1)', 'rgba(245, 158, 11, 0.1)', 'rgba(139, 92, 246, 0.1)'][index % 4],
+            tension: 0.4
+        }))
+    };
+    
+    window.childChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: progressData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        color: isDarkMode ? '#e5e5e5' : '#1a1a1a',
+                        padding: 15,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.9)',
+                    titleColor: isDarkMode ? '#e5e5e5' : '#1a1a1a',
+                    bodyColor: isDarkMode ? '#e5e5e5' : '#1a1a1a',
+                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                    borderWidth: 1
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        color: isDarkMode ? '#9ca3af' : '#6b7280',
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    grid: {
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: isDarkMode ? '#9ca3af' : '#6b7280'
+                    },
+                    grid: {
+                        color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                    }
+                }
+            }
         }
-        function copyShareLink() {
-            const shareLink = document.getElementById('share-link');
-            shareLink.select();
-            document.execCommand('copy');
-            alert('Link copied to clipboard!');
+    });
+}
+
+// ===========================
+// Upcoming Sessions Functions
+// ===========================
+
+function loadUpcomingSessions() {
+    // Sample upcoming sessions data
+    const upcomingSessions = [
+        {
+            child: 'Abebe Kebede',
+            subject: 'Math',
+            tutor: 'Amanuel Tesfaye',
+            time: 'Today at 2:00 PM'
+        },
+        {
+            child: 'Selam Tesfaye',
+            subject: 'Physics',
+            tutor: 'Kebede Worku',
+            time: 'Tomorrow at 10:00 AM'
+        },
+        {
+            child: 'Yonas Alemu',
+            subject: 'Chemistry',
+            tutor: 'Sara Tadesse',
+            time: 'Jan 17 at 3:00 PM'
         }
-        function shareProfile() {
-            const shareLink = document.getElementById('share-link').value;
-            const shareData = {
-                title: 'My ASTEGNI Parent Profile',
-                text: `Check out my parent profile on ASTEGNI!`,
-                url: shareLink
-            };
-            if (navigator.share) {
-                navigator.share(shareData)
-                    .then(() => console.log('Profile shared successfully'))
-                    .catch((error) => console.error('Error sharing:', error));
+    ];
+    
+    const sessionsTrack = document.getElementById('sessions-track');
+    if (!sessionsTrack) return;
+    
+    sessionsTrack.innerHTML = '';
+    
+    // Create sessions for carousel (duplicate for smooth loop)
+    const allSessions = [...upcomingSessions, ...upcomingSessions];
+    
+    allSessions.forEach((session, index) => {
+        const sessionAlert = document.createElement('div');
+        sessionAlert.className = 'session-alert';
+        
+        sessionAlert.innerHTML = `
+            <span class="alert-icon">⏰</span>
+            <div class="alert-content">
+                <strong>${index < upcomingSessions.length && index === 0 ? 'Next Session:' : 'Upcoming:'}</strong> 
+                ${session.subject} with ${session.tutor} - ${session.time}
+            </div>
+        `;
+        
+        sessionsTrack.appendChild(sessionAlert);
+    });
+}
+
+// ===========================
+// Modal Functions
+// ===========================
+
+function showModal(modal) {
+    if (!modal) return;
+    
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    
+    // Trap focus
+    trapFocus(modal);
+}
+
+function hideModal(modal) {
+    if (!modal) return;
+    
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+    
+    // Restore focus
+    restoreFocus();
+}
+
+function trapFocus(modal) {
+    const focusableElements = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    
+    if (focusableElements.length === 0) return;
+    
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    
+    modal.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab') {
+            if (e.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                }
             } else {
-                copyShareLink();
+                if (document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
             }
         }
-
-        // Register Child Modal
-        let pendingChild = null;
-        let pendingPaymentId = null;
-        function openRegisterChildModal() {
-            document.getElementById('register-child-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('register-child-modal'));
+        
+        if (e.key === 'Escape') {
+            hideModal(modal);
         }
-        function closeRegisterChildModal() {
-            document.getElementById('register-child-modal').classList.add('hidden');
-            document.getElementById('child-name').value = '';
-            document.getElementById('child-gender').value = 'Male';
-            document.getElementById('child-courses').value = '';
-            document.getElementById('child-payment-method').value = '';
-            document.getElementById('child-account-number').value = '';
-            restoreFocus();
-        }
-        function registerChild() {
-            const name = document.getElementById('child-name').value.trim();
-            const gender = document.getElementById('child-gender').value;
-            const courses = document.getElementById('child-courses').value.split(',').map(c => c.trim()).filter(c => c);
-            const paymentMethod = document.getElementById('child-payment-method').value;
-            const accountNumber = document.getElementById('child-account-number').value.trim();
+    });
+    
+    firstElement.focus();
+}
 
-            if (!name || !gender || !courses.length || !paymentMethod || !accountNumber) {
-                alert('Please fill in all required fields, including payment method and account number.');
-                return;
+function restoreFocus() {
+    // Restore focus to the element that triggered the modal
+    const triggerElement = document.activeElement;
+    if (triggerElement) {
+        triggerElement.focus();
+    }
+}
+
+// ===========================
+// Notification Functions
+// ===========================
+
+function checkNotifications() {
+    const notificationDot = document.getElementById('notification-dot');
+    
+    if (notificationDot && notifications > 0) {
+        notificationDot.textContent = notifications;
+        notificationDot.style.display = 'block';
+    }
+}
+
+function openNotificationModal() {
+    showNotification('Opening notifications...', 'info');
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+    
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        padding: 1rem 1.5rem;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+        color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        z-index: 10000;
+        animation: slideInRight 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOutRight 0.3s ease';
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 3000);
+}
+
+// ===========================
+// Utility Functions
+// ===========================
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function validateInput(input) {
+    if (input.hasAttribute('required') && !input.value.trim()) {
+        input.classList.add('error');
+        return false;
+    }
+    
+    if (input.type === 'email' && input.value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(input.value)) {
+            input.classList.add('error');
+            return false;
+        }
+    }
+    
+    if (input.type === 'tel' && input.value) {
+        const phoneRegex = /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/;
+        if (!phoneRegex.test(input.value)) {
+            input.classList.add('error');
+            return false;
+        }
+    }
+    
+    input.classList.remove('error');
+    return true;
+}
+
+function initializeTooltips() {
+    // Initialize any tooltips
+    const tooltipElements = document.querySelectorAll('[data-tooltip]');
+    
+    tooltipElements.forEach(element => {
+        element.addEventListener('mouseenter', function() {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'tooltip';
+            tooltip.textContent = this.getAttribute('data-tooltip');
+            
+            document.body.appendChild(tooltip);
+            
+            const rect = this.getBoundingClientRect();
+            tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + 'px';
+            tooltip.style.left = rect.left + (rect.width - tooltip.offsetWidth) / 2 + 'px';
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            const tooltip = document.querySelector('.tooltip');
+            if (tooltip) {
+                tooltip.remove();
             }
+        });
+    });
+}
 
-            const newChildId = Object.keys(children).length + 1;
-            pendingChild = {
-                id: newChildId,
-                name,
-                gender,
-                profilePicture: 'https://via.placeholder.com/64',
-                coverPicture: 'https://via.placeholder.com/1200x300',
-                courses,
-                pendingCourses: [],
-                tutorIds: [],
-                progress: { tutors: {}, cumulative: 0 }
-            };
+function initializeAnimations() {
+    // Intersection Observer for animations
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    
+    if (animatedElements.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, {
+            threshold: 0.1
+        });
+        
+        animatedElements.forEach(element => {
+            observer.observe(element);
+        });
+    }
+}
 
-            const newPaymentId = Object.keys(payments).length + 1;
-            pendingPaymentId = newPaymentId;
-            payments[newPaymentId] = {
-                id: newPaymentId,
-                type: 'Registration',
-                details: `Child Registration: ${name}`,
-                amount: 500,
-                status: 'Pending',
-                childId: newChildId,
-                paymentMethod,
-                accountNumber
-            };
+function openNotesModal() {
+    showNotification('Notes functionality coming soon!', 'info');
+}
 
-            document.getElementById('confirm-child-payment-details').textContent = `Confirm payment of 500 birr for registering ${name} using ${paymentMethod} (Account: ${accountNumber})?`;
-            document.getElementById('confirm-child-payment-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('confirm-child-payment-modal'));
-        }
-        function confirmChildPayment() {
-            if (pendingChild && pendingPaymentId) {
-                children[pendingChild.id] = pendingChild;
-                payments[pendingPaymentId].status = 'Confirmed';
-                alert(`Child ${pendingChild.name} registered successfully!`);
-                closeChildPaymentModal();
-                closeRegisterChildModal();
-                searchChildren();
-                pendingChild = null;
-                pendingPaymentId = null;
-            }
-        }
-        function closeChildPaymentModal() {
-            document.getElementById('confirm-child-payment-modal').classList.add('hidden');
-            restoreFocus();
-        }
+function openManageFinancesModal() {
+    showNotification('Finance management coming soon!', 'info');
+}
 
-        // Add CSS for seamless progress tooltip styling
+function logout() {
+    if (confirm('Are you sure you want to logout?')) {
+        localStorage.clear();
+        window.location.href = '../index.html';
+    }
+}
+
+// ===========================
+// Animation Styles
+// ===========================
+
 const style = document.createElement('style');
 style.textContent = `
-    .progress-container {
-        position: relative;
-        display: inline-block;
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
     }
-.progress-tooltip {
-    display: none;
-    position: absolute;
-    top: 50%; /* Align vertically with the circle */
-    left: calc(100% + 10px); /* Position to the right with a 10px gap */
-    transform: translateY(-50%); /* Center vertically */
-    background-color: var(--modal-bg);
-    border: 1px solid var(--modal-input-border);
-    padding: 0.75rem;
-    border-radius: 6px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 20;
-    min-width: 200px;
-    text-align: left;
-    color: var(--modal-text);
-}
-.progress-container:hover .progress-tooltip {
-    display: block;
-}
-    .progress-bar {
-        background-color: #e5e7eb;
-        height: 8px;
-        border-radius: 4px;
-        overflow: hidden;
-        margin-top: 0.5rem;
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
     }
-    .progress-bar-fill {
-        background-color: var(--button-bg);
-        height: 100%;
-        transition: width 0.3s ease-in;
+    
+    .error {
+        border-color: #ef4444 !important;
     }
-    .progress-tooltip p {
-        margin: 0.25rem 0;
-        font-size: 0.9rem;
+    
+    .tooltip {
+        position: fixed;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        z-index: 10000;
+        pointer-events: none;
     }
 `;
 document.head.appendChild(style);
-
-function searchChildren() {
-    const searchTerm = document.getElementById('child-search').value.toLowerCase();
-    const table = document.getElementById('child-table');
-    table.innerHTML = '';
-    Object.values(children).forEach(child => {
-        // Update child.courses to include all subjects from tutors
-        const allSubjects = new Set(child.courses || []);
-        Object.values(child.progress.tutors).forEach(tutorData => {
-            Object.keys(tutorData.subjects).forEach(subject => allSubjects.add(subject));
-        });
-        child.courses = Array.from(allSubjects);
-        
-        if (child.name.toLowerCase().includes(searchTerm) || child.courses.some(c => c.toLowerCase().includes(searchTerm))) {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td class="p-2">${child.name}</td>
-                <td class="p-2">${child.gender}</td>
-                <td class="p-2">${child.courses.join(', ')}</td>
-                <td class="p-2">
-                    <div class="progress-container">
-                        <svg class="w-12 h-12" viewBox="0 0 36 36">
-                            <path class="progress-circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#e5e7eb" stroke-width="3"/>
-                            <path class="progress-circle" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="var(--button-bg)" stroke-width="3" stroke-dasharray="${child.progress.cumulative}, 100"/>
-                            <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-sm">${child.progress.cumulative}%</span>
-                        </svg>
-                        <div class="progress-tooltip">
-                            ${Object.entries(child.progress.tutors).map(([tutorId, data]) => `
-                                ${Object.entries(data.subjects).map(([subject, percent]) => `
-                                    <p>${subject}: ${percent}%</p>
-                                    <div class="progress-bar">
-                                        <div class="progress-bar-fill" style="width: ${percent}%"></div>
-                                    </div>
-                                `).join('')}
-                            `).join('')}
-                        </div>
-                    </div>
-                </td>
-                <td class="p-2">
-                    <button onclick="openChildDetailsModal(${child.id})" class="px-2 py-1 rounded-lg cta-button">Details</button>
-                </td>
-            `;
-            table.appendChild(row);
-        }
-    });
-    if (!table.innerHTML) {
-        table.innerHTML = '<tr><td colspan="5" class="p-2 text-center no-results">No children found.</td></tr>';
-    }
-}        // Child Details Modal
-        function openChildDetailsModal(childId) {
-            const child = children[childId];
-            if (!child) {
-                console.error(`Child with ID ${childId} not found.`);
-                alert('Child not found.');
-                return;
-            }
-            const details = document.getElementById('child-details');
-            details.innerHTML = `
-                <div class="mb-4">
-                    <img src="${child.coverPicture}" class="w-full h-32 object-cover rounded-lg mb-4" alt="${child.name}'s Cover Picture"> 
-                    <img src="${child.profilePicture}" class="w-16 h-16 rounded-full mb-2" alt="${child.name}'s Profile Picture">
-                    <h4 class="text-lg font-semibold">${child.name}</h4>
-                    <p>Gender: ${child.gender}</p>
-                    <p>Courses: ${child.courses.join(', ') || 'None'}</p>
-                    <p>Pending Courses: ${child.pendingCourses.length ? child.pendingCourses.join(', ') : 'None'}</p>
-                </div>
-                <h4 class="text-lg font-semibold mb-2">Tutors</h4>
-                <div class="tutor-grid">
-                    ${child.tutorIds.length ? child.tutorIds.map(tutorId => {
-                const tutor = tutors[tutorId];
-                if (!tutor) return '';
-                const progress = child.progress.tutors[tutorId] || { subjects: {}, overall: 0 };
-                return `
-                            <div class="border p-4 rounded-lg" data-tutor-id="${tutorId}">
-                                <h5 class="font-semibold">${tutor.name}</h5>
-                                <p>Subjects: ${tutor.subjects.join(', ') || 'None'}</p>
-                                <p>Availability: ${tutor.availability || 'Not specified'}</p>
-                                <p>Fee: ${tutor.fee} birr</p>
-                                <p class="star-rating">Rating: ${'★'.repeat(Math.round(tutor.rating))}${'☆'.repeat(5 - Math.round(tutor.rating))} (${tutor.rating.toFixed(1)})</p>
-                                <p>Progress: ${progress.overall}%</p>
-                                ${Object.entries(progress.subjects).map(([subject, percent]) => `
-                                    <p>${subject}: ${percent}%</p>
-                                `).join('')}
-                                <button onclick="openSessionSheetModal(${childId}, ${tutorId})" class="px-2 py-1 rounded-lg cta-button mt-2">Session Sheet</button>
-                            </div>
-                        `;
-            }).join('') : '<p class="no-results">No tutors assigned.</p>'}
-                </div>
-            `;
-            document.getElementById('child-details-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('child-details-modal'));
-            updateChildDetails();
-        }
-        function closeChildDetailsModal() {
-            document.getElementById('child-details-modal').classList.add('hidden');
-            document.getElementById('child-details-search').value = '';
-            restoreFocus();
-        }
-        function updateChildDetails() {
-            const searchTerm = document.getElementById('child-details-search').value.toLowerCase();
-            const tutorDivs = document.querySelectorAll('#child-details .tutor-grid > div');
-            tutorDivs.forEach(div => {
-                const tutorName = div.querySelector('h5').textContent.toLowerCase();
-                div.style.display = tutorName.includes(searchTerm) ? 'block' : 'none';
-            });
-            const noResults = document.querySelector('#child-details .no-results');
-            if (noResults) {
-                noResults.style.display = searchTerm ? 'none' : 'block';
-            }
-        }
-
-        // Rate Tutor Modal
-        let currentTutorId = null;
-        let currentChildId = null;
-        function openRateTutorModal(tutorId, childId) {
-            currentTutorId = tutorId;
-            currentChildId = childId;
-            document.getElementById('rating-retention').value = 1;
-            document.getElementById('rating-punctuality').value = 1;
-            document.getElementById('rating-discipline').value = 1;
-            document.getElementById('rating-communication').value = 1;
-            document.getElementById('rating-subject-matter').value = 1;
-            document.getElementById('rating-tutor-comment').value = '';
-            document.getElementById('rate-tutor-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('rate-tutor-modal'));
-        }
-        function closeRateTutorModal() {
-            document.getElementById('rate-tutor-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function submitTutorRating() {
-            const retention = parseInt(document.getElementById('rating-retention').value);
-            const punctuality = parseInt(document.getElementById('rating-punctuality').value);
-            const discipline = parseInt(document.getElementById('rating-discipline').value);
-            const communication = parseInt(document.getElementById('rating-communication').value);
-            const subjectMatter = parseInt(document.getElementById('rating-subject-matter').value);
-            const comment = document.getElementById('rating-tutor-comment').value.trim();
-            if (!retention || !punctuality || !discipline || !communication || !subjectMatter) {
-                alert('Please provide all ratings.');
-                return;
-            }
-            const rating = (retention + punctuality + discipline + communication + subjectMatter) / 5;
-            ratings.push({
-                id: ratings.length + 1,
-                tutorId: currentTutorId,
-                childId: currentChildId,
-                rating,
-                comment
-            });
-            const tutor = tutors[currentTutorId];
-            const ratingsForTutor = ratings.filter(r => r.tutorId === currentTutorId);
-            tutor.rating = ratingsForTutor.reduce((sum, r) => sum + r.rating, 0) / ratingsForTutor.length;
-            alert('Rating submitted successfully!');
-            closeRateTutorModal();
-            openChildDetailsModal(currentChildId);
-        }
-
-        // Session Sheet Modal
-        function openSessionSheetModal(childId, tutorId) {
-            const table = document.getElementById('session-table');
-            table.innerHTML = '';
-            Object.values(sessions).forEach(session => {
-                if (session.studentId === childId && session.tutorId === tutorId) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td class="p-2">${session.date}</td>
-                        <td class="p-2">${session.time}</td>
-                        <td class="p-2">${session.duration}</td>
-                        <td class="p-2">${session.tutor}</td>
-                        <td class="p-2">${session.subjects.join(', ') || 'None'}</td>
-                        <td class="p-2">${session.cost} birr</td>
-                        <td class="p-2">${session.status}</td>
-                        <td class="p-2">
-                            ${session.status === 'Scheduled' ? `
-                                <button onclick="openPaymentModal(${session.sessionId})" class="px-2 py-1 rounded-lg cta-button">Pay</button>
-                                <button onclick="openProposeMakeupModal(${session.sessionId})" class="px-2 py-1 rounded-lg cta-button mt-2">Propose Makeup</button>
-                                <button onclick="openEditSubjectsModal(${session.sessionId})" class="px-2 py-1 rounded-lg cta-button mt-2">Edit Subjects</button>
-                            ` : ''}
-                            ${session.status === 'Confirmed' && !session.studentConfirmed ? `
-                                <button onclick="confirmSession(${session.sessionId}, 'student')" class="px-2 py-1 rounded-lg cta-button">Confirm</button>
-                            ` : ''}
-                            ${session.missed && !session.makeup ? `
-                                <button onclick="openProposeMakeupModal(${session.sessionId})" class="px-2 py-1 rounded-lg cta-button">Propose Makeup</button>
-                            ` : ''}
-                        </td>
-                    `;
-                    table.appendChild(row);
-                }
-            });
-            if (!table.innerHTML) {
-                table.innerHTML = '<tr><td colspan="8" class="p-2 text-center no-results">No sessions found.</td></tr>';
-            }
-            document.getElementById('session-sheet-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('session-sheet-modal'));
-        }
-        function closeSessionSheetModal() {
-            document.getElementById('session-sheet-modal').classList.add('hidden');
-            restoreFocus();
-        }
-
-        // View Child Comments Modal
-        function openViewChildCommentsModal(childId, tutorId = null) {
-            const comments = childRatings.filter(r => r.childId === childId && (!tutorId || r.tutorId === tutorId));
-            const content = document.getElementById('child-comments-content');
-            content.innerHTML = comments.length ? comments.map(r => `
-                <div class="border-b py-2">
-                    <p class="star-rating">${'★'.repeat(Math.round(r.rating))}${'☆'.repeat(5 - Math.round(r.rating))} (${r.rating.toFixed(1)})</p>
-                    <p>${r.comment || 'No comment provided.'}</p>
-                    <p class="text-sm text-gray-500">By ${tutors[r.tutorId]?.name || 'Unknown Tutor'}</p>
-                </div>
-            `).join('') : '<p class="no-results">No comments available.</p>';
-            document.getElementById('view-child-comments-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('view-child-comments-modal'));
-        }
-        function closeViewChildCommentsModal() {
-            document.getElementById('view-child-comments-modal').classList.add('hidden');
-            restoreFocus();
-        }
-
-        // Chat Modal
-        let currentChatId = null;
-        function openChatModal(id) {
-            currentChatId = id;
-            const messages = document.getElementById('chat-messages');
-            messages.innerHTML = logs[id]?.map(log => `
-                <p><strong>${log.sender}:</strong> ${log.message}</p>
-            `).join('') || '<p class="no-results">No messages yet.</p>';
-            document.getElementById('chat-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('chat-modal'));
-            document.getElementById('chat-input').focus();
-        }
-        function closeChatModal() {
-            document.getElementById('chat-modal').classList.add('hidden');
-            document.getElementById('chat-input').value = '';
-            restoreFocus();
-        }
-        function sendMessage() {
-            const message = document.getElementById('chat-input').value.trim();
-            if (!message) {
-                alert('Please enter a message.');
-                return;
-            }
-            if (!logs[currentChatId]) logs[currentChatId] = [];
-            logs[currentChatId].push({ sender: parent.name, message });
-            const messages = document.getElementById('chat-messages');
-            messages.innerHTML = logs[currentChatId].map(log => `
-                <p><strong>${log.sender}:</strong> ${log.message}</p>
-            `).join('');
-            document.getElementById('chat-input').value = '';
-            messages.scrollTop = messages.scrollHeight;
-        }
-
-        // Rate ASTEGNI Modal
-        function openRateAstegniModal() {
-            document.getElementById('rating-usability').value = 1;
-            document.getElementById('rating-customer-service').value = 1;
-            document.getElementById('rating-astegni-comment').value = '';
-            document.getElementById('rate-astegni-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('rate-astegni-modal'));
-        }
-        function closeRateAstegniModal() {
-            document.getElementById('rate-astegni-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function submitAstegniRating() {
-            const usability = parseInt(document.getElementById('rating-usability').value);
-            const customerService = parseInt(document.getElementById('rating-customer-service').value);
-            const comment = document.getElementById('rating-astegni-comment').value.trim();
-            if (!usability || !customerService) {
-                alert('Please provide all ratings.');
-                return;
-            }
-            const rating = (usability + customerService) / 2;
-            astegniRatings.push({ id: astegniRatings.length + 1, rating, comment });
-            alert('Thank you for rating ASTEGNI!');
-            closeRateAstegniModal();
-        }
-
-        /// View Parent Comments Modal
-        function openViewParentCommentsModal() {
-            const content = document.getElementById('parent-comments-content');
-            content.innerHTML = parentRatings.length ? parentRatings.map(r => `
-        <div class="border-b py-2">
-            <p class="star-rating">${'★'.repeat(Math.round(r.rating))}${'☆'.repeat(5 - Math.round(r.rating))} (${r.rating.toFixed(1)})</p>
-            <p>${r.comment || 'No comment provided.'}</p>
-            <p class="text-sm text-gray-500">By ${tutors[r.tutorId]?.name || 'Unknown Tutor'}</p>
-        </div>
-    `).join('') : '<p class="no-results">No comments available.</p>';
-            document.getElementById('view-parent-comments-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('view-parent-comments-modal'));
-        }
-        function closeViewParentCommentsModal() {
-            document.getElementById('view-parent-comments-modal').classList.add('hidden');
-            restoreFocus();
-        }
-
-        // Notification Modal
-        function openNotificationModal() {
-            const content = document.getElementById('notification-content');
-            const notifications = Object.values(sessions).filter(s => s.status === 'Scheduled' && !s.studentConfirmed).map(s => `
-        <div class="border-b py-2">
-            <p>Session with ${s.tutor} on ${s.date} at ${s.time} is awaiting your confirmation.</p>
-            <button onclick="confirmSession(${s.sessionId}, 'student')" class="px-2 py-1 rounded-lg cta-button mt-2">Confirm</button>
-        </div>
-    `);
-            content.innerHTML = notifications.length ? notifications.join('') : '<p class="no-results">No notifications.</p>';
-            document.getElementById('notification-modal').classList.remove('hidden');
-            document.getElementById('notification-dot').classList.toggle('hidden', !notifications.length);
-            document.getElementById('mobile-notification-dot').classList.toggle('hidden', !notifications.length);
-            trapFocus(document.getElementById('notification-modal'));
-        }
-        function closeNotificationModal() {
-            document.getElementById('notification-modal').classList.add('hidden');
-            restoreFocus();
-        }
-
-        // Propose Makeup Modal
-        let currentSessionId = null;
-        function openProposeMakeupModal(sessionId) {
-            currentSessionId = sessionId;
-            document.getElementById('makeup-date').value = '';
-            document.getElementById('makeup-time').value = '';
-            document.getElementById('makeup-duration').value = '60 minutes';
-            document.getElementById('propose-makeup-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('propose-makeup-modal'));
-        }
-        function closeProposeMakeupModal() {
-            document.getElementById('propose-makeup-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function submitMakeup() {
-            const date = document.getElementById('makeup-date').value;
-            const time = document.getElementById('makeup-time').value;
-            const duration = document.getElementById('makeup-duration').value;
-            if (!date || !time) {
-                alert('Please select a date and time.');
-                return;
-            }
-            sessions[currentSessionId].makeup = { date, time, duration, status: 'Proposed' };
-            alert('Makeup session proposed successfully!');
-            closeProposeMakeupModal();
-            openSessionSheetModal(sessions[currentSessionId].studentId, sessions[currentSessionId].tutorId);
-        }
-
-        // Edit Subjects Modal
-        function openEditSubjectsModal(sessionId) {
-            currentSessionId = sessionId;
-            document.getElementById('edit-subjects-input').value = sessions[sessionId].subjects.join(', ');
-            document.getElementById('edit-subjects-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('edit-subjects-modal'));
-        }
-        function closeEditSubjectsModal() {
-            document.getElementById('edit-subjects-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function submitEditSubjects() {
-            const subjects = document.getElementById('edit-subjects-input').value.split(',').map(s => s.trim()).filter(s => s);
-            if (!subjects.length) {
-                alert('Please enter at least one subject.');
-                return;
-            }
-            sessions[currentSessionId].subjects = subjects;
-            alert('Subjects updated successfully!');
-            closeEditSubjectsModal();
-            openSessionSheetModal(sessions[currentSessionId].studentId, sessions[currentSessionId].tutorId);
-        }
-
-        // Payment Modal
-        function openPaymentModal(sessionId) {
-            currentSessionId = sessionId;
-            document.getElementById('payment-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('payment-modal'));
-        }
-        function closePaymentModal() {
-            document.getElementById('payment-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function selectBank(bank) {
-            const session = sessions[currentSessionId];
-            if (!session) {
-                alert('Invalid session.');
-                return;
-            }
-            const paymentId = Object.keys(payments).length + 1;
-            payments[paymentId] = {
-                id: paymentId,
-                type: 'Session',
-                details: `Session ${currentSessionId} with ${session.tutor}`,
-                amount: session.cost,
-                status: 'Confirmed',
-                childId: session.studentId,
-                paymentMethod: bank,
-                accountNumber: 'N/A'
-            };
-            session.studentConfirmed = true;
-            if (session.tutorConfirmed) {
-                session.status = 'Confirmed';
-            }
-            alert(`Payment of ${session.cost} birr confirmed via ${bank}!`);
-            closePaymentModal();
-            openSessionSheetModal(session.studentId, session.tutorId);
-            openNotificationModal();
-        }
-
-        // Confirm Session
-        function confirmSession(sessionId, role) {
-            const session = sessions[sessionId];
-            if (!session) {
-                alert('Invalid session.');
-                return;
-            }
-            if (role === 'student') {
-                session.studentConfirmed = true;
-            }
-            if (session.studentConfirmed && session.tutorConfirmed) {
-                session.status = 'Confirmed';
-            }
-            alert('Session confirmed successfully!');
-            openSessionSheetModal(session.studentId, session.tutorId);
-            openNotificationModal();
-        }
-
-        // Notes Modal
-        function openNotesModal() {
-            document.getElementById('notes-input').value = localStorage.getItem('parentNotes') || '';
-            document.getElementById('notes-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('notes-modal'));
-        }
-        function closeNotesModal() {
-            document.getElementById('notes-modal').classList.add('hidden');
-            restoreFocus();
-        }
-        function saveNotes() {
-            const notes = document.getElementById('notes-input').value.trim();
-            localStorage.setItem('parentNotes', notes);
-            alert('Notes saved successfully!');
-            closeNotesModal();
-        }
-
-        // Manage Finances Modal
-        function openManageFinancesModal() {
-            document.getElementById('manage-finances-modal').classList.remove('hidden');
-            trapFocus(document.getElementById('manage-finances-modal'));
-        }
-        function closeManageFinancesModal() {
-            document.getElementById('manage-finances-modal').classList.add('hidden');
-            restoreFocus();
-        }
-
-        // Accessibility: Trap Focus in Modal
-        function trapFocus(modal) {
-            const focusableElements = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-            if (!focusableElements.length) return;
-            const firstElement = focusableElements[0];
-            const lastElement = focusableElements[focusableElements.length - 1];
-            modal.focusedElementBeforeModal = document.activeElement;
-
-            const handleKeyDown = (e) => {
-                if (e.key === 'Tab') {
-                    if (e.shiftKey) {
-                        if (document.activeElement === firstElement) {
-                            e.preventDefault();
-                            lastElement.focus();
-                        }
-                    } else {
-                        if (document.activeElement === lastElement) {
-                            e.preventDefault();
-                            firstElement.focus();
-                        }
-                    }
-                }
-                if (e.key === 'Escape') {
-                    const closeButton = modal.querySelector('button[onclick*="close"]');
-                    if (closeButton) closeButton.click();
-                }
-            };
-
-            modal.addEventListener('keydown', handleKeyDown);
-            modal._handleKeyDown = handleKeyDown;
-            if (firstElement) firstElement.focus();
-        }
-
-        // Accessibility: Restore Focus
-        function restoreFocus() {
-            const modal = document.querySelector('.modal:not(.hidden)');
-            if (modal && modal.focusedElementBeforeModal) {
-                modal.focusedElementBeforeModal.focus();
-            }
-        }
-
-        // Mobile Menu Toggle
-        document.getElementById('menu-btn').addEventListener('click', () => {
-            const mobileMenu = document.getElementById('mobile-menu');
-            const isOpen = mobileMenu.classList.contains('open');
-            mobileMenu.classList.toggle('open');
-            document.getElementById('menu-btn').setAttribute('aria-expanded', !isOpen);
-        });
-
-        // Profile Dropdown Toggle
-        function toggleProfileDropdown() {
-            const dropdown = document.getElementById('profile-dropdown');
-            const isOpen = !dropdown.classList.contains('hidden');
-            dropdown.classList.toggle('hidden');
-            document.getElementById('profile-dropdown-btn').setAttribute('aria-expanded', !isOpen);
-        }
-        function toggleMobileProfileDropdown() {
-            const dropdown = document.getElementById('mobile-profile-dropdown');
-            const isOpen = !dropdown.classList.contains('hidden');
-            dropdown.classList.toggle('hidden');
-            document.getElementById('mobile-profile-dropdown-btn').setAttribute('aria-expanded', !isOpen);
-        }
-        document.getElementById('profile-dropdown-btn').addEventListener('click', toggleProfileDropdown);
-        document.getElementById('mobile-profile-dropdown-btn').addEventListener('click', toggleMobileProfileDropdown);
-
-        // Theme Initialization
-        document.addEventListener('DOMContentLoaded', () => {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            updateThemeToggleIcon(savedTheme);
-            document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-            document.getElementById('mobile-theme-toggle').addEventListener('click', toggleTheme);
-            initProfile();
-        });
-
-        // Close modals when clicking outside
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    const closeButton = modal.querySelector('button[onclick*="close"]');
-                    if (closeButton) closeButton.click();
-                }
-            });
-        });
-    

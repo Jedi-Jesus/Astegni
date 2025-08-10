@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Admin Dashboard</title>
+    <link href="../css/output.css" rel="stylesheet">
+    <link href="../css/admin.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <script defer src="../js/xlsx.full.min.js"></script>
+    <script src="../js/app.js" defer></script>
+    <script defer src="../js/chart.min.js"></script>
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+                    <div class="nav-left">
+            <span class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+            <a href="../index.html" class="logo">Astegni</a>
+        </div>
+            <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="hidden md:flex space-x-6 items-center">
+                <a href="../index.html" class="hover:text-[var(--nav-link-hover)]">Home</a>
+                <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]">Find Tutors</a>
+                <a href="reels.html" class="hover:text-[var(--nav-link-hover)]">Reels</a>
+                <div class="relative">
+                    <button id="profile-btn" class="flex items-center space-x-2 focus:outline-none"
+                        aria-label="My Profile" aria-haspopup="true" aria-expanded="false">
+                        <img src="https://via.placeholder.com/32" alt="Admin Profile" class="w-8 h-8 rounded-full">
+                        <span id="nav-profile-name">My Profile</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                            xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                        </svg>
+                    </button>
+                    <div id="profile-dropdown" class="dropdown-menu">
+                        <button onclick="openCommentModal()">Comment and Rate</button>
+                        <button onclick="shareProfile()">Share</button>
+                        <button onclick="openRequestLeaveModal()">Request a Leave</button>
+                    </div>
+                </div>
+                <button id="notification-bell" class="relative focus:outline-none" onclick="openNotificationModal()"
+                    aria-label="View notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span id="notification-dot"
+                        class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+                </button>
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <button id="menu-btn" class="md:hidden focus:outline-none" aria-label="Toggle menu" aria-expanded="false">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="md:hidden">
+            <a href="../index.html" class="block py-2 px-4 hover:text-[var(--nav-link-hover)]">Home</a>
+            <button id="mobile-profile-btn"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left flex items-center space-x-2"
+                aria-label="My Profile" aria-haspopup="true" aria-expanded="false">
+                <img src="https://via.placeholder.com/32" alt="Admin Profile" class="w-6 h-6 rounded-full">
+                <span id="mobile-nav-profile-name">My Profile</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                </svg>
+            </button>
+            <div id="mobile-profile-dropdown" class="dropdown-menu ml-4">
+                <button onclick="openCommentModal()">Comment and Rate</button>
+                <button onclick="shareProfile()">Share</button>
+                <button onclick="openRequestLeaveModal()">Request a Leave</button>
+            </div>
+            <button id="mobile-notification-bell"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left relative"
+                onclick="openNotificationModal()" aria-label="View notifications">
+                Notifications
+                <span id="mobile-notification-dot"
+                    class="absolute top-2 right-4 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+            </button>
+            <button id="mobile-theme-toggle-btn"
+                class="block py-2 px-4 hover:text-[var(--nav-link-hover)] w-full text-left" aria-label="Toggle theme">
+                Toggle Theme
+            </button>
+        </div>
+    </nav>
+
+    <!-- Sidebar Filter -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+              <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+        </div>
+        <nav class="sidebar-nav">  
+            <h3>Menu</h3>
+            <span class="sidebar-close" id="sidebar-close">&times;</span>
+            <a href="#" class="sidebar-link" data-action="my-courses">
+                <span class="sidebar-icon">📚</span>
+                <span>My Courses</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">💰</span>
+                <span>Manage Finances</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">📝</span>
+                <span>Notes</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">🛠️</span>
+                <span>Tools</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">👥</span>
+                <span>Followings</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">⭐</span>
+                <span>Wishlists</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">❤️</span>
+                <span>Favorites</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">💾</span>
+                <span>Saved Items</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">📦</span>
+                <span>My Products</span>
+            </a>
+            <div class="sidebar-submenu">
+                <a href="#" class="sidebar-link sidebar-parent">
+                    <span class="sidebar-icon">📋</span>
+                    <span>My Requests</span>
+                    <span class="sidebar-arrow">▼</span>
+                </a>
+                <div class="submenu-items">
+                    <a href="#" class="sidebar-link submenu-item">Requested Courses</a>
+                    <a href="#" class="sidebar-link submenu-item">Request Course - Parent</a>
+                    <a href="#" class="sidebar-link submenu-item">Request Course - Tutor</a>
+                </div>
+            </div>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">🎓</span>
+                <span>Become a Tutor</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">💬</span>
+                <span>Comment and Rate Us</span>
+            </a>
+            <a href="#" class="sidebar-link">
+                <span class="sidebar-icon">🔗</span>
+                <span>Share Us</span>
+            </a>
+        </nav>
+    </div>
+</div>
+</aside>
+
+        <!-- Profile Header -->
+        <section class="profile-header">
+            <div class="cover-photo">
+                <img src="placeholder-cover.jpg" alt="Cover Photo" class="cover-img">
+                <span class="edit-icon cover-edit">✏️</span>
+            </div>
+                <div class="profile-picture">
+                    <img src="placeholder-profile.jpg" alt="Profile Picture" class="profile-img">
+                    <span class="edit-icon profile-edit">✏️</span>
+                </div>
+            <div class="profile-main">
+                <div class="profile-info">
+                    <div class="profile-header-top">
+                        <h1>John Doe</h1>
+                        <span class="verified-badge verified">✓ Verified</span>
+                    </div>
+                    <div class="rating-container">
+                        <span class="rating">
+                            <span class="stars">★★★★☆</span>
+                            <span class="rating-text">4.5/5</span>
+                        </span>
+                        <div class="rating-tooltip">
+                            <div class="tooltip-item">
+                                <span>Class Activity</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill" style="width: 80%"></div>
+                                </div>
+                                <span>80%</span>
+                            </div>
+                            <div class="tooltip-item">
+                                <span>Discipline</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                                <span>85%</span>
+                            </div>
+                            <div class="tooltip-item">
+                                <span>Punctuality</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill" style="width: 90%"></div>
+                                </div>
+                                <span>90%</span>
+                            </div>
+                            <div class="tooltip-item">
+                                <span>Communication</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                                <span>75%</span>
+                            </div>
+                            <div class="tooltip-item">
+                                <span>Subject Intake</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill" style="width: 88%"></div>
+                                </div>
+                                <span>88%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <span class="detail-icon">📱</span>
+                            <span>(123) 456-7890</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">✉️</span>
+                            <span>john.doe@example.com</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-icon">📍</span>
+                            <span>New York, NY</span>
+                        </div>
+
+                    </div>
+                    <div class="profile-bio">
+                        <p><strong>Bio:</strong> Passionate about learning and technology.</p>
+                        <p><strong>Quote:</strong> <em>"Knowledge is power."</em></p>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn btn-primary edit-profile-btn">
+                            <span class="btn-icon">✏️</span>
+                            Edit Profile
+                        </button>
+                        <button class="btn btn-primary view-admin-comments">
+                            <span class="btn-icon">✏️</span>
+                            View Admin Comments
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    <!-- Admin Dashboard -->
+    <section class="py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-8">Admin Dashboard</h2>
+            
+                <div>
+                    <div class="dashboard-grid mb-6">
+                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.1s;">
+                            <h3 class="text-lg font-semibold">Pending Ad Reviews</h3>
+                            <p id="pending-reviews" class="text-2xl font-bold">0</p>
+                        </div>
+                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.2s;">
+                            <h3 class="text-lg font-semibold">School Listing Requests</h3>
+                            <p id="school-listing-requests" class="text-2xl font-bold">0</p>
+                        </div>
+                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.3s;">
+                            <h3 class="text-lg font-semibold">Requested Courses</h3>
+                            <p id="requested-courses-count" class="text-2xl font-bold">0</p>
+                        </div>
+                    </div>
+                    <div class="dashboard-grid-second-row mb-6">
+                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.4s;">
+                            <h3 class="text-lg font-semibold">Tutor Confirmations</h3>
+                            <p id="tutor-confirmations" class="text-2xl font-bold">0</p>
+                        </div>
+                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.5s;">
+                            <h3 class="text-lg font-semibold">Astegni Comments</h3>
+                            <p id="user-comments" class="text-2xl font-bold">0</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button onclick="openSystemImageModal()" class="px-4 py-2 rounded-lg cta-button">Upload System
+                            Image</button>
+                        <button onclick="openUploadNewsModal()" class="px-4 py-2 rounded-lg cta-button">Upload
+                            News</button>
+                    </div>
+            </div>
+
+
+            <!-- Tabs -->
+            <div class="p-6 rounded-lg shadow-lg" style="background-color: var(--highlight-bg)">
+                <div class="flex flex-wrap border-b mb-4">
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('advertisers')"
+                        aria-controls="advertisers" aria-selected="false">Advertisers</button>
+                    <button class="tab-button px-4 py-2 font-semibold active" onclick="showTab('campaigns')"
+                        aria-controls="campaigns" aria-selected="true">Campaigns</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('rejected-campaigns')"
+                        aria-controls="rejected-campaigns" aria-selected="false">Rejected Campaigns</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('schools')"
+                        aria-controls="schools" aria-selected="false">Schools</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('requested-schools')"
+                        aria-controls="requested-schools" aria-selected="false">Requested School Listings</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('requested-courses')"
+                        aria-controls="requested-courses" aria-selected="false">Requested Course Listings</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('confirm-tutor')"
+                        aria-controls="confirm-tutor" aria-selected="false">Confirm Tutor</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('notifications')"
+                        aria-controls="notifications" aria-selected="false">Manage Notifications</button>
+                    <button class="tab-button px-4 py-2 font-semibold" onclick="showTab('comments')"
+                        aria-controls="comments" aria-selected="false">Comments Astegni</button>
+                </div>
+
+                <!-- Advertisers Tab -->
+                <div id="advertisers" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Manage Advertisers</h3>
+                    <input id="advertiser-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4"
+                        placeholder="Search advertisers by name or email" oninput="searchAdvertisers()">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Name</th>
+                                <th class="p-2">Phone Number</th>
+                                <th class="p-2">Email Address</th>
+                                <th class="p-2">Location</th>
+                                <th class="p-2">Message</th>
+                            </tr>
+                        </thead>
+                        <tbody id="advertiser-table"></tbody>
+                    </table>
+                </div>
+
+                <!-- Campaigns Tab -->
+                <div id="campaigns" class="tab-content">
+                    <h3 class="text-xl font-semibold mb-4">Manage Campaigns</h3>
+                    <input id="campaign-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4"
+                        placeholder="Search campaigns by name or description" oninput="searchCampaigns()">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Name</th>
+                                <th class="p-2">Advertiser</th>
+                                <th class="p-2">Status</th>
+                                <th class="p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="campaign-table"></tbody>
+                    </table>
+                </div>
+
+                <!-- Rejected Campaigns Tab -->
+                <div id="rejected-campaigns" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Rejected Campaigns</h3>
+                    <div id="rejected-campaigns-list" class="sub-tab-content">
+                        <div class="flex space-x-4 mb-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="sort-advertiser"
+                                    onchange="sortRejectedCampaigns('advertiser')" class="mr-2">
+                                Advertiser (Asc)
+                            </label>
+                        </div>
+                        <input id="rejected-campaign-search" type="text"
+                            class="w-full max-w-md p-2 border rounded-lg mb-4"
+                            placeholder="Search rejected campaigns by name or description"
+                            oninput="searchRejectedCampaigns()">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="bg-gray-200">
+                                    <th class="p-2">Name</th>
+                                    <th class="p-2">Advertiser</th>
+                                    <th class="p-2">Description</th>
+                                    <th class="p-2">Rejection Reason</th>
+                                    <th class="p-2">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rejected-campaign-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Notifications Tab -->
+                <div id="notifications" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Manage Notifications</h3>
+                    <button onclick="openSendNotificationModal()" class="px-4 py-2 rounded-lg cta-button mb-4">Send
+                        Announcement</button>
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Message</th>
+                                <th class="p-2">Recipient</th>
+                                <th class="p-2">Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="notification-table"></tbody>
+                    </table>
+                </div>
+
+                <!-- Schools Tab -->
+                <div id="schools" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Manage Schools</h3>
+                    <button onclick="openAddSchoolModal()" class="px-4 py-2 rounded-lg cta-button mb-4">Add
+                        School</button>
+                    <input id="school-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4"
+                        placeholder="Search schools by name or email" oninput="searchSchools()">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Name</th>
+                                <th class="p-2">Phone Number</th>
+                                <th class="p-2">Email Address</th>
+                                <th class="p-2">Location</th>
+                                <th class="p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="school-table"></tbody>
+                    </table>
+                </div>
+
+                <!-- Requested School Listings Tab -->
+                <div id="requested-schools" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Requested School Listings</h3>
+                    <input id="requested-school-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4"
+                        placeholder="Search requested schools by name or email" oninput="searchRequestedSchools()">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Name</th>
+                                <th class="p-2">Phone Number</th>
+                                <th class="p-2">Email Address</th>
+                                <th class="p-2">Location</th>
+                                <th class="p-2">Status</th>
+                                <th class="p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requested-school-table"></tbody>
+                    </table>
+                </div>
+
+                <!-- Requested Course Listings Tab -->
+                <div id="requested-courses" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Requested Course Listings</h3>
+                    <input id="requested-course-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4"
+                        placeholder="Search requested courses by name or school" oninput="searchRequestedCourses()">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Course Name</th>
+                                <th class="p-2">School</th>
+                                <th class="p-2">Description</th>
+                                <th class="p-2">Status</th>
+                                <th class="p-2 flex items-center">
+                                    Actions
+                                    <button onclick="sortRequestedCoursesByNotifications()"
+                                        class="ml-2 focus:outline-none" aria-label="Sort by notifications sent">
+                                        <svg id="notifications-sort-icon" class="w-4 h-4" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+                                        </svg>
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="requested-course-table"></tbody>
+                    </table>
+                </div>
+
+                <!-- Confirm Tutor Tab -->
+                <div id="confirm-tutor" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Confirm Tutors</h3>
+                    <div class="flex space-x-4 mb-4">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="sort-school-name" onchange="sortTutors('schoolName')"
+                                class="mr-2">
+                            School Name (Asc)
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="sort-school-rating" onchange="sortTutors('schoolRating')"
+                                class="mr-2">
+                            School Rating (Asc)
+                        </label>
+                    </div>
+                    <input id="tutor-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4"
+                        placeholder="Search tutors by name or school" oninput="searchTutors()">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="bg-gray-200">
+                                <th class="p-2">Tutor Name</th>
+                                <th class="p-2">Teaches at</th>
+                                <th class="p-2">School Phone Number</th>
+                                <th class="p-2">Certifications</th>
+                                <th class="p-2">Experience</th>
+                                <th class="p-2">Status</th>
+                                <th class="p-2">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tutor-table"></tbody>
+                    </table>
+                </div>
+
+                <!-- Comments Tab (Astegni) -->
+                <div id="comments" class="tab-content hidden">
+                    <h3 class="text-xl font-semibold mb-4">Manage Astegni Comments</h3>
+                    <input id="comment-search" type="text" class="w-full max-w-md p-2 border rounded-lg mb-4"
+                        placeholder="Search Astegni comments by user or content" oninput="searchAstegniComments()">
+                    <div id="astegni-comment-container"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modals -->
+     <!-- Edit Cover Photo Modal -->
+    <div id="cover-pic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Upload Cover Photo">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Upload Cover Photo</h3>
+            <input type="file" id="cover-pic-upload" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <img id="cover-pic-preview" class="image-preview" alt="Cover photo preview">
+            <button onclick="uploadCoverPic()" class="px-4 py-2 rounded-lg cta-button w-full">Upload</button>
+            <button onclick="closeCoverPicModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Edit Profile">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Edit Profile</h3>
+            <label class="block mb-2">Name</label>
+            <input id="edit-profile-name" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter your name">
+            <label class="block mb-2">Phone</label>
+            <input id="edit-profile-phone" type="tel" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., +251-912-345-678">
+            <label class="block mb-2">Email</label>
+            <input id="edit-profile-email" type="email" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., admin@astegni.et">
+            <label class="block mb-2">Location</label>
+            <input id="edit-profile-location" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., Addis Ababa, Ethiopia">
+            <label class="block mb-2">Bio</label>
+            <textarea id="edit-profile-bio" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter your bio"></textarea>
+            <label class="block mb-2">Quote</label>
+            <input id="edit-profile-quote" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter your quote">
+            <button onclick="saveProfile()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeEditProfileModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- View Admin Comments Modal -->
+    <div id="view-admin-comments-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="View Admin Comments">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Admin Comments</h3>
+            <div id="admin-comments-content"></div>
+            <button onclick="closeViewAdminCommentsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Review Campaign Modal -->
+    <div id="review-campaign-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Review Campaign">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Review Campaign</h3>
+            <div id="review-campaign-content"></div>
+            <div class="flex space-x-4 mt-4">
+                <button onclick="reviewCampaign(selectedCampaignId, true)"
+                    class="px-4 py-2 rounded-lg cta-button">Approve</button>
+                <button onclick="openRejectCampaignModal()"
+                    class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Reject</button>
+            </div>
+            <button onclick="closeReviewCampaignModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Reject Campaign Modal -->
+    <div id="reject-campaign-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Reject Campaign">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Reject Campaign</h3>
+            <label class="block mb-2">Reason for Rejection</label>
+            <textarea id="reject-reason" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter reason for rejection"></textarea>
+            <button onclick="rejectCampaignWithReason()" class="px-4 py-2 rounded-lg cta-button w-full">Submit</button>
+            <div class="mt-2">
+                <span id="rejection-count" class="text-white text-xs">0</span>
+            </div>
+            <button onclick="closeRejectCampaignModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- View Campaign Content Modal -->
+    <div id="view-content-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="View Campaign Content">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Campaign Content</h3>
+            <div id="view-content-details"></div>
+            <button onclick="closeViewContentModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Send Notification Modal -->
+    <div id="send-notification-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Send Announcement">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Send Announcement</h3>
+            <label class="block mb-2">Recipient</label>
+            <select id="notification-recipient" class="w-full p-2 border rounded-lg mb-4">
+                <option value="all">All Advertisers</option>
+            </select>
+            <label class="block mb-2">Message</label>
+            <textarea id="notification-message" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., Platform maintenance scheduled"></textarea>
+            <button onclick="sendNotification()" class="px-4 py-2 rounded-lg cta-button w-full">Send</button>
+            <button onclick="closeSendNotificationModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notification-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Admin Notifications">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Admin Notifications</h3>
+            <div id="notification-content">You have no notifications.</div>
+            <button onclick="closeNotificationModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Add School Modal -->
+    <div id="add-school-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog" aria-modal="true" aria-label="Add School">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Add School</h3>
+            <label class="block mb-2">School Name</label>
+            <input id="school-name" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., Central Prep">
+            <label class="block mb-2">Phone Number</label>
+            <input id="school-phone" type="tel" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., +251-912-345-678">
+            <label class="block mb-2">Email Address</label>
+            <input id="school-email" type="email" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., info@school.et">
+            <label class="block mb-2">Location</label>
+            <input id="school-location" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="e.g., Addis Ababa, Ethiopia">
+            <button onclick="saveSchool()" class="px-4 py-2 rounded-lg cta-button w-full">Save</button>
+            <button onclick="closeAddSchoolModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- List Certifications Modal -->
+    <div id="list-certifications-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="List Certifications">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Tutor Certifications</h3>
+            <div id="certifications-content"></div>
+            <button onclick="closeListCertificationsModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- List Experience Modal -->
+    <div id="list-experience-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="List Experience">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Tutor Experience</h3>
+            <div id="experience-content"></div>
+            <button onclick="closeListExperienceModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Decline Experience Modal -->
+    <div id="decline-experience-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Decline Experience">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Decline Experience</h3>
+            <p class="mb-4">We found out that the information you gave us is false. If you feel that this is a mistake,
+                please contact us at <a href="mailto:contact@astegni.com" class="underline">contact@astegni.com</a>.</p>
+            <label class="block mb-2">Reason for Decline</label>
+            <textarea id="decline-reason" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter reason for decline"></textarea>
+            <button onclick="submitDeclineExperience()" class="px-4 py-2 rounded-lg cta-button w-full">Send</button>
+            <button onclick="closeDeclineExperienceModal()" class="mt-4 hover:underline">Close</button>
+        </div>
+    </div>
+
+    <!-- Message Advertiser Modal -->
+    <div id="message-advertiser-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Message Advertiser">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Message Advertiser</h3>
+            <label class="block mb-2">To</label>
+            <input id="message-recipient" type="text" class="w-full p-2 border rounded-lg mb-4" readonly>
+            <label class="block mb-2">Message</label>
+            <textarea id="message-content" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Type your message here"></textarea>
+            <button onclick="sendMessage()" class="px-4 py-2 rounded-lg cta-button w-full">Send</button>
+            <button onclick="closeMessageAdvertiserModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Profile Picture Upload Modal -->
+    <div id="profile-pic-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Upload Profile Picture">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Upload Profile Picture</h3>
+            <input type="file" id="profile-pic-upload" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <img id="profile-pic-preview" class="image-preview" alt="Profile picture preview">
+            <button onclick="uploadProfilePic()" class="px-4 py-2 rounded-lg cta-button w-full">Upload</button>
+            <button onclick="closeProfilePicModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- System Image Upload Modal -->
+    <div id="system-image-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Upload System Image">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Upload System Image</h3>
+            <label class="block mb-2">Image Type</label>
+            <select id="system-image-type" class="w-full p-2 border rounded-lg mb-4">
+                <option value="cover">Cover Photo</option>
+                <option value="profile">Profile Picture</option>
+                <option value="ad_300x250">Ad Image (300x250)</option>
+                <option value="ad_992x200">Ad Image (992x200)</option>
+                <option value="background_notes">Background Images for Notes</option>
+                <option value="carousel_index">Rotating Carousel (index.html)</option>
+                <option value="carousel_find_tutors">Rotating Carousel (find-tutors.html)</option>
+                <option value="share_image">Share Image</option>
+                <option value="cart_icon">Add to Cart Icon</option>
+            </select>
+            <input type="file" id="system-image-upload" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <img id="system-image-preview" class="image-preview" alt="System image preview">
+            <button onclick="uploadSystemImage()" class="px-4 py-2 rounded-lg cta-button w-full">Upload</button>
+            <button onclick="closeSystemImageModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Upload News Modal -->
+    <div id="upload-news-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Upload News">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Upload News</h3>
+            <label class="block mb-2">News Title</label>
+            <input id="news-title" type="text" class="w-full p-2 border rounded-lg mb-4" placeholder="Enter news title">
+            <label class="block mb-2">Author</label>
+            <input id="news-author" type="text" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter author name">
+            <label class="block mb-2">Date</label>
+            <input id="news-date" type="date" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">News Content</label>
+            <textarea id="news-content" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter news content"></textarea>
+            <label class="block mb-2">News Image</label>
+            <input type="file" id="news-image-upload" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <img id="news-image-preview" class="image-preview" alt="News image preview">
+            <label class="block mb-2">News Video</label>
+            <input type="file" id="news-video-upload" accept="video/*" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Video Thumbnail</label>
+            <input type="file" id="video-thumbnail-upload" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
+            <img id="video-thumbnail-preview" class="image-preview" alt="Video thumbnail preview">
+            <button onclick="uploadNews()" class="px-4 py-2 rounded-lg cta-button w-full">Upload</button>
+            <button onclick="closeUploadNewsModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Comment Modal (Astegni) -->
+    <div id="comment-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog" aria-modal="true" aria-label="Comment on Astegni">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Comment on Astegni</h3>
+            <label class="block mb-2">Platform Usability Rating (1-5)</label>
+            <p class="text-sm text-gray-600 mb-2">Ease of navigating and using the Astegni platform.</p>
+            <select id="usability-rating" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label class="block mb-2">Company Culture & Values Rating (1-5)</label>
+            <p class="text-sm text-gray-600 mb-2">Alignment with personal values, inclusivity, community, and leadership
+                integrity.</p>
+            <select id="culture-rating" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label class="block mb-2">Management & Leadership Rating (1-5)</label>
+            <p class="text-sm text-gray-600 mb-2">Quality of supervisors, communication clarity, mentorship, and
+                decision-making transparency.</p>
+            <select id="management-rating" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label class="block mb-2">Job Role & Responsibilities Rating (1-5)</label>
+            <p class="text-sm text-gray-600 mb-2">Clarity of role expectations, autonomy, opportunities for innovation,
+                and workload balance.</p>
+            <select id="role-rating" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label class="block mb-2">Career Development & Growth Rating (1-5)</label>
+            <p class="text-sm text-gray-600 mb-2">Access to training, clear career paths, feedback quality, and internal
+                mobility.</p>
+            <select id="development-rating" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label class="block mb-2">Compensation & Benefits Rating (1-5)</label>
+            <p class="text-sm text-gray-600 mb-2">Fairness of salary, health benefits, retirement plans, and paid time
+                off policies.</p>
+            <select id="compensation-rating" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label class="block mb-2">Work-Life Balance Rating (1-5)</label>
+            <p class="text-sm text-gray-600 mb-2">Flexibility in work hours, respect for personal time, and support for
+                family responsibilities.</p>
+            <select id="worklife-rating" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label class="block mb-2">Mental Health & Wellbeing Rating (1-5)</label>
+            <p class="text-sm text-gray-600 mb-2">Support for stress management, mental health resources, and
+                psychological safety.</p>
+            <select id="mentalhealth-rating" class="w-full p-2 border rounded-lg mb-4">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <label class="block mb-2">Comment</label>
+            <p class="text-sm text-gray-600 mb-2">Your feedback about Astegni's platform and work environment.</p>
+            <textarea id="comment-content" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Enter your comment about Astegni"></textarea>
+            <button onclick="submitAstegniComment()" class="px-4 py-2 rounded-lg cta-button w-full">Submit</button>
+            <button onclick="closeCommentModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Request Leave Modal -->
+    <div id="request-leave-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog"
+        aria-modal="true" aria-label="Request a Leave">
+        <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Request a Leave</h3>
+            <label class="block mb-2">Start Date</label>
+            <input id="leave-start-date" type="date" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">End Date</label>
+            <input id="leave-end-date" type="date" class="w-full p-2 border rounded-lg mb-4">
+            <label class="block mb-2">Reason</label>
+            <textarea id="leave-reason" class="w-full p-2 border rounded-lg mb-4"
+                placeholder="Reason for leave"></textarea>
+            <button onclick="submitLeaveRequest()" class="px-4 py-2 rounded-lg cta-button w-full">Submit</button>
+            <button onclick="closeRequestLeaveModal()" class="mt-4 hover:underline">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Enhanced Footer -->
+    <footer class="footer-section">
+        <div class="footer-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+            </svg>
+        </div>
+        
+        <div class="container mx-auto px-4">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Active Users</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Courses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+                        </a>
+                        <a href="#" aria-label="Twitter" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                        </a>
+                        <a href="#" aria-label="LinkedIn" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        </a>
+                        <a href="#" aria-label="YouTube" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+                        </a>
+                    </div>
+                    
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="Your email address" class="newsletter-input">
+                            <button type="submit" class="newsletter-btn">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2025 Astegni. All rights reserved.</p>
+                    <div class="footer-badges">
+                        <span class="badge">🔒 SSL Secured</span>
+                        <span class="badge">✓ Verified Platform</span>
+                        <span class="badge">🏆 Award Winner 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+
+    <script src="../js/admin-profile.js"></script>
+</body>
+
+</html>

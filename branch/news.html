@@ -3,210 +3,461 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASTEGNI News</title>
+  <title>ASTEGNI News - Ethiopia's Premier News Platform</title>
   <script src="https://cdn.tailwindcss.com"></script>
-    <link href="../css/root_theme.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="../css/main.css" rel="stylesheet" />
   <link href="../css/news.css" rel="stylesheet" />
+  <link href="../css/newNews.css" rel="stylesheet" />
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="p-4 sticky top-0 z-10 shadow-sm">
-    <div class="container mx-auto flex justify-between items-center">
-      <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
-      <div class="flex-1 flex justify-center">
-        <input type="text" id="nav-search" class="p-2 border rounded-lg text-[var(--text)] dark:bg-gray-700 w-96 md:w-96 sm:w-64" placeholder="Search news...">
+  <!-- Animated Background -->
+  <div class="animated-bg"></div>
+  
+  <!-- Advanced Navigation -->
+  <nav class="nav-container">
+    <div class="nav-blur"></div>
+    <div class="container mx-auto flex justify-between items-center p-4">
+      <a href="../index.html" class="logo-container">
+        <div class="logo-text">ASTEGNI</div>
+        <div class="logo-subtitle">NEWS</div>
+      </a>
+      
+      <div class="search-container">
+        <div class="search-glow"></div>
+        <input type="text" id="nav-search" placeholder="Search news, topics, journalists...">
+        <div class="search-suggestions" id="search-suggestions"></div>
+        <button class="search-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+        </button>
       </div>
-      <div class="flex items-center space-x-4">
-        <div id="nav-links" class="hidden md:flex space-x-6 items-center"></div>
-        <button id="menu-btn" class="md:hidden focus:outline-none">
+      
+      <div class="nav-actions">
+        <button class="nav-icon-btn notification-btn">
+          <span class="notification-pulse"></span>
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+          </svg>
+          <span class="notification-count">3</span>
+        </button>
+        
+        <button class="nav-icon-btn theme-toggle" id="theme-toggle">
+          <svg class="sun-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          <svg class="moon-icon w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+        
+        <button class="nav-icon-btn menu-toggle" id="menu-toggle">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
           </svg>
         </button>
       </div>
     </div>
-    <div id="mobile-menu" class="hidden md:hidden bg-[var(--highlight)] mt-2 rounded-lg shadow"></div>
   </nav>
 
-  <!-- News Dashboard -->
-  <section class="py-16">
-    <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
-      <!-- Main Content (News List) -->
-      <div class="lg:w-3/4">
-        <!-- Rotating Ad Placeholder -->
-        <div id="rotating-ad" class="mb-8 rounded-lg shadow-lg p-4 text-center bg-[var(--highlight)]">
-          <img id="ad-image" src="https://via.placeholder.com/728x90" class="mx-auto mb-4 rounded" alt="Advertisement">
-          <p class="text-[var(--text)]">Interested in advertising on ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a></p>
-        </div>
-        <!-- News Filter Buttons -->
-        <div class="flex space-x-4 mb-6">
-          <button id="all-news-btn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">All News</button>
-          <button id="latest-btn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">Latest</button>
-          <button id="history-btn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">History</button>
-          <button id="favorites-btn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">Favorites</button>
-          <button id="saved-btn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">Saved</button>
-        </div>
-        <!-- News List -->
-        <h2 class="text-3xl font-bold mb-6 text-[var(--heading)]">Latest News</h2>
-        <div id="news-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+  <!-- Breaking News Ticker -->
+  <div class="breaking-news-ticker">
+    <div class="ticker-label">
+      <span class="live-dot"></span>
+      BREAKING
+    </div>
+    <div class="ticker-content">
+      <div class="ticker-items" id="ticker-items">
+        <span class="ticker-item">Ethiopia launches new digital education initiative for rural schools</span>
+        <span class="ticker-item">Tech summit in Addis Ababa attracts global investors</span>
+        <span class="ticker-item">National exam results to be announced tomorrow at 3 PM</span>
+        <span class="ticker-item">New scholarship opportunities for STEM students announced</span>
       </div>
-      <!-- Advertisement Sidebar -->
-      <aside class="lg:w-1/4 hidden lg:block sticky top-20 self-start">
-        <div class="ad-placeholder mb-4" style="width: 300px; height: 250px;">
-          <img src="https://via.placeholder.com/300x250" alt="Advertisement" class="rounded">
+    </div>
+  </div>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container mx-auto px-4">
+      <div class="hero-grid">
+        <!-- Main Featured Story -->
+        <div class="featured-main" id="featured-main">
+          <div class="featured-overlay"></div>
+          <img src="https://via.placeholder.com/800x600" alt="Featured Story" class="featured-img">
+          <div class="featured-content">
+            <span class="featured-category">EDUCATION</span>
+            <h1 class="featured-title">Revolutionary E-Learning Platform Transforms Ethiopian Education</h1>
+            <p class="featured-excerpt">ASTEGNI's innovative approach to digital learning reaches over 100,000 students nationwide</p>
+            <div class="featured-meta">
+              <span class="meta-author">By Sarah Ahmed</span>
+              <span class="meta-time">2 hours ago</span>
+              <span class="meta-reads">15.2k reads</span>
+            </div>
+          </div>
         </div>
-      </aside>
+        
+        <!-- Side Featured Stories -->
+        <div class="featured-side">
+          <div class="featured-card">
+            <img src="https://via.placeholder.com/400x250" alt="Story" class="featured-card-img">
+            <div class="featured-card-content">
+              <span class="card-category">TECHNOLOGY</span>
+              <h3 class="card-title">AI-Powered Tutoring System Shows Promising Results</h3>
+              <span class="card-time">5 hours ago</span>
+            </div>
+          </div>
+          
+          <div class="featured-card">
+            <img src="https://via.placeholder.com/400x250" alt="Story" class="featured-card-img">
+            <div class="featured-card-content">
+              <span class="card-category">BUSINESS</span>
+              <h3 class="card-title">EdTech Startups Receive $5M Investment Boost</h3>
+              <span class="card-time">8 hours ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- News Detail Modal -->
-  <div id="news-detail-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 id="news-title" class="text-2xl font-bold text-[var(--heading)] typewriter"></h3>
-        <button onclick="closeNewsDetailModal()" class="text-[var(--text)] hover:underline">Close</button>
+  <!-- Category Navigation -->
+  <div class="category-nav">
+    <div class="container mx-auto px-4">
+      <div class="category-scroll">
+        <button class="category-btn active" data-category="all">All News</button>
+        <button class="category-btn" data-category="education">Education</button>
+        <button class="category-btn" data-category="technology">Technology</button>
+        <button class="category-btn" data-category="business">Business</button>
+        <button class="category-btn" data-category="science">Science</button>
+        <button class="category-btn" data-category="culture">Culture</button>
+        <button class="category-btn" data-category="sports">Sports</button>
+        <button class="category-btn" data-category="politics">Politics</button>
+        <button class="category-btn" data-category="health">Health</button>
+        <button class="category-btn" data-category="entertainment">Entertainment</button>
       </div>
-      <div class="flex flex-col md:flex-row gap-4 mb-4">
-        <img id="news-image" src="" alt="News Image" class="w-full md:w-1/3 h-32 object-cover rounded-lg">
-        <p id="news-content" class="text-[var(--text)] typewriter"></p>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <section class="main-content">
+    <div class="container mx-auto px-4">
+      <div class="content-grid">
+        <!-- News Feed -->
+        <div class="news-feed">
+          <!-- Trending Topics -->
+          <div class="trending-section">
+            <h2 class="section-title">
+              <span class="title-icon">🔥</span>
+              Trending Now
+            </h2>
+            <div class="trending-grid" id="trending-grid">
+              <!-- Trending items will be populated by JS -->
+            </div>
+          </div>
+
+          <!-- Latest News -->
+          <div class="latest-section">
+            <div class="section-header">
+              <h2 class="section-title">Latest Updates</h2>
+              <div class="view-options">
+                <button class="view-btn active" data-view="grid">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                  </svg>
+                </button>
+                <button class="view-btn" data-view="list">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="news-grid" id="news-grid">
+              <!-- News items will be populated by JS -->
+            </div>
+            
+            <!-- Load More -->
+            <div class="load-more-container">
+              <button class="load-more-btn" id="load-more">
+                <span class="btn-text">Load More Stories</span>
+                <span class="btn-loader hidden">
+                  <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+          <!-- Live Updates Widget -->
+          <div class="widget live-updates">
+            <div class="widget-header">
+              <h3 class="widget-title">
+                <span class="live-indicator"></span>
+                Live Updates
+              </h3>
+            </div>
+            <div class="widget-content">
+              <div class="live-feed" id="live-feed">
+                <!-- Live updates will be populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Popular Authors -->
+          <div class="widget authors">
+            <div class="widget-header">
+              <h3 class="widget-title">Popular Authors</h3>
+            </div>
+            <div class="widget-content">
+              <div class="authors-list" id="authors-list">
+                <!-- Authors will be populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Newsletter Signup -->
+          <div class="widget newsletter">
+            <div class="newsletter-card">
+              <div class="newsletter-icon">📧</div>
+              <h3 class="newsletter-title">Stay Informed</h3>
+              <p class="newsletter-desc">Get daily news digest delivered to your inbox</p>
+              <form class="newsletter-form" id="newsletter-form">
+                <input type="email" placeholder="Enter your email" class="newsletter-input" required>
+                <button type="submit" class="newsletter-submit">Subscribe</button>
+              </form>
+              <p class="newsletter-note">Join 50,000+ subscribers</p>
+            </div>
+          </div>
+
+          <!-- Premium Ad Space -->
+          <div class="widget premium-ad">
+            <div class="ad-premium">
+              <div class="ad-shimmer"></div>
+              <div class="ad-content-premium">
+                <span class="ad-label">SPONSORED</span>
+                <h4>Unlock Premium Education</h4>
+                <p>Access exclusive courses and expert tutors</p>
+                <button class="ad-cta-btn">Learn More</button>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
-      <div class="flex space-x-4 mb-4">
-        <button id="read-btn" class="flex items-center px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">
-          <svg id="read-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path>
+    </div>
+  </section>
+
+  <!-- Interactive Features Section -->
+  <section class="features-section">
+    <div class="container mx-auto px-4">
+      <div class="features-grid">
+        <!-- Polls -->
+        <div class="feature-card polls">
+          <h3 class="feature-title">Quick Poll</h3>
+          <p class="poll-question">What's your preferred learning method?</p>
+          <div class="poll-options">
+            <button class="poll-option" data-vote="video">
+              <span class="option-text">Video Tutorials</span>
+              <div class="option-bar" style="width: 45%"></div>
+              <span class="option-percent">45%</span>
+            </button>
+            <button class="poll-option" data-vote="live">
+              <span class="option-text">Live Classes</span>
+              <div class="option-bar" style="width: 30%"></div>
+              <span class="option-percent">30%</span>
+            </button>
+            <button class="poll-option" data-vote="reading">
+              <span class="option-text">Reading Materials</span>
+              <div class="option-bar" style="width: 25%"></div>
+              <span class="option-percent">25%</span>
+            </button>
+          </div>
+          <p class="poll-votes">2,543 votes</p>
+        </div>
+
+        <!-- Weather Widget -->
+        <div class="feature-card weather">
+          <h3 class="feature-title">Weather Today</h3>
+          <div class="weather-display">
+            <div class="weather-main">
+              <div class="weather-icon">☀️</div>
+              <div class="weather-temp">25°C</div>
+            </div>
+            <div class="weather-info">
+              <p class="weather-location">Addis Ababa</p>
+              <p class="weather-desc">Partly Cloudy</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="feature-card stats">
+          <h3 class="feature-title">Today's Stats</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <span class="stat-value">1.2M</span>
+              <span class="stat-label">Readers Today</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">342</span>
+              <span class="stat-label">New Articles</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Article Modal -->
+  <div class="article-modal" id="article-modal">
+    <div class="modal-backdrop" id="modal-backdrop"></div>
+    <div class="modal-container">
+      <button class="modal-close" id="modal-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      
+      <div class="modal-content" id="modal-content">
+        <!-- Article content will be populated by JS -->
+      </div>
+      
+      <!-- Article Actions -->
+      <div class="article-actions">
+        <button class="action-btn like-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
           </svg>
-          Read
+          <span>Like</span>
         </button>
-        <button id="stop-btn" class="flex items-center px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h6v4H9v-4z"></path>
+        <button class="action-btn share-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-4.732 2.684m4.732-2.684a3 3 0 00-4.732-2.684M6.316 10.658a3 3 0 10-4.732-2.684"></path>
           </svg>
-          Stop
+          <span>Share</span>
         </button>
-        <button id="restart-btn" class="flex items-center px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">
-          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+        <button class="action-btn bookmark-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
           </svg>
-          Restart
+          <span>Save</span>
+        </button>
+        <button class="action-btn comment-btn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+          </svg>
+          <span>Comment</span>
         </button>
       </div>
-      <div id="news-videos" class="mb-4">
-        <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Videos</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
-      </div>
-      <p id="news-author" class="text-[var(--text)] mb-2"></p>
-      <p id="news-date" class="text-[var(--text)] mb-4"></p>
-      <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Other News</h4>
-      <div id="other-news" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
     </div>
   </div>
 
-  <!-- Notes Modal -->
-  <div id="notes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Notes</h3>
-      <p class="text-[var(--text)] mb-4">Notes functionality to be implemented.</p>
-      <button onclick="closeNotesModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
-    </div>
-  </div>
-
-  <!-- Manage Finances Modal -->
-  <div id="manage-finances-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Manage Finances</h3>
-      <p class="text-[var(--text)] mb-4">Manage Finances functionality to be implemented.</p>
-      <button onclick="closeManageFinancesModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
-    </div>
-  </div>
-
-  <!-- Comment & Rate Modal -->
-  <div id="comment-rate-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Comment & Rate ASTEGNI</h3>
-      <label class="block mb-2 text-[var(--text)]">Your Comment</label>
-      <textarea id="comment-input" class="w-full p-2 border rounded-lg mb-4" rows="4" placeholder="Write your comment here"></textarea>
-      <div id="submitted-comments" class="mb-4"></div>
-      <label class="block mb-2 text-[var(--text)]">Platform Usability</label>
-      <div class="flex mb-4">
-        <input type="range" id="usability-rating" min="1" max="5" value="3" class="w-full">
-        <span id="usability-value" class="ml-2 text-[var(--text)]">3</span>
-      </div>
-      <label class="block mb-2 text-[var(--text)]">Customer Service</label>
-      <div class="flex mb-4">
-        <input type="range" id="service-rating" min="1" max="5" value="3" class="w-full">
-        <span id="service-value" class="ml-2 text-[var(--text)]">3</span>
-      </div>
-      <button onclick="submitCommentRate()" class="cta-button px-4 py-2 rounded-lg w-full bg-blue-600 text-white hover:bg-blue-700">Submit</button>
-      <button onclick="closeCommentRateModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Share Profile Modal -->
-  <div id="share-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Share ASTEGNI</h3>
-      <input type="text" id="profile-link" class="w-full p-2 border rounded-lg mb-4" readonly>
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <a id="profile-share-facebook" href="#" target="_blank" class="cta-button px-4 py-2 rounded-lg text-center bg-blue-600 text-white hover:bg-blue-700">Facebook</a>
-        <a id="profile-share-telegram" href="#" target="_blank" class="cta-button px-4 py-2 rounded-lg text-center bg-blue-500 text-white hover:bg-blue-600">Telegram</a>
-        <button onclick="copyProfileLink()" class="cta-button px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">Copy Link</button>
-      </div>
-      <button onclick="closeShareProfileModal()" class="mt-4 text-[var(--text)] hover:underline">Close</button>
-    </div>
-  </div>
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toast-container"></div>
 
   <!-- Enhanced Footer -->
-    <footer class="footer-section">
-        <div class="footer-wave">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
-            </svg>
+  <footer class="footer-modern">
+    <div class="footer-wave-top">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <path d="M0,96L48,90.7C96,85,192,75,288,74.7C384,75,480,85,576,90.7C672,96,768,96,864,90.7C960,85,1056,75,1152,69.3C1248,64,1344,64,1392,64L1440,64L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+      </svg>
+    </div>
+    
+    <div class="container mx-auto px-4">
+      <div class="footer-content-modern">
+        <div class="footer-brand">
+          <h3 class="footer-logo">ASTEGNI NEWS</h3>
+          <p class="footer-tagline">Your trusted source for education news and insights</p>
+          <div class="footer-social">
+            <a href="#" class="social-icon-modern">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+            </a>
+            <a href="#" class="social-icon-modern">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+            </a>
+            <a href="#" class="social-icon-modern">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+            </a>
+            <a href="#" class="social-icon-modern">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+            </a>
+          </div>
         </div>
-        <div class="container mx-auto px-3 sm:px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-               
-                <div class="text-center md:text-left footer-column">
-                    <h3 class="footer-title">Quick Links</h3>
-                    <ul class="footer-links">
-                        <li><a href="../index.html" class="footer-link">Home</a></li>
-                        <li><a href="#contact" class="footer-link">Contact Us</a></li>
-                        <li><button onclick="openLoginRegisterModal()" class="footer-link-btn">Login/Register</button></li>
-                        <li><button onclick="openAdvertiseModal()" class="footer-link-btn">Advertise</button></li>
-                    </ul>
-                </div>
-                <div class="text-center md:text-left footer-column">
-                    <h3 class="footer-title">Contact Info</h3>
-                    <p class="footer-text">📞 +251-912-345-678</p>
-                    <p class="footer-text">✉️ <a href="mailto:info@astegni.et" class="footer-link">info@astegni.et</a></p>
-                    <p class="footer-text">📍 Addis Ababa, Ethiopia</p>
-                </div>
-                <div class="text-center md:text-left footer-column">
-                    <h3 class="footer-title">Follow Us</h3>
-                    <div class="social-links">
-                        <a href="#" aria-label="Facebook" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
-                        </a>
-                        <a href="#" aria-label="Twitter" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
-                        </a>
-                        <a href="#" aria-label="LinkedIn" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
-                        </a>
-                        <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"></path></svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
-                <p>© 2025 Astegni. All rights reserved.</p>
-            </div>
+        
+        <div class="footer-links-modern">
+          <div class="footer-column-modern">
+            <h4 class="footer-heading">Categories</h4>
+            <a href="#" class="footer-link-modern">Education</a>
+            <a href="#" class="footer-link-modern">Technology</a>
+            <a href="#" class="footer-link-modern">Business</a>
+            <a href="#" class="footer-link-modern">Science</a>
+          </div>
+          
+          <div class="footer-column-modern">
+            <h4 class="footer-heading">Company</h4>
+            <a href="#" class="footer-link-modern">About Us</a>
+            <a href="#" class="footer-link-modern">Careers</a>
+            <a href="#" class="footer-link-modern">Contact</a>
+            <a href="#" class="footer-link-modern">Advertise</a>
+          </div>
+          
+          <div class="footer-column-modern">
+            <h4 class="footer-heading">Support</h4>
+            <a href="#" class="footer-link-modern">Help Center</a>
+            <a href="#" class="footer-link-modern">Privacy Policy</a>
+            <a href="#" class="footer-link-modern">Terms of Service</a>
+            <a href="#" class="footer-link-modern">Cookie Policy</a>
+          </div>
         </div>
-    </footer>
+        
+        <div class="footer-app">
+          <h4 class="footer-heading">Get Our App</h4>
+          <div class="app-buttons">
+            <button class="app-btn">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+              </svg>
+              <div>
+                <span class="app-small">Download on</span>
+                <span class="app-large">App Store</span>
+              </div>
+            </button>
+            <button class="app-btn">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 20.5v-17c0-.83.67-1.5 1.5-1.5S6 2.67 6 3.5v17c0 .83-.67 1.5-1.5 1.5S3 21.33 3 20.5zm16.5-10.5c-.83 0-1.5.67-1.5 1.5v9c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-9c0-.83-.67-1.5-1.5-1.5zm-8.25-7.5c-.83 0-1.5.67-1.5 1.5v17c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-17c0-.83-.67-1.5-1.5-1.5z"/>
+              </svg>
+              <div>
+                <span class="app-small">Get it on</span>
+                <span class="app-large">Google Play</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom-modern">
+        <p>&copy; 2025 ASTEGNI News. All rights reserved.</p>
+        <div class="footer-badges-modern">
+          <span class="footer-badge">🔒 Secure</span>
+          <span class="footer-badge">✓ Verified</span>
+          <span class="footer-badge">🏆 Award Winner</span>
+        </div>
+      </div>
+    </div>
+  </footer>
 
+  <!-- Scroll to Top Button -->
+  <button class="scroll-top-btn" id="scroll-top">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
 
-  <script src='../js/news.js'></script>
+  <script src="../js/newNews.js"></script>
 </body>
 </html>

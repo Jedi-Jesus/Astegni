@@ -1,4 +1,67 @@
-// advertiser-profile.js - Premium Dashboard JavaScript
+// Sidebar Navigation Functions
+function scrollToTop() {
+    closeSidebar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function scrollToCampaigns() {
+    closeSidebar();
+    const campaignSection = document.querySelector('.campaign-section');
+    if (campaignSection) {
+        campaignSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function scrollToAnalytics() {
+    closeSidebar();
+    const analyticsSection = document.querySelector('.analytics-section');
+    if (analyticsSection) {
+        analyticsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// Creative Hub Modal Functions
+function openCreativeHubModal() {
+    closeSidebar();
+    openModal('creative-hub-modal');
+}
+
+function switchCreativeTab(tab) {
+    // Update tabs
+    document.querySelectorAll('.creative-tab').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Hide all content
+    document.querySelectorAll('.creative-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    
+    // Show selected content
+    document.getElementById(`creative-${tab}`).classList.remove('hidden');
+}
+
+function saveCreativeWork() {
+    notifications.show('Creative work saved successfully!', 'success');
+    closeModal('creative-hub-modal');
+}
+
+// Templates Modal Functions
+function openTemplatesModal() {
+    closeSidebar();
+    openModal('templates-modal');
+}
+
+function filterTemplates(category) {
+    // Update tabs
+    document.querySelectorAll('.template-cat').forEach(t => t.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // Filter templates
+    const templates = document.querySelectorAll('.template-card');
+    templates.forEach(template => {
+        if (category === 'all' || template.dataset.category === category) {
+            template.style.display = 'block';
+        } else// advertiser-profile.js - Premium Dashboard JavaScript
 
 // Global State Management
 const AppState = {
@@ -2607,3 +2670,13 @@ window.searchCampaigns = searchCampaigns;
 window.notifications = notifications;
 
 console.log('Advertiser Profile Dashboard Initialized Successfully');
+
+
+minor and funny bug. 
+the profile dropbox in the nav is behind the cover picture. fix that.
+other few updates.
+Add all modals,
+in the side bar, 
+edit the DashboardNew to Dashboard and Campaigns 12 to Campaigns. Dashboard should load the advertiser dashboard which is the current dashboard, campaign should scroll down the page to campaigns, and analytics to performance analytics. Remove audience from side bar, but add it to each campaign card in campaign management showing audience types and relevant with engagement and conversions.
+create a creative hub modal, and create templates for each objective and put it in templates modal. Templates should open this modal. remove billing
+in quick stats conversion card on hover should show how conversion is calculated, which is objective/impression * 100 %

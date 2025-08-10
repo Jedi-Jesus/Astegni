@@ -1,37 +1,31 @@
-// Also sync mobile search bar with main search bar
-    const searchBarMobile = document.getElementById('searchBarMobile');
-    if (searchBarMobile) {
-        searchBarMobile.addEventListener('input', () => {
-            searchBar.value = searchBarMobile.value;
-            applyFilters();
-        });
-        
-        searchBar.addEventListener('input', () => {
-            searchBarMobile.value = searchBar.value;
-        });
-    }document.addEventListener('DOMContentLoaded', () => {
-    // Initialize sidebar state - open by default on desktop
+document.addEventListener('DOMContentLoaded', () => {
+    // Initialize sidebar state - CLOSED by default
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
     const hamburger = document.getElementById('hamburger');
     const mobileMenuBtn = document.getElementById('mobileMenuBtn');
     const mobileMenu = document.getElementById('mobileMenu');
 
-    // Initialize sidebar
+    // Initialize sidebar as CLOSED
     const initializeSidebar = () => {
-        if (window.innerWidth >= 1024) {
-            sidebar.classList.add('open');
-            mainContent.classList.add('shifted');
-        }
+        sidebar.classList.remove('open');
+        mainContent.classList.remove('shifted');
     };
 
     initializeSidebar();
 
-    // Hamburger menu toggle
+    // Hamburger menu toggle - opens/closes sidebar
     hamburger.addEventListener('click', () => {
         sidebar.classList.toggle('open');
         if (window.innerWidth >= 1024) {
             mainContent.classList.toggle('shifted');
+        }
+        
+        // Animate hamburger icon
+        if (sidebar.classList.contains('open')) {
+            hamburger.classList.add('active');
+        } else {
+            hamburger.classList.remove('active');
         }
     });
 
@@ -47,6 +41,7 @@
         if (window.innerWidth < 1024) {
             if (!sidebar.contains(e.target) && !hamburger.contains(e.target) && sidebar.classList.contains('open')) {
                 sidebar.classList.remove('open');
+                hamburger.classList.remove('active');
             }
         }
     });
@@ -62,30 +57,190 @@
         }
     });
 
-    // Sidebar height adjustment when footer is visible
-    const footer = document.querySelector('.footer-container');
+    // Enhanced Sidebar animation with consistent wave matching
+    const footer = document.querySelector('.footer-section');
+    const footerWave = document.querySelector('.footer-wave');
+    const sidebarWave = document.querySelector('.sidebar-wave-bottom');
+    let lastScrollY = window.scrollY;
+    let animationFrame = null;
+    
     const adjustSidebarHeight = () => {
         if (!sidebar || !footer) return;
         
-        const footerRect = footer.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
+        // Cancel any pending animation frame
+        if (animationFrame) {
+            cancelAnimationFrame(animationFrame);
+        }
         
-        if (footerRect.top < windowHeight) {
-            // Footer is visible
-            const availableHeight = footerRect.top - 64; // 64px is nav height
-            sidebar.style.height = `${availableHeight}px`;
-        } else {
-            // Footer is not visible
-            sidebar.style.height = 'calc(100vh - 64px)';
+        animationFrame = requestAnimationFrame(() => {
+            const footerRect = footer.getBoundingClientRect();
+            const windowHeight = window.innerHeight;
+            const navHeight = 64;
+            
+            // Calculate the distance from footer
+            const distanceFromFooter = footerRect.top;
+            
+            if (distanceFromFooter < windowHeight) {
+                // Footer is visible - smoothly adjust sidebar height
+                const overlap = windowHeight - distanceFromFooter;
+                const maxSidebarHeight = windowHeight - navHeight;
+                const minSidebarHeight = 200;
+                
+                // Calculate new height with smooth transition
+                let newHeight = maxSidebarHeight - overlap;
+                newHeight = Math.max(minSidebarHeight, Math.min(maxSidebarHeight, newHeight));
+                
+                // Apply smooth transition
+                sidebar.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                sidebar.style.height = `${newHeight}px`;
+                
+                // Show and animate wave at bottom
+                if (sidebarWave) {
+                    const waveOpacity = Math.min(1, overlap / 200);
+                    sidebarWave.style.opacity = waveOpacity;
+                    sidebarWave.style.transform = `translateY(0) scale(1, ${1 + (waveOpacity * 0.2)})`;
+                    sidebarWave.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                }
+            } else {
+                // Footer is not visible - full height sidebar
+                sidebar.style.height = `calc(100vh - ${navHeight}px)`;
+                
+                // Hide wave
+                if (sidebarWave) {
+                    sidebarWave.style.opacity = '0';
+                    sidebarWave.style.transform = 'translateY(20px) scale(1, 0.8)';
+                }
+            }
+            
+            animationFrame = null;
+        });
+    };
+
+    // Throttle function for performance
+    const throttle = (func, limit) => {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
         }
     };
 
     // Check sidebar height on scroll and resize
-    window.addEventListener('scroll', adjustSidebarHeight);
-    window.addEventListener('resize', adjustSidebarHeight);
-    adjustSidebarHeight(); // Initial check
+    window.addEventListener('scroll', throttle(adjustSidebarHeight, 50));
+    window.addEventListener('resize', throttle(adjustSidebarHeight, 50));
+    adjustSidebarHeight();
 
-    // Theme Toggle - Fixed for both desktop and mobile
+    // Notification Modal Functionality
+    const notificationBtn = document.getElementById('notificationBtn');
+    const notificationBtnMobile = document.getElementById('notificationBtnMobile');
+    const notificationModal = document.getElementById('notificationModal');
+    const closeNotificationModal = document.getElementById('closeNotificationModal');
+    const notificationTabs = document.querySelectorAll('.notification-tab');
+    const notificationList = document.getElementById('notificationList');
+
+    // Sample notifications data
+    const notifications = {
+        all: [
+            { type: 'personal', title: 'New Message', content: 'John Doe sent you a message', time: '5 min ago', unread: true },
+            { type: 'system', title: 'System Update', content: 'Platform maintenance scheduled', time: '1 hour ago', unread: true },
+            { type: 'personal', title: 'Course Request', content: 'Your course request was approved', time: '2 hours ago', unread: false },
+            { type: 'system', title: 'Welcome!', content: 'Welcome to Astegni platform', time: '1 day ago', unread: false }
+        ],
+        personal: [
+            { type: 'personal', title: 'New Message', content: 'John Doe sent you a message', time: '5 min ago', unread: true },
+            { type: 'personal', title: 'Course Request', content: 'Your course request was approved', time: '2 hours ago', unread: false }
+        ],
+        unread: [
+            { type: 'personal', title: 'New Message', content: 'John Doe sent you a message', time: '5 min ago', unread: true },
+            { type: 'system', title: 'System Update', content: 'Platform maintenance scheduled', time: '1 hour ago', unread: true }
+        ],
+        system: [
+            { type: 'system', title: 'System Update', content: 'Platform maintenance scheduled', time: '1 hour ago', unread: true },
+            { type: 'system', title: 'Welcome!', content: 'Welcome to Astegni platform', time: '1 day ago', unread: false }
+        ]
+    };
+
+    // Function to render notifications
+    const renderNotifications = (tab = 'all') => {
+        const items = notifications[tab] || [];
+        notificationList.innerHTML = '';
+        
+        if (items.length === 0) {
+            notificationList.innerHTML = `
+                <div class="notification-empty">
+                    <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <p class="text-gray-500">No notifications</p>
+                </div>
+            `;
+            return;
+        }
+        
+        items.forEach(item => {
+            const notificationItem = document.createElement('div');
+            notificationItem.className = `notification-item ${item.unread ? 'unread' : ''}`;
+            notificationItem.innerHTML = `
+                <div class="notification-icon ${item.type}">
+                    ${item.type === 'personal' ? '👤' : '🔔'}
+                </div>
+                <div class="notification-content">
+                    <h4 class="notification-item-title">${item.title}</h4>
+                    <p class="notification-item-text">${item.content}</p>
+                    <span class="notification-time">${item.time}</span>
+                </div>
+                ${item.unread ? '<span class="unread-dot"></span>' : ''}
+            `;
+            notificationList.appendChild(notificationItem);
+        });
+    };
+
+    // Open notification modal
+    const openNotificationModal = () => {
+        notificationModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        renderNotifications('all');
+    };
+
+    // Close notification modal
+    const closeNotificationModalFunc = () => {
+        notificationModal.classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+
+    // Notification button click handlers
+    if (notificationBtn) {
+        notificationBtn.addEventListener('click', openNotificationModal);
+    }
+    if (notificationBtnMobile) {
+        notificationBtnMobile.addEventListener('click', openNotificationModal);
+    }
+    if (closeNotificationModal) {
+        closeNotificationModal.addEventListener('click', closeNotificationModalFunc);
+    }
+
+    // Notification tabs
+    notificationTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            notificationTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderNotifications(tab.dataset.tab);
+        });
+    });
+
+    // Close notification modal when clicking outside
+    notificationModal?.addEventListener('click', (e) => {
+        if (e.target === notificationModal) {
+            closeNotificationModalFunc();
+        }
+    });
+
+    // Theme Toggle with proper icon switching
     const themeToggle = document.getElementById('themeToggle');
     const themeToggleMobile = document.getElementById('themeToggleMobile');
     const html = document.documentElement;
@@ -94,11 +249,22 @@
         if (theme === 'dark') {
             html.classList.add('dark');
             html.setAttribute('data-theme', 'dark');
+            // Icons will automatically switch via CSS
         } else {
             html.classList.remove('dark');
             html.setAttribute('data-theme', 'light');
+            // Icons will automatically switch via CSS
         }
         localStorage.setItem('theme', theme);
+        
+        // Add animation to theme toggle button
+        const buttons = [themeToggle, themeToggleMobile].filter(Boolean);
+        buttons.forEach(btn => {
+            btn.classList.add('animate__animated', 'animate__rotateIn');
+            setTimeout(() => {
+                btn.classList.remove('animate__animated', 'animate__rotateIn');
+            }, 500);
+        });
     };
 
     // Desktop theme toggle
@@ -133,13 +299,13 @@
     }
     
     changeBackground();
-    setInterval(changeBackground, 10000); // Change every 10 seconds
+    let bgRotationInterval = setInterval(changeBackground, 10000);
 
     // Course Type and Grade Selection
     const courseTypeSelect = document.getElementById('courseTypeSelect');
     const gradeSelectContainer = document.getElementById('gradeSelectContainer');
     
-    courseTypeSelect.addEventListener('change', () => {
+    courseTypeSelect?.addEventListener('change', () => {
         if (courseTypeSelect.value === 'academics') {
             gradeSelectContainer.classList.remove('hidden');
         } else {
@@ -148,7 +314,7 @@
         applyFilters();
     });
 
-    // Enhanced Tutor Data with Training Centers
+    // Enhanced Tutor Data
     const tutors = [
         { 
             name: 'John Doe', 
@@ -257,186 +423,6 @@
             bio: 'Making history come alive through engaging storytelling.',
             quote: 'History teaches us about our future.',
             isTrainingCenter: false
-        },
-        { 
-            name: 'Kids Academy Training Center', 
-            courses: ['Math', 'Science', 'English', 'Art'], 
-            grades: ['KG', 'Grade 1-4'], 
-            courseType: 'academics',
-            location: 'Miami', 
-            teachesAt: 'Kids Academy Training Center', 
-            gender: 'Center', 
-            learningMethod: 'In-person', 
-            rating: 4.7, 
-            price: 30, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 12,
-            bio: 'Nurturing young minds with personalized attention and care.',
-            quote: 'Where every child is a star!',
-            isTrainingCenter: true
-        },
-        { 
-            name: 'David Lee', 
-            courses: ['Computer Science', 'Programming'], 
-            grades: ['Junior', 'Graduate'], 
-            courseType: 'academics',
-            location: 'San Francisco', 
-            teachesAt: 'CodeTech Institute', 
-            gender: 'Male', 
-            learningMethod: 'Online', 
-            rating: 4.86, 
-            price: 55, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 5,
-            bio: 'Full-stack developer teaching modern programming.',
-            quote: 'Code is poetry in motion.',
-            isTrainingCenter: false
-        },
-        { 
-            name: 'ProCert Business Center', 
-            courses: ['PMP Certification', 'Scrum Master', 'Six Sigma'], 
-            grades: [], 
-            courseType: 'certifications',
-            location: 'New York', 
-            teachesAt: 'ProCert Business Center', 
-            gender: 'Center', 
-            learningMethod: 'Hybrid', 
-            rating: 4.85, 
-            price: 150, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 15,
-            bio: 'Professional certification center with expert instructors.',
-            quote: 'Advance your career with industry-recognized certifications.',
-            isTrainingCenter: true
-        },
-        { 
-            name: 'Lisa Johnson', 
-            courses: ['Algebra', 'Calculus'], 
-            grades: ['Grade 11-12'], 
-            courseType: 'academics',
-            location: 'Miami', 
-            teachesAt: 'Miami University', 
-            gender: 'Female', 
-            learningMethod: 'Online', 
-            rating: 4.2, 
-            price: 45, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 4,
-            bio: 'Making complex math simple and enjoyable.',
-            quote: 'Mathematics is the language of the universe.',
-            isTrainingCenter: false
-        },
-        { 
-            name: 'James Wilson', 
-            courses: ['Economics', 'Finance'], 
-            grades: ['Freshman', 'Sophomore'], 
-            courseType: 'academics',
-            location: 'Seattle', 
-            teachesAt: 'University of Washington', 
-            gender: 'Male', 
-            learningMethod: 'Hybrid', 
-            rating: 4.5, 
-            price: 50, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 7,
-            bio: 'Former Wall Street analyst teaching practical finance.',
-            quote: 'Financial knowledge is financial freedom.',
-            isTrainingCenter: false
-        },
-        { 
-            name: 'Little Scholars Training Hub', 
-            courses: ['Reading', 'Writing', 'Basic Math', 'Social Skills'], 
-            grades: ['KG', 'Grade 1-4', 'Grade 5-6'], 
-            courseType: 'academics',
-            location: 'Houston', 
-            teachesAt: 'Little Scholars Training Hub', 
-            gender: 'Center', 
-            learningMethod: 'In-person', 
-            rating: 4.6, 
-            price: 40, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 9,
-            bio: 'Comprehensive education center for elementary students.',
-            quote: 'Growing minds, building futures.',
-            isTrainingCenter: true
-        },
-        { 
-            name: 'Anna Martinez', 
-            courses: ['Spanish', 'French'], 
-            grades: ['Grade 5-6', 'Grade 7-8'], 
-            courseType: 'academics',
-            location: 'Houston', 
-            teachesAt: 'Houston Language School', 
-            gender: 'Female', 
-            learningMethod: 'In-person', 
-            rating: 4.6, 
-            price: 42, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 4,
-            bio: 'Native speaker bringing languages to life.',
-            quote: 'Language opens doors to new worlds.',
-            isTrainingCenter: false
-        },
-        { 
-            name: 'Robert Taylor', 
-            courses: ['Physics', 'Astronomy'], 
-            grades: ['Sophomore', 'Junior'], 
-            courseType: 'academics',
-            location: 'Austin', 
-            teachesAt: 'University of Texas', 
-            gender: 'Male', 
-            learningMethod: 'Hybrid', 
-            rating: 4.3, 
-            price: 55, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 5,
-            bio: 'Astrophysicist sharing the cosmos.',
-            quote: 'We are all made of star stuff.',
-            isTrainingCenter: false
-        },
-        { 
-            name: 'CertPro Language Center', 
-            courses: ['IELTS', 'TOEFL', 'GRE', 'GMAT'], 
-            grades: [], 
-            courseType: 'certifications',
-            location: 'Boston', 
-            teachesAt: 'CertPro Language Center', 
-            gender: 'Center', 
-            learningMethod: 'Hybrid', 
-            rating: 4.75, 
-            price: 100, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 11,
-            bio: 'Expert test preparation center with proven results.',
-            quote: 'Your success is our mission.',
-            isTrainingCenter: true
-        },
-        { 
-            name: 'Emma White', 
-            courses: ['IELTS', 'TOEFL'], 
-            grades: [], 
-            courseType: 'certifications',
-            location: 'Denver', 
-            teachesAt: 'Language Certification Hub', 
-            gender: 'Female', 
-            learningMethod: 'Online', 
-            rating: 4.7, 
-            price: 70, 
-            favorite: false, 
-            inSearchHistory: false,
-            experience: 6,
-            bio: 'Helping students achieve their dream scores.',
-            quote: 'Success in language opens global opportunities.',
-            isTrainingCenter: false
         }
     ];
 
@@ -452,20 +438,66 @@
         const gradeInfo = tutor.grades.length > 0 ? tutor.grades.join(', ') : 'Professional Certification';
         const centerBadge = tutor.isTrainingCenter ? '<span class="inline-block px-2 py-1 text-xs bg-green-500 text-white rounded-full ml-2">Training Center</span>' : '';
         
+        // Calculate rating breakdowns
+        const ratingBreakdown = {
+            engagement: (tutor.rating + (Math.random() * 0.4 - 0.2)).toFixed(1),
+            discipline: (tutor.rating + (Math.random() * 0.3 - 0.15)).toFixed(1),
+            punctuality: (tutor.rating + (Math.random() * 0.35 - 0.175)).toFixed(1),
+            communication: (tutor.rating + (Math.random() * 0.25 - 0.125)).toFixed(1),
+            subjectMatter: (tutor.rating + (Math.random() * 0.3 - 0.15)).toFixed(1)
+        };
+        
         card.innerHTML = `
             <div class="tutor-header">
                 <img src="https://via.placeholder.com/60" alt="${tutor.name}" class="tutor-avatar">
                 <div class="tutor-info">
-                    <a href="view-tutor.html" class="tutor-name">${tutor.name}${centerBadge}</a>
-                    <div class="rating-stars">
-                        ${'★'.repeat(Math.round(tutor.rating))}${'☆'.repeat(5 - Math.round(tutor.rating))}
-                        <span style="font-size: 0.875rem; color: #6b7280; margin-left: 0.25rem;">(${tutor.rating})</span>
-                        <div class="rating-tooltip">
-                            <div>Engagement: ${tutor.rating.toFixed(1)}</div>
-                            <div>Discipline: ${(tutor.rating - 0.4).toFixed(1)}</div>
-                            <div>Punctuality: ${(tutor.rating + 0.2).toFixed(1)}</div>
-                            <div>Communication: ${(tutor.rating - 0.2).toFixed(1)}</div>
-                            <div>Subject Matter: ${(tutor.rating + 0.3).toFixed(1)}</div>
+                    <div class="tutor-name-wrapper">
+                        <a href="view-tutor.html" class="tutor-name">${tutor.name}${centerBadge}</a>
+                    </div>
+                    <div class="rating-stars-container">
+                        <div class="rating-stars">
+                            ${'★'.repeat(Math.round(tutor.rating))}${'☆'.repeat(5 - Math.round(tutor.rating))}
+                            <span style="font-size: 0.875rem; color: #6b7280; margin-left: 0.25rem;">(${tutor.rating})</span>
+                        </div>
+                        <div class="rating-breakdown-tooltip">
+                            <div class="tooltip-arrow"></div>
+                            <div class="tooltip-content">
+                                <div class="rating-item">
+                                    <span class="rating-label">Engagement:</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill" style="width: ${(ratingBreakdown.engagement / 5) * 100}%"></div>
+                                    </div>
+                                    <span class="rating-value">${ratingBreakdown.engagement}</span>
+                                </div>
+                                <div class="rating-item">
+                                    <span class="rating-label">Discipline:</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill" style="width: ${(ratingBreakdown.discipline / 5) * 100}%"></div>
+                                    </div>
+                                    <span class="rating-value">${ratingBreakdown.discipline}</span>
+                                </div>
+                                <div class="rating-item">
+                                    <span class="rating-label">Punctuality:</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill" style="width: ${(ratingBreakdown.punctuality / 5) * 100}%"></div>
+                                    </div>
+                                    <span class="rating-value">${ratingBreakdown.punctuality}</span>
+                                </div>
+                                <div class="rating-item">
+                                    <span class="rating-label">Communication:</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill" style="width: ${(ratingBreakdown.communication / 5) * 100}%"></div>
+                                    </div>
+                                    <span class="rating-value">${ratingBreakdown.communication}</span>
+                                </div>
+                                <div class="rating-item">
+                                    <span class="rating-label">Subject Matter:</span>
+                                    <div class="rating-bar">
+                                        <div class="rating-fill" style="width: ${(ratingBreakdown.subjectMatter / 5) * 100}%"></div>
+                                    </div>
+                                    <span class="rating-value">${ratingBreakdown.subjectMatter}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -514,7 +546,7 @@
                     <span class="detail-label">Quote:</span> <em>"${tutor.quote}"</em>
                 </div>
                 <div class="detail-item">
-                    <span class="detail-label">Price:</span> <strong>$${tutor.price}/hr</strong>
+                    <span class="detail-label">Price:</span> <strong>${tutor.price}/hr</strong>
                 </div>
             </div>
             <a href="view-tutor.html" class="view-tutor-btn">View Full Profile</a>
@@ -523,21 +555,12 @@
         return card;
     }
 
-    // Render tutor cards with ad placeholders
-    function renderTutorCards() {
+    // Render tutor cards
+    function renderTutorCards(filteredTutors = tutors) {
         tutorCardsContainer.innerHTML = '';
-        const adFrequency = 6; // Show ad after every 6 tutors
         
-        tutors.forEach((tutor, index) => {
+        filteredTutors.forEach((tutor, index) => {
             tutorCardsContainer.appendChild(generateTutorCard(tutor, index));
-            
-            // Add ad placeholder after every 6 tutors
-            if ((index + 1) % adFrequency === 0 && index < tutors.length - 1) {
-                const adPlaceholder = document.createElement('div');
-                adPlaceholder.className = 'ad-placeholder ad-container';
-                adPlaceholder.innerHTML = `<span class="ad-text text-gray-600 dark:text-gray-300">Ad Placeholder ${Math.floor((index + 1) / adFrequency)}</span>`;
-                tutorCardsContainer.appendChild(adPlaceholder);
-            }
         });
         
         attachCardEventListeners();
@@ -554,6 +577,12 @@
                 btn.classList.toggle('active');
                 const svg = btn.querySelector('svg');
                 svg.setAttribute('fill', tutors[index].favorite ? 'currentColor' : 'none');
+                
+                // Add animation
+                btn.classList.add('animate__animated', 'animate__heartBeat');
+                setTimeout(() => {
+                    btn.classList.remove('animate__animated', 'animate__heartBeat');
+                }, 1000);
             });
         });
 
@@ -564,13 +593,19 @@
                 btn.classList.toggle('active');
                 const svg = btn.querySelector('svg');
                 svg.setAttribute('fill', btn.classList.contains('active') ? 'currentColor' : 'none');
+                
+                // Add animation
+                btn.classList.add('animate__animated', 'animate__pulse');
+                setTimeout(() => {
+                    btn.classList.remove('animate__animated', 'animate__pulse');
+                }, 1000);
             });
         });
     }
 
     renderTutorCards();
 
-    // Ad Rotation for main ad placeholder and inline ads
+    // Ad Rotation
     const mainAdPlaceholder = document.getElementById('adPlaceholder');
     const ads = [
         '🎓 Featured Tutors & Special Offers',
@@ -585,7 +620,6 @@
     let adIndex = 0;
 
     function rotateAds() {
-        // Rotate main ad
         if (mainAdPlaceholder) {
             const mainAdText = mainAdPlaceholder.querySelector('.ad-text');
             if (mainAdText) {
@@ -596,30 +630,13 @@
                 }, 300);
             }
         }
-        
-        // Rotate inline ads
-        const inlineAdPlaceholders = document.querySelectorAll('.ad-placeholder .ad-text');
-        inlineAdPlaceholders.forEach((placeholder, index) => {
-            if (!placeholder || placeholder === mainAdPlaceholder?.querySelector('.ad-text')) return;
-            placeholder.style.opacity = '0';
-            setTimeout(() => {
-                const adIndexForPlaceholder = (adIndex + index + 1) % ads.length;
-                placeholder.textContent = ads[adIndexForPlaceholder];
-                placeholder.style.opacity = '1';
-                placeholder.parentElement.classList.add('animate__animated', 'animate__pulse');
-                setTimeout(() => {
-                    placeholder.parentElement.classList.remove('animate__animated', 'animate__pulse');
-                }, 1000);
-            }, 300);
-        });
-        
         adIndex = (adIndex + 1) % ads.length;
     }
 
     rotateAds();
-    setInterval(rotateAds, 8000);
+    let adRotationInterval = setInterval(rotateAds, 8000);
 
-    // Typing Animation for Hero Text
+    // Typing Animation
     const typedTextElement = document.getElementById('typedText');
     const cursorElement = document.getElementById('cursor');
     const heroTexts = [
@@ -663,8 +680,9 @@
 
     type();
 
-    // Search and Filter Functionality
+    // Enhanced Search and Filter Functionality
     const searchBar = document.getElementById('searchBar');
+    const searchBarMobile = document.getElementById('searchBarMobile');
     const genderCheckboxes = document.querySelectorAll('input[name="gender"]');
     const nearMeCheckbox = document.querySelector('input[name="nearMe"]');
     const trainingCenterCheckbox = document.querySelector('input[name="trainingCenter"]');
@@ -678,7 +696,13 @@
     const maxPriceInput = document.querySelector('input[name="maxPrice"]');
     const requestCourseBtn = document.getElementById('requestCourse');
     const requestSchoolBtn = document.getElementById('requestSchool');
+    const requestCourseNoResults = document.getElementById('requestCourseNoResults');
+    const requestSchoolNoResults = document.getElementById('requestSchoolNoResults');
     const clearFiltersBtn = document.getElementById('clearFilters');
+    const noResultsDiv = document.getElementById('noResults');
+
+    // Store search history
+    let searchHistory = [];
 
     function applyFilters() {
         const query = searchBar.value.toLowerCase().trim();
@@ -688,7 +712,7 @@
         const nearMe = nearMeCheckbox.checked;
         const trainingCenter = trainingCenterCheckbox ? trainingCenterCheckbox.checked : false;
         const favorite = favoriteCheckbox.checked;
-        const searchHistory = searchHistoryCheckbox.checked;
+        const searchHistoryFilter = searchHistoryCheckbox.checked;
         const minRating = parseFloat(minRatingInput.value) || 0;
         const maxRating = parseFloat(maxRatingInput.value) || 5;
         const learningMethod = learningMethodSelect.value;
@@ -697,46 +721,34 @@
         const minPrice = parseFloat(minPriceInput.value) || 0;
         const maxPrice = parseFloat(maxPriceInput.value) || Infinity;
 
-        let courseMatch = false;
-        let schoolMatch = false;
-        let visibleCount = 0;
+        // Add to search history
+        if (query && !searchHistory.includes(query)) {
+            searchHistory.unshift(query);
+            searchHistory = searchHistory.slice(0, 10);
+        }
 
-        const tutorCards = tutorCardsContainer.children;
-        
-        Array.from(tutorCards).forEach((card, index) => {
-            // Skip ad placeholders
-            if (card.classList.contains('ad-placeholder')) {
-                card.style.display = '';
-                return;
-            }
-            
-            // Calculate actual tutor index accounting for ad placeholders
-            const adPlaceholders = Array.from(tutorCards).slice(0, index).filter(c => c.classList.contains('ad-placeholder')).length;
-            const tutorIndex = index - adPlaceholders;
-            const tutor = tutors[tutorIndex];
-            
-            if (!tutor) return;
-            
+        // Filter tutors
+        const filteredTutors = tutors.filter(tutor => {
             let isMatch = true;
 
             // Search query matching
             if (query) {
+                const matchesName = tutor.name.toLowerCase().includes(query);
                 const matchesCourse = tutor.courses.some(course => course.toLowerCase().includes(query));
+                const matchesGrade = tutor.grades.some(grade => grade.toLowerCase().includes(query));
                 const matchesSchool = tutor.teachesAt.toLowerCase().includes(query);
-                isMatch = isMatch && (
-                    tutor.name.toLowerCase().includes(query) ||
-                    matchesCourse ||
-                    tutor.grades.some(grade => grade.toLowerCase().includes(query)) ||
-                    matchesSchool
-                );
-                if (matchesCourse) courseMatch = true;
-                if (matchesSchool) schoolMatch = true;
+                const matchesBio = tutor.bio.toLowerCase().includes(query);
+                
+                isMatch = isMatch && (matchesName || matchesCourse || matchesGrade || matchesSchool || matchesBio);
+                
+                if (isMatch) {
+                    tutor.inSearchHistory = true;
+                }
             }
 
-            // Gender filter - exclude training centers when gender is selected
+            // Gender filter
             if (selectedGenders.length > 0) {
                 if (tutor.gender === 'Center') {
-                    // Training centers should be hidden when any gender filter is applied
                     isMatch = false;
                 } else {
                     isMatch = isMatch && selectedGenders.includes(tutor.gender);
@@ -759,7 +771,7 @@
             }
 
             // Search history filter
-            if (searchHistory) {
+            if (searchHistoryFilter) {
                 isMatch = isMatch && tutor.inSearchHistory;
             }
 
@@ -775,7 +787,6 @@
             if (courseType) {
                 isMatch = isMatch && tutor.courseType === courseType;
                 
-                // If academics is selected and a grade is chosen
                 if (courseType === 'academics' && grade) {
                     isMatch = isMatch && tutor.grades.includes(grade);
                 }
@@ -784,37 +795,38 @@
             // Price filter
             isMatch = isMatch && tutor.price >= minPrice && tutor.price <= maxPrice;
 
-            // Show/hide card
-            card.style.display = isMatch ? '' : 'none';
-            if (isMatch) visibleCount++;
+            return isMatch;
         });
 
-        // Show/hide request buttons
-        requestCourseBtn.classList.toggle('hidden', courseMatch || !query);
-        requestSchoolBtn.classList.toggle('hidden', schoolMatch || !query);
-
-        // Show message if no results
-        const noResultsMsg = document.getElementById('noResults');
-        if (visibleCount === 0 && query) {
-            if (!noResultsMsg) {
-                const msg = document.createElement('div');
-                msg.id = 'noResults';
-                msg.className = 'text-center py-8 text-gray-500 dark:text-gray-400';
-                msg.innerHTML = `
-                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    <p class="text-lg font-medium">No tutors found</p>
-                    <p class="mt-2">Try adjusting your filters or search terms</p>
-                `;
-                tutorCardsContainer.appendChild(msg);
+        // Show/hide cards and no results message
+        if (filteredTutors.length === 0) {
+            tutorCardsContainer.style.display = 'none';
+            noResultsDiv.classList.remove('hidden');
+            
+            // Always show request buttons when no results
+            if (requestCourseNoResults) {
+                requestCourseNoResults.style.display = 'inline-flex';
             }
-        } else if (noResultsMsg) {
-            noResultsMsg.remove();
+            if (requestSchoolNoResults) {
+                requestSchoolNoResults.style.display = 'inline-flex';
+            }
+        } else {
+            tutorCardsContainer.style.display = 'grid';
+            noResultsDiv.classList.add('hidden');
+            renderTutorCards(filteredTutors);
+        }
+
+        // Show/hide request buttons in header based on search
+        if (query && filteredTutors.length === 0) {
+            requestCourseBtn.style.display = 'inline-flex';
+            requestSchoolBtn.style.display = 'inline-flex';
+        } else {
+            requestCourseBtn.style.display = 'none';
+            requestSchoolBtn.style.display = 'none';
         }
     }
 
-    // Debounce function for performance
+    // Debounce function
     function debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -827,28 +839,44 @@
         };
     }
 
-    // Add event listeners for filters
-    searchBar.addEventListener('input', debounce(applyFilters, 300));
-    genderCheckboxes.forEach(cb => cb.addEventListener('change', applyFilters));
-    nearMeCheckbox.addEventListener('change', applyFilters);
-    if (trainingCenterCheckbox) {
-        trainingCenterCheckbox.addEventListener('change', applyFilters);
-    }
-    favoriteCheckbox.addEventListener('change', applyFilters);
-    searchHistoryCheckbox.addEventListener('change', applyFilters);
-    minRatingInput.addEventListener('input', debounce(applyFilters, 500));
-    maxRatingInput.addEventListener('input', debounce(applyFilters, 500));
-    learningMethodSelect.addEventListener('change', applyFilters);
-    gradeSelect.addEventListener('change', applyFilters);
-    minPriceInput.addEventListener('input', debounce(applyFilters, 500));
-    maxPriceInput.addEventListener('input', debounce(applyFilters, 500));
+    // Live search with debouncing
+    const debouncedSearch = debounce(applyFilters, 300);
 
-    // Clear filters button
-    clearFiltersBtn.addEventListener('click', () => {
+    // Add event listeners for filters
+    searchBar?.addEventListener('input', debouncedSearch);
+    
+    // Sync mobile search bar
+    if (searchBarMobile) {
+        searchBarMobile.addEventListener('input', () => {
+            searchBar.value = searchBarMobile.value;
+            debouncedSearch();
+        });
+        
+        searchBar?.addEventListener('input', () => {
+            searchBarMobile.value = searchBar.value;
+        });
+    }
+
+    // Filter event listeners
+    genderCheckboxes.forEach(cb => cb.addEventListener('change', applyFilters));
+    nearMeCheckbox?.addEventListener('change', applyFilters);
+    trainingCenterCheckbox?.addEventListener('change', applyFilters);
+    favoriteCheckbox?.addEventListener('change', applyFilters);
+    searchHistoryCheckbox?.addEventListener('change', applyFilters);
+    minRatingInput?.addEventListener('input', debounce(applyFilters, 500));
+    maxRatingInput?.addEventListener('input', debounce(applyFilters, 500));
+    learningMethodSelect?.addEventListener('change', applyFilters);
+    gradeSelect?.addEventListener('change', applyFilters);
+    minPriceInput?.addEventListener('input', debounce(applyFilters, 500));
+    maxPriceInput?.addEventListener('input', debounce(applyFilters, 500));
+
+    // Clear filters
+    clearFiltersBtn?.addEventListener('click', () => {
         searchBar.value = '';
+        searchBarMobile.value = '';
         genderCheckboxes.forEach(cb => cb.checked = false);
         nearMeCheckbox.checked = false;
-        if (trainingCenterCheckbox) trainingCenterCheckbox.checked = false;
+        trainingCenterCheckbox.checked = false;
         favoriteCheckbox.checked = false;
         searchHistoryCheckbox.checked = false;
         minRatingInput.value = '';
@@ -864,34 +892,37 @@
 
     // Request Course Modal
     const requestCourseModal = document.getElementById('requestCourseModal');
+    const closeCourseModal = document.getElementById('closeCourseModal');
     const cancelCourseBtn = document.getElementById('cancelCourseBtn');
     const submitCourseBtn = document.getElementById('submitCourseBtn');
 
-    requestCourseBtn.addEventListener('click', () => {
+    const openCourseModal = () => {
         requestCourseModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-    });
+    };
 
-    cancelCourseBtn.addEventListener('click', () => {
+    requestCourseBtn?.addEventListener('click', openCourseModal);
+    requestCourseNoResults?.addEventListener('click', openCourseModal);
+
+    closeCourseModal?.addEventListener('click', () => {
         requestCourseModal.classList.add('hidden');
         document.body.style.overflow = '';
         clearModalForm('course');
     });
 
-    submitCourseBtn.addEventListener('click', () => {
+    cancelCourseBtn?.addEventListener('click', () => {
+        requestCourseModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        clearModalForm('course');
+    });
+
+    submitCourseBtn?.addEventListener('click', () => {
         const courseName = document.getElementById('courseName').value.trim();
         const courseType = document.getElementById('courseTypeInput').value.trim();
         const courseDescription = document.getElementById('courseDescription').value.trim();
         
         if (courseName && courseType && courseDescription) {
-            console.log('Course Request Submitted:', {
-                courseName,
-                courseType,
-                courseDescription
-            });
-            
             showNotification('Course request submitted successfully!', 'success');
-            
             requestCourseModal.classList.add('hidden');
             document.body.style.overflow = '';
             clearModalForm('course');
@@ -902,43 +933,44 @@
 
     // Request School Modal
     const requestSchoolModal = document.getElementById('requestSchoolModal');
+    const closeSchoolModal = document.getElementById('closeSchoolModal');
     const cancelSchoolBtn = document.getElementById('cancelSchoolBtn');
     const submitSchoolBtn = document.getElementById('submitSchoolBtn');
 
-    requestSchoolBtn.addEventListener('click', () => {
+    const openSchoolModal = () => {
         requestSchoolModal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-    });
+    };
 
-    cancelSchoolBtn.addEventListener('click', () => {
+    requestSchoolBtn?.addEventListener('click', openSchoolModal);
+    requestSchoolNoResults?.addEventListener('click', openSchoolModal);
+
+    closeSchoolModal?.addEventListener('click', () => {
         requestSchoolModal.classList.add('hidden');
         document.body.style.overflow = '';
         clearModalForm('school');
     });
 
-    submitSchoolBtn.addEventListener('click', () => {
+    cancelSchoolBtn?.addEventListener('click', () => {
+        requestSchoolModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        clearModalForm('school');
+    });
+
+    submitSchoolBtn?.addEventListener('click', () => {
         const schoolName = document.getElementById('schoolName').value.trim();
         const phone = document.getElementById('phone').value.trim();
         const email = document.getElementById('email').value.trim();
         const location = document.getElementById('location').value.trim();
         
         if (schoolName && phone && email && location) {
-            // Basic email validation
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 showNotification('Please enter a valid email address', 'error');
                 return;
             }
             
-            console.log('School Request Submitted:', {
-                schoolName,
-                phone,
-                email,
-                location
-            });
-            
             showNotification('School request submitted successfully!', 'success');
-            
             requestSchoolModal.classList.add('hidden');
             document.body.style.overflow = '';
             clearModalForm('school');
@@ -949,15 +981,13 @@
 
     // Close modals when clicking outside
     [requestCourseModal, requestSchoolModal].forEach(modal => {
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    modal.classList.add('hidden');
-                    document.body.style.overflow = '';
-                    clearModalForm(modal === requestCourseModal ? 'course' : 'school');
-                }
-            });
-        }
+        modal?.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+                clearModalForm(modal === requestCourseModal ? 'course' : 'school');
+            }
+        });
     });
 
     // Clear modal form
@@ -974,10 +1004,10 @@
         }
     }
 
-    // Show notification
+    // Enhanced notification with animation
     function showNotification(message, type = 'info') {
         const notification = document.createElement('div');
-        notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50`;
+        notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50 animate__animated animate__slideInRight`;
         
         if (type === 'success') {
             notification.className += ' bg-green-500 text-white';
@@ -988,23 +1018,17 @@
         }
         
         notification.textContent = message;
-        notification.style.transform = 'translateX(400px)';
-        
         document.body.appendChild(notification);
         
         setTimeout(() => {
-            notification.style.transform = 'translateX(0)';
-        }, 100);
-        
-        setTimeout(() => {
-            notification.style.transform = 'translateX(400px)';
+            notification.classList.add('animate__slideOutRight');
             setTimeout(() => {
                 notification.remove();
-            }, 300);
+            }, 500);
         }, 3000);
     }
 
-    // Smooth scroll for anchor links
+    // Smooth scroll
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -1018,55 +1042,39 @@
         });
     });
 
-    // Add keyboard navigation for modals
+    // Keyboard navigation
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            if (requestCourseModal && !requestCourseModal.classList.contains('hidden')) {
-                requestCourseModal.classList.add('hidden');
-                document.body.style.overflow = '';
-                clearModalForm('course');
-            }
-            if (requestSchoolModal && !requestSchoolModal.classList.contains('hidden')) {
-                requestSchoolModal.classList.add('hidden');
-                document.body.style.overflow = '';
-                clearModalForm('school');
-            }
+            // Close all modals
+            [requestCourseModal, requestSchoolModal, notificationModal].forEach(modal => {
+                if (modal && !modal.classList.contains('hidden')) {
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
         }
     });
 
-    // Performance optimization: Lazy load images
-    if ('IntersectionObserver' in window) {
-        const imageObserver = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const img = entry.target;
-                    img.src = img.dataset.src || img.src;
-                    img.classList.add('loaded');
-                    observer.unobserve(img);
-                }
-            });
-        });
-
-        document.querySelectorAll('.tutor-avatar').forEach(img => {
-            imageObserver.observe(img);
-        });
-    }
-
-    // Page visibility API to pause animations when tab is not active
-    let adRotationInterval = setInterval(rotateAds, 8000);
-    let bgRotationInterval = setInterval(changeBackground, 10000);
-    
+    // Page visibility API
     document.addEventListener('visibilitychange', () => {
         if (document.hidden) {
-            // Pause animations
             clearInterval(adRotationInterval);
             clearInterval(bgRotationInterval);
         } else {
-            // Resume animations
             adRotationInterval = setInterval(rotateAds, 8000);
             bgRotationInterval = setInterval(changeBackground, 10000);
         }
     });
 
-    console.log('Find Tutors page initialized successfully');
+    // Footer button functions
+    window.openLoginRegisterModal = function() {
+        showNotification('Login/Register feature coming soon!', 'info');
+    };
+
+    window.openAdvertiseModal = function() {
+        showNotification('Advertise with us - Contact info@astegni.et', 'info');
+    };
+
+    // Initialize page
+    console.log('✨ Astegni Find Tutors - Enhanced and ready!');
 });

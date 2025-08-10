@@ -6,7 +6,7 @@
     <title>Find Tutors - Astegni</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link rel="stylesheet" href="../css/root_theme.css">
+    <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/find-tutors.css">
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
@@ -14,18 +14,21 @@
     <nav class="nav-container fixed w-full top-0 z-50 bg-white dark:bg-gray-800 shadow-lg">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between h-16">
-                <!-- Hamburger Menu -->
-                <button id="hamburger" class="hamburger-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Toggle Menu">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
+                <!-- Left Section: Hamburger + Logo -->
+                <div class="flex items-center">
+                    <!-- Hamburger Menu -->
+                    <button id="hamburger" class="hamburger-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 mr-3" aria-label="Toggle Sidebar">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                    
+                    <!-- Logo -->
+                    <a href="../index.html" class="brand-logo font-bold text-2xl">Astegni</a>
+                </div>
                 
-                <!-- Logo -->
-                <h1 class="brand-logo font-bold text-2xl">Astegni</h1>
-                
-                <!-- Search Bar -->
-                <div class="flex-1 mx-4 max-w-2xl hidden md:block">
+                <!-- Center Section: Search Bar (visible on all desktop screens) -->
+                <div class="flex-1 mx-6 max-w-xl md:block">
                     <div class="relative">
                         <input type="text" id="searchBar" class="search-input w-full pl-10 pr-4 py-2" placeholder="Search tutors, courses, grades, or schools...">
                         <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,34 +37,51 @@
                     </div>
                 </div>
                 
-                <!-- Navigation Links -->
-                <div class="nav-links hidden md:flex items-center space-x-6">
+                <!-- Right Section: Navigation Links -->
+                <div class="nav-links hidden md:flex">
                     <a href="news.html" class="nav-link font-medium">News</a>
+                    <a href="find-tutors.html" class="nav-link font-medium text-amber-500">Find Tutors</a>
                     <a href="reels.html" class="nav-link font-medium">Reels</a>
                     <a href="store.html" class="nav-link font-medium">Store</a>
                     <a href="find-jobs.html" class="nav-link font-medium">Find Jobs</a>
                     <a href="profile.html" class="profile-link flex items-center space-x-2">
                         <img src="https://via.placeholder.com/32" alt="Profile" class="w-8 h-8 rounded-full border-2 border-gray-300">
-                        <span class="font-medium">John Doe</span>
+                        <span class="font-medium lg:inline">John Doe</span>
                     </a>
-                    <button aria-label="Notifications" class="notification-btn relative p-2">
+                    <button id="notificationBtn" aria-label="Notifications" class="notification-btn relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a3 3 0 10-6 0v1.083A6 6 0 002 11v3.159c0 .538-.214 1.055-.595 1.436L0 17h5m10 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
                         </svg>
-                        <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full pulse"></span>
                     </button>
                     <button id="themeToggle" class="theme-toggle-btn p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700" aria-label="Toggle Theme">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <!-- Sun Icon (shows in dark mode) -->
+                        <svg class="sun-icon w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <!-- Moon Icon (shows in light mode) -->
+                        <svg class="moon-icon w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                         </svg>
                     </button>
                 </div>
                 
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden flex items-center space-x-2">
-                    <button id="themeToggleMobile" class="theme-toggle-btn p-2" aria-label="Toggle Theme">
+                    <button id="notificationBtnMobile" aria-label="Notifications" class="notification-btn relative p-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a3 3 0 10-6 0v1.083A6 6 0 002 11v3.159c0 .538-.214 1.055-.595 1.436L0 17h5m10 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                        <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full pulse"></span>
+                    </button>
+                    <button id="themeToggleMobile" class="theme-toggle-btn p-2" aria-label="Toggle Theme">
+                        <!-- Sun Icon (shows in dark mode) -->
+                        <svg class="sun-icon w-6 h-6 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                        </svg>
+                        <!-- Moon Icon (shows in light mode) -->
+                        <svg class="moon-icon w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
                         </svg>
                     </button>
                     <button id="mobileMenuBtn" class="mobile-menu-btn p-2">
@@ -72,19 +92,12 @@
                 </div>
             </div>
             
-            <!-- Mobile Search Bar -->
-            <div class="sm:hidden pb-3">
-                <div class="relative">
-                    <input type="text" id="searchBarMobile" class="search-input w-full pl-10 pr-4 py-2" placeholder="Search...">
-                    <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                    </svg>
-                </div>
-            </div>
+
             
             <!-- Mobile Menu -->
             <div id="mobileMenu" class="mobile-menu hidden border-t border-gray-200 dark:border-gray-700">
                 <a href="news.html" class="mobile-menu-link">News</a>
+                <a href="find-tutors.html" class="mobile-menu-link text-amber-500">Find Tutors</a>
                 <a href="reels.html" class="mobile-menu-link">Reels</a>
                 <a href="store.html" class="mobile-menu-link">Store</a>
                 <a href="find-jobs.html" class="mobile-menu-link">Find Jobs</a>
@@ -95,6 +108,29 @@
             </div>
         </div>
     </nav>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="notification-modal hidden">
+        <div class="notification-modal-content animate__animated animate__slideInRight">
+            <div class="notification-header">
+                <h3 class="notification-title">Notifications</h3>
+                <button id="closeNotificationModal" class="modal-close">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="notification-tabs">
+                <button class="notification-tab active" data-tab="all">All</button>
+                <button class="notification-tab" data-tab="personal">Personal</button>
+                <button class="notification-tab" data-tab="unread">Unread</button>
+                <button class="notification-tab" data-tab="system">System</button>
+            </div>
+            <div class="notification-list" id="notificationList">
+                <!-- Notifications will be dynamically added here -->
+            </div>
+        </div>
+    </div>
 
     <!-- Sidebar Filter -->
     <aside id="sidebar" class="sidebar-container">
@@ -256,20 +292,20 @@
                     <input type="number" placeholder="Max" class="price-input" name="maxPrice">
                 </div>
             </div>
+            
+            <!-- Wave animation at the bottom of sidebar -->
+            <div class="sidebar-wave-bottom">
+                <svg viewBox="0 0 280 40" preserveAspectRatio="none">
+                    <path d="M0,20 Q70,5 140,20 T280,20 L280,40 L0,40 Z" fill="currentColor" class="wave-path"></path>
+                </svg>
+            </div>
         </div>
     </aside>
 
     <!-- Main Content -->
     <main id="mainContent" class="main-content-container">
         <div class="content-wrapper">
-            <!-- Ad Placeholder -->
-            <div id="adPlaceholder" class="ad-container animate__animated animate__fadeInDown">
-                <div class="ad-content">
-                    <span class="ad-text">🎓 Featured Tutors & Special Offers</span>
-                    <button class="ad-cta">Learn More →</button>
-                </div>
-            </div>
-            
+
             <!-- Hero Section -->
             <section class="hero-section animate__animated animate__fadeIn">
                 <h2 class="hero-title">
@@ -278,39 +314,33 @@
                 </h2>
                 <p class="hero-subtitle">Connect with expert educators and top-rated training centers</p>
                 <div class="hero-stats">
-                    <div class="stat-item">
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
                         <span class="stat-number">500+</span>
                         <span class="stat-label">Expert Tutors</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
                         <span class="stat-number">50+</span>
                         <span class="stat-label">Training Centers</span>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
                         <span class="stat-number">4.5★</span>
                         <span class="stat-label">Average Rating</span>
                     </div>
                 </div>
             </section>
             
+            <!-- Ad Placeholder -->
+            <div id="adPlaceholder" class="ad-container animate__animated animate__fadeInDown">
+                <div class="ad-content">
+                    <span class="ad-text">🎓 Featured Tutors & Special Offers</span>
+                    <button class="ad-cta">Learn More →</button>
+                </div>
+            </div>
+            
             <!-- Search Results Header -->
             <div class="search-results-header">
                 <div class="flex justify-between items-center flex-wrap">
                     <h3 class="section-title">Available Tutors & Centers</h3>
-                    <div class="action-buttons">
-                        <button id="requestCourse" class="request-btn hidden">
-                            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                            </svg>
-                            Request Course
-                        </button>
-                        <button id="requestSchool" class="request-btn hidden">
-                            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            Request School
-                        </button>
-                    </div>
                 </div>
             </div>
             
@@ -321,11 +351,15 @@
             
             <!-- No Results Message -->
             <div id="noResults" class="hidden text-center py-12">
-                <svg class="w-20 h-20 mx-auto mb-4 text-gray-300 dark:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-20 h-20 mx-auto mb-4 text-gray-300 dark:text-gray-600 animate__animated animate__fadeIn" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <p class="text-xl font-medium text-gray-500 dark:text-gray-400">No tutors found</p>
                 <p class="mt-2 text-gray-400 dark:text-gray-500">Try adjusting your filters or search terms</p>
+                <div class="mt-6 space-x-4">
+                    <button id="requestCourseNoResults" class="request-btn">Request Course</button>
+                    <button id="requestSchoolNoResults" class="request-btn">Request School</button>
+                </div>
             </div>
         </div>
     </main>
@@ -398,33 +432,62 @@
         </div>
     </div>
 
-<!-- Enhanced Footer -->
+
+    <!-- Enhanced Footer -->
     <footer class="footer-section">
         <div class="footer-wave">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
                 <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
             </svg>
         </div>
-        <div class="container mx-auto px-3 sm:px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-               
-                <div class="text-center md:text-left footer-column">
+        
+        <div class="container mx-auto px-4">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Active Users</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Courses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="footer-section-item">
                     <h3 class="footer-title">Quick Links</h3>
                     <ul class="footer-links">
-                        <li><a href="../index.html" class="footer-link">Home</a></li>
-                        <li><a href="#contact" class="footer-link">Contact Us</a></li>
-                        <li><button onclick="openLoginRegisterModal()" class="footer-link-btn">Login/Register</button></li>
-                        <li><button onclick="openAdvertiseModal()" class="footer-link-btn">Advertise</button></li>
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
                     </ul>
                 </div>
-                <div class="text-center md:text-left footer-column">
-                    <h3 class="footer-title">Contact Info</h3>
-                    <p class="footer-text">📞 +251-912-345-678</p>
-                    <p class="footer-text">✉️ <a href="mailto:info@astegni.et" class="footer-link">info@astegni.et</a></p>
-                    <p class="footer-text">📍 Addis Ababa, Ethiopia</p>
+                
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
                 </div>
-                <div class="text-center md:text-left footer-column">
-                    <h3 class="footer-title">Follow Us</h3>
+                
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
                     <div class="social-links">
                         <a href="#" aria-label="Facebook" class="social-link">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
@@ -436,25 +499,36 @@
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
                         </a>
                         <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                         </a>
+                        <a href="#" aria-label="YouTube" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+                        </a>
+                    </div>
+                    
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="Your email address" class="newsletter-input">
+                            <button type="submit" class="newsletter-btn">Subscribe</button>
+                        </form>
                     </div>
                 </div>
             </div>
+            
             <div class="footer-bottom">
-                <p class="mb-2">Join us with only 500 birr registration fee and 200 birr/month</p>
-                <p>© 2025 Astegni. All rights reserved.</p>
+                <div class="footer-bottom-content">
+                    <p>&copy; 2025 Astegni. All rights reserved.</p>
+                    <div class="footer-badges">
+                        <span class="badge">🔒 SSL Secured</span>
+                        <span class="badge">✓ Verified Platform</span>
+                        <span class="badge">🏆 Award Winner 2024</span>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
 
-
     <script src="../js/find-tutors.js"></script>
 </body>
 </html>
-
-
-problems
-1 nav bar isn't displaying in search bar, news, reels, store, find jobs, profile, notifications, theme toggle in the wide screens. its only showing this links in the mobile view. fix that.
-2. movile menu isn't displaying in notification icon.
-3. search bar should search live.
