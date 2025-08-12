@@ -3,335 +3,657 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ASTEGNI Find a Job</title>
+  <title>ASTEGNI - Find Your Dream Job | Ethiopia's Premier Job Portal</title>
+  <meta name="description" content="Discover career opportunities in Ethiopia. Connect with top employers, submit applications, and advance your career with ASTEGNI.">
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Custom Styles -->
   <link href="../css/main.css" rel="stylesheet">
   <link href="../css/find-jobs.css" rel="stylesheet">
-  <style></style>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="p-4 sticky top-0 z-10 shadow-sm">
-    <div class="container mx-auto flex justify-between items-center">
-      <a href="index.html" class="text-2xl font-bold">ASTEGNI</a>
-      <div class="flex-1 flex justify-center">
-        <input type="text" id="nav-search" class="p-2 border rounded-lg text-[var(--text)] dark:bg-gray-700 w-96 md:w-96 sm:w-64" placeholder="Search jobs...">
-      </div>
-      <div class="flex items-center space-x-4">
-        <div id="nav-links" class="hidden md:flex space-x-6 items-center"></div>
-        <button id="menu-btn" class="md:hidden focus:outline-none">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
-          </svg>
-        </button>
+  <!-- Enhanced Navigation with Glass Effect -->
+  <nav class="nav-container glass-nav sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo with Animation -->
+        <a href="../index.html" class="nav-logo group">
+          <span class="logo-text">ASTEGNI</span>
+          <span class="logo-badge">JOBS</span>
+        </a>
+        
+        <!-- Enhanced Search Bar -->
+        <div class="flex-1 max-w-2xl mx-8 hidden md:block">
+          <div class="search-container">
+            <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input type="text" id="nav-search" placeholder="Search jobs, companies, or keywords..." class="search-input">
+            <div class="search-filters">
+              <button class="filter-chip active">All Jobs</button>
+              <button class="filter-chip">Remote</button>
+              <button class="filter-chip">Full-time</button>
+              <button class="filter-chip">Tech</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Navigation Links with Indicators -->
+        <div class="flex items-center space-x-6">
+          <div id="nav-links" class="hidden lg:flex items-center space-x-6"></div>
+          
+          <!-- Mobile Menu Button -->
+          <button id="menu-btn" class="lg:hidden menu-toggle">
+            <span class="menu-line"></span>
+            <span class="menu-line"></span>
+            <span class="menu-line"></span>
+          </button>
+        </div>
       </div>
     </div>
-    <div id="mobile-menu" class="hidden md:hidden bg-[var(--highlight)] mt-2 rounded-lg shadow"></div>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="mobile-menu hidden"></div>
   </nav>
 
-  <!-- Job Dashboard -->
-  <section class="py-16">
-    <div class="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
-      <!-- Main Content -->
-      <div class="lg:w-3/4">
-        <!-- Action Buttons -->
-        <div class="flex space-x-4 mb-6">
-          <button id="find-jobs-btn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Find Jobs</button>
-          <button id="post-jobs-btn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">Post Jobs</button>
+  <!-- Hero Section with Stats -->
+  <section class="hero-section">
+    <div class="container mx-auto px-4">
+      <div class="hero-content">
+        <h1 class="hero-title">
+          Find Your <span class="gradient-text">Dream Career</span> in Ethiopia
+        </h1>
+        <p class="hero-subtitle">
+          Connect with top employers and discover opportunities that match your skills
+        </p>
+        
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+          <div class="stat-card-mini">
+            <span class="stat-number" data-count="1200">0</span>
+            <span class="stat-label">Active Jobs</span>
+          </div>
+          <div class="stat-card-mini">
+            <span class="stat-number" data-count="450">0</span>
+            <span class="stat-label">Companies</span>
+          </div>
+          <div class="stat-card-mini">
+            <span class="stat-number" data-count="15234">0</span>
+            <span class="stat-label">Candidates</span>
+          </div>
         </div>
-        <!-- Rotating Ad Placeholder -->
-        <div id="rotating-ad" class="mb-8 rounded-lg shadow-lg p-4 text-center bg-[var(--highlight)]">
-          <img id="ad-image" src="https://via.placeholder.com/728x90" class="mx-auto mb-4 rounded" alt="Advertisement">
-          <p class="text-[var(--text)]">Interested in advertising on ASTEGNI? Contact us at <a href="mailto:info@astegni.et" class="underline">info@astegni.et</a></p>
-        </div>
-        <!-- Job List -->
-        <h2 class="text-3xl font-bold mb-6 text-[var(--heading)]">Available Jobs</h2>
-        <div id="job-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       </div>
-      <!-- Advertisement Sidebar -->
-      <aside class="lg:w-1/4 hidden lg:block sticky top-20 self-start">
-        <div class="ad-placeholder mb-4" style="width: 300px; height: 250px;">
-          <img src="https://via.placeholder.com/300x250" alt="Advertisement" class="rounded">
-        </div>
-      </aside>
     </div>
   </section>
 
-  <!-- Find Jobs Modal -->
-  <div id="find-jobs-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-bold text-[var(--heading)]">Find Jobs</h3>
-        <button onclick="closeFindJobsModal()" class="text-[var(--text)] hover:underline">Close</button>
+  <!-- Main Job Dashboard -->
+  <section class="job-dashboard">
+    <div class="container mx-auto px-4">
+      <div class="dashboard-layout">
+        <!-- Sidebar Filters -->
+        <aside class="sidebar-filters">
+          <div class="filter-section">
+            <h3 class="filter-title">Job Categories</h3>
+            <div class="filter-options">
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="category" value="Technology" checked>
+                <span>Technology (245)</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="category" value="Finance">
+                <span>Finance (189)</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="category" value="Healthcare">
+                <span>Healthcare (156)</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="category" value="Education">
+                <span>Education (134)</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="category" value="Marketing">
+                <span>Marketing (98)</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="category" value="Design">
+                <span>Design (76)</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="category" value="Data & Analytics">
+                <span>Data & Analytics (65)</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="filter-section">
+            <h3 class="filter-title">Experience Level</h3>
+            <div class="filter-options">
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="experience" value="entry">
+                <span>Entry Level</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="experience" value="mid">
+                <span>Mid Level</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="experience" value="senior">
+                <span>Senior Level</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="experience" value="executive">
+                <span>Executive</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="filter-section">
+            <h3 class="filter-title">Employment Type</h3>
+            <div class="filter-options">
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="schedule" value="Full-time">
+                <span>Full-time</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="schedule" value="Part-time">
+                <span>Part-time</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="schedule" value="Contract">
+                <span>Contract</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="schedule" value="Freelance">
+                <span>Freelance</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="filter-section">
+            <h3 class="filter-title">Work Location</h3>
+            <div class="filter-options">
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="workplace" value="Remote">
+                <span>Remote</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="workplace" value="On-site">
+                <span>On-site</span>
+              </label>
+              <label class="filter-checkbox">
+                <input type="checkbox" data-filter="workplace" value="Hybrid">
+                <span>Hybrid</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="filter-section">
+            <h3 class="filter-title">Salary Range</h3>
+            <div class="salary-slider">
+              <input type="range" min="0" max="500000" value="100000" class="range-input" id="salary-range">
+              <div class="salary-display">
+                <span>0 ETB</span>
+                <span id="salary-value">100,000 ETB</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="filter-section">
+            <h3 class="filter-title">Location</h3>
+            <select class="filter-select">
+              <option>All Locations</option>
+              <option>Addis Ababa</option>
+              <option>Dire Dawa</option>
+              <option>Mekelle</option>
+              <option>Gondar</option>
+              <option>Hawassa</option>
+            </select>
+          </div>
+          
+          <button class="clear-filters-btn">Clear All</button>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+          <!-- Action Bar -->
+          <div class="action-bar">
+            <div class="action-buttons">
+              <button id="find-jobs-btn" class="action-btn primary">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                Find Jobs
+              </button>
+              <button id="saved-jobs-btn" class="action-btn tertiary">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                </svg>
+                Saved Jobs
+                <span class="badge-count">3</span>
+              </button>
+            </div>
+            
+            <div class="view-options">
+              <button class="view-btn active" data-view="grid">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM13 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2h-2z"></path>
+                </svg>
+              </button>
+              <button class="view-btn" data-view="list">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Featured Company Banner -->
+          <div class="featured-banner">
+            <div class="featured-content">
+              <div class="featured-text">
+                <span class="featured-label">Featured Company</span>
+                <h3 class="featured-title">Tech Corp is Hiring!</h3>
+                <p class="featured-description">Join Ethiopia's fastest-growing tech company with 50+ open positions</p>
+                <button class="featured-btn">View All Positions</button>
+              </div>
+              <div class="featured-visual">
+                <div class="floating-card card-1">
+                  <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"></path>
+                  </svg>
+                </div>
+                <div class="floating-card card-2">
+                  <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"></path>
+                  </svg>
+                </div>
+                <div class="floating-card card-3">
+                  <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Job Listings Grid -->
+          <div class="job-listings-header">
+            <h2 class="listings-title">
+              <span class="title-highlight">Latest Opportunities</span>
+              <span class="job-count">Showing 1-12 of 2,547 jobs</span>
+            </h2>
+            <select class="sort-select">
+              <option>Most Recent</option>
+              <option>Most Relevant</option>
+              <option>Salary: High to Low</option>
+              <option>Salary: Low to High</option>
+            </select>
+          </div>
+
+          <div id="job-list" class="job-grid"></div>
+
+          <!-- Load More -->
+          <div class="load-more-section">
+            <button class="load-more-btn">
+              Load More Jobs
+              <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+          <!-- Premium Ad Space -->
+          <div class="premium-ad">
+            <span class="ad-label">Advertisement</span>
+            <div class="ad-content-wrapper">
+              <img id="ad-image" src="https://via.placeholder.com/300x250" alt="Advertisement" class="ad-image">
+              <div class="ad-overlay">
+                <p class="ad-text">Your Ad Here</p>
+                <a href="mailto:ads@astegni.et" class="ad-link">Advertise with Us</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Job Alerts -->
+          <div class="job-alerts-card">
+            <h3 class="card-title">Job Alerts</h3>
+            <p class="card-description">Get notified about new jobs matching your preferences</p>
+            <button class="alert-btn">Set Up Alerts</button>
+          </div>
+
+          <!-- Career Tips -->
+          <div class="career-tips-card">
+            <h3 class="card-title">Career Tips</h3>
+            <ul class="tips-list">
+              <li class="tip-item">
+                <span class="tip-icon">💡</span>
+                <span>Optimize your resume for ATS</span>
+              </li>
+              <li class="tip-item">
+                <span class="tip-icon">🎯</span>
+                <span>Network with professionals</span>
+              </li>
+              <li class="tip-item">
+                <span class="tip-icon">📚</span>
+                <span>Keep learning new skills</span>
+              </li>
+            </ul>
+          </div>
+        </aside>
       </div>
-      <div id="find-jobs-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+    </div>
+  </section>
+
+  <!-- Modals -->
+  <!-- Find Jobs Modal -->
+  <div id="find-jobs-modal" class="modal-overlay hidden">
+    <div class="modal-container large">
+      <div class="modal-header">
+        <h3 class="modal-title">Explore Job Opportunities</h3>
+        <button onclick="closeFindJobsModal()" class="modal-close">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-search">
+          <input type="text" placeholder="Search jobs by title, company, or keywords..." class="modal-search-input">
+        </div>
+        <div id="find-jobs-list" class="modal-job-grid"></div>
+      </div>
     </div>
   </div>
 
   <!-- View Job Modal -->
-  <div id="view-job-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 id="view-job-title" class="text-2xl font-bold text-[var(--heading)]"></h3>
-        <button onclick="closeViewJobModal()" class="text-[var(--text)] hover:underline">Close</button>
+  <div id="view-job-modal" class="modal-overlay hidden">
+    <div class="modal-container large">
+      <div class="modal-header">
+        <h3 id="view-job-title" class="modal-title"></h3>
+        <button onclick="closeViewJobModal()" class="modal-close">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
       </div>
-      <img id="view-job-cover" src="" alt="Cover Photo" class="w-full h-48 object-cover rounded-lg mb-4">
-      <div class="flex items-center mb-4">
-        <img id="view-job-agency-pic" src="" alt="Agency Profile" class="w-12 h-12 rounded-full mr-4">
-        <div>
-          <a id="view-job-company" href="#" class="text-lg font-semibold text-[var(--nav-link-hover)]"></a>
-          <div id="view-job-rating" class="flex"></div>
+      <div class="modal-body">
+        <div class="job-detail-header">
+          <img id="view-job-cover" src="" alt="Cover" class="job-cover-image">
+          <div class="job-company-info">
+            <img id="view-job-agency-pic" src="" alt="Company" class="company-logo">
+            <div class="company-details">
+              <a id="view-job-company" href="#" class="company-name"></a>
+              <div id="view-job-rating" class="company-rating"></div>
+            </div>
+          </div>
         </div>
-      </div>
-      <p id="view-job-contact" class="text-[var(--text)] mb-2"></p>
-      <p id="view-job-location" class="text-[var(--text)] mb-2"></p>
-      <p id="view-job-brief" class="text-[var(--text)] mb-2"></p>
-      <p id="view-job-documents" class="text-[var(--text)] mb-2"></p>
-      <p id="view-job-experience" class="text-[var(--text)] mb-2"></p>
-      <p id="view-job-period" class="text-[var(--text)] mb-2"></p>
-      <p id="view-job-post-date" class="text-[var(--text)] mb-2"></p>
-      <p id="view-job-schedule" class="text-[var(--text)] mb-2"></p>
-      <p id="view-job-workplace" class="text-[var(--text)] mb-4"></p>
-      <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Detailed Description</h4>
-      <p id="view-job-description" class="text-[var(--text)] mb-4"></p>
-      <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Expectations</h4>
-      <p id="view-job-expectations" class="text-[var(--text)] mb-4"></p>
-      <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Benefits</h4>
-      <p id="view-job-benefits" class="text-[var(--text)] mb-4"></p>
-      <div class="flex space-x-4 mb-4">
-        <button id="resume-btn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">Resume</button>
-        <button id="certification-btn" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700">Certifications</button>
+        
+        <div class="job-detail-content">
+          <div class="detail-section">
+            <h4 class="section-title">Job Overview</h4>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="detail-label">Location</span>
+                <span id="view-job-location" class="detail-value"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Schedule</span>
+                <span id="view-job-schedule" class="detail-value"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Workplace</span>
+                <span id="view-job-workplace" class="detail-value"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Experience</span>
+                <span id="view-job-experience" class="detail-value"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Posted</span>
+                <span id="view-job-post-date" class="detail-value"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Application Period</span>
+                <span id="view-job-period" class="detail-value"></span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section">
+            <h4 class="section-title">Job Description</h4>
+            <p id="view-job-description" class="section-content"></p>
+          </div>
+          
+          <div class="detail-section">
+            <h4 class="section-title">Requirements & Expectations</h4>
+            <p id="view-job-expectations" class="section-content"></p>
+          </div>
+          
+          <div class="detail-section">
+            <h4 class="section-title">Benefits & Perks</h4>
+            <p id="view-job-benefits" class="section-content"></p>
+          </div>
+          
+          <div class="detail-section">
+            <h4 class="section-title">Required Documents</h4>
+            <p id="view-job-documents" class="section-content"></p>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button id="resume-btn" class="modal-action-btn primary">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Submit Resume
+          </button>
+          <button id="certification-btn" class="modal-action-btn secondary">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Upload Certifications
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Resume Modal -->
-  <div id="resume-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Submit Resume</h3>
-      <textarea id="resume-text" class="w-full p-2 border rounded-lg mb-4" rows="6" placeholder="Write your resume here..."></textarea>
-      <input type="file" id="resume-upload" class="mb-4" accept=".pdf,.doc,.docx">
-      <label class="flex items-center mb-4">
-        <input type="checkbox" id="save-resume" class="mr-2">
-        <span class="text-[var(--text)]">Save this resume for other applications</span>
-      </label>
-      <button onclick="submitResume()" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 w-full">Submit</button>
-      <button onclick="closeResumeModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
+  <div id="resume-modal" class="modal-overlay hidden">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Submit Your Resume</h3>
+        <button onclick="closeResumeModal()" class="modal-close">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Resume Text</label>
+          <textarea id="resume-text" class="form-textarea" rows="6" placeholder="Paste your resume here or upload a file below..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Upload Resume File</label>
+          <div class="file-upload-area">
+            <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+            </svg>
+            <p class="upload-text">Drop your resume here or click to browse</p>
+            <input type="file" id="resume-upload" class="file-input" accept=".pdf,.doc,.docx">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="save-resume" class="form-checkbox">
+            <span>Save this resume for future applications</span>
+          </label>
+        </div>
+        
+        <div class="modal-footer">
+          <button onclick="closeResumeModal()" class="btn-cancel">Cancel</button>
+          <button onclick="submitResume()" class="btn-submit">Submit Application</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Certification Modal -->
-  <div id="certification-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold mb-4 text-[var(--heading)]">Certifications</h3>
-      <p class="text-[var(--text)] mb-4">Uploading certifications may take some time for verification.</p>
-      <div id="certification-list" class="mb-4"></div>
-      <input type="file" id="certification-upload" class="mb-4" accept=".pdf,.jpg,.png" multiple>
-      <button onclick="submitCertification()" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 w-full">Upload</button>
-      <button onclick="closeCertificationModal()" class="mt-4 text-[var(--text)] hover:underline">Cancel</button>
-    </div>
-  </div>
-
-  <!-- Post Jobs Modal -->
-  <div id="post-jobs-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-bold text-[var(--heading)]">Post Jobs</h3>
-        <button onclick="closePostJobsModal()" class="text-[var(--text)] hover:underline">Close</button>
+  <div id="certification-modal" class="modal-overlay hidden">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 class="modal-title">Upload Certifications</h3>
+        <button onclick="closeCertificationModal()" class="modal-close">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
       </div>
-      <div class="flex space-x-4 mb-4">
-        <button id="applicants-tab" class="px-4 py-2 text-[var(--text)] tab-active">List of Applicants</button>
-        <button id="job-posts-tab" class="px-4 py-2 text-[var(--text)]">List of Job Posts</button>
-        <button id="publish-job-tab" class="px-4 py-2 text-[var(--text)]">Publish a Job</button>
-      </div>
-      <div id="applicants-content" class="hidden">
-        <div id="applicants-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-      </div>
-      <div id="job-posts-content" class="hidden">
-        <div id="job-posts-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
-      </div>
-      <div id="publish-job-content" class="hidden">
-        <h4 class="text-xl font-semibold mb-4 text-[var(--heading)]">Publish a New Job</h4>
-        <form id="publish-job-form">
-          <input type="text" id="job-title" class="w-full p-2 border rounded-lg mb-4" placeholder="Job Title">
-          <input type="text" id="company-name" class="w-full p-2 border rounded-lg mb-4" placeholder="Company Name">
-          <input type="text" id="company-link" class="w-full p-2 border rounded-lg mb-4" placeholder="Company Website">
-          <input type="text" id="company-phone" class="w-full p-2 border rounded-lg mb-4" placeholder="Company Phone">
-          <input type="email" id="company-email" class="w-full p-2 border rounded-lg mb-4" placeholder="Company Email">
-          <input type="text" id="job-location" class="w-full p-2 border rounded-lg mb-4" placeholder="Location">
-          <textarea id="job-brief" class="w-full p-2 border rounded-lg mb-4" rows="3" placeholder="Brief Description"></textarea>
-          <textarea id="job-description" class="w-full p-2 border rounded-lg mb-4" rows="5" placeholder="Detailed Description"></textarea>
-          <input type="text" id="job-documents" class="w-full p-2 border rounded-lg mb-4" placeholder="Required Documents (e.g., Resume, Cover Letter)">
-          <input type="text" id="job-experience" class="w-full p-2 border rounded-lg mb-4" placeholder="Required Experience (e.g., 2 years)">
-          <input type="text" id="job-period" class="w-full p-2 border rounded-lg mb-4" placeholder="Job Opening Period (e.g., 2025-08-01 to 2025-08-15)">
-          <input type="text" id="job-schedule" class="w-full p-2 border rounded-lg mb-4" placeholder="Work Schedule (e.g., Full-time)">
-          <input type="text" id="job-workplace" class="w-full p-2 border rounded-lg mb-4" placeholder="Workplace (e.g., On-site)">
-          <textarea id="job-expectations" class="w-full p-2 border rounded-lg mb-4" rows="4" placeholder="Expectations"></textarea>
-          <textarea id="job-benefits" class="w-full p-2 border rounded-lg mb-4" rows="4" placeholder="Benefits (including promotion options)"></textarea>
-          <input type="file" id="job-cover-upload" class="mb-4" accept=".jpg,.png">
-          <input type="file" id="agency-pic-upload" class="mb-4" accept=".jpg,.png">
-          <button type="button" onclick="publishJob()" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 w-full">Publish</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Applicant View Modal -->
-  <div id="applicant-view-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-2xl font-bold text-[var(--heading)]">Applicant Details</h3>
-        <button onclick="closeApplicantViewModal()" class="text-[var(--text)] hover:underline">Close</button>
-      </div>
-      <img id="applicant-cover" src="" alt="Cover Photo" class="w-full h-48 object-cover rounded-lg mb-4">
-      <div class="flex items-center mb-4">
-        <img id="applicant-profile-pic" src="" alt="Profile Picture" class="w-12 h-12 rounded-full mr-4">
-        <div>
-          <h4 id="applicant-name" class="text-lg font-semibold text-[var(--heading)]"></h4>
-          <div id="applicant-rating" class="flex"></div>
-        </div>
-      </div>
-      <p id="applicant-contact" class="text-[var(--text)] mb-2"></p>
-      <p id="applicant-location" class="text-[var(--text)] mb-2"></p>
-      <p id="applicant-bio" class="text-[var(--text)] mb-2"></p>
-      <p id="applicant-quote" class="text-[var(--text)] italic mb-4"></p>
-      <div id="applicant-socials" class="flex space-x-4 mb-4"></div>
-      <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Submitted Documents</h4>
-      <p id="applicant-documents" class="text-[var(--text)] mb-4"></p>
-    </div>
-  </div>
-
-  <!-- Job Post View Modal (same as View Job Modal) -->
-  <div id="job-post-view-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    <div class="modal-content p-6 rounded-lg w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4">
-        <h3 id="job-post-title" class="text-2xl font-bold text-[var(--heading)]"></h3>
-        <button onclick="closeJobPostViewModal()" class="text-[var(--text)] hover:underline">Close</button>
-      </div>
-      <img id="job-post-cover" src="" alt="Cover Photo" class="w-full h-48 object-cover rounded-lg mb-4">
-      <div class="flex items-center mb-4">
-        <img id="job-post-agency-pic" src="" alt="Agency Profile" class="w-12 h-12 rounded-full mr-4">
-        <div>
-          <a id="job-post-company" href="#" class="text-lg font-semibold text-[var(--nav-link-hover)]"></a>
-          <div id="job-post-rating" class="flex"></div>
-        </div>
-      </div>
-      <p id="job-post-contact" class="text-[var(--text)] mb-2"></p>
-      <p id="job-post-location" class="text-[var(--text)] mb-2"></p>
-      <p id="job-post-brief" class="text-[var(--text)] mb-2"></p>
-      <p id="job-post-documents" class="text-[var(--text)] mb-2"></p>
-      <p id="job-post-experience" class="text-[var(--text)] mb-2"></p>
-      <p id="job-post-period" class="text-[var(--text)] mb-2"></p>
-      <p id="job-post-post-date" class="text-[var(--text)] mb-2"></p>
-      <p id="job-post-schedule" class="text-[var(--text)] mb-2"></p>
-      <p id="job-post-workplace" class="text-[var(--text)] mb-4"></p>
-      <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Detailed Description</h4>
-      <p id="job-post-description" class="text-[var(--text)] mb-4"></p>
-      <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Expectations</h4>
-      <p id="job-post-expectations" class="text-[var(--text)] mb-4"></p>
-      <h4 class="text-xl font-semibold mb-2 text-[var(--heading)]">Benefits</h4>
-      <p id="job-post-benefits" class="text-[var(--text)] mb-4"></p>
-    </div>
-  </div>
-
-    <!-- Enhanced Footer -->
-    <footer class="footer-section">
-        <div class="footer-wave">
-            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
-            </svg>
+      <div class="modal-body">
+        <div class="alert-info">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+          </svg>
+          <p>Certification verification may take 1-2 business days</p>
         </div>
         
-        <div class="container mx-auto px-4">
-            <div class="footer-content">
-                <div class="footer-section-item">
-                    <h3 class="footer-title">About Astegni</h3>
-                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
-                    <div class="footer-stats">
-                        <div class="stat-item">
-                            <span class="stat-number">10k+</span>
-                            <span class="stat-label">Active Users</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">500+</span>
-                            <span class="stat-label">Courses</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-number">95%</span>
-                            <span class="stat-label">Success Rate</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="footer-section-item">
-                    <h3 class="footer-title">Quick Links</h3>
-                    <ul class="footer-links">
-                        <li><a href="#" class="footer-link">About Us</a></li>
-                        <li><a href="#" class="footer-link">How It Works</a></li>
-                        <li><a href="#" class="footer-link">Pricing</a></li>
-                        <li><a href="#" class="footer-link">Success Stories</a></li>
-                        <li><a href="#" class="footer-link">Blog</a></li>
-                        <li><a href="#" class="footer-link">Careers</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section-item">
-                    <h3 class="footer-title">Support</h3>
-                    <ul class="footer-links">
-                        <li><a href="#" class="footer-link">Help Center</a></li>
-                        <li><a href="#" class="footer-link">Contact Us</a></li>
-                        <li><a href="#" class="footer-link">FAQs</a></li>
-                        <li><a href="#" class="footer-link">Terms of Service</a></li>
-                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
-                        <li><a href="#" class="footer-link">Safety</a></li>
-                    </ul>
-                </div>
-                
-                <div class="footer-section-item">
-                    <h3 class="footer-title">Connect With Us</h3>
-                    <div class="social-links">
-                        <a href="#" aria-label="Facebook" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
-                        </a>
-                        <a href="#" aria-label="Twitter" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
-                        </a>
-                        <a href="#" aria-label="LinkedIn" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
-                        </a>
-                        <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
-                        </a>
-                        <a href="#" aria-label="YouTube" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
-                        </a>
-                    </div>
-                    
-                    <div class="newsletter-signup">
-                        <h4>Subscribe to Newsletter</h4>
-                        <form class="newsletter-form">
-                            <input type="email" placeholder="Your email address" class="newsletter-input">
-                            <button type="submit" class="newsletter-btn">Subscribe</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="footer-bottom">
-                <div class="footer-bottom-content">
-                    <p>&copy; 2025 Astegni. All rights reserved.</p>
-                    <div class="footer-badges">
-                        <span class="badge">🔒 SSL Secured</span>
-                        <span class="badge">✓ Verified Platform</span>
-                        <span class="badge">🏆 Award Winner 2024</span>
-                    </div>
-                </div>
-            </div>
+        <div id="certification-list" class="certification-list"></div>
+        
+        <div class="form-group">
+          <label class="form-label">Upload Certificates</label>
+          <div class="file-upload-area">
+            <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p class="upload-text">Drop certificates here or click to browse</p>
+            <input type="file" id="certification-upload" class="file-input" accept=".pdf,.jpg,.png" multiple>
+          </div>
         </div>
-    </footer>
+        
+        <div class="modal-footer">
+          <button onclick="closeCertificationModal()" class="btn-cancel">Cancel</button>
+          <button onclick="submitCertification()" class="btn-submit">Upload & Verify</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Footer -->
+  <footer class="footer-section">
+    <div class="footer-wave">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+      </svg>
+    </div>
+    
+    <div class="container mx-auto px-4">
+      <div class="footer-content">
+        <div class="footer-section-item">
+          <h3 class="footer-title">About Astegni Jobs</h3>
+          <p class="footer-description">Ethiopia's premier job portal connecting talented professionals with leading employers. Find your dream career or discover exceptional talent for your team.</p>
+          <div class="footer-stats">
+            <div class="stat-item">
+              <span class="stat-number">2.5k+</span>
+              <span class="stat-label">Active Jobs</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">890+</span>
+              <span class="stat-label">Companies</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">15k+</span>
+              <span class="stat-label">Job Seekers</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer-section-item">
+          <h3 class="footer-title">For Job Seekers</h3>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">Browse Jobs</a></li>
+            <li><a href="#" class="footer-link">Career Advice</a></li>
+            <li><a href="#" class="footer-link">Resume Builder</a></li>
+            <li><a href="#" class="footer-link">Job Alerts</a></li>
+            <li><a href="#" onclick="openSalaryCalculator()" class="footer-link">Salary Calculator</a></li>
+            <li><a href="#" class="footer-link">Interview Tips</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section-item">
+          <h3 class="footer-title">Resources</h3>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">Blog</a></li>
+            <li><a href="#" class="footer-link">Career Guide</a></li>
+            <li><a href="#" class="footer-link">FAQ</a></li>
+            <li><a href="#" class="footer-link">Terms of Service</a></li>
+            <li><a href="#" class="footer-link">Privacy Policy</a></li>
+            <li><a href="#" class="footer-link">Contact Us</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-section-item">
+          <h3 class="footer-title">Stay Connected</h3>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+            </a>
+            <a href="#" aria-label="Twitter" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+            </a>
+            <a href="#" aria-label="LinkedIn" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+            </a>
+            <a href="#" aria-label="Telegram" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.56l-1.52 7.16c-.11.53-.42.65-.85.4l-2.32-1.71-1.12 1.08c-.12.12-.23.23-.47.23l.17-2.39 4.33-3.91c.19-.17-.04-.26-.29-.1l-5.35 3.37-2.31-.72c-.5-.16-.51-.5.11-.74l9.02-3.48c.42-.15.78.1.64.73z"></path></svg>
+            </a>
+          </div>
+          
+          <div class="newsletter-signup">
+            <h4>Job Alert Newsletter</h4>
+            <form class="newsletter-form">
+              <input type="email" placeholder="Your email address" class="newsletter-input">
+              <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
+            <p class="newsletter-hint">Get daily job alerts directly to your inbox</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <div class="footer-bottom-content">
+          <p>&copy; 2025 Astegni Jobs. All rights reserved.</p>
+          <div class="footer-badges">
+            <span class="badge">🔒 Secure Platform</span>
+            <span class="badge">✓ Verified Employers</span>
+            <span class="badge">🏆 #1 Job Portal Ethiopia</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
 
+  <!-- Back to Top Button -->
+  <button id="back-to-top" class="back-to-top hidden">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+    </svg>
+  </button>
 
-  <script src='../js/find-jobs.js'></script>
+  <!-- JavaScript -->
+  <script src="../js/find-jobs.js"></script>
 </body>
 </html>

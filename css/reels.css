@@ -1,4 +1,4 @@
-/* Ultimate Enhanced Reels CSS */
+/* Ultimate Enhanced Reels CSS - FIXED */
 
 :root {
     --footer-bg-rgb: 229, 231, 235;
@@ -173,7 +173,7 @@ nav {
     opacity: 1;
 }
 
-/* Enhanced Ad Container */
+/* Enhanced Ad Container - FIXED */
 .ad-container {
     position: relative;
     width: 100%;
@@ -199,7 +199,7 @@ nav {
     justify-content: center;
     opacity: 0;
     transition: opacity 1s ease-in-out;
-    background: var(--bg);
+    /* Remove the var(--bg) and use inline styles or data attributes */
 }
 
 .ad-slide.active {
@@ -452,7 +452,7 @@ nav {
     stroke: #ff4757;
 }
 
-/* Enhanced Modals */
+/* Enhanced Modals - FIXED */
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -463,6 +463,11 @@ nav {
     justify-content: center;
     z-index: 50;
     padding: 1rem;
+}
+
+/* Use hidden class instead of :not(.hidden) */
+.modal-overlay.hidden {
+    display: none !important;
 }
 
 .modal-overlay:not(.hidden) {
@@ -523,13 +528,17 @@ nav {
     border-top: 1px solid rgba(var(--button-bg-rgb), 0.1);
 }
 
-/* Enhanced Video Modal */
+/* Enhanced Video Modal - FIXED */
 .video-modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.95);
     display: none;
     z-index: 60;
+}
+
+.video-modal-overlay.hidden {
+    display: none !important;
 }
 
 .video-modal-overlay:not(.hidden) {

@@ -8,7 +8,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="../css/main.css" rel="stylesheet" />
   <link href="../css/news.css" rel="stylesheet" />
-  <link href="../css/newNews.css" rel="stylesheet" />
 </head>
 <body>
   <!-- Animated Background -->
@@ -26,7 +25,9 @@
       <div class="search-container">
         <div class="search-glow"></div>
         <input type="text" id="nav-search" placeholder="Search news, topics, journalists...">
-        <div class="search-suggestions" id="search-suggestions"></div>
+        <div class="search-suggestions" id="search-suggestions">
+          <!-- Live search results will appear here -->
+        </div>
         <button class="search-btn">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -34,8 +35,41 @@
         </button>
       </div>
       
+      <div class="nav-links">
+        <a href="../index.html" class="nav-link">
+          <svg class="nav-link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+          <span>Home</span>
+        </a>
+        <a href="find-tutors.html" class="nav-link">
+          <svg class="nav-link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+          </svg>
+          <span>Find Tutors</span>
+        </a>
+        <a href="reels.html" class="nav-link">
+          <svg class="nav-link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          <span>Reels</span>
+        </a>
+        <a href="store.html" class="nav-link">
+          <svg class="nav-link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+          </svg>
+          <span>Store</span>
+        </a>
+        <a href="find-jobs.html" class="nav-link">
+          <svg class="nav-link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+          </svg>
+          <span>Find Jobs</span>
+        </a>
+      </div>
+      
       <div class="nav-actions">
-        <button class="nav-icon-btn notification-btn">
+        <button class="nav-icon-btn notification-btn" id="notification-btn">
           <span class="notification-pulse"></span>
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
@@ -60,6 +94,134 @@
       </div>
     </div>
   </nav>
+
+  <!-- Sidebar Menu -->
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+  <div class="sidebar-menu" id="sidebar-menu">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="logo-text">ASTEGNI</span>
+        <span class="logo-subtitle">MENU</span>
+      </div>
+      <button class="sidebar-close" id="sidebar-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="sidebar-content">
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">News Categories</h3>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">📚</span>
+          <span>Education</span>
+          <span class="sidebar-badge">124</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">💻</span>
+          <span>Technology</span>
+          <span class="sidebar-badge">89</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">💼</span>
+          <span>Business</span>
+          <span class="sidebar-badge">67</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">🔬</span>
+          <span>Science</span>
+          <span class="sidebar-badge">45</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">🎭</span>
+          <span>Culture</span>
+          <span class="sidebar-badge">38</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">⚽</span>
+          <span>Sports</span>
+          <span class="sidebar-badge">52</span>
+        </a>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">Trending Topics</h3>
+        <a href="#" class="sidebar-link trending">
+          <span class="trending-number">#1</span>
+          <span>Digital Education Summit</span>
+          <span class="trending-icon">🔥</span>
+        </a>
+        <a href="#" class="sidebar-link trending">
+          <span class="trending-number">#2</span>
+          <span>AI in Education</span>
+          <span class="trending-icon">📈</span>
+        </a>
+        <a href="#" class="sidebar-link trending">
+          <span class="trending-number">#3</span>
+          <span>Student Success Stories</span>
+          <span class="trending-icon">⭐</span>
+        </a>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">Media</h3>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">🎥</span>
+          <span>Videos</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">🎙️</span>
+          <span>Podcasts</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">📸</span>
+          <span>Photo Stories</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">📺</span>
+          <span>Live TV</span>
+        </a>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3 class="sidebar-section-title">More</h3>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">ℹ️</span>
+          <span>About ASTEGNI</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">📝</span>
+          <span>Editorial Guidelines</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">📧</span>
+          <span>Contact Us</span>
+        </a>
+        <a href="#" class="sidebar-link">
+          <span class="sidebar-link-icon">💝</span>
+          <span>Support Us</span>
+        </a>
+      </div>
+    </div>
+    
+    <div class="sidebar-footer">
+      <div class="sidebar-stats">
+        <div class="stat-item">
+          <span class="stat-value">1.5M</span>
+          <span class="stat-label">Readers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">24/7</span>
+          <span class="stat-label">Updates</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value">50+</span>
+          <span class="stat-label">Authors</span>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Breaking News Ticker -->
   <div class="breaking-news-ticker">
@@ -357,6 +519,116 @@
     </div>
   </div>
 
+  <!-- Notification Modal -->
+  <div class="notification-modal" id="notification-modal">
+    <div class="notification-backdrop" id="notification-backdrop"></div>
+    <div class="notification-container">
+      <div class="notification-header">
+        <h2 class="notification-title">
+          <span class="notification-icon">🔔</span>
+          Notifications
+        </h2>
+        <button class="notification-close" id="notification-close">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="notification-tabs">
+        <button class="notification-tab active" data-tab="all">All</button>
+        <button class="notification-tab" data-tab="unread">Unread</button>
+        <button class="notification-tab" data-tab="mentions">Mentions</button>
+        <button class="notification-tab" data-tab="updates">Updates</button>
+      </div>
+      
+      <div class="notification-list" id="notification-list">
+        <div class="notification-item unread">
+          <div class="notification-dot"></div>
+          <div class="notification-avatar">
+            <img src="https://i.pravatar.cc/150?img=1" alt="User">
+          </div>
+          <div class="notification-content">
+            <div class="notification-text">
+              <strong>Sarah Ahmed</strong> published a new article: "The Future of Education Technology"
+            </div>
+            <div class="notification-time">2 minutes ago</div>
+          </div>
+          <div class="notification-action">
+            <button class="notification-btn">View</button>
+          </div>
+        </div>
+        
+        <div class="notification-item unread">
+          <div class="notification-dot"></div>
+          <div class="notification-avatar">
+            <span class="notification-emoji">📊</span>
+          </div>
+          <div class="notification-content">
+            <div class="notification-text">
+              Your article "Digital Learning Trends" reached <strong>10,000 views</strong>!
+            </div>
+            <div class="notification-time">15 minutes ago</div>
+          </div>
+          <div class="notification-action">
+            <button class="notification-btn">Stats</button>
+          </div>
+        </div>
+        
+        <div class="notification-item unread">
+          <div class="notification-dot"></div>
+          <div class="notification-avatar">
+            <span class="notification-emoji">💬</span>
+          </div>
+          <div class="notification-content">
+            <div class="notification-text">
+              <strong>John Tadesse</strong> commented on your article: "Great insights! This really helps..."
+            </div>
+            <div class="notification-time">1 hour ago</div>
+          </div>
+          <div class="notification-action">
+            <button class="notification-btn">Reply</button>
+          </div>
+        </div>
+        
+        <div class="notification-item">
+          <div class="notification-avatar">
+            <span class="notification-emoji">🎉</span>
+          </div>
+          <div class="notification-content">
+            <div class="notification-text">
+              Welcome to ASTEGNI News! Start exploring trending articles and connect with authors.
+            </div>
+            <div class="notification-time">2 hours ago</div>
+          </div>
+          <div class="notification-action">
+            <button class="notification-btn">Explore</button>
+          </div>
+        </div>
+        
+        <div class="notification-item">
+          <div class="notification-avatar">
+            <img src="https://i.pravatar.cc/150?img=3" alt="User">
+          </div>
+          <div class="notification-content">
+            <div class="notification-text">
+              <strong>Maria Bekele</strong> started following you
+            </div>
+            <div class="notification-time">3 hours ago</div>
+          </div>
+          <div class="notification-action">
+            <button class="notification-btn">Profile</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="notification-footer">
+        <button class="mark-all-read">Mark all as read</button>
+        <a href="#" class="view-all-link">View all notifications →</a>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notifications -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -458,6 +730,6 @@
     </svg>
   </button>
 
-  <script src="../js/newNews.js"></script>
+  <script src="../js/news.js"></script>
 </body>
 </html>

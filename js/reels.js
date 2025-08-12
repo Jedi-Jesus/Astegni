@@ -134,8 +134,16 @@ let selectedReelId = null;
 let currentAdIndex = 0;
 let adInterval = null;
 
-// Initialize
+// Initialize - FIXED
 function init() {
+    // Add hidden class to all modals on initialization
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.classList.add('hidden');
+    });
+    document.querySelectorAll('.video-modal-overlay').forEach(modal => {
+        modal.classList.add('hidden');
+    });
+    
     updateUserProfile();
     enableCommentFunctionality();
     updateReels("all");
@@ -172,7 +180,7 @@ function enableCommentFunctionality() {
     }
 }
 
-// Setup Event Listeners
+// Setup Event Listeners - FIXED (updated section)
 function setupEventListeners() {
     // Search handlers
     const navSearch = document.getElementById("nav-search-input");
@@ -197,10 +205,10 @@ function setupEventListeners() {
     if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
     if (mobileThemeToggleBtn) mobileThemeToggleBtn.addEventListener("click", toggleTheme);
     
-    // Close modals on outside click
+    // Close modals on outside click - FIXED
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+            if (e.target === modal && !modal.classList.contains('hidden')) {
                 const modalId = modal.id;
                 if (modalId === 'comment-modal') closeCommentModal();
                 else if (modalId === 'notification-modal') closeNotificationModal();
@@ -209,17 +217,16 @@ function setupEventListeners() {
         });
     });
     
-    // Video modal outside click
+    // Video modal outside click - FIXED
     const videoModal = document.getElementById('video-modal');
     if (videoModal) {
         videoModal.addEventListener('click', (e) => {
-            if (e.target === videoModal) {
+            if (e.target === videoModal && !videoModal.classList.contains('hidden')) {
                 closeVideoModal();
             }
         });
     }
 }
-
 // Setup Keyboard Navigation
 function setupKeyboardNavigation() {
     document.addEventListener("keydown", (e) => {
@@ -238,20 +245,26 @@ function setupKeyboardNavigation() {
     });
 }
 
-// Initialize Enhanced Ads
+// Initialize Enhanced Ads - FIXED
 function initializeAds() {
     const ads = document.querySelectorAll('.ad-slide');
     if (ads.length === 0) return;
     
-    // Set background gradients
+    // Set background gradients using inline styles instead of CSS variables
     ads.forEach(ad => {
         const bg = ad.getAttribute('data-bg');
-        if (bg) ad.style.background = bg;
+        if (bg) {
+            ad.style.background = bg;
+        }
     });
+    
+    // Show first ad immediately
+    showAd(0);
     
     // Start ad rotation
     startAdRotation();
 }
+
 
 function startAdRotation() {
     if (adInterval) clearInterval(adInterval);
@@ -555,7 +568,46 @@ function toggleFollow(tutorId) {
     updateVideoModalIfOpen();
 }
 
-// Open Video Modal
+// Open Notification Modal - FIXED
+function openNotificationModal() {
+    const notificationContent = document.getElementById("notification-content");
+    const notificationList = Object.values(notifications);
+    
+    if (notificationContent) {
+        if (notificationList.length === 0) {
+            notificationContent.innerHTML = `
+                <div class="empty-state">
+                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
+                    </svg>
+                    <p class="text-center opacity-70">No new notifications</p>
+                </div>
+            `;
+        } else {
+            notificationContent.innerHTML = notificationList.map(n => `
+                <div class="notification-item">
+                    <p>${n.message}</p>
+                    <p class="text-xs opacity-60 mt-1">${n.date}</p>
+                </div>
+            `).join("");
+        }
+    }
+    
+    const modal = document.getElementById("notification-modal");
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
+}
+
+// Close Notification Modal - FIXED
+function closeNotificationModal() {
+    const modal = document.getElementById("notification-modal");
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+}
+
+// Open Video Modal - FIXED
 function openVideoModal(reelId) {
     currentVideoIndex = filteredReelIds.indexOf(reelId);
     updateVideoModal(reelId);
@@ -574,6 +626,7 @@ function openVideoModal(reelId) {
         updateFilterCounts();
     }
 }
+
 
 // Update Video Modal
 function updateVideoModal(reelId) {
@@ -695,7 +748,7 @@ function getCommentsHTML(reelId) {
     `).join('');
 }
 
-// Update Video Modal If Open
+// Update Video Modal If Open - FIXED
 function updateVideoModalIfOpen() {
     const videoModal = document.getElementById("video-modal");
     if (videoModal && !videoModal.classList.contains("hidden")) {
@@ -703,7 +756,7 @@ function updateVideoModalIfOpen() {
     }
 }
 
-// Close Video Modal
+// Close Video Modal - FIXED
 function closeVideoModal() {
     const modal = document.getElementById("video-modal");
     if (modal) {
@@ -716,7 +769,6 @@ function closeVideoModal() {
         modalVideo.pause();
     }
 }
-
 // Update Video Navigation
 function updateVideoNavigation() {
     const prevBtn = document.getElementById("prev-video-btn");
@@ -745,18 +797,22 @@ function navigateVideo(direction) {
     }
 }
 
-// Open Comment Modal
+// Open Comment Modal - FIXED
 function openCommentModal(reelId) {
     selectedReelId = reelId;
     updateCommentList();
     const modal = document.getElementById("comment-modal");
-    if (modal) modal.classList.remove("hidden");
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
 }
 
-// Close Comment Modal
+// Close Comment Modal - FIXED
 function closeCommentModal() {
     const modal = document.getElementById("comment-modal");
-    if (modal) modal.classList.add("hidden");
+    if (modal) {
+        modal.classList.add("hidden");
+    }
     selectedReelId = null;
 }
 
@@ -855,20 +911,25 @@ function showToast(message, type = "success") {
     }, 3000);
 }
 
-// Open Playlist Modal
+// Open Playlist Modal - FIXED
 function openPlaylistModal(reelId) {
     selectedReelId = reelId;
     updatePlaylistList();
     const modal = document.getElementById("playlist-modal");
-    if (modal) modal.classList.remove("hidden");
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
 }
 
-// Close Playlist Modal
+// Close Playlist Modal - FIXED
 function closePlaylistModal() {
     const modal = document.getElementById("playlist-modal");
-    if (modal) modal.classList.add("hidden");
+    if (modal) {
+        modal.classList.add("hidden");
+    }
     selectedReelId = null;
 }
+
 
 // Create Playlist
 function createPlaylist() {
@@ -976,7 +1037,7 @@ function checkNotifications() {
     if (notificationDot) notificationDot.classList.toggle("hidden", !hasNotifications);
     if (mobileNotificationDot) mobileNotificationDot.classList.toggle("hidden", !hasNotifications);
 }
-
+// Open Notification Modal - FIXED
 function openNotificationModal() {
     const notificationContent = document.getElementById("notification-content");
     const notificationList = Object.values(notifications);
@@ -1002,13 +1063,19 @@ function openNotificationModal() {
     }
     
     const modal = document.getElementById("notification-modal");
-    if (modal) modal.classList.remove("hidden");
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
 }
 
+// Close Notification Modal - FIXED
 function closeNotificationModal() {
     const modal = document.getElementById("notification-modal");
-    if (modal) modal.classList.add("hidden");
+    if (modal) {
+        modal.classList.add("hidden");
+    }
 }
+
 
 // Footer Functions
 function openLoginRegisterModal() {
