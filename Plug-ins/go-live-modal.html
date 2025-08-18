@@ -1,0 +1,2295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go Live - Professional Streaming Modal</title>
+    <style>
+        /* ============================================
+           ROOT VARIABLES & THEME
+           ============================================ */
+        :root {
+            --primary: #FF0000;
+            --primary-dark: #CC0000;
+            --primary-light: #FF4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            
+            --background: #ffffff;
+            --modal-bg: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --border: #e5e7eb;
+            --input-bg: #f9fafb;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --background: #1a1a1a;
+            --modal-bg: #1f1f1f;
+            --text: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border: #374151;
+            --input-bg: #262626;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* ============================================
+           LAUNCH BUTTON
+           ============================================ */
+        .launch-live-btn {
+            padding: 1.25rem 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: pulse 2s infinite;
+        }
+
+        .launch-live-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 0, 0, 0.4);
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 0, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); }
+        }
+
+        /* ============================================
+           MODAL OVERLAY & CONTAINER
+           ============================================ */
+        .live-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .live-modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+        }
+
+        .live-modal {
+            background: var(--modal-bg);
+            border-radius: 24px;
+            width: 95%;
+            max-width: 1400px;
+            max-height: 90vh;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .live-modal-overlay.active .live-modal {
+            transform: scale(1);
+        }
+
+        /* ============================================
+           MODAL HEADER
+           ============================================ */
+        .live-modal-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            padding: 1.5rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .live-modal-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .live-header-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            animation: blink 2s infinite;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            animation: blink-dot 1s infinite;
+        }
+
+        @keyframes blink-dot {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .modal-title h2 {
+            margin: 0;
+            font-size: 1.75rem;
+        }
+
+        .modal-title p {
+            margin: 0.25rem 0 0 0;
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .close-modal-btn {
+            position: relative;
+            z-index: 1;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
+
+        /* ============================================
+           MODAL BODY
+           ============================================ */
+        .live-modal-body {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            overflow-y: auto;
+            background: var(--background);
+        }
+
+        /* ============================================
+           MAIN CONTENT AREA
+           ============================================ */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Video Preview Section */
+        .video-section {
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+            aspect-ratio: 16/9;
+        }
+
+        .main-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, transparent 70%, rgba(0,0,0,0.8));
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 1.5rem;
+        }
+
+        .video-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .video-btn {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+        }
+
+        .video-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .video-btn.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .video-btn.muted {
+            background: var(--danger);
+            border-color: var(--danger);
+        }
+
+        .video-btn.recording {
+            background: var(--danger);
+            border-color: var(--danger);
+            animation: recordPulse 1.5s infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* Recording Panel Styles */
+        .recording-panel {
+            background: var(--modal-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 2px solid var(--danger);
+            margin-top: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        .recording-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .record-indicator {
+            color: var(--danger);
+            animation: blink-dot 1s infinite;
+        }
+
+        .recording-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--input-bg);
+            border-radius: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-dot.recording {
+            background: var(--danger);
+            animation: blink-dot 1s infinite;
+        }
+
+        .status-dot.paused {
+            background: var(--warning);
+        }
+
+        .recording-info {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .recording-stat {
+            text-align: center;
+            padding: 1rem;
+            background: var(--input-bg);
+            border-radius: 12px;
+        }
+
+        .recording-stat .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .recording-stat .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .recording-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .record-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .record-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .record-btn.pause {
+            background: var(--warning);
+            color: white;
+        }
+
+        .record-btn.pause:hover:not(:disabled) {
+            background: #d97706;
+        }
+
+        .record-btn.stop {
+            background: var(--danger);
+            color: white;
+        }
+
+        .record-btn.stop:hover:not(:disabled) {
+            background: #dc2626;
+        }
+
+        .record-btn.marker {
+            background: var(--info);
+            color: white;
+        }
+
+        .record-btn.marker:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .recording-options {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .record-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            color: var(--text);
+        }
+
+        .record-option input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .storage-options {
+            margin-bottom: 1.5rem;
+        }
+
+        .storage-options h4 {
+            margin: 0 0 1rem 0;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .storage-pills {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .storage-pill {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text);
+        }
+
+        .storage-pill:hover {
+            border-color: var(--primary);
+        }
+
+        .storage-pill.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        .markers-list {
+            margin-top: 1.5rem;
+        }
+
+        .markers-list h4 {
+            margin: 0 0 1rem 0;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .markers-container {
+            max-height: 150px;
+            overflow-y: auto;
+            background: var(--input-bg);
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+
+        .marker-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: var(--modal-bg);
+            border-radius: 6px;
+        }
+
+        .marker-time {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.875rem;
+        }
+
+        .marker-note {
+            flex: 1;
+            margin: 0 1rem;
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+
+        .marker-delete {
+            padding: 0.25rem 0.5rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        /* Recordings Library Styles */
+        .recordings-library {
+            background: var(--modal-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+            margin-top: 1rem;
+        }
+
+        .library-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .recordings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .recording-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--input-bg);
+            border-radius: 8px;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .recording-item:hover {
+            transform: translateX(5px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .recording-thumbnail {
+            width: 80px;
+            height: 45px;
+            background: #000;
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recording-play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .recording-details {
+            flex: 1;
+        }
+
+        .recording-title {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .recording-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .recording-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .recording-action-btn {
+            padding: 0.5rem;
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text);
+        }
+
+        .recording-action-btn:hover {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* Video Playback Modal */
+        .playback-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10002;
+        }
+
+        .playback-modal.active {
+            display: flex;
+        }
+
+        .playback-container {
+            width: 90%;
+            max-width: 1000px;
+            background: var(--modal-bg);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .playback-video {
+            width: 100%;
+            background: #000;
+        }
+
+        .playback-controls {
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--modal-bg);
+        }
+
+        .playback-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Guest Grid */
+        .guest-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .guest-slot {
+            background: var(--input-bg);
+            border-radius: 12px;
+            aspect-ratio: 16/9;
+            position: relative;
+            overflow: hidden;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .guest-slot.active {
+            border-color: var(--success);
+        }
+
+        .guest-slot.empty {
+            border: 3px dashed var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .guest-slot.empty:hover {
+            border-color: var(--primary);
+            background: rgba(255, 0, 0, 0.05);
+        }
+
+        .guest-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .guest-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 0.75rem;
+            color: white;
+        }
+
+        .guest-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .guest-controls {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .guest-control-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .guest-control-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .add-guest-icon {
+            font-size: 2rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Stream Settings */
+        .stream-settings {
+            background: var(--modal-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .setting-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .setting-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .setting-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        select {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+
+        .quality-pills {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .quality-pill {
+            padding: 0.5rem 1rem;
+            background: var(--input-bg);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .quality-pill:hover {
+            border-color: var(--primary);
+        }
+
+        .quality-pill.active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* ============================================
+           SIDEBAR
+           ============================================ */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Live Stats */
+        .live-stats {
+            background: var(--modal-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--input-bg);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            background: var(--modal-bg);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-title {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .viewer-count {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .chat-message {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .message-content {
+            flex: 1;
+        }
+
+        .message-user {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.875rem;
+        }
+
+        .message-text {
+            color: var(--text);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .message-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .chat-input {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--input-bg);
+            color: var(--text);
+        }
+
+        .send-btn {
+            padding: 0.5rem 1rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .send-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Waiting Room */
+        .waiting-room {
+            background: var(--modal-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .waiting-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--warning);
+            font-weight: 600;
+        }
+
+        .waiting-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .waiting-guest {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem;
+            background: var(--input-bg);
+            border-radius: 8px;
+        }
+
+        .waiting-guest-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .waiting-guest-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--warning);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .waiting-guest-name {
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .waiting-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .admit-btn, .deny-btn {
+            padding: 0.375rem 0.75rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .admit-btn {
+            background: var(--success);
+            color: white;
+        }
+
+        .admit-btn:hover {
+            background: #059669;
+        }
+
+        .deny-btn {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .deny-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* ============================================
+           MODAL FOOTER
+           ============================================ */
+        .live-modal-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 2rem;
+            background: var(--modal-bg);
+            border-top: 1px solid var(--border);
+        }
+
+        .stream-info {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .info-icon {
+            font-size: 1.125rem;
+        }
+
+        .stream-key {
+            font-family: monospace;
+            background: var(--input-bg);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            color: var(--text);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 0, 0, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--danger);
+            border: 2px solid var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .go-live-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            color: white;
+            font-size: 1.125rem;
+            padding: 1rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .go-live-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .go-live-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .go-live-btn.is-live {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+        }
+
+        .theme-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--modal-bg);
+            border: 2px solid var(--primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            transform: rotate(20deg) scale(1.1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .live-modal-body {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+            
+            .chat-panel {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .guest-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                grid-template-columns: 1fr;
+            }
+            
+            .stream-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+            <span id="themeIcon">🌙</span>
+        </button>
+    </div>
+
+    <!-- Launch Button -->
+    <button class="launch-live-btn" onclick="openLiveModal()">
+        <span class="live-dot"></span>
+        GO LIVE
+    </button>
+
+    <!-- Live Modal -->
+    <div class="live-modal-overlay" id="liveModalOverlay">
+        <div class="live-modal">
+            <!-- Modal Header -->
+            <div class="live-modal-header">
+                <div class="live-header-content">
+                    <div class="live-indicator" id="liveIndicator" style="display: none;">
+                        <span class="live-dot"></span>
+                        LIVE
+                    </div>
+                    <div class="modal-title">
+                        <h2>Broadcast Studio</h2>
+                        <p>Professional live streaming with real-time engagement</p>
+                    </div>
+                </div>
+                <button class="close-modal-btn" onclick="closeLiveModal()">×</button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="live-modal-body">
+                <!-- Main Content Area -->
+                <div class="main-content">
+                    <!-- Video Preview Section -->
+                    <div class="video-section">
+                        <video id="mainVideo" class="main-video" autoplay muted playsinline></video>
+                        <div class="video-overlay">
+                            <div class="video-controls">
+                                <button class="video-btn" onclick="toggleCamera()" title="Toggle Camera">
+                                    📹
+                                </button>
+                                <button class="video-btn" onclick="toggleMic()" title="Toggle Microphone">
+                                    🎤
+                                </button>
+                                <button class="video-btn" onclick="toggleScreen()" title="Share Screen">
+                                    🖥️
+                                </button>
+                                <button class="video-btn" id="recordBtn" onclick="toggleRecording()" title="Record">
+                                    ⏺️
+                                </button>
+                                <button class="video-btn" onclick="toggleSettings()" title="Settings">
+                                    ⚙️
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Guest Grid -->
+                    <div class="guest-grid" id="guestGrid">
+                        <div class="guest-slot empty" onclick="inviteGuest()">
+                            <div class="add-guest-icon">+</div>
+                            <div>Add Guest</div>
+                        </div>
+                        <div class="guest-slot empty" onclick="inviteGuest()">
+                            <div class="add-guest-icon">+</div>
+                            <div>Add Guest</div>
+                        </div>
+                        <div class="guest-slot empty" onclick="inviteGuest()">
+                            <div class="add-guest-icon">+</div>
+                            <div>Add Guest</div>
+                        </div>
+                        <div class="guest-slot empty" onclick="inviteGuest()">
+                            <div class="add-guest-icon">+</div>
+                            <div>Add Guest</div>
+                        </div>
+                    </div>
+
+                    <!-- Stream Settings -->
+                    <div class="stream-settings">
+                        <h3 style="margin: 0 0 1rem 0; color: var(--text);">Stream Settings</h3>
+                        <div class="settings-grid">
+                            <div class="setting-item">
+                                <div class="setting-label">Video Quality</div>
+                                <div class="quality-pills">
+                                    <div class="quality-pill" onclick="setQuality('720p')">720p</div>
+                                    <div class="quality-pill active" onclick="setQuality('1080p')">1080p</div>
+                                    <div class="quality-pill" onclick="setQuality('4K')">4K</div>
+                                </div>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">Camera</div>
+                                <select id="cameraSelect">
+                                    <option>Default Camera</option>
+                                    <option>External Webcam</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">Microphone</div>
+                                <select id="micSelect">
+                                    <option>Default Microphone</option>
+                                    <option>USB Microphone</option>
+                                </select>
+                            </div>
+                            <div class="setting-item">
+                                <div class="setting-label">Bitrate</div>
+                                <div class="setting-value">4000 kbps</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recording Panel -->
+                    <div class="recording-panel" id="recordingPanel" style="display: none;">
+                        <div class="recording-header">
+                            <h3 style="margin: 0; color: var(--text);">
+                                <span class="record-indicator">⏺️</span> Recording Session
+                            </h3>
+                            <div class="recording-status" id="recordingStatus">
+                                <span class="status-dot"></span>
+                                <span id="recordingStatusText">Ready</span>
+                            </div>
+                        </div>
+                        
+                        <div class="recording-info">
+                            <div class="recording-stat">
+                                <div class="stat-label">Duration</div>
+                                <div class="stat-value" id="recordDuration">00:00:00</div>
+                            </div>
+                            <div class="recording-stat">
+                                <div class="stat-label">Size</div>
+                                <div class="stat-value" id="recordSize">0 MB</div>
+                            </div>
+                            <div class="recording-stat">
+                                <div class="stat-label">Format</div>
+                                <div class="stat-value">WebM</div>
+                            </div>
+                        </div>
+
+                        <div class="recording-controls">
+                            <button class="record-btn pause" onclick="pauseRecording()" id="pauseBtn" disabled>
+                                <span>⏸️</span> Pause
+                            </button>
+                            <button class="record-btn stop" onclick="stopRecording()" id="stopBtn" disabled>
+                                <span>⏹️</span> Stop
+                            </button>
+                            <button class="record-btn marker" onclick="addMarker()" disabled id="markerBtn">
+                                <span>🔖</span> Add Marker
+                            </button>
+                        </div>
+
+                        <div class="recording-options">
+                            <label class="record-option">
+                                <input type="checkbox" id="recordAudio" checked>
+                                <span>Record Audio</span>
+                            </label>
+                            <label class="record-option">
+                                <input type="checkbox" id="recordVideo" checked>
+                                <span>Record Video</span>
+                            </label>
+                            <label class="record-option">
+                                <input type="checkbox" id="recordChat">
+                                <span>Save Chat</span>
+                            </label>
+                        </div>
+
+                        <div class="storage-options">
+                            <h4>Storage Options</h4>
+                            <div class="storage-pills">
+                                <div class="storage-pill active" onclick="selectStorage('local')">
+                                    💾 Local
+                                </div>
+                                <div class="storage-pill" onclick="selectStorage('cloud')">
+                                    ☁️ Cloud
+                                </div>
+                                <div class="storage-pill" onclick="selectStorage('both')">
+                                    🔄 Both
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="markers-list" id="markersList" style="display: none;">
+                            <h4>Recording Markers</h4>
+                            <div class="markers-container" id="markersContainer">
+                                <!-- Markers will be added here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recordings Library -->
+                    <div class="recordings-library" id="recordingsLibrary" style="display: none;">
+                        <div class="library-header">
+                            <h3 style="margin: 0; color: var(--text);">📹 Previous Recordings</h3>
+                            <button class="btn btn-secondary" onclick="toggleLibrary()">
+                                <span>📚</span> View All
+                            </button>
+                        </div>
+                        
+                        <div class="recordings-list" id="recordingsList">
+                            <!-- Recording items will be added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="sidebar">
+                    <!-- Live Stats -->
+                    <div class="live-stats">
+                        <h3 style="margin: 0 0 1rem 0; color: var(--text);">Live Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-value" id="viewerCount">0</div>
+                                <div class="stat-label">Viewers</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="duration">00:00</div>
+                                <div class="stat-label">Duration</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="likes">0</div>
+                                <div class="stat-label">Likes</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="messages">0</div>
+                                <div class="stat-label">Messages</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Panel -->
+                    <div class="chat-panel">
+                        <div class="chat-header">
+                            <div class="chat-title">💬 Live Chat</div>
+                            <div class="viewer-count">
+                                <span id="chatViewers">0</span> watching
+                            </div>
+                        </div>
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-message">
+                                <div class="message-avatar">SY</div>
+                                <div class="message-content">
+                                    <div class="message-user">System</div>
+                                    <div class="message-text">Welcome! Chat will be enabled when you go live.</div>
+                                    <div class="message-time">Now</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chat-input">
+                            <input type="text" id="chatInput" placeholder="Type a message..." disabled>
+                            <button class="send-btn" onclick="sendMessage()" disabled>Send</button>
+                        </div>
+                    </div>
+
+                    <!-- Waiting Room -->
+                    <div class="waiting-room" id="waitingRoom" style="display: none;">
+                        <div class="waiting-header">
+                            <span>⏳</span> Waiting Room
+                        </div>
+                        <div class="waiting-list" id="waitingList">
+                            <!-- Waiting guests will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="live-modal-footer">
+                <div class="stream-info">
+                    <div class="info-item">
+                        <span class="info-icon">🔑</span>
+                        <span>Stream Key: <span class="stream-key" id="streamKey">LIVE-XXXXX</span></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">🔗</span>
+                        <button class="btn btn-secondary" onclick="copyStreamLink()">Copy Link</button>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="testStream()">
+                        <span>🎬</span> Test Stream
+                    </button>
+                    <button class="btn go-live-btn" id="goLiveBtn" onclick="toggleLive()">
+                        <span>🔴</span> GO LIVE
+                    </button>
+                    <button class="btn btn-danger" onclick="endStream()" style="display: none;" id="endStreamBtn">
+                        <span>⏹️</span> End Stream
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Playback Modal -->
+    <div class="playback-modal" id="playbackModal">
+        <div class="playback-container">
+            <video id="playbackVideo" class="playback-video" controls></video>
+            <div class="playback-controls">
+                <div class="playback-info">
+                    <span id="playbackTitle">Recording</span>
+                </div>
+                <div class="playback-actions">
+                    <button class="btn btn-secondary" onclick="downloadRecording()">
+                        <span>⬇️</span> Download
+                    </button>
+                    <button class="btn btn-secondary" onclick="closePlayback()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme Management
+        let currentTheme = 'light';
+        
+        function toggleTheme() {
+            currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', currentTheme);
+            document.getElementById('themeIcon').textContent = currentTheme === 'light' ? '🌙' : '☀️';
+        }
+
+        // Modal Management
+        function openLiveModal() {
+            const overlay = document.getElementById('liveModalOverlay');
+            overlay.classList.add('active');
+            initializeStream();
+        }
+
+        function closeLiveModal() {
+            if (isLive && !confirm('Are you sure? This will end your live stream.')) {
+                return;
+            }
+            if (isRecording && !confirm('Recording in progress. Stop recording and close?')) {
+                return;
+            }
+            const overlay = document.getElementById('liveModalOverlay');
+            overlay.classList.remove('active');
+            if (isLive) {
+                endStream();
+            }
+            if (isRecording) {
+                stopRecording();
+            }
+        }
+
+        // Stream State
+        let isLive = false;
+        let localStream = null;
+        let startTime = null;
+        let durationInterval = null;
+        let viewerCount = 0;
+        let messageCount = 0;
+
+        // Recording State
+        let isRecording = false;
+        let isPaused = false;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingStartTime = null;
+        let recordingDurationInterval = null;
+        let recordingSize = 0;
+        let recordings = [];
+        let markers = [];
+        let currentRecordingBlob = null;
+
+        // Initialize Stream
+        async function initializeStream() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 1920, height: 1080 },
+                    audio: true
+                });
+                
+                const video = document.getElementById('mainVideo');
+                video.srcObject = localStream;
+                
+                // Generate stream key
+                document.getElementById('streamKey').textContent = 'LIVE-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+                
+                // Initialize MediaRecorder
+                initializeMediaRecorder();
+                
+                // Load previous recordings
+                loadRecordings();
+            } catch (error) {
+                console.error('Error accessing media devices:', error);
+                alert('Please allow camera and microphone access to continue.');
+            }
+        }
+
+        // Initialize MediaRecorder
+        function initializeMediaRecorder() {
+            if (!localStream) return;
+            
+            const options = {
+                mimeType: 'video/webm;codecs=vp9,opus',
+                videoBitsPerSecond: 2500000
+            };
+            
+            if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+                options.mimeType = 'video/webm';
+            }
+            
+            mediaRecorder = new MediaRecorder(localStream, options);
+            
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    recordedChunks.push(event.data);
+                    recordingSize += event.data.size;
+                    updateRecordingSize();
+                }
+            };
+            
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                currentRecordingBlob = blob;
+                saveRecording(blob);
+                recordedChunks = [];
+                recordingSize = 0;
+            };
+        }
+
+        // Toggle Recording
+        function toggleRecording() {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        // Start Recording
+        function startRecording() {
+            if (!mediaRecorder || !localStream) {
+                alert('Please ensure camera access is granted.');
+                return;
+            }
+            
+            isRecording = true;
+            recordingStartTime = Date.now();
+            markers = [];
+            
+            // Start recording
+            mediaRecorder.start(1000); // Collect data every second
+            
+            // Update UI
+            document.getElementById('recordBtn').classList.add('recording');
+            document.getElementById('recordingPanel').style.display = 'block';
+            document.getElementById('recordingStatusText').textContent = 'Recording';
+            document.querySelector('.status-dot').classList.add('recording');
+            
+            // Enable controls
+            document.getElementById('pauseBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('markerBtn').disabled = false;
+            
+            // Start duration timer
+            recordingDurationInterval = setInterval(updateRecordingDuration, 1000);
+            
+            // Show notification
+            showNotification('Recording Started', 'Your stream is being recorded');
+        }
+
+        // Pause Recording
+        function pauseRecording() {
+            if (!mediaRecorder) return;
+            
+            if (!isPaused) {
+                mediaRecorder.pause();
+                isPaused = true;
+                document.getElementById('pauseBtn').innerHTML = '<span>▶️</span> Resume';
+                document.getElementById('recordingStatusText').textContent = 'Paused';
+                document.querySelector('.status-dot').classList.add('paused');
+                clearInterval(recordingDurationInterval);
+            } else {
+                mediaRecorder.resume();
+                isPaused = false;
+                document.getElementById('pauseBtn').innerHTML = '<span>⏸️</span> Pause';
+                document.getElementById('recordingStatusText').textContent = 'Recording';
+                document.querySelector('.status-dot').classList.remove('paused');
+                recordingDurationInterval = setInterval(updateRecordingDuration, 1000);
+            }
+        }
+
+        // Stop Recording
+        function stopRecording() {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+            
+            mediaRecorder.stop();
+            isRecording = false;
+            isPaused = false;
+            
+            // Update UI
+            document.getElementById('recordBtn').classList.remove('recording');
+            document.getElementById('recordingStatusText').textContent = 'Stopped';
+            document.querySelector('.status-dot').classList.remove('recording', 'paused');
+            
+            // Disable controls
+            document.getElementById('pauseBtn').disabled = true;
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('markerBtn').disabled = true;
+            
+            // Stop timer
+            clearInterval(recordingDurationInterval);
+            
+            // Show notification
+            showNotification('Recording Saved', 'Your recording has been saved successfully');
+        }
+
+        // Add Marker
+        function addMarker() {
+            if (!isRecording || isPaused) return;
+            
+            const time = Date.now() - recordingStartTime;
+            const note = prompt('Add a note for this marker (optional):') || 'Marker';
+            
+            const marker = {
+                time: time,
+                note: note,
+                timestamp: formatTime(Math.floor(time / 1000))
+            };
+            
+            markers.push(marker);
+            updateMarkersList();
+            
+            showNotification('Marker Added', `Marker added at ${marker.timestamp}`);
+        }
+
+        // Update Markers List
+        function updateMarkersList() {
+            const container = document.getElementById('markersContainer');
+            const markersList = document.getElementById('markersList');
+            
+            if (markers.length > 0) {
+                markersList.style.display = 'block';
+                container.innerHTML = markers.map((marker, index) => `
+                    <div class="marker-item">
+                        <span class="marker-time">${marker.timestamp}</span>
+                        <span class="marker-note">${marker.note}</span>
+                        <button class="marker-delete" onclick="deleteMarker(${index})">×</button>
+                    </div>
+                `).join('');
+            } else {
+                markersList.style.display = 'none';
+            }
+        }
+
+        // Delete Marker
+        function deleteMarker(index) {
+            markers.splice(index, 1);
+            updateMarkersList();
+        }
+
+        // Update Recording Duration
+        function updateRecordingDuration() {
+            if (!recordingStartTime) return;
+            
+            const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+            document.getElementById('recordDuration').textContent = formatTime(elapsed);
+        }
+
+        // Update Recording Size
+        function updateRecordingSize() {
+            const sizeInMB = (recordingSize / (1024 * 1024)).toFixed(2);
+            document.getElementById('recordSize').textContent = `${sizeInMB} MB`;
+        }
+
+        // Format Time
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        // Save Recording
+        function saveRecording(blob) {
+            const recording = {
+                id: Date.now(),
+                title: `Recording ${new Date().toLocaleString()}`,
+                date: new Date().toISOString(),
+                duration: document.getElementById('recordDuration').textContent,
+                size: (blob.size / (1024 * 1024)).toFixed(2) + ' MB',
+                blob: blob,
+                markers: markers,
+                url: URL.createObjectURL(blob)
+            };
+            
+            recordings.unshift(recording);
+            updateRecordingsList();
+            
+            // Save to localStorage (metadata only)
+            saveRecordingsMetadata();
+            
+            // Auto-download if enabled
+            if (document.getElementById('recordVideo').checked) {
+                downloadBlob(blob, `recording_${recording.id}.webm`);
+            }
+        }
+
+        // Update Recordings List
+        function updateRecordingsList() {
+            const container = document.getElementById('recordingsList');
+            const library = document.getElementById('recordingsLibrary');
+            
+            if (recordings.length > 0) {
+                library.style.display = 'block';
+                container.innerHTML = recordings.slice(0, 5).map(recording => `
+                    <div class="recording-item">
+                        <div class="recording-thumbnail">
+                            <div class="recording-play-overlay" onclick="playRecording('${recording.id}')">
+                                ▶
+                            </div>
+                        </div>
+                        <div class="recording-details">
+                            <div class="recording-title">${recording.title}</div>
+                            <div class="recording-meta">
+                                <span>${recording.duration}</span>
+                                <span>${recording.size}</span>
+                                <span>${new Date(recording.date).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                        <div class="recording-actions">
+                            <button class="recording-action-btn" onclick="playRecording('${recording.id}')" title="Play">
+                                ▶️
+                            </button>
+                            <button class="recording-action-btn" onclick="downloadRecordingById('${recording.id}')" title="Download">
+                                ⬇️
+                            </button>
+                            <button class="recording-action-btn" onclick="deleteRecording('${recording.id}')" title="Delete">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                library.style.display = 'none';
+            }
+        }
+
+        // Play Recording
+        function playRecording(id) {
+            const recording = recordings.find(r => r.id == id);
+            if (recording) {
+                const modal = document.getElementById('playbackModal');
+                const video = document.getElementById('playbackVideo');
+                const title = document.getElementById('playbackTitle');
+                
+                video.src = recording.url;
+                title.textContent = recording.title;
+                modal.classList.add('active');
+                video.play();
+            }
+        }
+
+        // Close Playback
+        function closePlayback() {
+            const modal = document.getElementById('playbackModal');
+            const video = document.getElementById('playbackVideo');
+            
+            video.pause();
+            video.src = '';
+            modal.classList.remove('active');
+        }
+
+        // Download Recording
+        function downloadRecording() {
+            const video = document.getElementById('playbackVideo');
+            if (video.src) {
+                const a = document.createElement('a');
+                a.href = video.src;
+                a.download = `recording_${Date.now()}.webm`;
+                a.click();
+            }
+        }
+
+        // Download Recording by ID
+        function downloadRecordingById(id) {
+            const recording = recordings.find(r => r.id == id);
+            if (recording && recording.blob) {
+                downloadBlob(recording.blob, `recording_${recording.id}.webm`);
+            }
+        }
+
+        // Download Blob
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Delete Recording
+        function deleteRecording(id) {
+            if (confirm('Are you sure you want to delete this recording?')) {
+                const index = recordings.findIndex(r => r.id == id);
+                if (index > -1) {
+                    URL.revokeObjectURL(recordings[index].url);
+                    recordings.splice(index, 1);
+                    updateRecordingsList();
+                    saveRecordingsMetadata();
+                }
+            }
+        }
+
+        // Save Recordings Metadata
+        function saveRecordingsMetadata() {
+            const metadata = recordings.map(r => ({
+                id: r.id,
+                title: r.title,
+                date: r.date,
+                duration: r.duration,
+                size: r.size,
+                markers: r.markers
+            }));
+            localStorage.setItem('recordings', JSON.stringify(metadata));
+        }
+
+        // Load Recordings
+        function loadRecordings() {
+            const saved = localStorage.getItem('recordings');
+            if (saved) {
+                const metadata = JSON.parse(saved);
+                // Note: Actual video blobs are not persisted in localStorage
+                // This would require IndexedDB or server storage
+                updateRecordingsList();
+            }
+        }
+
+        // Select Storage
+        function selectStorage(type) {
+            document.querySelectorAll('.storage-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            showNotification('Storage Updated', `Recording will be saved to ${type}`);
+        }
+
+        // Toggle Library
+        function toggleLibrary() {
+            // This would open a full library modal in production
+            alert('Full recordings library coming soon!');
+        }
+
+        // Show Notification
+        function showNotification(title, message) {
+            // Simple notification for demo
+            console.log(`${title}: ${message}`);
+        }
+
+        // Toggle Live Stream
+        function toggleLive() {
+            if (!isLive) {
+                startLiveStream();
+            } else {
+                endStream();
+            }
+        }
+
+        // Start Live Stream
+        function startLiveStream() {
+            isLive = true;
+            startTime = Date.now();
+            
+            // Update UI
+            document.getElementById('liveIndicator').style.display = 'flex';
+            document.getElementById('goLiveBtn').style.display = 'none';
+            document.getElementById('endStreamBtn').style.display = 'flex';
+            document.getElementById('chatInput').disabled = false;
+            document.querySelector('.send-btn').disabled = false;
+            
+            // Start duration timer
+            durationInterval = setInterval(updateDuration, 1000);
+            
+            // Simulate viewers joining
+            simulateViewers();
+            
+            // Add system message
+            addChatMessage('System', '🎉 You are now LIVE!', true);
+            
+            // Auto-start recording if checkbox is checked
+            if (document.getElementById('recordVideo').checked) {
+                setTimeout(() => startRecording(), 1000);
+            }
+        }
+
+        // End Stream
+        function endStream() {
+            if (!confirm('Are you sure you want to end the live stream?')) {
+                return;
+            }
+            
+            isLive = false;
+            
+            // Stop recording if active
+            if (isRecording) {
+                stopRecording();
+            }
+            
+            // Update UI
+            document.getElementById('liveIndicator').style.display = 'none';
+            document.getElementById('goLiveBtn').style.display = 'flex';
+            document.getElementById('endStreamBtn').style.display = 'none';
+            document.getElementById('chatInput').disabled = true;
+            document.querySelector('.send-btn').disabled = true;
+            
+            // Stop timers
+            if (durationInterval) {
+                clearInterval(durationInterval);
+            }
+            
+            // Show summary
+            showStreamSummary();
+        }
+
+        // Update Duration
+        function updateDuration() {
+            if (!startTime) return;
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            document.getElementById('duration').textContent = 
+                `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // Camera Controls
+        function toggleCamera() {
+            if (localStream) {
+                const videoTrack = localStream.getVideoTracks()[0];
+                videoTrack.enabled = !videoTrack.enabled;
+                event.currentTarget.classList.toggle('muted', !videoTrack.enabled);
+            }
+        }
+
+        function toggleMic() {
+            if (localStream) {
+                const audioTrack = localStream.getAudioTracks()[0];
+                audioTrack.enabled = !audioTrack.enabled;
+                event.currentTarget.classList.toggle('muted', !audioTrack.enabled);
+            }
+        }
+
+        function toggleScreen() {
+            // Screen share implementation
+            alert('Screen sharing feature coming soon!');
+        }
+
+        function toggleSettings() {
+            const settings = document.querySelector('.stream-settings');
+            settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // Quality Settings
+        function setQuality(quality) {
+            document.querySelectorAll('.quality-pill').forEach(pill => {
+                pill.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+        }
+
+        // Guest Management
+        function inviteGuest() {
+            const link = window.location.origin + '/join/' + document.getElementById('streamKey').textContent;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(link);
+                alert('Guest invite link copied to clipboard!');
+            }
+        }
+
+        // Chat Functions
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            if (input.value.trim()) {
+                addChatMessage('You', input.value);
+                messageCount++;
+                document.getElementById('messages').textContent = messageCount;
+                input.value = '';
+            }
+        }
+
+        function addChatMessage(user, text, isSystem = false) {
+            const messages = document.getElementById('chatMessages');
+            const message = document.createElement('div');
+            message.className = 'chat-message';
+            message.innerHTML = `
+                <div class="message-avatar" style="${isSystem ? 'background: var(--info)' : ''}">${user.substring(0, 2).toUpperCase()}</div>
+                <div class="message-content">
+                    <div class="message-user">${user}</div>
+                    <div class="message-text">${text}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                </div>
+            `;
+            messages.appendChild(message);
+            messages.scrollTop = messages.scrollHeight;
+            
+            // Save chat if recording and option is enabled
+            if (isRecording && document.getElementById('recordChat').checked) {
+                // Chat would be saved with recording metadata
+            }
+        }
+
+        // Copy Stream Link
+        function copyStreamLink() {
+            const link = window.location.origin + '/live/' + document.getElementById('streamKey').textContent;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(link);
+                alert('Stream link copied to clipboard!');
+            }
+        }
+
+        // Test Stream
+        function testStream() {
+            alert('Testing stream connection... Connection successful!');
+        }
+
+        // Simulate Viewers
+        function simulateViewers() {
+            setInterval(() => {
+                if (isLive) {
+                    viewerCount = Math.max(0, viewerCount + Math.floor(Math.random() * 10) - 3);
+                    document.getElementById('viewerCount').textContent = viewerCount;
+                    document.getElementById('chatViewers').textContent = viewerCount;
+                    
+                    // Random likes
+                    if (Math.random() > 0.7) {
+                        const likes = parseInt(document.getElementById('likes').textContent);
+                        document.getElementById('likes').textContent = likes + 1;
+                    }
+                    
+                    // Random chat messages
+                    if (Math.random() > 0.8) {
+                        const messages = ['Great stream!', 'Love this content!', '👍', 'Hello from Brazil!', 'First time here!'];
+                        const users = ['User' + Math.floor(Math.random() * 999)];
+                        addChatMessage(users[0], messages[Math.floor(Math.random() * messages.length)]);
+                    }
+                }
+            }, 3000);
+        }
+
+        // Show Stream Summary
+        function showStreamSummary() {
+            const duration = document.getElementById('duration').textContent;
+            const viewers = document.getElementById('viewerCount').textContent;
+            const likes = document.getElementById('likes').textContent;
+            const messages = document.getElementById('messages').textContent;
+            const recordingCount = recordings.length;
+            
+            alert(`Stream Summary:\n\nDuration: ${duration}\nPeak Viewers: ${viewers}\nLikes: ${likes}\nChat Messages: ${messages}\nRecordings: ${recordingCount}\n\nGreat stream!`);
+        }
+
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('playbackModal').classList.contains('active')) {
+                    closePlayback();
+                } else {
+                    closeLiveModal();
+                }
+            }
+            if (e.key === 'Enter' && document.activeElement.id === 'chatInput') {
+                sendMessage();
+            }
+            // Keyboard shortcuts for recording
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'r') {
+                    e.preventDefault();
+                    toggleRecording();
+                }
+                if (e.key === 'm' && isRecording) {
+                    e.preventDefault();
+                    addMarker();
+                }
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            // Set initial theme
+            document.documentElement.setAttribute('data-theme', currentTheme);
+        });
+    </script>
+</body>
+</html>

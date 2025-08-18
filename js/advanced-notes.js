@@ -1071,3 +1071,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('Error initializing app:', error);
   }
 });
+

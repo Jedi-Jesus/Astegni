@@ -9,50 +9,6 @@
 /* ============================================
    CSS VARIABLES & THEME
    ============================================ */
-:root {
-  --primary-color: #F59E0B;
-  --primary-dark: #D97706;
-  --secondary-color: #8B5CF6;
-  --accent: #10B981;
-  --danger: #EF4444;
-  --text: #1f2937;
-  --text-muted: #6b7280;
-  --text-secondary: #4b5563;
-  --light-bg: #ffffff;
-  --dark-bg: #262626;
-  --border-color: #e5e7eb;
-  --button-bg: #F59E0B;
-  --button-hover: #D97706;
-  --heading: #111827;
-}
-
-[data-theme="dark"] {
-  --text: #e0e0e0;
-  --text-muted: #9ca3af;
-  --text-secondary: #d1d5db;
-  --light-bg: #262626;
-  --dark-bg: #1a1a1a;
-  --border-color: rgba(255, 255, 255, 0.1);
-  --heading: #f3f4f6;
-}
-
-/* ============================================
-   ENHANCED ANIMATED BACKGROUND
-   ============================================ */
-.animated-bg-enhanced {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  overflow: hidden;
-  background: linear-gradient(135deg, #fef3c7 0%, #fed7aa 100%);
-}
-
-[data-theme="dark"] .animated-bg-enhanced {
-  background: linear-gradient(135deg, #1a1a1a 0%, #262626 100%);
-}
 
 /* Floating Bubbles */
 .bubble-container {
@@ -4736,37 +4692,6 @@ textarea:focus-visible {
 
 /* Add this CSS to your store.css file or create a separate dark-theme-enhanced.css */
 
-/* Enhanced Dark Theme Hero Section */
-[data-theme="dark"] .hero-section-enhanced {
-  background: linear-gradient(135deg, 
-    rgba(245, 158, 11, 0.15) 0%, 
-    rgba(251, 146, 60, 0.2) 25%,
-    rgba(139, 92, 246, 0.15) 50%, 
-    rgba(236, 72, 153, 0.1) 75%,
-    rgba(59, 130, 246, 0.15) 100%);
-  position: relative;
-}
-
-/* Add a vibrant overlay for dark theme */
-[data-theme="dark"] .hero-section-enhanced::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 20% 50%, 
-    rgba(245, 158, 11, 0.3) 0%, 
-    transparent 50%),
-    radial-gradient(circle at 80% 80%, 
-    rgba(139, 92, 246, 0.3) 0%, 
-    transparent 50%),
-    radial-gradient(circle at 50% 20%, 
-    rgba(236, 72, 153, 0.2) 0%, 
-    transparent 50%);
-  pointer-events: none;
-  z-index: 0;
-}
 
 /* Enhanced dark theme bubbles with more vibrant colors */
 [data-theme="dark"] .hero-bubble {
@@ -4826,37 +4751,8 @@ textarea:focus-visible {
   filter: blur(6px);
 }
 
-/* Vibrant gradient orbs for dark theme */
-[data-theme="dark"] .gradient-orb {
-  filter: blur(80px);
-  opacity: 0.8;
-}
 
-[data-theme="dark"] .orb-1 {
-  background: radial-gradient(circle, 
-    rgba(251, 191, 36, 0.5), 
-    rgba(245, 158, 11, 0.3),
-    transparent);
-  animation: float-orb-dark 20s infinite ease-in-out;
-}
 
-[data-theme="dark"] .orb-2 {
-  background: radial-gradient(circle, 
-    rgba(168, 85, 247, 0.5), 
-    rgba(139, 92, 246, 0.3),
-    transparent);
-  animation: float-orb-dark 20s infinite ease-in-out;
-  animation-delay: -10s;
-}
-
-[data-theme="dark"] .orb-3 {
-  background: radial-gradient(circle, 
-    rgba(236, 72, 153, 0.5), 
-    rgba(219, 39, 119, 0.3),
-    transparent);
-  animation: float-orb-dark 20s infinite ease-in-out;
-  animation-delay: -5s;
-}
 
 @keyframes float-orb-dark {
   0%, 100% { 

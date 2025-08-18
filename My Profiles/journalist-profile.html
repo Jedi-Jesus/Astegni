@@ -1,0 +1,1210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sarah Mitchell - Elite Journalist Profile</title>
+    <link rel="stylesheet" href="../css/journalist-profile.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+</head>
+<body>
+    <!-- Advanced Preloader -->
+    <div id="preloader">
+        <div class="loader-wrapper">
+            <div class="loader-circle"></div>
+            <div class="loader-text">Loading Excellence...</div>
+        </div>
+    </div>
+
+    <!-- Particle Background -->
+    <div id="particles-bg"></div>
+
+    <!-- Theme Switcher -->
+    <div class="theme-switcher">
+        <button class="theme-btn" onclick="toggleTheme()">
+            <i class="fas fa-moon" id="theme-icon"></i>
+        </button>
+    </div>
+
+    <!-- Quick Access Toolbar -->
+    <div class="quick-toolbar">
+        <button class="toolbar-btn" data-tooltip="AI Assistant" onclick="openAIAssistant()">
+            <i class="fas fa-robot"></i>
+        </button>
+        <button class="toolbar-btn" data-tooltip="Voice Notes" onclick="startVoiceRecording()">
+            <i class="fas fa-microphone"></i>
+        </button>
+        <button class="toolbar-btn" data-tooltip="Analytics Dashboard" onclick="openAnalyticsDashboard()">
+            <i class="fas fa-chart-pie"></i>
+        </button>
+        <button class="toolbar-btn" data-tooltip="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notification-dot"></span>
+        </button>
+    </div>
+
+    <!-- Main Profile Container -->
+    <div class="profile-container enhanced">
+        <!-- Enhanced Header with Parallax -->
+        <div class="profile-header parallax-container">
+            <div class="cover-section enhanced-cover">
+                <div class="cover-overlay"></div>
+                <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1200&h=400&fit=crop" alt="Cover" class="cover-image parallax-element">
+                <div class="cover-content">
+                    <div class="live-indicator">
+                        <span class="live-dot"></span>
+                        <span>LIVE</span>
+                    </div>
+                    <button class="edit-cover-btn glass-effect">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                </div>
+                <!-- Animated Stats Bar -->
+                <div class="floating-stats-bar">
+                    <div class="stat-bubble">
+                        <i class="fas fa-trophy"></i>
+                        <span>15 Awards</span>
+                    </div>
+                    <div class="stat-bubble">
+                        <i class="fas fa-newspaper"></i>
+                        <span>842 Articles</span>
+                    </div>
+                    <div class="stat-bubble">
+                        <i class="fas fa-globe"></i>
+                        <span>127 Countries</span>
+                    </div>
+                    <div class="stat-bubble">
+                        <i class="fas fa-users"></i>
+                        <span>2.5M Readers</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-info-section enhanced">
+                <div class="profile-pic-wrapper magnetic-effect">
+                    <div class="profile-ring-animation"></div>
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop" alt="Profile" class="profile-picture">
+                    <div class="status-indicator online"></div>
+                    <button class="edit-profile-pic-btn pulse-effect">
+                        <i class="fas fa-camera"></i>
+                    </button>
+                    <!-- Verification Badge with Animation -->
+                    <div class="verification-badge-animated">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                
+                <div class="profile-details enhanced">
+                    <div class="name-rating-row">
+                        <div class="name-section">
+                            <h1 class="journalist-name glitch-effect" data-text="Sarah Mitchell">Sarah Mitchell</h1>
+                            <div class="title-badges">
+                                <span class="badge-elite">Elite Journalist</span>
+                                <span class="badge-verified">
+                                    <i class="fas fa-check"></i> Verified
+                                </span>
+                                <span class="badge-pro">PRO</span>
+                            </div>
+                        </div>
+                        <button class="edit-profile-btn premium-btn">
+                            <i class="fas fa-edit"></i> 
+                            <span>Edit Profile</span>
+                            <div class="btn-shine"></div>
+                        </button>
+                    </div>
+                    
+                    <!-- Enhanced Rating System -->
+                    <div class="rating-section enhanced">
+                        <div class="rating-stars">
+                            <div class="stars-background">
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                                <i class="far fa-star"></i>
+                            </div>
+                            <div class="stars-foreground" style="width: 90%">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                        <span class="rating-text">4.5/5.0 (234 reviews)</span>
+                        <button class="view-comments-btn glass-btn">
+                            <i class="fas fa-comments"></i> View Comments
+                        </button>
+                        <div class="trust-score">
+                            <span class="trust-label">Trust Score</span>
+                            <div class="trust-bar">
+                                <div class="trust-fill" style="width: 92%"></div>
+                            </div>
+                            <span class="trust-value">92%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Interactive Followers Section -->
+                    <div class="followers-section interactive">
+                        <div class="follower-count animated-counter">
+                            <i class="fas fa-users"></i>
+                            <span class="count" data-target="12500">0</span>
+                            <span>Followers</span>
+                        </div>
+                        <div class="following-count animated-counter">
+                            <span class="count" data-target="842">0</span>
+                            <span>Following</span>
+                        </div>
+                        <div class="engagement-rate">
+                            <i class="fas fa-chart-line"></i>
+                            <span>8.7% Engagement</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced Bio with Typewriter Effect -->
+                    <div class="bio-section enhanced">
+                        <p class="bio-text typewriter-text">Award-winning investigative journalist specializing in technology, culture, and social innovation. 15+ years of experience covering groundbreaking stories across the globe.</p>
+                        <blockquote class="journalist-quote animated-quote">
+                            <i class="fas fa-quote-left"></i>
+                            <span class="quote-text">Truth is the foundation of great journalism, and courage is its companion.</span>
+                            <i class="fas fa-quote-right"></i>
+                        </blockquote>
+                        <!-- Skills Tags -->
+                        <div class="skills-tags">
+                            <span class="skill-tag">Investigative Reporting</span>
+                            <span class="skill-tag">Data Journalism</span>
+                            <span class="skill-tag">Tech Analysis</span>
+                            <span class="skill-tag">Documentary</span>
+                            <span class="skill-tag">Podcast Host</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Enhanced Social Links with Hover Effects -->
+                    <div class="social-links enhanced">
+                        <a href="#" class="social-link twitter" data-tooltip="Twitter">
+                            <i class="fab fa-twitter"></i>
+                            <span class="follower-mini">45K</span>
+                        </a>
+                        <a href="#" class="social-link linkedin" data-tooltip="LinkedIn">
+                            <i class="fab fa-linkedin"></i>
+                            <span class="follower-mini">28K</span>
+                        </a>
+                        <a href="#" class="social-link instagram" data-tooltip="Instagram">
+                            <i class="fab fa-instagram"></i>
+                            <span class="follower-mini">67K</span>
+                        </a>
+                        <a href="#" class="social-link youtube" data-tooltip="YouTube">
+                            <i class="fab fa-youtube"></i>
+                            <span class="follower-mini">125K</span>
+                        </a>
+                        <a href="#" class="social-link website" data-tooltip="Website">
+                            <i class="fas fa-globe"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Action Buttons -->
+        <div class="action-buttons premium">
+            <button class="action-btn schedule-btn gradient-animation" onclick="openScheduleModal()">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Set Schedule</span>
+                <div class="btn-particles"></div>
+            </button>
+            <button class="action-btn news-btn gradient-animation" onclick="openNewsModal()">
+                <i class="fas fa-newspaper"></i>
+                <span>Create Article</span>
+                <div class="btn-particles"></div>
+            </button>
+            <button class="action-btn vlog-btn gradient-animation" onclick="openVlogModal()">
+                <i class="fas fa-video"></i>
+                <span>Upload Video</span>
+                <div class="btn-particles"></div>
+            </button>
+            <button class="action-btn podcast-btn gradient-animation" onclick="openPodcastModal()">
+                <i class="fas fa-podcast"></i>
+                <span>Create Podcast</span>
+                <div class="btn-particles"></div>
+            </button>
+            <button class="action-btn live-btn gradient-animation" onclick="openGoLiveModal()">
+                <i class="fas fa-broadcast-tower"></i>
+                <span>Go Live</span>
+                <div class="btn-particles"></div>
+            </button>
+            <button class="action-btn connect-btn gradient-animation" onclick="openConnectModal()">
+                <i class="fas fa-users"></i>
+                <span>Connect</span>
+                <div class="btn-particles"></div>
+            </button>
+            <button class="action-btn ai-btn gradient-animation" onclick="openAIWriter()">
+                <i class="fas fa-magic"></i>
+                <span>AI Writer</span>
+                <div class="btn-particles"></div>
+            </button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+            <button class="tab-btn active" data-tab="articles">
+                <i class="fas fa-newspaper"></i>
+                Articles
+            </button>
+            <button class="tab-btn" data-tab="vlogs">
+                <i class="fas fa-video"></i>
+                Vlogs
+            </button>
+            <button class="tab-btn" data-tab="podcasts">
+                <i class="fas fa-podcast"></i>
+                Podcasts
+            </button>
+            <button class="tab-btn" data-tab="analytics">
+                <i class="fas fa-chart-bar"></i>
+                Analytics
+            </button>
+            <button class="tab-btn" data-tab="schedule">
+                <i class="fas fa-calendar"></i>
+                Schedule
+            </button>
+        </div>
+
+        <!-- Enhanced Content Grid -->
+        <div class="content-grid enhanced">
+            <!-- Left Column - News Cards with Filters -->
+            <div class="news-column enhanced">
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search articles..." id="articleSearch">
+                    </div>
+                    <div class="filter-chips">
+                        <button class="filter-chip active">All</button>
+                        <button class="filter-chip">Technology</button>
+                        <button class="filter-chip">Culture</button>
+                        <button class="filter-chip">Politics</button>
+                        <button class="filter-chip">Business</button>
+                    </div>
+                    <div class="sort-dropdown">
+                        <select id="sortArticles">
+                            <option value="latest">Latest First</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="trending">Trending</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h2 class="section-title animated">
+                    <span>My Latest Articles</span>
+                    <span class="article-count">842 Total</span>
+                </h2>
+                
+                <!-- Featured Article Card -->
+                <div class="news-card featured">
+                    <div class="featured-badge">
+                        <i class="fas fa-star"></i> Featured
+                    </div>
+                    <div class="news-card-image">
+                        <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop" alt="Tech News">
+                        <div class="image-overlay">
+                            <button class="play-btn"><i class="fas fa-play"></i></button>
+                        </div>
+                        <span class="news-category tech animated">Technology</span>
+                        <span class="reading-time">8 min read</span>
+                    </div>
+                    <div class="news-card-content enhanced">
+                        <div class="article-meta">
+                            <span class="author-tag">By Sarah Mitchell</span>
+                            <span class="date">2 hours ago</span>
+                            <span class="trending-tag"><i class="fas fa-fire"></i> Trending</span>
+                        </div>
+                        <h3>The Future of AI in Journalism: A Paradigm Shift</h3>
+                        <p class="news-excerpt">Exploring how artificial intelligence is transforming the way we gather, analyze, and present news in the digital age...</p>
+                        
+                        <!-- Enhanced Stats with Animations -->
+                        <div class="news-stats enhanced">
+                            <span class="stat-item growing">
+                                <i class="fas fa-eye"></i>
+                                <span class="stat-number" data-value="5234">5.2K</span> views
+                            </span>
+                            <span class="stat-item">
+                                <i class="fas fa-heart"></i>
+                                <span class="stat-number" data-value="342">342</span> likes
+                            </span>
+                            <span class="stat-item">
+                                <i class="fas fa-comment"></i>
+                                <span class="stat-number">56</span> comments
+                            </span>
+                            <span class="stat-item">
+                                <i class="fas fa-bookmark"></i>
+                                <span class="stat-number">89</span> saves
+                            </span>
+                            <span class="stat-item">
+                                <i class="fas fa-share"></i>
+                                <span class="stat-number">156</span> shares
+                            </span>
+                        </div>
+                        
+                        <!-- Quick Actions Bar -->
+                        <div class="news-actions enhanced">
+                            <button class="btn-action like-btn" onclick="likeArticle(1)">
+                                <i class="far fa-heart"></i>
+                            </button>
+                            <button class="btn-action comment-btn" onclick="openComments(1)">
+                                <i class="far fa-comment"></i>
+                            </button>
+                            <button class="btn-action bookmark-btn" onclick="bookmarkArticle(1)">
+                                <i class="far fa-bookmark"></i>
+                            </button>
+                            <button class="btn-action share-btn" onclick="shareArticle(1)">
+                                <i class="fas fa-share-alt"></i>
+                            </button>
+                            <div class="action-separator"></div>
+                            <button class="btn-action edit-btn" onclick="editNews(1)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action analytics-btn" onclick="viewArticleAnalytics(1)">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            <button class="btn-action delete-btn" onclick="deleteNews(1)">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Regular News Cards -->
+                <div class="news-grid">
+                    <!-- News Card 2 -->
+                    <div class="news-card hover-lift">
+                        <div class="news-card-image">
+                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=250&fit=crop" alt="Culture News">
+                            <span class="news-category culture">Culture</span>
+                            <span class="reading-time">5 min</span>
+                        </div>
+                        <div class="news-card-content">
+                            <h3>Digital Art Revolution: NFTs and Beyond</h3>
+                            <p class="news-excerpt">How blockchain technology is reshaping the art world...</p>
+                            <div class="news-stats">
+                                <span><i class="fas fa-eye"></i> 3.8K</span>
+                                <span><i class="fas fa-heart"></i> 287</span>
+                                <span><i class="fas fa-comment"></i> 34</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- News Card 3 -->
+                    <div class="news-card hover-lift">
+                        <div class="news-card-image">
+                            <img src="https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=250&fit=crop" alt="Business News">
+                            <span class="news-category business">Business</span>
+                            <span class="reading-time">6 min</span>
+                        </div>
+                        <div class="news-card-content">
+                            <h3>Startup Ecosystem Thrives Despite Challenges</h3>
+                            <p class="news-excerpt">An in-depth look at emerging startups and innovation...</p>
+                            <div class="news-stats">
+                                <span><i class="fas fa-eye"></i> 2.1K</span>
+                                <span><i class="fas fa-heart"></i> 156</span>
+                                <span><i class="fas fa-comment"></i> 23</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Load More with Animation -->
+                <button class="load-more-btn">
+                    <span>Load More Articles</span>
+                    <i class="fas fa-arrow-down"></i>
+                </button>
+            </div>
+
+            <!-- Right Column - Advanced Widgets -->
+            <div class="widgets-column enhanced">
+                <!-- This Week's Performance Widget -->
+                <div class="widget performance-widget">
+                    <h3 class="widget-title">
+                        <i class="fas fa-chart-line"></i> This Week's Performance
+                    </h3>
+                    <div class="performance-stats">
+                        <div class="perf-stat">
+                            <div class="perf-value">28.5K</div>
+                            <div class="perf-label">Total Views</div>
+                            <div class="perf-change positive">+12%</div>
+                        </div>
+                        <div class="perf-stat">
+                            <div class="perf-value">1.2K</div>
+                            <div class="perf-label">New Followers</div>
+                            <div class="perf-change positive">+8%</div>
+                        </div>
+                        <div class="perf-stat">
+                            <div class="perf-value">456</div>
+                            <div class="perf-label">Engagement</div>
+                            <div class="perf-change negative">-3%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trending Topics Widget -->
+                <div class="widget trending-widget">
+                    <h3 class="widget-title">
+                        <i class="fas fa-fire"></i> Trending Topics
+                    </h3>
+                    <div class="trending-list">
+                        <div class="trending-item">
+                            <span class="trending-number">1</span>
+                            <span class="trending-topic">#AIRevolution</span>
+                            <span class="trending-count">45.2K posts</span>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-number">2</span>
+                            <span class="trending-topic">#ClimateAction</span>
+                            <span class="trending-count">38.7K posts</span>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-number">3</span>
+                            <span class="trending-topic">#TechEthics</span>
+                            <span class="trending-count">29.1K posts</span>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-number">4</span>
+                            <span class="trending-topic">#DigitalPrivacy</span>
+                            <span class="trending-count">24.5K posts</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- AI Insights Widget -->
+                <div class="widget ai-insights-widget premium-widget">
+                    <div class="widget-header">
+                        <h3 class="widget-title">
+                            <i class="fas fa-brain"></i> AI Insights
+                        </h3>
+                        <button class="widget-action">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                    <div class="ai-suggestions">
+                        <div class="suggestion-card">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="suggestion-content">
+                                <h4>Trending Topic Alert</h4>
+                                <p>Climate Tech is trending. Consider writing about sustainable innovations.</p>
+                                <button class="suggestion-action">Start Writing</button>
+                            </div>
+                        </div>
+                        <div class="suggestion-card">
+                            <div class="suggestion-icon">
+                                <i class="fas fa-chart-trending-up"></i>
+                            </div>
+                            <div class="suggestion-content">
+                                <h4>Optimal Posting Time</h4>
+                                <p>Your audience is most active at 2 PM EST</p>
+                                <button class="suggestion-action">Schedule Post</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-time Analytics Widget -->
+                <div class="widget analytics-widget real-time">
+                    <div class="widget-header">
+                        <h3 class="widget-title">
+                            <i class="fas fa-chart-line"></i> Real-time Analytics
+                        </h3>
+                        <div class="live-indicator-small">
+                            <span class="live-dot"></span>
+                            LIVE
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="realtimeChart"></canvas>
+                    </div>
+                    <div class="analytics-stats grid">
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-users"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value counter" data-target="234">0</div>
+                                <div class="stat-label">Active Now</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-eye"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value counter" data-target="28534">0</div>
+                                <div class="stat-label">Today's Views</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value">3:45</div>
+                                <div class="stat-label">Avg. Read Time</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon"><i class="fas fa-share-alt"></i></div>
+                            <div class="stat-info">
+                                <div class="stat-value counter" data-target="892">0</div>
+                                <div class="stat-label">Shares Today</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interactive Schedule Widget -->
+                <div class="widget schedule-widget interactive">
+                    <div class="widget-header">
+                        <h3 class="widget-title">
+                            <i class="fas fa-calendar"></i> Today's Schedule
+                        </h3>
+                        <button class="widget-action" onclick="openScheduleModal()">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div class="timeline">
+                        <div class="timeline-item upcoming">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="time">09:00 AM</div>
+                                <h4>Tech Conference Coverage</h4>
+                                <p>Silicon Valley Convention Center</p>
+                                <div class="item-actions">
+                                    <button class="mini-btn"><i class="fas fa-video"></i></button>
+                                    <button class="mini-btn"><i class="fas fa-edit"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item current">
+                            <div class="timeline-marker active"></div>
+                            <div class="timeline-content">
+                                <div class="time">NOW</div>
+                                <h4>Writing Session</h4>
+                                <p>Working on AI Article</p>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-marker"></div>
+                            <div class="timeline-content">
+                                <div class="time">02:00 PM</div>
+                                <h4>Interview with CEO</h4>
+                                <p>Virtual Meeting</p>
+                                <div class="item-actions">
+                                    <button class="mini-btn"><i class="fas fa-link"></i></button>
+                                    <button class="mini-btn"><i class="fas fa-bell"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weather Widget Enhanced -->
+                <div class="widget weather-widget animated">
+                    <div class="weather-background"></div>
+                    <div class="widget-header">
+                        <h3 class="widget-title">
+                            <i class="fas fa-cloud-sun"></i> Weather
+                        </h3>
+                        <span class="location">New York, NY</span>
+                    </div>
+                    <div class="weather-main">
+                        <div class="weather-icon-animated">
+                            <i class="fas fa-cloud-sun fa-3x"></i>
+                        </div>
+                        <div class="weather-info">
+                            <div class="temperature">72°F</div>
+                            <div class="condition">Partly Cloudy</div>
+                        </div>
+                    </div>
+                    <div class="weather-forecast">
+                        <div class="forecast-item">
+                            <span>Mon</span>
+                            <i class="fas fa-sun"></i>
+                            <span>75°</span>
+                        </div>
+                        <div class="forecast-item">
+                            <span>Tue</span>
+                            <i class="fas fa-cloud"></i>
+                            <span>68°</span>
+                        </div>
+                        <div class="forecast-item">
+                            <span>Wed</span>
+                            <i class="fas fa-cloud-rain"></i>
+                            <span>65°</span>
+                        </div>
+                        <div class="forecast-item">
+                            <span>Thu</span>
+                            <i class="fas fa-sun"></i>
+                            <span>73°</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Collaboration Widget -->
+                <div class="widget collaboration-widget">
+                    <h3 class="widget-title">
+                        <i class="fas fa-users"></i> Team Collaboration
+                    </h3>
+                    <div class="collaborators-list">
+                        <div class="collaborator online">
+                            <img src="https://i.pravatar.cc/40?img=1" alt="User">
+                            <div class="collaborator-info">
+                                <span class="name">Alex Chen</span>
+                                <span class="status">Editing Tech Article</span>
+                            </div>
+                            <button class="collab-action"><i class="fas fa-comment"></i></button>
+                        </div>
+                        <div class="collaborator online">
+                            <img src="https://i.pravatar.cc/40?img=2" alt="User">
+                            <div class="collaborator-info">
+                                <span class="name">Maria Garcia</span>
+                                <span class="status">Reviewing Draft</span>
+                            </div>
+                            <button class="collab-action"><i class="fas fa-comment"></i></button>
+                        </div>
+                        <div class="collaborator offline">
+                            <img src="https://i.pravatar.cc/40?img=3" alt="User">
+                            <div class="collaborator-info">
+                                <span class="name">James Wilson</span>
+                                <span class="status">Offline</span>
+                            </div>
+                            <button class="collab-action"><i class="fas fa-envelope"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Achievements Section -->
+        <div class="achievements-section">
+            <h2 class="section-title">
+                <i class="fas fa-trophy"></i> Achievements & Milestones
+            </h2>
+            <div class="achievements-grid">
+                <div class="achievement-card unlocked">
+                    <div class="achievement-icon gold">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <h4>Pulitzer Nominee</h4>
+                    <p>2023 Investigation Series</p>
+                </div>
+                <div class="achievement-card unlocked">
+                    <div class="achievement-icon silver">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h4>1M Readers</h4>
+                    <p>Milestone Reached</p>
+                </div>
+                <div class="achievement-card unlocked">
+                    <div class="achievement-icon bronze">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h4>Top Writer</h4>
+                    <p>Technology Category</p>
+                </div>
+                <div class="achievement-card locked">
+                    <div class="achievement-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <h4>10K Articles</h4>
+                    <p>8,420 / 10,000</p>
+                    <div class="achievement-progress">
+                        <div class="progress-fill" style="width: 84.2%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Interactive Footer -->
+        <footer class="enhanced-footer">
+            <div class="footer-content">
+                <div class="footer-stats">
+                    <div class="footer-stat">
+                        <i class="fas fa-pen"></i>
+                        <span>842 Articles</span>
+                    </div>
+                    <div class="footer-stat">
+                        <i class="fas fa-video"></i>
+                        <span>156 Vlogs</span>
+                    </div>
+                    <div class="footer-stat">
+                        <i class="fas fa-microphone"></i>
+                        <span>89 Podcasts</span>
+                    </div>
+                    <div class="footer-stat">
+                        <i class="fas fa-globe"></i>
+                        <span>127 Countries</span>
+                    </div>
+                </div>
+                <div class="footer-actions">
+                    <button class="footer-btn" onclick="exportData()">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                    <button class="footer-btn" onclick="printProfile()">
+                        <i class="fas fa-print"></i> Print Profile
+                    </button>
+                    <button class="footer-btn" onclick="shareProfile()">
+                        <i class="fas fa-share"></i> Share
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Enhanced Modals -->
+    <!-- AI Writer Modal -->
+    <div id="aiWriterModal" class="modal premium-modal">
+        <div class="modal-content ai-modal">
+            <div class="modal-header gradient-header">
+                <h2><i class="fas fa-magic"></i> AI Content Assistant</h2>
+                <span class="close-modal" onclick="closeAIWriter()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="ai-options">
+                    <button class="ai-option-btn active" data-mode="generate">
+                        <i class="fas fa-pen"></i>
+                        Generate Article
+                    </button>
+                    <button class="ai-option-btn" data-mode="improve">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                        Improve Existing
+                    </button>
+                    <button class="ai-option-btn" data-mode="ideas">
+                        <i class="fas fa-lightbulb"></i>
+                        Get Ideas
+                    </button>
+                    <button class="ai-option-btn" data-mode="translate">
+                        <i class="fas fa-language"></i>
+                        Translate
+                    </button>
+                </div>
+                <div class="ai-input-section">
+                    <div class="form-group">
+                        <label>Topic or Keywords</label>
+                        <input type="text" id="aiTopic" placeholder="Enter topic or keywords">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tone</label>
+                            <select id="aiTone">
+                                <option>Professional</option>
+                                <option>Casual</option>
+                                <option>Academic</option>
+                                <option>Creative</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Length</label>
+                            <select id="aiLength">
+                                <option>Short (300 words)</option>
+                                <option>Medium (800 words)</option>
+                                <option>Long (1500+ words)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Instructions</label>
+                        <textarea id="aiInstructions" rows="3" placeholder="Any specific requirements..."></textarea>
+                    </div>
+                </div>
+                <div class="ai-output-section">
+                    <div class="output-header">
+                        <h3>Generated Content</h3>
+                        <div class="output-actions">
+                            <button class="output-btn"><i class="fas fa-copy"></i></button>
+                            <button class="output-btn"><i class="fas fa-download"></i></button>
+                            <button class="output-btn"><i class="fas fa-redo"></i></button>
+                        </div>
+                    </div>
+                    <div id="aiOutput" class="ai-output" contenteditable="true">
+                        Your AI-generated content will appear here...
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-generate" onclick="generateAIContent()">
+                        <i class="fas fa-sparkles"></i> Generate
+                    </button>
+                    <button class="btn-use" onclick="useAIContent()">
+                        <i class="fas fa-check"></i> Use This Content
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analytics Dashboard Modal -->
+    <div id="analyticsDashboard" class="modal fullscreen-modal">
+        <div class="modal-content dashboard-content">
+            <div class="modal-header">
+                <h2>Analytics Dashboard</h2>
+                <span class="close-modal" onclick="closeAnalyticsDashboard()">&times;</span>
+            </div>
+            <div class="dashboard-body">
+                <div class="dashboard-filters">
+                    <select class="date-range">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>Last 3 Months</option>
+                        <option>Last Year</option>
+                    </select>
+                    <button class="filter-btn">Apply Filters</button>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Audience Overview</h3>
+                        <canvas id="audienceChart"></canvas>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Content Performance</h3>
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Geographic Distribution</h3>
+                        <div id="geoMap"></div>
+                    </div>
+                    <div class="dashboard-card">
+                        <h3>Top Articles</h3>
+                        <div class="top-articles-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Voice Recording Modal -->
+    <div id="voiceModal" class="modal">
+        <div class="modal-content voice-modal">
+            <div class="modal-header">
+                <h2>Voice Note Recorder</h2>
+                <span class="close-modal" onclick="closeVoiceModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="voice-recorder">
+                    <div class="recording-visualizer">
+                        <canvas id="audioVisualizer"></canvas>
+                    </div>
+                    <div class="recording-controls">
+                        <button class="record-btn" id="recordBtn">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <div class="recording-time">00:00</div>
+                    </div>
+                    <div class="recording-status">
+                        <span id="recordingStatus">Ready to record</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <div class="fab-container">
+        <button class="fab main-fab">
+            <i class="fas fa-plus"></i>
+        </button>
+        <div class="fab-options">
+            <button class="fab-option" data-tooltip="New Article" onclick="openNewsModal()">
+                <i class="fas fa-pen"></i>
+            </button>
+            <button class="fab-option" data-tooltip="Upload Media" onclick="openMediaUpload()">
+                <i class="fas fa-photo-video"></i>
+            </button>
+            <button class="fab-option" data-tooltip="Schedule Post" onclick="openScheduleModal()">
+                <i class="fas fa-clock"></i>
+            </button>
+            <button class="fab-option" data-tooltip="Go Live" onclick="startLiveSession()">
+                <i class="fas fa-broadcast-tower"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Create Podcast Modal -->
+    <div id="podcastModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2><i class="fas fa-podcast"></i> Create Podcast Episode</h2>
+                <span class="close-modal" onclick="closePodcastModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="podcastForm">
+                    <div class="form-group">
+                        <label>Episode Title</label>
+                        <input type="text" placeholder="Enter episode title" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Episode Number</label>
+                            <input type="number" placeholder="E.g., 45" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Season</label>
+                            <input type="number" placeholder="E.g., 2">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Guest(s)</label>
+                        <input type="text" placeholder="Add guest names (optional)">
+                    </div>
+                    <div class="form-group">
+                        <label>Episode Description</label>
+                        <textarea rows="4" placeholder="What's this episode about?"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Audio</label>
+                        <div class="file-upload">
+                            <input type="file" id="podcastFile" accept="audio/*" required>
+                            <label for="podcastFile" class="file-label">
+                                <i class="fas fa-microphone"></i>
+                                <span>Choose audio file or record</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cover Art</label>
+                        <div class="file-upload">
+                            <input type="file" id="podcastCover" accept="image/*">
+                            <label for="podcastCover" class="file-label">
+                                <i class="fas fa-image"></i>
+                                <span>Choose cover image</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-record" onclick="startPodcastRecording()">
+                            <i class="fas fa-circle"></i> Start Recording
+                        </button>
+                        <button type="button" class="btn-cancel" onclick="closePodcastModal()">Cancel</button>
+                        <button type="submit" class="btn-save">Publish Episode</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Go Live Modal -->
+    <div id="goLiveModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header gradient-header">
+                <h2><i class="fas fa-broadcast-tower"></i> Go Live</h2>
+                <span class="close-modal" onclick="closeGoLiveModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="live-options">
+                    <div class="live-option-card" onclick="selectLiveOption('solo')">
+                        <div class="option-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h3>Solo Stream</h3>
+                        <p>Broadcast by yourself</p>
+                    </div>
+                    <div class="live-option-card" onclick="selectLiveOption('interview')">
+                        <div class="option-icon">
+                            <i class="fas fa-user-friends"></i>
+                        </div>
+                        <h3>Interview</h3>
+                        <p>Go live with one guest</p>
+                    </div>
+                    <div class="live-option-card" onclick="selectLiveOption('panel')">
+                        <div class="option-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Panel Discussion</h3>
+                        <p>Multiple participants</p>
+                    </div>
+                </div>
+                
+                <div class="live-settings" id="liveSettings" style="display: none;">
+                    <div class="form-group">
+                        <label>Stream Title</label>
+                        <input type="text" id="streamTitle" placeholder="What are you talking about today?">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Stream Type</label>
+                            <select id="streamType">
+                                <option value="video">Video + Audio</option>
+                                <option value="audio">Audio Only</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Privacy</label>
+                            <select id="streamPrivacy">
+                                <option value="public">Public</option>
+                                <option value="followers">Followers Only</option>
+                                <option value="private">Private (Invite Only)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group" id="guestInvites" style="display: none;">
+                        <label>Invite Guests</label>
+                        <div class="guest-invite-box">
+                            <input type="email" placeholder="Enter email addresses">
+                            <button type="button" class="btn-add-guest">Add</button>
+                        </div>
+                        <div class="invited-guests-list"></div>
+                    </div>
+                    <div class="stream-preview">
+                        <video id="streamPreview" autoplay muted></video>
+                        <div class="preview-controls">
+                            <button class="preview-btn" onclick="toggleCamera()">
+                                <i class="fas fa-video"></i>
+                            </button>
+                            <button class="preview-btn" onclick="toggleMic()">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            <button class="preview-btn" onclick="testAudioVideo()">
+                                <i class="fas fa-cog"></i> Test
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-cancel" onclick="closeGoLiveModal()">Cancel</button>
+                        <button type="button" class="btn-go-live" onclick="startLiveStream()">
+                            <i class="fas fa-circle"></i> Start Live Stream
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connect Modal -->
+    <div id="connectModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2><i class="fas fa-users"></i> Connect with Community</h2>
+                <span class="close-modal" onclick="closeConnectModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="connect-tabs">
+                    <button class="connect-tab active" data-tab="discover">Discover</button>
+                    <button class="connect-tab" data-tab="network">My Network</button>
+                    <button class="connect-tab" data-tab="messages">Messages</button>
+                    <button class="connect-tab" data-tab="groups">Groups</button>
+                </div>
+                
+                <div class="connect-content">
+                    <div id="discoverTab" class="tab-content active">
+                        <div class="search-filters">
+                            <input type="text" placeholder="Search journalists, experts, sources..." class="connect-search">
+                            <select class="filter-select">
+                                <option>All Categories</option>
+                                <option>Journalists</option>
+                                <option>Editors</option>
+                                <option>Photographers</option>
+                                <option>Sources</option>
+                            </select>
+                        </div>
+                        
+                        <div class="suggested-connections">
+                            <h3>Suggested Connections</h3>
+                            <div class="connection-cards">
+                                <div class="connection-card">
+                                    <img src="https://i.pravatar.cc/100?img=5" alt="User">
+                                    <div class="connection-info">
+                                        <h4>Michael Chen</h4>
+                                        <p>Tech Journalist at TechCrunch</p>
+                                        <span class="mutual">12 mutual connections</span>
+                                    </div>
+                                    <button class="btn-connect">Connect</button>
+                                </div>
+                                <div class="connection-card">
+                                    <img src="https://i.pravatar.cc/100?img=8" alt="User">
+                                    <div class="connection-info">
+                                        <h4>Lisa Rodriguez</h4>
+                                        <p>Senior Editor at NYT</p>
+                                        <span class="mutual">8 mutual connections</span>
+                                    </div>
+                                    <button class="btn-connect">Connect</button>
+                                </div>
+                                <div class="connection-card">
+                                    <img src="https://i.pravatar.cc/100?img=12" alt="User">
+                                    <div class="connection-info">
+                                        <h4>David Park</h4>
+                                        <p>Documentary Filmmaker</p>
+                                        <span class="mutual">5 mutual connections</span>
+                                    </div>
+                                    <button class="btn-connect">Connect</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="online-now">
+                            <h3>Online Now <span class="online-count">234</span></h3>
+                            <div class="online-users">
+                                <div class="online-user">
+                                    <img src="https://i.pravatar.cc/40?img=15" alt="User">
+                                    <span class="online-indicator"></span>
+                                </div>
+                                <div class="online-user">
+                                    <img src="https://i.pravatar.cc/40?img=20" alt="User">
+                                    <span class="online-indicator"></span>
+                                </div>
+                                <div class="online-user">
+                                    <img src="https://i.pravatar.cc/40?img=25" alt="User">
+                                    <span class="online-indicator"></span>
+                                </div>
+                                <div class="online-user">
+                                    <img src="https://i.pravatar.cc/40?img=30" alt="User">
+                                    <span class="online-indicator"></span>
+                                </div>
+                                <button class="btn-view-all">View All</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="networkTab" class="tab-content" style="display: none;">
+                        <div class="network-stats">
+                            <div class="network-stat">
+                                <h3>1,234</h3>
+                                <p>Connections</p>
+                            </div>
+                            <div class="network-stat">
+                                <h3>89</h3>
+                                <p>Pending Requests</p>
+                            </div>
+                            <div class="network-stat">
+                                <h3>45</h3>
+                                <p>New This Week</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="messagesTab" class="tab-content" style="display: none;">
+                        <div class="messages-list">
+                            <!-- Messages will be loaded here -->
+                        </div>
+                    </div>
+                    
+                    <div id="groupsTab" class="tab-content" style="display: none;">
+                        <div class="groups-grid">
+                            <!-- Groups will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Immediate preloader removal fallback
+        setTimeout(function() {
+            var preloader = document.getElementById('preloader');
+            if (preloader) {
+                preloader.style.display = 'none';
+            }
+        }, 2000);
+    </script>
+    <script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script src="../js/journalist-profile.js"></script>
+</body>
+</html>

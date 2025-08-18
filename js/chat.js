@@ -1,1712 +1,2033 @@
-// Complete Enhanced Chat Application with All Original Features
+// =============================================
+// ENHANCED CHAT APPLICATION - COMPLETE JS
+// =============================================
 
-// Global State
-let selectedFiles = [];
-let currentMessageId = null;
-let isEditing = false;
-let deletedMessages = [];
-let deletedMessagesDB = [];
-let undoTimeout = null;
-let isReadingAll = false;
-let currentUtteranceIndex = 0;
-let audioQueue = [];
-let currentAudio = null;
-let isSelecting = false;
-let selectedMessageIds = [];
-let attachments = [];
-let currentAttachmentIndex = -1;
-let zoomLevel = 1;
-
-// Media Recording
-let mediaMode = 'voice-to-text';
-let recognition = null;
-let mediaRecorder = null;
-let recordedChunks = [];
-let stream = null;
-let currentTranscript = '';
-let videoPreview = null;
-let micPermissionGranted = false;
-let camPermissionGranted = false;
-
-// Call State
-let isCalling = false;
-let callMode = null; // Changed to null initially
-let isMinimized = false;
-let isCallMinimized = false;
-let isSenderMainVideo = false; // Changed to false so user sees themselves in small video initially
-let callStartTime = null;
-let isSpeakerOn = true;
-let isMuted = false;
-
-// ElevenLabs Configuration (Replace with your API key)
-const ELEVENLABS_API_KEY = 'YOUR_API_KEY_HERE';
-let voices = [];
-const DEFAULT_VOICE_ID = '21m00Tcm4TlvDq8ikWAM';
-
-const senders = {
-  'John Doe': 'male',
-  'user': 'female'
-};
-
-// Emoji Data
-const emojis = ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '🙃', '😉', '😌', '😍', '🥰', '😘', '😗', '😙', '😚', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😌', '😔', '😪', '🤤', '😴', '😷', '🤒', '🤕', '🤢', '🤮', '🤧', '😵', '🤯', '🤠', '😎', '🤓', '🧐', '😕', '😟', '🙁', '☹️', '😮', '😯', '😲', '😳', '😦', '😧', '😨', '😰', '😥', '😢', '😭', '😱', '😖', '😣', '😞', '😓', '😩', '😫', '😤', '😡', '😠', '🤬', '😈', '👿', '💀', '☠️', '💩', '🤡', '👹', '👺', '👻', '👽', '👾', '🤖', '😺', '😸', '😹', '😻', '😼', '😽', '🙀', '😿', '😾', '🙈', '🙉', '🙊', '💋', '💌', '💘', '💝', '💖', '💗', '💓', '💞', '💕', '💟', '❣️', '💔', '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '💯', '💢', '💥', '💫', '💦', '💨', '🕳️', '💣', '💬', '👁️‍🗨️', '🗨️', '🗯️', '💭', '💤', '👋', '🤚', '🖐️', '✋', '🖖', '👌', '✌️', '🤞', '🤟', '🤘', '🤙', '👈', '👉', '👆', '🖕', '👇', '☝️', '👍', '👎', '✊', '👊', '🤛', '🤜', '👏', '🙌', '👐', '🤲', '🤝', '🙏', '✍️', '💅', '🤳', '💪', '🎉', '🎊', '🎈', '🎁', '🎀', '🎄', '🎃', '🎆', '🎇', '✨', '🎐', '🎑', '🎖️', '🏆', '🏅', '🥇', '🥈', '🥉', '⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🥅', '🏒', '🏑', '🏏', '⛳', '🏹', '🎣', '🥊', '🥋', '🎽', '⛸️', '🥌', '🎿', '⛷️', '🏂'];
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  initializeApp();
-  loadEmojis();
-  fetchVoices();
-});
-
-function initializeApp() {
-  // Setup message input
-  const messageInput = document.getElementById('messageInput');
-  messageInput.addEventListener('input', handleTyping);
-  messageInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+const ChatApp = {
+  // State Management
+  state: {
+    currentUser: {
+      id: 'user-1',
+      name: 'You',
+      avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      occupation: 'Software Developer',
+      status: 'online'
+    },
+    selectedChat: null,
+    messages: {},
+    typingTimer: null,
+    isTyping: false,
+    mediaRecorder: null,
+    videoRecorder: null,
+    recognition: null,
+    recordingStartTime: null,
+    currentStream: null,
+    callTimer: null,
+    callDuration: 0,
+    videoStream: null,
+    recordedVideo: null,
+    recordedAudio: null,
+    speechSynthesis: window.speechSynthesis,
+    currentUtterance: null,
+    isReading: false,
+    readingIndex: 0,
+    selectedTab: 'all',
+    replyingTo: null,
+    pinnedMessages: [],
+    contextMenuTarget: null,
+    selectedMembers: [],
+    blockedContacts: [],
+    deletedChats: [],
+    isMinimized: false,
+    lastSeenTimes: {
+      '1': new Date(Date.now() - 2 * 60000), // 2 minutes ago
+      '2': new Date(Date.now() - 86400000), // Yesterday
+      '3': new Date(Date.now() - 3 * 86400000), // 3 days ago
+      '4': new Date(Date.now() - 172800000) // 2 days ago
     }
-  });
+  },
 
-  // Setup search
-  document.getElementById('searchBar').addEventListener('input', (e) => {
-    const searchTerm = e.target.value.toLowerCase();
-    searchMessages(searchTerm);
-  });
+  // Initialize
+  init() {
+    this.setupEventListeners();
+    this.initializeChat();
+    this.loadEmojis();
+    this.loadSampleGIFs();
+    this.checkPermissions();
+    this.updateLastSeenStatus();
+    console.log('Chat Application Initialized');
+  },
 
-  // Close modals on outside click
-  document.addEventListener('click', (e) => {
-    if (!document.getElementById('contextMenu').contains(e.target) && !e.target.closest('.message')) {
-      hideContextMenu();
+  // Setup Event Listeners
+  setupEventListeners() {
+    // Message input
+    const messageInput = document.getElementById('messageInput');
+    if (messageInput) {
+      messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          this.sendMessage();
+        }
+      });
+
+      messageInput.addEventListener('input', () => {
+        this.handleTyping();
+        this.autoResizeTextarea(messageInput);
+      });
+
+      messageInput.addEventListener('paste', (e) => {
+        this.handlePaste(e);
+      });
     }
-  });
 
-  // Select default media mode
-  selectMediaMode('voice-to-text');
+    // Contact search
+    const contactSearch = document.getElementById('contactSearch');
+    if (contactSearch) {
+      contactSearch.addEventListener('input', _.debounce((e) => {
+        this.searchContacts(e.target.value);
+      }, 300));
+    }
 
-  // Load voice synthesis voices
-  if (window.speechSynthesis) {
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.getVoices();
-    };
-  }
+    // Tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        ChatApp.handleTabChange(this.dataset.tab);
+      });
+    });
 
-  // Add welcome message
-  setTimeout(() => {
-    addWelcomeMessage();
-  }, 500);
-}
+    // Contact items
+    document.querySelectorAll('.contact-item').forEach(item => {
+      item.addEventListener('click', function() {
+        ChatApp.selectChat(this.dataset.userId);
+      });
+    });
 
-function addWelcomeMessage() {
-  const welcomeDiv = document.createElement('div');
-  welcomeDiv.className = 'message other';
-  welcomeDiv.id = `msg-${Date.now()}`;
-  welcomeDiv.innerHTML = `
-    <div class="message-bubble">
-      <div class="message-content">Hey! Welcome to our chat! Feel free to send messages, share files, or start a call. 😊</div>
-      <div class="message-meta">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ✓✓</div>
-    </div>
-    <button class="read-aloud-btn" onclick="readAloudMessage('${welcomeDiv.id}')">🔊</button>
-  `;
-  welcomeDiv.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    showContextMenu(e, welcomeDiv.id);
-  });
-  document.getElementById('chatArea').appendChild(welcomeDiv);
-}
+    // GIF search
+    const gifSearch = document.getElementById('gifSearch');
+    if (gifSearch) {
+      gifSearch.addEventListener('input', _.debounce(() => {
+        this.searchGIFs();
+      }, 500));
+    }
 
-// Load Emojis
-function loadEmojis() {
-  const emojiTab = document.getElementById('emojiTab');
-  emojis.forEach(emoji => {
-    const btn = document.createElement('button');
-    btn.className = 'emoji-btn-grid';
-    btn.textContent = emoji;
-    btn.onclick = () => addEmoji(emoji);
-    emojiTab.appendChild(btn);
-  });
-}
+    // File input
+    const fileInput = document.getElementById('fileInput');
+    if (fileInput) {
+      fileInput.addEventListener('change', (e) => {
+        this.handleFileSelection(e);
+      });
+    }
 
-// Fetch ElevenLabs Voices
-async function fetchVoices() {
-  if (ELEVENLABS_API_KEY === 'YOUR_API_KEY_HERE') {
-    console.log('ElevenLabs API key not configured. Using browser TTS.');
-    return;
-  }
-  
-  try {
-    const response = await fetch('https://api.elevenlabs.io/v1/voices', {
-      headers: {
-        'xi-api-key': ELEVENLABS_API_KEY
+    // Context menu prevention
+    document.addEventListener('contextmenu', (e) => {
+      if (e.target.closest('.message-bubble')) {
+        e.preventDefault();
+        this.showContextMenu(e);
       }
     });
-    if (response.ok) {
-      const data = await response.json();
-      voices = data.voices || [];
-    }
-  } catch (error) {
-    console.error('Error fetching voices:', error);
-  }
-}
 
-// Modal Functions
-function openModal() {
-  document.getElementById('chatModal').classList.add('show');
-  document.getElementById('messageInput').focus();
-  simulateJohnTyping();
-}
-
-function closeModal() {
-  document.getElementById('chatModal').classList.remove('show');
-  if (isCalling) {
-    endCall();
-  }
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    stopRecording();
-  }
-  if (recognition && recognition.recognizing) {
-    stopVoiceToText();
-  }
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
-}
-
-function minimizeModal() {
-  const modalContent = document.getElementById('modalContent');
-  modalContent.classList.add('minimized');
-  document.getElementById('minimizeBtn').style.display = 'none';
-  document.getElementById('maximizeBtn').style.display = 'inline-block';
-  
-  // Update minimized content to show profile picture, name, maximize and close buttons
-  const minimizedContent = `
-    <div class="user-info" style="padding: 10px;">
-      <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="John Doe" style="width: 40px; height: 40px;">
-      <div style="flex: 1; margin-left: 10px;">
-        <h2 style="font-size: 16px;">John Doe</h2>
-      </div>
-      <button class="maximize-btn" onclick="maximizeModal()" style="display: inline-block;">□</button>
-      <button class="close-btn" onclick="closeModal()">✕</button>
-    </div>
-  `;
-  
-  isMinimized = true;
-  updateMinimizedVideoPreview();
-}
-
-function maximizeModal() {
-  document.getElementById('modalContent').classList.remove('minimized');
-  document.getElementById('minimizeBtn').style.display = 'inline-block';
-  document.getElementById('maximizeBtn').style.display = 'none';
-  isMinimized = false;
-  document.getElementById('minimizedVideoPreview').style.display = 'none';
-}
-
-// Message Functions
-function sendMessage() {
-  const input = document.getElementById('messageInput');
-  const text = input.value.trim();
-  const chatArea = document.getElementById('chatArea');
-  const isReply = currentMessageId && !isEditing;
-
-  if (text || selectedFiles.length > 0) {
-    if (isEditing && currentMessageId) {
-      const messageDiv = document.getElementById(currentMessageId);
-      if (messageDiv) {
-        const content = messageDiv.querySelector('.message-content');
-        if (content) content.textContent = text;
+    // Close context menu on click outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.context-menu')) {
+        this.hideContextMenu();
       }
-      isEditing = false;
-      currentMessageId = null;
-      input.value = '';
-      hideContextMenu();
+    });
+
+    // Window resize
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 768) {
+        document.getElementById('chatSidebar').classList.remove('active');
+      }
+    });
+
+    // Auto-update last seen
+    setInterval(() => this.updateLastSeenStatus(), 60000); // Update every minute
+  },
+
+  // Initialize Chat
+  initializeChat() {
+    const firstContact = document.querySelector('.contact-item');
+    if (firstContact) {
+      this.selectChat(firstContact.dataset.userId);
+    }
+  },
+
+  // Select Chat
+  selectChat(userId) {
+    if (this.state.deletedChats.includes(userId)) {
+      this.showToast('This chat has been deleted', 'error');
       return;
     }
 
-    const messageDiv = document.createElement('div');
-    messageDiv.className = `message user${isReply ? ' reply' : ''}`;
-    messageDiv.id = `msg-${Date.now()}`;
-    
-    let content = '<div class="message-bubble">';
-    if (text) {
-      content += `<div class="message-content">${text}</div>`;
-    }
-    
-    // Add file attachments
-    if (selectedFiles.length > 0) {
-      selectedFiles.forEach(file => {
-        const url = URL.createObjectURL(file);
-        attachments.push({ url, type: file.type, file });
-        
-        if (file.type.startsWith('image/')) {
-          content += `<img src="${url}" alt="${file.name}" onclick="openAttachmentModal('${url}', '${file.type}')">`;
-        } else if (file.type.startsWith('video/')) {
-          content += `<video src="${url}" controls onclick="openAttachmentModal('${url}', '${file.type}')"></video>`;
-        } else if (file.type.startsWith('audio/')) {
-          content += `<audio src="${url}" controls></audio>`;
-        } else {
-          content += `<a href="${url}" target="_blank" onclick="event.preventDefault(); openAttachmentModal('${url}', '${file.type}')">${file.name}</a>`;
-        }
-      });
+    if (this.state.blockedContacts.includes(userId)) {
+      this.showToast('This contact is blocked', 'warning');
     }
 
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    content += `<div class="message-meta">${timestamp} ✓✓</div>`;
-    content += '</div>';
-    content += `<button class="read-aloud-btn" onclick="readAloudMessage('${messageDiv.id}')">🔊</button>`;
-    
-    messageDiv.innerHTML = content;
-    messageDiv.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      showContextMenu(e, messageDiv.id);
+    // Update active state
+    document.querySelectorAll('.contact-item').forEach(item => {
+      item.classList.remove('active');
     });
-
-    chatArea.appendChild(messageDiv);
-    chatArea.scrollTop = chatArea.scrollHeight;
     
-    input.value = '';
-    input.style.height = 'auto';
-    selectedFiles = [];
-    updateFilePreview();
-    removeUserTypingIndicator();
+    const selectedContact = document.querySelector(`[data-user-id="${userId}"]`);
+    if (selectedContact) {
+      selectedContact.classList.add('active');
+      
+      // Update header
+      const name = selectedContact.querySelector('h4').textContent;
+      const occupation = selectedContact.querySelector('.contact-occupation').textContent;
+      const avatar = selectedContact.querySelector('.contact-avatar')?.src || 
+                     selectedContact.querySelector('.group-avatar span')?.textContent;
+      
+      this.updateChatHeader(name, occupation, avatar, userId);
+      
+      // Clear unread
+      const unreadCount = selectedContact.querySelector('.unread-count');
+      if (unreadCount) {
+        unreadCount.style.display = 'none';
+      }
+      
+      // Load messages
+      this.loadMessages(userId);
+      
+      // Update state
+      this.state.selectedChat = userId;
+      
+      // Close sidebar on mobile
+      if (window.innerWidth <= 768) {
+        document.getElementById('chatSidebar').classList.remove('active');
+      }
 
-    // Simulate reply
-    if (!isReply) {
-      setTimeout(() => {
-        simulateReply();
-      }, 2000);
+      // Update last seen
+      this.updateLastSeenForUser(userId);
     }
+  },
 
-    currentMessageId = null;
-    hideContextMenu();
-  }
-}
-
-function simulateReply() {
-  const replies = [
-    "Thanks for your message! 😊",
-    "That's interesting!",
-    "I completely understand.",
-    "Tell me more about that.",
-    "Great point!",
-    "How can I help you with that?",
-    "That sounds good to me!",
-    "I appreciate you sharing that.",
-    "Let me think about that.",
-    "Absolutely! 👍"
-  ];
-
-  showJohnTypingIndicator();
-  
-  setTimeout(() => {
-    removeJohnTypingIndicator();
+  // Update Chat Header
+  updateChatHeader(name, occupation, avatar, userId) {
+    // Main header
+    const userNameElem = document.querySelector('.user-basic-info h2');
+    const userOccupationElem = document.querySelector('.user-occupation-header');
+    const userAvatarElem = document.getElementById('userAvatar');
+    const lastSeenElem = document.getElementById('lastSeen');
     
-    const replyDiv = document.createElement('div');
-    replyDiv.className = 'message other';
-    replyDiv.id = `msg-${Date.now()}`;
-    const randomReply = replies[Math.floor(Math.random() * replies.length)];
-    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (userNameElem) userNameElem.textContent = name;
+    if (userOccupationElem) userOccupationElem.textContent = occupation;
+    if (userAvatarElem && avatar && avatar.startsWith('http')) {
+      userAvatarElem.src = avatar;
+    }
+    if (lastSeenElem) {
+      lastSeenElem.textContent = this.getLastSeenText(userId);
+    }
     
-    replyDiv.innerHTML = `
-      <div class="message-bubble">
-        <div class="message-content">${randomReply}</div>
-        <div class="message-meta">${timestamp} ✓✓</div>
+    // Info panel
+    const infoPanelName = document.getElementById('infoPanelName');
+    const infoPanelOccupation = document.getElementById('infoPanelOccupation');
+    const infoPanelAvatar = document.getElementById('infoPanelAvatar');
+    const infoPanelLastSeen = document.getElementById('infoPanelLastSeen');
+    
+    if (infoPanelName) infoPanelName.textContent = name;
+    if (infoPanelOccupation) infoPanelOccupation.textContent = occupation;
+    if (infoPanelAvatar && avatar && avatar.startsWith('http')) {
+      infoPanelAvatar.src = avatar;
+    }
+    if (infoPanelLastSeen) {
+      infoPanelLastSeen.textContent = `Last seen ${this.getLastSeenText(userId)}`;
+    }
+    
+    // Call modal
+    const callUserName = document.getElementById('callUserName');
+    const callUserOccupation = document.getElementById('callUserOccupation');
+    const callUserAvatar = document.getElementById('callUserAvatar');
+    
+    if (callUserName) callUserName.textContent = name;
+    if (callUserOccupation) callUserOccupation.textContent = occupation;
+    if (callUserAvatar && avatar && avatar.startsWith('http')) {
+      callUserAvatar.src = avatar;
+    }
+  },
+
+  // Get Last Seen Text
+  getLastSeenText(userId) {
+    const lastSeen = this.state.lastSeenTimes[userId];
+    if (!lastSeen) return 'recently';
+    
+    const now = new Date();
+    const diff = now - lastSeen;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'just now';
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (days === 1) return 'yesterday';
+    if (days < 7) return `${days} days ago`;
+    return lastSeen.toLocaleDateString();
+  },
+
+  // Update Last Seen Status
+  updateLastSeenStatus() {
+    const lastSeenElem = document.getElementById('lastSeen');
+    if (lastSeenElem && this.state.selectedChat) {
+      lastSeenElem.textContent = this.getLastSeenText(this.state.selectedChat);
+    }
+  },
+
+  // Update Last Seen For User
+  updateLastSeenForUser(userId) {
+    // Simulate updating last seen when selecting chat
+    if (Math.random() > 0.5) {
+      this.state.lastSeenTimes[userId] = new Date();
+      setTimeout(() => this.updateLastSeenStatus(), 2000);
+    }
+  },
+
+  // Load Messages
+  loadMessages(userId) {
+    const chatArea = document.getElementById('chatArea');
+    if (!chatArea) return;
+    
+    // Clear current messages
+    chatArea.innerHTML = `
+      <div class="date-divider">
+        <span>Today</span>
       </div>
-      <button class="read-aloud-btn" onclick="readAloudMessage('${replyDiv.id}')">🔊</button>
     `;
     
-    replyDiv.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      showContextMenu(e, replyDiv.id);
-    });
-    
-    document.getElementById('chatArea').appendChild(replyDiv);
-    document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
-  }, 2000);
-}
-
-// Typing Indicators
-function handleTyping() {
-  const input = document.getElementById('messageInput');
-  input.style.height = 'auto';
-  input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-  
-  let userTypingIndicator = document.getElementById('userTypingIndicator');
-  const chatArea = document.getElementById('chatArea');
-  
-  if (input.value.trim() && !userTypingIndicator) {
-    userTypingIndicator = document.createElement('div');
-    userTypingIndicator.id = 'userTypingIndicator';
-    userTypingIndicator.className = 'message user';
-    userTypingIndicator.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-    chatArea.appendChild(userTypingIndicator);
-    chatArea.scrollTop = chatArea.scrollHeight;
-  } else if (!input.value.trim() && userTypingIndicator) {
-    userTypingIndicator.remove();
-  }
-}
-
-function removeUserTypingIndicator() {
-  const indicator = document.getElementById('userTypingIndicator');
-  if (indicator) indicator.remove();
-}
-
-function showJohnTypingIndicator() {
-  const typingIndicatorHeader = document.getElementById('typingIndicatorHeader');
-  typingIndicatorHeader.style.display = 'block';
-  
-  const chatArea = document.getElementById('chatArea');
-  const typingDiv = document.createElement('div');
-  typingDiv.id = 'johnTypingIndicator';
-  typingDiv.className = 'message other';
-  typingDiv.innerHTML = '<div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-  chatArea.appendChild(typingDiv);
-  chatArea.scrollTop = chatArea.scrollHeight;
-}
-
-function removeJohnTypingIndicator() {
-  const typingIndicatorHeader = document.getElementById('typingIndicatorHeader');
-  typingIndicatorHeader.style.display = 'none';
-  
-  const indicator = document.getElementById('johnTypingIndicator');
-  if (indicator) indicator.remove();
-}
-
-function simulateJohnTyping() {
-  setInterval(() => {
-    if (Math.random() > 0.7 && !document.getElementById('johnTypingIndicator')) {
-      showJohnTypingIndicator();
-      setTimeout(() => {
-        removeJohnTypingIndicator();
-      }, 3000);
-    }
-  }, 8000);
-}
-
-// Search Messages
-function searchMessages(searchTerm) {
-  const messages = document.querySelectorAll('.message');
-  messages.forEach(msg => {
-    const content = msg.querySelector('.message-content');
-    if (content) {
-      const text = content.textContent.toLowerCase();
-      msg.style.display = text.includes(searchTerm) ? 'block' : 'none';
-    }
-  });
-}
-
-// Context Menu
-function showContextMenu(event, messageId) {
-  currentMessageId = messageId;
-  const contextMenu = document.getElementById('contextMenu');
-  contextMenu.style.top = `${event.clientY}px`;
-  contextMenu.style.left = `${event.clientX}px`;
-  contextMenu.classList.add('show');
-
-  const isUserMessage = document.getElementById(messageId).classList.contains('user');
-  document.getElementById('editBtn').style.display = isUserMessage && !isSelecting ? 'block' : 'none';
-  document.getElementById('deleteBtn').style.display = isUserMessage || isSelecting ? 'block' : 'none';
-  document.getElementById('forwardBtn').style.display = isSelecting ? 'block' : 'none';
-  document.getElementById('copyBtn').style.display = isSelecting ? 'block' : 'none';
-  document.getElementById('selectBtn').style.display = isSelecting ? 'none' : 'block';
-  document.getElementById('selectAllBtn').style.display = isSelecting ? 'none' : 'block';
-  
-  const isPinned = document.getElementById(messageId).classList.contains('pinned');
-  document.getElementById('pinBtn').style.display = isPinned ? 'none' : 'block';
-  document.getElementById('unpinBtn').style.display = isPinned ? 'block' : 'none';
-}
-
-function hideContextMenu() {
-  document.getElementById('contextMenu').classList.remove('show');
-  currentMessageId = null;
-}
-
-// Message Actions (keeping all original functions)
-function editMessage() {
-  if (currentMessageId) {
-    const messageDiv = document.getElementById(currentMessageId);
-    if (messageDiv && messageDiv.classList.contains('user')) {
-      const content = messageDiv.querySelector('.message-content');
-      if (content) {
-        document.getElementById('messageInput').value = content.textContent;
-        isEditing = true;
-        document.getElementById('messageInput').focus();
+    // Sample messages
+    const sampleMessages = [
+      {
+        id: 'msg-1',
+        text: 'Hey! How\'s the project going?',
+        sender: 'John Doe',
+        avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+        time: '2:25 PM',
+        sent: false
+      },
+      {
+        id: 'msg-2',
+        text: 'It\'s going great! Just finished the UI design.',
+        sender: 'You',
+        time: '2:28 PM',
+        sent: true
+      },
+      {
+        id: 'msg-3',
+        text: 'That\'s awesome! Can\'t wait to see it.',
+        sender: 'John Doe',
+        avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+        time: '2:30 PM',
+        sent: false
       }
-    }
-    hideContextMenu();
-  }
-}
-
-function showDeletePrompt() {
-  const deletePrompt = document.getElementById('deletePrompt');
-  const deletePromptText = document.getElementById('deletePromptText');
-  const deleteForReceiverLabel = document.getElementById('deleteForReceiverLabel');
-  const isUserMessage = document.getElementById(currentMessageId).classList.contains('user');
-
-  if (isSelecting) {
-    deletePromptText.textContent = `Delete ${selectedMessageIds.length} selected messages?`;
-    deleteForReceiverLabel.style.display = 'block';
-  } else {
-    deletePromptText.textContent = isUserMessage ? 'Delete this message?' : 'This message will only be deleted for you.';
-    deleteForReceiverLabel.style.display = isUserMessage ? 'block' : 'none';
-  }
-
-  deletePrompt.classList.add('show');
-}
-
-function hideDeletePrompt() {
-  document.getElementById('deletePrompt').classList.remove('show');
-  document.getElementById('deleteForReceiver').checked = false;
-}
-
-function confirmDelete() {
-  const deleteForReceiver = document.getElementById('deleteForReceiver').checked;
-  deleteMessage(deleteForReceiver);
-  hideDeletePrompt();
-}
-
-function deleteMessage(deleteForReceiver) {
-  if (isSelecting) {
-    selectedMessageIds.forEach(id => {
-      const msgDiv = document.getElementById(id);
-      if (msgDiv) {
-        deletedMessages.push({
-          id: id,
-          content: msgDiv.innerHTML,
-          parent: msgDiv.parentElement,
-          nextSibling: msgDiv.nextElementSibling
-        });
-        msgDiv.remove();
-      }
-    });
-    clearSelection();
-  } else if (currentMessageId) {
-    const messageDiv = document.getElementById(currentMessageId);
-    if (messageDiv) {
-      deletedMessages.push({
-        id: currentMessageId,
-        content: messageDiv.innerHTML,
-        parent: messageDiv.parentElement,
-        nextSibling: messageDiv.nextElementSibling
-      });
-      messageDiv.remove();
-    }
-  }
-
-  const undoContainer = document.getElementById('undoContainer');
-  undoContainer.classList.add('show');
-  clearTimeout(undoTimeout);
-  undoTimeout = setTimeout(() => {
-    undoContainer.classList.remove('show');
-    deletedMessages = [];
-  }, 5000);
-
-  hideContextMenu();
-}
-
-function undoDelete() {
-  deletedMessages.forEach(deleted => {
-    const messageDiv = document.createElement('div');
-    messageDiv.id = deleted.id;
-    messageDiv.innerHTML = deleted.content;
+    ];
     
-    // Re-add event listener
-    messageDiv.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      showContextMenu(e, messageDiv.id);
-    });
+    sampleMessages.forEach(msg => this.displayMessage(msg));
+    this.scrollToBottom();
+  },
+
+  // Display Message
+  displayMessage(messageData) {
+    const chatArea = document.getElementById('chatArea');
+    if (!chatArea) return;
     
-    if (deleted.nextSibling) {
-      deleted.parent.insertBefore(messageDiv, deleted.nextSibling);
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${messageData.sent ? 'sent' : ''}`;
+    messageElement.dataset.messageId = messageData.id;
+    
+    let messageHTML = '';
+    
+    if (!messageData.sent) {
+      messageHTML += `<img src="${messageData.avatar}" alt="${messageData.sender}" class="message-avatar">`;
+    }
+    
+    messageHTML += '<div class="message-content">';
+    messageHTML += `<div class="message-bubble">`;
+    
+    if (messageData.replyTo) {
+      messageHTML += `
+        <div class="reply-reference">
+          <strong>${messageData.replyTo.sender}</strong>
+          <p>${messageData.replyTo.text}</p>
+        </div>
+      `;
+    }
+    
+    if (messageData.audio) {
+      messageHTML += `
+        <div class="message-audio">
+          <audio controls>
+            <source src="${messageData.audio}" type="audio/wav">
+          </audio>
+        </div>
+      `;
+    } else if (messageData.video) {
+      messageHTML += `
+        <div class="message-video">
+          <video controls>
+            <source src="${messageData.video}" type="video/webm">
+          </video>
+        </div>
+      `;
     } else {
-      deleted.parent.appendChild(messageDiv);
+      messageHTML += `<p class="message-text">${messageData.text}</p>`;
     }
-  });
-  
-  document.getElementById('undoContainer').classList.remove('show');
-  deletedMessages = [];
-  clearTimeout(undoTimeout);
-}
-
-function copyMessage() {
-  if (currentMessageId) {
-    const messageDiv = document.getElementById(currentMessageId);
-    const content = messageDiv.querySelector('.message-content');
-    if (content) {
-      navigator.clipboard.writeText(content.textContent);
-      showToast('Message copied to clipboard');
-    }
-    hideContextMenu();
-  }
-}
-
-function forwardMessage() {
-  if (currentMessageId) {
-    const messageDiv = document.getElementById(currentMessageId);
-    const content = messageDiv.querySelector('.message-content');
-    if (content) {
-      document.getElementById('messageInput').value = `Forwarded: ${content.textContent}`;
-      document.getElementById('messageInput').focus();
-    }
-    hideContextMenu();
-  }
-}
-
-function replyMessage() {
-  if (currentMessageId) {
-    const messageDiv = document.getElementById(currentMessageId);
-    const content = messageDiv.querySelector('.message-content');
-    if (content) {
-      document.getElementById('messageInput').value = `Replying to: "${content.textContent.substring(0, 50)}..."\n`;
-      document.getElementById('messageInput').focus();
-    }
-    hideContextMenu();
-  }
-}
-
-function pinMessage() {
-  if (currentMessageId) {
-    const messageDiv = document.getElementById(currentMessageId);
-    messageDiv.classList.add('pinned');
     
-    const pinnedMessages = document.getElementById('pinnedMessages');
-    pinnedMessages.classList.add('show');
+    messageHTML += '</div>';
+    messageHTML += `<span class="message-time">${messageData.time}</span>`;
+    messageHTML += '</div>';
     
-    const content = messageDiv.querySelector('.message-content');
-    if (content) {
-      const pinnedItem = document.createElement('div');
-      pinnedItem.className = 'pinned-message-item';
-      pinnedItem.id = `pinned-${currentMessageId}`;
-      pinnedItem.textContent = content.textContent.substring(0, 50) + '...';
-      pinnedItem.onclick = () => {
-        document.getElementById(currentMessageId).scrollIntoView({ behavior: 'smooth' });
+    messageElement.innerHTML = messageHTML;
+    chatArea.appendChild(messageElement);
+  },
+
+  // Send Message
+  sendMessage() {
+    const input = document.getElementById('messageInput');
+    const messageText = input.value.trim();
+    
+    if (!messageText && !this.state.recordedAudio && !this.state.recordedVideo) return;
+    
+    const messageData = {
+      id: `msg-${Date.now()}`,
+      text: messageText,
+      sender: 'You',
+      time: this.formatTime(new Date()),
+      sent: true,
+      replyTo: this.state.replyingTo,
+      audio: this.state.recordedAudio,
+      video: this.state.recordedVideo
+    };
+    
+    this.displayMessage(messageData);
+    
+    // Clear input and recordings
+    input.value = '';
+    this.autoResizeTextarea(input);
+    this.state.recordedAudio = null;
+    this.state.recordedVideo = null;
+    
+    // Clear reply
+    if (this.state.replyingTo) {
+      this.cancelReply();
+    }
+    
+    // Scroll to bottom
+    this.scrollToBottom();
+    
+    // Update last message in sidebar
+    this.updateLastMessage(this.state.selectedChat, messageText || '🎤 Voice message' || '📹 Video message');
+    
+    // Simulate response
+    setTimeout(() => this.simulateResponse(), 2000);
+  },
+
+  // Simulate Response
+  simulateResponse() {
+    const responses = [
+      'That sounds great!',
+      'I agree with you.',
+      'Let me think about it...',
+      'Sure, no problem!',
+      'Thanks for letting me know.'
+    ];
+    
+    const messageData = {
+      id: `msg-${Date.now()}`,
+      text: responses[Math.floor(Math.random() * responses.length)],
+      sender: document.querySelector('.user-basic-info h2').textContent,
+      avatar: document.getElementById('userAvatar').src,
+      time: this.formatTime(new Date()),
+      sent: false
+    };
+    
+    this.displayMessage(messageData);
+    this.scrollToBottom();
+    this.updateLastMessage(this.state.selectedChat, messageData.text);
+  },
+
+  // Handle Typing
+  handleTyping() {
+    const typingIndicator = document.getElementById('userTypingIndicator');
+    
+    if (!this.state.isTyping) {
+      this.state.isTyping = true;
+      if (typingIndicator) {
+        typingIndicator.classList.add('active');
+      }
+    }
+    
+    clearTimeout(this.state.typingTimer);
+    this.state.typingTimer = setTimeout(() => {
+      this.state.isTyping = false;
+      if (typingIndicator) {
+        typingIndicator.classList.remove('active');
+      }
+    }, 1000);
+  },
+
+  // Tab Change Handler
+  handleTabChange(tab) {
+    // Update active tab
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    this.state.selectedTab = tab;
+    
+    // Show/hide create group button
+    const createGroupBtn = document.getElementById('createGroupBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
+    
+    if (createGroupBtn && newChatBtn) {
+      if (tab === 'groups') {
+        createGroupBtn.style.display = 'flex';
+        newChatBtn.style.display = 'none';
+      } else {
+        createGroupBtn.style.display = 'none';
+        newChatBtn.style.display = 'flex';
+      }
+    }
+    
+    // Filter contacts
+    this.filterContacts(tab);
+  },
+
+  // Filter Contacts
+  filterContacts(filter) {
+    const contacts = document.querySelectorAll('.contact-item');
+    
+    contacts.forEach(contact => {
+      const category = contact.dataset.category;
+      const hasUnread = contact.querySelector('.unread-count');
+      const isUnread = hasUnread && hasUnread.style.display !== 'none';
+      
+      switch(filter) {
+        case 'all':
+          contact.style.display = 'flex';
+          break;
+        case 'personal':
+          contact.style.display = category === 'personal' ? 'flex' : 'none';
+          break;
+        case 'groups':
+          contact.style.display = category === 'groups' ? 'flex' : 'none';
+          break;
+        case 'unread':
+          contact.style.display = isUnread ? 'flex' : 'none';
+          break;
+        case 'archived':
+          contact.style.display = 'none';
+          break;
+      }
+    });
+  },
+
+  // Voice Recording Functions
+  async startVoiceRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.state.mediaRecorder = new MediaRecorder(stream);
+      
+      const audioChunks = [];
+      
+      this.state.mediaRecorder.ondataavailable = event => {
+        audioChunks.push(event.data);
       };
-      pinnedMessages.appendChild(pinnedItem);
+      
+      this.state.mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        this.state.recordedAudio = URL.createObjectURL(audioBlob);
+        this.sendVoiceMessage();
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      this.state.mediaRecorder.start();
+      this.state.recordingStartTime = Date.now();
+      
+      // Show recording UI
+      document.getElementById('voiceRecording').classList.add('active');
+      document.getElementById('voiceRecordBtn').classList.add('active');
+      
+      // Start timer
+      this.updateRecordingTimer();
+      
+      this.showToast('Recording voice message...', 'info');
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      this.showToast('Could not access microphone', 'error');
     }
-    
-    hideContextMenu();
-  }
-}
+  },
 
-function unpinMessage() {
-  if (currentMessageId) {
-    const messageDiv = document.getElementById(currentMessageId);
-    messageDiv.classList.remove('pinned');
-    
-    const pinnedItem = document.getElementById(`pinned-${currentMessageId}`);
-    if (pinnedItem) pinnedItem.remove();
-    
-    const pinnedMessages = document.getElementById('pinnedMessages');
-    if (pinnedMessages.children.length === 1) {
-      pinnedMessages.classList.remove('show');
+  stopVoiceRecording() {
+    if (this.state.mediaRecorder && this.state.mediaRecorder.state === 'recording') {
+      this.state.mediaRecorder.stop();
+      document.getElementById('voiceRecording').classList.remove('active');
+      document.getElementById('voiceRecordBtn').classList.remove('active');
     }
-    
-    hideContextMenu();
-  }
-}
+  },
 
-function reactMessage(emoji) {
-  if (currentMessageId) {
-    const messageDiv = document.getElementById(currentMessageId);
-    let reactionsDiv = messageDiv.querySelector('.message-reactions');
-    
-    if (!reactionsDiv) {
-      reactionsDiv = document.createElement('div');
-      reactionsDiv.className = 'message-reactions';
-      messageDiv.querySelector('.message-bubble').appendChild(reactionsDiv);
+  sendVoiceMessage() {
+    if (this.state.recordedAudio) {
+      this.sendMessage();
+      this.showToast('Voice message sent!', 'success');
     }
-    
-    const existingReaction = Array.from(reactionsDiv.children).find(r => r.textContent.includes(emoji));
-    if (existingReaction) {
-      const count = parseInt(existingReaction.querySelector('span')?.textContent || '0') + 1;
-      existingReaction.innerHTML = `${emoji} <span>${count}</span>`;
-    } else {
-      const reaction = document.createElement('div');
-      reaction.className = 'reaction';
-      reaction.innerHTML = `${emoji} <span>1</span>`;
-      reactionsDiv.appendChild(reaction);
-    }
-    
-    hideContextMenu();
-  }
-}
+  },
 
-// Selection Functions
-function selectMessage() {
-  if (currentMessageId) {
-    isSelecting = true;
-    const messageDiv = document.getElementById(currentMessageId);
-    messageDiv.classList.add('selected');
-    selectedMessageIds.push(currentMessageId);
-    
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'message-checkbox';
-    checkbox.checked = true;
-    checkbox.onchange = (e) => {
-      if (!e.target.checked) {
-        messageDiv.classList.remove('selected');
-        selectedMessageIds = selectedMessageIds.filter(id => id !== currentMessageId);
-        if (selectedMessageIds.length === 0) {
-          clearSelection();
+  updateRecordingTimer() {
+    const updateTimer = () => {
+      if (this.state.mediaRecorder && this.state.mediaRecorder.state === 'recording') {
+        const elapsed = Math.floor((Date.now() - this.state.recordingStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        
+        const timerElem = document.getElementById('recordingTime');
+        if (timerElem) {
+          timerElem.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         }
+        
+        const videoTimerElem = document.getElementById('videoTimer');
+        if (videoTimerElem && this.state.videoRecorder) {
+          videoTimerElem.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        requestAnimationFrame(updateTimer);
       }
     };
-    messageDiv.prepend(checkbox);
-    
-    hideContextMenu();
-  }
-}
+    updateTimer();
+  },
 
-function selectAllMessages() {
-  isSelecting = true;
-  const messages = document.querySelectorAll('.message:not(.typing)');
-  selectedMessageIds = [];
-  
-  messages.forEach(message => {
-    message.classList.add('selected');
-    selectedMessageIds.push(message.id);
-    
-    if (!message.querySelector('.message-checkbox')) {
-      const checkbox = document.createElement('input');
-      checkbox.type = 'checkbox';
-      checkbox.className = 'message-checkbox';
-      checkbox.checked = true;
-      message.prepend(checkbox);
+  // Voice to Text
+  async startVoiceToText() {
+    if (!('webkitSpeechRecognition' in window)) {
+      this.showToast('Speech recognition not supported', 'error');
+      return;
     }
-  });
-  
-  hideContextMenu();
-}
-
-function clearSelection() {
-  isSelecting = false;
-  selectedMessageIds = [];
-  document.querySelectorAll('.message.selected').forEach(message => {
-    message.classList.remove('selected');
-    const checkbox = message.querySelector('.message-checkbox');
-    if (checkbox) checkbox.remove();
-  });
-}
-
-// File Handling
-function handleFileChange() {
-  const fileInput = document.getElementById('fileInput');
-  selectedFiles = Array.from(fileInput.files);
-  updateFilePreview();
-}
-
-function updateFilePreview() {
-  const filePreview = document.getElementById('filePreview');
-  
-  if (selectedFiles.length > 0) {
-    filePreview.classList.add('show');
-    filePreview.innerHTML = '<ul>';
     
-    selectedFiles.forEach((file, index) => {
-      const li = document.createElement('li');
-      li.innerHTML = `
-        ${file.name}
-        <button class="file-remove" onclick="removeFile(${index})">✕</button>
+    const btn = document.getElementById('voiceToTextBtn');
+    
+    if (!this.state.recognition) {
+      this.state.recognition = new webkitSpeechRecognition();
+      this.state.recognition.continuous = true;
+      this.state.recognition.interimResults = true;
+      
+      this.state.recognition.onresult = (event) => {
+        const transcript = Array.from(event.results)
+          .map(result => result[0].transcript)
+          .join('');
+        
+        const input = document.getElementById('messageInput');
+        if (input) {
+          const currentText = input.value;
+          const lastResult = event.results[event.results.length - 1];
+          
+          if (lastResult.isFinal) {
+            input.value = currentText + ' ' + lastResult[0].transcript;
+          } else {
+            // Show interim results
+            input.value = currentText + ' [' + lastResult[0].transcript + ']';
+          }
+          
+          this.autoResizeTextarea(input);
+        }
+      };
+      
+      this.state.recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        this.showToast('Speech recognition error', 'error');
+        btn.classList.remove('listening');
+      };
+      
+      this.state.recognition.onend = () => {
+        btn.classList.remove('listening');
+      };
+    }
+    
+    if (btn.classList.contains('listening')) {
+      this.state.recognition.stop();
+      btn.classList.remove('listening');
+    } else {
+      this.state.recognition.start();
+      btn.classList.add('listening');
+      this.showToast('Listening... Speak now', 'info');
+    }
+  },
+
+  // Read Messages Functions
+  readAllMessages() {
+    if (!this.state.speechSynthesis) {
+      this.showToast('Text-to-speech not supported', 'error');
+      return;
+    }
+    
+    const messages = document.querySelectorAll('.message-text');
+    if (messages.length === 0) {
+      this.showToast('No messages to read', 'info');
+      return;
+    }
+    
+    this.state.isReading = true;
+    this.state.readingIndex = 0;
+    
+    document.getElementById('readAllBtn').style.display = 'none';
+    document.getElementById('stopReadBtn').style.display = 'block';
+    
+    this.readMessage(this.state.readingIndex);
+    this.showToast('Reading messages...', 'info');
+  },
+
+  readMessage(index) {
+    const messages = document.querySelectorAll('.message-text');
+    
+    if (index >= 0 && index < messages.length && this.state.isReading) {
+      const message = messages[index];
+      const utterance = new SpeechSynthesisUtterance(message.textContent);
+      
+      // Highlight current message
+      document.querySelectorAll('.message').forEach(m => m.classList.remove('reading'));
+      message.closest('.message').classList.add('reading');
+      
+      utterance.onend = () => {
+        if (this.state.isReading && index < messages.length - 1) {
+          this.state.readingIndex++;
+          this.readMessage(this.state.readingIndex);
+        } else {
+          this.stopReading();
+        }
+      };
+      
+      this.state.currentUtterance = utterance;
+      this.state.speechSynthesis.speak(utterance);
+    }
+  },
+
+  readPreviousMessage() {
+    if (this.state.readingIndex > 0) {
+      this.state.speechSynthesis.cancel();
+      this.state.readingIndex--;
+      this.readMessage(this.state.readingIndex);
+      this.showToast('Reading previous message', 'info');
+    }
+  },
+
+  readNextMessage() {
+    const messages = document.querySelectorAll('.message-text');
+    if (this.state.readingIndex < messages.length - 1) {
+      this.state.speechSynthesis.cancel();
+      this.state.readingIndex++;
+      this.readMessage(this.state.readingIndex);
+      this.showToast('Reading next message', 'info');
+    }
+  },
+
+  restartReading() {
+    this.state.speechSynthesis.cancel();
+    this.state.readingIndex = 0;
+    this.state.isReading = true;
+    
+    document.getElementById('readAllBtn').style.display = 'none';
+    document.getElementById('stopReadBtn').style.display = 'block';
+    
+    this.readMessage(0);
+    this.showToast('Restarting from beginning', 'info');
+  },
+
+  stopReading() {
+    this.state.isReading = false;
+    if (this.state.speechSynthesis) {
+      this.state.speechSynthesis.cancel();
+    }
+    
+    document.getElementById('readAllBtn').style.display = 'block';
+    document.getElementById('stopReadBtn').style.display = 'none';
+    
+    // Remove highlighting
+    document.querySelectorAll('.message').forEach(m => m.classList.remove('reading'));
+  },
+
+  // Video Recording
+  async openVideoRecording() {
+    const modal = document.getElementById('videoRecordModal');
+    if (modal) {
+      modal.classList.add('active');
+      
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        const preview = document.getElementById('videoPreview');
+        if (preview) {
+          preview.srcObject = stream;
+          this.state.videoStream = stream;
+        }
+      } catch (error) {
+        console.error('Error accessing camera:', error);
+        this.showToast('Could not access camera', 'error');
+      }
+    }
+  },
+
+  startVideoRecording() {
+    if (!this.state.videoStream) {
+      this.showToast('No video stream available', 'error');
+      return;
+    }
+    
+    const chunks = [];
+    this.state.videoRecorder = new MediaRecorder(this.state.videoStream);
+    
+    this.state.videoRecorder.ondataavailable = (event) => {
+      chunks.push(event.data);
+    };
+    
+    this.state.videoRecorder.onstop = () => {
+      const videoBlob = new Blob(chunks, { type: 'video/webm' });
+      this.state.recordedVideo = URL.createObjectURL(videoBlob);
+      
+      // Show preview
+      const preview = document.getElementById('videoPreview');
+      if (preview) {
+        preview.src = this.state.recordedVideo;
+        preview.controls = true;
+      }
+      
+      // Update buttons
+      document.getElementById('deleteVideoBtn').style.display = 'inline-flex';
+      document.getElementById('sendVideoBtn').style.display = 'inline-flex';
+    };
+    
+    this.state.videoRecorder.start();
+    this.state.recordingStartTime = Date.now();
+    
+    // Update UI
+    document.getElementById('startVideoBtn').style.display = 'none';
+    document.getElementById('stopVideoBtn').style.display = 'inline-flex';
+    document.getElementById('recordingIndicator').classList.add('active');
+    
+    // Start timer
+    this.updateRecordingTimer();
+    
+    this.showToast('Recording video...', 'info');
+  },
+
+  stopVideoRecording() {
+    if (this.state.videoRecorder && this.state.videoRecorder.state === 'recording') {
+      this.state.videoRecorder.stop();
+      
+      document.getElementById('stopVideoBtn').style.display = 'none';
+      document.getElementById('recordingIndicator').classList.remove('active');
+    }
+  },
+
+  deleteVideoRecording() {
+    this.state.recordedVideo = null;
+    
+    // Reset preview
+    const preview = document.getElementById('videoPreview');
+    if (preview && this.state.videoStream) {
+      preview.srcObject = this.state.videoStream;
+      preview.controls = false;
+    }
+    
+    // Reset buttons
+    document.getElementById('startVideoBtn').style.display = 'inline-flex';
+    document.getElementById('deleteVideoBtn').style.display = 'none';
+    document.getElementById('sendVideoBtn').style.display = 'none';
+    document.getElementById('videoTimer').textContent = '00:00';
+    
+    this.showToast('Video deleted', 'info');
+  },
+
+  sendVideoMessage() {
+    if (!this.state.recordedVideo) {
+      this.showToast('No video to send', 'error');
+      return;
+    }
+    
+    this.sendMessage();
+    this.closeVideoRecording();
+    this.showToast('Video message sent!', 'success');
+  },
+
+  closeVideoRecording() {
+    const modal = document.getElementById('videoRecordModal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+    
+    if (this.state.videoStream) {
+      this.state.videoStream.getTracks().forEach(track => track.stop());
+      this.state.videoStream = null;
+    }
+    
+    this.state.videoRecorder = null;
+    this.state.recordedVideo = null;
+    
+    // Reset UI
+    document.getElementById('startVideoBtn').style.display = 'inline-flex';
+    document.getElementById('stopVideoBtn').style.display = 'none';
+    document.getElementById('deleteVideoBtn').style.display = 'none';
+    document.getElementById('sendVideoBtn').style.display = 'none';
+    document.getElementById('recordingIndicator').classList.remove('active');
+    document.getElementById('videoTimer').textContent = '00:00';
+  },
+
+  // New Chat Functions
+  startNewChat() {
+    const modal = document.getElementById('newChatModal');
+    if (modal) {
+      modal.classList.add('active');
+      this.loadContactsForSelection();
+    }
+  },
+
+  loadContactsForSelection() {
+    const list = document.getElementById('contactsSelectList');
+    if (!list) return;
+    
+    const contacts = [
+      { id: 'user-5', name: 'Alice Brown', avatar: 'https://randomuser.me/api/portraits/women/5.jpg' },
+      { id: 'user-6', name: 'Bob Wilson', avatar: 'https://randomuser.me/api/portraits/men/6.jpg' },
+      { id: 'user-7', name: 'Carol Davis', avatar: 'https://randomuser.me/api/portraits/women/7.jpg' },
+      { id: 'user-8', name: 'David Miller', avatar: 'https://randomuser.me/api/portraits/men/8.jpg' }
+    ];
+    
+    list.innerHTML = '';
+    contacts.forEach(contact => {
+      const item = document.createElement('div');
+      item.className = 'contact-select-item';
+      item.dataset.userId = contact.id;
+      item.innerHTML = `
+        <img src="${contact.avatar}" alt="${contact.name}">
+        <span>${contact.name}</span>
       `;
-      filePreview.querySelector('ul').appendChild(li);
+      item.onclick = () => this.selectContactForChat(contact.id, item);
+      list.appendChild(item);
+    });
+  },
+
+  selectContactForChat(userId, element) {
+    document.querySelectorAll('.contact-select-item').forEach(item => {
+      item.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    this.state.selectedContactForChat = userId;
+  },
+
+  startChatWithSelected() {
+    if (!this.state.selectedContactForChat) {
+      this.showToast('Please select a contact', 'error');
+      return;
+    }
+    
+    this.closeNewChatModal();
+    this.showToast('Starting new chat...', 'success');
+    
+    // In real app, this would create a new chat
+    setTimeout(() => {
+      this.selectChat(this.state.selectedContactForChat);
+    }, 500);
+  },
+
+  closeNewChatModal() {
+    const modal = document.getElementById('newChatModal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+    this.state.selectedContactForChat = null;
+  },
+
+  // Create Group Functions
+  createGroup() {
+    const modal = document.getElementById('createGroupModal');
+    if (modal) {
+      modal.classList.add('active');
+      this.loadMembersForSelection();
+    }
+  },
+
+  loadMembersForSelection() {
+    const list = document.getElementById('membersList');
+    if (!list) return;
+    
+    const members = [
+      { id: 'user-1', name: 'John Doe', avatar: 'https://randomuser.me/api/portraits/men/1.jpg' },
+      { id: 'user-2', name: 'Jane Smith', avatar: 'https://randomuser.me/api/portraits/women/2.jpg' },
+      { id: 'user-3', name: 'Mike Johnson', avatar: 'https://randomuser.me/api/portraits/men/3.jpg' },
+      { id: 'user-4', name: 'Sarah Williams', avatar: 'https://randomuser.me/api/portraits/women/4.jpg' }
+    ];
+    
+    list.innerHTML = '';
+    members.forEach(member => {
+      const item = document.createElement('div');
+      item.className = 'member-item';
+      item.dataset.userId = member.id;
+      item.innerHTML = `
+        <img src="${member.avatar}" alt="${member.name}">
+        <span>${member.name}</span>
+      `;
+      item.onclick = () => this.toggleMemberSelection(member, item);
+      list.appendChild(item);
+    });
+  },
+
+  toggleMemberSelection(member, element) {
+    element.classList.toggle('selected');
+    
+    const index = this.state.selectedMembers.findIndex(m => m.id === member.id);
+    if (index > -1) {
+      this.state.selectedMembers.splice(index, 1);
+    } else {
+      this.state.selectedMembers.push(member);
+    }
+    
+    this.updateSelectedMembersDisplay();
+  },
+
+  updateSelectedMembersDisplay() {
+    const container = document.getElementById('selectedMembers');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    this.state.selectedMembers.forEach(member => {
+      const chip = document.createElement('div');
+      chip.className = 'selected-member-chip';
+      chip.innerHTML = `
+        <span>${member.name}</span>
+        <button onclick="ChatApp.removeMember('${member.id}')">×</button>
+      `;
+      container.appendChild(chip);
+    });
+  },
+
+  removeMember(memberId) {
+    this.state.selectedMembers = this.state.selectedMembers.filter(m => m.id !== memberId);
+    
+    const element = document.querySelector(`.member-item[data-user-id="${memberId}"]`);
+    if (element) {
+      element.classList.remove('selected');
+    }
+    
+    this.updateSelectedMembersDisplay();
+  },
+
+  createNewGroup() {
+    const groupName = document.getElementById('groupName').value.trim();
+    const groupDescription = document.getElementById('groupDescription').value.trim();
+    
+    if (!groupName) {
+      this.showToast('Please enter a group name', 'error');
+      return;
+    }
+    
+    if (this.state.selectedMembers.length < 2) {
+      this.showToast('Please select at least 2 members', 'error');
+      return;
+    }
+    
+    this.closeCreateGroupModal();
+    this.showToast(`Group "${groupName}" created successfully!`, 'success');
+    
+    // Add new group to contacts list
+    const contactsList = document.getElementById('contactsList');
+    const newGroup = document.createElement('div');
+    newGroup.className = 'contact-item group';
+    newGroup.dataset.userId = `group-${Date.now()}`;
+    newGroup.dataset.category = 'groups';
+    newGroup.innerHTML = `
+      <div class="contact-avatar-wrapper">
+        <div class="group-avatar">
+          <span>👥</span>
+        </div>
+      </div>
+      <div class="contact-info">
+        <div class="contact-header">
+          <h4>${groupName}</h4>
+          <span class="message-time">Now</span>
+        </div>
+        <span class="contact-occupation">${this.state.selectedMembers.length + 1} members</span>
+        <div class="contact-preview">
+          <p class="last-message">Group created</p>
+        </div>
+      </div>
+    `;
+    newGroup.onclick = function() {
+      ChatApp.selectChat(this.dataset.userId);
+    };
+    
+    contactsList.appendChild(newGroup);
+    
+    // Select the new group
+    setTimeout(() => {
+      this.selectChat(newGroup.dataset.userId);
+    }, 500);
+  },
+
+  closeCreateGroupModal() {
+    const modal = document.getElementById('createGroupModal');
+    if (modal) {
+      modal.classList.remove('active');
+    }
+    
+    // Reset form
+    document.getElementById('groupName').value = '';
+    document.getElementById('groupDescription').value = '';
+    this.state.selectedMembers = [];
+    this.updateSelectedMembersDisplay();
+  },
+
+  // Block Contact
+  blockContact() {
+    if (!this.state.selectedChat) return;
+    
+    if (confirm('Are you sure you want to block this contact?')) {
+      this.state.blockedContacts.push(this.state.selectedChat);
+      
+      // Update UI
+      const chatMain = document.getElementById('chatMain');
+      if (chatMain) {
+        chatMain.classList.add('chat-blocked');
+      }
+      
+      this.showToast('Contact blocked', 'info');
+      
+      // Disable input
+      const messageInput = document.getElementById('messageInput');
+      if (messageInput) {
+        messageInput.disabled = true;
+        messageInput.placeholder = 'You have blocked this contact';
+      }
+    }
+  },
+
+  // Delete Chat
+  deleteChat() {
+    if (!this.state.selectedChat) return;
+    
+    if (confirm('Are you sure you want to delete this chat? This action cannot be undone.')) {
+      this.state.deletedChats.push(this.state.selectedChat);
+      
+      // Remove from contacts list
+      const contactItem = document.querySelector(`[data-user-id="${this.state.selectedChat}"]`);
+      if (contactItem) {
+        contactItem.classList.add('chat-deleted');
+      }
+      
+      // Clear chat area
+      const chatArea = document.getElementById('chatArea');
+      if (chatArea) {
+        chatArea.innerHTML = '<div class="empty-state">Chat deleted</div>';
+      }
+      
+      this.showToast('Chat deleted', 'info');
+      
+      // Select first available chat
+      setTimeout(() => {
+        const firstContact = document.querySelector('.contact-item:not(.chat-deleted)');
+        if (firstContact) {
+          this.selectChat(firstContact.dataset.userId);
+        }
+      }, 500);
+    }
+  },
+
+  // Minimize/Maximize Chat
+  minimizeChat() {
+    const container = document.getElementById('chatContainer');
+    const badge = document.getElementById('minimizedBadge');
+    
+    if (container && badge) {
+      container.classList.add('minimized');
+      badge.style.display = 'flex';
+      this.state.isMinimized = true;
+      
+      // Update badge with current chat info
+      const avatar = document.getElementById('userAvatar');
+      if (avatar) {
+        badge.querySelector('img').src = avatar.src;
+      }
+    }
+  },
+
+  maximizeChat() {
+    const container = document.getElementById('chatContainer');
+    const badge = document.getElementById('minimizedBadge');
+    
+    if (container && badge) {
+      container.classList.remove('minimized');
+      badge.style.display = 'none';
+      this.state.isMinimized = false;
+    }
+  },
+
+  closeChat() {
+    if (confirm('Are you sure you want to close this chat window?')) {
+      window.close();
+      // If window.close() doesn't work (browser restriction), hide the chat
+      const container = document.getElementById('chatContainer');
+      if (container) {
+        container.style.display = 'none';
+      }
+      this.showToast('Chat closed', 'info');
+    }
+  },
+
+  // Media Tab Functions
+  showMediaTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.media-tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // Update content
+    document.querySelectorAll('.media-tab-content').forEach(content => {
+      content.classList.remove('active');
     });
     
-    filePreview.innerHTML += '</ul>';
+    const tabContent = document.getElementById(`${tabName}Tab`);
+    if (tabContent) {
+      tabContent.classList.add('active');
+    }
+  },
+
+  viewMedia(element) {
+    // In real app, this would open a media viewer
+    this.showToast('Opening media viewer...', 'info');
+  },
+
+  playVideo(element) {
+    // In real app, this would play the video
+    this.showToast('Playing video...', 'info');
+  },
+
+  // Context Menu Functions
+  showContextMenu(event) {
+    const menu = document.getElementById('contextMenu');
+    const messageElem = event.target.closest('.message');
+    
+    if (menu && messageElem) {
+      menu.style.left = event.clientX + 'px';
+      menu.style.top = event.clientY + 'px';
+      menu.classList.add('active');
+      
+      this.state.contextMenuTarget = messageElem;
+      
+      // Update pin/unpin button
+      const pinBtn = document.getElementById('pinBtn');
+      const unpinBtn = document.getElementById('unpinBtn');
+      const messageId = messageElem.dataset.messageId;
+      
+      if (this.state.pinnedMessages.includes(messageId)) {
+        pinBtn.style.display = 'none';
+        unpinBtn.style.display = 'flex';
+      } else {
+        pinBtn.style.display = 'flex';
+        unpinBtn.style.display = 'none';
+      }
+    }
+  },
+
+  hideContextMenu() {
+    const menu = document.getElementById('contextMenu');
+    if (menu) {
+      menu.classList.remove('active');
+    }
+  },
+
+  editMessage() {
+    if (!this.state.contextMenuTarget) return;
+    
+    const messageText = this.state.contextMenuTarget.querySelector('.message-text');
+    if (messageText) {
+      const newText = prompt('Edit message:', messageText.textContent);
+      if (newText !== null && newText.trim()) {
+        messageText.textContent = newText;
+        
+        // Add edited indicator
+        const timeElem = this.state.contextMenuTarget.querySelector('.message-time');
+        if (timeElem && !timeElem.querySelector('.edited-indicator')) {
+          const edited = document.createElement('span');
+          edited.className = 'edited-indicator';
+          edited.textContent = ' (edited)';
+          timeElem.appendChild(edited);
+        }
+        
+        this.showToast('Message edited', 'success');
+      }
+    }
+    
+    this.hideContextMenu();
+  },
+
+  deleteMessage() {
+    if (!this.state.contextMenuTarget) return;
+    
+    if (confirm('Delete this message?')) {
+      this.state.contextMenuTarget.remove();
+      this.showToast('Message deleted', 'info');
+    }
+    
+    this.hideContextMenu();
+  },
+
+  forwardMessage() {
+    this.showToast('Forward message feature', 'info');
+    this.hideContextMenu();
+  },
+
+  copyMessage() {
+    if (!this.state.contextMenuTarget) return;
+    
+    const messageText = this.state.contextMenuTarget.querySelector('.message-text');
+    if (messageText) {
+      navigator.clipboard.writeText(messageText.textContent);
+      this.showToast('Message copied to clipboard', 'success');
+    }
+    
+    this.hideContextMenu();
+  },
+
+  selectMessage() {
+    if (this.state.contextMenuTarget) {
+      this.state.contextMenuTarget.classList.add('selected');
+      this.showToast('Message selected', 'info');
+    }
+    this.hideContextMenu();
+  },
+
+  pinMessage() {
+    if (!this.state.contextMenuTarget) return;
+    
+    const messageId = this.state.contextMenuTarget.dataset.messageId;
+    if (!this.state.pinnedMessages.includes(messageId)) {
+      this.state.pinnedMessages.push(messageId);
+      
+      // Show pinned messages section
+      const pinnedSection = document.getElementById('pinnedMessages');
+      if (pinnedSection) {
+        pinnedSection.classList.add('active');
+        
+        // Add to pinned list
+        const messageText = this.state.contextMenuTarget.querySelector('.message-text');
+        if (messageText) {
+          const pinnedList = pinnedSection.querySelector('.pinned-messages-list');
+          const pinnedItem = document.createElement('div');
+          pinnedItem.className = 'pinned-message-item';
+          pinnedItem.innerHTML = `
+            <p>${messageText.textContent}</p>
+            <button onclick="ChatApp.unpinMessageDirect('${messageId}')">×</button>
+          `;
+          pinnedList.appendChild(pinnedItem);
+        }
+      }
+      
+      this.showToast('Message pinned', 'success');
+    }
+    
+    this.hideContextMenu();
+  },
+
+  unpinMessage() {
+    if (!this.state.contextMenuTarget) return;
+    
+    const messageId = this.state.contextMenuTarget.dataset.messageId;
+    this.unpinMessageDirect(messageId);
+    
+    this.hideContextMenu();
+  },
+
+  unpinMessageDirect(messageId) {
+    const index = this.state.pinnedMessages.indexOf(messageId);
+    if (index > -1) {
+      this.state.pinnedMessages.splice(index, 1);
+      
+      // Remove from pinned list
+      const pinnedSection = document.getElementById('pinnedMessages');
+      if (pinnedSection) {
+        const pinnedList = pinnedSection.querySelector('.pinned-messages-list');
+        const items = pinnedList.querySelectorAll('.pinned-message-item');
+        items.forEach(item => {
+          if (item.querySelector('button').onclick.toString().includes(messageId)) {
+            item.remove();
+          }
+        });
+        
+        // Hide section if no pinned messages
+        if (this.state.pinnedMessages.length === 0) {
+          pinnedSection.classList.remove('active');
+        }
+      }
+      
+      this.showToast('Message unpinned', 'info');
+    }
+  },
+
+  starMessage() {
+    if (this.state.contextMenuTarget) {
+      this.state.contextMenuTarget.classList.toggle('starred');
+      this.showToast('Message starred', 'success');
+    }
+    this.hideContextMenu();
+  },
+
+  messageInfo() {
+    this.showToast('Message info', 'info');
+    this.hideContextMenu();
+  },
+
+  replyMessage() {
+    if (!this.state.contextMenuTarget) return;
+    
+    const messageText = this.state.contextMenuTarget.querySelector('.message-text');
+    const messageSender = this.state.contextMenuTarget.classList.contains('sent') ? 
+                          'You' : document.querySelector('.user-basic-info h2').textContent;
+    
+    if (messageText) {
+      const replyPreview = document.getElementById('replyPreview');
+      if (replyPreview) {
+        replyPreview.classList.add('active');
+        replyPreview.querySelector('.reply-text').textContent = messageText.textContent;
+        
+        this.state.replyingTo = {
+          sender: messageSender,
+          text: messageText.textContent
+        };
+      }
+    }
+    
+    this.hideContextMenu();
+  },
+
+  cancelReply() {
+    const replyPreview = document.getElementById('replyPreview');
+    if (replyPreview) {
+      replyPreview.classList.remove('active');
+    }
+    this.state.replyingTo = null;
+  },
+
+  reactMessage(emoji) {
+    if (this.state.contextMenuTarget) {
+      // Add reaction to message
+      let reactions = this.state.contextMenuTarget.querySelector('.message-reactions');
+      if (!reactions) {
+        reactions = document.createElement('div');
+        reactions.className = 'message-reactions';
+        this.state.contextMenuTarget.querySelector('.message-content').appendChild(reactions);
+      }
+      
+      // Check if reaction already exists
+      let existingReaction = Array.from(reactions.children).find(r => 
+        r.querySelector('.reaction-emoji').textContent === emoji
+      );
+      
+      if (existingReaction) {
+        // Increment count
+        const count = existingReaction.querySelector('.reaction-count');
+        count.textContent = parseInt(count.textContent) + 1;
+      } else {
+        // Add new reaction
+        const reaction = document.createElement('div');
+        reaction.className = 'reaction';
+        reaction.innerHTML = `
+          <span class="reaction-emoji">${emoji}</span>
+          <span class="reaction-count">1</span>
+        `;
+        reactions.appendChild(reaction);
+      }
+      
+      this.showToast(`Reacted with ${emoji}`, 'success');
+    }
+    
+    this.hideContextMenu();
+  },
+
+  // Helper Functions
+  formatTime(date) {
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    return `${formattedHours}:${formattedMinutes} ${ampm}`;
+  },
+
+  autoResizeTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+  },
+
+  scrollToBottom() {
+    const chatArea = document.getElementById('chatArea');
+    if (chatArea) {
+      requestAnimationFrame(() => {
+        chatArea.scrollTop = chatArea.scrollHeight;
+      });
+    }
+  },
+
+  updateLastMessage(userId, text) {
+    const contactItem = document.querySelector(`[data-user-id="${userId}"]`);
+    if (contactItem) {
+      const lastMessage = contactItem.querySelector('.last-message');
+      const messageTime = contactItem.querySelector('.message-time');
+      
+      if (lastMessage) lastMessage.textContent = text;
+      if (messageTime) messageTime.textContent = this.formatTime(new Date());
+    }
+  },
+
+  searchContacts(searchTerm) {
+    const lowerSearch = searchTerm.toLowerCase();
+    
+    document.querySelectorAll('.contact-item').forEach(item => {
+      const name = item.querySelector('h4').textContent.toLowerCase();
+      const lastMessage = item.querySelector('.last-message')?.textContent.toLowerCase() || '';
+      
+      if (name.includes(lowerSearch) || lastMessage.includes(lowerSearch)) {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = 'none';
+      }
+    });
+  },
+
+  handlePaste(e) {
+    const items = e.clipboardData.items;
+    
+    for (let item of items) {
+      if (item.type.indexOf('image') !== -1) {
+        e.preventDefault();
+        const blob = item.getAsFile();
+        this.handlePastedImage(blob);
+        break;
+      }
+    }
+  },
+
+  handlePastedImage(blob) {
+    const file = new File([blob], `pasted-image-${Date.now()}.png`, { type: blob.type });
+    this.showToast(`Image pasted: ${file.name}`, 'info');
+  },
+
+  showToast(message, type = 'info') {
+    const toastContainer = document.getElementById('toastContainer');
+    if (!toastContainer) return;
+    
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+      success: '✅',
+      error: '❌',
+      info: 'ℹ️',
+      warning: '⚠️'
+    };
+    
+    toast.innerHTML = `
+      <span class="toast-icon">${icons[type]}</span>
+      <span class="toast-message">${message}</span>
+      <button class="toast-close" onclick="this.parentElement.remove()">✕</button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.animation = 'slideInRight 0.3s ease reverse';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  },
+
+  checkPermissions() {
+    // Request notification permission
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  },
+
+  // Load Emojis
+  loadEmojis() {
+    const emojiTab = document.getElementById('emojiTab');
+    if (!emojiTab) return;
+    
+    const emojis = ['😀','😃','😄','😁','😅','😂','🤣','😊','😇','🙂','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😜','🤪','😝','🤑','🤗','🤭','🤫','🤔','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','😎','🤓','🧐','😕','😟','🙁','☹️','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','🥱','😤','😡','😠','🤬','😈','👿','💀','☠️','💩','🤡','👹','👺','👻','👽','👾','🤖','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❣️','💕','💞','💓','💗','💖','💘','💝','💟','👍','👎','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','☝️','✋','🤚','🖐️','🖖','👋','🤙','💪','🖕','✍️','🙏','🦶','🦵','👂','👃','👣','👁️','👀','🧠','🦷','🦴','👅','👄'];
+    
+    emojiTab.innerHTML = '';
+    emojis.forEach(emoji => {
+      const btn = document.createElement('button');
+      btn.className = 'emoji-btn';
+      btn.textContent = emoji;
+      btn.onclick = () => this.insertEmoji(emoji);
+      emojiTab.appendChild(btn);
+    });
+  },
+
+  insertEmoji(emoji) {
+    const input = document.getElementById('messageInput');
+    if (input) {
+      const cursorPos = input.selectionStart;
+      const textBefore = input.value.substring(0, cursorPos);
+      const textAfter = input.value.substring(cursorPos);
+      
+      input.value = textBefore + emoji + textAfter;
+      input.focus();
+      input.setSelectionRange(cursorPos + emoji.length, cursorPos + emoji.length);
+      
+      this.closeEmojiGifModal();
+    }
+  },
+
+  loadSampleGIFs() {
+    const gifGrid = document.getElementById('gifGrid');
+    if (!gifGrid) return;
+    
+    const sampleGIFs = [
+      'https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif',
+      'https://media.giphy.com/media/LmNwrBhejkK9EFP504/giphy.gif',
+      'https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif',
+      'https://media.giphy.com/media/3og0INyCmHlNylks9O/giphy.gif'
+    ];
+    
+    gifGrid.innerHTML = '';
+    sampleGIFs.forEach(url => {
+      const gifItem = document.createElement('div');
+      gifItem.className = 'gif-item';
+      gifItem.innerHTML = `<img src="${url}" alt="GIF" onclick="ChatApp.sendGIF('${url}')">`;
+      gifGrid.appendChild(gifItem);
+    });
+  },
+
+  searchGIFs() {
+    const searchTerm = document.getElementById('gifSearch').value;
+    if (!searchTerm) {
+      this.loadSampleGIFs();
+      return;
+    }
+    
+    // In a real app, this would search a GIF API
+    this.showToast(`Searching for "${searchTerm}"...`, 'info');
+    setTimeout(() => this.loadSampleGIFs(), 1000);
+  },
+
+  sendGIF(url) {
+    const messageData = {
+      id: `msg-${Date.now()}`,
+      text: `<img src="${url}" style="max-width: 200px; border-radius: 8px;">`,
+      sender: 'You',
+      time: this.formatTime(new Date()),
+      sent: true,
+      isGIF: true
+    };
+    
+    const chatArea = document.getElementById('chatArea');
+    if (chatArea) {
+      const messageElement = document.createElement('div');
+      messageElement.className = 'message sent';
+      messageElement.innerHTML = `
+        <div class="message-content">
+          <div class="message-bubble">
+            ${messageData.text}
+          </div>
+          <span class="message-time">${messageData.time}</span>
+        </div>
+      `;
+      chatArea.appendChild(messageElement);
+    }
+    
+    this.scrollToBottom();
+    this.closeEmojiGifModal();
+    this.showToast('GIF sent!', 'success');
+  },
+
+  handleFileSelection(event) {
+    const files = Array.from(event.target.files);
+    if (files.length > 0) {
+      files.forEach(file => {
+        this.showToast(`File selected: ${file.name}`, 'info');
+      });
+    }
+  }
+};
+
+// Global Functions (for onclick handlers)
+function toggleSidebar() {
+  const sidebar = document.getElementById('chatSidebar');
+  sidebar.classList.toggle('active');
+}
+
+function toggleInfo() {
+  const infoPanel = document.getElementById('chatInfoPanel');
+  infoPanel.classList.toggle('active');
+}
+
+function toggleSearch() {
+  const searchContainer = document.getElementById('searchContainer');
+  searchContainer.classList.toggle('active');
+  if (searchContainer.classList.contains('active')) {
+    document.getElementById('searchBar').focus();
+  }
+}
+
+function sendMessage() {
+  ChatApp.sendMessage();
+}
+
+function startNewChat() {
+  ChatApp.startNewChat();
+}
+
+function createGroup() {
+  ChatApp.createGroup();
+}
+
+function closeNewChatModal() {
+  ChatApp.closeNewChatModal();
+}
+
+function startChatWithSelected() {
+  ChatApp.startChatWithSelected();
+}
+
+function closeCreateGroupModal() {
+  ChatApp.closeCreateGroupModal();
+}
+
+function createNewGroup() {
+  ChatApp.createNewGroup();
+}
+
+function openSettings() {
+  const modal = document.getElementById('settingsModal');
+  if (modal) modal.classList.add('active');
+}
+
+function closeSettings() {
+  const modal = document.getElementById('settingsModal');
+  if (modal) modal.classList.remove('active');
+}
+
+function saveSettings() {
+  ChatApp.showToast('Settings saved!', 'success');
+  closeSettings();
+}
+
+function minimizeChat() {
+  ChatApp.minimizeChat();
+}
+
+function maximizeChat() {
+  ChatApp.maximizeChat();
+}
+
+function closeChat() {
+  ChatApp.closeChat();
+}
+
+function startVoiceCall() {
+  ChatApp.startVoiceCall();
+}
+
+function startVideoCall() {
+  ChatApp.startVideoCall();
+}
+
+function endCall() {
+  ChatApp.endCall();
+}
+
+function closeCallModal() {
+  ChatApp.endCall();
+}
+
+function minimizeCallModal() {
+  ChatApp.showToast('Call minimized', 'info');
+}
+
+function maximizeCallModal() {
+  ChatApp.showToast('Call maximized', 'info');
+}
+
+function toggleVideo() {
+  const localVideo = document.getElementById('localVideo');
+  const voiceAnimation = document.getElementById('voiceCallAnimation');
+  
+  if (localVideo.style.display === 'none') {
+    ChatApp.startVideoCall();
   } else {
-    filePreview.classList.remove('show');
-    filePreview.innerHTML = '';
+    localVideo.style.display = 'none';
+    document.getElementById('remoteVideo').style.display = 'none';
+    voiceAnimation.style.display = 'flex';
+    ChatApp.showToast('Switched to voice call', 'info');
   }
 }
 
-function removeFile(index) {
-  selectedFiles.splice(index, 1);
-  updateFilePreview();
+function shareScreen() {
+  ChatApp.showToast('Screen sharing started', 'info');
 }
 
-// Emoji/GIF Modal
-function openEmojiGifModal() {
-  document.getElementById('emojiGifModal').classList.add('show');
+function toggleSpeaker() {
+  const btn = document.getElementById('speakerBtn');
+  btn.classList.toggle('active');
+  ChatApp.showToast(btn.classList.contains('active') ? 'Speaker on' : 'Speaker off', 'info');
 }
 
-function closeEmojiGifModal() {
-  document.getElementById('emojiGifModal').classList.remove('show');
+function toggleMute() {
+  const btn = document.getElementById('muteBtn');
+  btn.classList.toggle('active');
+  btn.textContent = btn.classList.contains('active') ? '🔇' : '🎤';
+  ChatApp.showToast(btn.classList.contains('active') ? 'Muted' : 'Unmuted', 'info');
 }
 
-function showTab(tabName) {
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-  document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-  
-  event.target.classList.add('active');
-  document.getElementById(tabName).classList.add('active');
+function swapVideos() {
+  ChatApp.swapVideos();
 }
 
-function addEmoji(emoji) {
-  const input = document.getElementById('messageInput');
-  input.value += emoji;
-  input.focus();
-  closeEmojiGifModal();
+function readAllMessages() {
+  ChatApp.readAllMessages();
 }
 
-// Updated Media Recording Functions
-function selectMediaMode(mode) {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    // If recording, stop it
-    stopRecording();
-    return;
-  }
-  
-  if (recognition && recognition.recognizing) {
-    stopVoiceToText();
-    return;
-  }
-
-  // If clicking the same mode that's active, start recording
-  if (mediaMode === mode) {
-    if (mode === 'voice-to-text') {
-      startVoiceToText();
-    } else if (mode === 'voice-record' || mode === 'video-record') {
-      startRecording(mode === 'video-record');
-    }
-    return;
-  }
-
-  // Otherwise, just switch mode
-  mediaMode = mode;
-  document.querySelectorAll('.media-btn').forEach(btn => btn.classList.remove('active'));
-  
-  const btnMap = {
-    'voice-to-text': 'voiceToTextBtn',
-    'voice-record': 'voiceRecordBtn',
-    'video-record': 'videoRecordBtn'
-  };
-  
-  document.getElementById(btnMap[mode]).classList.add('active');
-  
-  // Hide control and stop buttons when switching modes
-  document.getElementById('controlBtn').style.display = 'none';
-  document.getElementById('stopBtn').style.display = 'none';
-  
-  updateStatus(`Selected ${mode.replace('-', ' ')} mode. Click again to start.`);
+function stopReading() {
+  ChatApp.stopReading();
 }
 
-async function checkPermissions(isVideo) {
-  try {
-    const constraints = isVideo ? { video: true, audio: true } : { audio: true };
-    const testStream = await navigator.mediaDevices.getUserMedia(constraints);
-    testStream.getTracks().forEach(track => track.stop());
-    return true;
-  } catch (e) {
-    return false;
-  }
+function readPreviousMessage() {
+  ChatApp.readPreviousMessage();
 }
 
-async function getMediaStream(isVideo) {
-  if (stream) return stream;
-  
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-      video: isVideo ? { width: 1280, height: 720 } : false
-    });
-    
-    if (isMuted && stream.getAudioTracks().length > 0) {
-      stream.getAudioTracks()[0].enabled = false;
-    }
-    
-    return stream;
-  } catch (e) {
-    updateStatus(`Error accessing ${isVideo ? 'camera/microphone' : 'microphone'}: ${e.message}`);
-    return null;
-  }
+function readNextMessage() {
+  ChatApp.readNextMessage();
 }
 
-// Updated control recording to work as cancel button
-async function controlRecording() {
-  // This now acts as a cancel button
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    cancelRecording();
-  } else if (recognition && recognition.recognizing) {
-    stopVoiceToText();
+function restartReading() {
+  ChatApp.restartReading();
+}
+
+function startVoiceToText() {
+  ChatApp.startVoiceToText();
+}
+
+function toggleVoiceRecording() {
+  const btn = document.getElementById('voiceRecordBtn');
+  if (btn.classList.contains('active')) {
+    ChatApp.stopVoiceRecording();
+  } else {
+    ChatApp.startVoiceRecording();
   }
 }
 
 function cancelRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    recordedChunks = []; // Clear recorded data
-    mediaRecorder.stop();
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      stream = null;
-    }
-    
-    if (videoPreview) {
-      videoPreview.remove();
-      videoPreview = null;
-    }
-    
-    document.getElementById('voiceRecording').classList.remove('active');
-    document.getElementById('minimizedVideoPreview').style.display = 'none';
-    stopRecordingTimer();
-    
-    // Reset button states
-    document.querySelectorAll('.media-btn').forEach(btn => {
-      btn.textContent = btn.id === 'voiceToTextBtn' ? '🎤' : 
-                       btn.id === 'voiceRecordBtn' ? '🎙️' : '📹';
-    });
-    
-    document.getElementById('controlBtn').style.display = 'none';
-    document.getElementById('stopBtn').style.display = 'none';
-    
-    updateStatus('Recording cancelled');
-  }
+  ChatApp.stopVoiceRecording();
+  ChatApp.showToast('Recording cancelled', 'info');
 }
 
-async function startVoiceToText() {
-  if (!('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
-    updateStatus('Speech recognition not supported.');
-    return;
-  }
-
-  const hasPermission = await checkPermissions(false);
-  if (!hasPermission) {
-    stream = await getMediaStream(false);
-    if (!stream) return;
-  }
-
-  recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-  recognition.lang = 'en-US';
-  recognition.interimResults = true;
-  recognition.continuous = true;
-  recognition.recognizing = true;
-
-  recognition.onresult = (event) => {
-    let interimTranscript = '';
-    for (let i = event.resultIndex; i < event.results.length; i++) {
-      const transcript = event.results[i][0].transcript;
-      if (event.results[i].isFinal) {
-        currentTranscript += transcript + ' ';
-      } else {
-        interimTranscript += transcript;
-      }
-    }
-    document.getElementById('messageInput').value = currentTranscript + interimTranscript;
-    updateStatus('Transcribing...');
-  };
-
-  recognition.onerror = (event) => {
-    updateStatus(`Speech recognition error: ${event.error}`);
-    stopVoiceToText();
-  };
-
-  recognition.onend = () => {
-    if (recognition.recognizing) {
-      try {
-        recognition.start();
-      } catch (e) {
-        stopVoiceToText();
-      }
-    }
-  };
-
-  try {
-    recognition.start();
-    // Change button to pause icon
-    document.getElementById('voiceToTextBtn').textContent = '⏸️';
-    // Show cancel button only
-    document.getElementById('controlBtn').style.display = 'inline-block';
-    document.getElementById('controlBtn').textContent = '❌';
-    document.getElementById('stopBtn').style.display = 'none';
-    updateStatus('Listening...');
-  } catch (e) {
-    updateStatus('Error starting speech recognition');
-  }
+function openVideoRecording() {
+  ChatApp.openVideoRecording();
 }
 
-function stopVoiceToText() {
-  if (recognition && recognition.recognizing) {
-    recognition.stop();
-    recognition.recognizing = false;
-    document.getElementById('voiceToTextBtn').textContent = '🎤';
-    document.getElementById('controlBtn').style.display = 'none';
-    currentTranscript = '';
-    updateStatus('');
-  }
+function closeVideoRecording() {
+  ChatApp.closeVideoRecording();
 }
 
-async function startRecording(isVideo) {
-  stream = await getMediaStream(isVideo);
-  if (!stream) return;
-
-  try {
-    mediaRecorder = new MediaRecorder(stream, {
-      mimeType: isVideo ? 'video/webm;codecs=vp8,opus' : 'audio/webm'
-    });
-    
-    recordedChunks = [];
-
-    if (isVideo) {
-      videoPreview = document.createElement('div');
-      videoPreview.className = 'video-preview';
-      const videoElement = document.createElement('video');
-      videoElement.srcObject = stream;
-      videoElement.muted = true;
-      videoElement.play();
-      videoPreview.appendChild(videoElement);
-      document.getElementById('chatArea').appendChild(videoPreview);
-      document.getElementById('chatArea').scrollTop = document.getElementById('chatArea').scrollHeight;
-      updateMinimizedVideoPreview();
-      document.getElementById('videoRecordBtn').textContent = '⏸️';
-    } else {
-      // Show voice recording indicator
-      document.getElementById('voiceRecording').classList.add('active');
-      startRecordingTimer();
-      document.getElementById('voiceRecordBtn').textContent = '⏸️';
-    }
-
-    mediaRecorder.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        recordedChunks.push(event.data);
-      }
-    };
-
-    mediaRecorder.onstop = () => {
-      if (videoPreview) {
-        videoPreview.remove();
-        videoPreview = null;
-      }
-      
-      document.getElementById('voiceRecording').classList.remove('active');
-      document.getElementById('minimizedVideoPreview').style.display = 'none';
-      stopRecordingTimer();
-      
-      // Only send if we have recorded data
-      if (recordedChunks.length > 0) {
-        const blob = new Blob(recordedChunks, { 
-          type: isVideo ? 'video/webm' : 'audio/webm' 
-        });
-        
-        const fileName = isVideo ? `video-${Date.now()}.webm` : `audio-${Date.now()}.webm`;
-        const file = new File([blob], fileName, { 
-          type: isVideo ? 'video/webm' : 'audio/webm' 
-        });
-        
-        selectedFiles = [file];
-        updateFilePreview();
-        sendMessage();
-      }
-      
-      // Reset button states
-      document.getElementById('voiceRecordBtn').textContent = '🎙️';
-      document.getElementById('videoRecordBtn').textContent = '📹';
-      document.getElementById('controlBtn').style.display = 'none';
-      document.getElementById('stopBtn').style.display = 'none';
-      updateStatus('');
-    };
-
-    mediaRecorder.start();
-    // Show cancel button only
-    document.getElementById('controlBtn').style.display = 'inline-block';
-    document.getElementById('controlBtn').textContent = '❌';
-    document.getElementById('stopBtn').style.display = 'none';
-    updateStatus(isVideo ? 'Recording video...' : 'Recording audio...');
-  } catch (e) {
-    updateStatus('Error starting recording');
-    if (videoPreview) {
-      videoPreview.remove();
-      videoPreview = null;
-    }
-    document.getElementById('voiceRecording').classList.remove('active');
-  }
+function startVideoRecording() {
+  ChatApp.startVideoRecording();
 }
 
-function stopRecording() {
-  if (mediaRecorder && mediaRecorder.state === 'recording') {
-    mediaRecorder.stop();
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      stream = null;
-    }
-  }
-  if (recognition && recognition.recognizing) {
-    stopVoiceToText();
-  }
+function stopVideoRecording() {
+  ChatApp.stopVideoRecording();
 }
 
-let recordingInterval;
-function startRecordingTimer() {
-  let seconds = 0;
-  recordingInterval = setInterval(() => {
-    seconds++;
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    document.getElementById('recordingTime').textContent = 
-      `${mins}:${secs.toString().padStart(2, '0')}`;
-  }, 1000);
+function deleteVideoRecording() {
+  ChatApp.deleteVideoRecording();
 }
 
-function stopRecordingTimer() {
-  clearInterval(recordingInterval);
-  document.getElementById('recordingTime').textContent = '0:00';
+function sendVideoMessage() {
+  ChatApp.sendVideoMessage();
 }
 
-// Updated Call Functions
-function startOrEndCall() {
-  if (isCalling) {
-    endCall();
-  } else {
-    openCallModal(); // Just open modal, don't start call
-  }
+function openEmojiGifModal() {
+  const modal = document.getElementById('emojiGifModal');
+  if (modal) modal.classList.add('active');
 }
 
-function openCallModal() {
-  // Just open the modal without starting a call
-  document.getElementById('callModal').classList.add('show');
-  updateCallModal();
-  
-  // Update call modal header if needed
-  if (document.querySelector('.call-user-info')) {
-    const callUserInfo = document.querySelector('.call-user-info');
-    // Add rating and typing indicator info
-    if (!callUserInfo.querySelector('.rating-container')) {
-      const ratingDiv = document.createElement('div');
-      ratingDiv.innerHTML = `
-        <div class="rating-container" style="margin-top: 8px;">
-          <span class="rating-stars" style="color: #f59e0b;">★★★★★</span> <span style="color: white;">(50 People)</span>
-        </div>
-        <p id="callTypingIndicator" class="typing-indicator-header" style="display: none;">
-          <span>.</span><span>.</span><span>.</span>
-        </p>
-      `;
-      callUserInfo.appendChild(ratingDiv);
-    }
-  }
+function closeEmojiGifModal() {
+  const modal = document.getElementById('emojiGifModal');
+  if (modal) modal.classList.remove('active');
 }
 
-function closeCallModal() {
-  document.getElementById('callModal').classList.remove('show');
-  if (isCalling) {
-    endCall();
-  }
-}
-
-function minimizeCallModal() {
-  const callModalContent = document.querySelector('.call-modal-content');
-  callModalContent.classList.add('minimized');
-  document.getElementById('callMinimizeBtn').style.display = 'none';
-  document.getElementById('callMaximizeBtn').style.display = 'inline-block';
-  isCallMinimized = true;
-  updateMinimizedVideoPreview();
-}
-
-function maximizeCallModal() {
-  const callModalContent = document.querySelector('.call-modal-content');
-  callModalContent.classList.remove('minimized');
-  document.getElementById('callMinimizeBtn').style.display = 'inline-block';
-  document.getElementById('callMaximizeBtn').style.display = 'none';
-  isCallMinimized = false;
-  document.getElementById('minimizedVideoPreview').style.display = 'none';
-  updateCallModal();
-}
-
-async function toggleVideoCall() {
-  if (isCalling && callMode === 'video') {
-    // If already on video call, ask for confirmation to end
-    if (confirm('End video call?')) {
-      endCall();
-    }
-  } else if (isCalling && callMode === 'voice') {
-    // Switching from voice to video
-    if (confirm('Switch to video call?')) {
-      callMode = 'video';
-      stream = await getMediaStream(true);
-      updateCallModal();
-      updateCallButtons();
-    }
-  } else {
-    // Start new video call
-    callMode = 'video';
-    await startCall();
-  }
-}
-
-async function toggleVoiceCall() {
-  if (isCalling && callMode === 'voice') {
-    // If already on voice call, ask for confirmation to end
-    if (confirm('End voice call?')) {
-      endCall();
-    }
-  } else if (isCalling && callMode === 'video') {
-    // Switching from video to voice
-    if (confirm('Switch to voice call?')) {
-      callMode = 'voice';
-      if (stream) {
-        stream.getVideoTracks().forEach(track => track.stop());
-      }
-      updateCallModal();
-      updateCallButtons();
-    }
-  } else {
-    // Start new voice call
-    callMode = 'voice';
-    await startCall();
-  }
-}
-
-function updateCallButtons() {
-  const videoBtn = document.getElementById('switchToVideoBtn');
-  const voiceBtn = document.getElementById('switchToVoiceBtn');
-  
-  // Reset both buttons
-  videoBtn.classList.remove('active');
-  voiceBtn.classList.remove('active');
-  
-  // Highlight active mode
-  if (callMode === 'video') {
-    videoBtn.classList.add('active');
-  } else if (callMode === 'voice') {
-    voiceBtn.classList.add('active');
-  }
-}
-
-async function startCall() {
-  if (!callMode) return; // Don't start if no mode selected
-  
-  isCalling = true;
-  callStartTime = Date.now();
-  
-  const callBtn = document.getElementById('callBtn');
-  callBtn.classList.add('active');
-  callBtn.textContent = '⏹️';
-  
-  stream = await getMediaStream(callMode === 'video');
-  if (!stream) {
-    endCall();
-    return;
-  }
-  
-  updateCallModal();
-  updateCallButtons();
-  startCallTimer();
-}
-
-function endCall() {
-  if (!isCalling) return;
-  
-  isCalling = false;
-  const callDuration = Math.floor((Date.now() - callStartTime) / 1000);
-  
-  const callBtn = document.getElementById('callBtn');
-  callBtn.classList.remove('active');
-  callBtn.textContent = '📞';
-  
-  if (stream) {
-    stream.getTracks().forEach(track => track.stop());
-    stream = null;
-  }
-  
-  // Add call history message
-  const chatArea = document.getElementById('chatArea');
-  const callHistoryDiv = document.createElement('div');
-  callHistoryDiv.className = 'message user call-history';
-  callHistoryDiv.id = `msg-${Date.now()}`;
-  
-  const mins = Math.floor(callDuration / 60);
-  const secs = callDuration % 60;
-  const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
-  callHistoryDiv.innerHTML = `
-    <div class="message-bubble">
-      <div class="message-content">${callMode === 'video' ? '📹' : '📞'} ${callMode} call - ${mins}:${secs.toString().padStart(2, '0')}</div>
-      <div class="message-meta">${timestamp} ✓✓</div>
-    </div>
-    <button class="read-aloud-btn" onclick="readAloudMessage('${callHistoryDiv.id}')">🔊</button>
-  `;
-  
-  callHistoryDiv.addEventListener('contextmenu', (e) => {
-    e.preventDefault();
-    showContextMenu(e, callHistoryDiv.id);
+function showTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(tab => {
+    tab.classList.remove('active');
+  });
+  document.querySelectorAll('.tab').forEach(btn => {
+    btn.classList.remove('active');
   });
   
-  chatArea.appendChild(callHistoryDiv);
-  chatArea.scrollTop = chatArea.scrollHeight;
-  
-  // Reset call mode
-  callMode = null;
-  updateCallButtons();
-  stopCallTimer();
-  closeCallModal();
+  document.getElementById(tabName).classList.add('active');
+  event.target.classList.add('active');
 }
 
-let callInterval;
-function startCallTimer() {
-  let seconds = 0;
-  callInterval = setInterval(() => {
-    seconds++;
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    // Update call timer display if needed
+function handleFileChange() {
+  ChatApp.handleFileSelection(event);
+}
+
+function editMessage() {
+  ChatApp.editMessage();
+}
+
+function deleteMessage() {
+  ChatApp.deleteMessage();
+}
+
+function forwardMessage() {
+  ChatApp.forwardMessage();
+}
+
+function copyMessage() {
+  ChatApp.copyMessage();
+}
+
+function selectMessage() {
+  ChatApp.selectMessage();
+}
+
+function pinMessage() {
+  ChatApp.pinMessage();
+}
+
+function unpinMessage() {
+  ChatApp.unpinMessage();
+}
+
+function starMessage() {
+  ChatApp.starMessage();
+}
+
+function messageInfo() {
+  ChatApp.messageInfo();
+}
+
+function replyMessage() {
+  ChatApp.replyMessage();
+}
+
+function cancelReply() {
+  ChatApp.cancelReply();
+}
+
+function reactMessage(emoji) {
+  ChatApp.reactMessage(emoji);
+}
+
+function blockContact() {
+  ChatApp.blockContact();
+}
+
+function deleteChat() {
+  ChatApp.deleteChat();
+}
+
+function showMediaTab(tabName) {
+  ChatApp.showMediaTab(tabName);
+}
+
+function viewMedia(element) {
+  ChatApp.viewMedia(element);
+}
+
+function playVideo(element) {
+  ChatApp.playVideo(element);
+}
+
+// Call Functions
+ChatApp.startVoiceCall = async function() {
+  const modal = document.getElementById('callModal');
+  if (modal) {
+    modal.classList.add('active');
+    document.getElementById('voiceCallAnimation').style.display = 'flex';
+    document.getElementById('localVideo').style.display = 'none';
+    document.getElementById('remoteVideo').style.display = 'none';
+    
+    this.startCallTimer();
+    this.showToast('Voice call connected', 'success');
+  }
+};
+
+ChatApp.startVideoCall = async function() {
+  const modal = document.getElementById('callModal');
+  if (modal) {
+    modal.classList.add('active');
+    
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      this.state.currentStream = stream;
+      
+      const localVideo = document.getElementById('localVideo');
+      if (localVideo) {
+        localVideo.srcObject = stream;
+        localVideo.style.display = 'block';
+      }
+      
+      document.getElementById('voiceCallAnimation').style.display = 'none';
+      document.getElementById('remoteVideo').style.display = 'block';
+      
+      this.startCallTimer();
+      this.showToast('Video call connected', 'success');
+    } catch (error) {
+      console.error('Error accessing camera:', error);
+      this.showToast('Could not access camera', 'error');
+      this.startVoiceCall();
+    }
+  }
+};
+
+ChatApp.startCallTimer = function() {
+  this.state.callDuration = 0;
+  this.state.callTimer = setInterval(() => {
+    this.state.callDuration++;
+    const minutes = Math.floor(this.state.callDuration / 60);
+    const seconds = this.state.callDuration % 60;
+    
+    const timerElem = document.getElementById('callTimer');
+    if (timerElem) {
+      timerElem.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
   }, 1000);
-}
+};
 
-function stopCallTimer() {
-  clearInterval(callInterval);
-}
-
-function toggleSpeaker() {
-  isSpeakerOn = !isSpeakerOn;
-  const speakerBtn = document.getElementById('speakerBtn');
-  speakerBtn.textContent = isSpeakerOn ? '🔊' : '🔇';
+ChatApp.swapVideos = function() {
+  const localVideo = document.getElementById('localVideo');
+  const remoteVideo = document.getElementById('remoteVideo');
   
-  // Only toggle active class, no red color for muted state
-  if (isSpeakerOn) {
-    speakerBtn.classList.add('active');
-  } else {
-    speakerBtn.classList.remove('active');
-  }
-  
-  updateStatus(isSpeakerOn ? 'Speaker on' : 'Speaker muted');
-}
-
-function toggleMute() {
-  isMuted = !isMuted;
-  const muteBtn = document.getElementById('muteBtn');
-  muteBtn.textContent = isMuted ? '🔇' : '🎤';
-  muteBtn.classList.toggle('muted', isMuted);
-  
-  if (stream && stream.getAudioTracks().length > 0) {
-    stream.getAudioTracks()[0].enabled = !isMuted;
-  }
-  updateStatus(isMuted ? 'Microphone muted' : 'Microphone on');
-}
-
-async function shareScreen() {
-  if (!isCalling || callMode !== 'video') {
-    updateStatus('Screen sharing is only available during video calls');
-    return;
-  }
-  
-  try {
-    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-    // Handle screen sharing
-    updateStatus('Screen sharing started');
+  if (localVideo && remoteVideo) {
+    localVideo.classList.toggle('main-video');
+    localVideo.classList.toggle('pip-video');
+    remoteVideo.classList.toggle('main-video');
+    remoteVideo.classList.toggle('pip-video');
     
-    screenStream.getVideoTracks()[0].onended = () => {
-      updateStatus('Screen sharing stopped');
-    };
-  } catch (e) {
-    updateStatus('Error sharing screen');
+    this.showToast('Videos swapped', 'info');
   }
-}
+};
 
-function swapVideo() {
-  isSenderMainVideo = !isSenderMainVideo;
-  updateCallModal();
-}
-
-function updateCallModal() {
-  const callVideo = document.getElementById('callVideo');
-  const voiceCallAnimation = document.getElementById('voiceCallAnimation');
-  const swapVideoBtn = document.getElementById('swapVideoBtn');
-  
-  callVideo.innerHTML = '';
-  voiceCallAnimation.classList.remove('active');
-  swapVideoBtn.style.display = 'none';
-  
-  if (!isCalling) {
-    // Show default state when not calling
-    const placeholder = document.createElement('div');
-    placeholder.style.color = '#9ca3af';
-    placeholder.style.textAlign = 'center';
-    placeholder.innerHTML = 'Select voice or video call to start';
-    callVideo.appendChild(placeholder);
-  } else if (callMode === 'voice') {
-    voiceCallAnimation.classList.add('active');
-    callVideo.appendChild(voiceCallAnimation);
-  } else if (callMode === 'video' && stream) {
-    // User sees themselves in small video by default
-    const mainVideo = document.createElement('video');
-    mainVideo.className = 'main-video';
-    mainVideo.srcObject = isSenderMainVideo ? stream : stream; // This would be remote stream in real app
-    mainVideo.autoplay = true;
-    mainVideo.muted = isSenderMainVideo;
-    callVideo.appendChild(mainVideo);
-    
-    const insetVideo = document.createElement('video');
-    insetVideo.className = 'inset-video';
-    insetVideo.srcObject = !isSenderMainVideo ? stream : stream; // This would be local stream
-    insetVideo.autoplay = true;
-    insetVideo.muted = true;
-    callVideo.appendChild(insetVideo);
-    
-    swapVideoBtn.style.display = 'inline-block';
+ChatApp.endCall = function() {
+  const modal = document.getElementById('callModal');
+  if (modal) {
+    modal.classList.remove('active');
   }
   
-  updateMinimizedVideoPreview();
-}
-
-function updateMinimizedVideoPreview() {
-  const minimizedVideo = document.getElementById('minimizedVideo');
-  const preview = document.getElementById('minimizedVideoPreview');
-  
-  if ((mediaMode === 'video-record' && mediaRecorder && mediaRecorder.state === 'recording') || 
-      (isCalling && callMode === 'video' && isCallMinimized)) {
-    if (stream) {
-      minimizedVideo.srcObject = stream;
-      minimizedVideo.play().catch(e => console.error('Error playing video:', e));
-      preview.style.display = 'block';
-    }
-  } else {
-    minimizedVideo.srcObject = null;
-    preview.style.display = 'none';
-  }
-}
-
-// Fixed Text-to-Speech Functions
-function getVoiceIdForSender(sender) {
-  if (voices.length === 0) return DEFAULT_VOICE_ID;
-  const gender = senders[sender] || 'unknown';
-  const voice = voices.find(v => v.name && v.name.toLowerCase().includes(gender));
-  return voice ? voice.voice_id : DEFAULT_VOICE_ID;
-}
-
-async function readAloudMessage(messageId) {
-  const messageDiv = document.getElementById(messageId);
-  const content = messageDiv.querySelector('.message-content');
-  const text = content?.textContent || '';
-  
-  if (!text) return;
-  
-  const sender = messageDiv.classList.contains('user') ? 'user' : 'John Doe';
-  
-  if (voices.length > 0 && ELEVENLABS_API_KEY !== 'YOUR_API_KEY_HERE') {
-    try {
-      const voiceId = getVoiceIdForSender(sender);
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'xi-api-key': ELEVENLABS_API_KEY
-        },
-        body: JSON.stringify({
-          text: text,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.5
-          }
-        })
-      });
-      
-      if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        audio.play();
-        updateStatus(`Reading message`);
-        return;
-      }
-    } catch (error) {
-      console.error('ElevenLabs TTS error:', error);
-    }
+  if (this.state.callTimer) {
+    clearInterval(this.state.callTimer);
+    this.state.callTimer = null;
   }
   
-  // Fallback to browser TTS
-  useBrowserTTS(text, sender);
-}
-
-function useBrowserTTS(text, sender) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  const voices = window.speechSynthesis.getVoices();
-  const gender = senders[sender] || 'unknown';
-  const voice = voices.find(v => v.name.toLowerCase().includes(gender)) || voices[0];
-  
-  if (voice) utterance.voice = voice;
-  utterance.rate = 1.0;
-  utterance.pitch = gender === 'male' ? 0.9 : 1.1;
-  
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utterance);
-  updateStatus('Reading message');
-}
-
-// Fixed Read All Messages
-function readAllMessages() {
-  if (isReadingAll) {
-    stopReading();
-    return;
+  if (this.state.currentStream) {
+    this.state.currentStream.getTracks().forEach(track => track.stop());
+    this.state.currentStream = null;
   }
   
-  isReadingAll = true;
-  document.getElementById('readAllBtn').textContent = '⏸️';
-  document.getElementById('stopReadBtn').style.display = 'inline-block';
-  document.getElementById('restartReadBtn').style.display = 'inline-block';
+  document.getElementById('callTimer').textContent = '00:00';
+  document.getElementById('localVideo').srcObject = null;
   
-  audioQueue = [];
-  const messages = document.querySelectorAll('.message:not(.typing):not(.video-preview)');
-  
-  messages.forEach(message => {
-    const content = message.querySelector('.message-content');
-    const text = content?.textContent || '';
-    if (text) {
-      const sender = message.classList.contains('user') ? 'user' : 'John Doe';
-      audioQueue.push({ text, sender, id: message.id });
-    }
-  });
-  
-  currentUtteranceIndex = 0;
-  if (audioQueue.length > 0) {
-    playNextAudio();
-  } else {
-    stopReading();
-    updateStatus('No messages to read');
-  }
-}
+  this.showToast('Call ended', 'info');
+};
 
-async function playNextAudio() {
-  if (currentUtteranceIndex >= audioQueue.length || !isReadingAll) {
-    stopReading();
-    return;
-  }
-  
-  const { text, sender, id } = audioQueue[currentUtteranceIndex];
-  
-  // Scroll to current message
-  const messageEl = document.getElementById(id);
-  if (messageEl) {
-    messageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-  
-  // Try ElevenLabs first
-  if (voices.length > 0 && ELEVENLABS_API_KEY !== 'YOUR_API_KEY_HERE') {
-    try {
-      const voiceId = getVoiceIdForSender(sender);
-      const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'xi-api-key': ELEVENLABS_API_KEY
-        },
-        body: JSON.stringify({
-          text: text,
-          model_id: 'eleven_multilingual_v2',
-          voice_settings: {
-            stability: 0.5,
-            similarity_boost: 0.5
-          }
-        })
-      });
-      
-      if (response.ok) {
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        currentAudio = new Audio(audioUrl);
-        
-        currentAudio.onended = () => {
-          currentUtteranceIndex++;
-          playNextAudio();
-        };
-        
-        currentAudio.onerror = () => {
-          console.error('Audio playback error');
-          currentUtteranceIndex++;
-          playNextAudio();
-        };
-        
-        currentAudio.play();
-        return;
-      }
-    } catch (error) {
-      console.error('ElevenLabs TTS error:', error);
-    }
-  }
-  
-  // Fallback to browser TTS
-  const utterance = new SpeechSynthesisUtterance(text);
-  const browserVoices = window.speechSynthesis.getVoices();
-  const gender = senders[sender] || 'unknown';
-  const voice = browserVoices.find(v => v.name.toLowerCase().includes(gender)) || browserVoices[0];
-  
-  if (voice) utterance.voice = voice;
-  utterance.rate = 1.0;
-  utterance.pitch = gender === 'male' ? 0.9 : 1.1;
-  
-  utterance.onend = () => {
-    currentUtteranceIndex++;
-    playNextAudio();
-  };
-  
-  utterance.onerror = () => {
-    console.error('TTS error');
-    currentUtteranceIndex++;
-    playNextAudio();
-  };
-  
-  currentAudio = utterance;
-  window.speechSynthesis.speak(utterance);
-}
-
-function stopReading() {
-  isReadingAll = false;
-  
-  if (currentAudio instanceof Audio) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-  } else if (currentAudio) {
-    window.speechSynthesis.cancel();
-  }
-  
-  currentAudio = null;
-  audioQueue = [];
-  currentUtteranceIndex = 0;
-  
-  document.getElementById('readAllBtn').textContent = '🔊';
-  document.getElementById('stopReadBtn').style.display = 'none';
-  document.getElementById('restartReadBtn').style.display = 'none';
-  
-  updateStatus('Stopped reading');
-}
-
-function restartReading() {
-  stopReading();
-  setTimeout(() => {
-    readAllMessages();
-  }, 100);
-}
-
-// Attachment Modal functions (keeping all original)
-function openAttachmentModal(url, type) {
-  const viewer = document.getElementById('attachmentViewer');
-  const modal = document.getElementById('attachmentModal');
-  
-  viewer.innerHTML = '';
-  currentAttachmentIndex = attachments.findIndex(att => att.url === url);
-  zoomLevel = 1;
-  
-  let element;
-  if (type.startsWith('image/')) {
-    element = document.createElement('img');
-    element.src = url;
-    element.style.transform = `scale(${zoomLevel})`;
-  } else if (type.startsWith('video/')) {
-    element = document.createElement('video');
-    element.src = url;
-    element.controls = true;
-  } else if (type.startsWith('audio/')) {
-    element = document.createElement('audio');
-    element.src = url;
-    element.controls = true;
-  } else if (type === 'application/pdf') {
-    element = document.createElement('iframe');
-    element.src = url;
-  } else {
-    element = document.createElement('div');
-    element.textContent = 'Preview not available. Click Download to view.';
-  }
-  
-  viewer.appendChild(element);
-  modal.classList.add('show');
-}
-
-function closeAttachmentModal() {
-  document.getElementById('attachmentModal').classList.remove('show');
-}
-
-function downloadAttachment() {
-  if (currentAttachmentIndex >= 0) {
-    const { url, file } = attachments[currentAttachmentIndex];
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = file?.name || 'attachment';
-    a.click();
-  }
-}
-
-function toggleFullScreen() {
-  const modal = document.getElementById('attachmentModal');
-  if (!document.fullscreenElement) {
-    modal.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
-}
-
-function previousAttachment() {
-  if (currentAttachmentIndex > 0) {
-    currentAttachmentIndex--;
-    const { url, type } = attachments[currentAttachmentIndex];
-    openAttachmentModal(url, type);
-  }
-}
-
-function nextAttachment() {
-  if (currentAttachmentIndex < attachments.length - 1) {
-    currentAttachmentIndex++;
-    const { url, type } = attachments[currentAttachmentIndex];
-    openAttachmentModal(url, type);
-  }
-}
-
-function forwardAttachment() {
-  if (currentAttachmentIndex >= 0) {
-    selectedFiles = [attachments[currentAttachmentIndex].file];
-    updateFilePreview();
-    closeAttachmentModal();
-    document.getElementById('messageInput').focus();
-  }
-}
-
-function replayAttachment() {
-  const video = document.querySelector('#attachmentViewer video');
-  if (video) {
-    video.currentTime = 0;
-    video.play();
-  }
-}
-
-// Continuation of copyAttachmentLink and remaining functions
-
-function copyAttachmentLink() {
- if (currentAttachmentIndex >= 0) {
-   navigator.clipboard.writeText(attachments[currentAttachmentIndex].url);
-   showToast('Link copied to clipboard');
- }
-}
-
-function zoomAttachment(factor) {
- const img = document.querySelector('#attachmentViewer img');
- if (img) {
-   zoomLevel *= factor;
-   zoomLevel = Math.min(Math.max(zoomLevel, 0.5), 3);
-   img.style.transform = `scale(${zoomLevel})`;
- }
-}
-
-// Utility Functions
-function updateStatus(message) {
- document.getElementById('status').textContent = message;
- if (message) {
-   setTimeout(() => {
-     document.getElementById('status').textContent = '';
-   }, 3000);
- }
-}
-
-function showToast(message, type = 'info') {
- const container = document.getElementById('toastContainer');
- const toast = document.createElement('div');
- toast.className = `toast ${type}`;
- toast.textContent = message;
- 
- container.appendChild(toast);
- 
- setTimeout(() => {
-   toast.style.animation = 'toastSlide 0.3s ease reverse';
-   setTimeout(() => toast.remove(), 300);
- }, 3000);
-}
-
-// Initialize app
-console.log('Enhanced Chat Application loaded successfully!');
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', () => {
+  ChatApp.init();
+});

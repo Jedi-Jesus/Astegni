@@ -265,6 +265,7 @@ function initializeHeroSection() {
         'and',
         'reach highly targeted audiences',
         'Astegni - Ethiopia\'s first social media platform!',
+        'Contributing in realizing Digital Ethiopia!',
         'Learn with us',
         'Connect with tutors and training centers!',
         'Want to become a tutor?',

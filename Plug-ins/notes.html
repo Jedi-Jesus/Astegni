@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Notes Dashboard</title>
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/notes.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://unpkg.com/html-docx-js@0.3.1/dist/html-docx.min.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <span>📚</span>
+        <span>Advanced Notes</span>
+      </div>
+      <div class="header-actions">
+        <span id="save-status" class="save-status"></span>
+        <button class="theme-toggle" onclick="toggleTheme()">
+          <span class="theme-icon">🌙</span>
+          <span class="theme-text">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <!-- Dashboard View -->
+    <div class="dashboard" id="dashboard">
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">My Notes</h1>
+        <p class="dashboard-subtitle">Organize your thoughts and knowledge</p>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-number" id="totalNotes">0</span>
+          <span class="stat-label">Total Notes</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="totalWords">0</span>
+          <span class="stat-label">Total Words</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="totalCourses">0</span>
+          <span class="stat-label">Courses</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="recentNotes">0</span>
+          <span class="stat-label">This Week</span>
+        </div>
+      </div>
+
+      <!-- Search and Filter Bar -->
+      <div class="controls-bar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search notes...">
+        </div>
+        <div class="filter-buttons">
+          <button class="filter-btn active" data-filter="all">All Notes</button>
+          <button class="filter-btn" data-filter="recent">Recent</button>
+          <button class="filter-btn" data-filter="favorites">Favorites</button>
+        </div>
+        <select class="sort-select" id="sortSelect">
+          <option value="date-desc">Newest First</option>
+          <option value="date-asc">Oldest First</option>
+          <option value="title">Title A-Z</option>
+          <option value="course">By Course</option>
+        </select>
+      </div>
+
+      <!-- Notes Grid -->
+      <div class="notes-grid" id="notesGrid">
+        <!-- New Note Card -->
+        <div class="note-card new-note" onclick="createNewNote()">
+          <div class="new-note-icon">➕</div>
+          <div class="new-note-text">Create New Note</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Editor View -->
+    <div class="editor-container" id="editorContainer">
+      <!-- Main Editor -->
+      <div class="editor-main">
+        <div class="editor-header">
+          <h2 class="editor-title" id="editorTitle">New Note</h2>
+          <div class="editor-actions">
+            <button class="btn btn-icon" onclick="backToDashboard()" title="Back to Dashboard">
+              ←
+            </button>
+            <button class="btn btn-secondary" onclick="duplicateNote()">
+              <span>📋</span> Duplicate
+            </button>
+            <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" onclick="toggleExportMenu()">
+                <span>📥</span> Export
+              </button>
+              <div class="dropdown-menu" id="exportMenu">
+                <button class="dropdown-item" onclick="exportNoteAsPDF()">
+                  <span>📄</span> Export as PDF
+                </button>
+                <button class="dropdown-item" onclick="exportNoteAsDoc()">
+                  <span>📝</span> Export as Word
+                </button>
+                <button class="dropdown-item" onclick="exportNoteAsMarkdown()">
+                  <span>📋</span> Export as Markdown
+                </button>
+                <button class="dropdown-item" onclick="exportNoteAsHTML()">
+                  <span>🌐</span> Export as HTML
+                </button>
+              </div>
+            </div>
+            <button class="btn btn-secondary" onclick="toggleFavorite()" id="favoriteBtn">
+              <span>⭐</span>
+            </button>
+            <button class="btn btn-danger" onclick="deleteCurrentNote()">
+              <span>🗑️</span> Delete
+            </button>
+            <button class="btn btn-primary" onclick="saveNote()">
+              <span>💾</span> Save
+            </button>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <div class="form-section">
+          <div class="form-grid">
+            <div class="form-group full-width">
+              <label class="form-label">Title</label>
+              <input type="text" class="form-input" id="noteTitle" placeholder="Enter note title">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date</label>
+              <input type="datetime-local" class="form-input" id="noteDate">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Course</label>
+              <div class="input-with-suggestions">
+                <input type="text" class="form-input" id="noteCourse" placeholder="e.g., Mathematics 101">
+                <div class="suggestions-dropdown" id="courseSuggestions"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tutor</label>
+              <div class="input-with-suggestions">
+                <input type="text" class="form-input" id="noteTutor" placeholder="e.g., Dr. Smith">
+                <div class="suggestions-dropdown" id="tutorSuggestions"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tags</label>
+              <input type="text" class="form-input" id="noteTags" placeholder="e.g., exam, important, review">
+            </div>
+          </div>
+        </div>
+
+        <!-- Editor Toolbar -->
+        <div class="editor-toolbar">
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="formatText('bold')" title="Bold (Ctrl+B)">
+              <b>B</b>
+            </button>
+            <button class="toolbar-btn" onclick="formatText('italic')" title="Italic (Ctrl+I)">
+              <i>I</i>
+            </button>
+            <button class="toolbar-btn" onclick="formatText('underline')" title="Underline (Ctrl+U)">
+              <u>U</u>
+            </button>
+            <button class="toolbar-btn" onclick="formatText('strikeThrough')" title="Strikethrough">
+              <s>S</s>
+            </button>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="formatText('subscript')" title="Subscript">
+              X<sub>2</sub>
+            </button>
+            <button class="toolbar-btn" onclick="formatText('superscript')" title="Superscript">
+              X<sup>2</sup>
+            </button>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="showHighlightColors()" title="Highlight">
+              <span style="background: yellow; padding: 2px;">H</span>
+            </button>
+            <div class="highlight-colors" id="highlightColors">
+              <button class="color-btn" style="background: #FFEB3B" onclick="formatText('hiliteColor', '#FFEB3B')"></button>
+              <button class="color-btn" style="background: #FFC107" onclick="formatText('hiliteColor', '#FFC107')"></button>
+              <button class="color-btn" style="background: #4CAF50" onclick="formatText('hiliteColor', '#4CAF50')"></button>
+              <button class="color-btn" style="background: #2196F3" onclick="formatText('hiliteColor', '#2196F3')"></button>
+              <button class="color-btn" style="background: #E91E63" onclick="formatText('hiliteColor', '#E91E63')"></button>
+            </div>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="formatText('insertUnorderedList')" title="Bullet List">
+              •
+            </button>
+            <button class="toolbar-btn" onclick="formatText('insertOrderedList')" title="Numbered List">
+              1.
+            </button>
+            <button class="toolbar-btn" onclick="formatText('indent')" title="Indent">
+              →
+            </button>
+            <button class="toolbar-btn" onclick="formatText('outdent')" title="Outdent">
+              ←
+            </button>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <select class="toolbar-select" onchange="formatText('fontSize', this.value)">
+              <option value="">Size</option>
+              <option value="1">Small</option>
+              <option value="3">Normal</option>
+              <option value="5">Large</option>
+              <option value="7">Huge</option>
+            </select>
+            <input type="color" class="color-input" id="textColor" onchange="formatText('foreColor', this.value)" title="Text Color">
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="openBackgroundModal()" title="Background">
+              🖼️
+            </button>
+            <button class="toolbar-btn" onclick="removeNoteBackground()" title="Remove Background">
+              🗑️
+            </button>
+          </div>
+          <div class="toolbar-separator"></div>
+          <div class="toolbar-group">
+            <button class="toolbar-btn" onclick="formatText('undo')" title="Undo (Ctrl+Z)">
+              ↶
+            </button>
+            <button class="toolbar-btn" onclick="formatText('redo')" title="Redo (Ctrl+Y)">
+              ↷
+            </button>
+          </div>
+        </div>
+
+        <!-- Content Editor -->
+        <div class="editor-content-wrapper">
+          <div contenteditable="true" class="form-textarea" id="noteContent" placeholder="Start writing your note..."></div>
+          <div class="editor-footer">
+            <span id="wordCount">0 words</span>
+            <span id="charCount">0 characters</span>
+            <span id="lastSaved">Not saved</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="editor-actions-bottom">
+          <button class="btn btn-secondary" onclick="cancelEdit()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveAndClose()">Save & Close</button>
+        </div>
+      </div>
+
+      <!-- History Sidebar -->
+      <div class="history-sidebar">
+        <div class="history-header">
+          <h3 class="history-title">Notes History</h3>
+          <button class="btn btn-icon-small" onclick="toggleHistorySidebar()" title="Toggle Sidebar">
+            ⇄
+          </button>
+        </div>
+        <div class="history-search">
+          <input type="text" class="history-search-input" id="historySearch" placeholder="Search history...">
+        </div>
+        <div class="history-cards" id="historyCards">
+          <!-- History cards will be populated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background Modal -->
+  <div class="modal" id="backgroundModal">
+    <div class="modal-overlay" onclick="closeBackgroundModal()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Select Background Pattern</h3>
+        <button class="modal-close" onclick="closeBackgroundModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="background-grid">
+          <div class="background-option" onclick="setNoteBackground('math')">
+            <img src="../pictures/Math wallpaper 1.jpeg" alt="Math">
+            <span>Mathematics</span>
+          </div>
+          <div class="background-option" onclick="setNoteBackground('physics')">
+            <img src="../pictures/Physics wall paper 1.jpeg" alt="Physics">
+            <span>Physics</span>
+          </div>
+          <div class="background-option" onclick="setNoteBackground('biology')">
+            <img src="../pictures/Biology wallpaper 1.jpeg" alt="Biology">
+            <span>Biology</span>
+          </div>
+          <div class="background-option" onclick="setNoteBackground('chemistry')">
+            <img src="../pictures/chemistry wall paper 2.jpeg" alt="Chemistry">
+            <span>Chemistry</span>
+          </div>
+          <div class="background-option" onclick="setNoteBackground('geography')">
+            <img src="../pictures/Geography wallpaper 1.jpeg" alt="Geography">
+            <span>Geography</span>
+          </div>
+          <div class="background-option" onclick="setNoteBackground('history')">
+            <img src="../pictures/History wallpaper 1.jpeg" alt="History">
+            <span>History</span>
+          </div>
+          <div class="background-option" onclick="setNoteBackground('music')">
+            <img src="../pictures/Music.jpeg" alt="Music">
+            <span>Music</span>
+          </div>
+          <div class="background-option upload-option">
+            <input type="file" id="uploadBackground" accept="image/*" onchange="uploadBackgroundImage()">
+            <label for="uploadBackground">
+              <span>📤</span>
+              <span>Upload Custom</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/notes.js"></script>
+</body>
+</html>

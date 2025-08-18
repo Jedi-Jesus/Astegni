@@ -1,0 +1,1324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultra Enhanced Podcast Creation Modal</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/podcast-modal.css">
+</head>
+
+<body>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle">
+        <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle theme">
+            <span id="themeIcon">🌙</span>
+        </button>
+    </div>
+
+    <!-- Launch Button -->
+    <button class="launch-btn" onclick="openModal()">
+        🎙️ Create New Podcast Episode
+    </button>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <h2>Create Podcast Episode</h2>
+                    <p>Professional podcast publishing with AI-powered features</p>
+                </div>
+                <div class="close-btn" onclick="closeModal()"></div>
+            </div>
+
+            <!-- Progress Tracker -->
+            <div class="progress-container">
+                <div class="progress-steps">
+                    <div class="progress-step active" data-step="basics">
+                        <div class="step-circle">1</div>
+                        <div class="step-label">Details</div>
+                    </div>
+                    <div class="progress-step" data-step="recording">
+                        <div class="step-circle">2</div>
+                        <div class="step-label">Recording</div>
+                    </div>
+                    <div class="progress-step" data-step="guests">
+                        <div class="step-circle">3</div>
+                        <div class="step-label">Guests</div>
+                    </div>
+                    <div class="progress-step" data-step="schedule">
+                        <div class="step-circle">4</div>
+                        <div class="step-label">Schedule</div>
+                    </div>
+                    <div class="progress-step" data-step="monetize">
+                        <div class="step-circle">5</div>
+                        <div class="step-label">Monetize</div>
+                    </div>
+                                        <div class="progress-step" data-step="golive">
+                        <div class="step-circle">6</div>
+                        <div class="step-label">Go Live</div>
+                    </div>
+                    <div class="progress-step" data-step="publish">
+                        <div class="step-circle">7</div>
+                        <div class="step-label">Publish</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressBar" style="width: 16.66%"></div>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="modal-body">
+                <!-- Tab Navigation -->
+                <div class="tabs">
+                    <button class="tab active" onclick="switchTab('basics', this)">
+                        Episode Details
+                        <span class="tab-indicator"></span>
+                    </button>
+                    <button class="tab" onclick="switchTab('recording', this)">
+                        Recording Studio
+                        <span class="tab-indicator"></span>
+                    </button>
+                    <button class="tab" onclick="switchTab('guests', this)">
+                        Guests
+                        <span class="tab-indicator"></span>
+                    </button>
+                    <button class="tab" onclick="switchTab('schedule', this)">
+                        Schedule
+                        <span class="tab-indicator"></span>
+                    </button>
+                    <button class="tab" onclick="switchTab('monetize', this)">
+                        Monetize
+                        <span class="tab-indicator"></span>
+                    </button>
+                    <button class="tab" onclick="switchTab('golive', this)">
+                        Go Live
+                        <span class="tab-indicator"></span>
+                    </button>
+
+                    <button class="tab" onclick="switchTab('publish', this)">
+                        Publishing
+                        <span class="tab-indicator"></span>
+                    </button>
+                </div>
+
+                <!-- Episode Details Tab -->
+                <div class="tab-content active" id="basics">
+                    <!-- AI Panel for Title Generation -->
+                    <div class="ai-panel">
+                        <div class="ai-header">
+                            <h4>AI Assistant</h4>
+                            <div class="ai-badge">
+                                <span>✨</span> AI Powered
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Episode Title <span class="required">*</span></label>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="episodeTitle" placeholder="Enter an engaging title"
+                                    style="flex: 1;">
+                                <button class="btn btn-primary" onclick="generateTitle()">
+                                    <span>✨</span> Generate
+                                </button>
+                            </div>
+                            <div class="ai-suggestions" id="titleSuggestions" style="display: none;">
+                                <div class="ai-suggestion" onclick="selectSuggestion(this)">The Future of Podcasting: AI
+                                    Integration</div>
+                                <div class="ai-suggestion" onclick="selectSuggestion(this)">Breaking Barriers:
+                                    Technology Meets Creativity</div>
+                                <div class="ai-suggestion" onclick="selectSuggestion(this)">Innovation Unleashed:
+                                    Next-Gen Content</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Episode Number</label>
+                            <input type="number" placeholder="e.g., 42" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Season</label>
+                            <select>
+                                <option>Season 1</option>
+                                <option>Season 2</option>
+                                <option>Season 3</option>
+                                <option>Special Episode</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description <span class="helper">(SEO optimized)</span></label>
+                        <textarea id="episodeDescription" placeholder="Write a compelling description..."
+                            oninput="updateSEOScore()"></textarea>
+                    </div>
+
+                    <!-- SEO Score Meter -->
+                    <div class="seo-meter">
+                        <h4>SEO Score</h4>
+                        <div class="seo-score-circle">
+                            <svg width="120" height="120" class="seo-score-svg">
+                                <circle cx="60" cy="60" r="54" class="seo-score-bg"></circle>
+                                <circle cx="60" cy="60" r="54" class="seo-score-progress" stroke-dasharray="339.292"
+                                    stroke-dashoffset="169" id="seoCircle"></circle>
+                            </svg>
+                            <div class="seo-score-text" id="seoScore">75</div>
+                        </div>
+                        <div class="seo-tips">
+                            <div class="seo-tip">
+                                <span class="seo-tip-icon">✅</span>
+                                <span>Good keyword density</span>
+                            </div>
+                            <div class="seo-tip warning">
+                                <span class="seo-tip-icon">⚠️</span>
+                                <span>Add more descriptive content</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Smart Tag Suggestions -->
+                    <div class="form-group">
+                        <label>Episode Tags</label>
+                        <div class="tag-input-container">
+                            <div class="tag-input" id="tagInput">
+                                <div class="tag">Technology <span class="tag-close" onclick="removeTag(this)">×</span>
+                                </div>
+                                <div class="tag">Innovation <span class="tag-close" onclick="removeTag(this)">×</span>
+                                </div>
+                                <input type="text" placeholder="Add a tag..." onkeypress="addTag(event)">
+                            </div>
+                        </div>
+                        <div class="ai-suggestions" style="margin-top: 10px;">
+                            <small>Suggested tags:</small>
+                            <div style="display: flex; gap: 8px; margin-top: 8px;">
+                                <span class="ai-suggestion" onclick="addSuggestedTag('AI')">AI</span>
+                                <span class="ai-suggestion" onclick="addSuggestedTag('Podcast')">Podcast</span>
+                                <span class="ai-suggestion" onclick="addSuggestedTag('Tech')">Tech</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recording Studio Tab -->
+                <div class="tab-content" id="recording">
+                    <div class="recording-studio" id="recordingStudio">
+                        <h3>Recording Studio</h3>
+
+                        <!-- Live Waveform Visualizer -->
+                        <div class="waveform-container">
+                            <canvas class="waveform-canvas" id="waveformCanvas"></canvas>
+                            <div class="waveform-controls">
+                                <div class="audio-timer">
+                                    <span id="recordingTime">00:00:00</span>
+                                </div>
+                                <div class="audio-levels" id="audioLevels">
+                                    <div class="level-bar" style="height: 20px;"></div>
+                                    <div class="level-bar" style="height: 35px;"></div>
+                                    <div class="level-bar" style="height: 45px;"></div>
+                                    <div class="level-bar" style="height: 30px;"></div>
+                                    <div class="level-bar" style="height: 50px;"></div>
+                                    <div class="level-bar" style="height: 25px;"></div>
+                                    <div class="level-bar" style="height: 40px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Voice Filters -->
+                        <div class="voice-filters">
+                            <div class="filter-control">
+                                <div class="filter-label">Bass</div>
+                                <input type="range" class="filter-slider" min="0" max="100" value="50"
+                                    oninput="updateFilter(this, 'bass')">
+                                <div class="filter-value">50</div>
+                            </div>
+                            <div class="filter-control">
+                                <div class="filter-label">Treble</div>
+                                <input type="range" class="filter-slider" min="0" max="100" value="50"
+                                    oninput="updateFilter(this, 'treble')">
+                                <div class="filter-value">50</div>
+                            </div>
+                            <div class="filter-control">
+                                <div class="filter-label">Gain</div>
+                                <input type="range" class="filter-slider" min="0" max="100" value="75"
+                                    oninput="updateFilter(this, 'gain')">
+                                <div class="filter-value">75</div>
+                            </div>
+                        </div>
+
+                        <!-- Noise Meter -->
+                        <div class="noise-meter">
+                            <span class="noise-label">Noise Level:</span>
+                            <div class="noise-bars" id="noiseBars">
+                                <div class="noise-bar" style="height: 10px;"></div>
+                                <div class="noise-bar" style="height: 15px;"></div>
+                                <div class="noise-bar warning" style="height: 18px;"></div>
+                                <div class="noise-bar" style="height: 12px;"></div>
+                                <div class="noise-bar" style="height: 8px;"></div>
+                            </div>
+                            <span id="noiseStatus" style="color: var(--success); font-size: 13px;">Low</span>
+                        </div>
+
+                        <!-- Studio Controls -->
+                        <div class="studio-controls">
+                            <div class="studio-btn" onclick="toggleRecording()" id="recordBtn">
+                                <span class="studio-icon">🎤</span>
+                                <span class="studio-label">Start Recording</span>
+                            </div>
+                            <div class="studio-btn" onclick="toggleNoiseReduction()">
+                                <span class="studio-icon">🔇</span>
+                                <span class="studio-label">Noise Reduction</span>
+                            </div>
+                            <div class="studio-btn" onclick="toggleVoiceEnhance()">
+                                <span class="studio-icon">✨</span>
+                                <span class="studio-label">Voice Enhance</span>
+                            </div>
+                            <div class="studio-btn" onclick="toggleEqualizer()">
+                                <span class="studio-icon">🎚️</span>
+                                <span class="studio-label">Equalizer</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Area -->
+                    <div class="form-group">
+                        <label>Or Upload Audio File</label>
+                        <div class="upload-area" id="audioUpload" ondrop="dropHandler(event, 'audio')"
+                            ondragover="dragOverHandler(event)" ondragleave="dragLeaveHandler(event)"
+                            onclick="triggerFileInput('audio')">
+                            <div class="upload-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
+                                </svg>
+                            </div>
+                            <h4 class="upload-title">Drop audio file here</h4>
+                            <p class="upload-subtitle">MP3, WAV, or M4A (Max 500MB)</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Transcript Generation -->
+                    <div class="ai-panel">
+                        <h4>Transcript Generation</h4>
+                        <button class="btn btn-primary" onclick="generateTranscript()">
+                            <span>🤖</span> Generate Transcript
+                        </button>
+                        <div class="ai-loading" id="transcriptLoading" style="display: none;">
+                            <div class="ai-loading-spinner"></div>
+                            <span class="ai-loading-text">AI is generating transcript...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guests Tab with Live Collaboration -->
+                <div class="tab-content" id="guests">
+                    <!-- Collaboration Panel -->
+                    <div class="collab-panel">
+                        <div class="collab-header">
+                            <h4>Live Collaboration</h4>
+                            <div class="online-indicator">
+                                <span class="online-dot"></span>
+                                <span>3 collaborators online</span>
+                            </div>
+                        </div>
+
+                        <div class="collab-users">
+                            <div class="collab-user" title="John (Online)">
+                                <img src="https://i.pravatar.cc/40?img=1" alt="John">
+                            </div>
+                            <div class="collab-user" title="Sarah (Online)">
+                                <img src="https://i.pravatar.cc/40?img=2" alt="Sarah">
+                            </div>
+                            <div class="collab-user" title="Mike (Online)">
+                                <img src="https://i.pravatar.cc/40?img=3" alt="Mike">
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center;">
+                            <span style="font-size: 14px;">Sarah is typing</span>
+                            <div class="typing-indicator">
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Guest Name</label>
+                            <input type="text" placeholder="John Doe" id="guestName">
+                        </div>
+                        <div class="form-group">
+                            <label>Guest Email</label>
+                            <input type="email" placeholder="john@example.com" id="guestEmail">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Guest Role</label>
+                        <select id="guestRole">
+                            <option>Co-host</option>
+                            <option>Interview Guest</option>
+                            <option>Expert</option>
+                            <option>Special Guest</option>
+                        </select>
+                    </div>
+
+                    <!-- Availability Checker -->
+                    <div class="form-group">
+                        <label>Check Availability</label>
+                        <button class="btn btn-secondary" onclick="checkAvailability()">
+                            <span>📅</span> Check Calendar
+                        </button>
+                        <div id="availabilityStatus" style="margin-top: 10px; display: none;">
+                            <span style="color: var(--success);">✅ Guest is available</span>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="addGuest()">
+                        <span>+</span> Add Guest
+                    </button>
+
+                    <div class="guest-list">
+                        <div class="guest-list-header">
+                            <h4 class="guest-list-title">Guest List</h4>
+                            <span class="guest-count" id="guestCount">1 Guest</span>
+                        </div>
+                        <div id="guestList">
+                            <div class="guest-item">
+                                <div class="guest-avatar">JD</div>
+                                <div class="guest-info">
+                                    <div class="guest-name">
+                                        Jane Doe
+                                        <span class="guest-role">Expert</span>
+                                    </div>
+                                    <div class="guest-email">jane@techcompany.com</div>
+                                </div>
+                                <button class="remove-guest" onclick="removeGuest(this)">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Collaborative Notes -->
+                    <div class="form-group">
+                        <label>Collaborative Notes</label>
+                        <textarea placeholder="Add notes for this episode..." style="min-height: 120px;"></textarea>
+                        <small style="color: var(--text-muted);">All team members can see and edit these notes</small>
+                    </div>
+                </div>
+
+                <!-- Advanced Schedule Tab -->
+                <div class="tab-content" id="schedule">
+                    <!-- Calendar View -->
+                    <div class="calendar-view">
+                        <div class="calendar-header">
+                            <h4>August 2024</h4>
+                            <div class="calendar-nav">
+                                <button class="calendar-btn" onclick="navigateCalendar('prev')">←</button>
+                                <button class="calendar-btn" onclick="navigateCalendar('next')">→</button>
+                            </div>
+                        </div>
+                        <div class="calendar-grid" id="calendarGrid">
+                            <!-- Calendar days will be generated -->
+                        </div>
+                    </div>
+
+                    <!-- Conflict Detection -->
+                    <div class="conflict-alert" id="conflictAlert" style="display: none;">
+                        <span class="conflict-icon">⚠️</span>
+                        <span class="conflict-text">Schedule conflict detected: Another episode is scheduled for this
+                            time</span>
+                    </div>
+
+                    <!-- Best Time Calculator -->
+                    <div class="analytics-preview">
+                        <div class="analytics-card">
+                            <div class="analytics-icon">🎯</div>
+                            <div class="analytics-value">3:00 PM</div>
+                            <div class="analytics-label">Best Time to Publish</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">👥</div>
+                            <div class="analytics-value">85%</div>
+                            <div class="analytics-label">Audience Online</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">🌍</div>
+                            <div class="analytics-value">Global</div>
+                            <div class="analytics-label">Peak Timezone</div>
+                        </div>
+                    </div>
+
+                    <!-- Time Zone Converter -->
+                    <div class="timezone-converter">
+                        <div class="timezone-item">
+                            <div class="timezone-city">New York</div>
+                            <div class="timezone-time">3:00 PM</div>
+                        </div>
+                        <div class="timezone-item">
+                            <div class="timezone-city">London</div>
+                            <div class="timezone-time">8:00 PM</div>
+                        </div>
+                        <div class="timezone-item">
+                            <div class="timezone-city">Tokyo</div>
+                            <div class="timezone-time">4:00 AM</div>
+                        </div>
+                        <div class="timezone-item">
+                            <div class="timezone-city">Sydney</div>
+                            <div class="timezone-time">5:00 AM</div>
+                        </div>
+                    </div>
+
+                    <!-- Series Scheduler -->
+                    <div class="series-scheduler">
+                        <h4>Series Scheduling</h4>
+                        <div class="series-pattern">
+                            <div class="pattern-option selected" onclick="selectPattern(this, 'weekly')">Weekly</div>
+                            <div class="pattern-option" onclick="selectPattern(this, 'biweekly')">Bi-weekly</div>
+                            <div class="pattern-option" onclick="selectPattern(this, 'monthly')">Monthly</div>
+                            <div class="pattern-option" onclick="selectPattern(this, 'custom')">Custom</div>
+                        </div>
+                        <div class="series-preview">
+                            <div class="series-episode">
+                                <div class="series-episode-number">Ep. 1</div>
+                                <div class="series-episode-date">Aug 15</div>
+                            </div>
+                            <div class="series-episode">
+                                <div class="series-episode-number">Ep. 2</div>
+                                <div class="series-episode-date">Aug 22</div>
+                            </div>
+                            <div class="series-episode">
+                                <div class="series-episode-number">Ep. 3</div>
+                                <div class="series-episode-date">Aug 29</div>
+                            </div>
+                            <div class="series-episode">
+                                <div class="series-episode-number">Ep. 4</div>
+                                <div class="series-episode-date">Sep 5</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monetization Tab -->
+                <div class="tab-content" id="monetize">
+                    <!-- Monetization Calculator -->
+                    <div class="monetization-panel">
+                        <div class="earnings-display">
+                            <div class="earnings-label">Estimated Monthly Earnings</div>
+                            <div class="earnings-amount" id="earningsAmount">$2,450</div>
+                        </div>
+
+                        <div class="earnings-breakdown">
+                            <div class="breakdown-item">
+                                <div class="breakdown-value">$1,200</div>
+                                <div class="breakdown-label">Sponsorships</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-value">$850</div>
+                                <div class="breakdown-label">Dynamic Ads</div>
+                            </div>
+                            <div class="breakdown-item">
+                                <div class="breakdown-value">$400</div>
+                                <div class="breakdown-label">Premium Subs</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ROI Calculator -->
+                    <div class="roi-calculator">
+                        <div class="roi-input">
+                            <label>Monthly Downloads</label>
+                            <input type="number" value="10000" oninput="calculateROI()">
+                        </div>
+                        <div class="roi-input">
+                            <label>CPM Rate ($)</label>
+                            <input type="number" value="25" step="0.01" oninput="calculateROI()">
+                        </div>
+                        <div class="roi-result">
+                            <div class="roi-value" id="roiValue">250% ROI</div>
+                        </div>
+                    </div>
+
+                    <!-- Sponsor Slots -->
+                    <h4>Sponsor Management</h4>
+                    <div class="sponsor-slots">
+                        <div class="sponsor-slot filled">
+                            <div class="sponsor-icon">💎</div>
+                            <div class="sponsor-info">
+                                <div class="sponsor-position">Pre-roll (0:00 - 0:30)</div>
+                                <div class="sponsor-name">TechCorp Premium</div>
+                            </div>
+                            <div class="sponsor-value">$450</div>
+                        </div>
+                        <div class="sponsor-slot filled">
+                            <div class="sponsor-icon">🏆</div>
+                            <div class="sponsor-info">
+                                <div class="sponsor-position">Mid-roll (15:00 - 15:45)</div>
+                                <div class="sponsor-name">CloudServices Pro</div>
+                            </div>
+                            <div class="sponsor-value">$650</div>
+                        </div>
+                        <div class="sponsor-slot" onclick="addSponsor()">
+                            <div class="sponsor-icon">➕</div>
+                            <div class="sponsor-info">
+                                <div class="sponsor-position">Post-roll (End)</div>
+                                <div class="sponsor-name">Add Sponsor</div>
+                            </div>
+                            <div class="sponsor-value">--</div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Preview -->
+                    <h4>Predicted Performance</h4>
+                    <div class="analytics-preview">
+                        <div class="analytics-card">
+                            <div class="analytics-icon">📈</div>
+                            <div class="analytics-value">12.5K</div>
+                            <div class="analytics-label">Est. Downloads</div>
+                            <canvas class="analytics-chart" id="downloadsChart"></canvas>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">💰</div>
+                            <div class="analytics-value">$0.28</div>
+                            <div class="analytics-label">CPM Rate</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">⏱️</div>
+                            <div class="analytics-value">68%</div>
+                            <div class="analytics-label">Completion Rate</div>
+                        </div>
+                        <div class="analytics-card">
+                            <div class="analytics-icon">🎯</div>
+                            <div class="analytics-value">89%</div>
+                            <div class="analytics-label">Target Match</div>
+                        </div>
+                    </div>
+
+                    <!-- Audience Demographics -->
+                    <div class="demographics-panel">
+                        <h4>Predicted Audience</h4>
+                        <div class="demographic-bars">
+                            <div class="demographic-item">
+                                <span class="demographic-label">18-24</span>
+                                <div class="demographic-bar">
+                                    <div class="demographic-fill" style="width: 25%;">
+                                        <span class="demographic-percent">25%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="demographic-item">
+                                <span class="demographic-label">25-34</span>
+                                <div class="demographic-bar">
+                                    <div class="demographic-fill" style="width: 45%;">
+                                        <span class="demographic-percent">45%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="demographic-item">
+                                <span class="demographic-label">35-44</span>
+                                <div class="demographic-bar">
+                                    <div class="demographic-fill" style="width: 20%;">
+                                        <span class="demographic-percent">20%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="demographic-item">
+                                <span class="demographic-label">45+</span>
+                                <div class="demographic-bar">
+                                    <div class="demographic-fill" style="width: 10%;">
+                                        <span class="demographic-percent">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-content" id="golive">
+                    <!-- Go Live Container -->
+                    <div class="go-live-container">
+                        <div class="live-badge" style="display: none;">
+                            <span class="live-dot"></span>
+                            LIVE
+                        </div>
+
+                        <div class="live-header">
+                            <h3>🔴 Broadcast Live</h3>
+                            <p>Stream your podcast live with guests and interact with viewers in real-time</p>
+                        </div>
+                    </div>
+
+                    <!-- Pre-Live Setup -->
+                    <div class="pre-live-setup">
+                        <h4>Camera Preview</h4>
+                        <div class="camera-preview">
+                            <video id="cameraPreview" class="camera-feed" autoplay muted playsinline></video>
+                            <div class="camera-controls">
+                                <button class="camera-btn" onclick="goLiveFunctions.toggleCamera()"
+                                    title="Toggle Camera">
+                                    📹
+                                </button>
+                                <button class="camera-btn" onclick="goLiveFunctions.toggleMicrophone()"
+                                    title="Toggle Microphone">
+                                    🎤
+                                </button>
+                                <button class="camera-btn" onclick="goLiveFunctions.toggleScreenShare()"
+                                    title="Share Screen">
+                                    🖥️
+                                </button>
+                                <button class="camera-btn" onclick="goLiveFunctions.startCameraPreview()"
+                                    title="Start Preview">
+                                    ▶️
+                                </button>
+                                <button class="camera-btn" onclick="goLiveFunctions.stopCameraPreview()"
+                                    title="Stop Preview">
+                                    ⏹️
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Stream Settings -->
+                        <div class="stream-settings">
+                            <div class="setting-card">
+                                <div class="setting-label">
+                                    <span>📹</span> Video Device
+                                </div>
+                                <select id="videoDeviceSelect" class="setting-value pre-live-only">
+                                    <option>Default Camera</option>
+                                </select>
+                            </div>
+                            <div class="setting-card">
+                                <div class="setting-label">
+                                    <span>🎤</span> Audio Device
+                                </div>
+                                <select id="audioDeviceSelect" class="setting-value pre-live-only">
+                                    <option>Default Microphone</option>
+                                </select>
+                            </div>
+                            <div class="setting-card">
+                                <div class="setting-label">
+                                    <span>⚡</span> Stream Quality
+                                </div>
+                                <div class="quality-selector">
+                                    <div class="quality-option" onclick="goLiveFunctions.updateStreamQuality('720p')">
+                                        720p</div>
+                                    <div class="quality-option selected"
+                                        onclick="goLiveFunctions.updateStreamQuality('1080p')">1080p</div>
+                                    <div class="quality-option" onclick="goLiveFunctions.updateStreamQuality('4K')">4K
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Guest Management -->
+                    <div class="live-guests-panel">
+                        <div class="live-guests-header">
+                            <h4>
+                                <span>👥</span> Live Guests
+                            </h4>
+                            <div class="guest-slots-indicator">
+                                <span id="activeGuestCount">0</span>/4 Slots
+                            </div>
+                        </div>
+
+                        <!-- Guest Video Grid -->
+                        <div class="guest-video-grid" id="guestVideoGrid">
+                            <div class="guest-video-slot empty" onclick="goLiveFunctions.showInviteModal()">
+                                <div class="add-guest-icon">+</div>
+                                <div class="add-guest-slot">Add Guest</div>
+                            </div>
+                            <div class="guest-video-slot empty" onclick="goLiveFunctions.showInviteModal()">
+                                <div class="add-guest-icon">+</div>
+                                <div class="add-guest-slot">Add Guest</div>
+                            </div>
+                            <div class="guest-video-slot empty" onclick="goLiveFunctions.showInviteModal()">
+                                <div class="add-guest-icon">+</div>
+                                <div class="add-guest-slot">Add Guest</div>
+                            </div>
+                            <div class="guest-video-slot empty" onclick="goLiveFunctions.showInviteModal()">
+                                <div class="add-guest-icon">+</div>
+                                <div class="add-guest-slot">Add Guest</div>
+                            </div>
+                        </div>
+
+                        <!-- Guest Waiting Room -->
+                        <div class="guest-waiting-room" style="display: none;" id="waitingRoomContainer">
+                            <div class="waiting-room-header">
+                                <span>⏳</span> Waiting Room
+                            </div>
+                            <div class="waiting-guest-list" id="waitingGuestList">
+                                <!-- Waiting guests will be added here dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Control Panel -->
+                    <div class="live-control-panel">
+                        <div class="live-stats">
+                            <div class="live-stat">
+                                <div class="live-stat-value" id="viewerCount">0</div>
+                                <div class="live-stat-label">Viewers</div>
+                            </div>
+                            <div class="live-stat">
+                                <div class="live-stat-value" id="streamDuration">00:00:00</div>
+                                <div class="live-stat-label">Duration</div>
+                            </div>
+                            <div class="live-stat">
+                                <div class="live-stat-value" id="messageCount">0</div>
+                                <div class="live-stat-label">Messages</div>
+                            </div>
+                            <div class="live-stat">
+                                <div class="live-stat-value" id="guestCount">0</div>
+                                <div class="live-stat-label">Guests</div>
+                            </div>
+                        </div>
+
+                        <div class="live-main-controls">
+                            <button class="go-live-btn" id="goLiveBtn" onclick="goLiveFunctions.toggleLive()">
+                                GO LIVE
+                            </button>
+                            <button class="btn btn-secondary" onclick="goLiveFunctions.showInviteModal()">
+                                <span>🔗</span> Invite Guest
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Chat Container -->
+                    <div class="live-chat-container">
+                        <div class="live-content-area">
+                            <!-- Screen Share Options -->
+                            <div class="screen-share-panel">
+                                <h4>Screen Share Options</h4>
+                                <div class="screen-options">
+                                    <div class="screen-option" onclick="goLiveFunctions.toggleScreenShare()">
+                                        <div class="screen-icon">🖥️</div>
+                                        <div class="screen-label">Entire Screen</div>
+                                    </div>
+                                    <div class="screen-option" onclick="goLiveFunctions.toggleScreenShare()">
+                                        <div class="screen-icon">🪟</div>
+                                        <div class="screen-label">Window</div>
+                                    </div>
+                                    <div class="screen-option" onclick="goLiveFunctions.toggleScreenShare()">
+                                        <div class="screen-icon">📑</div>
+                                        <div class="screen-label">Browser Tab</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Stream Info -->
+                            <div class="stream-info-panel">
+                                <h4>Stream Information</h4>
+                                <div class="form-group">
+                                    <label>Stream Key</label>
+                                    <div class="stream-key-display">
+                                        <input type="text" id="streamKeyDisplay" readonly value="LIVE-XXXXX-XXXXX" />
+                                        <button class="btn btn-secondary" onclick="goLiveFunctions.copyShareLink()">
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Share Link</label>
+                                    <div class="share-link-display">
+                                        <span id="shareLink">https://yoursite.com/live/...</span>
+                                        <button class="btn btn-secondary" onclick="goLiveFunctions.copyShareLink()">
+                                            <span>📋</span> Copy Link
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Chat Panel -->
+                        <div class="live-chat-panel">
+                            <div class="live-chat-header">
+                                <h4>💬 Live Chat</h4>
+                                <span class="chat-viewer-count">
+                                    <span id="chatViewerCount">0</span> watching
+                                </span>
+                            </div>
+                            <div class="live-chat-messages" id="liveChatMessages">
+                                <!-- Chat messages will appear here -->
+                                <div class="live-chat-message">
+                                    <div class="chat-avatar">SY</div>
+                                    <div class="chat-content">
+                                        <div class="chat-user">System</div>
+                                        <div class="chat-text">Welcome to the live stream! Chat is now enabled.</div>
+                                        <div class="chat-time">Now</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="live-chat-input">
+                                <input type="text" id="liveChatInput" placeholder="Type a message..." />
+                                <button class="send-btn" onclick="goLiveFunctions.sendLiveChatMessage()">
+                                    Send
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Engagement Tools -->
+                    <div class="engagement-panel">
+                        <h4>Live Engagement Tools</h4>
+
+                        <!-- Live Polls -->
+                        <div class="live-poll-creator">
+                            <h5>Create Live Poll</h5>
+                            <input type="text" class="poll-question" placeholder="Ask your audience..."
+                                id="livePollQuestion">
+                            <div class="poll-options" id="livePollOptions">
+                                <div class="poll-option">
+                                    <input type="text" placeholder="Option 1">
+                                    <button class="poll-option-remove" onclick="removePollOption(this)">×</button>
+                                </div>
+                                <div class="poll-option">
+                                    <input type="text" placeholder="Option 2">
+                                    <button class="poll-option-remove" onclick="removePollOption(this)">×</button>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="addPollOption()">
+                                <span>+</span> Add Option
+                            </button>
+                            <button class="btn btn-primary" onclick="launchLivePoll()">
+                                <span>📊</span> Launch Poll
+                            </button>
+                        </div>
+
+                        <!-- Q&A Session -->
+                        <div class="qa-session-panel">
+                            <h5>Q&A Queue</h5>
+                            <div class="qa-queue" id="qaQueue">
+                                <div class="qa-item">
+                                    <div class="qa-question">
+                                        <div class="qa-user">Viewer123</div>
+                                        <div class="qa-text">What's your favorite podcasting equipment?</div>
+                                    </div>
+                                    <div class="qa-actions">
+                                        <button class="btn btn-secondary" onclick="answerQuestion(this)">Answer</button>
+                                        <button class="btn btn-secondary"
+                                            onclick="dismissQuestion(this)">Dismiss</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stream Analytics -->
+                    <div class="stream-analytics-panel">
+                        <h4>Real-time Analytics</h4>
+                        <div class="analytics-grid">
+                            <div class="analytics-card">
+                                <div class="analytics-icon">📈</div>
+                                <div class="analytics-value" id="peakViewers">0</div>
+                                <div class="analytics-label">Peak Viewers</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="analytics-icon">💬</div>
+                                <div class="analytics-value" id="totalMessages">0</div>
+                                <div class="analytics-label">Chat Messages</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="analytics-icon">❤️</div>
+                                <div class="analytics-value" id="totalLikes">0</div>
+                                <div class="analytics-label">Likes</div>
+                            </div>
+                            <div class="analytics-card">
+                                <div class="analytics-icon">🔄</div>
+                                <div class="analytics-value" id="totalShares">0</div>
+                                <div class="analytics-label">Shares</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Invite Modal (add at the end of body, before closing scripts) -->
+                <div class="invite-modal" id="inviteModal" style="display: none;">
+                    <div class="invite-modal-content">
+                        <h3>Invite Guest to Live Stream</h3>
+                        <p>Share this link with your guest to join the live stream:</p>
+                        <div class="invite-link-container">
+                            <input type="text" class="invite-link" id="inviteLinkInput" readonly />
+                            <button class="copy-link-btn" onclick="goLiveFunctions.copyShareLink()">
+                                Copy Link
+                            </button>
+                        </div>
+                        <div class="invite-instructions">
+                            <p><strong>Instructions for guests:</strong></p>
+                            <ol>
+                                <li>Click the link to join the waiting room</li>
+                                <li>Allow camera and microphone access</li>
+                                <li>Wait for the host to admit you to the stream</li>
+                            </ol>
+                        </div>
+                        <button class="btn btn-primary" onclick="goLiveFunctions.closeInviteModal()">
+                            Close
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Publishing Tab -->
+                <div class="tab-content" id="publish">
+                    <!-- Live Preview Player -->
+                    <div class="preview-player">
+                        <div class="player-content">
+                            <img src="https://via.placeholder.com/100" alt="Episode" class="player-artwork">
+                            <div class="player-info">
+                                <div class="player-title">Your Podcast Episode</div>
+                                <div class="player-artist">Your Podcast Name</div>
+                            </div>
+                            <div class="player-progress">
+                                <div class="progress-bar-player">
+                                    <div class="progress-fill-player" id="playerProgress"></div>
+                                </div>
+                                <div class="player-time">
+                                    <span id="currentTime">1:23</span>
+                                    <span id="totalTime">45:00</span>
+                                </div>
+                            </div>
+                            <div class="player-controls">
+                                <button class="player-btn" onclick="playerControl('prev')">⏮️</button>
+                                <button class="player-btn play" onclick="playerControl('play')" id="playBtn">▶️</button>
+                                <button class="player-btn" onclick="playerControl('next')">⏭️</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chapter Markers -->
+                    <div class="chapter-markers">
+                        <h4>Chapter Markers</h4>
+                        <div class="chapter-list" id="chapterList">
+                            <div class="chapter-item" draggable="true">
+                                <span class="chapter-time">00:00</span>
+                                <span class="chapter-title">Introduction</span>
+                                <div class="chapter-actions">
+                                    <button class="chapter-btn" onclick="editChapter(this)">✏️</button>
+                                    <button class="chapter-btn" onclick="deleteChapter(this)">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="chapter-item" draggable="true">
+                                <span class="chapter-time">05:30</span>
+                                <span class="chapter-title">Guest Introduction</span>
+                                <div class="chapter-actions">
+                                    <button class="chapter-btn" onclick="editChapter(this)">✏️</button>
+                                    <button class="chapter-btn" onclick="deleteChapter(this)">🗑️</button>
+                                </div>
+                            </div>
+                            <div class="chapter-item" draggable="true">
+                                <span class="chapter-time">15:00</span>
+                                <span class="chapter-title">Main Discussion</span>
+                                <div class="chapter-actions">
+                                    <button class="chapter-btn" onclick="editChapter(this)">✏️</button>
+                                    <button class="chapter-btn" onclick="deleteChapter(this)">🗑️</button>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="addChapter()">
+                            <span>+</span> Add Chapter
+                        </button>
+                    </div>
+
+                    <!-- Interactive Transcript -->
+                    <div class="transcript-editor">
+                        <h4>Interactive Transcript</h4>
+                        <div class="transcript-controls">
+                            <button class="transcript-btn active"
+                                onclick="switchTranscriptMode('edit', this)">Edit</button>
+                            <button class="transcript-btn"
+                                onclick="switchTranscriptMode('preview', this)">Preview</button>
+                            <button class="transcript-btn" onclick="exportTranscript()">Export</button>
+                        </div>
+                        <div class="transcript-content" id="transcriptContent">
+                            <div class="transcript-line active">
+                                <span class="transcript-timestamp">[00:00]</span>
+                                Welcome to today's episode where we'll be discussing the future of podcasting...
+                            </div>
+                            <div class="transcript-line">
+                                <span class="transcript-timestamp">[00:15]</span>
+                                I'm excited to have our special guest with us today who will share insights...
+                            </div>
+                            <div class="transcript-line">
+                                <span class="transcript-timestamp">[00:30]</span>
+                                Let's dive right into the main topic of how AI is transforming content creation...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Social Media Integration -->
+                    <h4>Social Media Posts</h4>
+                    <div class="social-preview">
+                        <div class="social-card">
+                            <div class="social-card-header">
+                                <div class="social-platform-icon platform-twitter">𝕏</div>
+                                <span>Twitter/X</span>
+                            </div>
+                            <div class="social-preview-image">🎙️</div>
+                            <div class="social-preview-content">
+                                🎙️ New episode alert! We dive deep into the future of podcasting with special guest
+                                @janedoe
+                            </div>
+                            <div class="hashtag-list">
+                                <span class="hashtag">#podcast</span>
+                                <span class="hashtag">#technology</span>
+                                <span class="hashtag">#innovation</span>
+                            </div>
+                            <div class="social-metrics">
+                                <span>Est. reach: 5.2K</span>
+                                <span>Best time: 2PM</span>
+                            </div>
+                        </div>
+                        <div class="social-card">
+                            <div class="social-card-header">
+                                <div class="social-platform-icon platform-instagram">📷</div>
+                                <span>Instagram</span>
+                            </div>
+                            <div class="social-preview-image">📸</div>
+                            <div class="social-preview-content">
+                                Behind the scenes of our latest recording session! Swipe to see highlights ➡️
+                            </div>
+                            <div class="hashtag-list">
+                                <span class="hashtag">#podcasting</span>
+                                <span class="hashtag">#behindthescenes</span>
+                            </div>
+                            <div class="social-metrics">
+                                <span>Est. reach: 8.1K</span>
+                                <span>Best time: 6PM</span>
+                            </div>
+                        </div>
+                        <div class="social-card">
+                            <div class="social-card-header">
+                                <div class="social-platform-icon platform-linkedin">in</div>
+                                <span>LinkedIn</span>
+                            </div>
+                            <div class="social-preview-image">💼</div>
+                            <div class="social-preview-content">
+                                Excited to share our latest podcast episode discussing industry innovations...
+                            </div>
+                            <div class="social-metrics">
+                                <span>Est. reach: 3.5K</span>
+                                <span>Best time: 9AM</span>
+                            </div>
+                        </div>
+                        <div class="social-card">
+                            <div class="social-card-header">
+                                <div class="social-platform-icon platform-youtube">▶️</div>
+                                <span>YouTube</span>
+                            </div>
+                            <div class="social-preview-image">🎬</div>
+                            <div class="social-preview-content">
+                                Full episode now available! Don't forget to like and subscribe 🔔
+                            </div>
+                            <div class="social-metrics">
+                                <span>Est. views: 2.8K</span>
+                                <span>Best time: 12PM</span>
+                            </div>
+                        </div>
+                        <div class="social-card">
+                            <div class="social-card-header">
+                                <div class="social-platform-icon platform-facebook">f</div>
+                                <span>Facebook</span>
+                            </div>
+                            <div class="social-preview-image">👍</div>
+                            <div class="social-preview-content">
+                                New episode is live! Join the discussion in the comments below 👇
+                            </div>
+                            <div class="social-metrics">
+                                <span>Est. reach: 4.2K</span>
+                                <span>Best time: 1PM</span>
+                            </div>
+                        </div>
+                        <div class="social-card">
+                            <div class="social-card-header">
+                                <div class="social-platform-icon platform-tiktok">♪</div>
+                                <span>TikTok</span>
+                            </div>
+                            <div class="social-preview-image">🎵</div>
+                            <div class="social-preview-content">
+                                Best moments from today's episode! Which insight was your favorite?
+                            </div>
+                            <div class="hashtag-list">
+                                <span class="hashtag">#podcastclips</span>
+                                <span class="hashtag">#fyp</span>
+                            </div>
+                            <div class="social-metrics">
+                                <span>Est. views: 15K</span>
+                                <span>Best time: 8PM</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Optimal Posting Times -->
+                    <div class="posting-times">
+                        <div class="time-slot optimal">
+                            <span class="time-slot-badge">BEST</span>
+                            <div class="time-slot-platform">🌐</div>
+                            <div class="time-slot-time">2:00 PM EST</div>
+                            <div class="time-slot-engagement">Peak engagement</div>
+                        </div>
+                        <div class="time-slot">
+                            <div class="time-slot-platform">🌅</div>
+                            <div class="time-slot-time">9:00 AM EST</div>
+                            <div class="time-slot-engagement">Morning commute</div>
+                        </div>
+                        <div class="time-slot">
+                            <div class="time-slot-platform">🌙</div>
+                            <div class="time-slot-time">8:00 PM EST</div>
+                            <div class="time-slot-engagement">Evening wind-down</div>
+                        </div>
+                    </div>
+
+                    <!-- Engagement Tools -->
+                    <div class="engagement-panel">
+                        <h4>Engagement Features</h4>
+
+                        <!-- Poll Creator -->
+                        <div class="poll-creator">
+                            <h5>Episode Poll</h5>
+                            <input type="text" class="poll-question" placeholder="What topic should we cover next?"
+                                value="What topic should we cover next?" id="pollQuestion">
+                            <div class="poll-options" id="pollOptions">
+                                <div class="poll-option">
+                                    <input type="text" placeholder="Option 1" value="AI in Content Creation">
+                                    <button class="poll-option-remove" onclick="removePollOption(this)">×</button>
+                                </div>
+                                <div class="poll-option">
+                                    <input type="text" placeholder="Option 2" value="Remote Work Culture">
+                                    <button class="poll-option-remove" onclick="removePollOption(this)">×</button>
+                                </div>
+                                <div class="poll-option">
+                                    <input type="text" placeholder="Option 3" value="Startup Success Stories">
+                                    <button class="poll-option-remove" onclick="removePollOption(this)">×</button>
+                                </div>
+                            </div>
+                            <button class="btn btn-secondary" onclick="addPollOption()">
+                                <span>+</span> Add Option
+                            </button>
+                        </div>
+
+                        <!-- Q&A Session -->
+                        <h5 style="margin-top: 20px;">Q&A Session Schedule</h5>
+                        <div class="qa-scheduler">
+                            <div class="qa-slot" onclick="selectQASlot(this)">
+                                <div class="qa-time">3:00 PM</div>
+                                <div class="qa-duration">30 minutes</div>
+                            </div>
+                            <div class="qa-slot selected" onclick="selectQASlot(this)">
+                                <div class="qa-time">4:00 PM</div>
+                                <div class="qa-duration">45 minutes</div>
+                            </div>
+                            <div class="qa-slot" onclick="selectQASlot(this)">
+                                <div class="qa-time">5:00 PM</div>
+                                <div class="qa-duration">30 minutes</div>
+                            </div>
+                        </div>
+
+                        <!-- Live Chat Setup -->
+                        <div class="chat-setup" style="margin-top: 20px;">
+                            <h5>Live Chat Preview</h5>
+                            <div class="chat-preview">
+                                <div class="chat-message">
+                                    <div class="chat-avatar">JD</div>
+                                    <div class="chat-content">
+                                        <div class="chat-user">John Doe</div>
+                                        <div class="chat-text">Great episode! When will the next one be released?</div>
+                                        <div class="chat-time">2 mins ago</div>
+                                    </div>
+                                </div>
+                                <div class="chat-message">
+                                    <div class="chat-avatar">SK</div>
+                                    <div class="chat-content">
+                                        <div class="chat-user">Sarah Kim</div>
+                                        <div class="chat-text">Love the insights on AI integration!</div>
+                                        <div class="chat-time">5 mins ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="feature-toggle">
+                                <div class="feature-info">
+                                    <div class="feature-title">Enable live chat</div>
+                                    <div class="feature-desc">Allow listeners to chat during premiere</div>
+                                </div>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Platform Distribution -->
+                    <div class="form-group">
+                        <label>Distribution Platforms</label>
+                        <div class="platform-grid">
+                            <div class="platform-card selected" onclick="togglePlatform(this)">
+                                <div class="platform-icon">🎵</div>
+                                <div class="platform-name">Apple Podcasts</div>
+                            </div>
+                            <div class="platform-card selected" onclick="togglePlatform(this)">
+                                <div class="platform-icon">🎧</div>
+                                <div class="platform-name">Spotify</div>
+                            </div>
+                            <div class="platform-card selected" onclick="togglePlatform(this)">
+                                <div class="platform-icon">📊</div>
+                                <div class="platform-name">Google Podcasts</div>
+                            </div>
+                            <div class="platform-card" onclick="togglePlatform(this)">
+                                <div class="platform-icon">📺</div>
+                                <div class="platform-name">YouTube</div>
+                            </div>
+                            <div class="platform-card" onclick="togglePlatform(this)">
+                                <div class="platform-icon">📡</div>
+                                <div class="platform-name">RSS Feed</div>
+                            </div>
+                            <div class="platform-card" onclick="togglePlatform(this)">
+                                <div class="platform-icon">🎙️</div>
+                                <div class="platform-name">Stitcher</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="modal-footer">
+                <div class="footer-info">
+                    <div class="info-item">
+                        <span class="info-icon">💾</span>
+                        <span>Auto-saved</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">⏱️</span>
+                        <span id="duration">Duration: --:--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">📊</span>
+                        <span id="reach">Est. Reach: 12.5K</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">💰</span>
+                        <span id="earnings">Est. Earnings: $2,450</span>
+                    </div>
+                </div>
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" onclick="saveDraft()">
+                        <span>💾</span> Save Draft
+                    </button>
+                    <button class="btn btn-primary" onclick="publishEpisode()">
+                        <span>🚀</span> Publish Episode
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="../js/podcast-modal.js"></script>
+</body>
+
+</html>

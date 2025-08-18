@@ -8,6 +8,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="../css/main.css" rel="stylesheet">
     <link href="../css/reels.css" rel="stylesheet">
+    <link href="../css/videoplayer.css" rel="stylesheet">
 </head>
 <body class="font-sans">
     <!-- Enhanced Navigation -->
@@ -353,63 +354,7 @@
         </div>
     </div>
 
-    <!-- Enhanced Video Modal -->
-    <div
-        id="video-modal"
-        class="video-modal-overlay"
-        role="dialog"
-        aria-modal="true"
-        aria-label="View Video"
-    >
-        <div class="video-modal-container">
-            <div class="video-player-section">
-                <div class="video-wrapper">
-                    <video id="modal-video" class="modal-video" controls autoplay>
-                        <source src="" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                    
-                    <!-- Floating Navigation Controls -->
-                    <div class="video-nav-controls">
-                        <button
-                            id="prev-video-btn"
-                            class="video-nav-btn prev-btn"
-                            onclick="navigateVideo('prev')"
-                            aria-label="Previous video"
-                            disabled
-                        >
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 11l5-5m0 0l5 5m-5-5v12"></path>
-                            </svg>
-                        </button>
-                        <button
-                            id="next-video-btn"
-                            class="video-nav-btn next-btn"
-                            onclick="navigateVideo('next')"
-                            aria-label="Next video"
-                            disabled
-                        >
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 13l-5 5m0 0l-5-5m5 5V6"></path>
-                            </svg>
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="video-info-sidebar">
-                <button onclick="closeVideoModal()" class="sidebar-close-btn">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-                <div id="video-sidebar-content" class="video-sidebar-content">
-                    <!-- Content will be dynamically inserted here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
+   
     <!-- Enhanced Playlist Modal -->
     <div
         id="playlist-modal"
@@ -549,5 +494,6 @@
 
     <!-- JavaScript for Interactivity -->
     <script src="../js/reels.js"></script>
+    <script src="../js/videoplayer.js"></script>
 </body>
 </html>

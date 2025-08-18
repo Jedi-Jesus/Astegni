@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profile - Astegni | Quantum Learning Experience</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/student-profile.css">
+    <script src="../js/student-profile.js" defer></script>
+</head>
+<body data-theme="light">
+    
+    <!-- Quantum Aurora Background -->
+    <div class="quantum-aurora"></div>
+    
+    <!-- Dimensional Orbs -->
+    <div class="dimensional-orbs">
+        <div class="dimension-orb"></div>
+        <div class="dimension-orb"></div>
+        <div class="dimension-orb"></div>
+    </div>
+
+    <!-- Transcendent Navigation -->
+    <nav class="navbar ethereal-glass">
+        <div class="neural-mesh"></div>
+        <div class="nav-left">
+            <span class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </span>
+            <a href="../index.html" class="logo quantum-heading" data-text="Astegni">Astegni</a>
+        </div>
+        <div class="nav-right">
+            <ul class="nav-links">
+                <li><a href="news.html" class="neural-text" data-text="News">News</a></li>
+                <li><a href="find-tutors.html" class="neural-text" data-text="Find Tutors">Find Tutors</a></li>
+                <li><a href="reels.html" class="neural-text" data-text="Reels">Reels</a></li>
+                <li><a href="store.html" class="neural-text" data-text="Store">Store</a></li>
+                <li><a href="find-jobs.html" class="neural-text" data-text="Find Jobs">Find Jobs</a></li>
+            </ul>
+            <div class="profile-display ethereal-glass">
+                <img src="placeholder-profile.jpg" alt="Profile" class="nav-profile-img">
+                <a href="#" class="nav-profile-name gradient-text" onclick="location.reload(); return false;">John Doe</a>
+            </div>
+            <div class="nav-icons">
+                <span class="notification-icon glow-quantum">
+                    <span class="icon-bell">🔔</span>
+                    <span class="notification-badge pulse">3</span>
+                </span>
+                <span class="theme-toggle" id="theme-toggle">
+                    <span class="theme-icon">🌙</span>
+                </span>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Quantum Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar ethereal-glass" id="sidebar">
+                <div class="sidebar-header">
+                    <h3 class="quantum-heading">Menu</h3>
+                    <span class="sidebar-close" id="sidebar-close">&times;</span>
+                </div>
+                <nav class="sidebar-nav">  
+                    <a href="#" class="sidebar-link" data-action="my-courses">
+                        <span class="sidebar-icon gradient-text">📚</span>
+                        <span>My Courses</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">💰</span>
+                        <span>Manage Finances</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">📝</span>
+                        <span>Notes</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">🛠️</span>
+                        <span>Tools</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">👥</span>
+                        <span>Followings</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">⭐</span>
+                        <span>Wishlists</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">❤️</span>
+                        <span>Favorites</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">💾</span>
+                        <span>Saved Items</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">📦</span>
+                        <span>My Products</span>
+                    </a>
+                    <div class="sidebar-submenu">
+                        <a href="#" class="sidebar-link sidebar-parent">
+                            <span class="sidebar-icon gradient-text">📋</span>
+                            <span>My Requests</span>
+                            <span class="sidebar-arrow">▼</span>
+                        </a>
+                        <div class="submenu-items">
+                            <a href="#" class="sidebar-link submenu-item">Requested Courses</a>
+                            <a href="#" class="sidebar-link submenu-item">Request Course - Parent</a>
+                            <a href="#" class="sidebar-link submenu-item">Request Course - Tutor</a>
+                        </div>
+                    </div>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">🎓</span>
+                        <span>Become a Tutor</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">💬</span>
+                        <span>Comment and Rate Us</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon gradient-text">🔗</span>
+                        <span>Share Us</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </aside>
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Transcendent Main Content -->
+    <main class="quantum-main">
+        <div class="neural-mesh"></div>
+        
+        <!-- Quantum Profile Header -->
+        <section class="profile-header card-dimensional">
+            <div class="cover-photo enhanced-cover">
+                <div class="quantum-aurora"></div>
+                <img src="placeholder-cover.jpg" alt="Cover Photo" class="cover-img">
+                <span class="edit-icon cover-edit ethereal-glass">✏️</span>
+            </div>
+            <div class="profile-picture">
+                <img src="placeholder-profile.jpg" alt="Profile Picture" class="profile-img">
+                <div class="avatar-ring"></div>
+                <span class="edit-icon profile-edit ethereal-glass">✏️</span>
+            </div>
+            <div class="profile-main">
+                <div class="profile-info">
+                    <div class="profile-header-top">
+                        <h1 class="quantum-heading" data-text="John Doe">John Doe</h1>
+                        <span class="verified-badge verified glow-quantum">✓ Verified</span>
+                    </div>
+                    <div class="rating-container">
+                        <span class="rating">
+                            <span class="stars gradient-text">★★★★☆</span>
+                            <span class="rating-text">4.5/5</span>
+                        </span>
+                        <div class="rating-tooltip ethereal-glass">
+                            <div class="tooltip-item">
+                                <span>Class Activity</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill quantum-gradient" style="width: 80%"></div>
+                                </div>
+                                <span class="gradient-text">80%</span>
+                            </div>
+                            <div class="tooltip-item">
+                                <span>Discipline</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill quantum-gradient" style="width: 85%"></div>
+                                </div>
+                                <span class="gradient-text">85%</span>
+                            </div>
+                            <div class="tooltip-item">
+                                <span>Punctuality</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill quantum-gradient" style="width: 90%"></div>
+                                </div>
+                                <span class="gradient-text">90%</span>
+                            </div>
+                            <div class="tooltip-item">
+                                <span>Communication</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill quantum-gradient" style="width: 75%"></div>
+                                </div>
+                                <span class="gradient-text">75%</span>
+                            </div>
+                            <div class="tooltip-item">
+                                <span>Subject Intake</span>
+                                <div class="progress-bar-mini">
+                                    <div class="progress-fill quantum-gradient" style="width: 88%"></div>
+                                </div>
+                                <span class="gradient-text">88%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-details">
+                        <div class="detail-item ethereal-glass">
+                            <span class="detail-icon gradient-text">📱</span>
+                            <span>(123) 456-7890</span>
+                        </div>
+                        <div class="detail-item ethereal-glass">
+                            <span class="detail-icon gradient-text">✉️</span>
+                            <span>john.doe@example.com</span>
+                        </div>
+                        <div class="detail-item ethereal-glass">
+                            <span class="detail-icon gradient-text">📍</span>
+                            <span>New York, NY</span>
+                        </div>
+                        <div class="detail-item ethereal-glass">
+                            <span class="detail-icon gradient-text">🏫</span>
+                            <span>XYZ High School - 12th Grade</span>
+                        </div>
+                    </div>
+                    <div class="profile-bio ethereal-glass">
+                        <p><strong class="gradient-text">Bio:</strong> Passionate about learning and technology.</p>
+                        <p><strong class="gradient-text">Quote:</strong> <em>"Knowledge is power."</em></p>
+                    </div>
+                    <div class="profile-next-session">
+                        <div class="session-alert">
+                            <span class="alert-icon gradient-text">⏰</span>
+                            <span><strong class="gradient-text">Next Session:</strong> Math with Jane Smith - Today at 2:44 PM</span>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <button class="btn-quantum edit-profile-btn">
+                            <span class="btn-icon">✏️</span>
+                            Edit Profile
+                        </button>
+                        <button class="btn-quantum sessions-btn">
+                            <span class="btn-icon">📅</span>
+                            Sessions
+                        </button>
+                        <button class="btn-quantum contact-parent-btn">
+                            <span class="btn-icon">👨‍👩‍👧</span>
+                            Contact Parent
+                        </button>
+                        <button class="btn-quantum certifications-btn">
+                            <span class="btn-icon">🏆</span>
+                            Certifications
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quantum Stats Cards -->
+        <section class="stats-cards">
+            <div class="stat-card card-dimensional glow-quantum">
+                <div class="stat-icon quantum-heading">📚</div>
+                <div class="stat-info">
+                    <h3 class="gradient-text">6</h3>
+                    <p>Active Courses</p>
+                </div>
+            </div>
+            <div class="stat-card card-dimensional glow-quantum">
+                <div class="stat-icon quantum-heading">👨‍🏫</div>
+                <div class="stat-info">
+                    <h3 class="gradient-text">3</h3>
+                    <p>Tutors</p>
+                </div>
+            </div>
+            <div class="stat-card card-dimensional glow-quantum">
+                <div class="stat-icon quantum-heading">⏱️</div>
+                <div class="stat-info">
+                    <h3 class="gradient-text">24</h3>
+                    <p>Hours This Month</p>
+                </div>
+            </div>
+            <div class="stat-card card-dimensional glow-quantum">
+                <div class="stat-icon quantum-heading">📈</div>
+                <div class="stat-info">
+                    <h3 class="gradient-text">85%</h3>
+                    <p>Overall Progress</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transcendent Ad Banner -->
+        <section class="ad-placeholder-section">
+            <div class="ad-banner card-dimensional glow-quantum">
+                <div class="ad-content-main">
+                    <div class="quantum-aurora"></div>
+                    <div class="neural-mesh"></div>
+                    <div class="ad-text">
+                        <h3 class="quantum-heading">Unlock Your Full Potential</h3>
+                        <p class="neural-text" data-text="Join thousands of students achieving their academic goals">Join thousands of students achieving their academic goals</p>
+                        <button class="btn-quantum">Learn More</button>
+                    </div>
+                    <div class="ad-visual">
+                        <div class="dimensional-orbs">
+                            <div class="dimension-orb"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quantum My Tutors Section -->
+        <section class="my-tutors card-dimensional">
+            <div class="section-header">
+                <h2 class="quantum-heading">My Tutors</h2>
+                <div class="section-actions">
+                    <div class="search-box ethereal-glass">
+                        <input type="text" placeholder="Search tutors..." id="tutor-search" class="search-input">
+                        <span class="search-icon gradient-text">🔍</span>
+                        <span class="search-shortcut">⌘K</span>
+                    </div>
+                    <button class="btn-quantum add-course-btn">
+                        <span class="btn-icon">➕</span>
+                        Add Course
+                    </button>
+                </div>
+            </div>
+            <div class="table-container ethereal-glass">
+                <table class="tutors-table">
+                    <thead>
+                        <tr>
+                            <th class="gradient-text">Tutor</th>
+                            <th class="gradient-text">Subjects</th>
+                            <th class="gradient-text">Method</th>
+                            <th class="gradient-text">Progress</th>
+                            <th class="gradient-text">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tutors-tbody">
+                        <!-- Will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+<!-- Request Session Modal -->
+<div class="modal request-session-modal" id="request-session-modal">
+    <div class="modal-content modal-large ethereal-glass">
+        <div class="neural-mesh"></div>
+        <div class="modal-header">
+            <h2 class="quantum-heading">Request a Session</h2>
+            <span class="close gradient-text">&times;</span>
+        </div>
+        <div class="modal-form">
+            <div class="form-group">
+                <label class="gradient-text">Child Name</label>
+                <div class="relative">
+                    <input type="text" id="session-child" class="form-input ethereal-glass" placeholder="Search for child">
+                    <div id="session-child-suggestions" class="suggestions-dropdown ethereal-glass hidden"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="session-self" onchange="toggleChildSearch()">
+                    <span class="gradient-text">Self</span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Preferred Days</label>
+                <div class="days-grid">
+                    <label class="checkbox-label ethereal-glass">
+                        <input type="checkbox" value="Monday">
+                        <span>Monday</span>
+                    </label>
+                    <label class="checkbox-label ethereal-glass">
+                        <input type="checkbox" value="Tuesday">
+                        <span>Tuesday</span>
+                    </label>
+                    <label class="checkbox-label ethereal-glass">
+                        <input type="checkbox" value="Wednesday">
+                        <span>Wednesday</span>
+                    </label>
+                    <label class="checkbox-label ethereal-glass">
+                        <input type="checkbox" value="Thursday">
+                        <span>Thursday</span>
+                    </label>
+                    <label class="checkbox-label ethereal-glass">
+                        <input type="checkbox" value="Friday">
+                        <span>Friday</span>
+                    </label>
+                    <label class="checkbox-label ethereal-glass">
+                        <input type="checkbox" value="Saturday">
+                        <span>Saturday</span>
+                    </label>
+                    <label class="checkbox-label ethereal-glass">
+                        <input type="checkbox" value="Sunday">
+                        <span>Sunday</span>
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Preferred Date</label>
+                <input type="date" id="session-date" class="form-input ethereal-glass">
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Preferred Time</label>
+                <input type="time" id="session-time" class="form-input ethereal-glass">
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Duration (minutes)</label>
+                <input type="number" id="session-duration" class="form-input ethereal-glass" min="30" max="120" value="60">
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Mode</label>
+                <select id="session-mode" class="form-input ethereal-glass">
+                    <option value="In-Person">In-Person</option>
+                    <option value="Online">Online</option>
+                </select>
+            </div>
+            <div class="form-actions">
+                <button class="btn-quantum view-packages-btn">View Packages</button>
+                <button class="btn-quantum submit-session-request-btn">Submit Request</button>
+                <button class="btn-quantum chat-btn">Chat</button>
+                <button class="btn-quantum video-call-btn">Video Call</button>
+                <button class="btn-quantum cancel-btn close-request-session-btn">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rate Tutor Modal -->
+<div class="modal rate-tutor-modal" id="rate-tutor-modal">
+    <div class="modal-content modal-large ethereal-glass">
+        <div class="neural-mesh"></div>
+        <div class="modal-header">
+            <h2 class="quantum-heading">Rate Tutor</h2>
+            <span class="close gradient-text">&times;</span>
+        </div>
+        <form id="rate-tutor-form" class="modal-form">
+            <div class="form-group">
+                <label class="gradient-text">Discipline</label>
+                <div class="star-rating ethereal-glass" data-criterion="discipline">
+                    <span class="star" data-value="1">⭐<span class="star-number">1</span></span>
+                    <span class="star" data-value="2">⭐<span class="star-number">2</span></span>
+                    <span class="star" data-value="3">⭐<span class="star-number">3</span></span>
+                    <span class="star" data-value="4">⭐<span class="star-number">4</span></span>
+                    <span class="star" data-value="5">⭐<span class="star-number">5</span></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Punctuality</label>
+                <div class="star-rating ethereal-glass" data-criterion="punctuality">
+                    <span class="star" data-value="1">⭐<span class="star-number">1</span></span>
+                    <span class="star" data-value="2">⭐<span class="star-number">2</span></span>
+                    <span class="star" data-value="3">⭐<span class="star-number">3</span></span>
+                    <span class="star" data-value="4">⭐<span class="star-number">4</span></span>
+                    <span class="star" data-value="5">⭐<span class="star-number">5</span></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Communication Skills</label>
+                <div class="star-rating ethereal-glass" data-criterion="communication">
+                    <span class="star" data-value="1">⭐<span class="star-number">1</span></span>
+                    <span class="star" data-value="2">⭐<span class="star-number">2</span></span>
+                    <span class="star" data-value="3">⭐<span class="star-number">3</span></span>
+                    <span class="star" data-value="4">⭐<span class="star-number">4</span></span>
+                    <span class="star" data-value="5">⭐<span class="star-number">5</span></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Subject Matter Expertise</label>
+                <div class="star-rating ethereal-glass" data-criterion="subject-matter">
+                    <span class="star" data-value="1">⭐<span class="star-number">1</span></span>
+                    <span class="star" data-value="2">⭐<span class="star-number">2</span></span>
+                    <span class="star" data-value="3">⭐<span class="star-number">3</span></span>
+                    <span class="star" data-value="4">⭐<span class="star-number">4</span></span>
+                    <span class="star" data-value="5">⭐<span class="star-number">5</span></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="gradient-text">Comment</label>
+                <textarea id="comment" class="form-textarea ethereal-glass" placeholder="Add your comment about this tutor..."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-quantum cancel-btn">Cancel</button>
+                <button type="submit" class="btn-quantum">Submit Rating</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Request Tutor Course Modal -->
+<div class="modal request-tutor-course-modal" id="request-tutor-course-modal">
+    <div class="modal-content ethereal-glass">
+        <div class="neural-mesh"></div>
+        <div class="modal-header">
+            <h2 class="quantum-heading">Request Tutor Course</h2>
+            <span class="close gradient-text">&times;</span>
+        </div>
+        <div class="modal-form">
+            <div class="form-group">
+                <p class="gradient-text">This feature allows you to request a specific course from a tutor.</p>
+                <p class="neural-text" data-text="Feature coming soon">Feature coming soon - stay tuned for updates!</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-quantum cancel-btn">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Parent Course Modal -->
+<div class="modal request-parent-course-modal" id="request-parent-course-modal">
+    <div class="modal-content ethereal-glass">
+        <div class="neural-mesh"></div>
+        <div class="modal-header">
+            <h2 class="quantum-heading">Request Parent Course</h2>
+            <span class="close gradient-text">&times;</span>
+        </div>
+        <div class="modal-form">
+            <div class="form-group">
+                <p class="gradient-text">Request your parent to enroll you in a specific course.</p>
+                <p class="neural-text" data-text="Feature coming soon">Feature coming soon - stay tuned for updates!</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn-quantum cancel-btn">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Transcendent Right Sidebar -->
+    <aside class="right-sidebar" id="right-sidebar">
+
+        
+        <!-- Quantum Progress Widget -->
+        <div class="widget-modern card-dimensional glow-quantum">
+            <div class="widget-header">
+                <h4 class="quantum-heading">Today's Progress</h4>
+                <span class="badge gradient-text">📊</span>
+            </div>
+            <div class="progress-chart ethereal-glass">
+    
+<!-- Updated SVG gradient definition for the progress circle -->
+<!-- Replace the existing SVG in your HTML with this updated version -->
+<div class="circular-progress" style="--progress: 72">
+    <svg viewBox="0 0 36 36" class="circular-chart">
+        <defs>
+            <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#FFC107;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+            </linearGradient>
+            <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+            </filter>
+        </defs>
+        <path class="circle-bg" 
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <path class="circle" 
+              stroke="url(#progressGradient)" 
+              stroke-dasharray="72, 100" 
+              filter="url(#glow)"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+        <text x="18" y="20.35" class="percentage quantum-heading">72%</text>
+    </svg>
+</div>
+                <div class="progress-details">
+                    <div class="progress-item ethereal-glass">
+                        <span>Completed</span>
+                        <strong class="gradient-text">5 lessons</strong>
+                    </div>
+                    <div class="progress-item ethereal-glass">
+                        <span>Time spent</span>
+                        <strong class="gradient-text">3h 45m</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum Actions Grid -->
+        <div class="widget-modern card-dimensional glow-quantum">
+            <div class="widget-header">
+                <h4 class="quantum-heading">Quick Actions</h4>
+                <span class="badge gradient-text">⚡</span>
+            </div>
+            <div class="quick-actions-grid">
+                <div class="quick-action ethereal-glass glow-quantum">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gradient-text">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z"></path>
+                        <path d="M2 17L12 22L22 17"></path>
+                        <path d="M2 12L12 17L22 12"></path>
+                    </svg>
+                    <span>Resources</span>
+                </div>
+                <div class="quick-action ethereal-glass glow-quantum">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gradient-text">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>Assignments</span>
+                </div>
+                <div class="quick-action ethereal-glass glow-quantum">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gradient-text">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span>Tests</span>
+                </div>
+                <div class="quick-action ethereal-glass glow-quantum">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="gradient-text">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="9" y1="9" x2="15" y2="9"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    <span>Calendar</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Neural Sessions Widget -->
+        <div class="widget-modern card-dimensional glow-quantum">
+            <div class="widget-header">
+                <h4 class="quantum-heading">Upcoming Sessions</h4>
+                <span class="badge gradient-text">📅</span>
+            </div>
+            <div class="sessions-mini-list">
+                <div class="session-mini ethereal-glass">
+                    <div class="session-time gradient-text">2:44 PM</div>
+                    <div class="session-details">
+                        <strong class="neural-text" data-text="Mathematics">Mathematics</strong>
+                        <span>with Jane Smith</span>
+                    </div>
+                    <button class="btn-quantum btn-join-mini">Join</button>
+                </div>
+                <div class="session-mini ethereal-glass">
+                    <div class="session-time gradient-text">4:00 PM</div>
+                    <div class="session-details">
+                        <strong class="neural-text" data-text="Physics">Physics</strong>
+                        <span>with John Brown</span>
+                    </div>
+                    <button class="btn-quantum btn-join-mini">Join</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum Achievement Widget -->
+        <div class="widget-modern card-dimensional glow-quantum">
+            <div class="widget-header">
+                <h4 class="quantum-heading">Recent Achievements</h4>
+                <span class="badge gradient-text">🏆</span>
+            </div>
+            <div class="achievements-list">
+                <div class="achievement-item ethereal-glass">
+                    <div class="achievement-icon quantum-heading">🥇</div>
+                    <div class="achievement-info">
+                        <strong class="gradient-text">Perfect Week</strong>
+                        <span>Attended all sessions</span>
+                    </div>
+                </div>
+                <div class="achievement-item ethereal-glass">
+                    <div class="achievement-icon quantum-heading">🎯</div>
+                    <div class="achievement-info">
+                        <strong class="gradient-text">Quiz Master</strong>
+                        <span>Scored 95% in Math Quiz</span>
+                    </div>
+                </div>
+                <div class="achievement-item ethereal-glass">
+                    <div class="achievement-icon quantum-heading">📚</div>
+                    <div class="achievement-info">
+                        <strong class="gradient-text">Study Streak</strong>
+                        <span>7 days consecutive</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Transcendent Premium Ad -->
+        <div class="widget-modern premium-ad card-dimensional glow-quantum">
+            <div class="ad-premium-modern">
+                <div class="quantum-aurora"></div>
+                <div class="neural-mesh"></div>
+                <div class="ad-content-premium ethereal-glass">
+                    <span class="ad-label gradient-text">PREMIUM</span>
+                    <h4 class="quantum-heading">Unlock Elite Tutoring</h4>
+                    <p class="neural-text" data-text="Get access to top-rated tutors">Get access to exclusive learning materials</p>
+                    <ul class="premium-features">
+                        <li class="gradient-text">✓ Learning tools</li>
+                        <li class="gradient-text">✓ Priority scheduling</li>
+                        <li class="gradient-text">✓ Advanced analytics</li>
+                    </ul>
+                    <button class="btn-quantum">Upgrade Now</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quantum Study Tips -->
+        <div class="widget-modern card-dimensional glow-quantum">
+            <div class="widget-header">
+                <h4 class="quantum-heading">Study Tip of the Day</h4>
+                <span class="badge gradient-text">💡</span>
+            </div>
+            <div class="tip-content ethereal-glass">
+                <p class="neural-text" data-text="Break your study sessions">"Break your study sessions into 25-minute focused intervals with 5-minute breaks. This technique, called Pomodoro, can significantly improve retention and focus."</p>
+                <button class="btn-quantum btn-tip">More Tips →</button>
+            </div>
+        </div>
+
+        <!-- Learning Analytics Widget -->
+        <div class="widget-modern card-dimensional glow-quantum">
+            <div class="widget-header">
+                <h4 class="quantum-heading">Learning Analytics</h4>
+                <span class="badge gradient-text">📈</span>
+            </div>
+            <div class="analytics-content ethereal-glass">
+                <div class="analytic-item">
+                    <span>Weekly Growth</span>
+                    <div class="analytic-bar">
+                        <div class="analytic-fill quantum-gradient" style="width: 85%"></div>
+                    </div>
+                    <strong class="gradient-text">+15%</strong>
+                </div>
+                <div class="analytic-item">
+                    <span>Focus Score</span>
+                    <div class="analytic-bar">
+                        <div class="analytic-fill quantum-gradient" style="width: 92%"></div>
+                    </div>
+                    <strong class="gradient-text">92/100</strong>
+                </div>
+                <div class="analytic-item">
+                    <span>Engagement Rate</span>
+                    <div class="analytic-bar">
+                        <div class="analytic-fill quantum-gradient" style="width: 78%"></div>
+                    </div>
+                    <strong class="gradient-text">78%</strong>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- All Original Modals - Enhanced with Quantum Design -->
+    
+    <!-- Tutor Details Modal -->
+    <div class="modal tutor-details-modal" id="tutor-details-modal">
+        <div class="modal-content modal-large ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">Tutor Details</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <div class="tutor-details-content">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- My Courses Modal -->
+    <div class="modal my-courses-modal" id="my-courses-modal">
+        <div class="modal-content modal-large ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">My Courses</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <div class="courses-grid">
+                <!-- Course cards will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal edit-profile-modal">
+        <div class="modal-content ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">Edit Profile</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <form class="modal-form">
+                <div class="form-group">
+                    <label class="gradient-text">Name</label>
+                    <input type="text" value="John Doe" class="form-input ethereal-glass">
+                </div>
+                <div class="form-group">
+                    <label class="gradient-text">Phone</label>
+                    <input type="tel" value="(123) 456-7890" class="form-input ethereal-glass">
+                </div>
+                <div class="form-group">
+                    <label class="gradient-text">Email</label>
+                    <input type="email" value="john.doe@example.com" class="form-input ethereal-glass">
+                </div>
+                <div class="form-group">
+                    <label class="gradient-text">Location</label>
+                    <input type="text" value="New York, NY" class="form-input ethereal-glass">
+                </div>
+                <div class="form-group">
+                    <label class="gradient-text">School</label>
+                    <input type="text" value="XYZ High School" class="form-input ethereal-glass">
+                </div>
+                <div class="form-group">
+                    <label class="gradient-text">Class</label>
+                    <input type="text" value="12th Grade" class="form-input ethereal-glass">
+                </div>
+                <div class="form-group">
+                    <label class="gradient-text">Bio</label>
+                    <textarea class="form-textarea ethereal-glass">Passionate about learning and technology.</textarea>
+                </div>
+                <div class="form-group">
+                    <label class="gradient-text">Quote</label>
+                    <input type="text" value="Knowledge is power." class="form-input ethereal-glass">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-quantum cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-quantum">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sessions Modal -->
+    <div class="modal sessions-modal">
+        <div class="modal-content modal-large ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">My Sessions</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <div class="sessions-container">
+                <div class="sessions-filters">
+                    <button class="filter-btn active ethereal-glass">All</button>
+                    <button class="filter-btn ethereal-glass">Upcoming</button>
+                    <button class="filter-btn ethereal-glass">Past</button>
+                </div>
+                <div class="sessions-list">
+                    <!-- Sessions will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cover Photo Upload Modal -->
+    <div class="modal cover-upload-modal">
+        <div class="modal-content ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">Upload Cover Photo</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <form class="modal-form">
+                <div class="form-group">
+                    <label class="gradient-text">Select Image</label>
+                    <input type="file" accept="image/*" class="cover-upload-input form-input ethereal-glass">
+                </div>
+                <div class="image-preview">
+                    <img src="placeholder-cover.jpg" alt="Cover Preview" class="cover-preview-img">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-quantum cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-quantum">Save Cover Photo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Profile Picture Upload Modal -->
+    <div class="modal profile-upload-modal">
+        <div class="modal-content ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">Upload Profile Picture</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <form class="modal-form">
+                <div class="form-group">
+                    <label class="gradient-text">Select Image</label>
+                    <input type="file" accept="image/*" class="profile-upload-input form-input ethereal-glass">
+                </div>
+                <div class="image-preview" style="text-align: center;">
+                    <img src="placeholder-profile.jpg" alt="Profile Preview" class="profile-preview-img">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-quantum cancel-btn">Cancel</button>
+                    <button type="submit" class="btn-quantum">Save Profile Picture</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Course Modal -->
+    <div class="modal add-course-modal">
+        <div class="modal-content ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">Add Course</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <div class="modal-form">
+                <div class="form-group">
+                    <label class="gradient-text">Search for a course</label>
+                    <input type="text" placeholder="Type course name..." id="course-search" class="form-input ethereal-glass">
+                </div>
+                <div id="course-result">
+                    <div class="search-prompt ethereal-glass">
+                        <p class="gradient-text">Type a course name to search</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Parent Modal -->
+    <div class="modal parent-modal">
+        <div class="modal-content ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">Parent Details</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <div class="parent-info">
+                <img src="placeholder-parent.jpg" alt="Parent" class="parent-avatar">
+                <h3 class="quantum-heading">Jane Doe</h3>
+                <div class="parent-details ethereal-glass">
+                    <p><strong class="gradient-text">Phone:</strong> (123) 456-7891</p>
+                    <p><strong class="gradient-text">Email:</strong> jane.doe@example.com</p>
+                    <p><strong class="gradient-text">Location:</strong> New York, NY</p>
+                </div>
+                <div class="parent-actions">
+                    <button class="btn-quantum">Video Call</button>
+                    <button class="btn-quantum">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Certifications Modal -->
+    <div class="modal certifications-modal">
+        <div class="modal-content modal-large ethereal-glass">
+            <div class="neural-mesh"></div>
+            <div class="modal-header">
+                <h2 class="quantum-heading">My Certifications</h2>
+                <span class="close gradient-text">&times;</span>
+            </div>
+            <div class="certifications-list">
+                <div class="certification-card card-dimensional glow-quantum">
+                    <div class="cert-icon quantum-heading">🏆</div>
+                    <div class="cert-info">
+                        <h4 class="gradient-text">Mathematics Excellence</h4>
+                        <p>XYZ High School • June 2024</p>
+                        <button class="btn-quantum btn-small">View Certificate</button>
+                    </div>
+                </div>
+                <div class="certification-card card-dimensional glow-quantum">
+                    <div class="cert-icon quantum-heading">🎓</div>
+                    <div class="cert-info">
+                        <h4 class="gradient-text">Physics Achievement Award</h4>
+                        <p>State Science Fair • March 2024</p>
+                        <button class="btn-quantum btn-small">View Certificate</button>
+                    </div>
+                </div>
+                <div class="certification-card card-dimensional glow-quantum">
+                    <div class="cert-icon quantum-heading">📜</div>
+                    <div class="cert-info">
+                        <h4 class="gradient-text">Honor Roll Student</h4>
+                        <p>XYZ High School • December 2023</p>
+                        <button class="btn-quantum btn-small">View Certificate</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transcendent Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 class="footer-title">Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier quantum educational platform connecting students with expert tutors through transcendent learning experiences.</p>
+                    <div class="footer-stats">
+                        <div class="stat-item ethereal-glass">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Active Users</span>
+                        </div>
+                        <div class="stat-item ethereal-glass">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Courses</span>
+                        </div>
+                        <div class="stat-item ethereal-glass">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                    <div class="footer-social">
+                        <a href="#" aria-label="Facebook" class="social-link">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+                        </a>
+                        <a href="#" aria-label="Twitter" class="social-link">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                        </a>
+                        <a href="#" aria-label="LinkedIn" class="social-link">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="social-link">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                        </a>
+                        <a href="#" aria-label="YouTube" class="social-link">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-subtitle">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-subtitle">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3 class="footer-subtitle">Connect With Us</h3>
+                    <div class="footer-contact">
+                        <span class="gradient-text">📧</span> support@astegni.com
+                    </div>
+                    <div class="footer-contact">
+                        <span class="gradient-text">📱</span> +251 912 345 678
+                    </div>
+                    <div class="footer-contact">
+                        <span class="gradient-text">📍</span> Addis Ababa, Ethiopia
+                    </div>
+                    
+                    <div class="newsletter-signup">
+                        <h4 class="gradient-text">Subscribe to Newsletter</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="Your email address" class="newsletter-input">
+                            <button type="submit" class="newsletter-btn">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Astegni. All rights reserved. Built with quantum technology.</p>
+                <div class="footer-badges">
+                    <span class="badge">🔒 SSL Secured</span>
+                    <span class="badge">✓ Verified Platform</span>
+                    <span class="badge">🏆 Award Winner 2024</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
