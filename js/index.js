@@ -18,18 +18,17 @@ const APP_STATE = {
     videoComments: []
 };
 // Profile URL mapping based on user role
-// Profile URL mapping based on user role
 const PROFILE_URLS = {
-    'tutor': 'my Profile/tutor-profile.html',
-    'student': 'my Profile/student-profile.html',
-    'guardian': 'my Profile/guardian-profile.html',
-    'institute': 'my Profile/institute-profile.html',
-    'bookstore': 'my Profile/bookStore-profile.html',
-    'delivery': 'my Profile/delivery-profile.html',
-    'advertiser': 'my Profile/advertiser-profile.html',
-    'employer': 'my Profile/employer-profile.html',
-    'church': 'my Profile/church-profile.html',
-    'author': 'my Profile/author-profile.html'
+    'tutor': 'My Profile/tutor-profile.html',
+    'student': 'My Profile/student-profile.html',
+    'guardian': 'My Profile/guardian-profile.html',
+    'institute': 'My Profile/institute-profile.html',
+    'bookstore': 'My Profile/bookStore-profile.html',
+    'delivery': 'My Profile/delivery-profile.html',
+    'advertiser': 'My Profile/advertiser-profile.html',
+    'employer': 'My Profile/employer-profile.html',
+    'church': 'My Profile/church-profile.html',
+    'author': 'My Profile/author-profile.html'
 
 };
 
