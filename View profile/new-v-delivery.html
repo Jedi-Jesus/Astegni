@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Delivery - Order #12345 | Astegni</title>
+    <link rel="stylesheet" href="../css/institute.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <div class="container nav-container">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="nav-brand">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text gradient-text">Astegni</span>
+            </div>
+            <div class="nav-menu">
+                <a href="../branch/news.html" class="nav-link">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </a>
+                <a href="../branch/find-tutors.html" class="nav-link">
+                    <span class="nav-icon">👨‍🏫</span>
+                    <span>Find Tutors</span>
+                </a>
+                <a href="../branch/reels.html" class="nav-link">
+                    <span class="nav-icon">🎬</span>
+                    <span>Reels</span>
+                </a>
+                <a href="../branch/store.html" class="nav-link">
+                    <span class="nav-icon">🛒</span>
+                    <span>Store</span>
+                </a>
+                <a href="../branch/find-jobs.html" class="nav-link">
+                    <span class="nav-icon">💼</span>
+                    <span>Find Jobs</span>
+                </a>
+                <button class="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge pulse">2</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar" id="leftSidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <button class="sidebar-btn active" data-content="tracking">
+                    <span class="sidebar-btn-icon">📍</span>
+                    <span>Live Tracking</span>
+                    <span class="sidebar-badge live">Live</span>
+                </button>
+            </div>
+            
+            <!-- DELIVERY TRACKING SECTION -->
+            <div class="sidebar-section" data-content="delivery-tracking">
+                <button class="sidebar-btn" data-content="order-details">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>Order Details</span>
+                </button>
+                <button class="sidebar-btn" data-content="delivery-person">
+                    <span class="sidebar-btn-icon">🚴</span>
+                    <span>Delivery Person</span>
+                </button>
+                <button class="sidebar-btn" data-content="route-map">
+                    <span class="sidebar-btn-icon">🗺️</span>
+                    <span>Route & Map</span>
+                </button>
+                <button class="sidebar-btn" data-content="communication">
+                    <span class="sidebar-btn-icon">💬</span>
+                    <span>Communication</span>
+                    <span class="sidebar-badge">1</span>
+                </button>
+                <button class="sidebar-btn" data-content="delivery-timeline">
+                    <span class="sidebar-btn-icon">⏱️</span>
+                    <span>Timeline</span>
+                </button>
+                <button class="sidebar-btn" data-content="delivery-updates">
+                    <span class="sidebar-btn-icon">🔔</span>
+                    <span>Updates</span>
+                    <span class="sidebar-badge">3</span>
+                </button>
+                <button class="sidebar-btn" data-content="bookstore-info">
+                    <span class="sidebar-btn-icon">📚</span>
+                    <span>Bookstore</span>
+                </button>
+                <button class="sidebar-btn" data-content="help-support">
+                    <span class="sidebar-btn-icon">❓</span>
+                    <span>Help & Support</span>
+                </button>
+            </div>
+
+            <div class="sidebar-section" data-content="customer-options">
+                <button class="sidebar-btn" data-content="my-orders">
+                    <span class="sidebar-btn-icon">📋</span>
+                    <span>My Orders</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="saved-addresses">
+                    <span class="sidebar-btn-icon">🏠</span>
+                    <span>Saved Addresses</span>
+                </button>
+                <button class="sidebar-btn" data-content="payment-methods">
+                    <span class="sidebar-btn-icon">💳</span>
+                    <span>Payment Methods</span>
+                </button>
+                <button class="sidebar-btn" data-content="delivery-preferences">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Preferences</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats Section -->
+            <div class="sidebar-quick-stats">
+                <h4>Delivery Status</h4>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Status</span>
+                    <span class="stat-value text-green">In Transit</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">ETA</span>
+                    <span class="stat-value">15 mins</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Distance</span>
+                    <span class="stat-value">2.3 mi</span>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="sidebar-activity">
+                <h4>Delivery Updates</h4>
+                <div class="activity-item">
+                    <span class="activity-icon">📦</span>
+                    <div class="activity-text">
+                        <p>Order picked up</p>
+                        <span class="activity-time">5 min ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">🚴</span>
+                    <div class="activity-text">
+                        <p>Delivery person assigned</p>
+                        <span class="activity-time">10 min ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">✅</span>
+                    <div class="activity-text">
+                        <p>Order confirmed</p>
+                        <span class="activity-time">20 min ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Button -->
+            <button class="sidebar-help-btn" onclick="openCustomerSupport()">
+                <span class="help-icon">💬</span>
+                <span>Need Help?</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container with-sidebar">
+        <!-- Delivery Header Section - Always Visible -->
+        <section class="delivery-header-section">
+            <div class="delivery-status-banner">
+                <div class="status-animation">
+                    <div class="delivery-progress">
+                        <div class="progress-step completed">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Order Placed</span>
+                        </div>
+                        <div class="progress-line active"></div>
+                        <div class="progress-step completed">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Confirmed</span>
+                        </div>
+                        <div class="progress-line active"></div>
+                        <div class="progress-step active">
+                            <span class="step-icon">🚴</span>
+                            <span class="step-label">In Transit</span>
+                        </div>
+                        <div class="progress-line"></div>
+                        <div class="progress-step">
+                            <span class="step-icon">📍</span>
+                            <span class="step-label">Delivered</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="delivery-main-info">
+                    <div class="delivery-header-content">
+                        <h1 class="order-title">Order #12345 - Book Delivery</h1>
+                        <div class="delivery-summary">
+                            <div class="summary-item">
+                                <span class="summary-icon">📦</span>
+                                <div class="summary-details">
+                                    <span class="summary-label">Product</span>
+                                    <span class="summary-value">The Great Novel</span>
+                                </div>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-icon">🚴</span>
+                                <div class="summary-details">
+                                    <span class="summary-label">Delivery Person</span>
+                                    <span class="summary-value">John Doe</span>
+                                </div>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-icon">⏰</span>
+                                <div class="summary-details">
+                                    <span class="summary-label">Estimated Arrival</span>
+                                    <span class="summary-value">2:45 PM (15 mins)</span>
+                                </div>
+                            </div>
+                            <div class="summary-item">
+                                <span class="summary-icon">📍</span>
+                                <div class="summary-details">
+                                    <span class="summary-label">Delivery Address</span>
+                                    <span class="summary-value">456 Home Ave, City</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advertisement Placeholder -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Fast & Reliable Delivery</h3>
+                    <p class="ad-text">Get your books delivered in minutes</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Area -->
+        <div class="content-with-sidebar">
+            <!-- Main Content Area -->
+            <div class="main-content-area">
+                <!-- Live Tracking Content (Default) -->
+                <div class="sidebar-content-panel active" id="tracking-content">
+                    <!-- Live Map Section -->
+                    <section class="tracking-map-section">
+                        <h2 class="section-title">📍 Live Delivery Tracking</h2>
+                        <div class="map-container">
+                            <div id="liveTrackingMap" class="live-map">
+                                <!-- Interactive map would be integrated here -->
+                                <div class="map-placeholder">
+                                    <div class="delivery-route">
+                                        <div class="route-marker start">
+                                            <span>📚</span>
+                                            <span class="marker-label">Bookstore</span>
+                                        </div>
+                                        <div class="route-path active"></div>
+                                        <div class="delivery-person-marker" style="left: 60%;">
+                                            <span>🚴</span>
+                                            <span class="marker-label">John (2.3 mi away)</span>
+                                        </div>
+                                        <div class="route-path"></div>
+                                        <div class="route-marker end">
+                                            <span>🏠</span>
+                                            <span class="marker-label">Your Location</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="map-controls">
+                                <button class="map-btn" onclick="centerMap()">
+                                    <i class="fas fa-crosshairs"></i> Center
+                                </button>
+                                <button class="map-btn" onclick="zoomIn()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="map-btn" onclick="zoomOut()">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <button class="map-btn" onclick="toggleFullscreen()">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="tracking-actions">
+                            <button class="btn-primary" onclick="callDeliveryPerson()">
+                                <i class="fas fa-phone"></i> Call Delivery Person
+                            </button>
+                            <button class="btn-secondary" onclick="sendMessage()">
+                                <i class="fas fa-comment"></i> Send Message
+                            </button>
+                            <button class="btn-secondary" onclick="shareLocation()">
+                                <i class="fas fa-share-alt"></i> Share Location
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Real-time Updates -->
+                    <section class="real-time-updates">
+                        <h3>Live Updates</h3>
+                        <div class="update-feed">
+                            <div class="update-item recent">
+                                <span class="update-time">2:30 PM</span>
+                                <div class="update-content">
+                                    <span class="update-icon">🚴</span>
+                                    <p>Your delivery person is 2.3 miles away</p>
+                                </div>
+                            </div>
+                            <div class="update-item">
+                                <span class="update-time">2:25 PM</span>
+                                <div class="update-content">
+                                    <span class="update-icon">📦</span>
+                                    <p>Order picked up from City Bookstore</p>
+                                </div>
+                            </div>
+                            <div class="update-item">
+                                <span class="update-time">2:20 PM</span>
+                                <div class="update-content">
+                                    <span class="update-icon">✅</span>
+                                    <p>Delivery person arrived at bookstore</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Order Details Content -->
+                <div class="sidebar-content-panel" id="order-details-content">
+                    <div class="section-header">
+                        <h2 class="section-title">📦 Order Details</h2>
+                        <button class="btn-secondary" onclick="downloadInvoice()">
+                            <i class="fas fa-download"></i> Download Invoice
+                        </button>
+                    </div>
+                    
+                    <div class="order-info-card">
+                        <div class="order-header">
+                            <span class="order-number">Order #12345</span>
+                            <span class="order-date">January 15, 2025</span>
+                        </div>
+                        
+                        <div class="order-items">
+                            <h3>Items</h3>
+                            <div class="item-card">
+                                <img src="https://via.placeholder.com/100" alt="Book" class="item-image">
+                                <div class="item-details">
+                                    <h4>The Great Novel</h4>
+                                    <p>Author: Jane Author</p>
+                                    <p>ISBN: 978-3-16-148410-0</p>
+                                    <p>Quantity: 1</p>
+                                </div>
+                                <div class="item-price">
+                                    <span class="price">$25.99</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="order-summary">
+                            <div class="summary-row">
+                                <span>Subtotal</span>
+                                <span>$25.99</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Delivery Fee</span>
+                                <span>$7.00</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Tax</span>
+                                <span>$2.60</span>
+                            </div>
+                            <div class="summary-row total">
+                                <span>Total</span>
+                                <span>$35.59</span>
+                            </div>
+                        </div>
+                        
+                        <div class="order-actions">
+                            <button class="btn-primary" onclick="reorderItems()">Reorder</button>
+                            <button class="btn-secondary" onclick="reportIssue()">Report Issue</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery Person Content -->
+                <div class="sidebar-content-panel" id="delivery-person-content">
+                    <div class="section-header">
+                        <h2 class="section-title">🚴 Your Delivery Person</h2>
+                    </div>
+                    
+                    <div class="delivery-person-card">
+                        <div class="person-header">
+                            <img src="https://via.placeholder.com/150" alt="John Doe" class="person-avatar">
+                            <div class="person-info">
+                                <h3>John Doe</h3>
+                                <div class="person-rating">
+                                    <span class="stars">⭐⭐⭐⭐⭐</span>
+                                    <span class="rating-text">4.7/5 (156 deliveries)</span>
+                                </div>
+                                <div class="person-badges">
+                                    <span class="badge verified">✓ Verified</span>
+                                    <span class="badge professional">Pro Delivery</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="person-stats">
+                            <div class="stat">
+                                <span class="stat-value">98%</span>
+                                <span class="stat-label">On-time Delivery</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">234</span>
+                                <span class="stat-label">Total Deliveries</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">2 years</span>
+                                <span class="stat-label">Experience</span>
+                            </div>
+                        </div>
+                        
+                        <div class="person-bio">
+                            <p>"Delivering smiles, one package at a time! Your satisfaction is my priority."</p>
+                        </div>
+                        
+                        <div class="person-actions">
+                            <button class="btn-primary" onclick="callDeliveryPerson()">
+                                <i class="fas fa-phone"></i> Call John
+                            </button>
+                            <button class="btn-secondary" onclick="chatWithDeliveryPerson()">
+                                <i class="fas fa-comment"></i> Chat
+                            </button>
+                            <button class="btn-secondary" onclick="tipDeliveryPerson()">
+                                <i class="fas fa-dollar-sign"></i> Add Tip
+                            </button>
+                        </div>
+                        
+                        <div class="recent-reviews">
+                            <h4>Recent Reviews</h4>
+                            <div class="review-item">
+                                <div class="review-header">
+                                    <span class="reviewer">Sarah M.</span>
+                                    <span class="review-rating">⭐⭐⭐⭐⭐</span>
+                                </div>
+                                <p>"Very professional and careful with my books!"</p>
+                            </div>
+                            <div class="review-item">
+                                <div class="review-header">
+                                    <span class="reviewer">Mike R.</span>
+                                    <span class="review-rating">⭐⭐⭐⭐⭐</span>
+                                </div>
+                                <p>"Fast delivery and great communication."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route & Map Content -->
+                <div class="sidebar-content-panel" id="route-map-content">
+                    <div class="section-header">
+                        <h2 class="section-title">🗺️ Delivery Route</h2>
+                        <button class="btn-secondary" onclick="getDirections()">
+                            <i class="fas fa-directions"></i> Get Directions
+                        </button>
+                    </div>
+                    
+                    <div class="route-details">
+                        <div class="route-map-large">
+                            <!-- Larger map view -->
+                            <div id="detailedRouteMap" class="detailed-map">
+                                <!-- Map placeholder -->
+                            </div>
+                        </div>
+                        
+                        <div class="route-info">
+                            <h3>Route Information</h3>
+                            <div class="route-stats">
+                                <div class="route-stat">
+                                    <span class="stat-icon">📍</span>
+                                    <div class="stat-content">
+                                        <span class="stat-label">Total Distance</span>
+                                        <span class="stat-value">5.8 miles</span>
+                                    </div>
+                                </div>
+                                <div class="route-stat">
+                                    <span class="stat-icon">⏱️</span>
+                                    <div class="stat-content">
+                                        <span class="stat-label">Estimated Time</span>
+                                        <span class="stat-value">15 minutes</span>
+                                    </div>
+                                </div>
+                                <div class="route-stat">
+                                    <span class="stat-icon">🚦</span>
+                                    <div class="stat-content">
+                                        <span class="stat-label">Traffic</span>
+                                        <span class="stat-value text-green">Light</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="route-stops">
+                                <h4>Route Stops</h4>
+                                <div class="stop-item">
+                                    <span class="stop-number">1</span>
+                                    <div class="stop-details">
+                                        <h5>City Bookstore</h5>
+                                        <p>123 Book St, City</p>
+                                        <span class="stop-time">Picked up at 2:25 PM</span>
+                                    </div>
+                                </div>
+                                <div class="stop-item current">
+                                    <span class="stop-number">→</span>
+                                    <div class="stop-details">
+                                        <h5>En Route</h5>
+                                        <p>Currently on Main Street</p>
+                                        <span class="stop-time">2.3 miles from destination</span>
+                                    </div>
+                                </div>
+                                <div class="stop-item">
+                                    <span class="stop-number">2</span>
+                                    <div class="stop-details">
+                                        <h5>Your Location</h5>
+                                        <p>456 Home Ave, City</p>
+                                        <span class="stop-time">ETA: 2:45 PM</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Communication Content -->
+                <div class="sidebar-content-panel" id="communication-content">
+                    <div class="section-header">
+                        <h2 class="section-title">💬 Communication</h2>
+                    </div>
+                    
+                    <div class="communication-options">
+                        <div class="comm-card">
+                            <h3>Call Delivery Person</h3>
+                            <p>Direct line to John Doe</p>
+                            <button class="btn-primary" onclick="makeCall()">
+                                <i class="fas fa-phone"></i> Call Now
+                            </button>
+                        </div>
+                        
+                        <div class="comm-card">
+                            <h3>Chat Messages</h3>
+                            <div class="chat-container">
+                                <div class="chat-messages">
+                                    <div class="message received">
+                                        <span class="sender">John D.</span>
+                                        <p>Hi! I've picked up your order and I'm on my way.</p>
+                                        <span class="time">2:25 PM</span>
+                                    </div>
+                                    <div class="message sent">
+                                        <span class="sender">You</span>
+                                        <p>Great! Thanks for the update.</p>
+                                        <span class="time">2:26 PM</span>
+                                    </div>
+                                    <div class="message received">
+                                        <span class="sender">John D.</span>
+                                        <p>Traffic is light, should be there in 15 mins!</p>
+                                        <span class="time">2:30 PM</span>
+                                    </div>
+                                </div>
+                                <div class="chat-input">
+                                    <input type="text" placeholder="Type a message..." id="chatMessage">
+                                    <button class="btn-send" onclick="sendChatMessage()">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="comm-card">
+                            <h3>Contact Support</h3>
+                            <p>Need help with your delivery?</p>
+                            <button class="btn-secondary" onclick="contactSupport()">
+                                <i class="fas fa-headset"></i> Contact Support
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timeline Content -->
+                <div class="sidebar-content-panel" id="delivery-timeline-content">
+                    <div class="section-header">
+                        <h2 class="section-title">⏱️ Delivery Timeline</h2>
+                    </div>
+                    
+                    <div class="timeline-container">
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker">✓</div>
+                            <div class="timeline-content">
+                                <h4>Order Placed</h4>
+                                <p>You placed an order for "The Great Novel"</p>
+                                <span class="timeline-time">2:00 PM</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker">✓</div>
+                            <div class="timeline-content">
+                                <h4>Order Confirmed</h4>
+                                <p>City Bookstore confirmed your order</p>
+                                <span class="timeline-time">2:05 PM</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker">✓</div>
+                            <div class="timeline-content">
+                                <h4>Delivery Person Assigned</h4>
+                                <p>John Doe assigned to deliver your order</p>
+                                <span class="timeline-time">2:15 PM</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item completed">
+                            <div class="timeline-marker">✓</div>
+                            <div class="timeline-content">
+                                <h4>Order Picked Up</h4>
+                                <p>Your order has been picked up from the bookstore</p>
+                                <span class="timeline-time">2:25 PM</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item active">
+                            <div class="timeline-marker">🚴</div>
+                            <div class="timeline-content">
+                                <h4>Out for Delivery</h4>
+                                <p>Your order is on the way</p>
+                                <span class="timeline-time">2:30 PM - Present</span>
+                            </div>
+                        </div>
+                        
+                        <div class="timeline-item pending">
+                            <div class="timeline-marker">⏳</div>
+                            <div class="timeline-content">
+                                <h4>Estimated Delivery</h4>
+                                <p>Expected arrival at your location</p>
+                                <span class="timeline-time">2:45 PM</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookstore Info Content -->
+                <div class="sidebar-content-panel" id="bookstore-info-content">
+                    <div class="section-header">
+                        <h2 class="section-title">📚 Bookstore Information</h2>
+                    </div>
+                    
+                    <div class="bookstore-card">
+                        <div class="store-header">
+                            <img src="https://via.placeholder.com/200x100" alt="City Bookstore" class="store-image">
+                            <div class="store-info">
+                                <h3>City Bookstore</h3>
+                                <div class="store-rating">
+                                    <span class="stars">⭐⭐⭐⭐⭐</span>
+                                    <span>4.9/5 (523 reviews)</span>
+                                </div>
+                                <p class="store-address">123 Book St, City, State 12345</p>
+                            </div>
+                        </div>
+                        
+                        <div class="store-details">
+                            <h4>About the Store</h4>
+                            <p>Your local bookstore with a wide selection of novels, textbooks, and educational materials. Serving the community for over 20 years.</p>
+                            
+                            <div class="store-hours">
+                                <h4>Store Hours</h4>
+                                <div class="hours-list">
+                                    <div class="hours-item">
+                                        <span>Monday - Friday</span>
+                                        <span>9:00 AM - 9:00 PM</span>
+                                    </div>
+                                    <div class="hours-item">
+                                        <span>Saturday</span>
+                                        <span>10:00 AM - 8:00 PM</span>
+                                    </div>
+                                    <div class="hours-item">
+                                        <span>Sunday</span>
+                                        <span>11:00 AM - 6:00 PM</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="store-contact">
+                                <h4>Contact</h4>
+                                <button class="btn-secondary" onclick="callBookstore()">
+                                    <i class="fas fa-phone"></i> +1 (555) 111-2222
+                                </button>
+                                <button class="btn-secondary" onclick="emailBookstore()">
+                                    <i class="fas fa-envelope"></i> contact@citybookstore.com
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="right-sidebar">
+                <!-- Delivery Summary Widget -->
+                <div class="sidebar-widget delivery-summary-widget">
+                    <div class="widget-header">
+                        <h3>📦 Quick Summary</h3>
+                    </div>
+                    <div class="summary-content">
+                        <div class="summary-row">
+                            <span>Order ID</span>
+                            <span>#12345</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Status</span>
+                            <span class="status in-transit">In Transit</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>ETA</span>
+                            <span class="eta-time">2:45 PM</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Distance</span>
+                            <span>2.3 miles</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Delivery Person</span>
+                            <span>John Doe</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary full-width" onclick="callDeliveryPerson()">
+                        <i class="fas fa-phone"></i> Call Now
+                    </button>
+                </div>
+
+                <!-- Similar Orders Widget -->
+                <div class="sidebar-widget similar-orders-widget">
+                    <div class="widget-header">
+                        <h3>📚 You May Also Like</h3>
+                        <a href="../branch/store.html" class="widget-action">View All</a>
+                    </div>
+                    <div class="product-suggestions">
+                        <div class="suggestion-item">
+                            <img src="https://via.placeholder.com/60" alt="Book">
+                            <div class="suggestion-info">
+                                <h4>Another Great Novel</h4>
+                                <p>By Same Author</p>
+                                <span class="price">$19.99</span>
+                            </div>
+                        </div>
+                        <div class="suggestion-item">
+                            <img src="https://via.placeholder.com/60" alt="Book">
+                            <div class="suggestion-info">
+                                <h4>Related Title</h4>
+                                <p>Bestseller</p>
+                                <span class="price">$22.99</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Center Widget -->
+                <div class="sidebar-widget help-widget">
+                    <div class="widget-header">
+                        <h3>❓ Need Help?</h3>
+                    </div>
+                    <div class="help-options">
+                        <button class="help-btn" onclick="reportIssue()">
+                            <i class="fas fa-exclamation-triangle"></i> Report Issue
+                        </button>
+                        <button class="help-btn" onclick="changeAddress()">
+                            <i class="fas fa-map-marker-alt"></i> Change Address
+                        </button>
+                        <button class="help-btn" onclick="cancelOrder()">
+                            <i class="fas fa-times-circle"></i> Cancel Order
+                        </button>
+                        <button class="help-btn" onclick="contactSupport()">
+                            <i class="fas fa-headset"></i> Support Chat
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Advertisement -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Premium Delivery Service</h3>
+                    <p class="ad-text">Get free delivery on your next order</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Widgets Section -->
+        <section class="bottom-widgets">
+            <div class="bottom-widgets-grid">
+                <!-- Delivery Stats Widget -->
+                <div class="bottom-widget delivery-stats-widget">
+                    <div class="widget-header">
+                        <h3>📊 Delivery Analytics</h3>
+                    </div>
+                    <div class="delivery-metrics">
+                        <div class="metric-card">
+                            <span class="metric-icon">🚴</span>
+                            <div class="metric-info">
+                                <span class="metric-value">2.3 mi</span>
+                                <span class="metric-label">Distance Remaining</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-icon">⏱️</span>
+                            <div class="metric-info">
+                                <span class="metric-value">15 min</span>
+                                <span class="metric-label">Time to Arrival</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-icon">📍</span>
+                            <div class="metric-info">
+                                <span class="metric-value">Main St</span>
+                                <span class="metric-label">Current Location</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-icon">🚗</span>
+                            <div class="metric-info">
+                                <span class="metric-value">12 mph</span>
+                                <span class="metric-label">Average Speed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weather Widget -->
+                <div class="bottom-widget weather-widget">
+                    <div class="widget-header">
+                        <h3>🌤️ Delivery Weather</h3>
+                    </div>
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="weather-icon">☀️</div>
+                            <div class="weather-temp">68°F</div>
+                            <div class="weather-condition">Clear - Perfect for delivery</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders Widget -->
+                <div class="bottom-widget recent-orders-widget">
+                    <div class="widget-header">
+                        <h3>📋 Recent Orders</h3>
+                        <a href="#" class="widget-action">View All</a>
+                    </div>
+                    <div class="orders-list">
+                        <div class="order-item">
+                            <span class="order-icon">📚</span>
+                            <div class="order-info">
+                                <h4>Order #12344</h4>
+                                <p>Delivered - Jan 10</p>
+                            </div>
+                            <button class="btn-reorder" onclick="reorder('12344')">Reorder</button>
+                        </div>
+                        <div class="order-item">
+                            <span class="order-icon">📖</span>
+                            <div class="order-info">
+                                <h4>Order #12343</h4>
+                                <p>Delivered - Jan 5</p>
+                            </div>
+                            <button class="btn-reorder" onclick="reorder('12343')">Reorder</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FAB Menu -->
+    <div class="fab-container">
+        <button class="fab" id="main-fab">
+            <span class="fab-icon">+</span>
+            <span class="fab-label">Quick Actions</span>
+        </button>
+        <div class="fab-menu">
+            <button class="fab-option" onclick="callDeliveryPerson()">
+                <span>📞</span> Call Delivery
+            </button>
+            <button class="fab-option" onclick="sendMessage()">
+                <span>💬</span> Send Message
+            </button>
+            <button class="fab-option" onclick="shareTracking()">
+                <span>🔗</span> Share Tracking
+            </button>
+            <button class="fab-option" onclick="tipDeliveryPerson()">
+                <span>💵</span> Add Tip
+            </button>
+            <button class="fab-option" onclick="reportIssue()">
+                <span>⚠️</span> Report Issue
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="footer-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+            </svg>
+        </div>
+        
+        <div class="container mx-auto px-4">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni Delivery</h3>
+                    <p class="footer-description">Fast, reliable book delivery service connecting readers with their favorite bookstores.</p>
+                </div>
+                
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Track Order</a></li>
+                        <li><a href="#" class="footer-link">Delivery Help</a></li>
+                        <li><a href="#" class="footer-link">Contact Support</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Policies</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Delivery Policy</a></li>
+                        <li><a href="#" class="footer-link">Refund Policy</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2025 Astegni. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src='../js/institute-profile-1.js'></script>
+    <SCRIPT SRC="../JS/Institute-profile-2.js"></SCRIPT>
+    <script src='../js/institute-profile-3.js'></script>
+    <SCRIPT SRC="../JS/Institute-profile-4.js"></SCRIPT>
+</body>
+
+</html>
