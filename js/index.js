@@ -28,7 +28,7 @@ const PROFILE_URLS = {
     'delivery': 'my Profile/delivery-profile.html',
     'advertiser': 'my Profile/advertiser-profile.html',
     'employer': 'my Profile/employer-profile.html',
-    'religious': 'my Profile/religious-profile.html',
+    'church': 'my Profile/church-profile.html',
     'author': 'my Profile/author-profile.html'
 
 };

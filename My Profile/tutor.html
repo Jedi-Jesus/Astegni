@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tutor Profile | Astegni</title>
+    <link rel="stylesheet" href="../css/institute.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation (Same as journalist-profile.html) -->
+    <nav class="navbar glass">
+        <div class="container nav-container">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="nav-brand">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text gradient-text">Astegni</span>
+            </div>
+            <div class="nav-menu">
+                <a href="../branch/news.html" class="nav-link">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </a>
+                <a href="../branch/find-tutors.html" class="nav-link">
+                    <span class="nav-icon">👨‍🏫</span>
+                    <span>Find Tutors</span>
+                </a>
+                <a href="../branch/reels.html" class="nav-link">
+                    <span class="nav-icon">🎬</span>
+                    <span>Reels</span>
+                </a>
+                <a href="../branch/store.html" class="nav-link">
+                    <span class="nav-icon">🛒</span>
+                    <span>Store</span>
+                </a>
+                <a href="../branch/find-jobs.html" class="nav-link">
+                    <span class="nav-icon">💼</span>
+                    <span>Find Jobs</span>
+                </a>
+                <button class="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge pulse">5</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar" id="leftSidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <button class="sidebar-btn active" data-content="dashboard">
+                    <span class="sidebar-btn-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+            </div>
+            
+            <!-- NEW TUTOR SECTION - ALL TUTOR-SPECIFIC FEATURES HERE -->
+            <div class="sidebar-section" data-content="tutor">
+                <button class="sidebar-btn" data-content="intro-video">
+                    <span class="sidebar-btn-icon">🎥</span>
+                    <span>Introduction Video</span>
+                </button>
+                <button class="sidebar-btn" data-content="video-library">
+                    <span class="sidebar-btn-icon">📹</span>
+                    <span>Video Library</span>
+                    <span class="sidebar-badge">23</span>
+                </button>
+                <button class="sidebar-btn" data-content="requested-sessions">
+                    <span class="sidebar-btn-icon">📅</span>
+                    <span>Requested Sessions</span>
+                    <span class="sidebar-badge">8</span>
+                </button>
+                <button class="sidebar-btn" data-content="my-students">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>My Students</span>
+                    <span class="sidebar-badge">45</span>
+                </button>
+                <button class="sidebar-btn" data-content="session-sheets">
+                    <span class="sidebar-btn-icon">📋</span>
+                    <span>Session Sheets</span>
+                </button>
+                <button class="sidebar-btn" data-content="tutor-schedule">
+                    <span class="sidebar-btn-icon">🗓️</span>
+                    <span>My Schedule</span>
+                </button>
+                <button class="sidebar-btn" data-content="tutor-earnings">
+                    <span class="sidebar-btn-icon">💰</span>
+                    <span>Earnings</span>
+                </button>
+                <button class="sidebar-btn" data-content="tutor-ratings">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Ratings & Reviews</span>
+                    <span class="sidebar-badge">4.8</span>
+                </button>
+                <button class="sidebar-btn" data-content="certifications">
+                    <span class="sidebar-btn-icon">🏆</span>
+                    <span>Certifications</span>
+                </button>
+                <button class="sidebar-btn" data-content="tutor-tools">
+                    <span class="sidebar-btn-icon">🛠️</span>
+                    <span>Teaching Tools</span>
+                </button>
+            </div>
+
+            <!-- Education Section (UNCHANGED) -->
+            <div class="sidebar-section" data-content="education">
+                <button class="sidebar-btn" data-content="jobs">
+                    <span class="sidebar-btn-icon">💼</span>
+                    <span>My Job Board</span>
+                    <span class="sidebar-badge">3</span>
+                </button>
+                <button class="sidebar-btn" data-content="classes">
+                    <span class="sidebar-btn-icon">🎓</span>
+                    <span>My Classes</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">📚</span>
+                    <span>My Books</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+            </div>
+
+            <!-- Permanent Section (UNCHANGED) -->
+            <div class="sidebar-section" data-content="permanent">
+                <button class="sidebar-btn" data-content="community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>Community</span>
+                    <span class="sidebar-badge live">Live</span>
+                </button>
+                <button class="sidebar-btn" data-content="clubs">
+                    <span class="sidebar-btn-icon">🎭</span>
+                    <span>Clubs</span>
+                    <span class="sidebar-badge active">Active</span>
+                </button>
+                <button class="sidebar-btn" data-content="podcasts">
+                    <span class="sidebar-btn-icon">🎙️</span>
+                    <span>Podcasts</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="videos">
+                    <span class="sidebar-btn-icon">🎬</span>
+                    <span>Videos</span>
+                    <span class="sidebar-badge">12</span>
+                </button>
+                <button class="sidebar-btn" data-content="blog">
+                    <span class="sidebar-btn-icon">📝</span>
+                    <span>Blog</span>
+                    <span class="sidebar-badge">7</span>
+                </button>
+                <button class="sidebar-btn" data-content="comments">
+                    <span class="sidebar-btn-icon">💬</span>
+                    <span>Comments</span>
+                    <span class="sidebar-badge">15</span>
+                </button>
+                <button class="sidebar-btn" data-content="my-products">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>My Products</span>
+                </button>
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
+                        <span class="sidebar-btn-icon">📝</span>
+                        <span>Notes</span>
+                    </button>
+                </a>
+                <button class="sidebar-btn" data-content="rate-comment">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Rate & Comment</span>
+                </button>
+                <button class="sidebar-btn" data-content="share">
+                    <span class="sidebar-btn-icon">🔗</span>
+                    <span>Share</span>
+                </button>
+                <button class="sidebar-btn" data-content="settings">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats Section -->
+            <div class="sidebar-quick-stats">
+                <h4>Quick Stats</h4>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Total Students</span>
+                    <span class="stat-value">45</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Sessions This Week</span>
+                    <span class="stat-value">12</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Rating</span>
+                    <span class="stat-value">4.8/5.0</span>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="sidebar-activity">
+                <h4>Recent Activity</h4>
+                <div class="activity-item">
+                    <span class="activity-icon">📅</span>
+                    <div class="activity-text">
+                        <p>New session request</p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">⭐</span>
+                    <div class="activity-text">
+                        <p>New review received</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">📹</span>
+                    <div class="activity-text">
+                        <p>Video uploaded</p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Button -->
+            <button class="sidebar-help-btn">
+                <span class="help-icon">💡</span>
+                <span>Need Help?</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container with-sidebar">
+        <!-- Profile Header Section (Same as journalist-profile.html structure) -->
+        <section class="profile-header-section">
+            <div class="cover-image-container">
+                <img src="../pictures/cover_photo.png" alt="Cover" class="cover-img">
+                <div class="cover-overlay"></div>
+            </div>
+
+            <div class="profile-main-info">
+                <div class="profile-info-wrapper">
+                    <div class="profile-avatar-container">
+                        <img src="../pictures/profile_picture.png" alt="Tutor Profile" class="profile-avatar">
+                        <div class="avatar-ring"></div>
+                    </div>
+
+                    <div class="profile-details-section">
+                        <div class="profile-name-row">
+                            <h1 class="center-name" id="centerName">Your Name</h1>
+                            <div class="badges-row">
+                                <span class="verified-badge" id="verification-status">✗ Unverified</span>
+                                <span class="center-score">Rating: <span id="tutor-rating">N/A</span></span>
+                            </div>
+                        </div>
+
+                        <div class="rating-section">
+                            <div class="stars" id="tutor-rating-stars">
+                                <span class="text-gray-400">No rating yet</span>
+                            </div>
+                            <span class="review-count">(<span id="follower-number">0</span> followers)</span>
+                        </div>
+
+                        <div class="location-info">
+                            <span class="location-icon">📍</span>
+                            <span id="locationText"><span id="tutor-address">Address: Not set</span> | <span id="tutor-school">Teaches at: Under verification</span></span>
+                        </div>
+
+                        <div class="profile-quote" id="profileQuote">
+                            <span id="quote">"Education is the key to success."</span>
+                        </div>
+
+                        <div class="follow-stats-cards">
+                            <div class="follow-card">
+                                <div class="follow-icon">👥</div>
+                                <div class="follow-info">
+                                    <span class="stat-value" id="student-count">45</span>
+                                    <span class="stat-label">Students</span>
+                                </div>
+                            </div>
+                            <div class="follow-card">
+                                <div class="follow-icon">📚</div>
+                                <div class="follow-info">
+                                    <span class="stat-value" id="course-count">5</span>
+                                    <span class="stat-label">Courses</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-next-session" id="profileNextSession">
+                            <div class="session-alert">
+                                <span class="alert-icon gradient-text">⏰</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> Today at 2:00 PM - Math with Abebe</span>
+                                <button class="btn-join-inline">Start Session</button>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions-grid">
+                            <button class="profile-action-btn edit-profile" onclick="openEditProfileModal()">
+                                <span class="action-icon">✏️</span>
+                                <span>Edit Profile</span>
+                            </button>
+                            <button class="profile-action-btn set-schedule" onclick="openScheduleModal()">
+                                <span class="action-icon">📅</span>
+                                <span>Set Schedule</span>
+                            </button>
+                            <a href="../Plug-ins/Chat.html">
+                                <button class="profile-action-btn connect">
+                                    <span class="action-icon">🤝</span>
+                                    <span>Connect</span>
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advertisement Placeholder (Same as journalist-profile.html) -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Area -->
+        <div class="content-with-sidebar">
+            <!-- Main Content Area -->
+            <div class="main-content-area">
+                <!-- Dashboard Content (Default) -->
+                <div class="sidebar-content-panel active" id="dashboard-content">
+                    <!-- About Section -->
+                    <section class="profile-about-section">
+                        <h3>About Me</h3>
+                        <p id="tutor-bio">Experienced tutor with a passion for teaching Math and Physics.</p>
+                    </section>
+
+                    <!-- Social Links -->
+                    <section class="profile-socials-section">
+                        <h3>Connect With Me</h3>
+                        <div class="social-links" id="socialLinksContainer">
+                            <div id="view-profile-socials"></div>
+                        </div>
+                    </section>
+
+                    <!-- Quick Stats Widget -->
+                    <section class="quick-stats-widget">
+                        <h2 class="section-title">Teaching Statistics</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">👥</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">45</div>
+                                    <div class="stat-desc">Total Students</div>
+                                    <div class="stat-detail">Active</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📚</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">5</div>
+                                    <div class="stat-desc">Courses Taught</div>
+                                    <div class="stat-detail" id="courses">Not set</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📅</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">156</div>
+                                    <div class="stat-desc">Sessions Completed</div>
+                                    <div class="stat-detail">This Year</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">⭐</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">4.8</div>
+                                    <div class="stat-desc">Average Rating</div>
+                                    <div class="stat-detail">From 234 reviews</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">ETB 45K</div>
+                                    <div class="stat-desc">Monthly Earnings</div>
+                                    <div class="stat-detail">Average</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">🏆</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">12</div>
+                                    <div class="stat-desc">Certifications</div>
+                                    <div class="stat-detail">Verified</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Personal Info Display -->
+                    <section class="profile-info-display">
+                        <h3>Contact Information</h3>
+                        <div class="info-grid">
+                            <p id="tutor-phone">Phone: Not set</p>
+                            <p id="tutor-email">Email: Not set</p>
+                            <p id="tutor-gender">Gender: Male</p>
+                            <p id="tutor-payment-method">Payment Method: Not set</p>
+                            <p id="tutor-bank">Bank: Not set</p>
+                            <p id="payment-account">Account Number: Not set</p>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- TUTOR-SPECIFIC CONTENT PANELS -->
+                
+                <!-- Introduction Video Content -->
+                <div class="sidebar-content-panel" id="intro-video-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Introduction Video</h2>
+                        <div class="header-buttons">
+                            <button onclick="openUploadVideoModal('intro')" class="btn-primary">Upload Video</button>
+                            <button onclick="openChangeIntroVideoModal()" class="btn-secondary">Change Video</button>
+                        </div>
+                    </div>
+                    
+                    <div class="video-player-container" onclick="openVideoPlayerModal('intro')">
+                        <p class="video-title">Introduction to My Teaching Style</p>
+                        <video controls class="w-full rounded-lg" id="intro">
+                            <source src="https://via.placeholder.com/640x360.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <p id="intro-desc" class="text-[var(--text)] mt-2">Introduction to my teaching style.</p>
+                    </div>
+
+                    <div class="video-actions">
+                        <button class="video-action-btn">👍 Like</button>
+                        <button class="video-action-btn">👎 Dislike</button>
+                        <button onclick="openVideoCommentModal('intro')" class="video-action-btn">💬 Comment</button>
+                        <button onclick="openShareModal('intro')" class="video-action-btn">↗ Share</button>
+                        <button onclick="openAdvertiseModal('intro')" class="video-action-btn">📢 Advertise</button>
+                        <div class="more-menu">
+                            <button class="video-action-btn" onclick="toggleMoreMenu(event)">⋯ More</button>
+                            <div class="more-menu-content hidden">
+                                <button onclick="openChangeIntroVideoModal()">Change Video</button>
+                                <button onclick="makeVideoPrivate('intro')">🔒 Make Private</button>
+                                <button onclick="deleteVideo('intro')" class="text-red-500">🗑 Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="intro-comments" class="comments-section">
+                        <p>No comments yet.</p>
+                    </div>
+                    <button onclick="openVideoDescModal('intro')" class="btn-secondary mt-4">Edit Video Description</button>
+                </div>
+
+                <!-- Video Library Content -->
+                <div class="sidebar-content-panel" id="video-library-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Video Library</h2>
+                        <input type="text" id="video-search" class="search-input" placeholder="Search videos...">
+                    </div>
+                    
+                    <!-- Video Tabs -->
+                    <div class="video-tabs">
+                        <button class="tab active" data-tab="shorts">Shorts</button>
+                        <button class="tab" data-tab="videos">Videos</button>
+                        <button class="tab" data-tab="playlists">Playlists</button>
+                    </div>
+
+                    <!-- Shorts Tab Content -->
+                    <div id="shorts" class="tab-content active">
+                        <div class="videos-grid">
+                            <div class="video-card">
+                                <p class="video-title">Quick Math Tip</p>
+                                <div class="video-player-container" onclick="openVideoPlayerModal('clip-1')">
+                                    <video controls class="w-full rounded-lg" id="clip-1">
+                                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                                    </video>
+                                    <p id="clip-1-desc" class="video-desc">Quick Math tip.</p>
+                                </div>
+                                <div class="video-actions">
+                                    <button class="video-action-btn">👍 Like</button>
+                                    <button class="video-action-btn">👎 Dislike</button>
+                                    <button onclick="openVideoCommentModal('clip1')" class="video-action-btn">💬 Comment</button>
+                                    <button onclick="openShareModal('clip1')" class="video-action-btn">↗ Share</button>
+                                    <button onclick="openAdvertiseModal('clip1')" class="video-action-btn">📢 Advertise</button>
+                                    <div class="more-menu">
+                                        <button class="video-action-btn" onclick="toggleMoreMenu(event)">⋯ More</button>
+                                        <div class="more-menu-content hidden">
+                                            <button onclick="makeIntroductionVideo('clip1')">Make Intro Video</button>
+                                            <button onclick="makeVideoPrivate('clip1')">🔒 Make Private</button>
+                                            <button onclick="deleteVideo('clip1')" class="text-red-500">🗑 Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="clip1-comments" class="comments-section">
+                                    <p>No comments yet.</p>
+                                </div>
+                                <button onclick="openVideoDescModal('clip1')" class="btn-secondary mt-2">Edit Description</button>
+                            </div>
+                            
+                            <div class="video-card">
+                                <p class="video-title">Physics Concept Explained</p>
+                                <div class="video-player-container" onclick="openVideoPlayerModal('clip-2')">
+                                    <video controls class="w-full rounded-lg" id="clip-2">
+                                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                                    </video>
+                                    <p id="clip-2-desc" class="video-desc">Physics concept explained.</p>
+                                </div>
+                                <div class="video-actions">
+                                    <button class="video-action-btn">👍 Like</button>
+                                    <button class="video-action-btn">👎 Dislike</button>
+                                    <button onclick="openVideoCommentModal('clip2')" class="video-action-btn">💬 Comment</button>
+                                    <button onclick="openShareModal('clip2')" class="video-action-btn">↗ Share</button>
+                                    <button onclick="openAdvertiseModal('clip2')" class="video-action-btn">📢 Advertise</button>
+                                    <div class="more-menu">
+                                        <button class="video-action-btn" onclick="toggleMoreMenu(event)">⋯ More</button>
+                                        <div class="more-menu-content hidden">
+                                            <button onclick="makeIntroductionVideo('clip2')">Make Intro Video</button>
+                                            <button onclick="makeVideoPrivate('clip2')">🔒 Make Private</button>
+                                            <button onclick="deleteVideo('clip2')" class="text-red-500">🗑 Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="clip2-comments" class="comments-section">
+                                    <p>No comments yet.</p>
+                                </div>
+                                <button onclick="openVideoDescModal('clip2')" class="btn-secondary mt-2">Edit Description</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Videos Tab Content -->
+                    <div id="videos" class="tab-content">
+                        <div class="videos-grid">
+                            <div class="video-card">
+                                <p class="video-title">Algebra Basics</p>
+                                <div class="video-player-container" onclick="openVideoPlayerModal('video-1')">
+                                    <video controls class="w-full rounded-lg" id="video-1">
+                                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                                    </video>
+                                    <p id="video-1-desc" class="video-desc">Algebra Basics</p>
+                                </div>
+                                <div class="video-actions">
+                                    <button class="video-action-btn">👍 Like</button>
+                                    <button class="video-action-btn">👎 Dislike</button>
+                                    <button onclick="openVideoCommentModal('video1')" class="video-action-btn">💬 Comment</button>
+                                    <button onclick="openShareModal('video1')" class="video-action-btn">↗ Share</button>
+                                    <button onclick="openAdvertiseModal('video1')" class="video-action-btn">📢 Advertise</button>
+                                    <div class="more-menu">
+                                        <button class="video-action-btn" onclick="toggleMoreMenu(event)">⋯ More</button>
+                                        <div class="more-menu-content hidden">
+                                            <button onclick="makeIntroductionVideo('video1')">Make Intro Video</button>
+                                            <button onclick="makeVideoPrivate('video1')">🔒 Make Private</button>
+                                            <button onclick="deleteVideo('video1')" class="text-red-500">🗑 Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="video1-comments" class="comments-section">
+                                    <p>No comments yet.</p>
+                                </div>
+                                <button onclick="openVideoDescModal('video1')" class="btn-secondary mt-2">Edit Description</button>
+                            </div>
+                            
+                            <div class="video-card">
+                                <p class="video-title">Physics Fundamentals</p>
+                                <div class="video-player-container" onclick="openVideoPlayerModal('video-2')">
+                                    <video controls class="w-full rounded-lg" id="video-2">
+                                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                                    </video>
+                                    <p id="video-2-desc" class="video-desc">Physics Fundamentals</p>
+                                </div>
+                                <div class="video-actions">
+                                    <button class="video-action-btn">👍 Like</button>
+                                    <button class="video-action-btn">👎 Dislike</button>
+                                    <button onclick="openVideoCommentModal('video2')" class="video-action-btn">💬 Comment</button>
+                                    <button onclick="openShareModal('video2')" class="video-action-btn">↗ Share</button>
+                                    <button onclick="openAdvertiseModal('video2')" class="video-action-btn">📢 Advertise</button>
+                                    <div class="more-menu">
+                                        <button class="video-action-btn" onclick="toggleMoreMenu(event)">⋯ More</button>
+                                        <div class="more-menu-content hidden">
+                                            <button onclick="makeIntroductionVideo('video2')">Make Intro Video</button>
+                                            <button onclick="makeVideoPrivate('video2')">🔒 Make Private</button>
+                                            <button onclick="deleteVideo('video2')" class="text-red-500">🗑 Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="video2-comments" class="comments-section">
+                                    <p>No comments yet.</p>
+                                </div>
+                                <button onclick="openVideoDescModal('video2')" class="btn-secondary mt-2">Edit Description</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Playlists Tab Content -->
+                    <div id="playlists" class="tab-content">
+                        <div class="playlists-grid">
+                            <div class="playlist-card">
+                                <h4 class="playlist-title">Math Essentials</h4>
+                                <div class="playlist-preview" onclick="openPlaylistModal('math-essentials')">
+                                    <video controls class="playlist-video" id="math-essentials-preview">
+                                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                                    </video>
+                                </div>
+                                <p class="playlist-desc">Math Essentials Playlist</p>
+                                <div class="playlist-info">
+                                    <span>3 videos</span>
+                                    <span>•</span>
+                                    <span>45 minutes</span>
+                                </div>
+                            </div>
+                            
+                            <div class="playlist-card">
+                                <h4 class="playlist-title">Physics Series</h4>
+                                <div class="playlist-preview" onclick="openPlaylistModal('physics-series')">
+                                    <video controls class="playlist-video" id="physics-series-preview">
+                                        <source src="https://via.placeholder.com/320x180.mp4" type="video/mp4">
+                                    </video>
+                                </div>
+                                <p class="playlist-desc">Physics Series Playlist</p>
+                                <div class="playlist-info">
+                                    <span>3 videos</span>
+                                    <span>•</span>
+                                    <span>38 minutes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Requested Sessions Content -->
+                <div class="sidebar-content-panel" id="requested-sessions-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Requested Sessions</h2>
+                        <button class="btn-secondary" onclick="refreshRequests()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    
+                    <div class="session-requests-list">
+                        <div class="session-request-card">
+                            <div class="request-header">
+                                <h4>Parent: Abebe Kebede</h4>
+                                <span class="request-badge new">New</span>
+                            </div>
+                            <div class="request-details">
+                                <p>Student: Yohannes Abebe</p>
+                                <p>Course: Algebra</p>
+                                <p>Date: 2025-07-20</p>
+                                <p>Time: 2:00 PM</p>
+                            </div>
+                            <div class="request-actions">
+                                <button onclick="openChatModal('abebe')" class="btn-secondary">Chat</button>
+                                <button onclick="startVideoCall('abebe')" class="btn-secondary">Video Call</button>
+                                <button onclick="viewParentDetails('abebe')" class="btn-secondary">View Parent</button>
+                                <button onclick="viewStudentDetails('yohannes')" class="btn-secondary">View Student</button>
+                                <button onclick="confirmSession('abebe')" class="btn-success">Confirm</button>
+                                <button onclick="rejectSession('abebe')" class="btn-danger">Reject</button>
+                            </div>
+                        </div>
+                        
+                        <div class="session-request-card">
+                            <div class="request-header">
+                                <h4>Student: Selam Tesfaye</h4>
+                                <span class="request-badge pending">Pending</span>
+                            </div>
+                            <div class="request-details">
+                                <p>Course: Physics</p>
+                                <p>Date: 2025-07-22</p>
+                                <p>Time: 4:00 PM</p>
+                            </div>
+                            <div class="request-actions">
+                                <button onclick="openChatModal('selam')" class="btn-secondary">Chat</button>
+                                <button onclick="startVideoCall('selam')" class="btn-secondary">Video Call</button>
+                                <button onclick="viewStudentDetails('selam')" class="btn-secondary">View Student</button>
+                                <button onclick="confirmSession('selam')" class="btn-success">Confirm</button>
+                                <button onclick="rejectSession('selam')" class="btn-danger">Reject</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Students Content -->
+                <div class="sidebar-content-panel" id="my-students-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Students</h2>
+                        <input type="text" id="student-search" class="search-input" placeholder="Search students...">
+                    </div>
+                    
+                    <div class="students-table-container">
+                        <table id="student-table" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Subjects</th>
+                                    <th>Next Session</th>
+                                    <th>Progress</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Abebe Kebede</td>
+                                    <td>Math, Physics</td>
+                                    <td>May 20, 2025, 2:00 PM</td>
+                                    <td>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 75%"></div>
+                                        </div>
+                                        <span>75%</span>
+                                    </td>
+                                    <td>
+                                        <button onclick="openStudentDetailsModal('student1')" class="btn-sm btn-primary">Details</button>
+                                        <button onclick="openSessionSheetModal('student1')" class="btn-sm btn-success">Session Sheet</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Session Sheets Content -->
+                <div class="sidebar-content-panel" id="session-sheets-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Session Sheets</h2>
+                        <button class="btn-primary" onclick="createNewSessionSheet()">+ New Session</button>
+                    </div>
+                    
+                    <div class="session-sheets-table">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Student</th>
+                                    <th>Subjects</th>
+                                    <th>Cost</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr id="session-1">
+                                    <td>May 20, 2025</td>
+                                    <td>2:00 PM</td>
+                                    <td>Abebe Kebede</td>
+                                    <td>Math</td>
+                                    <td>350 ETB</td>
+                                    <td id="session-1-status">Pending</td>
+                                    <td>
+                                        <button id="session-1-confirm" onclick="confirmAttendance('1', 'Tutor')" class="btn-sm btn-primary">Confirm</button>
+                                        <button id="session-1-wait" onclick="confirmWaiting('1', 'Tutor')" class="btn-sm btn-warning hidden">Waiting</button>
+                                        <button id="session-1-makeup" onclick="proposeMakeup('1')" class="btn-sm btn-info hidden">Makeup</button>
+                                        <button onclick="openSubjectsModal('1')" class="btn-sm btn-success">Subjects</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tutor Schedule Content -->
+                <div class="sidebar-content-panel" id="tutor-schedule-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Schedule</h2>
+                        <button class="btn-primary" onclick="openScheduleModal()">Set Availability</button>
+                    </div>
+                    
+                    <div class="schedule-calendar">
+                        <!-- Calendar widget would go here -->
+                        <div class="calendar-placeholder">
+                            <p>Calendar View Coming Soon</p>
+                        </div>
+                    </div>
+                    
+                    <div class="upcoming-sessions">
+                        <h3>Upcoming Sessions</h3>
+                        <div class="session-list">
+                            <div class="session-item">
+                                <span class="session-time">Today, 2:00 PM</span>
+                                <span class="session-student">Abebe Kebede</span>
+                                <span class="session-subject">Math</span>
+                            </div>
+                            <div class="session-item">
+                                <span class="session-time">Tomorrow, 10:00 AM</span>
+                                <span class="session-student">Selam Tesfaye</span>
+                                <span class="session-subject">Physics</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tutor Earnings Content -->
+                <div class="sidebar-content-panel" id="tutor-earnings-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Earnings</h2>
+                        <button class="btn-primary" onclick="requestPayout()">Request Payout</button>
+                    </div>
+                    
+                    <div class="earnings-summary">
+                        <div class="earnings-card">
+                            <h4>This Month</h4>
+                            <p class="earnings-amount">ETB 45,000</p>
+                            <span class="earnings-change up">+12% from last month</span>
+                        </div>
+                        <div class="earnings-card">
+                            <h4>This Week</h4>
+                            <p class="earnings-amount">ETB 12,500</p>
+                            <span class="earnings-change up">+5% from last week</span>
+                        </div>
+                        <div class="earnings-card">
+                            <h4>Pending</h4>
+                            <p class="earnings-amount">ETB 3,500</p>
+                            <span class="earnings-sessions">7 sessions</span>
+                        </div>
+                        <div class="earnings-card">
+                            <h4>Available Balance</h4>
+                            <p class="earnings-amount">ETB 8,750</p>
+                            <button class="btn-sm btn-success" onclick="requestPayout()">Withdraw</button>
+                        </div>
+                    </div>
+                    
+                    <div class="earnings-chart">
+                        <canvas id="earningsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tutor Ratings Content -->
+                <div class="sidebar-content-panel" id="tutor-ratings-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Ratings & Reviews</h2>
+                        <div class="rating-summary">
+                            <span class="rating-value">4.8</span>
+                            <span class="rating-stars">⭐⭐⭐⭐⭐</span>
+                            <span class="rating-count">(234 reviews)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="rating-breakdown">
+                        <div class="rating-bar">
+                            <span>5 stars</span>
+                            <div class="bar"><div class="fill" style="width: 75%"></div></div>
+                            <span>175</span>
+                        </div>
+                        <div class="rating-bar">
+                            <span>4 stars</span>
+                            <div class="bar"><div class="fill" style="width: 15%"></div></div>
+                            <span>35</span>
+                        </div>
+                        <div class="rating-bar">
+                            <span>3 stars</span>
+                            <div class="bar"><div class="fill" style="width: 7%"></div></div>
+                            <span>16</span>
+                        </div>
+                        <div class="rating-bar">
+                            <span>2 stars</span>
+                            <div class="bar"><div class="fill" style="width: 2%"></div></div>
+                            <span>5</span>
+                        </div>
+                        <div class="rating-bar">
+                            <span>1 star</span>
+                            <div class="bar"><div class="fill" style="width: 1%"></div></div>
+                            <span>3</span>
+                        </div>
+                    </div>
+                    
+                    <div class="reviews-list">
+                        <h3>Recent Reviews</h3>
+                        <div class="review-item">
+                            <div class="review-header">
+                                <span class="reviewer-name">Abebe Kebede</span>
+                                <span class="review-rating">⭐⭐⭐⭐⭐</span>
+                                <span class="review-date">2 days ago</span>
+                            </div>
+                            <p class="review-text">Excellent tutor! Very patient and explains concepts clearly.</p>
+                            <button onclick="respondToReview('review1')" class="btn-sm btn-secondary">Respond</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Certifications Content -->
+                <div class="sidebar-content-panel" id="certifications-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Certifications</h2>
+                        <button class="btn-primary" onclick="openEditCertificationsModal()">+ Add Certification</button>
+                    </div>
+                    
+                    <div class="certifications-grid" id="tutor-certifications">
+                        <div class="certification-card">
+                            <div class="cert-icon">🎓</div>
+                            <h4>BSc in Physics</h4>
+                            <p>School A</p>
+                            <p>2020</p>
+                            <button class="btn-sm btn-secondary">View Certificate</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Teaching Tools Content -->
+                <div class="sidebar-content-panel" id="tutor-tools-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Teaching Tools</h2>
+                    </div>
+                    
+                    <div class="tools-grid">
+                        <div class="tool-card" onclick="openWhiteboardTool()">
+                            <div class="tool-icon">📝</div>
+                            <h4>Digital Whiteboard</h4>
+                            <p>Interactive teaching board</p>
+                        </div>
+                        <div class="tool-card" onclick="openQuizMaker()">
+                            <div class="tool-icon">📋</div>
+                            <h4>Quiz Maker</h4>
+                            <p>Create custom quizzes</p>
+                        </div>
+                        <div class="tool-card" onclick="openResourceLibrary()">
+                            <div class="tool-icon">📚</div>
+                            <h4>Resource Library</h4>
+                            <p>Teaching materials</p>
+                        </div>
+                        <div class="tool-card" onclick="openProgressTracker()">
+                            <div class="tool-icon">📊</div>
+                            <h4>Progress Tracker</h4>
+                            <p>Monitor student progress</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Education Section Content Panels (UNCHANGED) -->
+                <div class="sidebar-content-panel" id="jobs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Job Posts</h2>
+                        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
+                    </div>
+                    <div class="jobs-grid" id="jobsGrid">
+                        <!-- Jobs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="classes-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Courses</h2>
+                        <button class="btn-primary" onclick="openClassModal()">+ Create Class</button>
+                    </div>
+                    <div class="classes-grid">
+                        <!-- Classes will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="books-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Books</h2>
+                        <button class="btn-primary" onclick="createBook()">
+                            <span>🤖</span> AI Book Writer
+                        </button>
+                    </div>
+                    <div class="books-grid" id="booksGrid">
+                        <!-- Books will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Permanent Section Content Panels (UNCHANGED) -->
+                <div class="sidebar-content-panel" id="community-content">
+                    <!-- Community content -->
+                </div>
+
+                <div class="sidebar-content-panel" id="clubs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Clubs</h2>
+                        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
+                    </div>
+                    <div class="clubs-grid" id="clubsGrid">
+                        <!-- Clubs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="podcasts-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Podcast Library</h2>
+                        <button class="btn-primary" onclick="createPodcast()">
+                            <span>🎙️</span> Create Podcast
+                        </button>
+                    </div>
+                    <div class="podcast-grid">
+                        <!-- Podcasts will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="videos-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Video Gallery</h2>
+                        <a href="../Plug-ins/go-live-modal.html">
+                            <button class="btn-primary live-btn">
+                                <span>📹 Go Live</span>
+                            </button>
+                        </a>
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Videos will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="blog-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Blog & Op-Eds</h2>
+                        <button class="btn-primary" onclick="openCreateBlogModal()">
+                            <span>📝 Create Blog Post</span>
+                        </button>
+                    </div>
+                    <div class="blog-grid">
+                        <!-- Blog posts will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="comments-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Reviews & Comments</h2>
+                        <button class="btn-primary" onclick="openCommentsModal()">
+                            <span>💬 View All Comments</span>
+                        </button>
+                    </div>
+                    <div class="comments-section">
+                        <!-- Comments will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="my-products-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Purchased Products</h2>
+                        <button class="btn-primary" onclick="navigateToStore()">
+                            <span>🛒</span> Browse Store
+                        </button>
+                    </div>
+                    <div class="my-products-grid" id="myProductsGrid">
+                        <!-- Purchased products will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="notes-content">
+                    <h2 class="section-title">My Notes</h2>
+                    <div class="notes-section">
+                        <!-- Notes content -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="rate-comment-content">
+                    <h2 class="section-title">Rate & Comment</h2>
+                    <div class="rate-comment-section">
+                        <!-- Rate & comment content -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="share-content">
+                    <h2 class="section-title">Share Profile</h2>
+                    <div class="share-section">
+                        <!-- Share content -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="settings-content">
+                    <h2 class="section-title">Settings</h2>
+                    <div class="settings-section">
+                        <!-- Settings content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar (Same as journalist-profile.html) -->
+            <div class="right-sidebar">
+                <!-- News Widget -->
+                <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <h3>📰 Latest News</h3>
+                        <a href="../branch/news.html" class="widget-action">View All</a>
+                    </div>
+                    <div class="news-carousel">
+                        <div class="news-card-container">
+                            <div class="news-card active" data-category="education">
+                                <div class="news-card-header">
+                                    <span class="news-category-badge education">Education</span>
+                                    <span class="news-time">2h ago</span>
+                                </div>
+                                <div class="news-card-image">
+                                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400" alt="Education News">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4>New Education Policy Transforms Learning Methods</h4>
+                                    <p>Latest educational reforms introduce innovative teaching approaches...</p>
+                                    <div class="news-stats">
+                                        <span class="news-stat">🔥 Trending</span>
+                                        <span class="news-stat">👁️ 1.2k views</span>
+                                        <span class="news-stat">💬 45 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Trends Widget -->
+                <div class="sidebar-widget market-widget" onclick="navigateToMarket()">
+                    <div class="widget-header">
+                        <h3>💹 Market Trends</h3>
+                        <a href="../branch/yeneta-exchange.html" class="widget-action">Details</a>
+                    </div>
+                    <div class="market-sections">
+                        <!-- Store Market Trend -->
+                        <div class="market-section">
+                            <h4>Astegni Store</h4>
+                            <div class="store-trend">
+                                <div class="trend-stat">
+                                    <span>Daily Sales</span>
+                                    <span class="trend-value">$24.5K</span>
+                                    <span class="change up">↑ 12%</span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Active Listings</span>
+                                    <span class="trend-value">1,234</span>
+                                    <span class="change up">↑ 8%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Advertisement -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Widgets Section -->
+        <section class="bottom-widgets">
+            <div class="bottom-widgets-grid">
+                <!-- Weather Widget -->
+                <div class="bottom-widget weather-widget" data-weather-theme="royal-blue">
+                    <div class="widget-header">
+                        <h3>🌤️ Weather</h3>
+                        <button class="widget-action" onclick="window.weatherManager.showForecast()">Forecast</button>
+                    </div>
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="weather-icon">☀️</div>
+                            <div class="weather-temp">68°F</div>
+                            <div class="weather-condition">Partly Cloudy</div>
+                        </div>
+                        <div class="weather-location">Addis Ababa, Ethiopia</div>
+                    </div>
+                </div>
+
+                <!-- Analytics Widget (Modified for Tutor Analytics) -->
+                <div class="bottom-widget analytics-widget compact">
+                    <div class="widget-header">
+                        <h3>📊 Real-Time Analytics</h3>
+                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                    </div>
+                    <div class="real-time-stats compact">
+                        <div class="rt-stat active" data-metric="students" onclick="switchMetric('students')">
+                            <span class="rt-icon">👥</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="45">45</span>
+                                <span class="rt-label">Active Students</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="sessions" onclick="switchMetric('sessions')">
+                            <span class="rt-icon">📅</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="12">12</span>
+                                <span class="rt-label">Sessions Today</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="rating" onclick="switchMetric('rating')">
+                            <span class="rt-icon">⭐</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="4.8">4.8</span>
+                                <span class="rt-label">Average Rating</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="earnings" onclick="switchMetric('earnings')">
+                            <span class="rt-icon">💰</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="45000">45K</span>
+                                <span class="rt-label">Monthly Earnings</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="analyticsChart"></canvas>
+                        <div class="chart-label">Teaching Performance - Last 24 Hours</div>
+                    </div>
+                    
+                    <!-- Parent/Employer Analysis Section -->
+                    <div class="employer-analysis mt-4">
+                        <h4>Parent & Student Analysis</h4>
+                        <div class="analysis-metrics">
+                            <div class="metric-item">
+                                <span class="metric-label">Parent Satisfaction</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 92%"></div>
+                                </div>
+                                <span class="metric-value">92%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">On-Time Payments</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 88%"></div>
+                                </div>
+                                <span class="metric-value">88%</span>
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Student Progress</span>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 85%"></div>
+                                </div>
+                                <span class="metric-value">85%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Events Widget -->
+                <div class="bottom-widget events-widget">
+                    <div class="widget-header">
+                        <h3>📅 Upcoming Sessions</h3>
+                        <button class="widget-action" onclick="openAllEventsModal()">View All</button>
+                    </div>
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">2:00 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Math Session</h4>
+                                <p>Abebe Kebede - Algebra</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">4:00 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Physics Session</h4>
+                                <p>Selam Tesfaye - Mechanics</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">10:00 AM</span>
+                                <span class="date">Tomorrow</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Chemistry Session</h4>
+                                <p>Group Class - Online</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ALL MODALS FROM TUTOR.HTML -->
+    <!-- Include all the modals from the original tutor.html file here -->
+    <!-- These should remain unchanged to preserve all functionality -->
+    
+    <!-- Notes Modal -->
+    <div id="notes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- Upload Video Modal -->
+    <div id="upload-video-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- Video Player Modal -->
+    <div id="video-player-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- Playlist Modal -->
+    <div id="playlist-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- Student Details Modal -->
+    <div id="student-details-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- Parent Modal -->
+    <div id="parent-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- Session Sheet Modal -->
+    <div id="session-sheet-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <!-- Modal content from tutor.html -->
+    </div>
+
+    <!-- All other modals from tutor.html should be included here -->
+
+    <!-- FAB Menu -->
+    <div class="fab-container">
+        <button class="fab" id="main-fab">
+            <span class="fab-icon">+</span>
+            <span class="fab-label">Quick Action</span>
+        </button>
+        <div class="fab-menu">
+            <button class="fab-option" onclick="openUploadVideoModal('intro')">
+                <span>📹</span> Upload Video
+            </button>
+            <button class="fab-option" onclick="openRequestedSessionsModal()">
+                <span>📅</span> View Requests
+            </button>
+            <button class="fab-option" onclick="openStudentsModal()">
+                <span>👥</span> My Students
+            </button>
+            <button class="fab-option" onclick="openScheduleModal()">
+                <span>🗓️</span> Set Schedule
+            </button>
+            <button class="fab-option" onclick="openNotesModal()">
+                <span>📝</span> Take Notes
+            </button>
+            <button class="fab-option" onclick="openToolsModal()">
+                <span>🛠️</span> Teaching Tools
+            </button>
+        </div>
+    </div>
+
+    <!-- Enhanced Footer (Same as journalist-profile.html) -->
+    <footer class="footer-section">
+        <div class="footer-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+            </svg>
+        </div>
+
+        <div class="container mx-auto px-4">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
+                    <div class="social-links">
+                        <!-- Social links content -->
+                    </div>
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="Your email address" class="newsletter-input">
+                            <button type="submit" class="newsletter-btn">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2025 Astegni. All rights reserved.</p>
+                    <div class="footer-badges">
+                        <span class="badge">🔒 SSL Secured</span>
+                        <span class="badge">✓ Verified Platform</span>
+                        <span class="badge">🏆 Award Winner 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/institute-profile-1.js"></script>
+    <script src="../js/institute-profile-2.js"></script>
+    <script src="../js/institute-profile-3.js"></script>
+    <script src="../js/institute-profile-4.js"></script>
+</body>
+
+</html>

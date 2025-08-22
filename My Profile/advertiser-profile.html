@@ -1,428 +1,541 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ASTEGNI - Premium Advertiser Dashboard</title>
-    <link href="../css/output.css" rel="stylesheet">
-    <link href="../css/advertiser-profile.css" rel="stylesheet">
-    <link href="../css/new-advert.css" rel="stylesheet">
+    <title>EduAds Inc. - Elite Advertiser Profile | Astegni</title>
+    <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/advertiser-profile.css">
+    <link rel="stylesheet" href="../css/new-advert.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="../js/xlsx.full.min.js"></script>
-    <script src="../js/app.js" defer></script>
     <script defer src="../js/chart.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
-<body class="font-inter">
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loader">
-            <div class="loader-circle"></div>
-            <div class="loader-circle"></div>
-            <div class="loader-circle"></div>
-        </div>
-        <h2 class="loading-text">ASTEGNI</h2>
-    </div>
 
-    <!-- Main Wrapper for sidebar push animation -->
-    <div id="main-wrapper" class="main-wrapper">
-        <!-- Premium Navigation Bar -->
-        <nav class="premium-nav" role="navigation" aria-label="Main navigation">
-            <div class="nav-container">
-                <div class="nav-left">
-                    <button class="hamburger-btn" id="hamburger" onclick="toggleSidebar()" aria-label="Toggle menu">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
-                    <a href="../index.html" class="nav-logo">
-                        <span class="logo-gradient">ASTEGNI</span>
-                        <span class="logo-badge">PRO</span>
-                    </a>
-                </div>
-                
-                <div class="nav-center hidden lg:flex">
-                    <div class="nav-links">
-                        <a href="news.html" class="nav-link">News</a>
-                        <a href="find-tutors.html" class="nav-link">Find Tutors</a>
-                        <a href="reels.html" class="nav-link">Reels</a>
-                        <a href="store.html" class="nav-link">Store</a>
-                        <a href="find-job.html" class="nav-link">Find a Job</a>
-                    </div>
-                </div>
-                
-                <div class="nav-right">
-                    <div class="nav-search-mini">
-                        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    
-                    <button class="nav-icon-btn" onclick="openQuickActions()" aria-label="Quick actions">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                    </button>
-                    
-                    <button class="nav-icon-btn notification-btn" onclick="openNotificationCenter()" aria-label="Notifications">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
-                        </svg>
-                        <span class="notification-badge pulse" id="notification-count">3</span>
-                    </button>
-                    
-                    <button class="nav-icon-btn" id="theme-toggle-btn" aria-label="Toggle theme">
-                        <svg class="w-5 h-5 sun-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <svg class="w-5 h-5 moon-icon hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"></path>
-                        </svg>
-                    </button>
-                    
-                    <div class="profile-dropdown-container">
-                        <button class="profile-btn" id="profile-dropdown-btn" onclick="toggleProfileDropdown()">
-                            <div class="profile-avatar">
-                                <img src="https://via.placeholder.com/40" alt="Profile" id="nav-profile-pic">
-                                <span class="avatar-status"></span>
-                            </div>
-                            <div class="profile-info hidden md:block">
-                                <span class="profile-name" id="nav-profile-name">EduAds Inc.</span>
-                                <span class="profile-role">Premium</span>
-                            </div>
-                            <svg class="dropdown-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div id="profile-dropdown" class="profile-dropdown hidden">
-                            <div class="dropdown-header">
-                                <img src="https://via.placeholder.com/60" alt="Profile" class="dropdown-avatar">
-                                <div>
-                                    <h4 class="dropdown-name">EduAds Inc.</h4>
-                                    <p class="dropdown-email">contact@eduads.com</p>
-                                </div>
-                            </div>
-                            <div class="dropdown-section">
-                                <a href="#" class="dropdown-item" onclick="openViewProfileModal()">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                    View Profile
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    </svg>
-                                    Settings
-                                </a>
-                                <a href="#" class="dropdown-item">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
-                                    </svg>
-                                    Billing
-                                </a>
-                            </div>
-                            <div class="dropdown-footer">
-                                <button class="dropdown-logout" onclick="openSignOutModal()">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-                                    </svg>
-                                    Sign Out
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <div class="container nav-container">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="nav-brand">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text gradient-text">Astegni</span>
             </div>
-        </nav>
+            <div class="nav-menu">
+                <a href="../branch/news.html" class="nav-link">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </a>
+                <a href="../branch/find-tutors.html" class="nav-link">
+                    <span class="nav-icon">👨‍🏫</span>
+                    <span>Find Tutors</span>
+                </a>
+                <a href="../branch/reels.html" class="nav-link">
+                    <span class="nav-icon">🎬</span>
+                    <span>Reels</span>
+                </a>
+                <a href="../branch/store.html" class="nav-link">
+                    <span class="nav-icon">🛒</span>
+                    <span>Store</span>
+                </a>
+                <a href="../branch/find-jobs.html" class="nav-link">
+                    <span class="nav-icon">💼</span>
+                    <span>Find Jobs</span>
+                </a>
+                <button class="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge pulse">5</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
 
-        <!-- Hero Profile Section -->
-        <section class="hero-profile">
-            <div class="hero-background">
-                <div class="hero-pattern"></div>
-                <div class="hero-gradient"></div>
-                <img src="https://via.placeholder.com/1920x400/F59E0B/FFFFFF?text=Cover" alt="Cover" class="hero-cover" id="hero-cover">
-                <button class="cover-edit-btn" onclick="openCoverUploadModal()">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z"></path>
-                    </svg>
-                    Change Cover
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar" id="leftSidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <button class="sidebar-btn active" data-content="dashboard">
+                    <span class="sidebar-btn-icon">📊</span>
+                    <span>Dashboard</span>
                 </button>
             </div>
             
-            <div class="hero-content">
-                <div class="hero-main">
-                    <div class="hero-avatar-container">
-                        <div class="hero-avatar">
-                            <img src="https://via.placeholder.com/200" alt="Profile" id="hero-avatar">
-                            <button class="avatar-edit-btn" onclick="openProfileUploadModal()">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="avatar-ring"></div>
-                        <div class="avatar-pulse"></div>
+            <!-- Advertiser Section - ALL NEW FEATURES GO HERE -->
+            <div class="sidebar-section" data-content="advertiser">
+                <button class="sidebar-btn" data-content="campaigns">
+                    <span class="sidebar-btn-icon">📢</span>
+                    <span>Campaigns</span>
+                    <span class="sidebar-badge">15</span>
+                </button>
+                <button class="sidebar-btn" data-content="ad-analytics">
+                    <span class="sidebar-btn-icon">📈</span>
+                    <span>Analytics</span>
+                    <span class="sidebar-badge">New</span>
+                </button>
+                <button class="sidebar-btn" data-content="creative-hub">
+                    <span class="sidebar-btn-icon">🎨</span>
+                    <span>Creative Hub</span>
+                </button>
+                <button class="sidebar-btn" data-content="templates">
+                    <span class="sidebar-btn-icon">📋</span>
+                    <span>Templates</span>
+                    <span class="sidebar-badge">23</span>
+                </button>
+                <button class="sidebar-btn" data-content="audiences">
+                    <span class="sidebar-btn-icon">🎯</span>
+                    <span>Audiences</span>
+                </button>
+                <button class="sidebar-btn" data-content="finances">
+                    <span class="sidebar-btn-icon">💰</span>
+                    <span>Manage Finances</span>
+                </button>
+                <button class="sidebar-btn" data-content="team">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>Team</span>
+                    <span class="sidebar-badge">8</span>
+                </button>
+                <button class="sidebar-btn" data-content="insights">
+                    <span class="sidebar-btn-icon">🤖</span>
+                    <span>AI Insights</span>
+                    <span class="sidebar-badge live">Live</span>
+                </button>
+                <button class="sidebar-btn" data-content="activity">
+                    <span class="sidebar-btn-icon">⚡</span>
+                    <span>Activity Feed</span>
+                </button>
+            </div>
+            
+            <div class="sidebar-section" data-content="education">
+                <button class="sidebar-btn" data-content="jobs">
+                    <span class="sidebar-btn-icon">💼</span>
+                    <span>My Job Board</span>
+                    <span class="sidebar-badge">3</span>
+                </button>
+                <button class="sidebar-btn" data-content="classes">
+                    <span class="sidebar-btn-icon">🎓</span>
+                    <span>My Classes</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">📚</span>
+                    <span>My Books</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+            </div>
+            
+            <div class="sidebar-section" data-content="permanent">
+                <button class="sidebar-btn" data-content="community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>Community</span>
+                    <span class="sidebar-badge live">Live</span>
+                </button>
+                <button class="sidebar-btn" data-content="clubs">
+                    <span class="sidebar-btn-icon">🎭</span>
+                    <span>Clubs</span>
+                    <span class="sidebar-badge active">Active</span>
+                </button>
+                <button class="sidebar-btn" data-content="podcasts">
+                    <span class="sidebar-btn-icon">🎙️</span>
+                    <span>Podcasts</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="videos">
+                    <span class="sidebar-btn-icon">🎬</span>
+                    <span>Videos</span>
+                    <span class="sidebar-badge">12</span>
+                </button>
+                <button class="sidebar-btn" data-content="blog">
+                    <span class="sidebar-btn-icon">📝</span>
+                    <span>Blog</span>
+                    <span class="sidebar-badge">7</span>
+                </button>
+                <button class="sidebar-btn" data-content="comments">
+                    <span class="sidebar-btn-icon">💬</span>
+                    <span>Comments</span>
+                    <span class="sidebar-badge">15</span>
+                </button>
+                <button class="sidebar-btn" data-content="my-products">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>My Products</span>
+                </button>
+
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
+                        <span class="sidebar-btn-icon">📝</span>
+                        <span>Notes</span>
+                    </button>
+                </a>
+                <button class="sidebar-btn" data-content="rate-comment">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Rate & Comment</span>
+                </button>
+                <button class="sidebar-btn" data-content="share">
+                    <span class="sidebar-btn-icon">🔗</span>
+                    <span>Share</span>
+                </button>
+                <button class="sidebar-btn" data-content="settings">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats Section -->
+            <div class="sidebar-quick-stats">
+                <h4>Quick Stats</h4>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Active Campaigns</span>
+                    <span class="stat-value">7</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Total Impressions</span>
+                    <span class="stat-value">2.4M</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Success Rate</span>
+                    <span class="stat-value">98.5%</span>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="sidebar-activity">
+                <h4>Recent Activity</h4>
+                <div class="activity-item">
+                    <span class="activity-icon">📢</span>
+                    <div class="activity-text">
+                        <p>Campaign launched</p>
+                        <span class="activity-time">2 hours ago</span>
                     </div>
-                    
-                    <div class="hero-info">
-                        <div class="hero-title">
-                            <h1 id="hero-name">EduAds Inc.</h1>
-                            <div class="hero-badges">
-                                <span class="badge-verified">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Verified
-                                </span>
-                                <span class="badge-premium">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
-                                    </svg>
-                                    Premium
-                                </span>
-                                <span class="badge-level">Level 12</span>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">✅</span>
+                    <div class="activity-text">
+                        <p>Campaign approved</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">📊</span>
+                    <div class="activity-text">
+                        <p>Analytics updated</p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Button -->
+            <button class="sidebar-help-btn">
+                <span class="help-icon">💡</span>
+                <span>Need Help?</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container with-sidebar">
+        <!-- Profile Header Section - Always Visible -->
+        <section class="profile-header-section">
+            <div class="cover-image-container">
+                <img src="https://via.placeholder.com/1920x400/F59E0B/FFFFFF?text=Cover" alt="Cover" class="cover-img">
+                <div class="cover-overlay"></div>
+            </div>
+
+            <div class="profile-main-info">
+                <div class="profile-info-wrapper">
+                    <div class="profile-avatar-container">
+                        <img src="https://via.placeholder.com/200" alt="EduAds Inc." class="profile-avatar">
+                        <div class="avatar-ring"></div>
+                    </div>
+
+                    <div class="profile-details-section">
+                        <div class="profile-name-row">
+                            <h1 class="center-name" id="centerName">EduAds Inc.</h1>
+                            <div class="badges-row">
+                                <span class="verified-badge">✔ Verified Advertiser</span>
+                                <span class="center-score">Success Rate: 98.5%</span>
                             </div>
                         </div>
-                        
-                        <p class="hero-tagline">Empowering Education Through Strategic Advertising</p>
-                        
-                        <div class="hero-stats">
-                            <div class="stat-item">
-                                <span class="stat-value" id="stat-campaigns">Total campaigns</span>
-                                <span class="stat-label">Campaigns</span>
+
+                        <div class="rating-section">
+                            <div class="stars">
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star half" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="stat-impressions">Total impressions</span>
-                                <span class="stat-label">Impressions</span>
-                            </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="stat-followers">Followers</span>
-                                <span class="stat-label">Followers</span>
-                            </div>                            
-                            <div class="stat-item has-tooltip">
-                                <span class="stat-value" id="stat-success">Success rate</span>
-                                <span class="stat-label">Success Rate</span>
-                                <div class="stat-tooltip">
-                                    <p>Success Rate Calculation:</p>
-                                    <p class="formula">(Conversions ÷ Impressions) * 100%</p>
+                            <span class="rating-value">4.8/5.0</span>
+                            <span class="review-count">(567 reviews)</span>
+                        </div>
+
+                        <div class="location-info">
+                            <span class="location-icon">📍</span>
+                            <span id="locationText">New York, NY | Premium Advertiser</span>
+                        </div>
+
+                        <div class="profile-quote" id="profileQuote">
+                            "Empowering Education Through Strategic Advertising"
+                        </div>
+
+                        <div class="follow-stats-cards">
+                            <div class="follow-card" onclick="openFollowersModal('followers')">
+                                <div class="follow-icon">👥</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">45.2K</span>
+                                    <span class="stat-label">Followers</span>
                                 </div>
                             </div>
-                            <div class="stat-item">
-                                <span class="stat-value" id="stat-rating">Rating</span>
-                                <span class="stat-label">Rating</span>
+                            <div class="follow-card" onclick="openFollowersModal('following')">
+                                <div class="follow-icon">➕</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">234</span>
+                                    <span class="stat-label">Following</span>
+                                </div>
                             </div>
                         </div>
-                        
-                        <div class="hero-actions">
-                            <button class="btn-hero primary" onclick="openEditProfileModal()">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                </svg>
-                                Edit Profile
+
+                        <div class="profile-next-session" id="profileNextSession">
+                            <div class="session-alert">
+                                <span class="alert-icon gradient-text">⏰</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Active Campaign:</strong> Summer Education Drive - 2.4M impressions | 8.7% CTR | Ends in 5 days</span>
+                                <button class="btn-join-inline">View Campaign</button>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions-grid">
+                            <button class="profile-action-btn edit-profile" onclick="openEditProfileModal()">
+                                <span class="action-icon">✏️</span>
+                                <span>Edit Profile</span>
                             </button>
-                            <button class="btn-hero secondary" onclick="openShareModal()">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-4.42 4.42l1.434-1.434a3 3 0 104.42-4.42l-1.434 1.434zm-4.969 0L10.5 12m0 0a3 3 0 10-6 0 3 3 0 006 0z"></path>
-                                </svg>
-                                Share
+                            <button class="profile-action-btn set-schedule" onclick="openScheduleModal()">
+                                <span class="action-icon">📅</span>
+                                <span>Schedule Campaign</span>
                             </button>
-                            <button class="btn-hero accent" onclick="openContactModal()">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-                                </svg>
-                                Message Astegni
-                            </button>
+                            <a href="../Plug-ins/Chat.html">
+                                <button class="profile-action-btn connect">
+                                    <span class="action-icon">🤝</span>
+                                    <span>Connect</span>
+                                </button>
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Main Dashboard Content -->
-        <main class="dashboard-container">
-
-            <!-- Quick Stats Cards -->
-            <section class="quick-stats-section">
-                <div class="stats-grid">
-                    <div class="stat-card gradient-1">
-                        <div class="stat-icon">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-title">Total Likes</h3>
-                            <p class="stat-number" id="stat-likes">142.8K</p>
-                            <div class="stat-metric">
-                                <span>5.95%</span>
-                                <span class="metric-label">(Likes/Impressions)</span>
-                            </div>
-                        </div>
-                        <div class="stat-chart">
-                            <canvas id="likes-chart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card gradient-2">
-                        <div class="stat-icon">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-title">Impressions</h3>
-                            <p class="stat-number" id="stat-total-impressions">2.4M</p>
-                            <div class="stat-change positive">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                </svg>
-                                <span>18.2%</span>
-                            </div>
-                        </div>
-                        <div class="stat-chart">
-                            <canvas id="impressions-chart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card gradient-3">
-                        <div class="stat-icon">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239A5 5 0 016.5 2.5h-.001C3.981 2.5 2 4.503 2 7s1.981 4.5 4.499 4.5h.001a5 5 0 00.688-.042"></path>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-title">Click Rate</h3>
-                            <p class="stat-number" id="stat-ctr">8.7%</p>
-                            <div class="stat-change negative">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-                                </svg>
-                                <span>-2.1%</span>
-                            </div>
-                        </div>
-                        <div class="stat-chart">
-                            <canvas id="ctr-chart"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="stat-card gradient-4">
-                        <div class="stat-icon">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="stat-content">
-                            <h3 class="stat-title">Conversions</h3>
-                            <p class="stat-number" id="stat-conversions">12,847</p>
-                            <div class="stat-change positive">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
-                                </svg>
-                                <span>32.4%</span>
-                            </div>
-                            <div class="conversion-calculation">
-                                <p>Conversion Rate Calculation:</p>
-                                <p class="formula">(Objectives ÷ Impressions) × 100%</p>
-                                <p class="formula">12,847 ÷ 2,400,000 × 100 = 0.54%</p>
-                            </div>
-                        </div>
-                        <div class="stat-chart">
-                            <canvas id="conversion-chart"></canvas>
-                        </div>
+        <!-- Advertisement Placeholder -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
                     </div>
                 </div>
-            </section>
+            </div>
+        </section>
 
-            <!-- Advertisement Placeholder -->
-            <section class="ad-placeholder-section">
-                <div class="ad-container premium-ad">
-                    <div class="ad-content">
-                        <span class="ad-label">Advertisement</span>
-                        <h3 class="ad-title">Boost Your Reach Today</h3>
-                        <p class="ad-text">Premium placement available</p>
-                        <button class="ad-cta">Learn More</button>
-                    </div>
-                    <div class="ad-animation">
-                        <div class="pulse-ring"></div>
-                        <div class="pulse-ring"></div>
-                    </div>
-                    <div class="ad-visual">
-                        <div class="ad-circles">
-                            <div class="circle circle-1"></div>
-                            <div class="circle circle-2"></div>
-                            <div class="circle circle-3"></div>
+        <!-- Content Area -->
+        <div class="content-with-sidebar">
+            <!-- Main Content Area -->
+            <div class="main-content-area">
+                <!-- Dashboard Content (Default) -->
+                <div class="sidebar-content-panel active" id="dashboard-content">
+                    <!-- About Section -->
+                    <section class="profile-about-section">
+                        <h3>About Us</h3>
+                        <p id="aboutText">EduAds Inc. is a premier advertising agency specializing in educational marketing and strategic brand positioning. With over 10 years of experience in the education sector, we've helped hundreds of institutions reach their target audiences effectively. Our data-driven approach combines creative excellence with analytical precision to deliver campaigns that not only capture attention but drive meaningful engagement. We believe in the power of education to transform lives, and our mission is to connect learners with the opportunities that will shape their futures. Our team of 50+ marketing professionals works tirelessly to ensure every campaign exceeds expectations.</p>
+                    </section>
+
+                    <!-- Social Links -->
+                    <section class="profile-socials-section">
+                        <h3>Connect With Us</h3>
+                        <div class="social-links" id="socialLinksContainer">
+                            <a href="#" class="social-link twitter" title="Twitter">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link linkedin" title="LinkedIn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link instagram" title="Instagram">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link youtube" title="YouTube">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link website" title="Website">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm1 16.057v-3.057h2.994c-.059 1.143-.212 2.24-.456 3.279-.823-.12-1.674-.188-2.538-.222zm1.957 2.162c-.499 1.33-1.159 2.497-1.957 3.456v-3.62c.666.028 1.319.081 1.957.164zm-1.957-7.219v-3.015c.868-.034 1.721-.103 2.548-.224.238 1.027.389 2.111.446 3.239h-2.994zm0-5.014v-3.661c.806.969 1.471 2.15 1.971 3.496-.642.084-1.3.137-1.971.165zm2.703-3.267c1.237.496 2.354 1.228 3.29 2.146-.642.234-1.311.442-2.019.607-.344-.992-.775-1.91-1.271-2.753zm-7.241 13.56c-.244-1.039-.398-2.136-.456-3.279h2.994v3.057c-.865.034-1.714.102-2.538.222zm2.538 1.776v3.62c-.798-.959-1.458-2.126-1.957-3.456.638-.083 1.291-.136 1.957-.164zm-2.994-7.055c.057-1.128.207-2.212.446-3.239.827.121 1.68.19 2.548.224v3.015h-2.994zm1.024-5.179c.5-1.346 1.165-2.527 1.97-3.496v3.661c-.671-.028-1.329-.081-1.97-.165zm-2.005-.35c-.708-.165-1.377-.373-2.018-.607.937-.918 2.053-1.65 3.29-2.146-.496.844-.927 1.762-1.272 2.753zm-.549 1.918c-.264 1.151-.434 2.36-.492 3.611h-3.933c.165-1.658.739-3.197 1.617-4.518.88.361 1.816.67 2.808.907zm.009 9.262c-.988.236-1.92.542-2.797.9-.89-1.328-1.471-2.879-1.637-4.551h3.934c.058 1.265.231 2.488.5 3.651zm.553 1.917c.342.976.768 1.881 1.257 2.712-1.223-.49-2.326-1.211-3.256-2.115.636-.229 1.299-.435 1.999-.597zm9.924 0c.7.163 1.362.367 1.999.597-.931.903-2.034 1.625-3.257 2.116.489-.832.915-1.737 1.258-2.713zm.553-1.917c.27-1.163.442-2.386.501-3.651h3.934c-.167 1.672-.748 3.223-1.638 4.551-.877-.358-1.81-.664-2.797-.9zm.501-5.651c-.058-1.251-.229-2.46-.492-3.611.992-.237 1.929-.546 2.809-.907.877 1.321 1.451 2.86 1.616 4.518h-3.933z" />
+                                </svg>
+                            </a>
                         </div>
-                    </div>
-                </div>
-            </section>
+                    </section>
 
-            <!-- Campaign Management Section -->
-            <section class="campaign-section">
-                <div class="section-header">
-                    <div>
+                    <!-- Quick Stats Widget -->
+                    <section class="quick-stats-widget">
+                        <h2 class="section-title">Advertising Performance Overview</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card hover-lift gradient-1">
+                                <div class="stat-icon">❤️</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">142.8K</div>
+                                    <div class="stat-desc">Total Likes</div>
+                                    <div class="stat-detail">5.95% Engagement</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift gradient-2">
+                                <div class="stat-icon">👁️</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">2.4M</div>
+                                    <div class="stat-desc">Impressions</div>
+                                    <div class="stat-detail">+18.2% Growth</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift gradient-3">
+                                <div class="stat-icon">🎯</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">8.7%</div>
+                                    <div class="stat-desc">Click Rate</div>
+                                    <div class="stat-detail">Above Average</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift gradient-4">
+                                <div class="stat-icon">✅</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">12,847</div>
+                                    <div class="stat-desc">Conversions</div>
+                                    <div class="stat-detail">+32.4% Monthly</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📊</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">15</div>
+                                    <div class="stat-desc">Active Campaigns</div>
+                                    <div class="stat-detail">7 Running Now</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">🏆</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">98.5%</div>
+                                    <div class="stat-desc">Success Rate</div>
+                                    <div class="stat-detail">Industry Leading</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Awards Showcase -->
+                    <section class="awards-section">
+                        <h2 class="section-title">Awards & Recognition</h2>
+                        <div class="awards-grid">
+                            <div class="award-card">
+                                <div class="award-icon">🥇</div>
+                                <h3>Best Education Campaign</h3>
+                                <p>Digital Marketing Awards 2023</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">⭐</div>
+                                <h3>Excellence in Advertising</h3>
+                                <p>Education Sector 2022</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">🎬</div>
+                                <h3>Creative Excellence</h3>
+                                <p>Video Campaign of the Year</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">💎</div>
+                                <h3>Premium Partner</h3>
+                                <p>Astegni Platform 2023</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Campaigns Content -->
+                <div class="sidebar-content-panel" id="campaigns-content">
+                    <div class="section-header">
                         <h2 class="section-title">Campaign Management</h2>
-                        <p class="section-subtitle">Create, manage and optimize your advertising campaigns</p>
-                    </div>
-                    <div class="section-actions">
-                        <button class="btn-action secondary">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Export
-                        </button>
-                        <button class="btn-action primary" onclick="openCreateCampaignModal()">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                            </svg>
-                            New Campaign
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="campaign-filters">
-                    <div class="filter-tabs">
-                        <button class="filter-tab active" onclick="filterCampaigns('all')">All Campaigns</button>
-                        <button class="filter-tab" onclick="filterCampaigns('active')">Active</button>
-                        <button class="filter-tab" onclick="filterCampaigns('scheduled')">Scheduled</button>
-                        <button class="filter-tab" onclick="filterCampaigns('completed')">Completed</button>
-                        <button class="filter-tab" onclick="filterCampaigns('draft')">Draft</button>
-                        <button class="filter-tab" onclick="filterCampaigns('under-review')">Under Review</button>
-                        <button class="filter-tab" onclick="filterCampaigns('approved')">Approved</button>
-                        <button class="filter-tab" onclick="filterCampaigns('rejected')">Rejected</button>
-                    </div>
-                    <div class="filter-controls">
-                        <div class="search-box">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                            <input type="text" placeholder="Search campaigns..." id="campaign-search" oninput="searchCampaigns()">
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="exportCampaigns()">
+                                <span>📥</span> Export
+                            </button>
+                            <button class="btn-primary" onclick="openCreateCampaignModal()">+ New Campaign</button>
                         </div>
-                        <button class="filter-btn">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                            </svg>
-                            Filters
-                        </button>
                     </div>
-                </div>
-                
-                <div class="campaigns-grid" id="campaigns-grid">
-                    <!-- Campaign cards will be dynamically inserted here -->
-                </div>
-            </section>
 
-            <!-- Analytics Overview -->
-            <section class="analytics-section">
-                <div class="section-header">
-                    <div>
-                        <h2 class="section-title">Performance Analytics</h2>
-                        <p class="section-subtitle">Track your campaign performance and ROI</p>
+                    <div class="campaign-filters">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" onclick="filterCampaigns('all')">All Campaigns</button>
+                            <button class="filter-tab" onclick="filterCampaigns('active')">Active</button>
+                            <button class="filter-tab" onclick="filterCampaigns('scheduled')">Scheduled</button>
+                            <button class="filter-tab" onclick="filterCampaigns('completed')">Completed</button>
+                            <button class="filter-tab" onclick="filterCampaigns('draft')">Draft</button>
+                            <button class="filter-tab" onclick="filterCampaigns('under-review')">Under Review</button>
+                            <button class="filter-tab" onclick="filterCampaigns('approved')">Approved</button>
+                            <button class="filter-tab" onclick="filterCampaigns('rejected')">Rejected</button>
+                        </div>
+                        <div class="filter-controls">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="Search campaigns..." id="campaign-search" oninput="searchCampaigns()">
+                            </div>
+                            <button class="filter-btn">
+                                <i class="fas fa-filter"></i> Filters
+                            </button>
+                        </div>
                     </div>
+
+                    <div class="campaigns-grid" id="campaigns-grid">
+                        <!-- Campaign cards will be dynamically loaded -->
+                    </div>
+                </div>
+
+                <!-- Analytics Content -->
+                <div class="sidebar-content-panel" id="ad-analytics-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Performance Analytics</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="refreshAnalytics()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                            <button class="btn-primary" onclick="exportAnalytics()">Export Report</button>
+                        </div>
+                    </div>
+
                     <div class="timeline-container">
                         <div class="timeline-slider-wrapper">
                             <label class="timeline-label">Timeline</label>
@@ -433,347 +546,859 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="analytics-grid">
-                    <div class="chart-card large">
-                        <h3 class="chart-title">Success Rate Trend</h3>
-                        <div class="chart-container" style="position: relative; height: 350px;">
-                            <canvas id="success-rate-chart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3 class="chart-title">Traffic Sources</h3>
-                        <div class="chart-container" style="position: relative; height: 300px;">
-                            <canvas id="traffic-sources-chart"></canvas>
-                        </div>
-                    </div>
-                    <div class="chart-card">
-                        <h3 class="chart-title">Device Distribution</h3>
-                        <div class="chart-container" style="position: relative; height: 300px;">
-                            <canvas id="device-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </section>
 
-            <!-- Recent Activity Feed -->
-            <section class="activity-section">
-                <div class="activity-container">
-                    <div class="activity-feed">
-                        <h3 class="feed-title">Recent Activity</h3>
-                        <div class="activity-list" id="activity-list">
-                            <!-- Activity items will be dynamically inserted -->
+                    <div class="analytics-grid">
+                        <div class="chart-card large">
+                            <h3 class="chart-title">Success Rate Trend</h3>
+                            <div class="chart-container" style="position: relative; height: 350px;">
+                                <canvas id="success-rate-chart"></canvas>
+                            </div>
                         </div>
+                        <div class="chart-card">
+                            <h3 class="chart-title">Traffic Sources</h3>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="traffic-sources-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <h3 class="chart-title">Device Distribution</h3>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="device-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Creative Hub Content -->
+                <div class="sidebar-content-panel" id="creative-hub-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Creative Hub</h2>
+                        <button class="btn-primary" onclick="openUploadCreativeModal()">+ Upload Creative</button>
+                    </div>
+
+                    <div class="creative-filters">
+                        <div class="creative-tabs">
+                            <button class="creative-tab active">All Assets</button>
+                            <button class="creative-tab">Images</button>
+                            <button class="creative-tab">Videos</button>
+                            <button class="creative-tab">Banners</button>
+                            <button class="creative-tab">Templates</button>
+                        </div>
+                    </div>
+
+                    <div class="creative-grid" id="creative-grid">
+                        <!-- Creative assets will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Templates Content -->
+                <div class="sidebar-content-panel" id="templates-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Ad Templates</h2>
+                        <button class="btn-primary" onclick="openCreateTemplateModal()">+ Create Template</button>
+                    </div>
+
+                    <div class="templates-categories">
+                        <button class="category-chip active">All Templates</button>
+                        <button class="category-chip">Display Ads</button>
+                        <button class="category-chip">Social Media</button>
+                        <button class="category-chip">Video Ads</button>
+                        <button class="category-chip">Email</button>
+                        <button class="category-chip">Landing Pages</button>
+                    </div>
+
+                    <div class="templates-grid" id="templates-grid">
+                        <!-- Templates will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Audiences Content -->
+                <div class="sidebar-content-panel" id="audiences-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Target Audiences</h2>
+                        <button class="btn-primary" onclick="openCreateAudienceModal()">+ Create Audience</button>
+                    </div>
+
+                    <div class="audiences-stats">
+                        <div class="audience-stat-card">
+                            <h4>Total Audiences</h4>
+                            <p class="stat-number">12</p>
+                        </div>
+                        <div class="audience-stat-card">
+                            <h4>Total Reach</h4>
+                            <p class="stat-number">1.2M</p>
+                        </div>
+                        <div class="audience-stat-card">
+                            <h4>Avg. Engagement</h4>
+                            <p class="stat-number">12.4%</p>
+                        </div>
+                    </div>
+
+                    <div class="audiences-list" id="audiences-list">
+                        <!-- Audience segments will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Finances Content -->
+                <div class="sidebar-content-panel" id="finances-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Financial Management</h2>
+                        <button class="btn-primary" onclick="openAddPaymentMethodModal()">+ Add Payment Method</button>
+                    </div>
+
+                    <div class="finance-overview">
+                        <div class="finance-card">
+                            <h4>Current Balance</h4>
+                            <p class="finance-amount">$24,580.00</p>
+                            <span class="finance-status positive">+12.5% this month</span>
+                        </div>
+                        <div class="finance-card">
+                            <h4>Total Spent</h4>
+                            <p class="finance-amount">$156,230.00</p>
+                            <span class="finance-info">Lifetime</span>
+                        </div>
+                        <div class="finance-card">
+                            <h4>Pending Charges</h4>
+                            <p class="finance-amount">$3,450.00</p>
+                            <span class="finance-info">Due in 5 days</span>
+                        </div>
+                    </div>
+
+                    <div class="transactions-section">
+                        <h3>Recent Transactions</h3>
+                        <div class="transactions-list" id="transactions-list">
+                            <!-- Transactions will be loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Content -->
+                <div class="sidebar-content-panel" id="team-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Team Management</h2>
+                        <button class="btn-primary" onclick="openInviteTeamMemberModal()">+ Invite Member</button>
+                    </div>
+
+                    <div class="team-grid" id="team-grid">
+                        <!-- Team members will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- AI Insights Content -->
+                <div class="sidebar-content-panel" id="insights-content">
+                    <div class="section-header">
+                        <h2 class="section-title">AI Insights & Recommendations</h2>
+                        <button class="btn-primary" onclick="refreshInsights()">
+                            <i class="fas fa-sync-alt"></i> Refresh Insights
+                        </button>
+                    </div>
+
+                    <div class="insights-categories">
+                        <button class="insight-tab active">Performance</button>
+                        <button class="insight-tab">Optimization</button>
+                        <button class="insight-tab">Trends</button>
+                        <button class="insight-tab">Competitors</button>
+                    </div>
+
+                    <div class="insight-cards" id="insight-cards">
+                        <!-- AI insights will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Activity Feed Content -->
+                <div class="sidebar-content-panel" id="activity-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Activity Feed</h2>
+                        <button class="btn-secondary" onclick="filterActivity()">
+                            <i class="fas fa-filter"></i> Filter
+                        </button>
+                    </div>
+
+                    <div class="activity-timeline" id="activity-timeline">
+                        <!-- Activity items will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Jobs Content Section (from permanent section) -->
+                <div class="sidebar-content-panel" id="jobs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Job Posts</h2>
+                        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
+                    </div>
+
+                    <div class="job-filters">
+                        <button class="filter-chip active" onclick="filterJobs('all')">All Jobs</button>
+                        <button class="filter-chip" onclick="filterJobs('posted')">Posted Jobs</button>
+                        <button class="filter-chip" onclick="filterJobs('draft')">Draft Jobs</button>
+                    </div>
+
+                    <div class="jobs-grid" id="jobsGrid">
+                        <!-- Jobs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Classes Content -->
+                <div class="sidebar-content-panel" id="classes-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Courses</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="openMyClassesModal()">📚 My Classes</button>
+                            <button class="btn-primary" onclick="openClassModal()">+ Create Class</button>
+                        </div>
+                    </div>
+
+                    <div class="class-filters">
+                        <button class="filter-chip active">All Classes</button>
+                        <button class="filter-chip">Marketing</button>
+                        <button class="filter-chip">Advertising</button>
+                        <button class="filter-chip">Analytics</button>
+                        <button class="filter-chip">Strategy</button>
+                    </div>
+
+                    <div class="classes-grid">
+                        <!-- Classes will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Books Content Section -->
+                <div class="sidebar-content-panel" id="books-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Books</h2>
+                        <button class="btn-primary" onclick="createBook()">
+                            <span class="sidebar-btn-icon">🤖</span>
+                            <span>AI Book Writer</span>
+                        </button>
+                    </div>
+
+                    <div class="books-grid" id="booksGrid">
+                        <!-- Books will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Remaining permanent sections -->
+                <!-- Community Content -->
+                <div class="sidebar-content-panel" id="community-content">
+                    <!-- This will trigger the community modal -->
+                </div>
+
+                <!-- Clubs Content Section -->
+                <div class="sidebar-content-panel" id="clubs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Clubs</h2>
+                        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
+                    </div>
+
+                    <div class="clubs-tabs">
+                        <button class="clubs-tab active" onclick="filterClubs('all')">All Clubs</button>
+                        <button class="clubs-tab" onclick="filterClubs('marketing')">Marketing</button>
+                        <button class="clubs-tab" onclick="filterClubs('advertising')">Advertising</button>
+                        <button class="clubs-tab" onclick="filterClubs('business')">Business</button>
+                    </div>
+
+                    <div class="clubs-grid" id="clubsGrid">
+                        <!-- Clubs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Podcasts Content -->
+                <div class="sidebar-content-panel" id="podcasts-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Podcast Library</h2>
+                        <div class="header-buttons">
+                            <button class="btn-primary" onclick="createPodcast()">
+                                <span>🎙️</span> Create Podcast
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="podcast-filters">
+                        <button class="filter-chip active" onclick="filterPodcasts('all')">All Podcasts</button>
+                        <button class="filter-chip" onclick="filterPodcasts('published')">Published</button>
+                        <button class="filter-chip" onclick="filterPodcasts('draft')">Drafts</button>
+                    </div>
+
+                    <div class="podcast-grid">
+                        <!-- Podcasts will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Videos Content -->
+                <div class="sidebar-content-panel" id="videos-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Video Gallery</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="openUploadVideoModal()">
+                                <span>🎬 Upload Video</span>
+                            </button>
+                            <a href="../Plug-ins/go-live-modal.html">
+                                <button class="btn-primary live-btn">
+                                    <span>📹 Go Live</span>
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="video-filters">
+                        <div class="video-tabs">
+                            <button class="video-tab active" onclick="filterVideos('all')">All Videos</button>
+                            <button class="video-tab" onclick="filterVideos('ads')">Ad Videos</button>
+                            <button class="video-tab" onclick="filterVideos('testimonials')">Testimonials</button>
+                            <button class="video-tab" onclick="filterVideos('tutorials')">Tutorials</button>
+                        </div>
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Videos will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Blog Content -->
+                <div class="sidebar-content-panel" id="blog-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Blog & Articles</h2>
+                        <button class="btn-primary" onclick="openCreateBlogModal()">
+                            <span>📝 Create Blog Post</span>
+                        </button>
+                    </div>
+
+                    <div class="blog-filters">
+                        <button class="filter-chip active" onclick="filterBlogs('all')">All Posts</button>
+                        <button class="filter-chip" onclick="filterBlogs('published')">Published</button>
+                        <button class="filter-chip" onclick="filterBlogs('draft')">Drafts</button>
+                    </div>
+
+                    <div class="blog-grid">
+                        <!-- Blog posts will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Comments Content -->
+                <div class="sidebar-content-panel" id="comments-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Reviews & Comments</h2>
+                        <button class="btn-primary" onclick="openCommentsModal()">
+                            <span>💬 View All Comments</span>
+                        </button>
+                    </div>
+
+                    <div class="comments-section">
+                        <!-- Comments will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- My Products Content -->
+                <div class="sidebar-content-panel" id="my-products-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Purchased Products</h2>
+                        <button class="btn-primary" onclick="navigateToStore()">
+                            <span>🛒</span> Browse Store
+                        </button>
+                    </div>
+
+                    <div class="product-filters">
+                        <button class="filter-chip active" onclick="filterMyProducts('all')">All Products</button>
+                        <button class="filter-chip" onclick="filterMyProducts('courses')">Courses</button>
+                        <button class="filter-chip" onclick="filterMyProducts('tools')">Tools</button>
+                        <button class="filter-chip" onclick="filterMyProducts('templates')">Templates</button>
+                    </div>
+
+                    <div class="my-products-grid" id="myProductsGrid">
+                        <!-- Purchased products will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Notes Content -->
+                <div class="sidebar-content-panel" id="notes-content">
+                    <h2 class="section-title">My Notes</h2>
+                    <div class="notes-section">
+                        <!-- Notes content -->
+                    </div>
+                </div>
+
+                <!-- Rate & Comment Content -->
+                <div class="sidebar-content-panel" id="rate-comment-content">
+                    <h2 class="section-title">Rate & Comment</h2>
+                    <div class="rate-comment-section">
+                        <!-- Rate & comment content -->
+                    </div>
+                </div>
+
+                <!-- Share Content -->
+                <div class="sidebar-content-panel" id="share-content">
+                    <h2 class="section-title">Share Profile</h2>
+                    <div class="share-section">
+                        <!-- Share content -->
+                    </div>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="sidebar-content-panel" id="settings-content">
+                    <h2 class="section-title">Settings</h2>
+                    <div class="settings-section">
+                        <!-- Settings content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="right-sidebar">
+                <!-- News Widget -->
+                <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <h3>📰 Latest News</h3>
+                        <a href="../branch/news.html" class="widget-action">View All</a>
+                    </div>
+
+                    <div class="news-carousel">
+                        <div class="news-card-container">
+                            <div class="news-card active" data-category="tech">
+                                <div class="news-card-header">
+                                    <span class="news-category-badge tech">Tech</span>
+                                    <span class="news-time">2h ago</span>
+                                </div>
+                                <div class="news-card-image">
+                                    <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400"
+                                        alt="Tech News">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4>AI Revolution in Education: New Tools Transform Learning</h4>
+                                    <p>Latest AI-powered tools are revolutionizing how students learn and interact with
+                                        educational content...</p>
+                                    <div class="news-stats">
+                                        <span class="news-stat">🔥 Trending</span>
+                                        <span class="news-stat">👁️ 1.2k views</span>
+                                        <span class="news-stat">💬 45 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Trends Widget -->
+                <div class="sidebar-widget market-widget" onclick="navigateToMarket()">
+                    <div class="widget-header">
+                        <h3>💹 Market Trends</h3>
+                        <a href="../branch/yeneta-exchange.html" class="widget-action">Details</a>
+                    </div>
+                    <div class="market-sections">
+                        <!-- Store Market Trend -->
+                        <div class="market-section">
+                            <h4>Astegni Store</h4>
+                            <div class="store-trend">
+                                <div class="trend-stat">
+                                    <span>Daily Sales</span>
+                                    <span class="trend-value">$24.5K</span>
+                                    <span class="change up">↑ 12%</span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Active Listings</span>
+                                    <span class="trend-value">1,234</span>
+                                    <span class="change up">↑ 8%</span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Top Category</span>
+                                    <span class="trend-value">Courses</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Ethiopian Stock Exchange -->
+                        <div class="market-section">
+                            <h4>Ethiopian Stock Exchange (ESX)</h4>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span>🏦</span>
+                                    <span>Banking Sector</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="1245.67">1,245.67</span>
+                                    <span class="change up">↑ 2.34%</span>
+                                </div>
+                            </div>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span>📱</span>
+                                    <span>Telecom Sector</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="892.45">892.45</span>
+                                    <span class="change up">↑ 1.87%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Forex & Crypto -->
+                        <div class="market-section">
+                            <h4>Forex Exchange</h4>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span class="currency-flag">🇺🇸</span>
+                                    <span>USD/ETB</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="56.85">56.85</span>
+                                    <span class="change up">↑ 0.25%</span>
+                                </div>
+                            </div>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span class="currency-flag">🇪🇺</span>
+                                    <span>EUR/ETB</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="61.23">61.23</span>
+                                    <span class="change up">↑ 0.18%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Bottom Advertisement -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Widgets Section -->
+        <section class="bottom-widgets">
+            <div class="bottom-widgets-grid">
+
+                <!-- Weather Widget -->
+                <div class="bottom-widget weather-widget" data-weather-theme="royal-blue">
+                    <div class="widget-header">
+                        <h3>🌤️ Weather</h3>
+                        <div class="weather-widget-actions">
+                            <button class="widget-action" onclick="window.weatherManager.toggleSettings()">
+                                <span class="settings-icon">⚙️</span>
+                            </button>
+                            <button class="widget-action" onclick="window.weatherManager.showForecast()">
+                                Forecast
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Weather Content -->
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="weather-icon">☀️</div>
+                            <div class="weather-temp">68°F</div>
+                            <div class="weather-condition">Partly Cloudy</div>
+                        </div>
+                        <div class="weather-location">New York, NY</div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span>High</span>
+                                <span>73°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Low</span>
+                                <span>62°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Humidity</span>
+                                <span>52%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Wind</span>
+                                <span>10 mph</span>
+                            </div>
+                        </div>
+                        <div class="weather-forecast">
+                            <div class="forecast-day">
+                                <span>Mon</span>
+                                <span>☀️</span>
+                                <span>71°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Tue</span>
+                                <span>⛅</span>
+                                <span>69°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Wed</span>
+                                <span>☁️</span>
+                                <span>66°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Thu</span>
+                                <span>🌧️</span>
+                                <span>64°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Widget - Modified for Advertiser -->
+                <div class="bottom-widget analytics-widget compact">
+                    <div class="widget-header">
+                        <h3>📊 Real-Time Campaign Analytics</h3>
+                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                    </div>
+                    <div class="real-time-stats compact">
+                        <div class="rt-stat active" data-metric="impressions" onclick="switchMetric('impressions')">
+                            <span class="rt-icon">👁️</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="2400000">2.4M</span>
+                                <span class="rt-label">Total Impressions</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="clicks" onclick="switchMetric('clicks')">
+                            <span class="rt-icon">🖱️</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="208800">208.8K</span>
+                                <span class="rt-label">Total Clicks</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="conversions" onclick="switchMetric('conversions')">
+                            <span class="rt-icon">✅</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="12847">12,847</span>
+                                <span class="rt-label">Conversions</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="roi" onclick="switchMetric('roi')">
+                            <span class="rt-icon">📈</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="324">324%</span>
+                                <span class="rt-label">ROI</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="analyticsChart"></canvas>
+                        <div class="chart-label">Campaign Performance - Last 24 Hours</div>
                     </div>
                     
-                    <div class="insights-panel">
-                        <h3 class="panel-title">AI Insights</h3>
-                        <div class="insight-cards" id="insight-cards">
-                            <!-- Insight cards will be dynamically inserted -->
+                    <!-- Additional Analytics Metrics -->
+                    <div class="analytics-metrics">
+                        <div class="metric-item">
+                            <span class="metric-label">CTR</span>
+                            <span class="metric-value">8.7%</span>
+                            <span class="metric-change negative">-2.1%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">CPC</span>
+                            <span class="metric-value">$0.45</span>
+                            <span class="metric-change positive">-5.3%</span>
+                        </div>
+                        <div class="metric-item">
+                            <span class="metric-label">Success Rate</span>
+                            <span class="metric-value">98.5%</span>
+                            <span class="metric-change positive">+0.8%</span>
                         </div>
                     </div>
                 </div>
-            </section>
-        </main>
 
-        <!-- Enhanced Footer with Wave -->
-        <footer class="footer-section">
-            <div class="footer-wave">
-                <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                    <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
-                </svg>
-            </div>
-            <div class="container mx-auto px-4">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div class="footer-column">
-                        <h3 class="footer-title">Quick Links</h3>
-                        <ul class="footer-links">
-                            <li><a href="../index.html" class="footer-link">Home</a></li>
-                            <li><a href="#contact" class="footer-link">Contact Us</a></li>
-                            <li><button class="footer-link-btn">Login/Register</button></li>
-                            <li><button class="footer-link-btn">Advertise</button></li>
-                        </ul>
+                <!-- Events Widget -->
+                <div class="bottom-widget events-widget">
+                    <div class="widget-header">
+                        <h3>📅 Upcoming Events</h3>
+                        <button class="widget-action" onclick="openAllEventsModal()">View All</button>
                     </div>
-                    <div class="footer-column">
-                        <h3 class="footer-title">Contact Info</h3>
-                        <p class="footer-text">📞 +251-912-345-678</p>
-                        <p class="footer-text">✉️ info@astegni.et</p>
-                        <p class="footer-text">📍 Addis Ababa, Ethiopia</p>
-                    </div>
-                    <div class="footer-column">
-                        <h3 class="footer-title">Follow Us</h3>
-                        <div class="social-links">
-                            <a href="#" aria-label="Facebook" class="social-link">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
-                            </a>
-                            <a href="#" aria-label="Twitter" class="social-link">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
-                            </a>
-                            <a href="#" aria-label="LinkedIn" class="social-link">
-                                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
-                            </a>
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">10:00 AM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Campaign Review</h4>
+                                <p>Q3 Performance Analysis</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">2:00 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Client Meeting</h4>
+                                <p>New Campaign Proposal</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">9:00 AM</span>
+                                <span class="date">Tomorrow</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Team Strategy</h4>
+                                <p>Q4 Planning Session</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="footer-bottom">
-                    <p>&copy; 2025 Astegni. All rights reserved.</p>
-                </div>
             </div>
-        </footer>
+        </section>
     </div>
 
-    <!-- Advanced Sidebar (Outside main wrapper) -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <div class="sidebar-logo">
-                <span class="logo-icon">A</span>
-                <span class="logo-text">ASTEGNI</span>
-            </div>
-            <button class="sidebar-close" onclick="toggleSidebar()">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
+    <!-- FAB Menu -->
+    <div class="fab-container">
+        <button class="fab" id="main-fab">
+            <span class="fab-icon">+</span>
+            <span class="fab-label">Quick Action</span>
+        </button>
+        <div class="fab-menu">
+            <button class="fab-option" onclick="openCreateCampaignModal()">
+                <span>📢</span> New Campaign
+            </button>
+            <button class="fab-option" onclick="openUploadCreativeModal()">
+                <span>🎨</span> Upload Creative
+            </button>
+            <button class="fab-option" onclick="openCreateAudienceModal()">
+                <span>🎯</span> Create Audience
+            </button>
+            <button class="fab-option" onclick="openFinanceModal()">
+                <span>💰</span> Manage Finances
+            </button>
+            <button class="fab-option" onclick="openTeamModal()">
+                <span>👥</span> Manage Team
+            </button>
+            <button class="fab-option" onclick="openAnalyticsModal()">
+                <span>📊</span> View Analytics
             </button>
         </div>
-        <nav class="sidebar-nav">
-            <div class="nav-section">
-                <h4 class="nav-section-title">Main</h4>
-                <a href="#" class="sidebar-link" onclick="scrollToTop()">
-                    <span class="sidebar-icon">🏠</span>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#" class="sidebar-link" onclick="scrollToCampaigns()">
-                    <span class="sidebar-icon">📊</span>
-                    <span>Campaigns</span>
-                </a>
-                <a href="#" class="sidebar-link" onclick="scrollToAnalytics()">
-                    <span class="sidebar-icon">📈</span>
-                    <span>Analytics</span>
-                </a>
-            </div>
-            <div class="nav-section">
-                <h4 class="nav-section-title">Management</h4>
-                <a href="#" class="sidebar-link" onclick="openFinanceModal()">
-                    <span class="sidebar-icon">💰</span>
-                    <span>Manage Finances</span>
-                </a>
-                <a href="#" class="sidebar-link" onclick="openNotesModal()">
-                    <span class="sidebar-icon">📝</span>
-                    <span>Notes</span>
-                </a>
-                <a href="#" class="sidebar-link" onclick="openFollowingsModal()">
-                    <span class="sidebar-icon">👥</span>
-                    <span>Followings</span>
-                </a>
-            </div>
-            <div class="nav-section">
-                <h4 class="nav-section-title">Content</h4>
-                <a href="#" class="sidebar-link" onclick="openCreativeHubModal()">
-                    <span class="sidebar-icon">🎨</span>
-                    <span>Creative Hub</span>
-                </a>
-                <a href="#" class="sidebar-link" onclick="openTemplatesModal()">
-                    <span class="sidebar-icon">📋</span>
-                    <span>Templates</span>
-                </a>
-            </div>
-            <div class="nav-section">
-                <h4 class="nav-section-title">Settings</h4>
-                <a href="#" class="sidebar-link" onclick="openTeamModal()">
-                    <span class="sidebar-icon">👨‍👩‍👧‍👦</span>
-                    <span>Team</span>
-                </a>
-                <a href="#" class="sidebar-link" onclick="openCommentRateModal()">
-                    <span class="sidebar-icon">⭐</span>
-                    <span>Rate Astegni</span>
-                </a>
-            </div>
-        </nav>
-        <div class="sidebar-footer">
-            <div class="storage-info">
-                <div class="storage-header">
-                    <span>Storage Used</span>
-                    <span>75%</span>
-                </div>
-                <div class="storage-bar">
-                    <div class="storage-fill" style="width: 75%"></div>
-                </div>
-                <p class="storage-text">7.5 GB of 10 GB</p>
-            </div>
-        </div>
-    </div>
-    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
-
-    <!-- All Modals (included but truncated for brevity - same structure as original) -->
-    <div id="modals-container">
-        
-        <!-- Create Campaign Modal -->
-        <div id="create-campaign-modal" class="modal hidden">
-            <div class="modal-overlay" onclick="closeModal('create-campaign-modal')"></div>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2 class="modal-title">Create New Campaign</h2>
-                    <button class="modal-close" onclick="closeModal('create-campaign-modal')">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-grid">
-                        <div class="form-group span-2">
-                            <label for="campaign-name" class="form-label">Campaign Name *</label>
-                            <input type="text" id="campaign-name" class="form-input" placeholder="Enter campaign name">
-                        </div>
-                        <div class="form-group">
-                            <label for="campaign-objective" class="form-label">Objective *</label>
-                            <select id="campaign-objective" class="form-select">
-                                <option value="">Select objective</option>
-                                <option value="awareness">Brand Awareness</option>
-                                <option value="traffic">Website Traffic</option>
-                                <option value="engagement">Engagement</option>
-                                <option value="leads">Lead Generation</option>
-                                <option value="sales">Sales</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="campaign-duration" class="form-label">Duration *</label>
-                            <select id="campaign-duration" class="form-select" onchange="updateCampaignPrice()">
-                                <option value="1">1 Day - 1,000 birr</option>
-                                <option value="3">3 Days - 2,700 birr</option>
-                                <option value="7">7 Days - 5,600 birr</option>
-                                <option value="30" selected>30 Days - 19,500 birr</option>
-                                <option value="180">180 Days - 108,000 birr</option>
-                                <option value="360">360 Days - 194,400 birr</option>
-                                <option value="custom">Custom Duration</option>
-                            </select>
-                            <input type="number" id="custom-days" class="form-input mt-2 hidden" placeholder="Enter number of days" onchange="updateCampaignPrice()">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Campaign Price</label>
-                            <div class="price-display">
-                                <span class="price-amount" id="campaign-price">19,500 birr</span>
-                                <span class="price-info">Based on selected duration</span>
-                            </div>
-                        </div>
-                        <div class="form-group span-2">
-                            <label for="campaign-description" class="form-label">Description</label>
-                            <textarea id="campaign-description" class="form-textarea" rows="4" placeholder="Describe your campaign..."></textarea>
-                        </div>
-                        <div class="form-group span-2">
-                            <label class="form-label">Target Audience *</label>
-                            <div class="checkbox-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" value="students">
-                                    <span>Students</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" value="tutors">
-                                    <span>Tutors</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" value="parents">
-                                    <span>Parents</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" value="advertisers">
-                                    <span>Advertisers</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" value="game-stores">
-                                    <span>Game Stores</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" value="book-stores">
-                                    <span>Book Stores</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" value="training-centers">
-                                    <span>Training Centers</span>
-                                </label>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" value="employers">
-                                    <span>Employers</span>
-                                </label>
-                            </div>
-                        </div>
-                        <div class="form-group span-2">
-                            <label class="form-label">Upload Creative Assets</label>
-                            <div class="file-upload-area" onclick="document.getElementById('campaign-files').click()">
-                                <input type="file" id="campaign-files" class="hidden" multiple accept="image/*,video/*">
-                                <svg class="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                </svg>
-                                <p>Click to upload or drag and drop</p>
-                                <p class="text-sm text-muted">PNG, JPG, GIF, MP4 up to 10MB</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-modal secondary" onclick="closeModal('create-campaign-modal')">Cancel</button>
-                    <button class="btn-modal primary" onclick="saveCampaign()">Create Campaign</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- View Campaign Modal -->
-        <div id="view-campaign-modal" class="modal hidden">
-            <div class="modal-overlay" onclick="closeModal('view-campaign-modal')"></div>
-            <div class="modal-content large">
-                <div class="modal-header">
-                    <h2 class="modal-title">Campaign Details</h2>
-                    <button class="modal-close" onclick="closeModal('view-campaign-modal')">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="campaign-details-content">
-                        <!-- Campaign details will be dynamically inserted -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-modal secondary" onclick="closeModal('view-campaign-modal')">Close</button>
-                    <button class="btn-modal primary" onclick="editCampaignFromView()">Edit Campaign</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Campaign Analytics Modal -->
-        <div id="campaign-analytics-modal" class="modal hidden">
-            <div class="modal-overlay" onclick="closeModal('campaign-analytics-modal')"></div>
-            <div class="modal-content large">
-                <div class="modal-header">
-                    <h2 class="modal-title">Campaign Analytics</h2>
-                    <button class="modal-close" onclick="closeModal('campaign-analytics-modal')">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div id="campaign-analytics-content">
-                        <!-- Analytics content will be dynamically inserted -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn-modal secondary" onclick="exportAnalytics()">Export Report</button>
-                    <button class="btn-modal primary" onclick="closeModal('campaign-analytics-modal')">Close</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- All other modals remain the same as in original file -->
-        <!-- ... (including all other modals) ... -->
-        
     </div>
 
-    <!-- Toast Notification Container -->
-    <div id="toast-container" class="toast-container"></div>
+    <!-- Enhanced Footer -->
+    <footer class="footer-section">
+        <div class="footer-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
+            </svg>
+        </div>
 
+        <div class="container mx-auto px-4">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Active Users</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Courses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Twitter" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="LinkedIn" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="YouTube" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="Your email address" class="newsletter-input">
+                            <button type="submit" class="newsletter-btn">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2025 Astegni. All rights reserved.</p>
+                    <div class="footer-badges">
+                        <span class="badge">🔒 SSL Secured</span>
+                        <span class="badge">✔ Verified Platform</span>
+                        <span class="badge">🏆 Award Winner 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/institute-profile-1.js"></script>
+    <script src="../js/institute-profile-2.js"></script>
+    <script src="../js/institute-profile-3.js"></script>
+    <script src="../js/institute-profile-4.js"></script>
     <script src="../js/advertiser-profile.js"></script>
 </body>
+
 </html>
