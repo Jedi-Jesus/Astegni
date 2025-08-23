@@ -21,7 +21,7 @@ const APP_STATE = {
 const PROFILE_URLS = {
     'tutor': 'My Profile/tutor-profile.html',
     'student': 'My Profile/student-profile.html',
-    'guardian': 'My Profile/guardian-profile.html',
+    'guardian': 'My Profile/parent-profile.html',
     'institute': 'My Profile/institute-profile.html',
     'bookstore': 'My Profile/bookStore-profile.html',
     'delivery': 'My Profile/delivery-profile.html',
