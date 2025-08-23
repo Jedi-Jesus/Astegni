@@ -96,6 +96,11 @@ function loadInitialContent() {
 }
 
 function generateMockArticles() {
+    // First, ensure authors are generated
+    if (NewsApp.authors.length === 0) {
+        generateAuthors();
+    }
+    
     const categories = ['Education', 'Technology', 'Business', 'Science', 'Culture', 'Sports'];
     const titles = [
         'Breaking: Major Educational Reform Announced',
@@ -114,8 +119,8 @@ function generateMockArticles() {
         category: categories[i % categories.length],
         excerpt: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
         author: {
-            name: `Author ${i % 5 + 1}`,
-            avatar: `https://i.pravatar.cc/150?img=${i % 5 + 1}`
+            name: NewsApp.authors[i % NewsApp.authors.length].name, // Use actual author names
+            avatar: `https://i.pravatar.cc/150?img=${(i % 5) + 1}`
         },
         image: `https://picsum.photos/400/250?random=${i}`,
         time: `${Math.floor(Math.random() * 12) + 1} hours ago`,
@@ -155,11 +160,11 @@ function generateTrendingTopics() {
 
 function generateAuthors() {
     NewsApp.authors = [
-        { id: 1, name: 'Sarah Ahmed', articles: 142, avatar: 'https://i.pravatar.cc/150?img=1' },
-        { id: 2, name: 'John Tadesse', articles: 98, avatar: 'https://i.pravatar.cc/150?img=2' },
-        { id: 3, name: 'Maria Bekele', articles: 87, avatar: 'https://i.pravatar.cc/150?img=3' },
-        { id: 4, name: 'Daniel Haile', articles: 76, avatar: 'https://i.pravatar.cc/150?img=4' },
-        { id: 5, name: 'Ruth Mekonnen', articles: 65, avatar: 'https://i.pravatar.cc/150?img=5' }
+        { id: 1, name: 'Sarah Ahmed', articles: 142},
+        { id: 2, name: 'Yohannes Tadesse', articles: 98},
+        { id: 3, name: 'Aster Bekele', articles: 87},
+        { id: 4, name: 'Daniel Haile', articles: 76 },
+        { id: 5, name: 'Ruth Mekonnen', articles: 65}
     ];
 }
 
@@ -340,9 +345,20 @@ function setupEventListeners() {
     document.querySelectorAll('.poll-option').forEach(btn => {
         btn.addEventListener('click', handlePollVote);
     });
+
+// Menu Toggle for LEFT Sidebar (sidebar-menu)
+    const menuToggleBtn = document.getElementById('menu-toggle');
+    if (menuToggleBtn) {
+        menuToggleBtn.addEventListener('click', toggleSidebarMenu);
+    }
     
-    // Main Navigation Links
-    setupMainNavigation();
+    // Sidebar Overlay click to close
+    document.getElementById('sidebar-overlay')?.addEventListener('click', closeSidebarMenu);
+    
+    // Sidebar Close button
+    document.getElementById('sidebar-close')?.addEventListener('click', closeSidebarMenu);
+    
+
 }
 
 function toggleTheme() {
@@ -427,6 +443,11 @@ function handleLoadMore() {
 }
 
 function generateMoreArticles() {
+    // Ensure authors are available
+    if (NewsApp.authors.length === 0) {
+        generateAuthors();
+    }
+    
     const startIndex = NewsApp.articles.length;
     return Array.from({ length: 8 }, (_, i) => ({
         id: `article-${startIndex + i}`,
@@ -434,8 +455,8 @@ function generateMoreArticles() {
         category: ['Education', 'Technology', 'Business'][i % 3],
         excerpt: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         author: {
-            name: `Author ${(startIndex + i) % 5 + 1}`,
-            avatar: `https://i.pravatar.cc/150?img=${(startIndex + i) % 5 + 1}`
+            name: NewsApp.authors[(startIndex + i) % NewsApp.authors.length].name, // Use actual author names
+            avatar: `https://i.pravatar.cc/150?img=${((startIndex + i) % 5) + 1}`
         },
         image: `https://picsum.photos/400/250?random=${startIndex + i}`,
         time: `${Math.floor(Math.random() * 24) + 1} hours ago`,
@@ -523,79 +544,131 @@ function handlePollVote(e) {
 // SIDEBAR FUNCTIONS
 // ============================================
 
-function openSidebar() {
-    const sidebar = document.getElementById('sidebar-menu');
-    const overlay = document.getElementById('sidebar-overlay');
+function setupSidebarToggle() {
+    // Create and insert hamburger button for right sidebar
+    const navActions = document.querySelector('.nav-actions');
+    if (navActions) {
+        // Create the toggle button
+        const sidebarToggleBtn = document.createElement('button');
+        sidebarToggleBtn.className = 'nav-icon-btn sidebar-toggle-btn';
+        sidebarToggleBtn.id = 'sidebar-toggle-btn';
+        sidebarToggleBtn.innerHTML = `
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      d="M4 6h16M4 12h8m-8 6h16"></path>
+            </svg>
+        `;
+        
+        // Insert before the notification button
+        const notificationBtn = document.getElementById('notification-btn');
+        navActions.insertBefore(sidebarToggleBtn, notificationBtn);
+        
+        // Add click event
+        sidebarToggleBtn.addEventListener('click', toggleRightSidebar);
+    }
     
-    sidebar.classList.add('active');
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    // Check localStorage for sidebar preference
+    const sidebarHidden = localStorage.getItem('sidebarHidden') === 'true';
+    if (sidebarHidden) {
+        document.querySelector('.sidebar')?.classList.add('hidden');
+        document.querySelector('.news-feed')?.classList.add('full-width');
+    }
+}
+
+function toggleRightSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const newsFeed = document.querySelector('.news-feed');
+    const toggleBtn = document.getElementById('sidebar-toggle-btn');
     
-    // Animate sidebar links
-    const links = sidebar.querySelectorAll('.sidebar-link');
-    links.forEach((link, i) => {
-        link.style.animation = 'none';
-        setTimeout(() => {
-            link.style.animation = `slideInLeft 0.5s ease backwards`;
-            link.style.animationDelay = `${i * 0.05}s`;
-        }, 10);
+    if (sidebar && newsFeed) {
+        sidebar.classList.toggle('hidden');
+        newsFeed.classList.toggle('full-width');
+        
+        // Animate the toggle button
+        toggleBtn.classList.toggle('active');
+        
+        // Save preference
+        const isHidden = sidebar.classList.contains('hidden');
+        localStorage.setItem('sidebarHidden', isHidden);
+        
+        // Show toast
+        showToast(isHidden ? 'Sidebar hidden' : 'Sidebar shown', 'info');
+    }
+}
+
+function setupSidebarScroll() {
+    const sidebar = document.querySelector('.sidebar');
+    if (!sidebar) return;
+    
+    let isScrolling = false;
+    let startY;
+    let scrollTop;
+    
+    // Make sidebar scrollable on hover
+    sidebar.addEventListener('mouseenter', () => {
+        sidebar.classList.add('scrollable');
     });
-}
-
-function closeSidebar() {
-    const sidebar = document.getElementById('sidebar-menu');
-    const overlay = document.getElementById('sidebar-overlay');
     
-    sidebar.classList.remove('active');
-    overlay.classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-// ============================================
-// MAIN NAVIGATION SETUP
-// ============================================
-
-function setupMainNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
+    sidebar.addEventListener('mouseleave', () => {
+        if (!isScrolling) {
+            sidebar.classList.remove('scrollable');
+        }
+    });
     
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            const linkText = link.querySelector('span').textContent;
+    // Custom scroll behavior
+    sidebar.addEventListener('wheel', (e) => {
+        if (sidebar.classList.contains('scrollable')) {
+            e.preventDefault();
             
-            switch(linkText) {
-                case 'Home':
-                    // Scroll to top or navigate to home
-                    e.preventDefault();
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    showToast('Welcome to ASTEGNI News!', 'info');
-                    break;
-                    
-                case 'Find Tutors':
-                    e.preventDefault();
-                    showToast('Find Tutors feature coming soon!', 'info');
-                    openFindTutorsModal();
-                    break;
-                    
-                case 'Reels':
-                    e.preventDefault();
-                    showToast('Reels section launching soon!', 'info');
-                    openReelsSection();
-                    break;
-                    
-                case 'Store':
-                    e.preventDefault();
-                    showToast('Store opening soon!', 'info');
-                    openStoreModal();
-                    break;
-                    
-                case 'Find Jobs':
-                    e.preventDefault();
-                    showToast('Job portal launching soon!', 'info');
-                    openJobsModal();
-                    break;
+            // Check if sidebar content is scrollable
+            const sidebarContent = sidebar.querySelector('.sidebar-content-wrapper');
+            if (sidebarContent) {
+                sidebarContent.scrollTop += e.deltaY;
+            } else {
+                // If no wrapper, scroll the sidebar itself
+                sidebar.scrollTop += e.deltaY;
             }
-        });
+        }
     });
+    
+    // Touch scroll for mobile
+    sidebar.addEventListener('touchstart', (e) => {
+        isScrolling = true;
+        startY = e.touches[0].pageY;
+        scrollTop = sidebar.scrollTop;
+    });
+    
+    sidebar.addEventListener('touchmove', (e) => {
+        if (!isScrolling) return;
+        e.preventDefault();
+        const y = e.touches[0].pageY;
+        const distance = startY - y;
+        sidebar.scrollTop = scrollTop + distance;
+    });
+    
+    sidebar.addEventListener('touchend', () => {
+        isScrolling = false;
+    });
+}
+
+// Add smooth scroll animation for sidebar widgets
+function animateSidebarWidgets() {
+    const widgets = document.querySelectorAll('.widget');
+    widgets.forEach((widget, index) => {
+        widget.style.opacity = '0';
+        widget.style.transform = 'translateX(20px)';
+        
+        setTimeout(() => {
+            widget.style.transition = 'all 0.5s ease';
+            widget.style.opacity = '1';
+            widget.style.transform = 'translateX(0)';
+        }, index * 100);
+    });
+}
+
+// Call this when sidebar is shown
+function onSidebarShow() {
+    animateSidebarWidgets();
 }
 
 // Placeholder functions for future features

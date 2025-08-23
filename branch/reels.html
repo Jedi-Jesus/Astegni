@@ -6,8 +6,8 @@
     <title>ASTEGNI - Tutor Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="../css/main.css" rel="stylesheet">
     <link href="../css/reels.css" rel="stylesheet">
+    <link href="../css/main.css" rel="stylesheet">
     <link href="../css/videoplayer.css" rel="stylesheet">
 </head>
 <body class="font-sans">
@@ -167,41 +167,28 @@
     <!-- Enhanced Reels Section -->
     <section class="py-8 sm:py-12 md:py-16 mt-14 sm:mt-16">
         <div class="container mx-auto px-3 sm:px-4">
-            <!-- Enhanced Ad Placeholder -->
-            <div id="ad-placeholder" class="ad-container mb-8">
-                <div class="ad-wrapper">
-                    <div class="ad-slide active" data-bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)">
-                        <div class="ad-content">
-                            <h3 class="ad-title">Premium Tutoring</h3>
-                            <p class="ad-text">Get 50% off your first month</p>
-                            <button class="ad-cta">Learn More</button>
-                        </div>
-                        <div class="ad-particles"></div>
-                    </div>
-                    <div class="ad-slide" data-bg="linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">
-                        <div class="ad-content">
-                            <h3 class="ad-title">Become a Tutor</h3>
-                            <p class="ad-text">Start earning today</p>
-                            <button class="ad-cta">Apply Now</button>
-                        </div>
-                        <div class="ad-particles"></div>
-                    </div>
-                    <div class="ad-slide" data-bg="linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">
-                        <div class="ad-content">
-                            <h3 class="ad-title">Special Offer</h3>
-                            <p class="ad-text">Limited time discount</p>
-                            <button class="ad-cta">Get Started</button>
-                        </div>
-                        <div class="ad-particles"></div>
+                    <!-- Advertisement Placeholder -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
                     </div>
                 </div>
-                <div class="ad-indicators">
-                    <span class="indicator active" onclick="showAd(0)"></span>
-                    <span class="indicator" onclick="showAd(1)"></span>
-                    <span class="indicator" onclick="showAd(2)"></span>
-                </div>
-                <div class="ad-progress"></div>
             </div>
+        </section>
             
             <!-- Enhanced Filter Buttons -->
             <div class="filter-container mb-8">

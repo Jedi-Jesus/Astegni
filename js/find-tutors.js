@@ -317,12 +317,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Enhanced Tutor Data
     const tutors = [
         { 
-            name: 'John Doe', 
+            name: 'Abebe Kebede', 
             courses: ['Math', 'Physics'], 
             grades: ['Grade 9-10', 'Grade 11-12'], 
             courseType: 'academics',
-            location: 'New York', 
-            teachesAt: 'New York University', 
+            location: 'Addis Ababa', 
+            teachesAt: 'Addis Ababa University', 
             gender: 'Male', 
             learningMethod: 'Hybrid', 
             rating: 4.4, 
@@ -335,12 +335,12 @@ document.addEventListener('DOMContentLoaded', () => {
             isTrainingCenter: false
         },
         { 
-            name: 'Bright Minds Learning Center', 
+            name: 'Yene Akal Learning Center', 
             courses: ['Elementary Math', 'Reading', 'Science'], 
             grades: ['KG', 'Grade 1-4', 'Grade 5-6'], 
             courseType: 'academics',
-            location: 'Chicago', 
-            teachesAt: 'Bright Minds Learning Center', 
+            location: 'Bahir Dar', 
+            teachesAt: 'Yene Akal Learning Center', 
             gender: 'Center', 
             learningMethod: 'In-person', 
             rating: 4.8, 
@@ -353,12 +353,12 @@ document.addEventListener('DOMContentLoaded', () => {
             isTrainingCenter: true
         },
         { 
-            name: 'Sarah Smith', 
+            name: 'Selam Tesfaye', 
             courses: ['English', 'Literature'], 
             grades: ['Grade 7-8', 'Grade 9-10'], 
             courseType: 'academics',
-            location: 'Chicago', 
-            teachesAt: 'Online Academy', 
+            location: 'Hawassa', 
+            teachesAt: 'Hawassa Online Academy', 
             gender: 'Female', 
             learningMethod: 'Online', 
             rating: 4.78, 
@@ -371,12 +371,12 @@ document.addEventListener('DOMContentLoaded', () => {
             isTrainingCenter: false
         },
         { 
-            name: 'TechCert Professional Training', 
+            name: 'EthioTech Professional Training', 
             courses: ['AWS Certification', 'Azure', 'Google Cloud'], 
             grades: [], 
             courseType: 'certifications',
-            location: 'San Francisco', 
-            teachesAt: 'TechCert Professional Training', 
+            location: 'Adama', 
+            teachesAt: 'EthioTech Professional Training', 
             gender: 'Center', 
             learningMethod: 'Hybrid', 
             rating: 4.9, 
@@ -389,12 +389,12 @@ document.addEventListener('DOMContentLoaded', () => {
             isTrainingCenter: true
         },
         { 
-            name: 'Michael Brown', 
+            name: 'Tewodros Alemayehu', 
             courses: ['Chemistry', 'Biology'], 
             grades: ['Freshman', 'Sophomore'], 
             courseType: 'academics',
-            location: 'Boston', 
-            teachesAt: 'Boston College', 
+            location: 'Gondar', 
+            teachesAt: 'University of Gondar', 
             gender: 'Male', 
             learningMethod: 'In-person', 
             rating: 4.32, 
@@ -407,12 +407,12 @@ document.addEventListener('DOMContentLoaded', () => {
             isTrainingCenter: false
         },
         { 
-            name: 'Emily Davis', 
+            name: 'Meron Getachew', 
             courses: ['History', 'Social Studies'], 
             grades: ['Grade 9-10'], 
             courseType: 'academics',
-            location: 'Los Angeles', 
-            teachesAt: 'Los Angeles High School', 
+            location: 'Dire Dawa', 
+            teachesAt: 'Dire Dawa High School', 
             gender: 'Female', 
             learningMethod: 'Hybrid', 
             rating: 3.78, 
@@ -425,7 +425,7 @@ document.addEventListener('DOMContentLoaded', () => {
             isTrainingCenter: false
         }
     ];
-
+    
     // Generate Tutor Cards
     const tutorCardsContainer = document.getElementById('tutorCards');
     

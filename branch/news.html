@@ -16,10 +16,10 @@
   <!-- Advanced Navigation -->
   <nav class="nav-container">
     <div class="nav-blur"></div>
-    <div class="container mx-auto flex justify-between items-center p-4">
+    <div class="container mx-auto flex justify-between items-center">
       <a href="../index.html" class="logo-container">
-        <div class="logo-text">ASTEGNI</div>
-        <div class="logo-subtitle">NEWS</div>
+        <span class="logo-text">ASTEGNI</span>
+        <span class="logo-subtitle">NEWS</span>
       </a>
       
       <div class="search-container">
@@ -36,12 +36,6 @@
       </div>
       
       <div class="nav-links">
-        <a href="../index.html" class="nav-link">
-          <svg class="nav-link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-          </svg>
-          <span>Home</span>
-        </a>
         <a href="find-tutors.html" class="nav-link">
           <svg class="nav-link-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
@@ -96,7 +90,6 @@
   </nav>
 
   <!-- Sidebar Menu -->
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
   <div class="sidebar-menu" id="sidebar-menu">
     <div class="sidebar-header">
       <div class="sidebar-logo">
@@ -222,6 +215,8 @@
       </div>
     </div>
   </div>
+
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
 
   <!-- Breaking News Ticker -->
   <div class="breaking-news-ticker">
@@ -354,62 +349,70 @@
           </div>
         </div>
 
-        <!-- Sidebar -->
-        <aside class="sidebar">
-          <!-- Live Updates Widget -->
-          <div class="widget live-updates">
+        <!-- TO THIS (with wrapper): -->
+<aside class="right-widget">
+    <div class="right-widget-content-wrapper">
+        <!-- Live Updates Widget -->
+        <div class="widget live-updates">
             <div class="widget-header">
-              <h3 class="widget-title">
-                <span class="live-indicator"></span>
-                Live Updates
-              </h3>
+                <h3 class="widget-title">
+                    <span class="live-indicator"></span>
+                    Live Updates
+                </h3>
             </div>
             <div class="widget-content">
-              <div class="live-feed" id="live-feed">
-                <!-- Live updates will be populated by JS -->
-              </div>
+                <div class="live-feed" id="live-feed">
+                    <!-- Live updates will be populated by JS -->
+                </div>
             </div>
-          </div>
+        </div>
 
-          <!-- Popular Authors -->
-          <div class="widget authors">
+        <!-- Popular Authors -->
+        <div class="widget authors">
             <div class="widget-header">
-              <h3 class="widget-title">Popular Authors</h3>
+                <h3 class="widget-title">Popular Authors</h3>
             </div>
             <div class="widget-content">
-              <div class="authors-list" id="authors-list">
-                <!-- Authors will be populated by JS -->
-              </div>
+                <div class="authors-list" id="authors-list">
+                    <!-- Authors will be populated by JS -->
+                </div>
             </div>
-          </div>
+        </div>
 
-          <!-- Newsletter Signup -->
-          <div class="widget newsletter">
+        <!-- Newsletter Signup -->
+        <div class="widget newsletter">
             <div class="newsletter-card">
-              <div class="newsletter-icon">📧</div>
-              <h3 class="newsletter-title">Stay Informed</h3>
-              <p class="newsletter-desc">Get daily news digest delivered to your inbox</p>
-              <form class="newsletter-form" id="newsletter-form">
-                <input type="email" placeholder="Enter your email" class="newsletter-input" required>
-                <button type="submit" class="newsletter-submit">Subscribe</button>
-              </form>
-              <p class="newsletter-note">Join 50,000+ subscribers</p>
+                <div class="newsletter-icon">📧</div>
+                <h3 class="newsletter-title">Stay Informed</h3>
+                <p class="newsletter-desc">Get daily news digest delivered to your inbox</p>
+                <form class="newsletter-form" id="newsletter-form">
+                    <input type="email" placeholder="Enter your email" class="newsletter-input" required>
+                    <button type="submit" class="newsletter-submit">Subscribe</button>
+                </form>
+                <p class="newsletter-note">Join 50,000+ subscribers</p>
             </div>
-          </div>
+        </div>
 
-          <!-- Premium Ad Space -->
-          <div class="widget premium-ad">
+        <!-- Premium Ad Space -->
+        <div class="widget premium-ad">
             <div class="ad-premium">
-              <div class="ad-shimmer"></div>
-              <div class="ad-content-premium">
-                <span class="ad-label">SPONSORED</span>
-                <h4>Unlock Premium Education</h4>
-                <p>Access exclusive courses and expert tutors</p>
-                <button class="ad-cta-btn">Learn More</button>
-              </div>
+                <div class="ad-shimmer"></div>
+                <div class="ad-content-premium">
+                    <span class="ad-label">SPONSORED</span>
+                    <h4>Unlock Premium Education</h4>
+                    <p>Access exclusive courses and expert tutors</p>
+                    <button class="ad-cta-btn">Learn More</button>
+                </div>
             </div>
-          </div>
-        </aside>
+        </div>
+        
+        <!-- Scroll hint indicator -->
+        <div class="sidebar-scroll-hint"></div>
+    </div>
+</aside>
+      
+      
+      
       </div>
     </div>
   </section>

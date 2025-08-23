@@ -90,8 +90,10 @@ body {
     z-index: 1000;
     background: rgba(var(--background-rgb), 0.8);
     backdrop-filter: blur(var(--blur-md));
-    border-bottom: 1px solid rgba(var(--border-rgb), 0.1);
+    border-bottom: solid rgba(var(--border-rgb), 0.1);
     transition: all 0.3s ease;
+    padding: 0.5rem 0; /* Reduced padding for smaller nav height */
+    font-size: 0.875rem; /* Smaller font for nav items */
 }
 
 .nav-blur {
@@ -219,7 +221,7 @@ body {
 /* Navigation Links - Enhanced with Icons */
 .nav-links {
     display: flex;
-    gap: 1rem;
+    gap: .25rem;
     margin: 0 2rem;
 }
 
@@ -604,13 +606,286 @@ body {
     justify-content: center;
 }
 
+/* ============================================
+   SIDEBAR SCROLL AND TOGGLE STYLES
+   Add these to your news.css file
+   ============================================ */
+
+/* Sidebar Toggle Button */
+.sidebar-toggle-btn {
+    position: relative;
+    padding: 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sidebar-toggle-btn:hover {
+    background: rgba(var(--button-bg-rgb), 0.1);
+    color: var(--button-bg);
+    transform: translateY(-2px);
+}
+
+.sidebar-toggle-btn.active svg {
+    transform: rotate(180deg);
+}
+
+/* Enhanced Sidebar with Scroll */
+.sidebar {
+    position: sticky;
+    top: 175px;
+    height: calc(100vh - 200px); /* Make it viewport height minus top offset */
+    z-index: 50;
+    transition: all 0.3s ease;
+    overflow: hidden; /* Hidden by default */
+}
+
+/* Scrollable state */
+.sidebar.scrollable {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 5px;
+}
+
+/* Custom scrollbar for sidebar */
+.sidebar.scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar.scrollable::-webkit-scrollbar-track {
+    background: rgba(var(--border-rgb), 0.1);
+    border-radius: 3px;
+}
+
+.sidebar.scrollable::-webkit-scrollbar-thumb {
+    background: rgba(var(--button-bg-rgb), 0.3);
+    border-radius: 3px;
+    transition: background 0.3s ease;
+}
+
+.sidebar.scrollable::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--button-bg-rgb), 0.5);
+}
+
+/* Firefox scrollbar */
+.sidebar.scrollable {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(var(--button-bg-rgb), 0.3) rgba(var(--border-rgb), 0.1);
+}
+
+/* Sidebar hidden state */
+.sidebar.hidden {
+    transform: translateX(400px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* News feed full width when sidebar is hidden */
+.news-feed.full-width {
+    max-width: 100%;
+    transition: max-width 0.3s ease;
+}
+
+/* Content grid adjustment */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 3rem;
+    transition: all 0.3s ease;
+}
+
+.content-grid:has(.sidebar.hidden) {
+    grid-template-columns: 1fr;
+}
+
+/* Smooth scroll indicator */
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(
+        to bottom,
+        var(--card-bg) 0%,
+        transparent 100%
+    );
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sidebar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(
+        to top,
+        var(--card-bg) 0%,
+        transparent 100%
+    );
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sidebar.scrollable::before,
+.sidebar.scrollable::after {
+    opacity: 1;
+}
+
+/* Widget hover effects when scrollable */
+.sidebar.scrollable .widget {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sidebar.scrollable .widget:hover {
+    transform: translateX(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Scroll hint animation */
+@keyframes scrollHint {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(5px);
+    }
+}
+
+.sidebar-scroll-hint {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 30px;
+    height: 30px;
+    background: rgba(var(--button-bg-rgb), 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: scrollHint 2s infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.sidebar:hover .sidebar-scroll-hint {
+    opacity: 1;
+}
+
+.sidebar-scroll-hint::after {
+    content: '↓';
+    color: var(--button-bg);
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Mobile adjustments */
+@media (max-width: 1200px) {
+    .sidebar-toggle-btn {
+        display: block !important;
+    }
+    
+    .sidebar {
+        position: fixed;
+        right: 0;
+        top: 73px;
+        height: calc(100vh - 73px);
+        width: 380px;
+        background: var(--card-bg);
+        box-shadow: -2px 0 20px rgba(0, 0, 0, 0.1);
+        z-index: 90;
+    }
+    
+    .sidebar:not(.hidden) {
+        transform: translateX(0);
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        max-width: 100vw;
+    }
+    
+    .sidebar-toggle-btn {
+        display: block !important;
+    }
+}
+
+/* Animation for sidebar toggle */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.sidebar.animate-in {
+    animation: slideInRight 0.3s ease forwards;
+}
+
+.sidebar.animate-out {
+    animation: slideOutRight 0.3s ease forwards;
+}
+
+/* Sidebar content wrapper for better scroll control */
+.sidebar-content-wrapper {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 20px;
+}
+
+/* Ensure widgets maintain spacing during scroll */
+.sidebar.scrollable .widget {
+    margin-bottom: 2rem;
+    scroll-snap-align: start;
+}
+
+.sidebar.scrollable {
+    scroll-snap-type: y proximity;
+    scroll-behavior: smooth;
+}
+
 /* Breaking News Ticker */
 .breaking-news-ticker {
     background: linear-gradient(90deg, var(--button-bg), var(--button-hover));
     color: white;
     padding: 0.75rem 0;
     overflow: hidden;
-    position: relative;
+    position: sticky; /* Changed to sticky */
+    top: 73px; /* Sticks below a 73px header */
+    z-index: 200; /* Above category-nav (z-index: 100) */
+    backdrop-filter: blur(10px); /* Matches category-nav style */
 }
 
 .ticker-label {
@@ -811,6 +1086,8 @@ body {
     opacity: 0.7;
 }
 
+
+
 /* Category Navigation */
 .category-nav {
     background: var(--card-bg);
@@ -818,8 +1095,8 @@ body {
     border-top: 1px solid rgba(var(--border-rgb), 0.1);
     border-bottom: 1px solid rgba(var(--border-rgb), 0.1);
     position: sticky;
-    top: 73px;
-    z-index: 100;
+    top: 121px; /* Sticks below header (73px) + ticker (48px) */
+    z-index: 100; /* This is already correct */
     backdrop-filter: blur(10px);
 }
 
@@ -857,6 +1134,7 @@ body {
     color: white;
     border-color: var(--button-bg);
 }
+
 
 /* Main Content Grid */
 .main-content {
@@ -1138,8 +1416,9 @@ body {
 /* Sidebar Widgets */
 .sidebar {
     position: sticky;
-    top: 150px;
+    top: 175px; /* Changed from 150px to account for nav (73px) + ticker (48px) + category-nav + gap */
     height: fit-content;
+    z-index: 50; /* Add z-index lower than category-nav (100) and ticker (200) */
 }
 
 .widget {
@@ -3305,6 +3584,25 @@ body {
     .modal-container {
         width: 95%;
         max-height: 95vh;
+    }
+}
+
+/* Responsive adjustments for mobile */
+@media (max-width: 640px) {
+    .ticker-content {
+        margin-left: 100px; /* Reduced for smaller screens */
+    }
+    .ticker-label {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem; /* Smaller font for mobile */
+    }
+    .nav-links {
+        gap: 0.3rem; /* Further reduced gap for mobile */
+        margin: 0 1rem; /* Reduced margin for mobile */
+    }
+    .nav-link {
+        padding: 0.5rem 0.75rem; /* Slightly smaller padding for mobile */
+        font-size: 0.85rem; /* Smaller font for mobile */
     }
 }
 
