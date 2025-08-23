@@ -109,7 +109,10 @@ document.addEventListener('DOMContentLoaded', function() {
     startDealTimer();
     loadCategories();
     loadBookstores();
-    loadAuthors();
+    loadAuthors();    
+    // ADD THESE TWO LINES:
+    new CategoryStickyNav();
+    initializeCategoryCarousel();
 });
 
 function initializeStore() {
@@ -407,7 +410,146 @@ function searchCategories(query) {
         }
     });
 }
+// ============================================
+// ADD THIS AFTER YOUR GLOBAL STATE MANAGEMENT (around line 30)
+// CATEGORY STICKY NAVIGATION SYSTEM
+// ============================================
 
+class CategoryStickyNav {
+    constructor() {
+        this.categoryNav = document.getElementById('categoryNav');
+        this.categoryScroll = document.querySelector('.category-scroll');
+        this.mainNav = document.getElementById('mainNav');
+        this.isStuck = false;
+        this.init();
+    }
+
+    init() {
+        if (!this.categoryScroll) return;
+        
+        // Make the category-scroll sticky
+        this.categoryScroll.style.position = 'sticky';
+        this.categoryScroll.style.top = '73px'; // Adjust based on your nav height
+        this.categoryScroll.style.zIndex = '100';
+        this.categoryScroll.style.background = 'rgba(255, 255, 255, 0.98)';
+        this.categoryScroll.style.backdropFilter = 'blur(10px)';
+        
+        // Set up scroll listener
+        this.setupScrollListener();
+        
+        // Handle window resize
+        window.addEventListener('resize', this.debounce(() => {
+            this.adjustStickyPosition();
+        }, 250));
+    }
+
+    setupScrollListener() {
+        let lastScrollY = window.scrollY;
+        
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            const categoryNavTop = this.categoryNav ? this.categoryNav.offsetTop : 0;
+            const navHeight = this.mainNav ? this.mainNav.offsetHeight : 73;
+            
+            // Check if we've scrolled past the category nav
+            if (currentScrollY > categoryNavTop - navHeight) {
+                if (!this.isStuck) {
+                    this.isStuck = true;
+                    this.categoryScroll?.classList.add('stuck');
+                }
+            } else {
+                if (this.isStuck) {
+                    this.isStuck = false;
+                    this.categoryScroll?.classList.remove('stuck');
+                }
+            }
+            
+            lastScrollY = currentScrollY;
+        });
+    }
+
+    adjustStickyPosition() {
+        const navHeight = this.mainNav ? this.mainNav.offsetHeight : 73;
+        if (this.categoryScroll) {
+            this.categoryScroll.style.top = `${navHeight}px`;
+        }
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+}
+
+// ============================================
+// CATEGORY CAROUSEL (NON-STICKY)
+// ============================================
+
+function initializeCategoryCarousel() {
+    const carousel = document.getElementById('categoryCarousel');
+    if (!carousel) return;
+    
+    // Sample carousel items
+    const carouselItems = [
+        { title: 'Extreme Mathematics', cover: 'math', price: 450 },
+        { title: 'Physics Grade 12', cover: 'physics', price: 420 },
+        { title: 'Chemistry Guide', cover: 'chem', price: 430 },
+        { title: 'Biology Textbook', cover: 'bio', price: 440 },
+        { title: 'English Grade 12', cover: 'eng', price: 380 },
+        { title: 'Ethiopian History', cover: 'history', price: 350 }
+    ];
+    
+    // Create carousel track
+    const track = document.createElement('div');
+    track.className = 'carousel-track';
+    track.style.cssText = `
+        display: flex;
+        gap: 1.5rem;
+        animation: carousel-scroll 30s linear infinite;
+        width: fit-content;
+        padding: 1rem;
+    `;
+    
+    // Double items for seamless loop
+    const allItems = [...carouselItems, ...carouselItems];
+    
+    track.innerHTML = allItems.map(item => `
+        <div class="carousel-book-item" style="flex-shrink: 0; width: 150px; cursor: pointer; transition: transform 0.3s ease;" 
+             onmouseover="this.style.transform='scale(1.05)'" 
+             onmouseout="this.style.transform='scale(1)'"
+             onclick="openQuickView(1)">
+            <img src="https://picsum.photos/seed/${item.cover}/150/200" 
+                 alt="${item.title}" 
+                 class="carousel-book-cover" 
+                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div class="carousel-book-title" style="font-size: 0.875rem; font-weight: 600; margin-top: 0.5rem; text-align: center; color: var(--text);">
+                ${item.title}
+            </div>
+            <div style="text-align: center; color: var(--button-bg); font-weight: 700; margin-top: 0.25rem;">
+                ETB ${item.price}
+            </div>
+        </div>
+    `).join('');
+    
+    carousel.innerHTML = '';
+    carousel.appendChild(track);
+    
+    // Pause animation on hover
+    track.addEventListener('mouseenter', () => {
+        track.style.animationPlayState = 'paused';
+    });
+    
+    track.addEventListener('mouseleave', () => {
+        track.style.animationPlayState = 'running';
+    });
+}
 // ============================================
 // ENHANCED SUB NAV CATEGORIES
 // ============================================
@@ -2256,27 +2398,7 @@ function closeAllBookstoresModal() {
         document.body.style.overflow = '';
     }
 }
-// Add shadow when category buttons are stuck
-document.addEventListener('DOMContentLoaded', function() {
-    const categoryScroll = document.querySelector('.category-scroll');
-    if (!categoryScroll) return;
-    
-    const observer = new IntersectionObserver(
-        ([entry]) => {
-            if (entry.intersectionRatio < 1) {
-                categoryScroll.classList.add('stuck');
-            } else {
-                categoryScroll.classList.remove('stuck');
-            }
-        },
-        { 
-            rootMargin: '-74px 0px 0px 0px',
-            threshold: [1]
-        }
-    );
-    
-    observer.observe(categoryScroll);
-});
+
 // ============================================
 // MODALS - ENHANCED AUTHOR & BOOKSTORE
 // ============================================
