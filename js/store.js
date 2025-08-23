@@ -458,19 +458,8 @@ function updateSubNavCategories() {
 }
 
 function createSubNavCarousel() {
-    const categoryNav = document.querySelector('.category-nav-sticky');
-    if (!categoryNav) return;
-    
-    // Add carousel before the regular category scroll
-    const carouselHTML = `
-        <div class="category-carousel">
-            <div class="carousel-track" id="carouselTrack">
-                <!-- Carousel items will be duplicated for infinite scroll -->
-            </div>
-        </div>
-    `;
-    
-    categoryNav.insertAdjacentHTML('afterbegin', carouselHTML);
+    const carouselWrapper = document.getElementById('categoryCarousel');
+    if (!carouselWrapper) return;
     
     // Sample books for carousel
     const carouselBooks = [
@@ -480,11 +469,14 @@ function createSubNavCarousel() {
         { title: 'Top Rated', cover: 'https://picsum.photos/seed/top1/150/200' },
         { title: 'Featured', cover: 'https://picsum.photos/seed/feat1/150/200' },
         { title: 'Rare Find', cover: 'https://picsum.photos/seed/rare1/150/200' },
+        // ... rest of books
     ];
     
-    const track = document.getElementById('carouselTrack');
-    let html = '';
+    const track = document.createElement('div');
+    track.className = 'carousel-track';
+    track.id = 'carouselTrack';
     
+    let html = '';
     // Create two sets for infinite scroll
     for (let i = 0; i < 2; i++) {
         carouselBooks.forEach(book => {
@@ -498,6 +490,7 @@ function createSubNavCarousel() {
     }
     
     track.innerHTML = html;
+    carouselWrapper.appendChild(track);
 }
 
 // ============================================
@@ -2263,7 +2256,27 @@ function closeAllBookstoresModal() {
         document.body.style.overflow = '';
     }
 }
-
+// Add shadow when category buttons are stuck
+document.addEventListener('DOMContentLoaded', function() {
+    const categoryScroll = document.querySelector('.category-scroll');
+    if (!categoryScroll) return;
+    
+    const observer = new IntersectionObserver(
+        ([entry]) => {
+            if (entry.intersectionRatio < 1) {
+                categoryScroll.classList.add('stuck');
+            } else {
+                categoryScroll.classList.remove('stuck');
+            }
+        },
+        { 
+            rootMargin: '-74px 0px 0px 0px',
+            threshold: [1]
+        }
+    );
+    
+    observer.observe(categoryScroll);
+});
 // ============================================
 // MODALS - ENHANCED AUTHOR & BOOKSTORE
 // ============================================

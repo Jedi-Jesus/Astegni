@@ -1331,20 +1331,15 @@
   transform: translateZ(-100px) rotateY(20deg);
   background: linear-gradient(135deg, #43e97b, #38f9d7);
 }
-
 /* ============================================
    STICKY CATEGORY NAVIGATION & CAROUSEL
    ============================================ */
+
+/* Main wrapper - NOT sticky */
 .category-nav-sticky {
   background: white;
-  padding: 1rem 0;
   border-top: 1px solid rgba(0, 0, 0, 0.08);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  position: sticky;
-  top: 73px;
-  z-index: 100;
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.95);
+  /* Remove all sticky-related properties from here */
 }
 
 [data-theme="dark"] .category-nav-sticky {
@@ -1352,13 +1347,14 @@
   border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Category Carousel */
+/* Category Carousel - NOT sticky, appears first */
 .category-carousel {
   position: relative;
   background: white;
   padding: 1rem 0;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
   overflow: hidden;
+  /* This will appear above the sticky buttons */
 }
 
 [data-theme="dark"] .category-carousel {
@@ -1405,22 +1401,42 @@
   color: var(--text);
 }
 
+/* Category buttons container - THIS IS STICKY */
 .category-scroll {
   display: flex;
   gap: 1rem;
   overflow-x: auto;
   scrollbar-width: none;
-  padding: 0.5rem 0;
+  padding: 1rem;
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  
+  /* Make this sticky */
+  position: sticky;
+  top: 73px;
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+[data-theme="dark"] .category-scroll {
+  background: rgba(26, 26, 26, 0.98);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .category-scroll::-webkit-scrollbar {
   display: none;
 }
 
+/* Add shadow when stuck */
+.category-scroll.stuck {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 .category-btn {
   padding: 0.625rem 1.25rem;
-  background: transparent;
-  border: 2px solid transparent;
+  background: white;
+  border: 2px solid rgba(245, 158, 11, 0.2);
   border-radius: 25px;
   color: #6b7280;
   font-weight: 600;
@@ -1433,10 +1449,17 @@
   gap: 6px;
 }
 
+[data-theme="dark"] .category-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #e0e0e0;
+}
+
 .category-btn:hover {
   background: rgba(245, 158, 11, 0.1);
   color: var(--button-bg);
   transform: translateY(-2px);
+  border-color: rgba(245, 158, 11, 0.4);
 }
 
 .category-btn.active {
@@ -1450,6 +1473,29 @@
   font-size: 1rem;
 }
 
+/* Optional: Add transition when category buttons become sticky */
+@supports (position: sticky) {
+  .category-scroll {
+    transition: box-shadow 0.3s ease;
+  }
+}
+
+/* For better mobile experience */
+@media (max-width: 768px) {
+  .category-carousel {
+    display: none; /* Hide carousel on mobile to save space */
+  }
+  
+  .category-scroll {
+    top: 60px; /* Adjust for mobile header height */
+    padding: 0.75rem;
+  }
+  
+  .category-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
 /* ============================================
    CONTENT GRID
    ============================================ */

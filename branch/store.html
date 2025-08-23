@@ -258,17 +258,26 @@
         </div>
       </div>
     </section>
+<!-- Category Carousel (Not Sticky) -->
+<div class="category-carousel-wrapper">
+  <div class="container mx-auto px-4">
+    <div class="category-carousel" id="categoryCarousel">
+      <!-- Carousel content will be added by JS -->
+    </div>
+  </div>
+</div>
 
-    <!-- Sticky Category Navigation -->
-    <div class="category-nav-sticky" id="categoryNav">
-      <div class="container mx-auto px-4">
-        <div class="category-scroll">
-          <button class="category-btn active" data-category="all" onclick="filterByGenre('all')">All Books</button>
-          <button class="category-btn" data-category="trending" onclick="filterByGenre('trending')">
-            <span class="category-icon">🔥</span>
-            Trending
-          </button>
-          <button class="category-btn" data-category="new" onclick="filterByGenre('new')">
+<!-- Sticky Category Navigation (Only This is Sticky) -->
+<div class="category-nav-sticky" id="categoryNav">
+  <div class="container mx-auto px-4">
+    <div class="category-scroll">
+      <button class="category-btn active" data-category="all" onclick="filterByGenre('all')">All Books</button>
+      <button class="category-btn" data-category="trending" onclick="filterByGenre('trending')">
+        <span class="category-icon">🔥</span>
+        Trending
+      </button>
+      <!-- rest of buttons... -->
+       <button class="category-btn" data-category="new" onclick="filterByGenre('new')">
             <span class="category-icon">✨</span>
             New Arrivals
           </button>
@@ -287,9 +296,11 @@
           <button class="category-btn" data-category="fiction" onclick="filterByGenre('fiction')">Fiction</button>
           <button class="category-btn" data-category="nonfiction" onclick="filterByGenre('nonfiction')">Non-Fiction</button>
           <button class="category-btn" data-category="academics" onclick="filterByGenre('academics')">Academics</button>
-        </div>
-      </div>
+        
     </div>
+  </div>
+</div>
+    
 <!-- Author Modal -->
   <div class="modal-overlay" id="authorModal">
     <div class="modal-container author-modal">
