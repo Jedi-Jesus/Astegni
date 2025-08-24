@@ -549,7 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="detail-label">Price:</span> <strong>${tutor.price}/hr</strong>
                 </div>
             </div>
-            <a href="view-tutor.html" class="view-tutor-btn">View Full Profile</a>
+            <a href="../View%20profile/view-tutor.html" class="view-tutor-btn">View Full Profile</a>
         `;
         
         return card;
