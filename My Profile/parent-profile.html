@@ -7,6 +7,319 @@
     <title>Yeneta - Parent Profile</title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
+
+    <style>
+        /* Children Cards Styles */
+        .children-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .child-card {
+            background: #FAF9F6; /* Beige/Broken white background */
+            border: 1px solid #E8E6E1;
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .child-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
+        }
+
+        .child-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .child-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .child-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid #667eea;
+            margin-right: 20px;
+            object-fit: cover;
+        }
+
+        .child-info {
+            flex: 1;
+        }
+
+        .child-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .child-grade {
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .child-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .child-stat-item {
+            background: rgba(102, 126, 234, 0.08);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .child-stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #667eea;
+            display: block;
+        }
+
+        .child-stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .child-progress-bar {
+            background: #E5E7EB;
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .child-progress-fill {
+            height: 100%;
+            background: #FAF9F6; /* Beige/Broken white background */
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .child-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .child-action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .view-details-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+        }
+
+        .view-details-btn:hover {
+            background: linear-gradient(135deg, #5a67d8 0%, #6b4199 100%);
+            transform: scale(1.05);
+        }
+
+        .quick-message-btn {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .quick-message-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Child Details Modal Styles */
+        .child-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 10000;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .child-details-modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .child-modal-container {
+            background: white;
+            width: 95%;
+            height: 90%;
+            margin: auto;
+            border-radius: 20px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .child-modal-sidebar {
+            width: 250px;
+            background: #FAF9F6; /* Beige/Broken white background */
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .child-modal-sidebar-header {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 20px;
+        }
+
+        .child-modal-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .child-modal-grade-info {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .child-modal-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .child-modal-menu-item {
+            padding: 15px 20px;
+            margin-bottom: 5px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: rgba(255,255,255,0.9);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .child-modal-menu-item:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        .child-modal-menu-item.active {
+            background: rgba(255,255,255,0.25);
+            color: white;
+            font-weight: 600;
+        }
+
+        .child-modal-menu-icon {
+            font-size: 18px;
+        }
+
+        .child-modal-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .child-modal-header {
+            padding: 20px 30px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .child-modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .child-modal-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #f3f4f6;
+            color: #6b7280;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .child-modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+        }
+
+        .child-modal-body {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .modal-content-section {
+            display: none;
+        }
+
+        .modal-content-section.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+    </style>
+
 </head>
 
 <body>
@@ -58,69 +371,36 @@
                 </button>
             </div>
             
-            <!-- NEW PARENT SECTION - ALL PARENT FEATURES HERE -->
+            <!-- PARENT SECTION - SIMPLIFIED -->
             <div class="sidebar-section" data-content="parent">
                 <button class="sidebar-btn" data-content="my-children">
                     <span class="sidebar-btn-icon">👨‍👩‍👧‍👦</span>
                     <span>My Children</span>
                     <span class="sidebar-badge">3</span>
                 </button>
-                <button class="sidebar-btn" data-content="children-courses">
-                    <span class="sidebar-btn-icon">📚</span>
-                    <span>Children's Courses</span>
-                    <span class="sidebar-badge">12</span>
-                </button>
                 <button class="sidebar-btn" data-content="tutor-child">
                     <span class="sidebar-btn-icon">👨‍🏫</span>
-                    <span>Tutor Child</span>
-                    <span class="sidebar-badge">New</span>
+                    <span>Tutor My Child</span>
                 </button>
-                <button class="sidebar-btn" data-content="take-course">
-                    <span class="sidebar-btn-icon">🎓</span>
-                    <span>Take a Course</span>
-                </button>
-                <button class="sidebar-btn" data-content="progress-tracking">
-                    <span class="sidebar-btn-icon">📈</span>
-                    <span>Progress Tracking</span>
-                </button>
-                <button class="sidebar-btn" data-content="attendance">
-                    <span class="sidebar-btn-icon">✅</span>
-                    <span>Attendance</span>
-                    <span class="sidebar-badge">95%</span>
-                </button>
-                <button class="sidebar-btn" data-content="assignments">
-                    <span class="sidebar-btn-icon">📝</span>
-                    <span>Assignments</span>
-                    <span class="sidebar-badge">8</span>
-                </button>
-                <button class="sidebar-btn" data-content="exam-results">
-                    <span class="sidebar-btn-icon">📋</span>
-                    <span>Exam Results</span>
-                </button>
-                <button class="sidebar-btn" data-content="tuition-payments">
-                    <span class="sidebar-btn-icon">💳</span>
-                    <span>Tuition & Payments</span>
-                </button>
-                <button class="sidebar-btn" data-content="parent-teacher">
+                <button class="sidebar-btn" data-content="parent-community">
                     <span class="sidebar-btn-icon">🤝</span>
-                    <span>Parent-Teacher</span>
-                    <span class="sidebar-badge">2</span>
+                    <span>Parent Community</span>
                 </button>
-                <button class="sidebar-btn" data-content="schedule-sessions">
-                    <span class="sidebar-btn-icon">📅</span>
-                    <span>Schedule & Sessions</span>
-                    <span class="sidebar-badge">8</span>
-                </button>
-                <button class="sidebar-btn" data-content="learning-resources">
+                <button class="sidebar-btn" data-content="educational-resources">
                     <span class="sidebar-btn-icon">📖</span>
-                    <span>Learning Resources</span>
+                    <span>Educational Resources</span>
                 </button>
-                <button class="sidebar-btn" data-content="reports-analytics">
-                    <span class="sidebar-btn-icon">📊</span>
-                    <span>Reports & Analytics</span>
+                <button class="sidebar-btn" data-content="payment-center">
+                    <span class="sidebar-btn-icon">💳</span>
+                    <span>Payment Center</span>
+                </button>
+                <button class="sidebar-btn" data-content="notifications-center">
+                    <span class="sidebar-btn-icon">🔔</span>
+                    <span>Notifications</span>
+                    <span class="sidebar-badge">12</span>
                 </button>
             </div>
-            
+
             <!-- UNCHANGED EDUCATION SECTION -->
             <div class="sidebar-section" data-content="education">
                 <button class="sidebar-btn" data-content="jobs">
@@ -326,8 +606,8 @@
                         <div class="profile-next-session" id="profileNextSession">
                             <div class="session-alert">
                                 <span class="alert-icon gradient-text">⏰</span>
-                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> Abebe's Math Class - Today at 3:00 PM EAT</span>
-                                <button class="btn-join-inline">View Session</button>
+                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> Math Tutorial - Today at 4:00 PM EAT (Live in 2 hours) - Abebe attending</span>
+                                <button class="btn-join-inline">Join Session</button>
                             </div>
                         </div>
 
@@ -336,18 +616,6 @@
                                 <span class="action-icon">✏️</span>
                                 <span>Edit Profile</span>
                             </button>
-                            <button class="profile-action-btn set-schedule" onclick="openScheduleModal()">
-                                <span class="action-icon">📅</span>
-                                <span>View Schedule</span>
-                            </button>
-                            
-                                <a href="../Plug-ins/Chat.html">
-                            <button class="profile-action-btn connect" onclick="">
-                                    <span class="action-icon">💬</span>
-                                    <span>Message Tutors</span>
-                            </button>
-                        </div>
-                                </a>
                     </div>
                 </div>
             </div>
@@ -473,25 +741,142 @@
 
                 <!-- NEW PARENT CONTENT PANELS -->
                 
-                <!-- My Children Content -->
+                <!-- My Children Content Panel -->
                 <div class="sidebar-content-panel" id="my-children-content">
                     <div class="section-header">
                         <h2 class="section-title">My Children</h2>
                         <button class="btn-primary" onclick="openAddChildModal()">+ Add Child</button>
                     </div>
-                    
-                    <div class="children-filters">
-                        <input type="text" placeholder="Search children..." class="children-search">
-                        <select class="grade-filter">
-                            <option>All Grades</option>
-                            <option>Elementary</option>
-                            <option>Middle School</option>
-                            <option>High School</option>
-                        </select>
-                    </div>
-                    
-                    <div class="children-grid" id="childrenGrid">
-                        <!-- Children cards will be loaded dynamically -->
+
+                    <div class="children-cards-grid">
+                        <!-- Child Card 1 -->
+                        <div class="child-card">
+                            <div class="child-card-header">
+                                <img src="https://via.placeholder.com/80" alt="Abebe" class="child-avatar">
+                                <div class="child-info">
+                                    <h3 class="child-name">Abebe Alemu</h3>
+                                    <p class="child-grade">Grade 10 • Age 16</p>
+                                </div>
+                            </div>
+                            
+                            <div class="child-stats">
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">5</span>
+                                    <span class="child-stat-label">Courses</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">92%</span>
+                                    <span class="child-stat-label">Attendance</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">A-</span>
+                                    <span class="child-stat-label">Grade</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">85%</span>
+                                    <span class="child-stat-label">Progress</span>
+                                </div>
+                            </div>
+
+                            <div class="child-progress-bar">
+                                <div class="child-progress-fill" style="width: 85%"></div>
+                            </div>
+
+                            <div class="child-actions">
+                                <button class="child-action-btn view-details-btn" onclick="openChildDetailsModal('Abebe')">
+                                    View Details
+                                </button>
+                                <button class="child-action-btn quick-message-btn">
+                                    Message
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Child Card 2 -->
+                        <div class="child-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="child-card-header">
+                                <img src="https://via.placeholder.com/80" alt="Sara" class="child-avatar">
+                                <div class="child-info">
+                                    <h3 class="child-name">Sara Alemu</h3>
+                                    <p class="child-grade">Grade 8 • Age 14</p>
+                                </div>
+                            </div>
+                            
+                            <div class="child-stats">
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">4</span>
+                                    <span class="child-stat-label">Courses</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">98%</span>
+                                    <span class="child-stat-label">Attendance</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">A+</span>
+                                    <span class="child-stat-label">Grade</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">94%</span>
+                                    <span class="child-stat-label">Progress</span>
+                                </div>
+                            </div>
+
+                            <div class="child-progress-bar">
+                                <div class="child-progress-fill" style="width: 94%"></div>
+                            </div>
+
+                            <div class="child-actions">
+                                <button class="child-action-btn view-details-btn" onclick="openChildDetailsModal('Sara')">
+                                    View Details
+                                </button>
+                                <button class="child-action-btn quick-message-btn">
+                                    Message
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Child Card 3 -->
+                        <div class="child-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="child-card-header">
+                                <img src="https://via.placeholder.com/80" alt="Meron" class="child-avatar">
+                                <div class="child-info">
+                                    <h3 class="child-name">Meron Alemu</h3>
+                                    <p class="child-grade">Grade 5 • Age 11</p>
+                                </div>
+                            </div>
+                            
+                            <div class="child-stats">
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">3</span>
+                                    <span class="child-stat-label">Courses</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">96%</span>
+                                    <span class="child-stat-label">Attendance</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">A</span>
+                                    <span class="child-stat-label">Grade</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">88%</span>
+                                    <span class="child-stat-label">Progress</span>
+                                </div>
+                            </div>
+
+                            <div class="child-progress-bar">
+                                <div class="child-progress-fill" style="width: 88%"></div>
+                            </div>
+
+                            <div class="child-actions">
+                                <button class="child-action-btn view-details-btn" onclick="openChildDetailsModal('Meron')">
+                                    View Details
+                                </button>
+                                <button class="child-action-btn quick-message-btn">
+                                    Message
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -514,38 +899,37 @@
                     </div>
                 </div>
 
-                <!-- Tutor Child Content -->
+               <!-- Tutor My Child Content -->
                 <div class="sidebar-content-panel" id="tutor-child-content">
                     <div class="section-header">
-                        <h2 class="section-title">Find Tutors for Your Children</h2>
-                        <button class="btn-primary" onclick="openTutorRequestModal()">+ Request Tutor</button>
+                        <h2 class="section-title">Tutor My Child</h2>
+                        <button class="btn-primary" onclick="createTutorSession()">+ Create Session</button>
                     </div>
                     
-                    <div class="tutor-filters">
-                        <select class="subject-filter">
-                            <option>All Subjects</option>
-                            <option>Mathematics</option>
-                            <option>Science</option>
-                            <option>Languages</option>
-                            <option>Social Studies</option>
-                        </select>
-                        <select class="availability-filter">
-                            <option>Any Availability</option>
-                            <option>Morning</option>
-                            <option>Afternoon</option>
-                            <option>Evening</option>
-                            <option>Weekend</option>
-                        </select>
-                        <select class="price-filter">
-                            <option>Any Price</option>
-                            <option>0-500 Birr/hr</option>
-                            <option>500-1000 Birr/hr</option>
-                            <option>1000+ Birr/hr</option>
-                        </select>
-                    </div>
-                    
-                    <div class="tutors-grid" id="tutorsGrid">
-                        <!-- Available tutors will be loaded dynamically -->
+                    <div class="tutor-dashboard">
+                        <h3>Parent Tutoring Dashboard</h3>
+                        <p>Create and manage tutoring sessions for your children</p>
+                        
+                        <div class="tutor-tools">
+                            <div class="tool-card">
+                                <span class="tool-icon">📝</span>
+                                <h4>Create Lesson</h4>
+                                <p>Design custom lessons for your children</p>
+                                <button class="btn-secondary">Start</button>
+                            </div>
+                            <div class="tool-card">
+                                <span class="tool-icon">📊</span>
+                                <h4>Track Progress</h4>
+                                <p>Monitor your tutoring effectiveness</p>
+                                <button class="btn-secondary">View</button>
+                            </div>
+                            <div class="tool-card">
+                                <span class="tool-icon">📚</span>
+                                <h4>Resources</h4>
+                                <p>Access educational materials</p>
+                                <button class="btn-secondary">Browse</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1413,7 +1797,261 @@
             </div>
         </div>
     </div>
+<!-- Child Details Modal -->
+    <div class="child-details-modal" id="childDetailsModal">
+        <div class="child-modal-container">
+            <!-- Modal Sidebar -->
+            <div class="child-modal-sidebar">
+                <div class="child-modal-sidebar-header">
+                    <h3 class="child-modal-name" id="modalChildName">Abebe Alemu</h3>
+                    <p class="child-modal-grade-info" id="modalChildGrade">Grade 10 • Age 16</p>
+                </div>
+                
+                <ul class="child-modal-menu">
+                    <li class="child-modal-menu-item active" onclick="switchModalContent('overview')">
+                        <span class="child-modal-menu-icon">📊</span>
+                        <span>Overview</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('progress')">
+                        <span class="child-modal-menu-icon">📈</span>
+                        <span>Progress Tracking</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('attendance')">
+                        <span class="child-modal-menu-icon">✅</span>
+                        <span>Attendance</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('assignments')">
+                        <span class="child-modal-menu-icon">📝</span>
+                        <span>Assignments</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('exams')">
+                        <span class="child-modal-menu-icon">📋</span>
+                        <span>Exam Results</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('payments')">
+                        <span class="child-modal-menu-icon">💳</span>
+                        <span>Tuition & Payments</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('communication')">
+                        <span class="child-modal-menu-icon">🤝</span>
+                        <span>Parent-Teacher</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('schedule')">
+                        <span class="child-modal-menu-icon">📅</span>
+                        <span>Schedule & Sessions</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('resources')">
+                        <span class="child-modal-menu-icon">📚</span>
+                        <span>Learning Resources</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('analytics')">
+                        <span class="child-modal-menu-icon">📊</span>
+                        <span>Reports & Analytics</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('tutors')">
+                        <span class="child-modal-menu-icon">👨‍🏫</span>
+                        <span>Tutors</span>
+                    </li>
+                </ul>
+            </div>
 
+            <!-- Modal Content -->
+            <div class="child-modal-content">
+                <div class="child-modal-header">
+                    <h2 class="child-modal-title" id="modalContentTitle">Overview</h2>
+                    <button class="child-modal-close" onclick="closeChildDetailsModal()">×</button>
+                </div>
+                
+                <div class="child-modal-body">
+                    <!-- Overview Content -->
+                    <div class="modal-content-section active" id="overview-content">
+                        <h3>Child Overview</h3>
+                        <div class="overview-grid">
+                            <div class="overview-card">
+                                <h4>Current Performance</h4>
+                                <p>Overall Grade: A-</p>
+                                <p>Attendance: 92%</p>
+                                <p>Assignments Completed: 45/50</p>
+                            </div>
+                            <div class="overview-card">
+                                <h4>Recent Activities</h4>
+                                <ul>
+                                    <li>Math Quiz - Score: 85%</li>
+                                    <li>Science Project Submitted</li>
+                                    <li>English Essay - Grade: A</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Tracking Content -->
+                    <div class="modal-content-section" id="progress-content">
+                        <h3>Progress Tracking</h3>
+                        <canvas id="progressChart"></canvas>
+                        <div class="progress-details">
+                            <p>Mathematics: 85%</p>
+                            <p>Science: 90%</p>
+                            <p>English: 88%</p>
+                            <p>History: 82%</p>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Content -->
+                    <div class="modal-content-section" id="attendance-content">
+                        <h3>Attendance Records</h3>
+                        <div class="attendance-calendar">
+                            <!-- Calendar view will be here -->
+                        </div>
+                        <div class="attendance-stats">
+                            <p>Present Days: 92</p>
+                            <p>Absent Days: 8</p>
+                            <p>Late Arrivals: 3</p>
+                        </div>
+                    </div>
+
+                    <!-- Assignments Content -->
+                    <div class="modal-content-section" id="assignments-content">
+                        <h3>Assignments</h3>
+                        <div class="assignments-list">
+                            <div class="assignment-item">
+                                <h4>Math Homework - Chapter 5</h4>
+                                <p>Due: Tomorrow</p>
+                                <span class="status pending">Pending</span>
+                            </div>
+                            <div class="assignment-item">
+                                <h4>Science Project</h4>
+                                <p>Due: Next Week</p>
+                                <span class="status in-progress">In Progress</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exam Results Content -->
+                    <div class="modal-content-section" id="exams-content">
+                        <h3>Exam Results</h3>
+                        <div class="exam-results">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Mid-Term</th>
+                                        <th>Final</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Mathematics</td>
+                                        <td>85%</td>
+                                        <td>88%</td>
+                                        <td>A-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Science</td>
+                                        <td>90%</td>
+                                        <td>92%</td>
+                                        <td>A</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Payments Content -->
+                    <div class="modal-content-section" id="payments-content">
+                        <h3>Tuition & Payments</h3>
+                        <div class="payment-summary">
+                            <p>Monthly Tuition: 4,500 Birr</p>
+                            <p>Status: Paid</p>
+                            <p>Next Due: March 1, 2025</p>
+                        </div>
+                        <button class="btn-primary">Make Payment</button>
+                    </div>
+
+                    <!-- Parent-Teacher Communication -->
+                    <div class="modal-content-section" id="communication-content">
+                        <h3>Parent-Teacher Communication</h3>
+                        <div class="messages-list">
+                            <div class="message-item">
+                                <h4>Math Teacher - Mr. Bekele</h4>
+                                <p>Your child is doing well in algebra...</p>
+                                <span class="time">2 days ago</span>
+                            </div>
+                        </div>
+                        <button class="btn-primary">Send Message</button>
+                    </div>
+
+                    <!-- Schedule Content -->
+                    <div class="modal-content-section" id="schedule-content">
+                        <h3>Schedule & Sessions</h3>
+                        <div class="schedule-view">
+                            <div class="session-item">
+                                <h4>Math Tutorial</h4>
+                                <p>Monday, 4:00 PM - 5:30 PM</p>
+                            </div>
+                            <div class="session-item">
+                                <h4>Science Lab</h4>
+                                <p>Wednesday, 3:00 PM - 4:30 PM</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Learning Resources -->
+                    <div class="modal-content-section" id="resources-content">
+                        <h3>Learning Resources</h3>
+                        <div class="resources-grid">
+                            <div class="resource-item">
+                                <span class="resource-icon">📚</span>
+                                <h4>Math Textbook</h4>
+                                <button class="btn-secondary">Download</button>
+                            </div>
+                            <div class="resource-item">
+                                <span class="resource-icon">🎥</span>
+                                <h4>Science Videos</h4>
+                                <button class="btn-secondary">Watch</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reports & Analytics -->
+                    <div class="modal-content-section" id="analytics-content">
+                        <h3>Reports & Analytics</h3>
+                        <div class="analytics-dashboard">
+                            <canvas id="analyticsChart"></canvas>
+                            <div class="analytics-summary">
+                                <p>Overall Performance: Improving</p>
+                                <p>Strengths: Science, Mathematics</p>
+                                <p>Areas to Improve: History</p>
+                            </div>
+                        </div>
+                        <button class="btn-primary">Download Full Report</button>
+                    </div>
+
+                    <!-- Tutors Content -->
+                    <div class="modal-content-section" id="tutors-content">
+                        <h3>Child's Tutors</h3>
+                        <div class="tutors-grid">
+                            <div class="tutor-card">
+                                <img src="https://via.placeholder.com/60" alt="Tutor" class="tutor-avatar">
+                                <h4>Mr. Bekele Tadesse</h4>
+                                <p>Mathematics</p>
+                                <p>⭐ 4.9/5.0</p>
+                                <button class="btn-secondary">Contact</button>
+                            </div>
+                            <div class="tutor-card">
+                                <img src="https://via.placeholder.com/60" alt="Tutor" class="tutor-avatar">
+                                <h4>Ms. Tigist Haile</h4>
+                                <p>Science</p>
+                                <p>⭐ 4.8/5.0</p>
+                                <button class="btn-secondary">Contact</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary">Find More Tutors</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Schedule Modal and other existing modals remain the same... -->
 
     <!-- FAB Menu -->
@@ -1540,11 +2178,95 @@
             </div>
         </div>
     </footer>
-    <!-- Scripts -->
+
+
+     <!-- Scripts -->
+       <script>
+        // Function to open child details modal
+        function openChildDetailsModal(childName) {
+            const modal = document.getElementById('childDetailsModal');
+            const modalChildName = document.getElementById('modalChildName');
+            modalChildName.textContent = childName + ' Alemu';
+            modal.classList.add('active');
+            
+            // Reset to overview
+            switchModalContent('overview');
+        }
+
+        // Function to close child details modal
+        function closeChildDetailsModal() {
+            const modal = document.getElementById('childDetailsModal');
+            modal.classList.remove('active');
+        }
+
+        // Function to switch modal content
+        function switchModalContent(contentType) {
+            // Remove active class from all menu items
+            const menuItems = document.querySelectorAll('.child-modal-menu-item');
+            menuItems.forEach(item => item.classList.remove('active'));
+            
+            // Add active class to clicked menu item
+            event.currentTarget.classList.add('active');
+            
+            // Hide all content sections
+            const contentSections = document.querySelectorAll('.modal-content-section');
+            contentSections.forEach(section => section.classList.remove('active'));
+            
+            // Show selected content section
+            const selectedContent = document.getElementById(contentType + '-content');
+            if (selectedContent) {
+                selectedContent.classList.add('active');
+            }
+            
+            // Update modal title
+            const modalTitle = document.getElementById('modalContentTitle');
+            const titleMap = {
+                'overview': 'Overview',
+                'progress': 'Progress Tracking',
+                'attendance': 'Attendance',
+                'assignments': 'Assignments',
+                'exams': 'Exam Results',
+                'payments': 'Tuition & Payments',
+                'communication': 'Parent-Teacher Communication',
+                'schedule': 'Schedule & Sessions',
+                'resources': 'Learning Resources',
+                'analytics': 'Reports & Analytics',
+                'tutors': 'Tutors'
+            };
+            modalTitle.textContent = titleMap[contentType] || 'Overview';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('childDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeChildDetailsModal();
+            }
+        });
+    </script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
     <script src="../js/institute-profile-4.js"></script>
+   
+        <script>
+        setTimeout(function() {
+            // Re-ensure our functions are available
+            if (typeof window.openChildDetailsModal === 'function') {
+                console.log('Child modal functions are available');
+            } else {
+                console.error('Child modal functions were overridden, re-initializing...');
+                // Re-initialize if needed
+                window.openChildDetailsModal = function(childName) {
+                    const modal = document.getElementById('childDetailsModal');
+                    if (modal) {
+                        const modalChildName = document.getElementById('modalChildName');
+                        if (modalChildName) modalChildName.textContent = childName + ' Alemu';
+                        modal.classList.add('active');
+                    }
+                }
+            }
+        }, 100);
+    </script>
 </body>
 
 </html>

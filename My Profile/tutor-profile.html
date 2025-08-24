@@ -8,6 +8,416 @@
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+        /* Student Cards Styling */
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .student-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 25px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .student-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .student-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .student-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .student-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            color: #667eea;
+        }
+
+        .student-info h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .student-info p {
+            margin: 5px 0 0 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .student-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .student-progress {
+            margin: 20px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .student-badges {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255,255,255,0.25);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .student-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-view-details {
+            flex: 1;
+            padding: 12px;
+            background: white;
+            color: #667eea;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view-details:hover {
+            background: #f0f0f0;
+            transform: scale(1.02);
+        }
+
+        .btn-quick-action {
+            padding: 12px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-quick-action:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        /* Student Details Modal Styling */
+        .student-details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .student-details-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-container {
+            background: white;
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            border-radius: 20px;
+            display: flex;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            color: white;
+            overflow-y: auto;
+        }
+
+        .modal-sidebar h3 {
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .sidebar-menu-item {
+            padding: 12px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu-item:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .sidebar-menu-item.active {
+            background: rgba(255,255,255,0.3);
+            font-weight: 600;
+        }
+
+        .modal-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .modal-close {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #f0f0f0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: #e0e0e0;
+            transform: rotate(90deg);
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeInContent 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Dashboard Cards Styling */
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .dashboard-card h3 {
+            margin-top: 0;
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea20, #764ba220);
+            padding: 15px;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-card h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .info-card p {
+            margin: 5px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-card .btn-view {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .info-card .btn-view:hover {
+            background: #764ba2;
+            transform: translateY(-2px);
+        }
+
+        /* Real-time Analytics Cards */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .analytics-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .analytics-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .analytics-card .icon {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .analytics-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .analytics-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .analytics-card .change {
+            font-size: 12px;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .analytics-card.positive .change {
+            color: #4CAF50;
+        }
+
+        .analytics-card.negative .change {
+            color: #f44336;
+        }
+    </style>
+
 </head>
 
 <body>
@@ -50,6 +460,7 @@
     </nav>
 
     <!-- Left Sidebar -->
+    <!-- Left Sidebar -->
     <aside class="left-sidebar" id="leftSidebar">
         <div class="sidebar-content">
             <div class="sidebar-section">
@@ -59,12 +470,6 @@
                 </button>
             </div>
 
-            <!-- NEW TUTOR SECTION - ALL TUTOR-SPECIFIC FEATURES HERE -->
-            <button class="sidebar-btn" data-content="requested-sessions">
-                <span class="sidebar-btn-icon">📅</span>
-                <span>Requested Sessions</span>
-                <span class="sidebar-badge">8</span>
-            </button>
             <button class="sidebar-btn" data-content="my-students">
                 <span class="sidebar-btn-icon">👥</span>
                 <span>My Students</span>
@@ -74,17 +479,41 @@
                 <span class="sidebar-btn-icon">🗓️</span>
                 <span>My Schedule</span>
             </button>
+            
+            <!-- Manage Certifications -->
+            <button class="sidebar-btn" data-content="manage-certifications">
+                <span class="sidebar-btn-icon">🎓</span>
+                <span>Manage Certifications</span>
+            </button>
+            
+            <!-- Manage Experience -->
+            <button class="sidebar-btn" data-content="manage-experience">
+                <span class="sidebar-btn-icon">💼</span>
+                <span>Manage Experience</span>
+            </button>
+            
+            <!-- Manage Achievements -->
+            <button class="sidebar-btn" data-content="manage-achievements">
+                <span class="sidebar-btn-icon">🏆</span>
+                <span>Manage Achievements</span>
+            </button>
+            
+            <!-- Get Certified Button -->
+            <button class="sidebar-btn" data-content="get-certified">
+                <span class="sidebar-btn-icon">🏅</span>
+                <span>Get Certified</span>
+                <span class="sidebar-badge new">New</span>
+            </button>
+            
+            <!-- Tutor Features -->
+            <button class="sidebar-btn" data-content="requested-sessions">
+                <span class="sidebar-btn-icon">📅</span>
+                <span>Requested Sessions</span>
+                <span class="sidebar-badge">8</span>
+            </button>
             <button class="sidebar-btn" data-content="tutor-earnings">
                 <span class="sidebar-btn-icon">💰</span>
                 <span>Earnings</span>
-            </button>
-            <button class="sidebar-btn" data-content="certifications">
-                <span class="sidebar-btn-icon">🏆</span>
-                <span>Certifications</span>
-            </button>
-            <button class="sidebar-btn" data-content="certifications">
-                <span class="sidebar-btn-icon">🏆</span>
-                <span>Experience</span>
             </button>
             <button class="sidebar-btn" data-content="tutor-tools">
                 <span class="sidebar-btn-icon">🛠️</span>
@@ -145,7 +574,7 @@
             </button>
             <a href='../Plug-ins/notes.html'>
                 <button class="sidebar-btn" data-content="notes">
-                    <span class="sidebar-btn-icon">📝</span>
+                    <span class="sidebar-btn-icon">📓</span>
                     <span>Notes</span>
                 </button>
             </a>
@@ -239,6 +668,9 @@
                                 <span class="verified-badge" id="verification-status">✗ Unverified</span>
                                 <span class="center-score">Rating: <span id="tutor-rating">N/A</span></span>
                             </div>
+                        <div class="gender-info">
+                            <span id="tutor-gender">Male</span>
+                        </div>
                         </div>
 
                         <div class="rating-section">
@@ -286,16 +718,6 @@
                                 <span class="action-icon">✏️</span>
                                 <span>Edit Profile</span>
                             </button>
-                            <button class="profile-action-btn set-schedule" onclick="openScheduleModal()">
-                                <span class="action-icon">📅</span>
-                                <span>Set Schedule</span>
-                            </button>
-                            <a href="../Plug-ins/Chat.html">
-                                <button class="profile-action-btn connect">
-                                    <span class="action-icon">🤝</span>
-                                    <span>Connect</span>
-                                </button>
-                            </a>
                         </div>
                     </div>
                 </div>
@@ -326,7 +748,7 @@
         </section>
 
         <!-- Content Area -->
-        <div class="content-with-sidebar">
+       <div class="content-with-sidebar">
             <!-- Main Content Area -->
             <div class="main-content-area">
                 <!-- Dashboard Content (Default) -->
@@ -334,18 +756,105 @@
                     <!-- About Section -->
                     <section class="profile-about-section">
                         <h3>About Me</h3>
-                        <p id="tutor-bio">Experienced tutor with a passion for teaching Math and Physics.</p>
+                        <p id="tutor-bio">Experienced tutor with a passion for teaching Math and Physics. I have been helping students achieve their academic goals for over 7 years.</p>
                     </section>
 
                     <!-- Social Links -->
                     <section class="profile-socials-section">
                         <h3>Connect With Me</h3>
                         <div class="social-links" id="socialLinksContainer">
-                            <div id="view-profile-socials"></div>
+                            <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
                         </div>
                     </section>
 
-                    <!-- Quick Stats Widget -->
+                    <!-- Certifications Display Card -->
+                    <div class="dashboard-card">
+                        <h3>My Certifications</h3>
+                        <div class="card-grid">
+                            <div class="info-card">
+                                <h4>🎓 BSc in Physics</h4>
+                                <p>Addis Ababa University</p>
+                                <p>2020</p>
+                                <button class="btn-view" onclick="viewCertificate('cert1')">View Certificate</button>
+                            </div>
+                            <div class="info-card">
+                                <h4>🏆 Teaching Excellence Award</h4>
+                                <p>Education Ministry</p>
+                                <p>2022</p>
+                                <button class="btn-view" onclick="viewCertificate('cert2')">View Certificate</button>
+                            </div>
+                            <div class="info-card">
+                                <h4>📜 Advanced Mathematics</h4>
+                                <p>Online University</p>
+                                <p>2023</p>
+                                <button class="btn-view" onclick="viewCertificate('cert3')">View Certificate</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Experience Display Card -->
+                    <div class="dashboard-card">
+                        <h3>Professional Experience</h3>
+                        <div class="card-grid">
+                            <div class="info-card">
+                                <h4>🏫 Senior Math Teacher</h4>
+                                <p>Unity High School</p>
+                                <p>2020 - Present</p>
+                                <p>Teaching advanced mathematics to grade 11 and 12 students.</p>
+                                <button class="btn-view" onclick="viewExperience('exp1')">View Details</button>
+                            </div>
+                            <div class="info-card">
+                                <h4>👨‍🏫 Private Tutor</h4>
+                                <p>Self-Employed</p>
+                                <p>2018 - 2020</p>
+                                <p>Personalized tutoring sessions for high school students.</p>
+                                <button class="btn-view" onclick="viewExperience('exp2')">View Details</button>
+                            </div>
+                            <div class="info-card">
+                                <h4>🎓 Teaching Assistant</h4>
+                                <p>Addis Ababa University</p>
+                                <p>2016 - 2018</p>
+                                <p>Assisted professors in undergraduate physics courses.</p>
+                                <button class="btn-view" onclick="viewExperience('exp3')">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Achievements Display Card -->
+                    <div class="dashboard-card">
+                        <h3>Achievements & Awards</h3>
+                        <div class="card-grid">
+                            <div class="info-card">
+                                <h4>🥇 Best Tutor Award 2023</h4>
+                                <p>Astegni Platform</p>
+                                <p>For exceptional teaching performance</p>
+                                <button class="btn-view" onclick="viewAchievement('ach1')">View Details</button>
+                            </div>
+                            <div class="info-card">
+                                <h4>🌟 100+ Students Mentored</h4>
+                                <p>Milestone Achievement</p>
+                                <p>Successfully guided over 100 students</p>
+                                <button class="btn-view" onclick="viewAchievement('ach2')">View Details</button>
+                            </div>
+                            <div class="info-card">
+                                <h4>📈 95% Pass Rate</h4>
+                                <p>Academic Excellence</p>
+                                <p>Maintained high student success rate</p>
+                                <button class="btn-view" onclick="viewAchievement('ach3')">View Details</button>
+                            </div>
+                            <div class="info-card">
+                                <h4>💡 Innovation in Teaching</h4>
+                                <p>Education Ministry Recognition</p>
+                                <p>For developing new teaching methods</p>
+                                <button class="btn-view" onclick="viewAchievement('ach4')">View Details</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teaching Statistics -->
                     <section class="quick-stats-widget">
                         <h2 class="section-title">Teaching Statistics</h2>
                         <div class="stats-grid">
@@ -362,7 +871,7 @@
                                 <div class="stat-info">
                                     <div class="stat-number">5</div>
                                     <div class="stat-desc">Courses Taught</div>
-                                    <div class="stat-detail" id="courses">Not set</div>
+                                    <div class="stat-detail">Math, Physics, Chemistry</div>
                                 </div>
                             </div>
                             <div class="stat-card hover-lift">
@@ -392,26 +901,401 @@
                             <div class="stat-card hover-lift">
                                 <div class="stat-icon">🏆</div>
                                 <div class="stat-info">
-                                    <div class="stat-number">12</div>
-                                    <div class="stat-desc">Certifications</div>
-                                    <div class="stat-detail">Verified</div>
+                                    <div class="stat-number">7+</div>
+                                    <div class="stat-desc">Years Experience</div>
+                                    <div class="stat-detail">Professional</div>
                                 </div>
                             </div>
                         </div>
                     </section>
+                </div>
 
-                    <!-- Personal Info Display -->
-                    <section class="profile-info-display">
-                        <h3>Contact Information</h3>
-                        <div class="info-grid">
-                            <p id="tutor-phone">Phone: Not set</p>
-                            <p id="tutor-email">Email: Not set</p>
-                            <p id="tutor-gender">Gender: Male</p>
-                            <p id="tutor-payment-method">Payment Method: Not set</p>
-                            <p id="tutor-bank">Bank: Not set</p>
-                            <p id="payment-account">Account Number: Not set</p>
+                <!-- My Students Content with Detailed Cards -->
+                <div class="sidebar-content-panel" id="my-students-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Students</h2>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="student-search" class="search-input" placeholder="Search students..." style="flex: 1;">
+                            <button class="btn-primary" onclick="addNewStudent()">+ Add Student</button>
                         </div>
-                    </section>
+                    </div>
+
+                    <div class="students-grid">
+                        <!-- Student Card 1 -->
+                        <div class="student-card">
+                            <div class="student-header">
+                                <div class="student-avatar">👨‍🎓</div>
+                                <div class="student-info">
+                                    <h3>Abebe Kebede</h3>
+                                    <p>Grade 12 • Science Stream</p>
+                                </div>
+                            </div>
+
+                            <div class="student-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Sessions</span>
+                                    <span class="stat-value">24</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Attendance</span>
+                                    <span class="stat-value">92%</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Avg Grade</span>
+                                    <span class="stat-value">A-</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Next Session</span>
+                                    <span class="stat-value">Today</span>
+                                </div>
+                            </div>
+
+                            <div class="student-progress">
+                                <div class="progress-label">
+                                    <span>Overall Progress</span>
+                                    <span>78%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 78%"></div>
+                                </div>
+                            </div>
+
+                            <div class="student-badges">
+                                <span class="badge">🎯 Math</span>
+                                <span class="badge">🔬 Physics</span>
+                                <span class="badge">⭐ Top Performer</span>
+                            </div>
+
+                            <div class="student-actions">
+                                <button class="btn-view-details" onclick="openStudentDetailsModal('student1')">View Details</button>
+                                <button class="btn-quick-action" onclick="quickMessage('student1')">📧</button>
+                                <button class="btn-quick-action" onclick="quickCall('student1')">📞</button>
+                            </div>
+                        </div>
+
+                        <!-- Student Card 2 -->
+                        <div class="student-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="student-header">
+                                <div class="student-avatar">👩‍🎓</div>
+                                <div class="student-info">
+                                    <h3>Selam Tesfaye</h3>
+                                    <p>Grade 11 • Science Stream</p>
+                                </div>
+                            </div>
+
+                            <div class="student-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Sessions</span>
+                                    <span class="stat-value">18</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Attendance</span>
+                                    <span class="stat-value">88%</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Avg Grade</span>
+                                    <span class="stat-value">B+</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Next Session</span>
+                                    <span class="stat-value">Tomorrow</span>
+                                </div>
+                            </div>
+
+                            <div class="student-progress">
+                                <div class="progress-label">
+                                    <span>Overall Progress</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 65%"></div>
+                                </div>
+                            </div>
+
+                            <div class="student-badges">
+                                <span class="badge">🧮 Algebra</span>
+                                <span class="badge">⚡ Physics</span>
+                                <span class="badge">📈 Improving</span>
+                            </div>
+
+                            <div class="student-actions">
+                                <button class="btn-view-details" onclick="openStudentDetailsModal('student2')">View Details</button>
+                                <button class="btn-quick-action" onclick="quickMessage('student2')">📧</button>
+                                <button class="btn-quick-action" onclick="quickCall('student2')">📞</button>
+                            </div>
+                        </div>
+
+                        <!-- Add more student cards as needed -->
+                    </div>
+                </div>
+
+                <!-- Manage Certifications Content -->
+                <div class="sidebar-content-panel" id="manage-certifications-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Manage Certifications</h2>
+                        <button class="btn-primary" onclick="addCertification()">+ Add Certification</button>
+                    </div>
+
+                    <div class="certifications-list">
+                        <div class="certification-item">
+                            <div class="cert-info">
+                                <h4>BSc in Physics</h4>
+                                <p>Addis Ababa University • 2020</p>
+                            </div>
+                            <div class="cert-actions">
+                                <button class="btn-sm btn-primary" onclick="editCertification('cert1')">Edit</button>
+                                <button class="btn-sm btn-danger" onclick="deleteCertification('cert1')">Delete</button>
+                            </div>
+                        </div>
+                        <div class="certification-item">
+                            <div class="cert-info">
+                                <h4>Teaching Excellence Award</h4>
+                                <p>Education Ministry • 2022</p>
+                            </div>
+                            <div class="cert-actions">
+                                <button class="btn-sm btn-primary" onclick="editCertification('cert2')">Edit</button>
+                                <button class="btn-sm btn-danger" onclick="deleteCertification('cert2')">Delete</button>
+                            </div>
+                        </div>
+                        <div class="certification-item">
+                            <div class="cert-info">
+                                <h4>Advanced Mathematics Certificate</h4>
+                                <p>Online University • 2023</p>
+                            </div>
+                            <div class="cert-actions">
+                                <button class="btn-sm btn-primary" onclick="editCertification('cert3')">Edit</button>
+                                <button class="btn-sm btn-danger" onclick="deleteCertification('cert3')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manage Experience Content -->
+                <div class="sidebar-content-panel" id="manage-experience-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Manage Experience</h2>
+                        <button class="btn-primary" onclick="addExperience()">+ Add Experience</button>
+                    </div>
+
+                    <div class="experience-list">
+                        <div class="experience-item">
+                            <div class="exp-info">
+                                <h4>Senior Math Teacher</h4>
+                                <p>Unity High School • 2020 - Present</p>
+                                <p>Teaching advanced mathematics to grade 11 and 12 students.</p>
+                            </div>
+                            <div class="exp-actions">
+                                <button class="btn-sm btn-primary" onclick="editExperience('exp1')">Edit</button>
+                                <button class="btn-sm btn-danger" onclick="deleteExperience('exp1')">Delete</button>
+                            </div>
+                        </div>
+                        <div class="experience-item">
+                            <div class="exp-info">
+                                <h4>Private Tutor</h4>
+                                <p>Self-Employed • 2018 - 2020</p>
+                                <p>Provided personalized tutoring sessions to high school students.</p>
+                            </div>
+                            <div class="exp-actions">
+                                <button class="btn-sm btn-primary" onclick="editExperience('exp2')">Edit</button>
+                                <button class="btn-sm btn-danger" onclick="deleteExperience('exp2')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manage Achievements Content -->
+                <div class="sidebar-content-panel" id="manage-achievements-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Manage Achievements</h2>
+                        <button class="btn-primary" onclick="addAchievement()">+ Add Achievement</button>
+                    </div>
+
+                    <div class="achievements-list">
+                        <div class="achievement-item">
+                            <div class="ach-info">
+                                <h4>🥇 Best Tutor Award 2023</h4>
+                                <p>Astegni Platform</p>
+                                <p>For exceptional teaching performance and student satisfaction</p>
+                            </div>
+                            <div class="ach-actions">
+                                <button class="btn-sm btn-primary" onclick="editAchievement('ach1')">Edit</button>
+                                <button class="btn-sm btn-danger" onclick="deleteAchievement('ach1')">Delete</button>
+                            </div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="ach-info">
+                                <h4>🌟 100+ Students Mentored</h4>
+                                <p>Milestone Achievement</p>
+                                <p>Successfully guided over 100 students to academic success</p>
+                            </div>
+                            <div class="ach-actions">
+                                <button class="btn-sm btn-primary" onclick="editAchievement('ach2')">Edit</button>
+                                <button class="btn-sm btn-danger" onclick="deleteAchievement('ach2')">Delete</button>
+                            </div>
+                        </div>
+                        <div class="achievement-item">
+                            <div class="ach-info">
+                                <h4>📈 95% Pass Rate</h4>
+                                <p>Academic Excellence</p>
+                                <p>Maintained high student success rate in national examinations</p>
+                            </div>
+                            <div class="ach-actions">
+                                <button class="btn-sm btn-primary" onclick="editAchievement('ach3')">Edit</button>
+                                <button class="btn-sm btn-danger" onclick="deleteAchievement('ach3')">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Get Certified Content -->
+                <div class="sidebar-content-panel" id="get-certified-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Get Certified</h2>
+                        <p class="section-subtitle">Enhance your credentials with official certifications</p>
+                    </div>
+
+                    <div class="certification-programs">
+                        <h3>Available Certification Programs</h3>
+                        
+                        <div class="cert-program-grid">
+                            <div class="cert-program-card">
+                                <div class="cert-badge">🏅</div>
+                                <h4>Advanced Mathematics Teaching</h4>
+                                <p class="cert-provider">Astegni Academy</p>
+                                <p class="cert-duration">Duration: 3 months</p>
+                                <p class="cert-price">ETB 5,000</p>
+                                <ul class="cert-benefits">
+                                    <li>✓ Recognized by Education Ministry</li>
+                                    <li>✓ Online & Self-paced</li>
+                                    <li>✓ Lifetime access to materials</li>
+                                </ul>
+                                <button class="btn-primary" onclick="enrollCertification('math-advanced')">Enroll Now</button>
+                            </div>
+
+                            <div class="cert-program-card">
+                                <div class="cert-badge">🌟</div>
+                                <h4>Digital Teaching Methods</h4>
+                                <p class="cert-provider">Tech Education Institute</p>
+                                <p class="cert-duration">Duration: 2 months</p>
+                                <p class="cert-price">ETB 3,500</p>
+                                <ul class="cert-benefits">
+                                    <li>✓ Learn modern teaching tools</li>
+                                    <li>✓ Interactive online classes</li>
+                                    <li>✓ Certificate of completion</li>
+                                </ul>
+                                <button class="btn-primary" onclick="enrollCertification('digital-teaching')">Enroll Now</button>
+                            </div>
+
+                            <div class="cert-program-card popular">
+                                <span class="popular-badge">Most Popular</span>
+                                <div class="cert-badge">🎯</div>
+                                <h4>Complete Teaching Mastery</h4>
+                                <p class="cert-provider">Astegni Professional Institute</p>
+                                <p class="cert-duration">Duration: 6 months</p>
+                                <p class="cert-price"><s>ETB 15,000</s> ETB 12,000</p>
+                                <ul class="cert-benefits">
+                                    <li>✓ Comprehensive curriculum</li>
+                                    <li>✓ 1-on-1 mentorship</li>
+                                    <li>✓ Job placement assistance</li>
+                                    <li>✓ International recognition</li>
+                                </ul>
+                                <button class="btn-success" onclick="enrollCertification('mastery')">Get 20% Off</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEW GET CERTIFIED CONTENT PANEL -->
+                <div class="sidebar-content-panel" id="get-certified-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Get Certified</h2>
+                        <p class="section-subtitle">Enhance your credentials with official certifications</p>
+                    </div>
+
+                    <div class="certification-programs">
+                        <h3>Available Certification Programs</h3>
+                        
+                        <div class="cert-program-grid">
+                            <div class="cert-program-card">
+                                <div class="cert-badge">🏅</div>
+                                <h4>Advanced Mathematics Teaching</h4>
+                                <p class="cert-provider">Astegni Academy</p>
+                                <p class="cert-duration">Duration: 3 months</p>
+                                <p class="cert-price">ETB 5,000</p>
+                                <ul class="cert-benefits">
+                                    <li>✓ Recognized by Education Ministry</li>
+                                    <li>✓ Online & Self-paced</li>
+                                    <li>✓ Lifetime access to materials</li>
+                                </ul>
+                                <button class="btn-primary" onclick="enrollCertification('math-advanced')">Enroll Now</button>
+                            </div>
+
+                            <div class="cert-program-card">
+                                <div class="cert-badge">🌟</div>
+                                <h4>Digital Teaching Methods</h4>
+                                <p class="cert-provider">Tech Education Institute</p>
+                                <p class="cert-duration">Duration: 2 months</p>
+                                <p class="cert-price">ETB 3,500</p>
+                                <ul class="cert-benefits">
+                                    <li>✓ Learn modern teaching tools</li>
+                                    <li>✓ Interactive online classes</li>
+                                    <li>✓ Certificate of completion</li>
+                                </ul>
+                                <button class="btn-primary" onclick="enrollCertification('digital-teaching')">Enroll Now</button>
+                            </div>
+
+                            <div class="cert-program-card">
+                                <div class="cert-badge">📊</div>
+                                <h4>Student Assessment & Evaluation</h4>
+                                <p class="cert-provider">Educational Excellence Center</p>
+                                <p class="cert-duration">Duration: 1 month</p>
+                                <p class="cert-price">ETB 2,500</p>
+                                <ul class="cert-benefits">
+                                    <li>✓ Modern assessment techniques</li>
+                                    <li>✓ Data-driven evaluation</li>
+                                    <li>✓ Practical workshops</li>
+                                </ul>
+                                <button class="btn-primary" onclick="enrollCertification('assessment')">Enroll Now</button>
+                            </div>
+
+                            <div class="cert-program-card popular">
+                                <span class="popular-badge">Most Popular</span>
+                                <div class="cert-badge">🎯</div>
+                                <h4>Complete Teaching Mastery</h4>
+                                <p class="cert-provider">Astegni Professional Institute</p>
+                                <p class="cert-duration">Duration: 6 months</p>
+                                <p class="cert-price"><s>ETB 15,000</s> ETB 12,000</p>
+                                <ul class="cert-benefits">
+                                    <li>✓ Comprehensive curriculum</li>
+                                    <li>✓ 1-on-1 mentorship</li>
+                                    <li>✓ Job placement assistance</li>
+                                    <li>✓ International recognition</li>
+                                </ul>
+                                <button class="btn-success" onclick="enrollCertification('mastery')">Get 20% Off</button>
+                            </div>
+                        </div>
+
+                        <div class="cert-partners">
+                            <h3>Our Certification Partners</h3>
+                            <div class="partners-logos">
+                                <div class="partner-logo">🏛️ Education Ministry</div>
+                                <div class="partner-logo">🎓 AAU</div>
+                                <div class="partner-logo">🌍 UNESCO</div>
+                                <div class="partner-logo">📚 British Council</div>
+                            </div>
+                        </div>
+
+                        <div class="cert-testimonials">
+                            <h3>Success Stories</h3>
+                            <div class="testimonial-card">
+                                <p>"The certification program helped me increase my hourly rate by 40% and attract more students!"</p>
+                                <div class="testimonial-author">
+                                    <span>- Abebe T., Certified Math Tutor</span>
+                                    <span class="rating">⭐⭐⭐⭐⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- TUTOR-SPECIFIC CONTENT PANELS -->
@@ -438,8 +1322,7 @@
                                 <p>Time: 2:00 PM</p>
                             </div>
                             <div class="request-actions">
-                                <button onclick="openChatModal('abebe')" class="btn-secondary">Chat</button>
-                                <button onclick="startVideoCall('abebe')" class="btn-secondary">Video Call</button>
+                                <button onclick="openChatModal('abebe')" class="btn-secondary">Connect</button>
                                 <button onclick="viewParentDetails('abebe')" class="btn-secondary">View Parent</button>
                                 <button onclick="viewStudentDetails('yohannes')" class="btn-secondary">View
                                     Student</button>
@@ -459,8 +1342,7 @@
                                 <p>Time: 4:00 PM</p>
                             </div>
                             <div class="request-actions">
-                                <button onclick="openChatModal('selam')" class="btn-secondary">Chat</button>
-                                <button onclick="startVideoCall('selam')" class="btn-secondary">Video Call</button>
+                                <button onclick="openChatModal('selam')" class="btn-secondary">Connect</button>
                                 <button onclick="viewStudentDetails('selam')" class="btn-secondary">View
                                     Student</button>
                                 <button onclick="confirmSession('selam')" class="btn-success">Confirm</button>
@@ -511,7 +1393,6 @@
                     </div>
                 </div>
 
-
                 <!-- Tutor Schedule Content -->
                 <div class="sidebar-content-panel" id="tutor-schedule-content">
                     <div class="section-header">
@@ -550,6 +1431,7 @@
 
                     </div>
                 </div>
+
                 <!-- Tutor Ratings Content -->
                 <div class="sidebar-content-panel" id="tutor-ratings-content">
                     <div class="section-header">
@@ -644,25 +1526,6 @@
 
                     <div class="earnings-chart">
                         <canvas id="earningsChart"></canvas>
-                    </div>
-                </div>
-
-
-                <!-- Certifications Content -->
-                <div class="sidebar-content-panel" id="certifications-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Certifications</h2>
-                        <button class="btn-primary" onclick="openEditCertificationsModal()">+ Add Certification</button>
-                    </div>
-
-                    <div class="certifications-grid" id="tutor-certifications">
-                        <div class="certification-card">
-                            <div class="cert-icon">🎓</div>
-                            <h4>BSc in Physics</h4>
-                            <p>School A</p>
-                            <p>2020</p>
-                            <button class="btn-sm btn-secondary">View Certificate</button>
-                        </div>
                     </div>
                 </div>
 
@@ -837,6 +1700,68 @@
 
             <!-- Right Sidebar (Same as journalist-profile.html) -->
             <div class="right-sidebar">
+                                <!-- Real-time Analytics with Parent & Student Analysis -->
+                <div class="sidebar-widget analytics-widget">
+                    <div class="widget-header">
+                        <h3>📊 Real-Time Analytics</h3>
+                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                    </div>
+                    
+                    <div class="analytics-grid">
+                        <!-- Parent Satisfaction -->
+                        <div class="analytics-card">
+                            <div class="icon">👨‍👩‍👧</div>
+                            <div class="value">92%</div>
+                            <div class="label">Parent Satisfaction</div>
+                            <div class="change positive">↑ 3% this month</div>
+                        </div>
+                        
+                        <!-- On-Time Payments -->
+                        <div class="analytics-card">
+                            <div class="icon">💳</div>
+                            <div class="value">88%</div>
+                            <div class="label">On-Time Payments</div>
+                            <div class="change positive">↑ 5% this month</div>
+                        </div>
+                        
+                        <!-- Student Progress -->
+                        <div class="analytics-card">
+                            <div class="icon">📈</div>
+                            <div class="value">85%</div>
+                            <div class="label">Student Progress</div>
+                            <div class="change positive">↑ 7% this month</div>
+                        </div>
+                        
+                        <!-- Active Students -->
+                        <div class="analytics-card">
+                            <div class="icon">👥</div>
+                            <div class="value">45</div>
+                            <div class="label">Active Students</div>
+                            <div class="change positive">↑ 2 new this week</div>
+                        </div>
+                        
+                        <!-- Session Completion -->
+                        <div class="analytics-card">
+                            <div class="icon">✅</div>
+                            <div class="value">96%</div>
+                            <div class="label">Session Completion</div>
+                            <div class="change positive">↑ 1% this week</div>
+                        </div>
+                        
+                        <!-- Average Rating -->
+                        <div class="analytics-card">
+                            <div class="icon">⭐</div>
+                            <div class="value">4.8</div>
+                            <div class="label">Average Rating</div>
+                            <div class="change">Steady</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container" style="margin-top: 20px;">
+                        <canvas id="analyticsChart"></canvas>
+                        <div class="chart-label">Performance Trends - Last 7 Days</div>
+                    </div>
+                </div>
                 <!-- News Widget -->
                 <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
                     <div class="widget-header">
@@ -971,34 +1896,6 @@
                         <canvas id="analyticsChart"></canvas>
                         <div class="chart-label">Teaching Performance - Last 24 Hours</div>
                     </div>
-
-                    <!-- Parent/Employer Analysis Section -->
-                    <div class="employer-analysis mt-4">
-                        <h4>Parent & Student Analysis</h4>
-                        <div class="analysis-metrics">
-                            <div class="metric-item">
-                                <span class="metric-label">Parent Satisfaction</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 92%"></div>
-                                </div>
-                                <span class="metric-value">92%</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-label">On-Time Payments</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 88%"></div>
-                                </div>
-                                <span class="metric-value">88%</span>
-                            </div>
-                            <div class="metric-item">
-                                <span class="metric-label">Student Progress</span>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 85%"></div>
-                                </div>
-                                <span class="metric-value">85%</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Events Widget -->
@@ -1100,6 +1997,419 @@
 
     <!-- All other modals from tutor.html should be included here -->
 
+    <!-- Student Details Modal -->
+    <div class="student-details-modal" id="studentDetailsModal">
+        <div class="modal-container">
+            <div class="modal-sidebar">
+                <h3>Student Menu</h3>
+                <div class="sidebar-menu-item active" onclick="switchSection('progress-tracking')">
+                    <span>📊</span> Progress Tracking
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('attendance')">
+                    <span>📅</span> Attendance
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('assignments')">
+                    <span>📝</span> Assignments
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('exam-results')">
+                    <span>📋</span> Exam Results
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('tuition-payments')">
+                    <span>💰</span> Tuition & Payments
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('parent')">
+                    <span>👨‍👩‍👧</span> Parent Information
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('schedule-sessions')">
+                    <span>🗓️</span> Schedule & Sessions
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('learning-resources')">
+                    <span>📚</span> Learning Resources
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('reports-analytics')">
+                    <span>📈</span> Reports & Analytics
+                </div>
+            </div>
+
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h2 id="studentName">Abebe Kebede</h2>
+                        <p>Grade 12 • Science Stream</p>
+                    </div>
+                    <button class="modal-close" onclick="closeStudentDetailsModal()">✕</button>
+                </div>
+
+                <!-- Progress Tracking Section -->
+                <div class="content-section active" id="progress-tracking">
+                    <h3>Progress Tracking</h3>
+                    <div class="progress-overview">
+                        <div class="progress-card">
+                            <h4>Mathematics</h4>
+                            <div class="progress-chart">
+                                <canvas id="mathProgressChart"></canvas>
+                            </div>
+                            <p>Current Level: Advanced Calculus</p>
+                            <p>Completion: 78%</p>
+                        </div>
+                        <div class="progress-card">
+                            <h4>Physics</h4>
+                            <div class="progress-chart">
+                                <canvas id="physicsProgressChart"></canvas>
+                            </div>
+                            <p>Current Level: Mechanics</p>
+                            <p>Completion: 65%</p>
+                        </div>
+                        <div class="progress-card">
+                            <h4>Overall Performance</h4>
+                            <div class="progress-chart">
+                                <canvas id="overallProgressChart"></canvas>
+                            </div>
+                            <p>Grade Average: A-</p>
+                            <p>Improvement: +12%</p>
+                        </div>
+                    </div>
+                    <div class="detailed-progress">
+                        <h4>Recent Achievements</h4>
+                        <ul>
+                            <li>✅ Completed Advanced Algebra Module</li>
+                            <li>✅ Scored 95% in Physics Mid-term</li>
+                            <li>✅ Perfect attendance for 3 months</li>
+                            <li>🎯 Next Goal: Master Differential Equations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Attendance Section -->
+                <div class="content-section" id="attendance">
+                    <h3>Attendance Record</h3>
+                    <div class="attendance-stats">
+                        <div class="stat-card">
+                            <h4>Total Sessions</h4>
+                            <p>24</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Present</h4>
+                            <p>22</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Absent</h4>
+                            <p>1</p>
+                        </div>
+                        <div class="stat-card">
+                            <h4>Late</h4>
+                            <p>1</p>
+                        </div>
+                    </div>
+                    <div class="attendance-calendar">
+                        <h4>Monthly Attendance</h4>
+                        <div class="calendar-grid">
+                            <div class="calendar-day present">1</div>
+                            <div class="calendar-day present">2</div>
+                            <div class="calendar-day">3</div>
+                            <div class="calendar-day present">4</div>
+                            <div class="calendar-day present">5</div>
+                            <div class="calendar-day">6</div>
+                            <div class="calendar-day">7</div>
+                            <div class="calendar-day present">8</div>
+                            <div class="calendar-day late">9</div>
+                            <div class="calendar-day">10</div>
+                            <div class="calendar-day present">11</div>
+                            <div class="calendar-day present">12</div>
+                            <div class="calendar-day">13</div>
+                            <div class="calendar-day">14</div>
+                            <div class="calendar-day present">15</div>
+                            <div class="calendar-day absent">16</div>
+                            <div class="calendar-day">17</div>
+                            <div class="calendar-day present">18</div>
+                            <div class="calendar-day present">19</div>
+                            <div class="calendar-day">20</div>
+                            <div class="calendar-day">21</div>
+                            <div class="calendar-day present">22</div>
+                            <div class="calendar-day present">23</div>
+                            <div class="calendar-day">24</div>
+                            <div class="calendar-day present">25</div>
+                            <div class="calendar-day present">26</div>
+                            <div class="calendar-day">27</div>
+                            <div class="calendar-day">28</div>
+                            <div class="calendar-day present">29</div>
+                            <div class="calendar-day present">30</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignments Section -->
+                <div class="content-section" id="assignments">
+                    <h3>Assignments</h3>
+                    <div class="assignments-list">
+                        <div class="assignment-card">
+                            <div>
+                                <h4>Calculus Problem Set #5</h4>
+                                <p>Due: May 25, 2025</p>
+                            </div>
+                            <span class="assignment-status status-completed">Completed</span>
+                        </div>
+                        <div class="assignment-card">
+                            <div>
+                                <h4>Physics Lab Report</h4>
+                                <p>Due: May 28, 2025</p>
+                            </div>
+                            <span class="assignment-status status-pending">Pending</span>
+                        </div>
+                        <div class="assignment-card">
+                            <div>
+                                <h4>Geometry Project</h4>
+                                <p>Due: May 20, 2025</p>
+                            </div>
+                            <span class="assignment-status status-overdue">Overdue</span>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="addNewAssignment()">+ Add Assignment</button>
+                </div>
+
+                <!-- Exam Results Section -->
+                <div class="content-section" id="exam-results">
+                    <h3>Exam Results</h3>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Exam Type</th>
+                                <th>Date</th>
+                                <th>Score</th>
+                                <th>Grade</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Mathematics</td>
+                                <td>Mid-term</td>
+                                <td>April 15, 2025</td>
+                                <td>92/100</td>
+                                <td>A</td>
+                                <td><button class="btn-sm btn-secondary">View Details</button></td>
+                            </tr>
+                            <tr>
+                                <td>Physics</td>
+                                <td>Quiz #3</td>
+                                <td>April 20, 2025</td>
+                                <td>18/20</td>
+                                <td>A-</td>
+                                <td><button class="btn-sm btn-secondary">View Details</button></td>
+                            </tr>
+                            <tr>
+                                <td>Chemistry</td>
+                                <td>Lab Test</td>
+                                <td>April 22, 2025</td>
+                                <td>85/100</td>
+                                <td>B+</td>
+                                <td><button class="btn-sm btn-secondary">View Details</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="btn-primary" onclick="addExamResult()">+ Add Result</button>
+                </div>
+
+                <!-- Tuition & Payments Section -->
+                <div class="content-section" id="tuition-payments">
+                    <h3>Tuition & Payments</h3>
+                    <div class="payment-summary">
+                        <div class="payment-card">
+                            <h4>Monthly Tuition</h4>
+                            <p class="amount">ETB 3,000</p>
+                            <span class="status paid">Paid</span>
+                        </div>
+                        <div class="payment-card">
+                            <h4>Outstanding Balance</h4>
+                            <p class="amount">ETB 0</p>
+                            <span class="status">Clear</span>
+                        </div>
+                        <div class="payment-card">
+                            <h4>Next Payment Due</h4>
+                            <p class="amount">June 1, 2025</p>
+                            <button class="btn-sm btn-primary">Send Reminder</button>
+                        </div>
+                    </div>
+                    <h4>Payment History</h4>
+                    <table class="payment-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Receipt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>May 1, 2025</td>
+                                <td>ETB 3,000</td>
+                                <td>Bank Transfer</td>
+                                <td><span class="status paid">Paid</span></td>
+                                <td><button class="btn-sm btn-secondary">Download</button></td>
+                            </tr>
+                            <tr>
+                                <td>April 1, 2025</td>
+                                <td>ETB 3,000</td>
+                                <td>Mobile Banking</td>
+                                <td><span class="status paid">Paid</span></td>
+                                <td><button class="btn-sm btn-secondary">Download</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Parent Information Section -->
+                <div class="content-section" id="parent">
+                    <h3>Parent/Guardian Information</h3>
+                    <div class="parent-info">
+                        <div class="info-card">
+                            <h4>Primary Contact</h4>
+                            <p><strong>Name:</strong> Mr. Kebede Alemu</p>
+                            <p><strong>Relationship:</strong> Father</p>
+                            <p><strong>Phone:</strong> +251 911 234 567</p>
+                            <p><strong>Email:</strong> kebede.alemu@email.com</p>
+                            <p><strong>Address:</strong> Bole, Addis Ababa</p>
+                            <div class="parent-actions">
+                                <button class="btn-primary" onclick="callParent()">📞 Call</button>
+                                <button class="btn-secondary" onclick="emailParent()">📧 Email</button>
+                                <button class="btn-secondary" onclick="messageParent()">💬 Message</button>
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <h4>Secondary Contact</h4>
+                            <p><strong>Name:</strong> Mrs. Sara Kebede</p>
+                            <p><strong>Relationship:</strong> Mother</p>
+                            <p><strong>Phone:</strong> +251 922 345 678</p>
+                            <p><strong>Email:</strong> sara.kebede@email.com</p>
+                        </div>
+                    </div>
+                    <h4>Communication Log</h4>
+                    <div class="comm-log">
+                        <div class="log-item">
+                            <span class="log-date">May 15, 2025</span>
+                            <span class="log-type">📧 Email</span>
+                            <span class="log-subject">Progress Report Sent</span>
+                        </div>
+                        <div class="log-item">
+                            <span class="log-date">May 10, 2025</span>
+                            <span class="log-type">📞 Call</span>
+                            <span class="log-subject">Discussed upcoming exams</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule & Sessions Section -->
+                <div class="content-section" id="schedule-sessions">
+                    <h3>Schedule & Sessions</h3>
+                    <div class="schedule-overview">
+                        <h4>Regular Schedule</h4>
+                        <div class="schedule-grid">
+                            <div class="schedule-item">
+                                <span class="day">Monday</span>
+                                <span class="time">3:00 PM - 5:00 PM</span>
+                                <span class="subject">Mathematics</span>
+                            </div>
+                            <div class="schedule-item">
+                                <span class="day">Wednesday</span>
+                                <span class="time">3:00 PM - 5:00 PM</span>
+                                <span class="subject">Physics</span>
+                            </div>
+                            <div class="schedule-item">
+                                <span class="day">Friday</span>
+                                <span class="time">4:00 PM - 6:00 PM</span>
+                                <span class="subject">Chemistry</span>
+                            </div>
+                        </div>
+                    </div>
+                    <h4>Upcoming Sessions</h4>
+                    <div class="sessions-list">
+                        <div class="session-card">
+                            <span class="session-date">Today, 3:00 PM</span>
+                            <span class="session-subject">Mathematics - Calculus</span>
+                            <button class="btn-sm btn-primary">Start Session</button>
+                        </div>
+                        <div class="session-card">
+                            <span class="session-date">May 24, 3:00 PM</span>
+                            <span class="session-subject">Physics - Thermodynamics</span>
+                            <button class="btn-sm btn-secondary">Reschedule</button>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="scheduleNewSession()">+ Schedule Session</button>
+                </div>
+
+                <!-- Learning Resources Section -->
+                <div class="content-section" id="learning-resources">
+                    <h3>Learning Resources</h3>
+                    <div class="resources-grid">
+                        <div class="resource-card">
+                            <span class="resource-icon">📖</span>
+                            <h4>Advanced Calculus Textbook</h4>
+                            <p>PDF • 25MB</p>
+                            <button class="btn-sm btn-primary">Download</button>
+                        </div>
+                        <div class="resource-card">
+                            <span class="resource-icon">🎥</span>
+                            <h4>Physics Video Lectures</h4>
+                            <p>12 Videos</p>
+                            <button class="btn-sm btn-primary">View Playlist</button>
+                        </div>
+                        <div class="resource-card">
+                            <span class="resource-icon">📝</span>
+                            <h4>Practice Problems</h4>
+                            <p>50 Problems</p>
+                            <button class="btn-sm btn-primary">Access</button>
+                        </div>
+                        <div class="resource-card">
+                            <span class="resource-icon">🧪</span>
+                            <h4>Lab Experiments Guide</h4>
+                            <p>PDF • 10MB</p>
+                            <button class="btn-sm btn-primary">Download</button>
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="uploadResource()">+ Upload Resource</button>
+                </div>
+
+                <!-- Reports & Analytics Section -->
+                <div class="content-section" id="reports-analytics">
+                    <h3>Reports & Analytics</h3>
+                    <div class="analytics-dashboard">
+                        <div class="chart-container">
+                            <h4>Performance Trend</h4>
+                            <canvas id="performanceTrendChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <h4>Subject Comparison</h4>
+                            <canvas id="subjectComparisonChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="report-actions">
+                        <button class="btn-primary" onclick="generateReport()">Generate Full Report</button>
+                        <button class="btn-secondary" onclick="exportData()">Export Data</button>
+                        <button class="btn-secondary" onclick="shareWithParent()">Share with Parent</button>
+                    </div>
+                    <h4>Recent Reports</h4>
+                    <div class="reports-list">
+                        <div class="report-item">
+                            <span class="report-date">May 15, 2025</span>
+                            <span class="report-type">Monthly Progress Report</span>
+                            <button class="btn-sm btn-secondary">View</button>
+                            <button class="btn-sm btn-secondary">Download</button>
+                        </div>
+                        <div class="report-item">
+                            <span class="report-date">April 30, 2025</span>
+                            <span class="report-type">Mid-term Analysis</span>
+                            <button class="btn-sm btn-secondary">View</button>
+                            <button class="btn-sm btn-secondary">Download</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FAB Menu -->
     <div class="fab-container">
         <button class="fab" id="main-fab">
@@ -1120,7 +2430,7 @@
                 <span>🗓️</span> Set Schedule
             </button>
             <button class="fab-option" onclick="openNotesModal()">
-                <span>📝</span> Take Notes
+                <span>📓</span> Take Notes
             </button>
             <button class="fab-option" onclick="openToolsModal()">
                 <span>🛠️</span> Teaching Tools
@@ -1186,7 +2496,7 @@
                     <p>&copy; 2025 Astegni. All rights reserved.</p>
                     <div class="footer-badges">
                         <span class="badge">🔒 SSL Secured</span>
-                        <span class="badge">✓ Verified Platform</span>
+                        <span class="badge">✔ Verified Platform</span>
                         <span class="badge">🏆 Award Winner 2024</span>
                     </div>
                 </div>
@@ -1199,6 +2509,35 @@
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
     <script src="../js/institute-profile-4.js"></script>
+
+    <script>
+        // JavaScript for modal and section switching
+        function openStudentDetailsModal(studentId) {
+            document.getElementById('studentDetailsModal').classList.add('active');
+        }
+
+        function closeStudentDetailsModal() {
+            document.getElementById('studentDetailsModal').classList.remove('active');
+        }
+
+        function switchSection(sectionId) {
+            // Remove active class from all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all menu items
+            document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Add active class to selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Add active class to selected menu item
+            event.target.closest('.sidebar-menu-item').classList.add('active');
+        }
+    </script>
 </body>
 
 </html>
