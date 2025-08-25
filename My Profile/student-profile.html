@@ -8,182 +8,794 @@
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
 
-    <style>
-        .circular-progress-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 20px 0;
-        }
+/* Tutor Cards Grid */
+.tutors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
 
-        .progress-chart {
-            padding: 15px;
-        }
-
-        .progress-details {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 15px;
-        }
-
-        .progress-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            flex: 1;
-            margin: 0 5px;
-        }
-
-        .progress-item span {
-            font-size: 12px;
-            color: #888;
-            margin-bottom: 5px;
-        }
-
-        .progress-item strong {
-            font-size: 14px;
-        }
-
-        /* Progress Tracker Styles */
-.progress-summary-card {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 193, 7, 0.1));
+.tutor-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 215, 0, 0.1);
     border-radius: 12px;
     padding: 20px;
-    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
-.summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 15px;
-    margin-top: 15px;
+.tutor-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.summary-item {
+.tutor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.3);
+}
+
+.tutor-card:hover::before {
+    opacity: 1;
+}
+
+.tutor-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.tutor-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid #FFD700;
+    object-fit: cover;
+}
+
+.tutor-status {
     display: flex;
     align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
     background: rgba(255, 255, 255, 0.05);
-    padding: 15px;
+}
+
+.tutor-status.online {
+    color: #4CAF50;
+}
+
+.tutor-status.offline {
+    color: #888;
+}
+
+.tutor-status.busy {
+    color: #FFA500;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 currentColor;
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    }
+}
+
+.tutor-card-body {
+    margin-bottom: 15px;
+}
+
+.tutor-name {
+    font-size: 18px;
+    font-weight: bold;
+    color: #FFD700;
+    margin-bottom: 5px;
+}
+
+.tutor-title {
+    font-size: 14px;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+
+.tutor-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.tutor-rating .stars {
+    display: flex;
+}
+
+.tutor-rating .star {
+    font-size: 14px;
+}
+
+.tutor-rating .star.filled {
+    color: #FFD700;
+}
+
+.tutor-rating .star.half {
+    color: #FFD700;
+    opacity: 0.5;
+}
+
+.rating-text {
+    font-size: 12px;
+    color: #888;
+}
+
+.tutor-subjects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.subject-tag {
+    padding: 4px 8px;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 15px;
+    font-size: 11px;
+    color: #FFD700;
+}
+
+.tutor-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tutor-stats .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 5px;
+    background: rgba(255, 255, 255, 0.02);
     border-radius: 8px;
 }
 
-.summary-icon {
-    font-size: 24px;
+.stat-icon {
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: #888;
+}
+
+.tutor-next-session {
+    padding: 10px;
+    background: rgba(255, 215, 0, 0.05);
+    border-left: 3px solid #FFD700;
+    border-radius: 5px;
+    margin-bottom: 15px;
+}
+
+.session-label {
+    font-size: 12px;
+    color: #888;
     margin-right: 10px;
 }
 
-.summary-info {
+.session-time {
+    font-size: 13px;
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.tutor-card-footer {
+    display: flex;
+    gap: 10px;
+}
+
+.tutor-card-footer button {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.tutor-card-footer .btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tutor-card-footer .btn-primary {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    font-weight: bold;
+}
+
+/* Tutor Details Modal */
+.modal-extra-large {
+    max-width: 1200px;
+    width: 90%;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.tutor-details-container {
+    display: flex;
+    height: 600px;
+    gap: 0;
+}
+
+.tutor-details-sidebar {
+    width: 280px;
+    background: rgba(0, 0, 0, 0.3);
+    border-right: 1px solid rgba(255, 215, 0, 0.1);
     display: flex;
     flex-direction: column;
 }
 
-.summary-value {
-    font-size: 20px;
-    font-weight: bold;
-    color: #FFD700;
+.tutor-profile-section {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1);
 }
 
-.summary-label {
-    font-size: 12px;
-    color: #888;
-}
-
-.subject-progress-item {
-    background: rgba(255, 255, 255, 0.02);
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-}
-
-.subject-header {
-    display: flex;
-    justify-content: space-between;
+.tutor-profile-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid #FFD700;
     margin-bottom: 10px;
 }
 
-.subject-details {
+.tutor-profile-name {
+    font-size: 16px;
+    color: #FFD700;
+    margin-bottom: 5px;
+}
+
+.tutor-profile-title {
+    font-size: 13px;
+    color: #aaa;
+    margin-bottom: 10px;
+}
+
+.tutor-profile-rating {
     display: flex;
-    gap: 15px;
-    margin-top: 10px;
-    font-size: 12px;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.tutor-nav {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+}
+
+.tutor-nav-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+}
+
+.tutor-nav-btn:hover {
+    background: rgba(255, 215, 0, 0.05);
+}
+
+.tutor-nav-btn.active {
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    border-left: 3px solid #FFD700;
+}
+
+.nav-icon {
+    font-size: 16px;
+}
+
+.tutor-quick-actions {
+    padding: 15px;
+    border-top: 1px solid rgba(255, 215, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-action-full {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border: none;
+    border-radius: 8px;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-action-full:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+}
+
+.tutor-details-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.tutor-tab-content {
+    display: none;
+}
+
+.tutor-tab-content.active {
+    display: block;
+}
+
+.tutor-tab-content h3 {
+    color: #FFD700;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+.tutor-tab-content h4 {
+    color: #FFA500;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+/* Progress Tab Styles */
+.progress-overview {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.progress-card {
+    flex: 0 0 200px;
+    background: rgba(255, 215, 0, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.circular-progress {
+    margin: 10px 0;
+}
+
+.progress-description {
+    font-size: 13px;
     color: #aaa;
 }
 
-.timeline-item {
-    display: flex;
-    gap: 20px;
-    padding: 15px;
-    border-left: 3px solid #FFD700;
-    margin-bottom: 15px;
-    position: relative;
-}
-
-.timeline-item.completed {
-    border-color: #4CAF50;
-}
-
-.timeline-item.in-progress {
-    border-color: #FFC107;
-}
-
-.timeline-item.upcoming {
-    border-color: #888;
-    opacity: 0.7;
-}
-
-.timeline-time {
-    font-weight: bold;
-    color: #FFD700;
-    min-width: 80px;
-}
-
-.goals-grid {
+.progress-details-grid {
+    flex: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 15px;
 }
 
-.goal-card {
-    background: rgba(255, 255, 255, 0.02);
+.progress-detail-card {
+    display: flex;
+    align-items: center;
+    gap: 15px;
     padding: 15px;
-    border-radius: 8px;
-    text-align: center;
-}
-
-.goal-icon {
-    font-size: 28px;
-    margin-bottom: 10px;
-}
-
-.goal-progress {
-    margin-top: 10px;
-}
-
-.charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 15px;
-}
-
-.chart-container {
     background: rgba(255, 255, 255, 0.02);
-    padding: 20px;
     border-radius: 8px;
-    min-height: 250px;
+    border: 1px solid rgba(255, 215, 0, 0.1);
 }
 
-.chart-label {
-    text-align: center;
-    margin-top: 10px;
+.detail-icon {
+    font-size: 24px;
+}
+
+.detail-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.detail-label {
     font-size: 12px;
     color: #888;
 }
-    </style>
+
+.chapter-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.chapter-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.chapter-item.completed {
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.chapter-item.in-progress {
+    border-color: rgba(255, 165, 0, 0.3);
+}
+
+.chapter-info {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.chapter-number {
+    font-weight: bold;
+    color: #FFD700;
+    font-size: 14px;
+}
+
+.chapter-name {
+    color: #fff;
+    font-size: 14px;
+}
+
+.chapter-progress-bar {
+    width: 150px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    transition: width 0.3s ease;
+}
+
+.chapter-score {
+    font-size: 14px;
+    font-weight: bold;
+    color: #FFD700;
+    min-width: 60px;
+    text-align: right;
+}
+
+/* Attendance Tab Styles */
+.attendance-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.attendance-card {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.attendance-card.present {
+    border-color: rgba(76, 175, 80, 0.3);
+}
+
+.attendance-card.absent {
+    border-color: rgba(244, 67, 54, 0.3);
+}
+
+.attendance-card.late {
+    border-color: rgba(255, 165, 0, 0.3);
+}
+
+.attendance-icon {
+    font-size: 24px;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.attendance-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.attendance-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.attendance-label {
+    font-size: 12px;
+    color: #888;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    font-size: 12px;
+    color: #888;
+}
+
+.calendar-day.present {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.calendar-day.absent {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+}
+
+.attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.attendance-table th {
+    background: rgba(255, 215, 0, 0.1);
+    padding: 12px;
+    text-align: left;
+    color: #FFD700;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.attendance-table td {
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.05);
+    font-size: 13px;
+    color: #fff;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.status-badge.present {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.status-badge.absent {
+    background: rgba(244, 67, 54, 0.2);
+    color: #f44336;
+}
+
+.status-badge.paid {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+/* Additional Tab Styles */
+.assignments-overview,
+.quiz-performance {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.assignment-stat,
+.quiz-stat {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.assignment-item {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+.assignment-item.pending {
+    border-left: 3px solid #FFA500;
+}
+
+.assignment-item.completed {
+    border-left: 3px solid #4CAF50;
+}
+
+.assignment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.assignment-status {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.assignment-status.pending {
+    background: rgba(255, 165, 0, 0.2);
+    color: #FFA500;
+}
+
+.assignment-status.completed {
+    background: rgba(76, 175, 80, 0.2);
+    color: #4CAF50;
+}
+
+.assignment-details {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.assignment-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-small {
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border: none;
+    border-radius: 6px;
+    color: #000;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-small.secondary {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-small:hover {
+    transform: translateY(-2px);
+}
+
+.payment-summary {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.payment-card {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tutors-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .tutor-details-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .tutor-details-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+    
+    .progress-details-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .attendance-stats,
+    .assignments-overview,
+    .quiz-performance,
+    .payment-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .attendance-stats,
+    .assignments-overview,
+    .quiz-performance,
+    .payment-summary {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+
 </head>
 
 <body>
@@ -466,7 +1078,7 @@
         <section class="profile-header-section">
             <div class="cover-image-container">
                 <img src="../pictures/student cover.jpg" alt="Cover" class="cover-img">
-<span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
+                <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
                 <div class="cover-overlay"></div>
             </div>
 
@@ -474,7 +1086,7 @@
                 <div class="profile-info-wrapper">
                     <div class="profile-avatar-container">
                         <img src="../pictures/student profile kid.jpg" alt="Student profile" class="profile-avatar">
-<span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+                        <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
                     </div>
 
                     <div class="profile-details-section">
@@ -748,35 +1360,35 @@
                     </section>
 
                     <!-- In dashboard-content section, add after Awards Showcase -->
-<section class="recent-achievements-section">
-    <h2 class="section-title">Recent Achievements</h2>
-    <div class="achievements-timeline">
-        <div class="achievement-item">
-            <div class="achievement-icon">🥇</div>
-            <div class="achievement-info">
-                <h4>Perfect Week</h4>
-                <p>Attended all sessions this week</p>
-                <span class="achievement-date">2 days ago</span>
-            </div>
-        </div>
-        <div class="achievement-item">
-            <div class="achievement-icon">🎯</div>
-            <div class="achievement-info">
-                <h4>Quiz Master</h4>
-                <p>Scored 95% in Math Quiz</p>
-                <span class="achievement-date">3 days ago</span>
-            </div>
-        </div>
-        <div class="achievement-item">
-            <div class="achievement-icon">📚</div>
-            <div class="achievement-info">
-                <h4>Study Streak</h4>
-                <p>7 days consecutive studying</p>
-                <span class="achievement-date">Active now</span>
-            </div>
-        </div>
-    </div>
-</section>
+                    <section class="recent-achievements-section">
+                        <h2 class="section-title">Recent Achievements</h2>
+                        <div class="achievements-timeline">
+                            <div class="achievement-item">
+                                <div class="achievement-icon">🥇</div>
+                                <div class="achievement-info">
+                                    <h4>Perfect Week</h4>
+                                    <p>Attended all sessions this week</p>
+                                    <span class="achievement-date">2 days ago</span>
+                                </div>
+                            </div>
+                            <div class="achievement-item">
+                                <div class="achievement-icon">🎯</div>
+                                <div class="achievement-info">
+                                    <h4>Quiz Master</h4>
+                                    <p>Scored 95% in Math Quiz</p>
+                                    <span class="achievement-date">3 days ago</span>
+                                </div>
+                            </div>
+                            <div class="achievement-item">
+                                <div class="achievement-icon">📚</div>
+                                <div class="achievement-info">
+                                    <h4>Study Streak</h4>
+                                    <p>7 days consecutive studying</p>
+                                    <span class="achievement-date">Active now</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 </div>
 
                 <!-- AI Insights Content -->
@@ -909,7 +1521,7 @@
                     </div>
                 </div>
 
-                <!-- My Tutors Content -->
+                <!-- My Tutors Content - Replace the existing my-tutors-content section -->
                 <div class="sidebar-content-panel" id="my-tutors-content">
                     <div class="section-header">
                         <h2 class="section-title">My Tutors</h2>
@@ -918,66 +1530,229 @@
                                 <input type="text" placeholder="Search tutors..." id="tutor-search"
                                     class="search-input">
                                 <span class="search-icon gradient-text">🔍</span>
-                                <span class="search-shortcut">⌘K</span>
                             </div>
-                            <button class="btn-primary add-course-btn" onclick="openAddCourseModal()">
+                            <button class="btn-primary" onclick="openFindTutorsModal()">
                                 <span class="btn-icon">➕</span>
-                                Add Course
+                                Find New Tutor
                             </button>
                         </div>
                     </div>
-                    <div class="table-container ethereal-glass">
-                        <table class="tutors-table">
-                            <thead>
-                                <tr>
-                                    <th class="gradient-text">Tutor</th>
-                                    <th class="gradient-text">Subjects</th>
-                                    <th class="gradient-text">Method</th>
-                                    <th class="gradient-text">Progress</th>
-                                    <th class="gradient-text">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tutors-tbody">
-                                <!-- Tutors will be populated by JavaScript -->
-                            </tbody>
-                        </table>
+
+                    <!-- Tutor Cards Grid -->
+                    <div class="tutors-grid" id="tutorsGrid">
+                        <!-- Tutor Card 1 -->
+                        <div class="tutor-card ethereal-glass">
+                            <div class="tutor-card-header">
+                                <img src="../pictures/tutor1.jpg" alt="Jane Smith" class="tutor-avatar">
+                                <div class="tutor-status online">
+                                    <span class="status-dot"></span>
+                                    <span>Online</span>
+                                </div>
+                            </div>
+                            <div class="tutor-card-body">
+                                <h3 class="tutor-name">Jane Smith</h3>
+                                <p class="tutor-title">Mathematics Expert</p>
+                                <div class="tutor-rating">
+                                    <div class="stars">
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star half">⭐</span>
+                                    </div>
+                                    <span class="rating-text">4.8 (156 reviews)</span>
+                                </div>
+                                <div class="tutor-subjects">
+                                    <span class="subject-tag">Algebra</span>
+                                    <span class="subject-tag">Calculus</span>
+                                    <span class="subject-tag">Geometry</span>
+                                </div>
+                                <div class="tutor-stats">
+                                    <div class="stat">
+                                        <span class="stat-icon">📚</span>
+                                        <span class="stat-value">24</span>
+                                        <span class="stat-label">Sessions</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-icon">📈</span>
+                                        <span class="stat-value">92%</span>
+                                        <span class="stat-label">Progress</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-icon">⏰</span>
+                                        <span class="stat-value">48h</span>
+                                        <span class="stat-label">Total Time</span>
+                                    </div>
+                                </div>
+                                <div class="tutor-next-session">
+                                    <span class="session-label">Next Session:</span>
+                                    <span class="session-time">Today, 2:44 PM</span>
+                                </div>
+                            </div>
+                            <div class="tutor-card-footer">
+                                <button class="btn-secondary" onclick="messageTutor('jane-smith')">
+                                    <span>💬</span> Message
+                                </button>
+                                <button class="btn-primary" onclick="openTutorDetailsModal('jane-smith')">
+                                    <span>👁️</span> View Details
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tutor Card 2 -->
+                        <div class="tutor-card ethereal-glass">
+                            <div class="tutor-card-header">
+                                <img src="../pictures/tutor2.jpg" alt="John Brown" class="tutor-avatar">
+                                <div class="tutor-status offline">
+                                    <span class="status-dot"></span>
+                                    <span>Offline</span>
+                                </div>
+                            </div>
+                            <div class="tutor-card-body">
+                                <h3 class="tutor-name">John Brown</h3>
+                                <p class="tutor-title">Physics Specialist</p>
+                                <div class="tutor-rating">
+                                    <div class="stars">
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                    </div>
+                                    <span class="rating-text">5.0 (89 reviews)</span>
+                                </div>
+                                <div class="tutor-subjects">
+                                    <span class="subject-tag">Mechanics</span>
+                                    <span class="subject-tag">Thermodynamics</span>
+                                    <span class="subject-tag">Quantum</span>
+                                </div>
+                                <div class="tutor-stats">
+                                    <div class="stat">
+                                        <span class="stat-icon">📚</span>
+                                        <span class="stat-value">18</span>
+                                        <span class="stat-label">Sessions</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-icon">📈</span>
+                                        <span class="stat-value">88%</span>
+                                        <span class="stat-label">Progress</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-icon">⏰</span>
+                                        <span class="stat-value">36h</span>
+                                        <span class="stat-label">Total Time</span>
+                                    </div>
+                                </div>
+                                <div class="tutor-next-session">
+                                    <span class="session-label">Next Session:</span>
+                                    <span class="session-time">Tomorrow, 10:00 AM</span>
+                                </div>
+                            </div>
+                            <div class="tutor-card-footer">
+                                <button class="btn-secondary" onclick="messageTutor('john-brown')">
+                                    <span>💬</span> Message
+                                </button>
+                                <button class="btn-primary" onclick="openTutorDetailsModal('john-brown')">
+                                    <span>👁️</span> View Details
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tutor Card 3 -->
+                        <div class="tutor-card ethereal-glass">
+                            <div class="tutor-card-header">
+                                <img src="../pictures/tutor3.jpg" alt="Dr. Wilson" class="tutor-avatar">
+                                <div class="tutor-status busy">
+                                    <span class="status-dot"></span>
+                                    <span>In Session</span>
+                                </div>
+                            </div>
+                            <div class="tutor-card-body">
+                                <h3 class="tutor-name">Dr. Emily Wilson</h3>
+                                <p class="tutor-title">Chemistry Professor</p>
+                                <div class="tutor-rating">
+                                    <div class="stars">
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star filled">⭐</span>
+                                        <span class="star">⭐</span>
+                                    </div>
+                                    <span class="rating-text">4.6 (203 reviews)</span>
+                                </div>
+                                <div class="tutor-subjects">
+                                    <span class="subject-tag">Organic Chemistry</span>
+                                    <span class="subject-tag">Biochemistry</span>
+                                    <span class="subject-tag">Lab Work</span>
+                                </div>
+                                <div class="tutor-stats">
+                                    <div class="stat">
+                                        <span class="stat-icon">📚</span>
+                                        <span class="stat-value">15</span>
+                                        <span class="stat-label">Sessions</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-icon">📈</span>
+                                        <span class="stat-value">75%</span>
+                                        <span class="stat-label">Progress</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-icon">⏰</span>
+                                        <span class="stat-value">30h</span>
+                                        <span class="stat-label">Total Time</span>
+                                    </div>
+                                </div>
+                                <div class="tutor-next-session">
+                                    <span class="session-label">Next Session:</span>
+                                    <span class="session-time">Wednesday, 3:00 PM</span>
+                                </div>
+                            </div>
+                            <div class="tutor-card-footer">
+                                <button class="btn-secondary" onclick="messageTutor('emily-wilson')">
+                                    <span>💬</span> Message
+                                </button>
+                                <button class="btn-primary" onclick="openTutorDetailsModal('emily-wilson')">
+                                    <span>👁️</span> View Details
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- My Quizzes Content -->
-<div class="sidebar-content-panel" id="my-quizzes-content">
-    <div class="section-header">
-        <h2 class="section-title">My Quizzes</h2>
-        <div class="header-buttons">
-            <button class="btn-secondary" onclick="filterQuizzes('upcoming')">Upcoming</button>
-            <button class="btn-secondary" onclick="filterQuizzes('completed')">Completed</button>
-            <button class="btn-primary" onclick="openPracticeQuizModal()">Practice Quiz</button>
-        </div>
-    </div>
-    
-    <div class="quiz-stats">
-        <div class="stat-box">
-            <span class="stat-number">12</span>
-            <span class="stat-label">Total Quizzes</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-number">8</span>
-            <span class="stat-label">Completed</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-number">85%</span>
-            <span class="stat-label">Avg Score</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-number">4</span>
-            <span class="stat-label">Upcoming</span>
-        </div>
-    </div>
-    
-    <div class="quizzes-list" id="quizzesList">
-        <!-- Quizzes will be loaded dynamically -->
-    </div>
-</div>
+                <div class="sidebar-content-panel" id="my-quizzes-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Quizzes</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="filterQuizzes('upcoming')">Upcoming</button>
+                            <button class="btn-secondary" onclick="filterQuizzes('completed')">Completed</button>
+                            <button class="btn-primary" onclick="openPracticeQuizModal()">Practice Quiz</button>
+                        </div>
+                    </div>
+
+                    <div class="quiz-stats">
+                        <div class="stat-box">
+                            <span class="stat-number">12</span>
+                            <span class="stat-label">Total Quizzes</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">8</span>
+                            <span class="stat-label">Completed</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">85%</span>
+                            <span class="stat-label">Avg Score</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">4</span>
+                            <span class="stat-label">Upcoming</span>
+                        </div>
+                    </div>
+
+                    <div class="quizzes-list" id="quizzesList">
+                        <!-- Quizzes will be loaded dynamically -->
+                    </div>
+                </div>
 
                 <!-- ALL OTHER STUDENT CONTENT PANELS -->
                 <!-- Manage Finances Content -->
@@ -1382,57 +2157,52 @@
             <!-- Right Sidebar - EXACTLY WHERE JOURNALIST-PROFILE HAS IT -->
             <div class="right-sidebar">
                 <!-- Today's Progress Widget with View Details Implementation -->
-<div class="sidebar-widget progress-widget">
-    <div class="widget-header">
-        <h3>📊 Today's Progress</h3>
-        <a href="#" class="widget-action" onclick="viewProgressDetails(event)">View Details</a>
-    </div>
-    
-    <div class="progress-chart" onclick="viewProgressDetails(event)" style="cursor: pointer;">
-        <div class="circular-progress-container">
-            <svg viewBox="0 0 36 36" class="circular-chart" width="120" height="120">
-                <defs>
-                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:#FFC107;stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
-                    </linearGradient>
-                    <filter id="glow">
-                        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-                        <feMerge>
-                            <feMergeNode in="coloredBlur"/>
-                            <feMergeNode in="SourceGraphic"/>
-                        </feMerge>
-                    </filter>
-                </defs>
-                <path class="circle-bg" 
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="#E0E0E0"
-                      stroke-width="2.5" />
-                <path class="circle" 
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                      fill="none"
-                      stroke="url(#progressGradient)" 
-                      stroke-width="2.5"
-                      stroke-dasharray="72, 100"
-                      stroke-dashoffset="25"
-                      filter="url(#glow)" />
-                <text x="18" y="20.35" class="percentage" text-anchor="middle" font-size="8" font-weight="bold" fill="#FFD700">72%</text>
-            </svg>
-        </div>
-        <div class="progress-details">
-            <div class="progress-item">
-                <span>Completed</span>
-                <strong style="color: #FFD700;">5 lessons</strong>
-            </div>
-            <div class="progress-item">
-                <span>Time spent</span>
-                <strong style="color: #FFC107;">3h 45m</strong>
-            </div>
-        </div>
-    </div>
-</div>
+                <div class="sidebar-widget progress-widget">
+                    <div class="widget-header">
+                        <h3>📊 Today's Progress</h3>
+                        <a href="#" class="widget-action" onclick="viewProgressDetails(event)">View Details</a>
+                    </div>
+
+                    <div class="progress-chart" onclick="viewProgressDetails(event)" style="cursor: pointer;">
+                        <div class="circular-progress-container">
+                            <svg viewBox="0 0 36 36" class="circular-chart" width="120" height="120">
+                                <defs>
+                                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                                        <stop offset="50%" style="stop-color:#FFC107;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
+                                    </linearGradient>
+                                    <filter id="glow">
+                                        <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                                        <feMerge>
+                                            <feMergeNode in="coloredBlur" />
+                                            <feMergeNode in="SourceGraphic" />
+                                        </feMerge>
+                                    </filter>
+                                </defs>
+                                <path class="circle-bg"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none" stroke="#E0E0E0" stroke-width="2.5" />
+                                <path class="circle"
+                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none" stroke="url(#progressGradient)" stroke-width="2.5"
+                                    stroke-dasharray="72, 100" stroke-dashoffset="25" filter="url(#glow)" />
+                                <text x="18" y="20.35" class="percentage" text-anchor="middle" font-size="8"
+                                    font-weight="bold" fill="#FFD700">72%</text>
+                            </svg>
+                        </div>
+                        <div class="progress-details">
+                            <div class="progress-item">
+                                <span>Completed</span>
+                                <strong style="color: #FFD700;">5 lessons</strong>
+                            </div>
+                            <div class="progress-item">
+                                <span>Time spent</span>
+                                <strong style="color: #FFC107;">3h 45m</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <!-- Quick Actions Widget -->
                 <div class="sidebar-widget quick-actions-widget">
                     <div class="widget-header">
@@ -1676,49 +2446,49 @@
                 </div>
 
                 <!-- Events Widget -->
-                
+
                 <!-- Updated Events Widget with Sessions -->
-<div class="bottom-widget events-widget">
-    <div class="widget-header">
-        <h3>📅 Upcoming Events & Sessions</h3>
-        <button class="widget-action" onclick="openAllEventsModal()">View All</button>
-    </div>
-    <div class="events-list">
-        <div class="event-item">
-            <div class="event-time">
-                <span class="time">2:44 PM</span>
-                <span class="date">Today</span>
-            </div>
-            <div class="event-info">
-                <h4>Mathematics Session</h4>
-                <p>with Jane Smith</p>
-                <button class="btn-join-mini" onclick="joinSession('math')">Join</button>
-            </div>
-        </div>
-        <div class="event-item">
-            <div class="event-time">
-                <span class="time">4:00 PM</span>
-                <span class="date">Today</span>
-            </div>
-            <div class="event-info">
-                <h4>Physics Lab Session</h4>
-                <p>with John Brown</p>
-                <button class="btn-join-mini" onclick="joinSession('physics')">Join</button>
-            </div>
-        </div>
-        <div class="event-item">
-            <div class="event-time">
-                <span class="time">10:00 AM</span>
-                <span class="date">Tomorrow</span>
-            </div>
-            <div class="event-info">
-                <h4>Chemistry Test</h4>
-                <p>Chapter 5: Organic Chemistry</p>
-            </div>
-        </div>
-    </div>
-</div>
-            
+                <div class="bottom-widget events-widget">
+                    <div class="widget-header">
+                        <h3>📅 Upcoming Events & Sessions</h3>
+                        <button class="widget-action" onclick="openAllEventsModal()">View All</button>
+                    </div>
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">2:44 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Mathematics Session</h4>
+                                <p>with Jane Smith</p>
+                                <button class="btn-join-mini" onclick="joinSession('math')">Join</button>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">4:00 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Physics Lab Session</h4>
+                                <p>with John Brown</p>
+                                <button class="btn-join-mini" onclick="joinSession('physics')">Join</button>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">10:00 AM</span>
+                                <span class="date">Tomorrow</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Chemistry Test</h4>
+                                <p>Chapter 5: Organic Chemistry</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </section>
     </div>
@@ -1875,16 +2645,866 @@
         </div>
     </div>
 
-    <!-- Tutor Details Modal -->
+    <!-- My Tutors Content - Replace the existing my-tutors-content section -->
+    <div class="sidebar-content-panel" id="my-tutors-content">
+        <div class="section-header">
+            <h2 class="section-title">My Tutors</h2>
+            <div class="section-actions">
+                <div class="search-box ethereal-glass">
+                    <input type="text" placeholder="Search tutors..." id="tutor-search" class="search-input">
+                    <span class="search-icon gradient-text">🔍</span>
+                </div>
+                <button class="btn-primary" onclick="openFindTutorsModal()">
+                    <span class="btn-icon">➕</span>
+                    Find New Tutor
+                </button>
+            </div>
+        </div>
+
+        <!-- Tutor Cards Grid -->
+        <div class="tutors-grid" id="tutorsGrid">
+            <!-- Tutor Card 1 -->
+            <div class="tutor-card ethereal-glass">
+                <div class="tutor-card-header">
+                    <img src="../pictures/tutor1.jpg" alt="Jane Smith" class="tutor-avatar">
+                    <div class="tutor-status online">
+                        <span class="status-dot"></span>
+                        <span>Online</span>
+                    </div>
+                </div>
+                <div class="tutor-card-body">
+                    <h3 class="tutor-name">Jane Smith</h3>
+                    <p class="tutor-title">Mathematics Expert</p>
+                    <div class="tutor-rating">
+                        <div class="stars">
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star half">⭐</span>
+                        </div>
+                        <span class="rating-text">4.8 (156 reviews)</span>
+                    </div>
+                    <div class="tutor-subjects">
+                        <span class="subject-tag">Algebra</span>
+                        <span class="subject-tag">Calculus</span>
+                        <span class="subject-tag">Geometry</span>
+                    </div>
+                    <div class="tutor-stats">
+                        <div class="stat">
+                            <span class="stat-icon">📚</span>
+                            <span class="stat-value">24</span>
+                            <span class="stat-label">Sessions</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">📈</span>
+                            <span class="stat-value">92%</span>
+                            <span class="stat-label">Progress</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">⏰</span>
+                            <span class="stat-value">48h</span>
+                            <span class="stat-label">Total Time</span>
+                        </div>
+                    </div>
+                    <div class="tutor-next-session">
+                        <span class="session-label">Next Session:</span>
+                        <span class="session-time">Today, 2:44 PM</span>
+                    </div>
+                </div>
+                <div class="tutor-card-footer">
+                    <button class="btn-secondary" onclick="messageTutor('jane-smith')">
+                        <span>💬</span> Message
+                    </button>
+                    <button class="btn-primary" onclick="openTutorDetailsModal('jane-smith')">
+                        <span>👁️</span> View Details
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tutor Card 2 -->
+            <div class="tutor-card ethereal-glass">
+                <div class="tutor-card-header">
+                    <img src="../pictures/tutor2.jpg" alt="John Brown" class="tutor-avatar">
+                    <div class="tutor-status offline">
+                        <span class="status-dot"></span>
+                        <span>Offline</span>
+                    </div>
+                </div>
+                <div class="tutor-card-body">
+                    <h3 class="tutor-name">John Brown</h3>
+                    <p class="tutor-title">Physics Specialist</p>
+                    <div class="tutor-rating">
+                        <div class="stars">
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                        </div>
+                        <span class="rating-text">5.0 (89 reviews)</span>
+                    </div>
+                    <div class="tutor-subjects">
+                        <span class="subject-tag">Mechanics</span>
+                        <span class="subject-tag">Thermodynamics</span>
+                        <span class="subject-tag">Quantum</span>
+                    </div>
+                    <div class="tutor-stats">
+                        <div class="stat">
+                            <span class="stat-icon">📚</span>
+                            <span class="stat-value">18</span>
+                            <span class="stat-label">Sessions</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">📈</span>
+                            <span class="stat-value">88%</span>
+                            <span class="stat-label">Progress</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">⏰</span>
+                            <span class="stat-value">36h</span>
+                            <span class="stat-label">Total Time</span>
+                        </div>
+                    </div>
+                    <div class="tutor-next-session">
+                        <span class="session-label">Next Session:</span>
+                        <span class="session-time">Tomorrow, 10:00 AM</span>
+                    </div>
+                </div>
+                <div class="tutor-card-footer">
+                    <button class="btn-secondary" onclick="messageTutor('john-brown')">
+                        <span>💬</span> Message
+                    </button>
+                    <button class="btn-primary" onclick="openTutorDetailsModal('john-brown')">
+                        <span>👁️</span> View Details
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tutor Card 3 -->
+            <div class="tutor-card ethereal-glass">
+                <div class="tutor-card-header">
+                    <img src="../pictures/tutor3.jpg" alt="Dr. Wilson" class="tutor-avatar">
+                    <div class="tutor-status busy">
+                        <span class="status-dot"></span>
+                        <span>In Session</span>
+                    </div>
+                </div>
+                <div class="tutor-card-body">
+                    <h3 class="tutor-name">Dr. Emily Wilson</h3>
+                    <p class="tutor-title">Chemistry Professor</p>
+                    <div class="tutor-rating">
+                        <div class="stars">
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star filled">⭐</span>
+                            <span class="star">⭐</span>
+                        </div>
+                        <span class="rating-text">4.6 (203 reviews)</span>
+                    </div>
+                    <div class="tutor-subjects">
+                        <span class="subject-tag">Organic Chemistry</span>
+                        <span class="subject-tag">Biochemistry</span>
+                        <span class="subject-tag">Lab Work</span>
+                    </div>
+                    <div class="tutor-stats">
+                        <div class="stat">
+                            <span class="stat-icon">📚</span>
+                            <span class="stat-value">15</span>
+                            <span class="stat-label">Sessions</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">📈</span>
+                            <span class="stat-value">75%</span>
+                            <span class="stat-label">Progress</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-icon">⏰</span>
+                            <span class="stat-value">30h</span>
+                            <span class="stat-label">Total Time</span>
+                        </div>
+                    </div>
+                    <div class="tutor-next-session">
+                        <span class="session-label">Next Session:</span>
+                        <span class="session-time">Wednesday, 3:00 PM</span>
+                    </div>
+                </div>
+                <div class="tutor-card-footer">
+                    <button class="btn-secondary" onclick="messageTutor('emily-wilson')">
+                        <span>💬</span> Message
+                    </button>
+                    <button class="btn-primary" onclick="openTutorDetailsModal('emily-wilson')">
+                        <span>👁️</span> View Details
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tutor Details Modal with Sidebar -->
     <div class="modal tutor-details-modal" id="tutor-details-modal">
-        <div class="modal-content modal-large ethereal-glass">
+        <div class="modal-content modal-extra-large ethereal-glass">
             <div class="neural-mesh"></div>
             <div class="modal-header">
-                <h2 class="quantum-heading">Tutor Details</h2>
+                <h2 class="quantum-heading" id="tutorDetailsTitle">Tutor Details - Jane Smith</h2>
                 <span class="close gradient-text">&times;</span>
             </div>
-            <div class="tutor-details-content">
-                <!-- Will be populated by JavaScript -->
+
+            <div class="tutor-details-container">
+                <!-- Left Sidebar Navigation -->
+                <div class="tutor-details-sidebar">
+                    <div class="tutor-profile-section">
+                        <img src="../pictures/tutor1.jpg" alt="Tutor" class="tutor-profile-img">
+                        <h3 class="tutor-profile-name">Jane Smith</h3>
+                        <p class="tutor-profile-title">Mathematics Expert</p>
+                        <div class="tutor-profile-rating">
+                            <span class="stars">⭐⭐⭐⭐⭐</span>
+                            <span class="rating">4.8/5.0</span>
+                        </div>
+                    </div>
+
+                    <nav class="tutor-nav">
+                        <button class="tutor-nav-btn active" onclick="switchTutorTab('progress')">
+                            <span class="nav-icon">📈</span>
+                            <span>Progress Tracking</span>
+                        </button>
+                        <button class="tutor-nav-btn" onclick="switchTutorTab('attendance')">
+                            <span class="nav-icon">📅</span>
+                            <span>Attendance</span>
+                        </button>
+                        <button class="tutor-nav-btn" onclick="switchTutorTab('assignments')">
+                            <span class="nav-icon">📝</span>
+                            <span>Assignments</span>
+                        </button>
+                        <button class="tutor-nav-btn" onclick="switchTutorTab('quizzes')">
+                            <span class="nav-icon">📋</span>
+                            <span>Quizzes</span>
+                        </button>
+                        <button class="tutor-nav-btn" onclick="switchTutorTab('payments')">
+                            <span class="nav-icon">💳</span>
+                            <span>Tuition & Payments</span>
+                        </button>
+                        <button class="tutor-nav-btn" onclick="switchTutorTab('schedule')">
+                            <span class="nav-icon">⏰</span>
+                            <span>Schedule & Sessions</span>
+                        </button>
+                        <button class="tutor-nav-btn" onclick="switchTutorTab('resources')">
+                            <span class="nav-icon">📚</span>
+                            <span>Learning Resources</span>
+                        </button>
+                        <button class="tutor-nav-btn" onclick="switchTutorTab('analytics')">
+                            <span class="nav-icon">📊</span>
+                            <span>Reports & Analytics</span>
+                        </button>
+                    </nav>
+
+                    <div class="tutor-quick-actions">
+                        <button class="btn-action-full" onclick="scheduleTutorSession()">
+                            <span>📅</span> Schedule Session
+                        </button>
+                        <button class="btn-action-full" onclick="startVideoCall()">
+                            <span>📹</span> Start Video Call
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Content Area -->
+                <div class="tutor-details-content">
+                    <!-- Progress Tracking Tab -->
+                    <div class="tutor-tab-content active" id="tutor-progress">
+                        <h3>Progress Tracking</h3>
+
+                        <div class="progress-overview">
+                            <div class="progress-card">
+                                <h4>Overall Progress</h4>
+                                <div class="circular-progress">
+                                    <svg viewBox="0 0 36 36" width="120" height="120">
+                                        <path class="circle-bg"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none" stroke="#E0E0E0" stroke-width="2.5" />
+                                        <path class="circle"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none" stroke="#FFD700" stroke-width="2.5"
+                                            stroke-dasharray="92, 100" />
+                                        <text x="18" y="20.35" text-anchor="middle" font-size="8" font-weight="bold"
+                                            fill="#FFD700">92%</text>
+                                    </svg>
+                                </div>
+                                <p class="progress-description">Excellent progress in Mathematics</p>
+                            </div>
+
+                            <div class="progress-details-grid">
+                                <div class="progress-detail-card">
+                                    <span class="detail-icon">📖</span>
+                                    <div class="detail-info">
+                                        <span class="detail-value">15/18</span>
+                                        <span class="detail-label">Chapters Completed</span>
+                                    </div>
+                                </div>
+                                <div class="progress-detail-card">
+                                    <span class="detail-icon">🎯</span>
+                                    <div class="detail-info">
+                                        <span class="detail-value">88%</span>
+                                        <span class="detail-label">Average Score</span>
+                                    </div>
+                                </div>
+                                <div class="progress-detail-card">
+                                    <span class="detail-icon">⏱️</span>
+                                    <div class="detail-info">
+                                        <span class="detail-value">48h</span>
+                                        <span class="detail-label">Total Study Time</span>
+                                    </div>
+                                </div>
+                                <div class="progress-detail-card">
+                                    <span class="detail-icon">📈</span>
+                                    <div class="detail-info">
+                                        <span class="detail-value">+12%</span>
+                                        <span class="detail-label">Improvement</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chapter-progress">
+                            <h4>Chapter-wise Progress</h4>
+                            <div class="chapter-list">
+                                <div class="chapter-item completed">
+                                    <div class="chapter-info">
+                                        <span class="chapter-number">Ch. 1</span>
+                                        <span class="chapter-name">Algebra Basics</span>
+                                    </div>
+                                    <div class="chapter-progress-bar">
+                                        <div class="progress-fill" style="width: 100%;"></div>
+                                    </div>
+                                    <span class="chapter-score">100%</span>
+                                </div>
+                                <div class="chapter-item completed">
+                                    <div class="chapter-info">
+                                        <span class="chapter-number">Ch. 2</span>
+                                        <span class="chapter-name">Linear Equations</span>
+                                    </div>
+                                    <div class="chapter-progress-bar">
+                                        <div class="progress-fill" style="width: 100%;"></div>
+                                    </div>
+                                    <span class="chapter-score">100%</span>
+                                </div>
+                                <div class="chapter-item in-progress">
+                                    <div class="chapter-info">
+                                        <span class="chapter-number">Ch. 3</span>
+                                        <span class="chapter-name">Quadratic Equations</span>
+                                    </div>
+                                    <div class="chapter-progress-bar">
+                                        <div class="progress-fill" style="width: 75%;"></div>
+                                    </div>
+                                    <span class="chapter-score">75%</span>
+                                </div>
+                                <div class="chapter-item">
+                                    <div class="chapter-info">
+                                        <span class="chapter-number">Ch. 4</span>
+                                        <span class="chapter-name">Polynomials</span>
+                                    </div>
+                                    <div class="chapter-progress-bar">
+                                        <div class="progress-fill" style="width: 0%;"></div>
+                                    </div>
+                                    <span class="chapter-score">Not Started</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Tab -->
+                    <div class="tutor-tab-content" id="tutor-attendance">
+                        <h3>Attendance Record</h3>
+
+                        <div class="attendance-stats">
+                            <div class="attendance-card present">
+                                <span class="attendance-icon">✅</span>
+                                <div class="attendance-info">
+                                    <span class="attendance-value">22</span>
+                                    <span class="attendance-label">Present</span>
+                                </div>
+                            </div>
+                            <div class="attendance-card absent">
+                                <span class="attendance-icon">❌</span>
+                                <div class="attendance-info">
+                                    <span class="attendance-value">2</span>
+                                    <span class="attendance-label">Absent</span>
+                                </div>
+                            </div>
+                            <div class="attendance-card late">
+                                <span class="attendance-icon">⏰</span>
+                                <div class="attendance-info">
+                                    <span class="attendance-value">1</span>
+                                    <span class="attendance-label">Late</span>
+                                </div>
+                            </div>
+                            <div class="attendance-card percentage">
+                                <span class="attendance-icon">📊</span>
+                                <div class="attendance-info">
+                                    <span class="attendance-value">91.7%</span>
+                                    <span class="attendance-label">Attendance Rate</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="attendance-calendar">
+                            <h4>Monthly Attendance</h4>
+                            <div class="calendar-grid">
+                                <!-- Calendar implementation here -->
+                                <div class="calendar-day present">1</div>
+                                <div class="calendar-day present">2</div>
+                                <div class="calendar-day">3</div>
+                                <div class="calendar-day present">4</div>
+                                <div class="calendar-day present">5</div>
+                                <div class="calendar-day">6</div>
+                                <div class="calendar-day">7</div>
+                                <div class="calendar-day present">8</div>
+                                <div class="calendar-day present">9</div>
+                                <div class="calendar-day">10</div>
+                                <div class="calendar-day absent">11</div>
+                                <div class="calendar-day present">12</div>
+                                <!-- Add more days as needed -->
+                            </div>
+                        </div>
+
+                        <div class="attendance-history">
+                            <h4>Recent Sessions</h4>
+                            <table class="attendance-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                        <th>Topic</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Jan 15, 2025</td>
+                                        <td>2:00 PM</td>
+                                        <td>1h 30m</td>
+                                        <td><span class="status-badge present">Present</span></td>
+                                        <td>Quadratic Equations</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jan 13, 2025</td>
+                                        <td>2:00 PM</td>
+                                        <td>1h 30m</td>
+                                        <td><span class="status-badge present">Present</span></td>
+                                        <td>Linear Equations Review</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Jan 11, 2025</td>
+                                        <td>2:00 PM</td>
+                                        <td>-</td>
+                                        <td><span class="status-badge absent">Absent</span></td>
+                                        <td>Practice Problems</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Assignments Tab -->
+                    <div class="tutor-tab-content" id="tutor-assignments">
+                        <h3>Assignments</h3>
+
+                        <div class="assignments-overview">
+                            <div class="assignment-stat">
+                                <span class="stat-icon">📝</span>
+                                <span class="stat-value">18</span>
+                                <span class="stat-label">Total Assignments</span>
+                            </div>
+                            <div class="assignment-stat">
+                                <span class="stat-icon">✅</span>
+                                <span class="stat-value">15</span>
+                                <span class="stat-label">Completed</span>
+                            </div>
+                            <div class="assignment-stat">
+                                <span class="stat-icon">⏳</span>
+                                <span class="stat-value">2</span>
+                                <span class="stat-label">Pending</span>
+                            </div>
+                            <div class="assignment-stat">
+                                <span class="stat-icon">⚠️</span>
+                                <span class="stat-value">1</span>
+                                <span class="stat-label">Overdue</span>
+                            </div>
+                        </div>
+
+                        <div class="assignments-list">
+                            <div class="assignment-item pending">
+                                <div class="assignment-header">
+                                    <h4>Quadratic Equations Practice Set</h4>
+                                    <span class="assignment-status pending">Pending</span>
+                                </div>
+                                <div class="assignment-details">
+                                    <span class="detail">📅 Due: Jan 20, 2025</span>
+                                    <span class="detail">📄 10 Problems</span>
+                                    <span class="detail">⏱️ Est. 45 min</span>
+                                </div>
+                                <div class="assignment-actions">
+                                    <button class="btn-small">Start</button>
+                                    <button class="btn-small secondary">View Details</button>
+                                </div>
+                            </div>
+
+                            <div class="assignment-item completed">
+                                <div class="assignment-header">
+                                    <h4>Linear Equations Worksheet</h4>
+                                    <span class="assignment-status completed">Completed</span>
+                                </div>
+                                <div class="assignment-details">
+                                    <span class="detail">✅ Submitted: Jan 10, 2025</span>
+                                    <span class="detail">🎯 Score: 92/100</span>
+                                    <span class="detail">⏱️ Time: 38 min</span>
+                                </div>
+                                <div class="assignment-actions">
+                                    <button class="btn-small">View Feedback</button>
+                                    <button class="btn-small secondary">Review</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quizzes Tab -->
+                    <div class="tutor-tab-content" id="tutor-quizzes">
+                        <h3>Quizzes & Tests</h3>
+
+                        <div class="quiz-performance">
+                            <div class="performance-card">
+                                <canvas id="quizPerformanceChart"></canvas>
+                            </div>
+                            <div class="quiz-stats">
+                                <div class="quiz-stat">
+                                    <span class="stat-label">Average Score</span>
+                                    <span class="stat-value">85%</span>
+                                </div>
+                                <div class="quiz-stat">
+                                    <span class="stat-label">Best Score</span>
+                                    <span class="stat-value">98%</span>
+                                </div>
+                                <div class="quiz-stat">
+                                    <span class="stat-label">Total Quizzes</span>
+                                    <span class="stat-value">12</span>
+                                </div>
+                                <div class="quiz-stat">
+                                    <span class="stat-label">Pass Rate</span>
+                                    <span class="stat-value">100%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quiz-history">
+                            <h4>Recent Quizzes</h4>
+                            <div class="quiz-list">
+                                <div class="quiz-item">
+                                    <div class="quiz-info">
+                                        <h5>Chapter 3 Assessment</h5>
+                                        <span class="quiz-date">Jan 12, 2025</span>
+                                    </div>
+                                    <div class="quiz-score">
+                                        <span class="score-value">88%</span>
+                                        <span class="score-label">22/25</span>
+                                    </div>
+                                    <button class="btn-small">Review</button>
+                                </div>
+                                <div class="quiz-item">
+                                    <div class="quiz-info">
+                                        <h5>Mid-term Practice</h5>
+                                        <span class="quiz-date">Jan 5, 2025</span>
+                                    </div>
+                                    <div class="quiz-score">
+                                        <span class="score-value">92%</span>
+                                        <span class="score-label">46/50</span>
+                                    </div>
+                                    <button class="btn-small">Review</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payments Tab -->
+                    <div class="tutor-tab-content" id="tutor-payments">
+                        <h3>Tuition & Payments</h3>
+
+                        <div class="payment-summary">
+                            <div class="payment-card">
+                                <span class="payment-icon">💰</span>
+                                <div class="payment-info">
+                                    <span class="payment-label">Monthly Fee</span>
+                                    <span class="payment-value">$200</span>
+                                </div>
+                            </div>
+                            <div class="payment-card">
+                                <span class="payment-icon">💳</span>
+                                <div class="payment-info">
+                                    <span class="payment-label">Next Payment</span>
+                                    <span class="payment-value">Feb 1, 2025</span>
+                                </div>
+                            </div>
+                            <div class="payment-card">
+                                <span class="payment-icon">✅</span>
+                                <div class="payment-info">
+                                    <span class="payment-label">Status</span>
+                                    <span class="payment-value">Paid</span>
+                                </div>
+                            </div>
+                            <div class="payment-card">
+                                <span class="payment-icon">📊</span>
+                                <div class="payment-info">
+                                    <span class="payment-label">Total Paid</span>
+                                    <span class="payment-value">$2,400</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="payment-history">
+                            <h4>Payment History</h4>
+                            <table class="payment-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Description</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Invoice</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Jan 1, 2025</td>
+                                        <td>Monthly Tuition - January</td>
+                                        <td>$200</td>
+                                        <td><span class="status-badge paid">Paid</span></td>
+                                        <td><button class="btn-link">Download</button></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Dec 1, 2024</td>
+                                        <td>Monthly Tuition - December</td>
+                                        <td>$200</td>
+                                        <td><span class="status-badge paid">Paid</span></td>
+                                        <td><button class="btn-link">Download</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="payment-actions">
+                            <button class="btn-primary">Make Payment</button>
+                            <button class="btn-secondary">View All Invoices</button>
+                            <button class="btn-secondary">Payment Settings</button>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Tab -->
+                    <div class="tutor-tab-content" id="tutor-schedule">
+                        <h3>Schedule & Sessions</h3>
+
+                        <div class="schedule-overview">
+                            <div class="upcoming-sessions">
+                                <h4>Upcoming Sessions</h4>
+                                <div class="session-list">
+                                    <div class="session-item">
+                                        <div class="session-time">
+                                            <span class="day">Today</span>
+                                            <span class="time">2:44 PM</span>
+                                        </div>
+                                        <div class="session-details">
+                                            <h5>Mathematics - Quadratic Equations</h5>
+                                            <p>Chapter 3, Section 2</p>
+                                            <span class="duration">Duration: 1h 30m</span>
+                                        </div>
+                                        <div class="session-actions">
+                                            <button class="btn-primary">Join Session</button>
+                                            <button class="btn-secondary">Reschedule</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="session-item">
+                                        <div class="session-time">
+                                            <span class="day">Jan 20</span>
+                                            <span class="time">2:00 PM</span>
+                                        </div>
+                                        <div class="session-details">
+                                            <h5>Mathematics - Practice Problems</h5>
+                                            <p>Review & Problem Solving</p>
+                                            <span class="duration">Duration: 1h 30m</span>
+                                        </div>
+                                        <div class="session-actions">
+                                            <button class="btn-secondary">View Details</button>
+                                            <button class="btn-secondary">Reschedule</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="schedule-calendar-mini">
+                                <h4>January 2025</h4>
+                                <div class="calendar-mini">
+                                    <!-- Mini calendar implementation -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="schedule-actions">
+                            <button class="btn-primary" onclick="scheduleTutorSession()">Schedule New Session</button>
+                            <button class="btn-secondary">View Full Calendar</button>
+                            <button class="btn-secondary">Session Preferences</button>
+                        </div>
+                    </div>
+
+                    <!-- Resources Tab -->
+                    <div class="tutor-tab-content" id="tutor-resources">
+                        <h3>Learning Resources</h3>
+
+                        <div class="resources-categories">
+                            <button class="category-btn active">All</button>
+                            <button class="category-btn">Study Materials</button>
+                            <button class="category-btn">Videos</button>
+                            <button class="category-btn">Practice Problems</button>
+                            <button class="category-btn">References</button>
+                        </div>
+
+                        <div class="resources-grid">
+                            <div class="resource-item">
+                                <div class="resource-icon">📄</div>
+                                <div class="resource-info">
+                                    <h4>Algebra Fundamentals Guide</h4>
+                                    <p>Complete guide to algebraic concepts</p>
+                                    <span class="resource-meta">PDF • 2.5 MB • Updated Jan 10</span>
+                                </div>
+                                <div class="resource-actions">
+                                    <button class="btn-icon" title="Download">⬇️</button>
+                                    <button class="btn-icon" title="View">👁️</button>
+                                </div>
+                            </div>
+
+                            <div class="resource-item">
+                                <div class="resource-icon">🎥</div>
+                                <div class="resource-info">
+                                    <h4>Quadratic Equations Explained</h4>
+                                    <p>Video tutorial with examples</p>
+                                    <span class="resource-meta">Video • 45 min • Jan 8</span>
+                                </div>
+                                <div class="resource-actions">
+                                    <button class="btn-icon" title="Play">▶️</button>
+                                    <button class="btn-icon" title="Save">💾</button>
+                                </div>
+                            </div>
+
+                            <div class="resource-item">
+                                <div class="resource-icon">📝</div>
+                                <div class="resource-info">
+                                    <h4>Practice Problem Set #3</h4>
+                                    <p>50 problems with solutions</p>
+                                    <span class="resource-meta">Worksheet • Jan 5</span>
+                                </div>
+                                <div class="resource-actions">
+                                    <button class="btn-icon" title="Download">⬇️</button>
+                                    <button class="btn-icon" title="Start">✏️</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="resources-upload">
+                            <button class="btn-primary">Request Resource</button>
+                            <button class="btn-secondary">Browse Library</button>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Tab -->
+                    <div class="tutor-tab-content" id="tutor-analytics">
+                        <h3>Reports & Analytics</h3>
+
+                        <div class="analytics-dashboard">
+                            <div class="analytics-card">
+                                <h4>Performance Trend</h4>
+                                <canvas id="performanceTrendChart"></canvas>
+                            </div>
+
+                            <div class="analytics-card">
+                                <h4>Subject Mastery</h4>
+                                <canvas id="subjectMasteryChart"></canvas>
+                            </div>
+
+                            <div class="analytics-insights">
+                                <h4>Key Insights</h4>
+                                <div class="insight-list">
+                                    <div class="insight-item positive">
+                                        <span class="insight-icon">📈</span>
+                                        <div class="insight-text">
+                                            <h5>Strong Improvement</h5>
+                                            <p>12% improvement in quiz scores over the last month</p>
+                                        </div>
+                                    </div>
+                                    <div class="insight-item">
+                                        <span class="insight-icon">🎯</span>
+                                        <div class="insight-text">
+                                            <h5>Focus Area</h5>
+                                            <p>Quadratic equations need more practice</p>
+                                        </div>
+                                    </div>
+                                    <div class="insight-item positive">
+                                        <span class="insight-icon">⭐</span>
+                                        <div class="insight-text">
+                                            <h5>Achievement</h5>
+                                            <p>Maintained 90%+ attendance for 3 months</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="analytics-comparison">
+                                <h4>Comparative Analysis</h4>
+                                <table class="comparison-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Metric</th>
+                                            <th>This Month</th>
+                                            <th>Last Month</th>
+                                            <th>Change</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Average Score</td>
+                                            <td>88%</td>
+                                            <td>76%</td>
+                                            <td class="positive">+12%</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Sessions Attended</td>
+                                            <td>8</td>
+                                            <td>7</td>
+                                            <td class="positive">+1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Assignments Completed</td>
+                                            <td>6</td>
+                                            <td>5</td>
+                                            <td class="positive">+1</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Study Hours</td>
+                                            <td>24h</td>
+                                            <td>21h</td>
+                                            <td class="positive">+3h</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="report-actions">
+                            <button class="btn-primary">Generate Full Report</button>
+                            <button class="btn-secondary">Export to PDF</button>
+                            <button class="btn-secondary">Share with Parent</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2148,222 +3768,226 @@
     </div>
 
     <!-- Progress Tracker Content with Detailed View -->
-<div class="sidebar-content-panel" id="progress-tracker-content">
-    <div class="section-header">
-        <h2 class="section-title">Progress Tracker - Detailed View</h2>
-        <div class="header-buttons">
-            <button class="btn-secondary" onclick="filterProgress('today')">Today</button>
-            <button class="btn-secondary" onclick="filterProgress('week')">This Week</button>
-            <button class="btn-secondary" onclick="filterProgress('month')">This Month</button>
-            <button class="btn-primary" onclick="exportProgressReport()">Export Report</button>
-        </div>
-    </div>
-    
-    <!-- Today's Summary Card -->
-    <div class="progress-summary-card">
-        <h3>Today's Summary - <span id="currentDate"></span></h3>
-        <div class="summary-grid">
-            <div class="summary-item">
-                <div class="summary-icon">📚</div>
-                <div class="summary-info">
-                    <span class="summary-value">5/7</span>
-                    <span class="summary-label">Lessons Completed</span>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-icon">⏱️</div>
-                <div class="summary-info">
-                    <span class="summary-value">3h 45m</span>
-                    <span class="summary-label">Study Time</span>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-icon">📝</div>
-                <div class="summary-info">
-                    <span class="summary-value">2/3</span>
-                    <span class="summary-label">Assignments</span>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-icon">🎯</div>
-                <div class="summary-info">
-                    <span class="summary-value">72%</span>
-                    <span class="summary-label">Daily Goal</span>
-                </div>
+    <div class="sidebar-content-panel" id="progress-tracker-content">
+        <div class="section-header">
+            <h2 class="section-title">Progress Tracker - Detailed View</h2>
+            <div class="header-buttons">
+                <button class="btn-secondary" onclick="filterProgress('today')">Today</button>
+                <button class="btn-secondary" onclick="filterProgress('week')">This Week</button>
+                <button class="btn-secondary" onclick="filterProgress('month')">This Month</button>
+                <button class="btn-primary" onclick="exportProgressReport()">Export Report</button>
             </div>
         </div>
-    </div>
-    
-    <!-- Detailed Progress Breakdown -->
-    <div class="progress-breakdown">
-        <h3>Subject-wise Progress</h3>
-        <div class="subject-progress-list">
-            <div class="subject-progress-item">
-                <div class="subject-header">
-                    <span class="subject-name">Mathematics</span>
-                    <span class="subject-percentage">85%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 85%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                </div>
-                <div class="subject-details">
-                    <span>✅ Completed: Algebra Chapter 3</span>
-                    <span>⏰ Time spent: 1h 15m</span>
-                    <span>📊 Quiz score: 92%</span>
-                </div>
-            </div>
-            
-            <div class="subject-progress-item">
-                <div class="subject-header">
-                    <span class="subject-name">Physics</span>
-                    <span class="subject-percentage">70%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 70%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
-                </div>
-                <div class="subject-details">
-                    <span>✅ Completed: Newton's Laws</span>
-                    <span>⏰ Time spent: 1h 00m</span>
-                    <span>📊 Quiz score: 88%</span>
-                </div>
-            </div>
-            
-            <div class="subject-progress-item">
-                <div class="subject-header">
-                    <span class="subject-name">Chemistry</span>
-                    <span class="subject-percentage">60%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 60%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
-                </div>
-                <div class="subject-details">
-                    <span>🔄 In Progress: Organic Chemistry</span>
-                    <span>⏰ Time spent: 45m</span>
-                    <span>📊 Quiz pending</span>
-                </div>
-            </div>
-            
-            <div class="subject-progress-item">
-                <div class="subject-header">
-                    <span class="subject-name">English</span>
-                    <span class="subject-percentage">75%</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" style="width: 75%; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
-                </div>
-                <div class="subject-details">
-                    <span>✅ Completed: Essay Writing</span>
-                    <span>⏰ Time spent: 45m</span>
-                    <span>📊 Assignment submitted</span>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Activity Timeline -->
-    <div class="activity-timeline">
-        <h3>Today's Activity Timeline</h3>
-        <div class="timeline-list">
-            <div class="timeline-item completed">
-                <div class="timeline-time">8:00 AM</div>
-                <div class="timeline-content">
-                    <h4>Started Math Lesson</h4>
-                    <p>Algebra - Quadratic Equations</p>
-                </div>
-            </div>
-            <div class="timeline-item completed">
-                <div class="timeline-time">9:15 AM</div>
-                <div class="timeline-content">
-                    <h4>Completed Math Quiz</h4>
-                    <p>Score: 92% (23/25 correct)</p>
-                </div>
-            </div>
-            <div class="timeline-item completed">
-                <div class="timeline-time">10:30 AM</div>
-                <div class="timeline-content">
-                    <h4>Physics Lab Session</h4>
-                    <p>Experiment: Pendulum Motion</p>
-                </div>
-            </div>
-            <div class="timeline-item in-progress">
-                <div class="timeline-time">2:00 PM</div>
-                <div class="timeline-content">
-                    <h4>Chemistry Study Session</h4>
-                    <p>Currently studying: Organic Compounds</p>
-                </div>
-            </div>
-            <div class="timeline-item upcoming">
-                <div class="timeline-time">2:44 PM</div>
-                <div class="timeline-content">
-                    <h4>Math Tutoring Session</h4>
-                    <p>with Jane Smith - Scheduled</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Goals and Targets -->
-    <div class="goals-section">
-        <h3>Daily Goals & Targets</h3>
-        <div class="goals-grid">
-            <div class="goal-card">
-                <div class="goal-icon">🎯</div>
-                <h4>Study Hours</h4>
-                <div class="goal-progress">
-                    <span>3.75 / 5 hours</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 75%; background: #FFD700;"></div>
+
+        <!-- Today's Summary Card -->
+        <div class="progress-summary-card">
+            <h3>Today's Summary - <span id="currentDate"></span></h3>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-icon">📚</div>
+                    <div class="summary-info">
+                        <span class="summary-value">5/7</span>
+                        <span class="summary-label">Lessons Completed</span>
                     </div>
                 </div>
-            </div>
-            <div class="goal-card">
-                <div class="goal-icon">📚</div>
-                <h4>Lessons</h4>
-                <div class="goal-progress">
-                    <span>5 / 7 completed</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 71%; background: #FFC107;"></div>
+                <div class="summary-item">
+                    <div class="summary-icon">⏱️</div>
+                    <div class="summary-info">
+                        <span class="summary-value">3h 45m</span>
+                        <span class="summary-label">Study Time</span>
                     </div>
                 </div>
-            </div>
-            <div class="goal-card">
-                <div class="goal-icon">📝</div>
-                <h4>Assignments</h4>
-                <div class="goal-progress">
-                    <span>2 / 3 submitted</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 66%; background: #FFA500;"></div>
+                <div class="summary-item">
+                    <div class="summary-icon">📝</div>
+                    <div class="summary-info">
+                        <span class="summary-value">2/3</span>
+                        <span class="summary-label">Assignments</span>
                     </div>
                 </div>
-            </div>
-            <div class="goal-card">
-                <div class="goal-icon">📋</div>
-                <h4>Practice Quiz</h4>
-                <div class="goal-progress">
-                    <span>1 / 2 completed</span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: 50%; background: #FF8C00;"></div>
+                <div class="summary-item">
+                    <div class="summary-icon">🎯</div>
+                    <div class="summary-info">
+                        <span class="summary-value">72%</span>
+                        <span class="summary-label">Daily Goal</span>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <!-- Performance Charts -->
-    <div class="performance-charts">
-        <h3>Performance Analytics</h3>
-        <div class="charts-grid">
-            <div class="chart-container">
-                <canvas id="weeklyProgressChart"></canvas>
-                <p class="chart-label">Weekly Progress Trend</p>
+
+        <!-- Detailed Progress Breakdown -->
+        <div class="progress-breakdown">
+            <h3>Subject-wise Progress</h3>
+            <div class="subject-progress-list">
+                <div class="subject-progress-item">
+                    <div class="subject-header">
+                        <span class="subject-name">Mathematics</span>
+                        <span class="subject-percentage">85%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"
+                            style="width: 85%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                    </div>
+                    <div class="subject-details">
+                        <span>✅ Completed: Algebra Chapter 3</span>
+                        <span>⏰ Time spent: 1h 15m</span>
+                        <span>📊 Quiz score: 92%</span>
+                    </div>
+                </div>
+
+                <div class="subject-progress-item">
+                    <div class="subject-header">
+                        <span class="subject-name">Physics</span>
+                        <span class="subject-percentage">70%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"
+                            style="width: 70%; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);"></div>
+                    </div>
+                    <div class="subject-details">
+                        <span>✅ Completed: Newton's Laws</span>
+                        <span>⏰ Time spent: 1h 00m</span>
+                        <span>📊 Quiz score: 88%</span>
+                    </div>
+                </div>
+
+                <div class="subject-progress-item">
+                    <div class="subject-header">
+                        <span class="subject-name">Chemistry</span>
+                        <span class="subject-percentage">60%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"
+                            style="width: 60%; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);"></div>
+                    </div>
+                    <div class="subject-details">
+                        <span>🔄 In Progress: Organic Chemistry</span>
+                        <span>⏰ Time spent: 45m</span>
+                        <span>📊 Quiz pending</span>
+                    </div>
+                </div>
+
+                <div class="subject-progress-item">
+                    <div class="subject-header">
+                        <span class="subject-name">English</span>
+                        <span class="subject-percentage">75%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"
+                            style="width: 75%; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);"></div>
+                    </div>
+                    <div class="subject-details">
+                        <span>✅ Completed: Essay Writing</span>
+                        <span>⏰ Time spent: 45m</span>
+                        <span>📊 Assignment submitted</span>
+                    </div>
+                </div>
             </div>
-            <div class="chart-container">
-                <canvas id="subjectPerformanceChart"></canvas>
-                <p class="chart-label">Subject Performance</p>
+        </div>
+
+        <!-- Activity Timeline -->
+        <div class="activity-timeline">
+            <h3>Today's Activity Timeline</h3>
+            <div class="timeline-list">
+                <div class="timeline-item completed">
+                    <div class="timeline-time">8:00 AM</div>
+                    <div class="timeline-content">
+                        <h4>Started Math Lesson</h4>
+                        <p>Algebra - Quadratic Equations</p>
+                    </div>
+                </div>
+                <div class="timeline-item completed">
+                    <div class="timeline-time">9:15 AM</div>
+                    <div class="timeline-content">
+                        <h4>Completed Math Quiz</h4>
+                        <p>Score: 92% (23/25 correct)</p>
+                    </div>
+                </div>
+                <div class="timeline-item completed">
+                    <div class="timeline-time">10:30 AM</div>
+                    <div class="timeline-content">
+                        <h4>Physics Lab Session</h4>
+                        <p>Experiment: Pendulum Motion</p>
+                    </div>
+                </div>
+                <div class="timeline-item in-progress">
+                    <div class="timeline-time">2:00 PM</div>
+                    <div class="timeline-content">
+                        <h4>Chemistry Study Session</h4>
+                        <p>Currently studying: Organic Compounds</p>
+                    </div>
+                </div>
+                <div class="timeline-item upcoming">
+                    <div class="timeline-time">2:44 PM</div>
+                    <div class="timeline-content">
+                        <h4>Math Tutoring Session</h4>
+                        <p>with Jane Smith - Scheduled</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Goals and Targets -->
+        <div class="goals-section">
+            <h3>Daily Goals & Targets</h3>
+            <div class="goals-grid">
+                <div class="goal-card">
+                    <div class="goal-icon">🎯</div>
+                    <h4>Study Hours</h4>
+                    <div class="goal-progress">
+                        <span>3.75 / 5 hours</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%; background: #FFD700;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="goal-card">
+                    <div class="goal-icon">📚</div>
+                    <h4>Lessons</h4>
+                    <div class="goal-progress">
+                        <span>5 / 7 completed</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 71%; background: #FFC107;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="goal-card">
+                    <div class="goal-icon">📝</div>
+                    <h4>Assignments</h4>
+                    <div class="goal-progress">
+                        <span>2 / 3 submitted</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 66%; background: #FFA500;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="goal-card">
+                    <div class="goal-icon">📋</div>
+                    <h4>Practice Quiz</h4>
+                    <div class="goal-progress">
+                        <span>1 / 2 completed</span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 50%; background: #FF8C00;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Charts -->
+        <div class="performance-charts">
+            <h3>Performance Analytics</h3>
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <canvas id="weeklyProgressChart"></canvas>
+                    <p class="chart-label">Weekly Progress Trend</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="subjectPerformanceChart"></canvas>
+                    <p class="chart-label">Subject Performance</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- FAB Menu -->
     <div class="fab-container">
@@ -2511,108 +4135,364 @@
     <!-- Scripts -->
     <script>
         // Add this to your JavaScript file
-function viewProgressDetails(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    // Hide all content panels
-    document.querySelectorAll('.sidebar-content-panel').forEach(panel => {
-        panel.classList.remove('active');
-    });
-    
-    // Show progress tracker content
-    const progressPanel = document.getElementById('progress-tracker-content');
-    if (progressPanel) {
-        progressPanel.classList.add('active');
-    }
-    
-    // Update sidebar button active state
-    document.querySelectorAll('.sidebar-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Find and activate the progress tracker button
-    const progressBtn = document.querySelector('[data-content="progress-tracker"]');
-    if (progressBtn) {
-        progressBtn.classList.add('active');
-    }
-    
-    // Scroll to top of content area
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+        function viewProgressDetails(event) {
+            event.preventDefault();
+            event.stopPropagation();
 
-// Alternative navigation function
-function navigateToContent(contentId) {
-    // Hide all content panels
-    document.querySelectorAll('.sidebar-content-panel').forEach(panel => {
-        panel.classList.remove('active');
-    });
-    
-    // Show selected content
-    const targetPanel = document.getElementById(contentId + '-content');
-    if (targetPanel) {
-        targetPanel.classList.add('active');
-    }
-    
-    // Update sidebar button active state
-    document.querySelectorAll('.sidebar-btn').forEach(btn => {
-        btn.classList.remove('active');
-    });
-    
-    // Find and activate the corresponding button
-    const targetBtn = document.querySelector(`[data-content="${contentId}"]`);
-    if (targetBtn) {
-        targetBtn.classList.add('active');
-    }
-}
+            // Hide all content panels
+            document.querySelectorAll('.sidebar-content-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
 
-// Initialize current date
-document.addEventListener('DOMContentLoaded', function() {
-    const currentDate = document.getElementById('currentDate');
-    if (currentDate) {
-        const today = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        currentDate.textContent = today.toLocaleDateString('en-US', options);
-    }
-    
-    // Initialize charts if canvas elements exist
-    initializeProgressCharts();
-});
+            // Show progress tracker content
+            const progressPanel = document.getElementById('progress-tracker-content');
+            if (progressPanel) {
+                progressPanel.classList.add('active');
+            }
 
-function initializeProgressCharts() {
-    // Weekly Progress Chart
-    const weeklyCanvas = document.getElementById('weeklyProgressChart');
-    if (weeklyCanvas) {
-        const ctx = weeklyCanvas.getContext('2d');
-        // Add your chart.js implementation here
-        // Example: new Chart(ctx, { ... });
-    }
-    
-    // Subject Performance Chart
-    const subjectCanvas = document.getElementById('subjectPerformanceChart');
-    if (subjectCanvas) {
-        const ctx = subjectCanvas.getContext('2d');
-        // Add your chart.js implementation here
-    }
-}
+            // Update sidebar button active state
+            document.querySelectorAll('.sidebar-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
 
-function filterProgress(period) {
-    console.log('Filtering progress for:', period);
-    // Implement filtering logic
-}
+            // Find and activate the progress tracker button
+            const progressBtn = document.querySelector('[data-content="progress-tracker"]');
+            if (progressBtn) {
+                progressBtn.classList.add('active');
+            }
 
-function exportProgressReport() {
-    console.log('Exporting progress report...');
-    // Implement export functionality
-}
+            // Scroll to top of content area
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
 
-   </script>
+        // Alternative navigation function
+        function navigateToContent(contentId) {
+            // Hide all content panels
+            document.querySelectorAll('.sidebar-content-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Show selected content
+            const targetPanel = document.getElementById(contentId + '-content');
+            if (targetPanel) {
+                targetPanel.classList.add('active');
+            }
+
+            // Update sidebar button active state
+            document.querySelectorAll('.sidebar-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Find and activate the corresponding button
+            const targetBtn = document.querySelector(`[data-content="${contentId}"]`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+            }
+        }
+
+        // Initialize current date
+        document.addEventListener('DOMContentLoaded', function () {
+            const currentDate = document.getElementById('currentDate');
+            if (currentDate) {
+                const today = new Date();
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                currentDate.textContent = today.toLocaleDateString('en-US', options);
+            }
+
+            // Initialize charts if canvas elements exist
+            initializeProgressCharts();
+        });
+
+        function initializeProgressCharts() {
+            // Weekly Progress Chart
+            const weeklyCanvas = document.getElementById('weeklyProgressChart');
+            if (weeklyCanvas) {
+                const ctx = weeklyCanvas.getContext('2d');
+                // Add your chart.js implementation here
+                // Example: new Chart(ctx, { ... });
+            }
+
+            // Subject Performance Chart
+            const subjectCanvas = document.getElementById('subjectPerformanceChart');
+            if (subjectCanvas) {
+                const ctx = subjectCanvas.getContext('2d');
+                // Add your chart.js implementation here
+            }
+        }
+
+        function filterProgress(period) {
+            console.log('Filtering progress for:', period);
+            // Implement filtering logic
+        }
+
+        function exportProgressReport() {
+            console.log('Exporting progress report...');
+            // Implement export functionality
+        }
+
+    </script>
     <script src="../js/student-profile.js"></script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
     <script src="../js/institute-profile-4.js"></script>
+<script>
 
+// Tutor Details Modal Functions
+function openTutorDetailsModal(tutorId) {
+    const modal = document.getElementById('tutor-details-modal');
+    if (modal) {
+        modal.style.display = 'flex';
+        loadTutorDetails(tutorId);
+        // Reset to first tab
+        switchTutorTab('progress');
+    }
+}
+
+function switchTutorTab(tabName) {
+    // Remove active class from all tabs
+    document.querySelectorAll('.tutor-tab-content').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    
+    // Remove active class from all nav buttons
+    document.querySelectorAll('.tutor-nav-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    // Add active class to selected tab
+    const selectedTab = document.getElementById(`tutor-${tabName}`);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+    
+    // Add active class to selected nav button
+    const navButtons = document.querySelectorAll('.tutor-nav-btn');
+    navButtons.forEach(btn => {
+        if (btn.onclick && btn.onclick.toString().includes(tabName)) {
+            btn.classList.add('active');
+        }
+    });
+    
+    // Initialize specific tab content
+    initializeTabContent(tabName);
+}
+
+function initializeTabContent(tabName) {
+    switch(tabName) {
+        case 'quizzes':
+            initializeQuizChart();
+            break;
+        case 'analytics':
+            initializeAnalyticsCharts();
+            break;
+    }
+}
+
+function loadTutorDetails(tutorId) {
+    // Mock data for different tutors
+    const tutorData = {
+        'jane-smith': {
+            name: 'Jane Smith',
+            title: 'Mathematics Expert',
+            avatar: '../pictures/tutor1.jpg',
+            rating: '4.8',
+            totalSessions: 24,
+            progress: 92,
+            nextSession: 'Today, 2:44 PM'
+        },
+        'john-brown': {
+            name: 'John Brown',
+            title: 'Physics Specialist',
+            avatar: '../pictures/tutor2.jpg',
+            rating: '5.0',
+            totalSessions: 18,
+            progress: 88,
+            nextSession: 'Tomorrow, 10:00 AM'
+        },
+        'emily-wilson': {
+            name: 'Dr. Emily Wilson',
+            title: 'Chemistry Professor',
+            avatar: '../pictures/tutor3.jpg',
+            rating: '4.6',
+            totalSessions: 15,
+            progress: 75,
+            nextSession: 'Wednesday, 3:00 PM'
+        }
+    };
+    
+    const tutor = tutorData[tutorId];
+    if (tutor) {
+        // Update modal header
+        document.getElementById('tutorDetailsTitle').textContent = `Tutor Details - ${tutor.name}`;
+        
+        // Update sidebar profile
+        document.querySelector('.tutor-profile-img').src = tutor.avatar;
+        document.querySelector('.tutor-profile-name').textContent = tutor.name;
+        document.querySelector('.tutor-profile-title').textContent = tutor.title;
+        
+        // Update progress data dynamically
+        updateProgressData(tutor.progress);
+    }
+}
+
+function updateProgressData(progressValue) {
+    // Update circular progress
+    const circleElement = document.querySelector('#tutor-progress .circle');
+    if (circleElement) {
+        circleElement.setAttribute('stroke-dasharray', `${progressValue}, 100`);
+        const textElement = document.querySelector('#tutor-progress text');
+        if (textElement) {
+            textElement.textContent = `${progressValue}%`;
+        }
+    }
+}
+
+function messageTutor(tutorId) {
+    console.log('Opening message for tutor:', tutorId);
+    // Implement messaging functionality
+    alert('Messaging feature coming soon!');
+}
+
+function scheduleTutorSession() {
+    // Close current modal
+    document.getElementById('tutor-details-modal').style.display = 'none';
+    // Open session scheduling modal
+    openScheduleSessionModal();
+}
+
+function startVideoCall() {
+    console.log('Starting video call...');
+    alert('Video call feature coming soon!');
+}
+
+// Initialize quiz performance chart
+function initializeQuizChart() {
+    const canvas = document.getElementById('quizPerformanceChart');
+    if (canvas && typeof Chart !== 'undefined') {
+        const ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Quiz 1', 'Quiz 2', 'Quiz 3', 'Quiz 4', 'Quiz 5', 'Quiz 6'],
+                datasets: [{
+                    label: 'Score (%)',
+                    data: [78, 82, 85, 88, 92, 88],
+                    borderColor: '#FFD700',
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Initialize analytics charts
+function initializeAnalyticsCharts() {
+    // Performance Trend Chart
+    const trendCanvas = document.getElementById('performanceTrendChart');
+    if (trendCanvas && typeof Chart !== 'undefined') {
+        const ctx = trendCanvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Overall Performance',
+                    data: [65, 70, 75, 82, 88, 92],
+                    borderColor: '#FFD700',
+                    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+    
+    // Subject Mastery Chart
+    const masteryCanvas = document.getElementById('subjectMasteryChart');
+    if (masteryCanvas && typeof Chart !== 'undefined') {
+        const ctx = masteryCanvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Algebra', 'Geometry', 'Calculus', 'Statistics', 'Trigonometry'],
+                datasets: [{
+                    label: 'Mastery Level',
+                    data: [90, 85, 75, 88, 82],
+                    borderColor: '#FFD700',
+                    backgroundColor: 'rgba(255, 215, 0, 0.2)'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Close modal when clicking close button
+document.querySelector('#tutor-details-modal .close').addEventListener('click', function() {
+    document.getElementById('tutor-details-modal').style.display = 'none';
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('tutor-details-modal');
+    if (event.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// Search functionality for tutors
+document.getElementById('tutor-search').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const tutorCards = document.querySelectorAll('.tutor-card');
+    
+    tutorCards.forEach(card => {
+        const tutorName = card.querySelector('.tutor-name').textContent.toLowerCase();
+        const tutorTitle = card.querySelector('.tutor-title').textContent.toLowerCase();
+        const subjects = Array.from(card.querySelectorAll('.subject-tag'))
+            .map(tag => tag.textContent.toLowerCase()).join(' ');
+        
+        if (tutorName.includes(searchTerm) || 
+            tutorTitle.includes(searchTerm) || 
+            subjects.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
+
+// Find new tutor modal
+function openFindTutorsModal() {
+    console.log('Opening find tutors modal...');
+    // Redirect to find tutors page or open modal
+    window.location.href = '../branch/find-tutors.html';
+}
+
+</script>
 </body>
 
 </html>
