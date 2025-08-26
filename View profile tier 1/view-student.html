@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Student Profile | Astegni</title>
+    <link rel="stylesheet" href="../css/institute.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <div class="container nav-container">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="nav-brand">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text gradient-text">Astegni</span>
+            </div>
+            <div class="nav-menu">
+                <a href="../branch/news.html" class="nav-link">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </a>
+                <a href="../branch/find-tutors.html" class="nav-link">
+                    <span class="nav-icon">👨‍🏫</span>
+                    <span>Find Tutors</span>
+                </a>
+                <a href="../branch/reels.html" class="nav-link">
+                    <span class="nav-icon">🎬</span>
+                    <span>Reels</span>
+                </a>
+                <a href="../branch/store.html" class="nav-link">
+                    <span class="nav-icon">🛒</span>
+                    <span>Store</span>
+                </a>
+                <a href="../branch/find-jobs.html" class="nav-link">
+                    <span class="nav-icon">💼</span>
+                    <span>Find Jobs</span>
+                </a>
+                <button class="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge pulse">5</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar" id="leftSidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <button class="sidebar-btn active" data-content="dashboard">
+                    <span class="sidebar-btn-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+            </div>
+            
+            <!-- NEW VIEW-STUDENT SECTION - ALL NEW FEATURES HERE -->
+            <div class="sidebar-section" data-content="view-student">
+                <button class="sidebar-btn" data-content="student-overview">
+                    <span class="sidebar-btn-icon">👤</span>
+                    <span>Student Overview</span>
+                </button>
+                <button class="sidebar-btn" data-content="academic-performance">
+                    <span class="sidebar-btn-icon">📈</span>
+                    <span>Academic Performance</span>
+                    <span class="sidebar-badge">A+</span>
+                </button>
+                <button class="sidebar-btn" data-content="enrolled-courses">
+                    <span class="sidebar-btn-icon">📚</span>
+                    <span>Enrolled Courses</span>
+                    <span class="sidebar-badge">6</span>
+                </button>
+                <button class="sidebar-btn" data-content="quiz-results">
+                    <span class="sidebar-btn-icon">📋</span>
+                    <span>Quiz Results</span>
+                    <span class="sidebar-badge">85%</span>
+                </button>
+                <button class="sidebar-btn" data-content="assignment-status">
+                    <span class="sidebar-btn-icon">📝</span>
+                    <span>Assignments</span>
+                    <span class="sidebar-badge">4</span>
+                </button>
+                <button class="sidebar-btn" data-content="attendance-record">
+                    <span class="sidebar-btn-icon">📅</span>
+                    <span>Attendance</span>
+                    <span class="sidebar-badge">92%</span>
+                </button>
+                <button class="sidebar-btn" data-content="learning-progress">
+                    <span class="sidebar-btn-icon">🎯</span>
+                    <span>Learning Progress</span>
+                </button>
+                <button class="sidebar-btn" data-content="study-schedule">
+                    <span class="sidebar-btn-icon">⏰</span>
+                    <span>Study Schedule</span>
+                </button>
+                <button class="sidebar-btn" data-content="student-grades">
+                    <span class="sidebar-btn-icon">🎓</span>
+                    <span>Grades & Reports</span>
+                </button>
+                <button class="sidebar-btn" data-content="achievements">
+                    <span class="sidebar-btn-icon">🏆</span>
+                    <span>Achievements</span>
+                    <span class="sidebar-badge">15</span>
+                </button>
+                <button class="sidebar-btn" data-content="study-materials-access">
+                    <span class="sidebar-btn-icon">📖</span>
+                    <span>Study Materials</span>
+                </button>
+                <button class="sidebar-btn" data-content="parent-communication">
+                    <span class="sidebar-btn-icon">👨‍👩‍👧</span>
+                    <span>Parent Contact</span>
+                </button>
+                <button class="sidebar-btn" data-content="behavioral-notes">
+                    <span class="sidebar-btn-icon">📔</span>
+                    <span>Behavioral Notes</span>
+                </button>
+                <button class="sidebar-btn" data-content="recommendations">
+                    <span class="sidebar-btn-icon">💡</span>
+                    <span>AI Recommendations</span>
+                    <span class="sidebar-badge">New</span>
+                </button>
+            </div>
+            
+            <!-- UNCHANGED EDUCATION SECTION -->
+            <div class="sidebar-section" data-content="education">
+                <button class="sidebar-btn" data-content="jobs">
+                    <span class="sidebar-btn-icon">💼</span>
+                    <span>My Job Board</span>
+                    <span class="sidebar-badge">3</span>
+                </button>
+                <button class="sidebar-btn" data-content="classes">
+                    <span class="sidebar-btn-icon">🎓</span>
+                    <span>My Classes</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">📚</span>
+                    <span>My Books</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+            </div>
+            
+            <!-- UNCHANGED PERMANENT SECTION -->
+            <div class="sidebar-section" data-content="permanent">
+                <button class="sidebar-btn" data-content="community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>Community</span>
+                    <span class="sidebar-badge live">Live</span>
+                </button>
+                <button class="sidebar-btn" data-content="clubs">
+                    <span class="sidebar-btn-icon">🎭</span>
+                    <span>Clubs</span>
+                    <span class="sidebar-badge active">Active</span>
+                </button>
+                <button class="sidebar-btn" data-content="podcasts">
+                    <span class="sidebar-btn-icon">🎙️</span>
+                    <span>Podcasts</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="videos">
+                    <span class="sidebar-btn-icon">🎬</span>
+                    <span>Videos</span>
+                    <span class="sidebar-badge">12</span>
+                </button>
+                <button class="sidebar-btn" data-content="blog">
+                    <span class="sidebar-btn-icon">📝</span>
+                    <span>Blog</span>
+                    <span class="sidebar-badge">7</span>
+                </button>
+                <button class="sidebar-btn" data-content="comments">
+                    <span class="sidebar-btn-icon">💬</span>
+                    <span>Comments</span>
+                    <span class="sidebar-badge">15</span>
+                </button>
+                <button class="sidebar-btn" data-content="my-products">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>My Products</span>
+                </button>
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
+                        <span class="sidebar-btn-icon">📓</span>
+                        <span>Notes</span>
+                    </button>
+                </a>
+                <button class="sidebar-btn" data-content="rate-comment">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Rate & Comment</span>
+                </button>
+                <button class="sidebar-btn" data-content="share">
+                    <span class="sidebar-btn-icon">🔗</span>
+                    <span>Share</span>
+                </button>
+                <button class="sidebar-btn" data-content="settings">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats Section -->
+            <div class="sidebar-quick-stats">
+                <h4>Student Quick Stats</h4>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Current GPA</span>
+                    <span class="stat-value">3.8</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Attendance</span>
+                    <span class="stat-value">92%</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Active Courses</span>
+                    <span class="stat-value">6</span>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="sidebar-activity">
+                <h4>Recent Activity</h4>
+                <div class="activity-item">
+                    <span class="activity-icon">📚</span>
+                    <div class="activity-text">
+                        <p>Assignment submitted</p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">📋</span>
+                    <div class="activity-text">
+                        <p>Quiz completed</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">🎓</span>
+                    <div class="activity-text">
+                        <p>Attended class</p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Button -->
+            <button class="sidebar-help-btn">
+                <span class="help-icon">💡</span>
+                <span>Need Help?</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container with-sidebar">
+        <!-- Profile Header Section - Shows Student's Profile -->
+        <section class="profile-header-section">
+            <div class="cover-image-container">
+                <img src="../pictures/student cover.jpg" alt="Cover" class="cover-img">
+                <div class="cover-overlay"></div>
+            </div>
+
+            <div class="profile-main-info">
+                <div class="profile-info-wrapper">
+                    <div class="profile-avatar-container">
+                        <img src="../pictures/student profile kid.jpg" alt="Student profile" class="profile-avatar">
+                    </div>
+
+                    <div class="profile-details-section">
+                        <div class="profile-name-row">
+                            <h1 class="center-name" id="centerName">John Doe - Student</h1>
+                            <div class="badges-row">
+                                <span class="verified-badge">✓ Active Student</span>
+                                <span class="center-score">GPA: 3.8/4.0</span>
+                            </div>
+                        </div>
+
+                        <div class="rating-section">
+                            <div class="stars">
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star half" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            </div>
+                            <span class="rating-value">4.5/5.0</span>
+                            <span class="review-count">(12 reviews)</span>
+                        </div>
+
+                        <div class="location-info">
+                            <span class="location-icon">📍</span>
+                            <span id="locationText">New York, NY | XYZ High School - 12th Grade</span>
+                        </div>
+
+                        <div class="profile-quote" id="profileQuote">
+                            "Knowledge is power."
+                        </div>
+
+                        <div class="follow-stats-cards">
+                            <div class="follow-card">
+                                <div class="follow-icon">📚</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">6</span>
+                                    <span class="stat-label">Active Courses</span>
+                                </div>
+                            </div>
+                            <div class="follow-card">
+                                <div class="follow-icon">🏆</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">15</span>
+                                    <span class="stat-label">Achievements</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-next-session" id="profileNextSession">
+                            <div class="session-alert">
+                                <span class="alert-icon gradient-text">⏰</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> Math with Jane Smith - Today at 2:44 PM (Starts in 30 minutes)</span>
+                                <button class="btn-join-inline" onclick="messageStudent()">Message Student</button>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions-grid">
+                            <button class="profile-action-btn" onclick="contactParent()">
+                                <span class="action-icon">👨‍👩‍👧</span>
+                                <span>Contact Parent</span>
+                            </button>
+                            <button class="profile-action-btn" onclick="scheduleSession()">
+                                <span class="action-icon">📅</span>
+                                <span>Schedule Session</span>
+                            </button>
+                            <button class="profile-action-btn" onclick="viewReports()">
+                                <span class="action-icon">📊</span>
+                                <span>View Reports</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advertisement Placeholder -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Area -->
+        <div class="content-with-sidebar">
+            <!-- Main Content Area -->
+            <div class="main-content-area">
+                <!-- Dashboard Content (Default) -->
+                <div class="sidebar-content-panel active" id="dashboard-content">
+                    <!-- About Section -->
+                    <section class="profile-about-section">
+                        <h3>About Student</h3>
+                        <p id="aboutText">Passionate about learning and technology. Currently in 12th grade at XYZ High School with a focus on STEM subjects. Active member of the school's robotics club and debate team. Aspiring to pursue computer science and artificial intelligence in college. I believe in continuous learning and enjoy helping others understand complex concepts. My goal is to use technology to solve real-world problems and make a positive impact on society.</p>
+                    </section>
+
+                    <!-- Quick Stats Widget -->
+                    <section class="quick-stats-widget">
+                        <h2 class="section-title">Academic Progress & Statistics</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📚</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">6</div>
+                                    <div class="stat-desc">Active Courses</div>
+                                    <div class="stat-detail">This Semester</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">⏱️</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">24</div>
+                                    <div class="stat-desc">Study Hours</div>
+                                    <div class="stat-detail">This Month</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📈</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">85%</div>
+                                    <div class="stat-desc">Overall Progress</div>
+                                    <div class="stat-detail">Above Average</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📝</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">42</div>
+                                    <div class="stat-desc">Assignments</div>
+                                    <div class="stat-detail">Completed</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">🎓</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">3.8</div>
+                                    <div class="stat-desc">GPA</div>
+                                    <div class="stat-detail">Dean's List</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📅</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">92%</div>
+                                    <div class="stat-desc">Attendance</div>
+                                    <div class="stat-detail">Excellent</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Awards Showcase -->
+                    <section class="awards-section">
+                        <h2 class="section-title">Achievements & Recognition</h2>
+                        <div class="awards-grid">
+                            <div class="award-card">
+                                <div class="award-icon">🥇</div>
+                                <h3>Perfect Attendance</h3>
+                                <p>Fall Semester 2024</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">⭐</div>
+                                <h3>Honor Roll Student</h3>
+                                <p>3 Consecutive Terms</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">🏆</div>
+                                <h3>Math Olympiad</h3>
+                                <p>Regional Champion</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">🎯</div>
+                                <h3>Quiz Master</h3>
+                                <p>95% Average Score</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- VIEW-STUDENT CONTENT PANELS -->
+                <!-- Student Overview Content -->
+                <div class="sidebar-content-panel" id="student-overview-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Student Overview</h2>
+                        <button class="btn-primary" onclick="downloadStudentReport()">Download Report</button>
+                    </div>
+                    <div class="student-overview">
+                        <div class="overview-card">
+                            <h3>Basic Information</h3>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <span class="label">Name:</span>
+                                    <span class="value">John Doe</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Grade:</span>
+                                    <span class="value">12th</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">School:</span>
+                                    <span class="value">XYZ High School</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Student ID:</span>
+                                    <span class="value">STU-2024-0842</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Academic Performance Content -->
+                <div class="sidebar-content-panel" id="academic-performance-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Academic Performance</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="filterPerformance('current')">Current Term</button>
+                            <button class="btn-secondary" onclick="filterPerformance('all')">All Time</button>
+                        </div>
+                    </div>
+                    <div class="performance-charts">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Enrolled Courses Content -->
+                <div class="sidebar-content-panel" id="enrolled-courses-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Enrolled Courses</h2>
+                    </div>
+                    <div class="courses-grid">
+                        <!-- Courses will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Quiz Results Content -->
+                <div class="sidebar-content-panel" id="quiz-results-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Quiz Results</h2>
+                    </div>
+                    <div class="quiz-results-list">
+                        <!-- Quiz results will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Assignment Status Content -->
+                <div class="sidebar-content-panel" id="assignment-status-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Assignment Status</h2>
+                    </div>
+                    <div class="assignments-grid">
+                        <!-- Assignments will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Attendance Record Content -->
+                <div class="sidebar-content-panel" id="attendance-record-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Attendance Record</h2>
+                    </div>
+                    <div class="attendance-calendar">
+                        <!-- Attendance calendar will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Learning Progress Content -->
+                <div class="sidebar-content-panel" id="learning-progress-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Learning Progress</h2>
+                    </div>
+                    <div class="progress-tracker">
+                        <!-- Progress tracking will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Study Schedule Content -->
+                <div class="sidebar-content-panel" id="study-schedule-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Study Schedule</h2>
+                    </div>
+                    <div class="schedule-calendar">
+                        <!-- Schedule will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Student Grades Content -->
+                <div class="sidebar-content-panel" id="student-grades-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Grades & Reports</h2>
+                        <button class="btn-primary" onclick="generateTranscript()">Generate Transcript</button>
+                    </div>
+                    <div class="grades-table">
+                        <!-- Grades will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Achievements Content -->
+                <div class="sidebar-content-panel" id="achievements-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Student Achievements</h2>
+                    </div>
+                    <div class="achievements-grid">
+                        <!-- Achievements will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Study Materials Access Content -->
+                <div class="sidebar-content-panel" id="study-materials-access-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Study Materials Access</h2>
+                    </div>
+                    <div class="materials-list">
+                        <!-- Materials will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Parent Communication Content -->
+                <div class="sidebar-content-panel" id="parent-communication-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Parent Communication</h2>
+                        <button class="btn-primary" onclick="contactParentModal()">Contact Parent</button>
+                    </div>
+                    <div class="parent-info">
+                        <div class="parent-card">
+                            <h3>Primary Contact</h3>
+                            <p><strong>Name:</strong> Jane Doe (Mother)</p>
+                            <p><strong>Phone:</strong> (123) 456-7891</p>
+                            <p><strong>Email:</strong> jane.doe@example.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Behavioral Notes Content -->
+                <div class="sidebar-content-panel" id="behavioral-notes-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Behavioral Notes</h2>
+                        <button class="btn-primary" onclick="addBehavioralNote()">Add Note</button>
+                    </div>
+                    <div class="notes-list">
+                        <!-- Behavioral notes will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- AI Recommendations Content -->
+                <div class="sidebar-content-panel" id="recommendations-content">
+                    <div class="section-header">
+                        <h2 class="section-title">AI Recommendations</h2>
+                    </div>
+                    <div class="ai-recommendations">
+                        <div class="recommendation-card">
+                            <h3>Suggested Focus Areas</h3>
+                            <ul>
+                                <li>Improve performance in Physics (currently at 78%)</li>
+                                <li>Consider advanced Math courses based on excellent performance</li>
+                                <li>Join study group for Chemistry lab work</li>
+                            </ul>
+                        </div>
+                        <div class="recommendation-card">
+                            <h3>Learning Style</h3>
+                            <p>Visual learner - performs better with diagrams and video content</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- REMAINING UNCHANGED SECTIONS FROM JOURNALIST PROFILE -->
+                <!-- Jobs Content -->
+                <div class="sidebar-content-panel" id="jobs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Job Posts</h2>
+                    </div>
+                    <div class="jobs-grid">
+                        <!-- Jobs content -->
+                    </div>
+                </div>
+
+                <!-- Classes Content -->
+                <div class="sidebar-content-panel" id="classes-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Classes</h2>
+                    </div>
+                    <div class="classes-grid">
+                        <!-- Classes content -->
+                    </div>
+                </div>
+
+                <!-- Books Content -->
+                <div class="sidebar-content-panel" id="books-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Books</h2>
+                    </div>
+                    <div class="books-grid">
+                        <!-- Books content -->
+                    </div>
+                </div>
+
+                <!-- Community Content -->
+                <div class="sidebar-content-panel" id="community-content">
+                    <!-- Community content -->
+                </div>
+
+                <!-- Clubs Content -->
+                <div class="sidebar-content-panel" id="clubs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Clubs</h2>
+                    </div>
+                    <div class="clubs-grid">
+                        <!-- Clubs content -->
+                    </div>
+                </div>
+
+                <!-- Podcasts Content -->
+                <div class="sidebar-content-panel" id="podcasts-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Podcast Library</h2>
+                    </div>
+                    <div class="podcast-grid">
+                        <!-- Podcasts content -->
+                    </div>
+                </div>
+
+                <!-- Videos Content -->
+                <div class="sidebar-content-panel" id="videos-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Video Gallery</h2>
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Videos content -->
+                    </div>
+                </div>
+
+                <!-- Blog Content -->
+                <div class="sidebar-content-panel" id="blog-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Blog</h2>
+                    </div>
+                    <div class="blog-grid">
+                        <!-- Blog content -->
+                    </div>
+                </div>
+
+                <!-- Comments Content -->
+                <div class="sidebar-content-panel" id="comments-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Comments</h2>
+                    </div>
+                    <div class="comments-section">
+                        <!-- Comments content -->
+                    </div>
+                </div>
+
+                <!-- My Products Content -->
+                <div class="sidebar-content-panel" id="my-products-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Products</h2>
+                    </div>
+                    <div class="my-products-grid">
+                        <!-- Products content -->
+                    </div>
+                </div>
+
+                <!-- Notes Content -->
+                <div class="sidebar-content-panel" id="notes-content">
+                    <h2 class="section-title">My Notes</h2>
+                    <div class="notes-section">
+                        <!-- Notes content -->
+                    </div>
+                </div>
+
+                <!-- Rate & Comment Content -->
+                <div class="sidebar-content-panel" id="rate-comment-content">
+                    <h2 class="section-title">Rate & Comment</h2>
+                    <div class="rate-comment-section">
+                        <!-- Rate content -->
+                    </div>
+                </div>
+
+                <!-- Share Content -->
+                <div class="sidebar-content-panel" id="share-content">
+                    <h2 class="section-title">Share Profile</h2>
+                    <div class="share-section">
+                        <!-- Share content -->
+                    </div>
+                </div>
+
+                <!-- Settings Content -->
+                <div class="sidebar-content-panel" id="settings-content">
+                    <h2 class="section-title">Settings</h2>
+                    <div class="settings-section">
+                        <!-- Settings content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="right-sidebar">
+                <!-- News Widget -->
+                <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <h3>📰 Latest News</h3>
+                        <a href="../branch/news.html" class="widget-action">View All</a>
+                    </div>
+                    <div class="news-carousel">
+                        <div class="news-card-container">
+                            <div class="news-card active" data-category="tech">
+                                <div class="news-card-header">
+                                    <span class="news-category-badge tech">Tech</span>
+                                    <span class="news-time">2h ago</span>
+                                </div>
+                                <div class="news-card-image">
+                                    <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400" alt="Tech News">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4>AI Revolution in Education: New Tools Transform Learning</h4>
+                                    <p>Latest AI-powered tools are revolutionizing how students learn...</p>
+                                    <div class="news-stats">
+                                        <span class="news-stat">🔥 Trending</span>
+                                        <span class="news-stat">👁️ 1.2k views</span>
+                                        <span class="news-stat">💬 45 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Performance Widget -->
+                <div class="sidebar-widget performance-widget">
+                    <div class="widget-header">
+                        <h3>📊 Performance Overview</h3>
+                        <a href="#" class="widget-action" onclick="viewDetailedPerformance()">Details</a>
+                    </div>
+                    <div class="performance-summary">
+                        <div class="performance-item">
+                            <span class="subject">Mathematics</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 92%"></div>
+                            </div>
+                            <span class="score">92%</span>
+                        </div>
+                        <div class="performance-item">
+                            <span class="subject">Physics</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 78%"></div>
+                            </div>
+                            <span class="score">78%</span>
+                        </div>
+                        <div class="performance-item">
+                            <span class="subject">Chemistry</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 85%"></div>
+                            </div>
+                            <span class="score">85%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Widgets Section -->
+        <section class="bottom-widgets">
+            <div class="bottom-widgets-grid">
+                <!-- Weather Widget -->
+                <div class="bottom-widget weather-widget" data-weather-theme="royal-blue">
+                    <div class="widget-header">
+                        <h3>🌤️ Weather</h3>
+                        <div class="weather-widget-actions">
+                            <button class="widget-action" onclick="window.weatherManager.toggleSettings()">
+                                <span class="settings-icon">⚙️</span>
+                            </button>
+                            <button class="widget-action" onclick="window.weatherManager.showForecast()">
+                                Forecast
+                            </button>
+                        </div>
+                    </div>
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="weather-icon">☀️</div>
+                            <div class="weather-temp">68°F</div>
+                            <div class="weather-condition">Partly Cloudy</div>
+                        </div>
+                        <div class="weather-location">New York, NY</div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span>High</span>
+                                <span>73°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Low</span>
+                                <span>62°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Humidity</span>
+                                <span>52%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Wind</span>
+                                <span>10 mph</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Widget - STUDENT SPECIFIC ANALYTICS -->
+                <div class="bottom-widget analytics-widget compact">
+                    <div class="widget-header">
+                        <h3>📊 Student Analytics</h3>
+                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                    </div>
+                    <div class="real-time-stats compact">
+                        <div class="rt-stat active" data-metric="attendance" onclick="switchMetric('attendance')">
+                            <span class="rt-icon">📅</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="92">92%</span>
+                                <span class="rt-label">Attendance</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="assignments" onclick="switchMetric('assignments')">
+                            <span class="rt-icon">📝</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="38">38/42</span>
+                                <span class="rt-label">Completed</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="quiz-avg" onclick="switchMetric('quiz-avg')">
+                            <span class="rt-icon">📋</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="85">85%</span>
+                                <span class="rt-label">Quiz Average</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="improvement" onclick="switchMetric('improvement')">
+                            <span class="rt-icon">📈</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="12">+12%</span>
+                                <span class="rt-label">Improvement</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="analyticsChart"></canvas>
+                        <div class="chart-label">Performance Trend - Last 30 Days</div>
+                    </div>
+                </div>
+
+                <!-- Events Widget -->
+                <div class="bottom-widget events-widget">
+                    <div class="widget-header">
+                        <h3>📅 Upcoming Sessions</h3>
+                        <button class="widget-action" onclick="openAllEventsModal()">View All</button>
+                    </div>
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">2:44 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Mathematics Session</h4>
+                                <p>with Jane Smith</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">4:00 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Physics Lab</h4>
+                                <p>with John Brown</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">10:00 AM</span>
+                                <span class="date">Tomorrow</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Chemistry Test</h4>
+                                <p>Chapter 5: Organic Chemistry</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FAB Menu -->
+    <div class="fab-container">
+        <button class="fab" id="main-fab">
+            <span class="fab-icon">+</span>
+            <span class="fab-label">Quick Action</span>
+        </button>
+        <div class="fab-menu">
+            <button class="fab-option" onclick="contactParent()">
+                <span>👨‍👩‍👧</span> Contact Parent
+            </button>
+            <button class="fab-option" onclick="scheduleSession()">
+                <span>📅</span> Schedule Session
+            </button>
+            <button class="fab-option" onclick="addBehavioralNote()">
+                <span>📔</span> Add Note
+            </button>
+            <button class="fab-option" onclick="viewReports()">
+                <span>📊</span> View Reports
+            </button>
+            <button class="fab-option" onclick="assignHomework()">
+                <span>📝</span> Assign Work
+            </button>
+            <button class="fab-option" onclick="messageStudent()">
+                <span>💬</span> Message Student
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="footer-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
+            </svg>
+        </div>
+
+        <div class="container mx-auto px-4">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Active Users</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Courses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Twitter" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="LinkedIn" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="Your email address" class="newsletter-input">
+                            <button type="submit" class="newsletter-btn">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2025 Astegni. All rights reserved.</p>
+                    <div class="footer-badges">
+                        <span class="badge">🔒 SSL Secured</span>
+                        <span class="badge">✓ Verified Platform</span>
+                        <span class="badge">🏆 Award Winner 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/institute-profile-1.js"></script>
+    <script src="../js/institute-profile-2.js"></script>
+    <script src="../js/institute-profile-3.js"></script>
+    <script src="../js/institute-profile-4.js"></script>
+</body>
+
+</html>

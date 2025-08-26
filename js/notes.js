@@ -1145,3 +1145,604 @@ window.open('advanced-notes.html?action=new', 'NotesWindow');
 
 // Open specific note
 window.open('advanced-notes.html?noteId=123456', 'NotesWindow');
+
+
+// ============================================
+// MEDIA RECORDING FUNCTIONALITY
+// ============================================
+
+let mediaRecorder = null;
+let audioChunks = [];
+let videoChunks = [];
+let recordingTimer = null;
+let recordingStartTime = 0;
+let audioStream = null;
+let videoStream = null;
+let currentCamera = 'user'; // 'user' for front, 'environment' for back
+let recordedBlob = null;
+
+// Voice Recording Functions
+async function openVoiceRecorder() {
+  document.getElementById('voiceRecorderModal').classList.add('show');
+  try {
+    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    initializeWaveform();
+  } catch (err) {
+    console.error('Error accessing microphone:', err);
+    document.getElementById('voiceStatus').textContent = 'Microphone access denied';
+    document.getElementById('voiceStatus').classList.add('error');
+  }
+}
+
+function closeVoiceRecorder() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (audioStream) {
+    audioStream.getTracks().forEach(track => track.stop());
+  }
+  document.getElementById('voiceRecorderModal').classList.remove('show');
+  resetVoiceRecorder();
+}
+
+function toggleVoiceRecording() {
+  const recordBtn = document.getElementById('voiceRecordBtn');
+  
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+    startVoiceRecording();
+  } else if (mediaRecorder.state === 'recording') {
+    pauseVoiceRecording();
+  } else if (mediaRecorder.state === 'paused') {
+    resumeVoiceRecording();
+  }
+}
+
+async function startVoiceRecording() {
+  audioChunks = [];
+  
+  if (!audioStream) {
+    try {
+      audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      console.error('Error accessing microphone:', err);
+      return;
+    }
+  }
+  
+  mediaRecorder = new MediaRecorder(audioStream);
+  
+  mediaRecorder.ondataavailable = (event) => {
+    audioChunks.push(event.data);
+  };
+  
+  mediaRecorder.onstop = () => {
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    recordedBlob = audioBlob;
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const playback = document.getElementById('voicePlayback');
+    playback.src = audioUrl;
+    playback.style.display = 'block';
+    document.getElementById('saveVoiceBtn').disabled = false;
+  };
+  
+  mediaRecorder.start();
+  startRecordingTimer('voice');
+  
+  const recordBtn = document.getElementById('voiceRecordBtn');
+  recordBtn.classList.add('recording');
+  recordBtn.innerHTML = '<span class="record-icon">●</span> Recording...';
+  document.getElementById('voicePauseBtn').disabled = false;
+  document.getElementById('voiceStopBtn').disabled = false;
+  document.getElementById('voiceStatus').textContent = 'Recording in progress...';
+}
+
+function pauseVoiceRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    mediaRecorder.pause();
+    clearInterval(recordingTimer);
+    document.getElementById('voiceRecordBtn').innerHTML = '<span class="record-icon">▶</span> Resume';
+    document.getElementById('voicePauseBtn').disabled = true;
+    document.getElementById('voiceStatus').textContent = 'Recording paused';
+  }
+}
+
+function resumeVoiceRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'paused') {
+    mediaRecorder.resume();
+    startRecordingTimer('voice', true);
+    document.getElementById('voiceRecordBtn').innerHTML = '<span class="record-icon">●</span> Recording...';
+    document.getElementById('voicePauseBtn').disabled = false;
+    document.getElementById('voiceStatus').textContent = 'Recording resumed...';
+  }
+}
+
+function stopVoiceRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+    clearInterval(recordingTimer);
+    document.getElementById('voiceRecordBtn').classList.remove('recording');
+    document.getElementById('voiceRecordBtn').innerHTML = '<span class="record-icon">●</span> Start Recording';
+    document.getElementById('voicePauseBtn').disabled = true;
+    document.getElementById('voiceStopBtn').disabled = true;
+    document.getElementById('voiceStatus').textContent = 'Recording complete';
+    document.getElementById('voiceStatus').classList.add('success');
+  }
+}
+
+function saveVoiceNote() {
+  if (!recordedBlob) return;
+  
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64Audio = reader.result;
+    addMediaToNote('audio', base64Audio);
+    closeVoiceRecorder();
+  };
+  reader.readAsDataURL(recordedBlob);
+}
+
+// Video Recording Functions
+async function openVideoRecorder() {
+  document.getElementById('videoRecorderModal').classList.add('show');
+  try {
+    const constraints = {
+      video: { facingMode: currentCamera },
+      audio: true
+    };
+    videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+    const preview = document.getElementById('videoPreview');
+    preview.srcObject = videoStream;
+  } catch (err) {
+    console.error('Error accessing camera:', err);
+    document.getElementById('videoStatus').textContent = 'Camera access denied';
+    document.getElementById('videoStatus').classList.add('error');
+  }
+}
+
+function closeVideoRecorder() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+  }
+  if (videoStream) {
+    videoStream.getTracks().forEach(track => track.stop());
+  }
+  document.getElementById('videoRecorderModal').classList.remove('show');
+  resetVideoRecorder();
+}
+
+function toggleVideoRecording() {
+  if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+    startVideoRecording();
+  } else if (mediaRecorder.state === 'recording') {
+    pauseVideoRecording();
+  } else if (mediaRecorder.state === 'paused') {
+    resumeVideoRecording();
+  }
+}
+
+async function startVideoRecording() {
+  videoChunks = [];
+  
+  if (!videoStream) {
+    try {
+      const constraints = {
+        video: { facingMode: currentCamera },
+        audio: true
+      };
+      videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+      document.getElementById('videoPreview').srcObject = videoStream;
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      return;
+    }
+  }
+  
+  mediaRecorder = new MediaRecorder(videoStream);
+  
+  mediaRecorder.ondataavailable = (event) => {
+    videoChunks.push(event.data);
+  };
+  
+  mediaRecorder.onstop = () => {
+    const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+    recordedBlob = videoBlob;
+    const videoUrl = URL.createObjectURL(videoBlob);
+    const playback = document.getElementById('videoPlayback');
+    playback.src = videoUrl;
+    playback.style.display = 'block';
+    document.getElementById('videoPreview').style.display = 'none';
+    document.getElementById('saveVideoBtn').disabled = false;
+  };
+  
+  mediaRecorder.start();
+  startRecordingTimer('video');
+  
+  const recordBtn = document.getElementById('videoRecordBtn');
+  recordBtn.classList.add('recording');
+  recordBtn.innerHTML = '<span class="record-icon">●</span> Recording...';
+  document.getElementById('videoPauseBtn').disabled = false;
+  document.getElementById('videoStopBtn').disabled = false;
+  document.getElementById('videoStatus').textContent = 'Recording in progress...';
+}
+
+function stopVideoRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+    clearInterval(recordingTimer);
+    document.getElementById('videoRecordBtn').classList.remove('recording');
+    document.getElementById('videoRecordBtn').innerHTML = '<span class="record-icon">●</span> Start Recording';
+    document.getElementById('videoPauseBtn').disabled = true;
+    document.getElementById('videoStopBtn').disabled = true;
+    document.getElementById('videoStatus').textContent = 'Recording complete';
+    document.getElementById('videoStatus').classList.add('success');
+  }
+}
+
+function saveVideoNote() {
+  if (!recordedBlob) return;
+  
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    const base64Video = reader.result;
+    addMediaToNote('video', base64Video);
+    closeVideoRecorder();
+  };
+  reader.readAsDataURL(recordedBlob);
+}
+
+// Camera switching
+async function switchCamera() {
+  currentCamera = currentCamera === 'user' ? 'environment' : 'user';
+  
+  if (videoStream) {
+    videoStream.getTracks().forEach(track => track.stop());
+  }
+  
+  try {
+    const constraints = {
+      video: { facingMode: currentCamera },
+      audio: true
+    };
+    videoStream = await navigator.mediaDevices.getUserMedia(constraints);
+    document.getElementById('videoPreview').srcObject = videoStream;
+  } catch (err) {
+    console.error('Error switching camera:', err);
+  }
+}
+
+// Timer functionality
+function startRecordingTimer(type, resume = false) {
+  if (!resume) {
+    recordingStartTime = Date.now();
+  }
+  
+  recordingTimer = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+    const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+    const seconds = (elapsed % 60).toString().padStart(2, '0');
+    document.getElementById(`${type}Timer`).textContent = `${minutes}:${seconds}`;
+  }, 100);
+}
+
+// Waveform visualization
+function initializeWaveform() {
+  const canvas = document.getElementById('voiceWaveform');
+  const ctx = canvas.getContext('2d');
+  const audioContext = new AudioContext();
+  const analyser = audioContext.createAnalyser();
+  const source = audioContext.createMediaStreamSource(audioStream);
+  
+  source.connect(analyser);
+  analyser.fftSize = 256;
+  
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+  
+  function draw() {
+    requestAnimationFrame(draw);
+    
+    analyser.getByteFrequencyData(dataArray);
+    
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const barWidth = (canvas.width / bufferLength) * 2.5;
+    let barHeight;
+    let x = 0;
+    
+    for (let i = 0; i < bufferLength; i++) {
+      barHeight = dataArray[i] / 2;
+      
+      ctx.fillStyle = `rgb(245, ${158 + barHeight / 2}, 11)`;
+      ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+      
+      x += barWidth + 1;
+    }
+  }
+  
+  draw();
+}
+
+// Add media to note
+function addMediaToNote(type, data) {
+  const mediaContainer = document.getElementById('mediaContainer');
+  mediaContainer.classList.add('has-media');
+  
+  if (!mediaContainer.querySelector('.media-items')) {
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'media-items';
+    mediaContainer.appendChild(itemsDiv);
+  }
+  
+  const mediaItem = document.createElement('div');
+  mediaItem.className = 'media-item';
+  
+  const timestamp = new Date().toISOString();
+  
+  if (type === 'audio') {
+    mediaItem.innerHTML = `
+      <span class="media-item-type">🎵 Voice</span>
+      <button class="media-item-delete" onclick="deleteMedia(this)">×</button>
+      <audio controls src="${data}"></audio>
+      <div class="media-timestamp">${new Date(timestamp).toLocaleString()}</div>
+    `;
+  } else if (type === 'video') {
+    mediaItem.innerHTML = `
+      <span class="media-item-type">🎬 Video</span>
+      <button class="media-item-delete" onclick="deleteMedia(this)">×</button>
+      <video controls src="${data}" style="width: 100%; max-width: 400px;"></video>
+      <div class="media-timestamp">${new Date(timestamp).toLocaleString()}</div>
+    `;
+  }
+  
+  mediaContainer.querySelector('.media-items').appendChild(mediaItem);
+  
+  // Trigger auto-save
+  triggerAutoSave();
+}
+
+function deleteMedia(button) {
+  const mediaItem = button.parentElement;
+  mediaItem.remove();
+  
+  const mediaContainer = document.getElementById('mediaContainer');
+  const remainingItems = mediaContainer.querySelectorAll('.media-item');
+  
+  if (remainingItems.length === 0) {
+    mediaContainer.classList.remove('has-media');
+  }
+  
+  triggerAutoSave();
+}
+
+// Reset functions
+function resetVoiceRecorder() {
+  recordedBlob = null;
+  audioChunks = [];
+  document.getElementById('voiceTimer').textContent = '00:00';
+  document.getElementById('voicePlayback').style.display = 'none';
+  document.getElementById('saveVoiceBtn').disabled = true;
+  document.getElementById('voiceStatus').textContent = 'Ready to record';
+  document.getElementById('voiceStatus').classList.remove('error', 'success');
+  document.getElementById('voiceRecordBtn').classList.remove('recording');
+}
+
+function resetVideoRecorder() {
+  recordedBlob = null;
+  videoChunks = [];
+  document.getElementById('videoTimer').textContent = '00:00';
+  document.getElementById('videoPlayback').style.display = 'none';
+  document.getElementById('videoPreview').style.display = 'block';
+  document.getElementById('saveVideoBtn').disabled = true;
+  document.getElementById('videoStatus').textContent = 'Camera ready';
+  document.getElementById('videoStatus').classList.remove('error', 'success');
+  document.getElementById('videoRecordBtn').classList.remove('recording');
+}
+
+// ============================================
+// ENHANCED AUTO-SAVE FUNCTIONALITY
+// ============================================
+
+let autoSaveInterval = null;
+let pendingChanges = false;
+
+// Initialize auto-save
+function initializeAutoSave() {
+  // Check for changes every 2 seconds
+  autoSaveInterval = setInterval(() => {
+    if (pendingChanges && currentView === 'editor') {
+      performAutoSave();
+    }
+  }, 2000);
+  
+  // Also save on window blur
+  window.addEventListener('blur', () => {
+    if (pendingChanges && currentView === 'editor') {
+      performAutoSave();
+    }
+  });
+  
+  // Save before closing/refreshing
+  window.addEventListener('beforeunload', (e) => {
+    if (pendingChanges && currentView === 'editor') {
+      performAutoSave();
+      e.preventDefault();
+      e.returnValue = '';
+    }
+  });
+}
+
+// Mark that changes are pending
+function triggerAutoSave() {
+  pendingChanges = true;
+  const indicator = document.getElementById('autoSaveIndicator');
+  if (indicator) {
+    indicator.classList.add('saving');
+  }
+}
+
+// Perform the actual auto-save
+function performAutoSave() {
+  if (!pendingChanges) return;
+  
+  const noteData = collectNoteData();
+  
+  // Save to localStorage
+  if (currentNoteIndex !== null) {
+    notes[currentNoteIndex] = noteData;
+  } else {
+    // For new notes, save as draft
+    localStorage.setItem('noteDraft', JSON.stringify(noteData));
+  }
+  
+  localStorage.setItem('notes', JSON.stringify(notes));
+  
+  // Update UI
+  pendingChanges = false;
+  const indicator = document.getElementById('autoSaveIndicator');
+  if (indicator) {
+    indicator.classList.remove('saving');
+  }
+  
+  document.getElementById('lastSaved').textContent = 
+    `Last saved: ${new Date().toLocaleTimeString()}`;
+  
+  showSaveStatus('success', 'Auto-saved');
+  
+  setTimeout(() => {
+    const status = document.getElementById('save-status');
+    if (status) {
+      status.className = 'save-status';
+    }
+  }, 2000);
+}
+
+// Collect all note data including media
+function collectNoteData() {
+  const mediaItems = document.querySelectorAll('.media-item audio, .media-item video');
+  const mediaData = [];
+  
+  mediaItems.forEach(item => {
+    mediaData.push({
+      type: item.tagName.toLowerCase(),
+      src: item.src,
+      timestamp: item.parentElement.querySelector('.media-timestamp')?.textContent || ''
+    });
+  });
+  
+  return {
+    id: currentNoteIndex !== null ? notes[currentNoteIndex].id : Date.now(),
+    title: document.getElementById('noteTitle').value || 'Untitled Note',
+    date: document.getElementById('noteDate').value,
+    course: document.getElementById('noteCourse').value,
+    tutor: document.getElementById('noteTutor').value,
+    tags: document.getElementById('noteTags').value,
+    content: document.getElementById('noteContent').innerHTML,
+    background: document.getElementById('noteContent').dataset.background || '',
+    media: mediaData,
+    hasMedia: mediaData.length > 0,
+    favorite: currentNoteIndex !== null ? notes[currentNoteIndex].favorite : false,
+    wordCount: countWords(document.getElementById('noteContent').innerText),
+    created: currentNoteIndex !== null ? notes[currentNoteIndex].created : new Date().toISOString(),
+    lastModified: new Date().toISOString()
+  };
+}
+
+// Load media when opening a note
+function loadMediaToEditor(mediaData) {
+  if (!mediaData || mediaData.length === 0) return;
+  
+  const mediaContainer = document.getElementById('mediaContainer');
+  mediaContainer.classList.add('has-media');
+  
+  if (!mediaContainer.querySelector('.media-items')) {
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'media-items';
+    mediaContainer.appendChild(itemsDiv);
+  }
+  
+  const itemsContainer = mediaContainer.querySelector('.media-items');
+  itemsContainer.innerHTML = '';
+  
+  mediaData.forEach(item => {
+    const mediaItem = document.createElement('div');
+    mediaItem.className = 'media-item';
+    
+    if (item.type === 'audio') {
+      mediaItem.innerHTML = `
+        <span class="media-item-type">🎵 Voice</span>
+        <button class="media-item-delete" onclick="deleteMedia(this)">×</button>
+        <audio controls src="${item.src}"></audio>
+        <div class="media-timestamp">${item.timestamp}</div>
+      `;
+    } else if (item.type === 'video') {
+      mediaItem.innerHTML = `
+        <span class="media-item-type">🎬 Video</span>
+        <button class="media-item-delete" onclick="deleteMedia(this)">×</button>
+        <video controls src="${item.src}" style="width: 100%; max-width: 400px;"></video>
+        <div class="media-timestamp">${item.timestamp}</div>
+      `;
+    }
+    
+    itemsContainer.appendChild(mediaItem);
+  });
+}
+
+// Update the existing loadNoteToEditor function to include media
+const originalLoadNoteToEditor = loadNoteToEditor;
+loadNoteToEditor = function(note) {
+  originalLoadNoteToEditor(note);
+  if (note.media) {
+    loadMediaToEditor(note.media);
+  }
+};
+
+// Add event listeners for auto-save triggers
+document.addEventListener('DOMContentLoaded', () => {
+  initializeAutoSave();
+  
+  // Add change listeners to all inputs
+  const inputs = ['noteTitle', 'noteDate', 'noteCourse', 'noteTutor', 'noteTags'];
+  inputs.forEach(id => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.addEventListener('input', triggerAutoSave);
+      element.addEventListener('change', triggerAutoSave);
+    }
+  });
+  
+  // Content editor
+  const noteContent = document.getElementById('noteContent');
+  if (noteContent) {
+    noteContent.addEventListener('input', triggerAutoSave);
+    noteContent.addEventListener('paste', triggerAutoSave);
+  }
+});
+
+// Add media filter functionality
+document.querySelector('[data-filter="media"]')?.addEventListener('click', (e) => {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  e.target.classList.add('active');
+  
+  const cards = document.querySelectorAll('.note-card:not(.new-note)');
+  cards.forEach(card => {
+    const index = parseInt(card.dataset.index);
+    const note = notes[index];
+    card.style.display = note.hasMedia ? '' : 'none';
+  });
+});
+
+// Update note card creation to show media indicator
+const originalCreateNoteCard = createNoteCard;
+createNoteCard = function(note, index) {
+  const card = originalCreateNoteCard(note, index);
+  
+  if (note.hasMedia) {
+    card.classList.add('has-media');
+    if (note.media && note.media.some(m => m.type === 'video')) {
+      card.classList.add('has-video');
+    }
+  }
+  
+  return card;
+};

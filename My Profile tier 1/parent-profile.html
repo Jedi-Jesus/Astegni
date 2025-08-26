@@ -7,318 +7,9 @@
     <title>Yeneta - Parent Profile</title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/parent-profile.css">
 
-    <style>
-        /* Children Cards Styles */
-        .children-cards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 25px;
-            margin-top: 20px;
-            padding: 20px;
-        }
 
-        .child-card {
-            background: #FAF9F6; /* Beige/Broken white background */
-            border: 1px solid #E8E6E1;
-            border-radius: 20px;
-            padding: 30px;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .child-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 50px rgba(102, 126, 234, 0.15);
-        }
-
-        .child-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
-            animation: shimmer 3s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .child-card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .child-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 4px solid #667eea;
-            margin-right: 20px;
-            object-fit: cover;
-        }
-
-        .child-info {
-            flex: 1;
-        }
-
-        .child-name {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 5px;
-        }
-
-        .child-grade {
-            font-size: 16px;
-            color: #6b7280;
-        }
-
-        .child-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .child-stat-item {
-            background: rgba(102, 126, 234, 0.08);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(102, 126, 234, 0.15);
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-        }
-
-        .child-stat-value {
-            font-size: 20px;
-            font-weight: 600;
-            color: #667eea;
-            display: block;
-        }
-
-        .child-stat-label {
-            font-size: 12px;
-            color: #6b7280;
-            margin-top: 5px;
-            display: block;
-        }
-
-        .child-progress-bar {
-            background: #E5E7EB;
-            border-radius: 10px;
-            height: 8px;
-            overflow: hidden;
-            margin: 20px 0;
-        }
-
-        .child-progress-fill {
-            height: 100%;
-            background: #FAF9F6; /* Beige/Broken white background */
-            border-radius: 10px;
-            transition: width 0.5s ease;
-        }
-
-        .child-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .child-action-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .view-details-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-        }
-
-        .view-details-btn:hover {
-            background: linear-gradient(135deg, #5a67d8 0%, #6b4199 100%);
-            transform: scale(1.05);
-        }
-
-        .quick-message-btn {
-            background: white;
-            color: #667eea;
-            border: 2px solid #667eea;
-        }
-
-        .quick-message-btn:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        /* Child Details Modal Styles */
-        .child-details-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 10000;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .child-details-modal.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .child-modal-container {
-            background: white;
-            width: 95%;
-            height: 90%;
-            margin: auto;
-            border-radius: 20px;
-            display: flex;
-            overflow: hidden;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-
-        .child-modal-sidebar {
-            width: 250px;
-            background: #FAF9F6; /* Beige/Broken white background */
-            padding: 20px;
-            overflow-y: auto;
-        }
-
-        .child-modal-sidebar-header {
-            padding: 20px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 20px;
-        }
-
-        .child-modal-name {
-            font-size: 20px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 5px;
-        }
-
-        .child-modal-grade-info {
-            font-size: 14px;
-            color: rgba(255,255,255,0.9);
-        }
-
-        .child-modal-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .child-modal-menu-item {
-            padding: 15px 20px;
-            margin-bottom: 5px;
-            border-radius: 10px;
-            cursor: pointer;
-            color: rgba(255,255,255,0.9);
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .child-modal-menu-item:hover {
-            background: rgba(255,255,255,0.15);
-            color: white;
-        }
-
-        .child-modal-menu-item.active {
-            background: rgba(255,255,255,0.25);
-            color: white;
-            font-weight: 600;
-        }
-
-        .child-modal-menu-icon {
-            font-size: 18px;
-        }
-
-        .child-modal-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .child-modal-header {
-            padding: 20px 30px;
-            border-bottom: 1px solid #e5e7eb;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .child-modal-title {
-            font-size: 24px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        .child-modal-close {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: none;
-            background: #f3f4f6;
-            color: #6b7280;
-            font-size: 24px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .child-modal-close:hover {
-            background: #e5e7eb;
-            color: #1f2937;
-        }
-
-        .child-modal-body {
-            flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-        }
-
-        .modal-content-section {
-            display: none;
-        }
-
-        .modal-content-section.active {
-            display: block;
-            animation: slideIn 0.3s ease;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-    </style>
 
 </head>
 
@@ -370,7 +61,7 @@
                     <span>Dashboard</span>
                 </button>
             </div>
-            
+
             <!-- PARENT SECTION - SIMPLIFIED -->
             <div class="sidebar-section" data-content="parent">
                 <button class="sidebar-btn" data-content="my-children">
@@ -382,44 +73,41 @@
                     <span class="sidebar-btn-icon">👨‍🏫</span>
                     <span>Tutor My Child</span>
                 </button>
-                <button class="sidebar-btn" data-content="parent-community">
-                    <span class="sidebar-btn-icon">🤝</span>
-                    <span>Parent Community</span>
-                </button>
                 <button class="sidebar-btn" data-content="educational-resources">
                     <span class="sidebar-btn-icon">📖</span>
                     <span>Educational Resources</span>
+                </button>
+                <button class="sidebar-btn" data-content="blog">
+                    <span class="sidebar-btn-icon">📝</span>
+                    <span>Blog</span>
+                    <span class="sidebar-badge">7</span>
+                </button>
+                <button class="sidebar-btn" data-content="parent-engagement">
+                    <span class="sidebar-btn-icon">📈</span>
+                    <span>Engagement</span>
+                </button>
+                <button class="sidebar-btn" data-content="parent-reviews">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Reviews & Ratings</span>
+                </button>
+                <button class="sidebar-btn" data-content="parent-preferences">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Parent Preferences</span>
                 </button>
                 <button class="sidebar-btn" data-content="payment-center">
                     <span class="sidebar-btn-icon">💳</span>
                     <span>Payment Center</span>
                 </button>
-                <button class="sidebar-btn" data-content="notifications-center">
-                    <span class="sidebar-btn-icon">🔔</span>
-                    <span>Notifications</span>
-                    <span class="sidebar-badge">12</span>
-                </button>
             </div>
 
             <!-- UNCHANGED EDUCATION SECTION -->
             <div class="sidebar-section" data-content="education">
-                <button class="sidebar-btn" data-content="jobs">
-                    <span class="sidebar-btn-icon">💼</span>
-                    <span>My Job Board</span>
-                    <span class="sidebar-badge">3</span>
-                </button>
-                <button class="sidebar-btn" data-content="classes">
-                    <span class="sidebar-btn-icon">🎓</span>
-                    <span>My Classes</span>
-                    <span class="sidebar-badge">5</span>
-                </button>
-                <button class="sidebar-btn" data-content="books">
+                <button class="sidebar-btn" data-content="Resources">
                     <span class="sidebar-btn-icon">📚</span>
-                    <span>My Books</span>
+                    <span>My Resources</span>
                     <span class="sidebar-badge">5</span>
                 </button>
             </div>
-            
             <!-- UNCHANGED PERMANENT SECTION -->
             <div class="sidebar-section" data-content="permanent">
                 <button class="sidebar-btn" data-content="community">
@@ -432,38 +120,16 @@
                     <span>Clubs</span>
                     <span class="sidebar-badge active">Active</span>
                 </button>
-                <button class="sidebar-btn" data-content="podcasts">
-                    <span class="sidebar-btn-icon">🎙️</span>
-                    <span>Podcasts</span>
-                    <span class="sidebar-badge">5</span>
-                </button>
-                <button class="sidebar-btn" data-content="videos">
-                    <span class="sidebar-btn-icon">🎬</span>
-                    <span>Videos</span>
-                    <span class="sidebar-badge">12</span>
-                </button>
-                <button class="sidebar-btn" data-content="blog">
-                    <span class="sidebar-btn-icon">📝</span>
-                    <span>Blog</span>
-                    <span class="sidebar-badge">7</span>
-                </button>
-                <button class="sidebar-btn" data-content="comments">
-                    <span class="sidebar-btn-icon">💬</span>
-                    <span>Comments</span>
-                    <span class="sidebar-badge">15</span>
-                </button>
                 <button class="sidebar-btn" data-content="my-products">
                     <span class="sidebar-btn-icon">📦</span>
                     <span>My Products</span>
                 </button>
-                
-                    <a href='../Plug-ins/notes.html'>
-                <button class="sidebar-btn" data-content="notes">
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
                         <span class="sidebar-btn-icon">📝</span>
                         <span>Notes</span>
-                </button>
-                
-                    </a>
+                    </button>
+                </a>
                 <button class="sidebar-btn" data-content="rate-comment">
                     <span class="sidebar-btn-icon">⭐</span>
                     <span>Rate & Comment</span>
@@ -535,7 +201,7 @@
         <section class="profile-header-section">
             <div class="cover-image-container">
                 <img src="../pictures/parent cover.webp" alt="Cover" class="cover-img">
-<span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
+                <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
                 <div class="cover-overlay"></div>
             </div>
 
@@ -543,7 +209,7 @@
                 <div class="profile-info-wrapper">
                     <div class="profile-avatar-container">
                         <img src="../pictures/parent profile.jpg" alt="Parent profile" class="profile-avatar">
-<span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+                        <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
                     </div>
 
                     <div class="profile-details-section">
@@ -558,19 +224,24 @@
                         <div class="rating-section">
                             <div class="stars">
                                 <svg class="star filled" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                                 <svg class="star filled" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                                 <svg class="star filled" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                                 <svg class="star filled" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                                 <svg class="star half" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                             </div>
                             <span class="rating-value">4.8/5.0</span>
@@ -586,7 +257,7 @@
                             "Investing in my children's education for a brighter future"
                         </div>
 
-                                                <div class="follow-stats-cards">
+                        <div class="follow-stats-cards">
                             <div class="follow-card" onclick="openFollowersModal('followers')">
                                 <div class="follow-icon">👥</div>
                                 <div class="follow-info">
@@ -602,11 +273,12 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="profile-next-session" id="profileNextSession">
                             <div class="session-alert">
                                 <span class="alert-icon gradient-text">⏰</span>
-                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> Math Tutorial - Today at 4:00 PM EAT (Live in 2 hours) - Abebe attending</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> Math
+                                    Tutorial - Today at 4:00 PM EAT (Live in 2 hours) - Abebe attending</span>
                                 <button class="btn-join-inline">Join Session</button>
                             </div>
                         </div>
@@ -616,9 +288,9 @@
                                 <span class="action-icon">✏️</span>
                                 <span>Edit Profile</span>
                             </button>
+                        </div>
                     </div>
                 </div>
-            </div>
         </section>
 
         <!-- Advertisement Placeholder -->
@@ -653,7 +325,11 @@
                     <!-- About Section -->
                     <section class="profile-about-section">
                         <h3>About Me</h3>
-                        <p id="aboutText">As a dedicated parent, I am committed to providing the best educational opportunities for my children. I actively monitor their academic progress, engage with their tutors, and ensure they have all the resources they need to succeed. My goal is to create a supportive learning environment that nurtures their talents and helps them achieve their full potential.</p>
+                        <p id="aboutText">As a dedicated parent, I am committed to providing the best educational
+                            opportunities for my children. I actively monitor their academic progress, engage with their
+                            tutors, and ensure they have all the resources they need to succeed. My goal is to create a
+                            supportive learning environment that nurtures their talents and helps them achieve their
+                            full potential.</p>
                     </section>
 
                     <!-- Quick Stats Widget -->
@@ -740,7 +416,7 @@
                 </div>
 
                 <!-- NEW PARENT CONTENT PANELS -->
-                
+
                 <!-- My Children Content Panel -->
                 <div class="sidebar-content-panel" id="my-children-content">
                     <div class="section-header">
@@ -758,7 +434,7 @@
                                     <p class="child-grade">Grade 10 • Age 16</p>
                                 </div>
                             </div>
-                            
+
                             <div class="child-stats">
                                 <div class="child-stat-item">
                                     <span class="child-stat-value">5</span>
@@ -783,7 +459,8 @@
                             </div>
 
                             <div class="child-actions">
-                                <button class="child-action-btn view-details-btn" onclick="openChildDetailsModal('Abebe')">
+                                <button class="child-action-btn view-details-btn"
+                                    onclick="openChildDetailsModal('Abebe')">
                                     View Details
                                 </button>
                                 <button class="child-action-btn quick-message-btn">
@@ -801,7 +478,7 @@
                                     <p class="child-grade">Grade 8 • Age 14</p>
                                 </div>
                             </div>
-                            
+
                             <div class="child-stats">
                                 <div class="child-stat-item">
                                     <span class="child-stat-value">4</span>
@@ -826,7 +503,8 @@
                             </div>
 
                             <div class="child-actions">
-                                <button class="child-action-btn view-details-btn" onclick="openChildDetailsModal('Sara')">
+                                <button class="child-action-btn view-details-btn"
+                                    onclick="openChildDetailsModal('Sara')">
                                     View Details
                                 </button>
                                 <button class="child-action-btn quick-message-btn">
@@ -844,7 +522,7 @@
                                     <p class="child-grade">Grade 5 • Age 11</p>
                                 </div>
                             </div>
-                            
+
                             <div class="child-stats">
                                 <div class="child-stat-item">
                                     <span class="child-stat-value">3</span>
@@ -869,7 +547,8 @@
                             </div>
 
                             <div class="child-actions">
-                                <button class="child-action-btn view-details-btn" onclick="openChildDetailsModal('Meron')">
+                                <button class="child-action-btn view-details-btn"
+                                    onclick="openChildDetailsModal('Meron')">
                                     View Details
                                 </button>
                                 <button class="child-action-btn quick-message-btn">
@@ -886,30 +565,30 @@
                         <h2 class="section-title">Children's Courses</h2>
                         <button class="btn-primary" onclick="openEnrollCourseModal()">+ Enroll in Course</button>
                     </div>
-                    
+
                     <div class="courses-tabs">
                         <button class="course-tab active">All Courses</button>
                         <button class="course-tab">Active</button>
                         <button class="course-tab">Completed</button>
                         <button class="course-tab">Upcoming</button>
                     </div>
-                    
+
                     <div class="children-courses-grid" id="childrenCoursesGrid">
                         <!-- Children's courses will be loaded dynamically -->
                     </div>
                 </div>
 
-               <!-- Tutor My Child Content -->
+                <!-- Tutor My Child Content -->
                 <div class="sidebar-content-panel" id="tutor-child-content">
                     <div class="section-header">
                         <h2 class="section-title">Tutor My Child</h2>
                         <button class="btn-primary" onclick="createTutorSession()">+ Create Session</button>
                     </div>
-                    
+
                     <div class="tutor-dashboard">
                         <h3>Parent Tutoring Dashboard</h3>
                         <p>Create and manage tutoring sessions for your children</p>
-                        
+
                         <div class="tutor-tools">
                             <div class="tool-card">
                                 <span class="tool-icon">📝</span>
@@ -939,7 +618,7 @@
                         <h2 class="section-title">Parent Education Courses</h2>
                         <button class="btn-primary" onclick="openBrowseCoursesModal()">Browse All Courses</button>
                     </div>
-                    
+
                     <div class="course-categories">
                         <button class="category-chip active">All Courses</button>
                         <button class="category-chip">Parenting Skills</button>
@@ -948,7 +627,7 @@
                         <button class="category-chip">Technology</button>
                         <button class="category-chip">Languages</button>
                     </div>
-                    
+
                     <div class="parent-courses-grid" id="parentCoursesGrid">
                         <!-- Parent courses will be loaded dynamically -->
                     </div>
@@ -960,7 +639,7 @@
                         <h2 class="section-title">Progress Tracking</h2>
                         <button class="btn-primary" onclick="openProgressReportModal()">Generate Report</button>
                     </div>
-                    
+
                     <div class="progress-tabs">
                         <button class="progress-tab active">Overview</button>
                         <button class="progress-tab">By Child</button>
@@ -968,11 +647,11 @@
                         <button class="progress-tab">Monthly</button>
                         <button class="progress-tab">Yearly</button>
                     </div>
-                    
+
                     <div class="progress-charts">
                         <canvas id="progressTrackingChart"></canvas>
                     </div>
-                    
+
                     <div class="progress-metrics" id="progressMetrics">
                         <!-- Progress metrics will be loaded dynamically -->
                     </div>
@@ -984,7 +663,7 @@
                         <h2 class="section-title">Attendance Tracking</h2>
                         <button class="btn-primary" onclick="openAttendanceReportModal()">View Report</button>
                     </div>
-                    
+
                     <div class="attendance-summary">
                         <div class="summary-card">
                             <span class="summary-label">Overall Rate</span>
@@ -1002,7 +681,7 @@
                             <span class="summary-change">This Term</span>
                         </div>
                     </div>
-                    
+
                     <div class="attendance-calendar" id="attendanceCalendar">
                         <!-- Attendance calendar will be loaded dynamically -->
                     </div>
@@ -1014,7 +693,7 @@
                         <h2 class="section-title">Assignments Tracker</h2>
                         <button class="btn-primary" onclick="openAddAssignmentModal()">+ Add Assignment</button>
                     </div>
-                    
+
                     <div class="assignments-filters">
                         <button class="assignment-chip active">All</button>
                         <button class="assignment-chip">Pending</button>
@@ -1022,7 +701,7 @@
                         <button class="assignment-chip">Completed</button>
                         <button class="assignment-chip">Overdue</button>
                     </div>
-                    
+
                     <div class="assignments-list" id="assignmentsList">
                         <!-- Assignments will be loaded dynamically -->
                     </div>
@@ -1034,7 +713,7 @@
                         <h2 class="section-title">Exam Results & Grades</h2>
                         <button class="btn-primary" onclick="openAddExamResultModal()">+ Add Result</button>
                     </div>
-                    
+
                     <div class="exam-filters">
                         <select class="exam-filter">
                             <option>All Children</option>
@@ -1048,7 +727,7 @@
                             <option>All Terms</option>
                         </select>
                     </div>
-                    
+
                     <div class="exam-results-grid" id="examResultsGrid">
                         <!-- Exam results will be loaded dynamically -->
                     </div>
@@ -1060,7 +739,7 @@
                         <h2 class="section-title">Tuition & Payment Management</h2>
                         <button class="btn-primary" onclick="openMakePaymentModal()">Make Payment</button>
                     </div>
-                    
+
                     <div class="payment-summary">
                         <div class="summary-card">
                             <span class="summary-label">Total Due</span>
@@ -1078,14 +757,14 @@
                             <span class="summary-change">2024</span>
                         </div>
                     </div>
-                    
+
                     <div class="payment-methods">
                         <h3>Payment Methods</h3>
                         <div class="payment-method-cards">
                             <!-- Payment methods will be loaded dynamically -->
                         </div>
                     </div>
-                    
+
                     <div class="payment-history" id="paymentHistory">
                         <h3>Payment History</h3>
                         <!-- Payment history will be loaded dynamically -->
@@ -1098,21 +777,21 @@
                         <h2 class="section-title">Parent-Teacher Communication</h2>
                         <button class="btn-primary" onclick="openScheduleMeetingModal()">Schedule Meeting</button>
                     </div>
-                    
+
                     <div class="communication-tabs">
                         <button class="comm-tab active">Messages</button>
                         <button class="comm-tab">Meetings</button>
                         <button class="comm-tab">Feedback</button>
                         <button class="comm-tab">Announcements</button>
                     </div>
-                    
+
                     <div class="teacher-list">
                         <h3>Your Children's Teachers</h3>
                         <div class="teachers-grid" id="teachersGrid">
                             <!-- Teachers will be loaded dynamically -->
                         </div>
                     </div>
-                    
+
                     <div class="messages-section" id="parentTeacherMessages">
                         <!-- Messages will be loaded dynamically -->
                     </div>
@@ -1124,11 +803,11 @@
                         <h2 class="section-title">Schedule & Sessions Management</h2>
                         <button class="btn-primary" onclick="openScheduleSessionModal()">Schedule Session</button>
                     </div>
-                    
+
                     <div class="calendar-view">
                         <!-- Calendar component for viewing sessions -->
                     </div>
-                    
+
                     <div class="upcoming-sessions" id="upcomingSessions">
                         <!-- Upcoming sessions will be loaded dynamically -->
                     </div>
@@ -1140,7 +819,7 @@
                         <h2 class="section-title">Learning Resources Library</h2>
                         <button class="btn-primary" onclick="openUploadResourceModal()">+ Add Resource</button>
                     </div>
-                    
+
                     <div class="resource-categories">
                         <button class="resource-chip active">All Resources</button>
                         <button class="resource-chip">Study Materials</button>
@@ -1148,7 +827,7 @@
                         <button class="resource-chip">Videos</button>
                         <button class="resource-chip">Reference Books</button>
                     </div>
-                    
+
                     <div class="resources-grid" id="resourcesGrid">
                         <!-- Learning resources will be loaded dynamically -->
                     </div>
@@ -1160,62 +839,21 @@
                         <h2 class="section-title">Reports & Analytics</h2>
                         <button class="btn-primary" onclick="openCustomReportModal()">Custom Report</button>
                     </div>
-                    
+
                     <div class="report-types">
                         <button class="report-chip active">Monthly Summary</button>
                         <button class="report-chip">Progress Report</button>
                         <button class="report-chip">Financial Report</button>
                         <button class="report-chip">Attendance Report</button>
                     </div>
-                    
+
                     <div class="reports-dashboard" id="reportsDashboard">
                         <!-- Reports and analytics will be loaded dynamically -->
                     </div>
                 </div>
 
                 <!-- EXISTING EDUCATION CONTENT PANELS (UNCHANGED) -->
-                
-                <!-- Jobs Content Section -->
-                <div class="sidebar-content-panel" id="jobs-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Job Posts</h2>
-                        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
-                    </div>
-                    
-                    <div class="job-filters">
-                        <button class="filter-chip active" onclick="filterJobs('all')">All Jobs</button>
-                        <button class="filter-chip" onclick="filterJobs('posted')">Posted Jobs</button>
-                        <button class="filter-chip" onclick="filterJobs('draft')">Draft Jobs</button>
-                    </div>
-                    
-                    <div class="jobs-grid" id="jobsGrid">
-                        <!-- Jobs will be loaded dynamically -->
-                    </div>
-                </div>
 
-                <!-- Classes Content -->
-                <div class="sidebar-content-panel" id="classes-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Featured Courses</h2>
-                        <div class="header-buttons">
-                            <button class="btn-secondary" onclick="openMyClassesModal()">📚 My Classes</button>
-                            <button class="btn-primary" onclick="openClassModal()">+ Create Class</button>
-                        </div>
-                    </div>
-
-                    <div class="class-filters">
-                        <button class="filter-chip active">All Classes</button>
-                        <button class="filter-chip">Videography</button>
-                        <button class="filter-chip">Editing</button>
-                        <button class="filter-chip">Directing</button>
-                        <button class="filter-chip">Animation</button>
-                        <button class="filter-chip">Photography</button>
-                    </div>
-
-                    <div class="classes-grid">
-                        <!-- Classes will be loaded dynamically -->
-                    </div>
-                </div>
                 
                 <!-- Books Content Section -->
                 <div class="sidebar-content-panel" id="books-content">
@@ -1225,14 +863,14 @@
                             <!-- Button will be dynamically added based on books availability -->
                         </div>
                     </div>
-                    
+
                     <div class="books-grid" id="booksGrid">
                         <!-- Books will be loaded dynamically -->
                     </div>
                 </div>
 
                 <!-- EXISTING PERMANENT CONTENT PANELS (UNCHANGED) -->
-                
+
                 <!-- Community Content (Now opens modal) -->
                 <div class="sidebar-content-panel" id="community-content">
                     <!-- This will trigger the community modal -->
@@ -1244,15 +882,13 @@
                         <h2 class="section-title">Clubs</h2>
                         <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
                     </div>
-                    
+
                     <div class="clubs-tabs">
                         <button class="clubs-tab active" onclick="filterClubs('all')">All Clubs</button>
-                        <button class="clubs-tab" onclick="filterClubs('academic')">Academic</button>
-                        <button class="clubs-tab" onclick="filterClubs('arts')">Arts & Culture</button>
-                        <button class="clubs-tab" onclick="filterClubs('sports')">Sports</button>
-                        <button class="clubs-tab" onclick="filterClubs('technology')">Technology</button>
+                        <button class="clubs-tab" onclick="filterClubs('Parents')">Parents</button>
+                        <button class="clubs-tab" onclick="filterClubs('Tutors')">Tutors</button>
                     </div>
-                    
+
                     <div class="clubs-grid" id="clubsGrid">
                         <!-- Clubs will be loaded dynamically -->
                     </div>
@@ -1268,18 +904,18 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="podcast-filters">
                         <button class="filter-chip active" onclick="filterPodcasts('all')">All Podcasts</button>
                         <button class="filter-chip" onclick="filterPodcasts('published')">Published</button>
                         <button class="filter-chip" onclick="filterPodcasts('draft')">Drafts</button>
                     </div>
-                    
+
                     <div class="podcast-grid">
                         <!-- Podcasts will be loaded dynamically -->
                     </div>
                 </div>
-                              
+
                 <!-- Videos Content with Draft Filter -->
                 <div class="sidebar-content-panel" id="videos-content">
                     <div class="section-header">
@@ -1298,13 +934,19 @@
 
                     <div class="video-filters">
                         <div class="video-tabs">
-                            <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All Videos</button>
-                            <button class="video-tab" data-filter="published" onclick="filterVideos('published')">Published</button>
-                            <button class="video-tab" data-filter="draft" onclick="filterVideos('draft')">Drafts</button>
-                            <button class="video-tab" data-filter="shorts" onclick="filterVideos('shorts')">Shorts</button>
-                            <button class="video-tab" data-filter="playlists" onclick="filterVideos('playlists')">Playlists</button>
+                            <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All
+                                Videos</button>
+                            <button class="video-tab" data-filter="published"
+                                onclick="filterVideos('published')">Published</button>
+                            <button class="video-tab" data-filter="draft"
+                                onclick="filterVideos('draft')">Drafts</button>
+                            <button class="video-tab" data-filter="shorts"
+                                onclick="filterVideos('shorts')">Shorts</button>
+                            <button class="video-tab" data-filter="playlists"
+                                onclick="filterVideos('playlists')">Playlists</button>
                         </div>
-                        <button class="btn-create-playlist" onclick="window.trainingCenterProfile.playlists.openModal()">
+                        <button class="btn-create-playlist"
+                            onclick="window.trainingCenterProfile.playlists.openModal()">
                             + Create Playlist
                         </button>
                     </div>
@@ -1312,7 +954,7 @@
                         <!-- Videos will be loaded dynamically -->
                     </div>
                 </div>
-                
+
                 <!-- Blog Content with Draft Filter -->
                 <div class="sidebar-content-panel" id="blog-content">
                     <div class="section-header">
@@ -1358,7 +1000,7 @@
                             <span>🛒</span> Browse Store
                         </button>
                     </div>
-                    
+
                     <div class="product-filters">
                         <button class="filter-chip active" onclick="filterMyProducts('all')">All Products</button>
                         <button class="filter-chip" onclick="filterMyProducts('courses')">Courses</button>
@@ -1366,7 +1008,7 @@
                         <button class="filter-chip" onclick="filterMyProducts('software')">Software</button>
                         <button class="filter-chip" onclick="filterMyProducts('materials')">Materials</button>
                     </div>
-                    
+
                     <div class="my-products-grid" id="myProductsGrid">
                         <!-- Purchased products will be loaded dynamically -->
                     </div>
@@ -1797,7 +1439,7 @@
             </div>
         </div>
     </div>
-<!-- Child Details Modal -->
+    <!-- Child Details Modal -->
     <div class="child-details-modal" id="childDetailsModal">
         <div class="child-modal-container">
             <!-- Modal Sidebar -->
@@ -1806,7 +1448,7 @@
                     <h3 class="child-modal-name" id="modalChildName">Abebe Alemu</h3>
                     <p class="child-modal-grade-info" id="modalChildGrade">Grade 10 • Age 16</p>
                 </div>
-                
+
                 <ul class="child-modal-menu">
                     <li class="child-modal-menu-item active" onclick="switchModalContent('overview')">
                         <span class="child-modal-menu-icon">📊</span>
@@ -1861,7 +1503,7 @@
                     <h2 class="child-modal-title" id="modalContentTitle">Overview</h2>
                     <button class="child-modal-close" onclick="closeChildDetailsModal()">×</button>
                 </div>
-                
+
                 <div class="child-modal-body">
                     <!-- Overview Content -->
                     <div class="modal-content-section active" id="overview-content">
@@ -2087,15 +1729,18 @@
     <footer class="footer-section">
         <div class="footer-wave">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+                <path
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
             </svg>
         </div>
-        
+
         <div class="container mx-auto px-4">
             <div class="footer-content">
                 <div class="footer-section-item">
                     <h3 class="footer-title">About Astegni</h3>
-                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
                     <div class="footer-stats">
                         <div class="stat-item">
                             <span class="stat-number">10k+</span>
@@ -2111,7 +1756,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Quick Links</h3>
                     <ul class="footer-links">
@@ -2123,7 +1768,7 @@
                         <li><a href="#" class="footer-link">Careers</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Support</h3>
                     <ul class="footer-links">
@@ -2135,27 +1780,46 @@
                         <li><a href="#" class="footer-link">Safety</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Connect With Us</h3>
                     <div class="social-links">
                         <a href="#" aria-label="Facebook" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Twitter" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="LinkedIn" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
                         </a>
                         <a href="#" aria-label="YouTube" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
+                            </svg>
                         </a>
                     </div>
-                    
+
                     <div class="newsletter-signup">
                         <h4>Subscribe to Newsletter</h4>
                         <form class="newsletter-form">
@@ -2165,7 +1829,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <div class="footer-bottom-content">
                     <p>&copy; 2025 Astegni. All rights reserved.</p>
@@ -2180,15 +1844,15 @@
     </footer>
 
 
-     <!-- Scripts -->
-       <script>
+    <!-- Scripts -->
+    <script>
         // Function to open child details modal
         function openChildDetailsModal(childName) {
             const modal = document.getElementById('childDetailsModal');
             const modalChildName = document.getElementById('modalChildName');
             modalChildName.textContent = childName + ' Alemu';
             modal.classList.add('active');
-            
+
             // Reset to overview
             switchModalContent('overview');
         }
@@ -2204,20 +1868,20 @@
             // Remove active class from all menu items
             const menuItems = document.querySelectorAll('.child-modal-menu-item');
             menuItems.forEach(item => item.classList.remove('active'));
-            
+
             // Add active class to clicked menu item
             event.currentTarget.classList.add('active');
-            
+
             // Hide all content sections
             const contentSections = document.querySelectorAll('.modal-content-section');
             contentSections.forEach(section => section.classList.remove('active'));
-            
+
             // Show selected content section
             const selectedContent = document.getElementById(contentType + '-content');
             if (selectedContent) {
                 selectedContent.classList.add('active');
             }
-            
+
             // Update modal title
             const modalTitle = document.getElementById('modalContentTitle');
             const titleMap = {
@@ -2237,7 +1901,7 @@
         }
 
         // Close modal when clicking outside
-        document.getElementById('childDetailsModal').addEventListener('click', function(e) {
+        document.getElementById('childDetailsModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeChildDetailsModal();
             }
@@ -2247,16 +1911,16 @@
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
     <script src="../js/institute-profile-4.js"></script>
-   
-        <script>
-        setTimeout(function() {
+
+    <script>
+        setTimeout(function () {
             // Re-ensure our functions are available
             if (typeof window.openChildDetailsModal === 'function') {
                 console.log('Child modal functions are available');
             } else {
                 console.error('Child modal functions were overridden, re-initializing...');
                 // Re-initialize if needed
-                window.openChildDetailsModal = function(childName) {
+                window.openChildDetailsModal = function (childName) {
                     const modal = document.getElementById('childDetailsModal');
                     if (modal) {
                         const modalChildName = document.getElementById('modalChildName');

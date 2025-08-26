@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parent Profile - View | Astegni</title>
+    <link rel="stylesheet" href="../css/institute.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/view-parent.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <div class="container nav-container">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="nav-brand">
+                <span class="logo-icon">🎯</span>
+                <span class="logo-text gradient-text">Astegni</span>
+            </div>
+            <div class="nav-menu">
+                <a href="../branch/news.html" class="nav-link">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </a>
+                <a href="../branch/find-tutors.html" class="nav-link">
+                    <span class="nav-icon">👨‍🏫</span>
+                    <span>Find Tutors</span>
+                </a>
+                <a href="../branch/reels.html" class="nav-link">
+                    <span class="nav-icon">🎬</span>
+                    <span>Reels</span>
+                </a>
+                <a href="../branch/store.html" class="nav-link">
+                    <span class="nav-icon">🛒</span>
+                    <span>Store</span>
+                </a>
+                <a href="../branch/find-jobs.html" class="nav-link">
+                    <span class="nav-icon">💼</span>
+                    <span>Find Jobs</span>
+                </a>
+                <button class="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge pulse">5</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar" id="leftSidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <button class="sidebar-btn active" data-content="dashboard">
+                    <span class="sidebar-btn-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+            </div>
+            
+            <!-- VIEW PARENT SECTION - WITH PAYMENT HISTORY -->
+<div class="sidebar-section" data-content="view-parent">
+    <button class="sidebar-btn" data-content="children-profiles">
+        <span class="sidebar-btn-icon">👨‍👩‍👧‍👦</span>
+        <span>Children Profiles</span>
+        <span class="sidebar-badge">3</span>
+    </button>    
+    <button class="sidebar-btn" data-content="blog">
+        <span class="sidebar-btn-icon">📝</span>
+        <span>Blog</span>
+        <span class="sidebar-badge">7</span>
+    </button>
+    <button class="sidebar-btn" data-content="parent-engagement">
+        <span class="sidebar-btn-icon">📈</span>
+        <span>Engagement</span>
+    </button>
+    <button class="sidebar-btn" data-content="parent-reviews">
+        <span class="sidebar-btn-icon">⭐</span>
+        <span>Reviews & Ratings</span>
+    </button>
+    <button class="sidebar-btn" data-content="parent-preferences">
+        <span class="sidebar-btn-icon">⚙️</span>
+        <span>Parent Preferences</span>
+    </button>
+        <button class="sidebar-btn" data-content="payment-history">
+        <span class="sidebar-btn-icon">💳</span>
+        <span>Payment History</span>
+    </button>
+</div>
+
+            
+            <!-- PERMANENT SECTION - UNCHANGED -->
+
+
+                <button class="sidebar-btn" data-content="my-products">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>My Products</span>
+                </button>
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
+                        <span class="sidebar-btn-icon">📝</span>
+                        <span>Notes</span>
+                    </button>
+                </a>
+                <button class="sidebar-btn" data-content="rate-comment">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Rate & Comment</span>
+                </button>
+                <button class="sidebar-btn" data-content="share">
+                    <span class="sidebar-btn-icon">🔗</span>
+                    <span>Share</span>
+                </button>
+                <button class="sidebar-btn" data-content="settings">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats Section -->
+            <div class="sidebar-quick-stats">
+                <h4>Quick Stats</h4>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Children Enrolled</span>
+                    <span class="stat-value">3</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Engagement Rate</span>
+                    <span class="stat-value">92%</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Payment Status</span>
+                    <span class="stat-value">Current</span>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="sidebar-activity">
+                <h4>Recent Activity</h4>
+                <div class="activity-item">
+                    <span class="activity-icon">💳</span>
+                    <div class="activity-text">
+                        <p>Payment made</p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">📅</span>
+                    <div class="activity-text">
+                        <p>Session attended</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">📊</span>
+                    <div class="activity-text">
+                        <p>Progress reviewed</p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Button -->
+            <button class="sidebar-help-btn">
+                <span class="help-icon">💡</span>
+                <span>Need Help?</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container with-sidebar">
+        <!-- Profile Header Section - Always Visible -->
+        <section class="profile-header-section">
+            <div class="cover-image-container">
+                <img src="../pictures/parent cover.webp" alt="Cover" class="cover-img">
+                <div class="cover-overlay"></div>
+            </div>
+
+            <div class="profile-main-info">
+                <div class="profile-info-wrapper">
+                    <div class="profile-avatar-container">
+                        <img src="../pictures/parent profile.jpg" alt="Parent profile" class="profile-avatar">
+                    </div>
+
+                    <div class="profile-details-section">
+                        <div class="profile-name-row">
+                            <h1 class="center-name" id="centerName">Mulugeta Alemu</h1>
+                            <div class="badges-row">
+                                <span class="verified-badge">✓ Verified Parent</span>
+                                <span class="center-score">Engagement Score: 92/100</span>
+                            </div>
+                        </div>
+
+                        <div class="rating-section">
+                            <div class="stars">
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star half" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            </div>
+                            <span class="rating-value">4.8/5.0</span>
+                            <span class="review-count">(45 tutor reviews)</span>
+                        </div>
+
+                        <div class="location-info">
+                            <span class="location-icon">📍</span>
+                            <span id="locationText">Addis Ababa, Ethiopia | Parent of 3 Students</span>
+                        </div>
+
+                        <div class="profile-quote" id="profileQuote">
+                            "Investing in my children's education for a brighter future"
+                        </div>
+
+                        <div class="follow-stats-cards">
+                            <div class="follow-card">
+                                <div class="follow-icon">👨‍👩‍👧‍👦</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">3</span>
+                                    <span class="stat-label">Children</span>
+                                </div>
+                            </div>
+                            <div class="follow-card">
+                                <div class="follow-icon">📚</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">12</span>
+                                    <span class="stat-label">Active Courses</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-next-session" id="profileNextSession">
+                            <div class="session-alert">
+                                <span class="alert-icon gradient-text">⏰</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> Math Tutorial - Today at 4:00 PM EAT (Live in 2 hours) - Abebe attending</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions-grid">
+                            <button class="profile-action-btn connect-parent" onclick="openConnectModal()">
+                                <span class="action-icon">🤝</span>
+                                <span>Connect</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advertisement Placeholder -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Premium Tutoring Services</h3>
+                    <p class="ad-text">Find the best tutors for your children</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Area -->
+        <div class="content-with-sidebar">
+            <!-- Main Content Area -->
+            <div class="main-content-area">
+                <!-- Dashboard Content (Default) -->
+                <div class="sidebar-content-panel active" id="dashboard-content">
+                    <!-- About Section -->
+                    <section class="profile-about-section">
+                        <h3>About This Parent</h3>
+                        <p id="aboutText">Mulugeta Alemu is a dedicated parent of three children, actively involved in their educational journey. With a strong commitment to providing quality education, he maintains regular communication with tutors, monitors academic progress closely, and ensures timely payment for all educational services. His engagement level and support have contributed significantly to his children's academic success.</p>
+                    </section>
+
+                    <!-- Quick Stats Widget -->
+                    <section class="quick-stats-widget">
+                        <h2 class="section-title">Parent Statistics</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">👨‍👩‍👧‍👦</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">3</div>
+                                    <div class="stat-desc">Children Enrolled</div>
+                                    <div class="stat-detail">All Active</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">12,500</div>
+                                    <div class="stat-desc">Monthly Investment</div>
+                                    <div class="stat-detail">ETB</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📈</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">92%</div>
+                                    <div class="stat-desc">Engagement Rate</div>
+                                    <div class="stat-detail">Excellent</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">⏰</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">95%</div>
+                                    <div class="stat-desc">Attendance Rate</div>
+                                    <div class="stat-detail">Outstanding</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">💳</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">100%</div>
+                                    <div class="stat-desc">Payment Punctuality</div>
+                                    <div class="stat-detail">Always On Time</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">⭐</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">4.8</div>
+                                    <div class="stat-desc">Parent Rating</div>
+                                    <div class="stat-detail">From Tutors</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Children Overview -->
+                    <section class="awards-section">
+                        <h2 class="section-title">Children's Academic Performance</h2>
+                        <div class="awards-grid">
+                            <div class="award-card">
+                                <div class="award-icon">👦</div>
+                                <h3>Abebe Alemu</h3>
+                                <p>Grade 10 • GPA: 3.8</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">👧</div>
+                                <h3>Sara Alemu</h3>
+                                <p>Grade 8 • GPA: 3.9</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">👦</div>
+                                <h3>Merhawi Alemu</h3>
+                                <p>Grade 5 • GPA: 3.7</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- VIEW PARENT CONTENT PANELS -->
+                
+                <!-- Children Profiles Content -->
+                <div class="sidebar-content-panel" id="children-profiles-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Children Profiles</h2>
+                    </div>
+                    
+                    <div class="children-cards-grid">
+                        <!-- Child Card 1 - Abebe -->
+                        <div class="child-card">
+                            <div class="child-card-header">
+                                <img src="https://via.placeholder.com/80" alt="Abebe" class="child-avatar">
+                                <div class="child-info">
+                                    <h3 class="child-name">Abebe Alemu</h3>
+                                    <p class="child-grade">Grade 10 • Age 16</p>
+                                </div>
+                            </div>
+                            
+                            <div class="child-stats">
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">3.8</span>
+                                    <span class="child-stat-label">GPA</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">92%</span>
+                                    <span class="child-stat-label">Attendance</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">5</span>
+                                    <span class="child-stat-label">Subjects</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">A-</span>
+                                    <span class="child-stat-label">Grade</span>
+                                </div>
+                            </div>
+
+                            <div class="child-progress-section">
+                                <div class="child-progress-label">
+                                    <span>Overall Progress</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="child-progress-bar">
+                                    <div class="child-progress-fill" style="width: 85%"></div>
+                                </div>
+                            </div>
+
+                            <div class="child-courses-preview">
+                                <p style="margin: 10px 0; font-size: 14px;">Current Focus: Mathematics, Physics, Chemistry</p>
+                                <p style="margin: 10px 0; font-size: 14px;">Next Exam: Math - March 15, 2025</p>
+                            </div>
+
+                            <button class="child-details-btn" onclick="openChildDetailsModal('Abebe', 10, 16)">
+                                View Detailed Profile →
+                            </button>
+                        </div>
+
+                        <!-- Child Card 2 - Sara -->
+                        <div class="child-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="child-card-header">
+                                <img src="https://via.placeholder.com/80" alt="Sara" class="child-avatar">
+                                <div class="child-info">
+                                    <h3 class="child-name">Sara Alemu</h3>
+                                    <p class="child-grade">Grade 8 • Age 14</p>
+                                </div>
+                            </div>
+                            
+                            <div class="child-stats">
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">3.9</span>
+                                    <span class="child-stat-label">GPA</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">98%</span>
+                                    <span class="child-stat-label">Attendance</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">4</span>
+                                    <span class="child-stat-label">Subjects</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">A+</span>
+                                    <span class="child-stat-label">Grade</span>
+                                </div>
+                            </div>
+
+                            <div class="child-progress-section">
+                                <div class="child-progress-label">
+                                    <span>Overall Progress</span>
+                                    <span>94%</span>
+                                </div>
+                                <div class="child-progress-bar">
+                                    <div class="child-progress-fill" style="width: 94%"></div>
+                                </div>
+                            </div>
+
+                            <div class="child-courses-preview">
+                                <p style="margin: 10px 0; font-size: 14px;">Current Focus: Biology, English, History</p>
+                                <p style="margin: 10px 0; font-size: 14px;">Recent Achievement: Science Fair Winner</p>
+                            </div>
+
+                            <button class="child-details-btn" onclick="openChildDetailsModal('Sara', 8, 14)">
+                                View Detailed Profile →
+                            </button>
+                        </div>
+
+                        <!-- Child Card 3 - Meron -->
+                        <div class="child-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="child-card-header">
+                                <img src="https://via.placeholder.com/80" alt="Meron" class="child-avatar">
+                                <div class="child-info">
+                                    <h3 class="child-name">Meron Alemu</h3>
+                                    <p class="child-grade">Grade 5 • Age 11</p>
+                                </div>
+                            </div>
+                            
+                            <div class="child-stats">
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">3.7</span>
+                                    <span class="child-stat-label">GPA</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">96%</span>
+                                    <span class="child-stat-label">Attendance</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">3</span>
+                                    <span class="child-stat-label">Subjects</span>
+                                </div>
+                                <div class="child-stat-item">
+                                    <span class="child-stat-value">A</span>
+                                    <span class="child-stat-label">Grade</span>
+                                </div>
+                            </div>
+
+                            <div class="child-progress-section">
+                                <div class="child-progress-label">
+                                    <span>Overall Progress</span>
+                                    <span>88%</span>
+                                </div>
+                                <div class="child-progress-bar">
+                                    <div class="child-progress-fill" style="width: 88%"></div>
+                                </div>
+                            </div>
+
+                            <div class="child-courses-preview">
+                                <p style="margin: 10px 0; font-size: 14px;">Current Focus: Basic Math, Science, Language</p>
+                                <p style="margin: 10px 0; font-size: 14px;">Special Interest: Art & Creative Writing</p>
+                            </div>
+
+                            <button class="child-details-btn" onclick="openChildDetailsModal('Meron', 5, 11)">
+                                View Detailed Profile →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parent Engagement & Payment Status Content -->
+                <div class="sidebar-content-panel" id="parent-engagement-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Engagement Level & Payment Status</h2>
+                    </div>
+                    
+                    <div class="engagement-metrics">
+                        <div class="metric-card high">
+                            <h3>Overall Engagement Score</h3>
+                            <div class="score-display">
+                                <span class="score">92%</span>
+                                <span class="label">Highly Engaged Parent</span>
+                            </div>
+                        </div>
+                        
+                
+                        <div class="engagement-factors">
+                            <h3>Engagement Breakdown</h3>
+                            <div class="factor-list">
+                                <div class="factor-item">
+                                    <span class="factor">Message Response Rate</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 95%"></div>
+                                    </div>
+                                    <span class="value">95%</span>
+                                </div>
+                                <div class="factor-item">
+                                    <span class="factor">Meeting Attendance</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 88%"></div>
+                                    </div>
+                                    <span class="value">88%</span>
+                                </div>
+                                <div class="factor-item">
+                                    <span class="factor">Progress Monitoring</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 92%"></div>
+                                    </div>
+                                    <span class="value">92%</span>
+                                </div>
+                                <div class="factor-item">
+                                    <span class="factor">Platform Activity</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 90%"></div>
+                                    </div>
+                                    <span class="value">90%</span>
+                                </div>
+                                <div class="factor-item">
+                                    <span class="factor">Resource Utilization</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 85%"></div>
+                                    </div>
+                                    <span class="value">85%</span>
+                                </div>
+                                <div class="factor-item">
+                                    <span class="factor">Payment Reliability</span>
+                                    <div class="progress-bar">
+                                        <div class="progress" style="width: 100%"></div>
+                                    </div>
+                                    <span class="value">100%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="engagement-timeline">
+                            <h3>Engagement Trend</h3>
+                            <canvas id="engagementTimelineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Payment History Content -->
+<div class="sidebar-content-panel" id="payment-history-content">
+    <div class="section-header">
+        <h2 class="section-title">Payment History</h2>
+    </div>
+    
+    <div class="payment-status-overview">
+        <!-- Main Payment Status Display -->
+        <div class="payment-status-hero">
+            <div class="status-badge-large excellent">
+                <span class="status-icon">✓</span>
+                <span class="status-percentage">100%</span>
+                <span class="status-label">ON-TIME PAYMENT RATE</span>
+            </div>
+            <div class="payment-excellence">
+                <h3>Excellent Payment Record</h3>
+                <p>This parent has maintained a perfect payment record with no late or missed payments.</p>
+            </div>
+        </div>
+        
+        <!-- Payment Statistics -->
+        <div class="payment-stats-grid">
+            <div class="payment-stat-card">
+                <span class="stat-icon">📅</span>
+                <span class="stat-value">24</span>
+                <span class="stat-label">Consecutive On-Time Payments</span>
+            </div>
+            <div class="payment-stat-card">
+                <span class="stat-icon">⏰</span>
+                <span class="stat-value">3 Days</span>
+                <span class="stat-label">Average Early Payment</span>
+            </div>
+            <div class="payment-stat-card">
+                <span class="stat-icon">🏆</span>
+                <span class="stat-value">Gold</span>
+                <span class="stat-label">Payment Tier Status</span>
+            </div>
+        </div>
+        
+        <!-- Payment Timeline -->
+        <div class="payment-timeline-section">
+            <h3>Recent Payment Activity</h3>
+            <div class="payment-timeline">
+                <div class="timeline-entry">
+                    <div class="timeline-dot success"></div>
+                    <div class="timeline-content">
+                        <div class="payment-date">February 1, 2025</div>
+                        <div class="payment-info">
+                            <span class="payment-desc">Monthly Tuition - All Children</span>
+                        </div>
+                        <span class="payment-badge on-time">Paid On Time</span>
+                    </div>
+                </div>
+                <div class="timeline-entry">
+                    <div class="timeline-dot success"></div>
+                    <div class="timeline-content">
+                        <div class="payment-date">January 28, 2025</div>
+                        <div class="payment-info">
+                            <span class="payment-desc">Extra Math Sessions - Abebe</span>
+                        </div>
+                        <span class="payment-badge early">Paid Early</span>
+                    </div>
+                </div>
+                <div class="timeline-entry">
+                    <div class="timeline-dot success"></div>
+                    <div class="timeline-content">
+                        <div class="payment-date">January 1, 2025</div>
+                        <div class="payment-info">
+                            <span class="payment-desc">Monthly Tuition - All Children</span>
+                        </div>
+                        <span class="payment-badge on-time">Paid On Time</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Method Info -->
+        <div class="payment-method-section">
+            <h3>Payment Information</h3>
+            <div class="payment-method-card">
+                <div class="method-info">
+                    <span class="method-label">Preferred Method:</span>
+                    <span class="method-value">Bank Transfer</span>
+                </div>
+                <div class="method-info">
+                    <span class="method-label">Payment Schedule:</span>
+                    <span class="method-value">Monthly (1st of each month)</span>
+                </div>
+                <div class="method-info">
+                    <span class="method-label">Auto-Pay Status:</span>
+                    <span class="method-value">Enabled</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+                <!-- Parent Reviews Content -->
+                <div class="sidebar-content-panel" id="parent-reviews-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Reviews & Ratings</h2>
+                    </div>
+                    
+                    <div class="reviews-section">
+                        <div class="rating-summary">
+                            <div class="overall-rating">
+                                <h3>Overall Rating</h3>
+                                <div class="rating-display">
+                                    <span class="rating-number">4.8</span>
+                                    <div class="stars">⭐⭐⭐⭐⭐</div>
+                                    <span class="review-count">45 reviews from tutors</span>
+                                </div>
+                            </div>
+                            
+                            <div class="rating-breakdown">
+                                <div class="rating-row">
+                                    <span>5 stars</span>
+                                    <div class="rating-bar">
+                                        <div class="bar-fill" style="width: 80%"></div>
+                                    </div>
+                                    <span>36</span>
+                                </div>
+                                <div class="rating-row">
+                                    <span>4 stars</span>
+                                    <div class="rating-bar">
+                                        <div class="bar-fill" style="width: 15%"></div>
+                                    </div>
+                                    <span>7</span>
+                                </div>
+                                <div class="rating-row">
+                                    <span>3 stars</span>
+                                    <div class="rating-bar">
+                                        <div class="bar-fill" style="width: 5%"></div>
+                                    </div>
+                                    <span>2</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="reviews-list">
+                            <h3>Recent Reviews</h3>
+                            <div class="review-item">
+                                <div class="reviewer-info">
+                                    <img src="https://via.placeholder.com/40" alt="Reviewer" class="reviewer-avatar">
+                                    <div>
+                                        <h4>Mr. Bekele Tadesse</h4>
+                                        <p>Math Tutor - Abebe</p>
+                                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                                    </div>
+                                </div>
+                                <p>"Excellent parent! Very supportive and engaged in their children's education. Always responsive to messages and provides helpful feedback. Payments are always on time."</p>
+                                <span class="review-date">1 week ago</span>
+                            </div>
+                            <div class="review-item">
+                                <div class="reviewer-info">
+                                    <img src="https://via.placeholder.com/40" alt="Reviewer" class="reviewer-avatar">
+                                    <div>
+                                        <h4>Ms. Tigist Haile</h4>
+                                        <p>Science Tutor - Sara</p>
+                                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                                    </div>
+                                </div>
+                                <p>"Great communication and very involved in monitoring progress. Always attends parent-teacher meetings and shows genuine interest in educational strategies."</p>
+                                <span class="review-date">2 weeks ago</span>
+                            </div>
+                            <div class="review-item">
+                                <div class="reviewer-info">
+                                    <img src="https://via.placeholder.com/40" alt="Reviewer" class="reviewer-avatar">
+                                    <div>
+                                        <h4>Mr. Daniel Mekonnen</h4>
+                                        <p>English Tutor - All Children</p>
+                                        <div class="stars">⭐⭐⭐⭐</div>
+                                    </div>
+                                </div>
+                                <p>"Very cooperative parent who values education highly. Ensures children complete assignments and provides a good learning environment at home."</p>
+                                <span class="review-date">3 weeks ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parent Preferences Content -->
+                <div class="sidebar-content-panel" id="parent-preferences-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Parent Preferences</h2>
+                    </div>
+                    
+                    <div class="preferences-overview">
+                        <div class="preference-section">
+                            <h3>Communication Preferences</h3>
+                            <div class="preference-list">
+                                <div class="preference-item">
+                                    <span class="pref-label">Best Time to Contact:</span>
+                                    <span class="pref-value">Evenings (6-8 PM)</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Language:</span>
+                                    <span class="pref-value">Amharic & English</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Update Frequency:</span>
+                                    <span class="pref-value">Weekly Progress Reports</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Response Time:</span>
+                                    <span class="pref-value">Usually within 2 hours</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-section">
+                            <h3>Educational Preferences</h3>
+                            <div class="preference-list">
+                                <div class="preference-item">
+                                    <span class="pref-label">Teaching Style:</span>
+                                    <span class="pref-value">Interactive & Visual Learning</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Session Format:</span>
+                                    <span class="pref-value">One-on-One Preferred</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Homework Policy:</span>
+                                    <span class="pref-value">Moderate Amount with Clear Guidelines</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Focus Areas:</span>
+                                    <span class="pref-value">STEM Subjects Priority</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Extra Support:</span>
+                                    <span class="pref-value">Open to Additional Sessions When Needed</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="preference-section">
+                            <h3>Scheduling Preferences</h3>
+                            <div class="preference-list">
+                                <div class="preference-item">
+                                    <span class="pref-label">Preferred Days:</span>
+                                    <span class="pref-value">Weekdays & Saturday Mornings</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Session Duration:</span>
+                                    <span class="pref-value">1.5 Hours Per Session</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Cancellation Notice:</span>
+                                    <span class="pref-value">24 Hours in Advance</span>
+                                </div>
+                                <div class="preference-item">
+                                    <span class="pref-label">Make-up Sessions:</span>
+                                    <span class="pref-value">Flexible Rescheduling</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PERMANENT CONTENT PANELS - These remain unchanged and can be copied from journalist-profile.html -->
+                
+            </div>
+
+            <!-- Right Sidebar - UNCHANGED -->
+            <div class="right-sidebar">
+                <!-- News Widget -->
+                <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <h3>📰 Latest News</h3>
+                        <a href="../branch/news.html" class="widget-action">View All</a>
+                    </div>
+
+                    <div class="news-carousel">
+                        <div class="news-card-container">
+                            <div class="news-card active" data-category="education">
+                                <div class="news-card-header">
+                                    <span class="news-category-badge education">Education</span>
+                                    <span class="news-time">2h ago</span>
+                                </div>
+                                <div class="news-card-image">
+                                    <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400"
+                                        alt="Education News">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4>New Learning Methods Transform Student Success</h4>
+                                    <p>Latest educational approaches are helping students achieve better results...</p>
+                                    <div class="news-stats">
+                                        <span class="news-stat">🔥 Trending</span>
+                                        <span class="news-stat">👁️ 1.2k views</span>
+                                        <span class="news-stat">💬 45 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Trends Widget -->
+                <div class="sidebar-widget market-widget" onclick="navigateToMarket()">
+                    <div class="widget-header">
+                        <h3>💹 Market Trends</h3>
+                        <a href="../branch/yeneta-exchange.html" class="widget-action">Details</a>
+                    </div>
+                    <div class="market-sections">
+                        <!-- Store Market Trend -->
+                        <div class="market-section">
+                            <h4>Astegni Store</h4>
+                            <div class="store-trend">
+                                <div class="trend-stat">
+                                    <span>Daily Sales</span>
+                                    <span class="trend-value">$24.5K</span>
+                                    <span class="change up">↑ 12%</span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Active Listings</span>
+                                    <span class="trend-value">1,234</span>
+                                    <span class="change up">↑ 8%</span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Top Category</span>
+                                    <span class="trend-value">Courses</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Ethiopian Stock Exchange -->
+                        <div class="market-section">
+                            <h4>Ethiopian Stock Exchange (ESX)</h4>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span>🏦</span>
+                                    <span>Banking Sector</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="1245.67">1,245.67</span>
+                                    <span class="change up">↑ 2.34%</span>
+                                </div>
+                            </div>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span>📱</span>
+                                    <span>Telecom Sector</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="892.45">892.45</span>
+                                    <span class="change up">↑ 1.87%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Forex & Crypto -->
+                        <div class="market-section">
+                            <h4>Forex Exchange</h4>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span class="currency-flag">🇺🇸</span>
+                                    <span>USD/ETB</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="56.85">56.85</span>
+                                    <span class="change up">↑ 0.25%</span>
+                                </div>
+                            </div>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span class="currency-flag">🇪🇺</span>
+                                    <span>EUR/ETB</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="61.23">61.23</span>
+                                    <span class="change up">↑ 0.18%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Advertisement -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Premium Educational Tools</h3>
+                    <p class="ad-text">Enhance your children's learning experience</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Widgets Section -->
+        <section class="bottom-widgets">
+            <div class="bottom-widgets-grid">
+
+                <!-- Weather Widget - UNCHANGED -->
+                <div class="bottom-widget weather-widget" data-weather-theme="royal-blue">
+                    <div class="widget-header">
+                        <h3>🌤️ Weather</h3>
+                        <div class="weather-widget-actions">
+                            <button class="widget-action" onclick="window.weatherManager.toggleSettings()">
+                                <span class="settings-icon">⚙️</span>
+                            </button>
+                            <button class="widget-action" onclick="window.weatherManager.showForecast()">
+                                Forecast
+                            </button>
+                        </div>
+                    </div>
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="weather-icon">☀️</div>
+                            <div class="weather-temp">72°F</div>
+                            <div class="weather-condition">Sunny</div>
+                        </div>
+                        <div class="weather-location">Addis Ababa, ET</div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span>High</span>
+                                <span>78°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Low</span>
+                                <span>65°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Humidity</span>
+                                <span>45%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Wind</span>
+                                <span>8 mph</span>
+                            </div>
+                        </div>
+                        <div class="weather-forecast">
+                            <div class="forecast-day">
+                                <span>Mon</span>
+                                <span>☀️</span>
+                                <span>75°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Tue</span>
+                                <span>⛅</span>
+                                <span>73°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Wed</span>
+                                <span>☁️</span>
+                                <span>70°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Thu</span>
+                                <span>🌧️</span>
+                                <span>68°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Widget - PARENT FOCUSED -->
+                <div class="bottom-widget analytics-widget compact">
+                    <div class="widget-header">
+                        <h3>📊 Parent Analytics</h3>
+                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                    </div>
+                    <div class="real-time-stats compact">
+                        <div class="rt-stat active" data-metric="engagement" onclick="switchMetric('engagement')">
+                            <span class="rt-icon">📈</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="92">92%</span>
+                                <span class="rt-label">Engagement Rate</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="attendance" onclick="switchMetric('attendance')">
+                            <span class="rt-icon">📅</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="95">95%</span>
+                                <span class="rt-label">Attendance Rate</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="investment" onclick="switchMetric('investment')">
+                            <span class="rt-icon">💰</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="12500">12.5K</span>
+                                <span class="rt-label">Monthly Investment</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="response" onclick="switchMetric('response')">
+                            <span class="rt-icon">💬</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="95">95%</span>
+                                <span class="rt-label">Response Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="analyticsChart"></canvas>
+                        <div class="chart-label">Parent Engagement - Last 30 Days</div>
+                    </div>
+                </div>
+
+                <!-- Events Widget -->
+                <div class="bottom-widget events-widget">
+                    <div class="widget-header">
+                        <h3>📅 Upcoming Sessions</h3>
+                        <button class="widget-action" onclick="openAllEventsModal()">View All</button>
+                    </div>
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">4:00 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Math Tutorial</h4>
+                                <p>Abebe - Online Session</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">3:00 PM</span>
+                                <span class="date">Tomorrow</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Science Lab</h4>
+                                <p>Sara - In-Person</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">10:00 AM</span>
+                                <span class="date">Friday</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Parent-Teacher Meeting</h4>
+                                <p>All Children - School</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Child Details Modal -->
+    <div class="child-details-modal" id="childDetailsModal">
+        <div class="child-modal-container">
+            <!-- Modal Sidebar -->
+            <div class="child-modal-sidebar">
+                <div class="child-modal-sidebar-header">
+                    <h3 class="child-modal-name" id="modalChildName">Abebe Alemu</h3>
+                    <p class="child-modal-grade-info" id="modalChildGrade">Grade 10 • Age 16</p>
+                </div>
+                
+                <ul class="child-modal-menu">
+                    <li class="child-modal-menu-item active" onclick="switchModalContent('education-preference')">
+                        <span class="child-modal-menu-icon">📚</span>
+                        <span>Education Preference</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('tutoring-requirements')">
+                        <span class="child-modal-menu-icon">👨‍🏫</span>
+                        <span>Tutoring Requirements</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('progress')">
+                        <span class="child-modal-menu-icon">📈</span>
+                        <span>Progress Tracking</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('attendance')">
+                        <span class="child-modal-menu-icon">✅</span>
+                        <span>Attendance</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('assignments')">
+                        <span class="child-modal-menu-icon">📝</span>
+                        <span>Assignments</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('exams')">
+                        <span class="child-modal-menu-icon">📋</span>
+                        <span>Exam Results</span>
+                    </li>
+                    <li class="child-modal-menu-item" onclick="switchModalContent('analytics')">
+                        <span class="child-modal-menu-icon">📊</span>
+                        <span>Reports & Analytics</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="child-modal-content">
+                <div class="child-modal-header">
+                    <h2 class="child-modal-title" id="modalContentTitle">Education Preference</h2>
+                    <button class="child-modal-close" onclick="closeChildDetailsModal()">×</button>
+                </div>
+                
+                <div class="child-modal-body">
+                    <!-- Education Preference Content -->
+                    <div class="modal-content-section active" id="education-preference-content">
+                        <h3>Education Preferences</h3>
+                        <div class="preference-grid">
+                            <div class="pref-card">
+                                <h4>Learning Style</h4>
+                                <p>Visual and Interactive Learning</p>
+                                <ul>
+                                    <li>Prefers diagrams and visual aids</li>
+                                    <li>Responds well to interactive exercises</li>
+                                    <li>Benefits from hands-on activities</li>
+                                </ul>
+                            </div>
+                            <div class="pref-card">
+                                <h4>Preferred Subjects</h4>
+                                <ul>
+                                    <li>Mathematics (Advanced)</li>
+                                    <li>Physics</li>
+                                    <li>Chemistry</li>
+                                    <li>Computer Science</li>
+                                </ul>
+                            </div>
+                            <div class="pref-card">
+                                <h4>Study Schedule</h4>
+                                <p>Afternoon Sessions Preferred</p>
+                                <ul>
+                                    <li>Weekdays: 4:00 PM - 6:00 PM</li>
+                                    <li>Saturdays: 10:00 AM - 12:00 PM</li>
+                                    <li>Break every 45 minutes</li>
+                                </ul>
+                            </div>
+                            <div class="pref-card">
+                                <h4>Special Requirements</h4>
+                                <ul>
+                                    <li>Needs quiet environment</li>
+                                    <li>Prefers one-on-one sessions</li>
+                                    <li>Extra support in writing skills</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tutoring Requirements Content -->
+                    <div class="modal-content-section" id="tutoring-requirements-content">
+                        <h3>Tutoring Requirements</h3>
+                        <div class="requirements-section">
+                            <div class="req-category">
+                                <h4>Current Tutoring Needs</h4>
+                                <div class="req-list">
+                                    <div class="req-item">
+                                        <span class="subject">Mathematics</span>
+                                        <span class="level">Advanced Calculus</span>
+                                        <span class="frequency">3x per week</span>
+                                    </div>
+                                    <div class="req-item">
+                                        <span class="subject">Physics</span>
+                                        <span class="level">Mechanics & Thermodynamics</span>
+                                        <span class="frequency">2x per week</span>
+                                    </div>
+                                    <div class="req-item">
+                                        <span class="subject">Chemistry</span>
+                                        <span class="level">Organic Chemistry</span>
+                                        <span class="frequency">2x per week</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="req-category">
+                                <h4>Tutor Qualifications Preferred</h4>
+                                <ul>
+                                    <li>Minimum Bachelor's degree in subject area</li>
+                                    <li>3+ years teaching experience</li>
+                                    <li>Experience with exam preparation</li>
+                                    <li>Patient and encouraging teaching style</li>
+                                </ul>
+                            </div>
+                            <div class="req-category">
+                                <h4>Session Format</h4>
+                                <ul>
+                                    <li>Duration: 1.5 hours per session</li>
+                                    <li>Format: Hybrid (Online & In-person)</li>
+                                    <li>Group Size: Individual preferred</li>
+                                    <li>Materials: Digital resources preferred</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Tracking Content -->
+                    <div class="modal-content-section" id="progress-content">
+                        <h3>Progress Tracking</h3>
+                        <canvas id="progressChart"></canvas>
+                        <div class="progress-details">
+                            <div class="subject-progress">
+                                <h4>Subject Performance</h4>
+                                <div class="progress-item">
+                                    <span>Mathematics</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 85%"></div>
+                                    </div>
+                                    <span>85%</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>Physics</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 82%"></div>
+                                    </div>
+                                    <span>82%</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>Chemistry</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 88%"></div>
+                                    </div>
+                                    <span>88%</span>
+                                </div>
+                                <div class="progress-item">
+                                    <span>English</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 79%"></div>
+                                    </div>
+                                    <span>79%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attendance Content -->
+                    <div class="modal-content-section" id="attendance-content">
+                        <h3>Attendance Records</h3>
+                        <div class="attendance-summary">
+                            <div class="attendance-stat">
+                                <span class="stat-label">Overall Attendance</span>
+                                <span class="stat-value">92%</span>
+                            </div>
+                            <div class="attendance-stat">
+                                <span class="stat-label">This Month</span>
+                                <span class="stat-value">95%</span>
+                            </div>
+                            <div class="attendance-stat">
+                                <span class="stat-label">Classes Missed</span>
+                                <span class="stat-value">8</span>
+                            </div>
+                        </div>
+                        <div class="attendance-calendar">
+                            <!-- Calendar view here -->
+                        </div>
+                        <div class="attendance-details">
+                            <h4>Recent Attendance</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Subject</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Feb 10, 2025</td>
+                                        <td>Mathematics</td>
+                                        <td><span class="status present">Present</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Feb 9, 2025</td>
+                                        <td>Physics</td>
+                                        <td><span class="status present">Present</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Feb 8, 2025</td>
+                                        <td>Chemistry</td>
+                                        <td><span class="status absent">Absent</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Assignments Content -->
+                    <div class="modal-content-section" id="assignments-content">
+                        <h3>Assignments</h3>
+                        <div class="assignments-filters">
+                            <button class="filter-btn active">All</button>
+                            <button class="filter-btn">Pending</button>
+                            <button class="filter-btn">Submitted</button>
+                            <button class="filter-btn">Graded</button>
+                        </div>
+                        <div class="assignments-list">
+                            <div class="assignment-item">
+                                <div class="assignment-header">
+                                    <h4>Calculus Problem Set #5</h4>
+                                    <span class="status pending">Pending</span>
+                                </div>
+                                <p>Subject: Mathematics</p>
+                                <p>Due: March 15, 2025</p>
+                            </div>
+                            <div class="assignment-item">
+                                <div class="assignment-header">
+                                    <h4>Physics Lab Report</h4>
+                                    <span class="status submitted">Submitted</span>
+                                </div>
+                                <p>Subject: Physics</p>
+                                <p>Submitted: March 10, 2025</p>
+                            </div>
+                            <div class="assignment-item">
+                                <div class="assignment-header">
+                                    <h4>Chemistry Project</h4>
+                                    <span class="status graded">Graded: A-</span>
+                                </div>
+                                <p>Subject: Chemistry</p>
+                                <p>Grade: 88%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Exam Results Content -->
+                    <div class="modal-content-section" id="exams-content">
+                        <h3>Exam Results</h3>
+                        <div class="exam-summary">
+                            <div class="summary-card">
+                                <h4>Current GPA</h4>
+                                <span class="gpa">3.8</span>
+                            </div>
+                            <div class="summary-card">
+                                <h4>Class Rank</h4>
+                                <span class="rank">5/120</span>
+                            </div>
+                        </div>
+                        <div class="exam-results">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Subject</th>
+                                        <th>Mid-Term</th>
+                                        <th>Final</th>
+                                        <th>Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Mathematics</td>
+                                        <td>85%</td>
+                                        <td>88%</td>
+                                        <td>A-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Physics</td>
+                                        <td>82%</td>
+                                        <td>84%</td>
+                                        <td>B+</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Chemistry</td>
+                                        <td>88%</td>
+                                        <td>90%</td>
+                                        <td>A</td>
+                                    </tr>
+                                    <tr>
+                                        <td>English</td>
+                                        <td>78%</td>
+                                        <td>80%</td>
+                                        <td>B</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Reports & Analytics Content -->
+                    <div class="modal-content-section" id="analytics-content">
+                        <h3>Reports & Analytics</h3>
+                        <div class="analytics-dashboard">
+                            <div class="chart-section">
+                                <h4>Performance Trend</h4>
+                                <canvas id="performanceChart"></canvas>
+                            </div>
+                            <div class="analytics-summary">
+                                <h4>Key Insights</h4>
+                                <ul>
+                                    <li>Overall Performance: <strong>Improving</strong></li>
+                                    <li>Strongest Subject: <strong>Chemistry</strong></li>
+                                    <li>Needs Improvement: <strong>English Writing</strong></li>
+                                    <li>Attendance Correlation: <strong>High (0.85)</strong></li>
+                                </ul>
+                            </div>
+                            <div class="recommendations">
+                                <h4>Recommendations</h4>
+                                <ul>
+                                    <li>Increase English tutoring sessions</li>
+                                    <li>Maintain current Math & Science schedule</li>
+                                    <li>Consider peer study groups for Physics</li>
+                                    <li>Focus on exam preparation techniques</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <button class="btn-primary" onclick="downloadReport()">Download Full Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAB Menu -->
+    <div class="fab-container">
+        <button class="fab" id="main-fab">
+            <span class="fab-icon">+</span>
+            <span class="fab-label">Quick Action</span>
+        </button>
+        <div class="fab-menu">
+            <button class="fab-option" onclick="openMessageModal()">
+                <span>💬</span> Message Parent
+            </button>
+            <button class="fab-option" onclick="openConnectModal()">
+                <span>🤝</span> Connect
+            </button>
+            <button class="fab-option" onclick="viewChildrenProfiles()">
+                <span>👨‍👩‍👧‍👦</span> View Children
+            </button>
+            <button class="fab-option" onclick="openReviewModal()">
+                <span>⭐</span> Leave Review
+            </button>
+            <button class="fab-option" onclick="viewEngagement()">
+                <span>📊</span> View Engagement
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <!-- Footer content remains the same as in journalist-profile.html -->
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // Function to open child details modal
+        function openChildDetailsModal(childName, grade, age) {
+            const modal = document.getElementById('childDetailsModal');
+            const modalChildName = document.getElementById('modalChildName');
+            const modalChildGrade = document.getElementById('modalChildGrade');
+            
+            modalChildName.textContent = childName + ' Alemu';
+            modalChildGrade.textContent = `Grade ${grade} • Age ${age}`;
+            
+            modal.classList.add('active');
+            
+            // Reset to first tab
+            switchModalContent('education-preference');
+        }
+
+        // Function to close child details modal
+        function closeChildDetailsModal() {
+            const modal = document.getElementById('childDetailsModal');
+            modal.classList.remove('active');
+        }
+
+        // Function to switch modal content
+        function switchModalContent(contentType) {
+            // Remove active class from all menu items
+            const menuItems = document.querySelectorAll('.child-modal-menu-item');
+            menuItems.forEach(item => item.classList.remove('active'));
+            
+            // Add active class to clicked menu item
+            event.currentTarget.classList.add('active');
+            
+            // Hide all content sections
+            const contentSections = document.querySelectorAll('.modal-content-section');
+            contentSections.forEach(section => section.classList.remove('active'));
+            
+            // Show selected content section
+            const selectedContent = document.getElementById(contentType + '-content');
+            if (selectedContent) {
+                selectedContent.classList.add('active');
+            }
+            
+            // Update modal title
+            const modalTitle = document.getElementById('modalContentTitle');
+            const titleMap = {
+                'education-preference': 'Education Preference',
+                'tutoring-requirements': 'Tutoring Requirements',
+                'progress': 'Progress Tracking',
+                'attendance': 'Attendance',
+                'assignments': 'Assignments',
+                'exams': 'Exam Results',
+                'analytics': 'Reports & Analytics'
+            };
+            modalTitle.textContent = titleMap[contentType] || 'Education Preference';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('childDetailsModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeChildDetailsModal();
+            }
+        });
+    </script>
+    <script src="../js/institute-profile-1.js"></script>
+    <script src="../js/institute-profile-2.js"></script>
+    <script src="../js/institute-profile-3.js"></script>
+    <script src="../js/institute-profile-4.js"></script>
+</body>
+
+</html>

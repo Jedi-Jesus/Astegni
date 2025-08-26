@@ -1,0 +1,2551 @@
+/* ============================================
+   VIEW CHURCH - COMPLETE SIDEBAR PANEL STYLES
+   ============================================ */
+
+   /* ============================================
+   DASHBOARD CONTENT STYLING
+   ============================================ */
+
+#dashboard-content {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* About Section */
+.profile-about-section {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-about-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.03) 0%, transparent 70%);
+}
+
+.profile-about-section:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.12);
+}
+
+.profile-about-section h3 {
+    color: #2d3748;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    position: relative;
+    display: inline-block;
+}
+
+.profile-about-section h3::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 2px;
+}
+
+#aboutText {
+    color: #4a5568;
+    line-height: 1.8;
+    font-size: 1.05rem;
+    text-align: justify;
+}
+
+/* Service Times Section */
+.service-times-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+}
+
+.service-times-section h3 {
+    color: white;
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+}
+
+.service-times-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.service-time-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.service-time-card::before {
+    content: '';
+    position: absolute;
+    top: -100%;
+    left: -100%;
+    width: 300%;
+    height: 300%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+    transition: all 0.6s ease;
+}
+
+.service-time-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.service-time-card:hover::before {
+    top: -150%;
+    left: -150%;
+}
+
+.service-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.service-time-card h4 {
+    color: white;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+}
+
+.service-time {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.service-location {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+}
+
+/* Ministries Overview */
+.ministries-overview {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+.ministries-overview h3 {
+    color: #2d3748;
+    font-size: 1.75rem;
+    margin-bottom: 2rem;
+    font-weight: 700;
+}
+
+.ministries-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.ministry-card {
+    background: linear-gradient(145deg, #ffffff, #f0f0f3);
+    border-radius: 20px;
+    padding: 1.75rem;
+    text-align: center;
+    box-shadow: 20px 20px 60px #d1d1d1, -20px -20px 60px #ffffff;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.ministry-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.ministry-card:hover {
+    transform: translateY(-8px) rotateZ(-1deg);
+    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.2);
+}
+
+.ministry-card:hover::after {
+    transform: scaleX(1);
+}
+
+.ministry-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+    transition: all 0.3s ease;
+}
+
+.ministry-card:hover .ministry-icon {
+    transform: scale(1.2) rotateZ(10deg);
+}
+
+.ministry-card h4 {
+    color: #2d3748;
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.ministry-card p {
+    color: #718096;
+    font-size: 0.9rem;
+}
+/* Salvation Statistics Card */
+.salvation-card {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    grid-column: span 2;
+    position: relative;
+    overflow: hidden;
+}
+
+.salvation-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 60%);
+    animation: shimmerRotate 10s linear infinite;
+}
+
+@keyframes shimmerRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.salvation-number {
+    font-size: 3rem;
+    font-weight: 800;
+    color: #2d3748;
+    margin: 1rem 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    animation: countUp 2s ease-out;
+}
+
+@keyframes countUp {
+    from { opacity: 0; transform: scale(0.5); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.salvation-progress {
+    margin: 1.5rem 0;
+}
+
+.salvation-progress .progress-bar {
+    height: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.salvation-progress .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    border-radius: 10px;
+    transition: width 1s ease;
+    animation: progressGrow 1.5s ease-out;
+}
+
+@keyframes progressGrow {
+    from { width: 0; }
+}
+
+.salvation-progress .progress-text {
+    font-size: 0.85rem;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.btn-view-testimonies {
+    margin-top: 1rem;
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    background: white;
+    color: #2d3748;
+    border: 2px solid transparent;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-view-testimonies:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+    border-color: #ffd700;
+}
+
+/* Make it responsive */
+@media (max-width: 768px) {
+    .salvation-card {
+        grid-column: span 1;
+    }
+}
+
+/* Social Links Section */
+.profile-socials-section {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+.profile-socials-section h3 {
+    color: #2d3748;
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+}
+
+#socialLinksContainer {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.social-link {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.social-link::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    transition: all 0.4s ease;
+}
+
+.social-link:hover::before {
+    width: 100px;
+    height: 100px;
+}
+
+.social-link.twitter {
+    background: linear-gradient(135deg, #1DA1F2, #0d8bd9);
+}
+
+.social-link.linkedin {
+    background: linear-gradient(135deg, #0077B5, #005582);
+}
+
+.social-link.instagram {
+    background: linear-gradient(135deg, #E1306C, #C13584, #833AB4);
+}
+
+.social-link.youtube {
+    background: linear-gradient(135deg, #FF0000, #cc0000);
+}
+
+.social-link.website {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.social-link:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.social-link svg {
+    width: 28px;
+    height: 28px;
+    fill: white;
+    position: relative;
+    z-index: 1;
+}
+
+/* Church Statistics Widget */
+.quick-stats-widget {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(240, 147, 251, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.quick-stats-widget::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.quick-stats-widget .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    transform: translateY(-10px) scale(1.05);
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    animation: bounce 2s infinite;
+    animation-delay: calc(var(--index) * 0.1s);
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.stat-number {
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stat-desc {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.95rem;
+    font-weight: 500;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.stat-detail {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+/* Leadership Team */
+.leadership-section {
+    background: rgba(255, 255, 255, 0.98);
+    border-radius: 24px;
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+.leadership-section .section-title {
+    color: #2d3748;
+    margin-bottom: 2rem;
+}
+
+.leadership-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.leader-card {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.leader-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.leader-card:hover::before {
+    transform: scaleX(1);
+}
+
+.leader-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+}
+
+.leader-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    object-fit: cover;
+    border: 5px solid transparent;
+    background: linear-gradient(white, white) padding-box,
+                linear-gradient(135deg, #667eea, #764ba2) border-box;
+}
+
+.leader-card h3 {
+    color: #2d3748;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.leader-role {
+    color: #667eea;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.leader-bio {
+    color: #718096;
+    font-size: 0.95rem;
+}
+
+   /* Daily Devotion Card Styles */
+.daily-devotion-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-top: 1rem;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    transition: all 0.3s ease;
+}
+
+.daily-devotion-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+}
+
+.devotion-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.devotion-icon {
+    font-size: 1.25rem;
+}
+
+.devotion-label {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.devotion-date {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+.devotion-title {
+    color: #2d3748;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+}
+
+.devotion-verse {
+    font-style: italic;
+    color: #4a5568;
+    margin-bottom: 0.75rem;
+    padding-left: 1rem;
+    border-left: 3px solid #667eea;
+}
+
+.devotion-text {
+    color: #718096;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.btn-read-devotion {
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.btn-read-devotion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Base Panel Animations & Transitions */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.8; }
+}
+
+/* Base Panel Styling */
+.sidebar-content-panel {
+    animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 2.5rem;
+    background: linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(249,250,251,0.98) 100%);
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-content-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, transparent, #667eea, #764ba2, #f093fb, transparent);
+    animation: shimmer 3s infinite linear;
+}
+
+.sidebar-content-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.12);
+}
+
+.section-title {
+    font-size: 2.25rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+    letter-spacing: -0.5px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.1);
+}
+
+.header-buttons {
+    display: flex;
+    gap: 0.75rem;
+}
+
+/* Button Styles */
+.btn-primary, .btn-secondary {
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+    border: 2px solid transparent;
+}
+
+.btn-secondary:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+/* ============================================
+   1. CHURCH OVERVIEW CONTENT
+   ============================================ */
+#church-overview-content {
+    background: linear-gradient(135deg, #f6f9fc 0%, #e9ecef 100%);
+}
+
+.church-overview-sections {
+    display: grid;
+    gap: 2rem;
+    animation: slideInRight 0.6s ease-out;
+}
+
+.overview-section {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2.5rem;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.overview-section::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+    transition: all 0.5s ease;
+}
+
+.overview-section:hover {
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+}
+
+.overview-section:hover::after {
+    transform: scale(1.1);
+}
+
+.overview-section h3 {
+    color: #2d3748;
+    font-size: 1.75rem;
+    margin-bottom: 1.25rem;
+    font-weight: 700;
+}
+
+.values-list {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 1rem;
+}
+
+.values-list li {
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.values-list li:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+    transform: translateX(10px);
+    border-left-color: #667eea;
+}
+
+.beliefs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.belief-card {
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+}
+
+.belief-card:hover {
+    transform: translateY(-5px) rotateX(5deg);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+}
+
+.belief-card h4 {
+    color: #667eea;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+.belief-card p {
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+/* ============================================
+   2. WATCH SERMONS CONTENT
+   ============================================ */
+#watch-sermons-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+#watch-sermons-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+.sermon-filters {
+    margin-bottom: 2.5rem;
+}
+
+.sermon-filters .search-box {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.sermon-filters .search-box input {
+    width: 100%;
+    padding: 1.25rem 1.25rem 1.25rem 3.5rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 60px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    color: white;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+}
+
+.sermon-filters .search-box input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.sermon-filters .search-box input:focus {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    outline: none;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.sermon-filters .search-box i {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.25rem;
+}
+
+.filter-chips {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    padding: 0.6rem 1.75rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 30px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.9);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+}
+
+.filter-chip:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.filter-chip.active {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: white;
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+}
+
+.sermons-viewer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.sermon-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sermon-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.sermon-thumbnail {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+}
+
+.sermon-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.sermon-card:hover .sermon-thumbnail img {
+    transform: scale(1.1);
+}
+
+.sermon-duration {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    color: #667eea;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    opacity: 0;
+}
+
+.sermon-card:hover .play-btn {
+    opacity: 1;
+}
+
+.play-btn:hover {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: white;
+}
+
+.sermon-info {
+    padding: 1.5rem;
+}
+
+.sermon-info h3 {
+    color: white;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.sermon-date, .sermon-speaker {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    margin-bottom: 0.25rem;
+}
+
+.sermon-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.btn-watch, .btn-download, .btn-share {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.btn-watch:hover, .btn-download:hover, .btn-share:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   3. JOIN LIVE SERVICE CONTENT
+   ============================================ */
+#join-services-content {
+    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
+}
+
+#join-services-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+.live-service-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+.live-stream-container {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.stream-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 0, 0, 0.8);
+    border-radius: 25px;
+    animation: pulse 2s infinite;
+}
+
+.viewer-count {
+    color: white;
+    font-weight: 500;
+}
+
+.video-player {
+    background: #000;
+    border-radius: 12px;
+    height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.video-player video {
+    width: 100%;
+    height: 100%;
+    border-radius: 12px;
+}
+
+.stream-info {
+    margin-top: 1rem;
+    color: white;
+}
+
+.stream-info h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.live-chat-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.live-chat-section h3 {
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.chat-messages {
+    height: 350px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.chat-input {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.chat-input input {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 25px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.chat-input input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.send-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.send-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.upcoming-streams {
+    margin-top: 2rem;
+    grid-column: 1 / -1;
+}
+
+.upcoming-streams h3 {
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.stream-schedule {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.schedule-item {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.schedule-item:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.schedule-time {
+    color: white;
+}
+
+.schedule-time .day {
+    display: block;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.schedule-time .time {
+    display: block;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.schedule-info h4 {
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+.reminder-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.reminder-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================
+   4. CHURCH RESOURCES CONTENT
+   ============================================ */
+#church-resources-content {
+    background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+}
+
+#church-resources-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+.resources-section {
+    display: grid;
+    gap: 2rem;
+}
+
+.resource-category {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.resource-category h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.resource-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(168, 224, 99, 0.1) 0%, rgba(86, 171, 47, 0.1) 100%);
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.resource-item:hover {
+    transform: translateX(10px);
+    border-color: #56ab2f;
+    box-shadow: 0 5px 20px rgba(86, 171, 47, 0.2);
+}
+
+.resource-icon {
+    font-size: 2rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.resource-info {
+    flex: 1;
+}
+
+.resource-info h4 {
+    color: #2d3748;
+    font-size: 1.15rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.resource-info p {
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+.btn-download, .btn-access, .btn-get {
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-download:hover, .btn-access:hover, .btn-get:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(86, 171, 47, 0.3);
+}
+
+/* ============================================
+   5. READ TESTIMONIES CONTENT
+   ============================================ */
+#testimonies-view-content {
+    background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+}
+
+.testimonies-viewer-section {
+    padding: 1rem;
+}
+
+.testimony-filters {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+.testimonies-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.testimony-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.testimony-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+.testimony-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.testimony-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fdcb6e;
+}
+
+.testimony-author h4 {
+    color: #2d3748;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+}
+
+.testimony-date {
+    color: #718096;
+    font-size: 0.9rem;
+}
+
+.testimony-content h3 {
+    color: #2d3748;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.testimony-content p {
+    color: #4a5568;
+    line-height: 1.7;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+.btn-read-more {
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #fdcb6e 0%, #ffeaa7 100%);
+    color: #2d3748;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-read-more:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(253, 203, 110, 0.4);
+}
+
+.testimony-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.btn-praise, .btn-share {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #fdcb6e;
+    background: transparent;
+    color: #fdcb6e;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-praise:hover, .btn-share:hover {
+    background: #fdcb6e;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.testimony-submit {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+}
+
+.testimony-submit h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.testimony-submit p {
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+}
+
+.btn-submit-testimony {
+    padding: 0.8rem 2rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fdcb6e 0%, #ffeaa7 100%);
+    color: #2d3748;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+}
+
+.btn-submit-testimony:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 30px rgba(253, 203, 110, 0.5);
+}
+
+/* ============================================
+   6. CHURCH EVENTS CONTENT
+   ============================================ */
+#church-events-content {
+    background: linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%);
+}
+
+#church-events-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+.events-viewer-section {
+    display: grid;
+    gap: 2rem;
+}
+
+.events-calendar-widget {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+}
+
+.events-list-viewer {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.event-card-viewer {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+}
+
+.event-card-viewer:hover {
+    transform: translateY(-10px) rotateZ(-1deg);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+}
+
+.event-date-badge {
+    background: linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%);
+    color: white;
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+}
+
+.event-date-badge .month {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.9;
+}
+
+.event-date-badge .day {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.event-details {
+    padding: 2rem;
+    flex: 1;
+}
+
+.event-details h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.event-time, .event-location {
+    color: #4a5568;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-description {
+    color: #718096;
+    line-height: 1.6;
+    margin: 1rem 0;
+}
+
+.event-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.btn-register, .btn-info {
+    padding: 0.6rem 1.25rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-register {
+    background: linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%);
+    color: white;
+}
+
+.btn-info {
+    background: transparent;
+    color: #6a82fb;
+    border: 2px solid #6a82fb;
+}
+
+.btn-register:hover, .btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(106, 130, 251, 0.3);
+}
+
+/* ============================================
+   7. BOOK COUNSELING CONTENT
+   ============================================ */
+#book-counseling-content {
+    background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%);
+}
+
+.counseling-booking-section {
+    display: grid;
+    gap: 2.5rem;
+}
+
+.counseling-types h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.counseling-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.counseling-option {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+}
+
+.counseling-option:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+}
+
+.counseling-option h4 {
+    color: #2d3748;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.counseling-option p {
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.btn-book {
+    padding: 0.7rem 1.5rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%);
+    color: #2d3748;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-book:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(238, 156, 167, 0.4);
+}
+
+.counselor-profiles h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.counselor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.counselor-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.counselor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.12);
+}
+
+.counselor-card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    border: 4px solid #ffdde1;
+}
+
+.counselor-card h4 {
+    color: #2d3748;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.counselor-card p {
+    color: #4a5568;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+}
+
+.btn-schedule {
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #ee9ca7 0%, #ffdde1 100%);
+    color: #2d3748;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-schedule:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(238, 156, 167, 0.3);
+}
+
+/* ============================================
+   8. JOIN SMALL GROUPS CONTENT
+   ============================================ */
+#join-groups-content {
+    background: linear-gradient(135deg, #3494e6 0%, #ec6ead 100%);
+}
+
+#join-groups-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+.small-groups-section {
+    padding: 1rem;
+}
+
+.groups-intro {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.groups-intro p {
+    color: white;
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+.groups-filter {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+.groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.group-card {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.group-card:hover {
+    transform: translateY(-10px) rotateX(5deg);
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+.group-card h3 {
+    color: #2d3748;
+    font-size: 1.35rem;
+    margin-bottom: 1rem;
+}
+
+.group-schedule, .group-location {
+    color: #4a5568;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.group-description {
+    color: #718096;
+    line-height: 1.6;
+    margin: 1rem 0;
+}
+
+.group-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
+}
+
+.group-size {
+    color: #4a5568;
+    font-weight: 500;
+}
+
+.btn-join {
+    padding: 0.6rem 1.5rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #3494e6 0%, #ec6ead 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-join:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(52, 148, 230, 0.3);
+}
+
+/* ============================================
+   9. GIVE & DONATE CONTENT
+   ============================================ */
+#give-donation-content {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+#give-donation-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+.donation-section {
+    padding: 1rem;
+}
+
+.donation-intro {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.donation-intro p {
+    color: white;
+    font-size: 1.1rem;
+    line-height: 1.7;
+}
+
+.donation-options h3 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.donation-methods {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.donation-method {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.donation-method h4 {
+    color: #2d3748;
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.amount-options {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.amount-btn {
+    padding: 0.75rem 1.25rem;
+    border-radius: 10px;
+    border: 2px solid #f5576c;
+    background: transparent;
+    color: #f5576c;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.amount-btn:hover, .amount-btn.selected {
+    background: #f5576c;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.donation-method input[type="number"] {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    margin-bottom: 1rem;
+}
+
+.frequency-select {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    margin-bottom: 1rem;
+    background: white;
+}
+
+.btn-donate {
+    width: 100%;
+    padding: 0.8rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+}
+
+.btn-donate:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(245, 87, 108, 0.4);
+}
+
+.donation-campaigns h3 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.campaign-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.campaign-card h4 {
+    color: #2d3748;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.campaign-card p {
+    color: #4a5568;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.campaign-progress {
+    margin-bottom: 1.5rem;
+}
+
+.progress-bar {
+    height: 12px;
+    background: #e2e8f0;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 20px;
+    transition: width 0.5s ease;
+}
+
+.progress-text {
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.btn-contribute {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-contribute:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(245, 87, 108, 0.3);
+}
+
+/* ============================================
+   10. CONTACT CHURCH CONTENT
+   ============================================ */
+#contact-church-content {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+#contact-church-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+.contact-section {
+    display: grid;
+    gap: 2rem;
+}
+
+.contact-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.contact-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.contact-card h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.contact-card p {
+    color: #4a5568;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.contact-map {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.map-placeholder {
+    height: 100%;
+    min-height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e2e8f0;
+    color: #4a5568;
+    font-size: 1.25rem;
+}
+
+.contact-form-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.contact-form-section h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.contact-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #4facfe;
+    box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+}
+
+.contact-form button[type="submit"] {
+    padding: 0.8rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+}
+
+.contact-form button[type="submit"]:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 30px rgba(79, 172, 254, 0.4);
+}
+
+.staff-contacts {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.staff-contacts h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.staff-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.staff-contact {
+    padding: 1.25rem;
+    background: linear-gradient(135deg, rgba(79, 172, 254, 0.1) 0%, rgba(0, 242, 254, 0.1) 100%);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.staff-contact:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(79, 172, 254, 0.2);
+}
+
+.staff-contact h4 {
+    color: #2d3748;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.staff-contact p {
+    color: #4a5568;
+    font-size: 0.95rem;
+}
+
+/* ============================================
+   11. MEMBERSHIP CONTENT
+   ============================================ */
+#membership-content {
+    background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+}
+
+#membership-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+.membership-section {
+    display: grid;
+    gap: 2rem;
+}
+
+.membership-intro {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.membership-intro h3 {
+    color: white;
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+}
+
+.membership-intro p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.7;
+}
+
+.membership-benefits {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.membership-benefits h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.benefits-list {
+    list-style: none;
+    padding: 0;
+}
+
+.benefits-list li {
+    padding: 0.75rem 0;
+    color: #4a5568;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.benefits-list li:hover {
+    color: #8e2de2;
+    transform: translateX(10px);
+}
+
+.benefits-list li:last-child {
+    border-bottom: none;
+}
+
+.membership-process {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.membership-process h3 {
+    color: #2d3748;
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.process-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+}
+
+.process-step {
+    text-align: center;
+    position: relative;
+}
+
+.step-number {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 auto 1rem;
+    box-shadow: 0 5px 20px rgba(142, 45, 226, 0.3);
+}
+
+.process-step h4 {
+    color: #2d3748;
+    font-size: 1.15rem;
+    margin-bottom: 0.75rem;
+}
+
+.process-step p {
+    color: #4a5568;
+    line-height: 1.6;
+}
+
+.membership-application {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 2rem;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.membership-application h3 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.membership-application button {
+    margin: 0.5rem;
+}
+
+/* ============================================
+   12. CLASSES CONTENT (Educational)
+   ============================================ */
+#classes-content {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.classes-content .section-title {
+    color: #2d3748;
+}
+
+/* Add classes-specific styles here if needed */
+
+/* ============================================
+   13. BLOG CONTENT
+   ============================================ */
+#blog-content {
+    background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+}
+
+.blog-filters {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+.blog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+/* ============================================
+   14. PODCASTS CONTENT
+   ============================================ */
+#podcasts-content {
+    background: linear-gradient(135deg, #f77062 0%, #fe5196 100%);
+}
+
+#podcasts-content .section-title {
+    color: white;
+    -webkit-text-fill-color: white;
+}
+
+/* ============================================
+   15. MY PRODUCTS CONTENT
+   ============================================ */
+#my-products-content {
+    background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+}
+
+.product-filters {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+.my-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 1024px) {
+    .live-service-section {
+        grid-template-columns: 1fr;
+    }
+    
+    .contact-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .process-steps {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar-content-panel {
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    .sermons-viewer-grid,
+    .groups-grid,
+    .counseling-options,
+    .events-list-viewer {
+        grid-template-columns: 1fr;
+    }
+    
+    .donation-methods {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-content-panel {
+        padding: 1rem;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+    }
+    
+    .filter-chips {
+        width: 100%;
+    }
+    
+    .filter-chip {
+        flex: 1;
+        text-align: center;
+        min-width: auto;
+    }
+}
+
+/* ============================================
+   DARK MODE SUPPORT
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    .sidebar-content-panel {
+        background: linear-gradient(135deg, rgba(30,30,30,0.98) 0%, rgba(20,20,20,0.98) 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .overview-section,
+    .resource-category,
+    .testimony-card,
+    .counseling-option,
+    .group-card,
+    .contact-card,
+    .membership-benefits,
+    .membership-process {
+        background: rgba(40, 40, 40, 0.95);
+    }
+    
+    h3, h4, p {
+        color: #e2e8f0;
+    }
+    
+    .belief-card,
+    .resource-item {
+        background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    }
+}

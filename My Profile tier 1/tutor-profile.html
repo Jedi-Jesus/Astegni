@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
+    <style>
         /* Student Cards Styling */
         .students-grid {
             display: grid;
@@ -24,13 +24,13 @@
             color: white;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
 
         .student-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
         }
 
         .student-card::before {
@@ -40,13 +40,18 @@
             right: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
             animation: shimmer 3s infinite;
         }
 
         @keyframes shimmer {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         .student-header {
@@ -88,7 +93,7 @@
         }
 
         .stat-item {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             padding: 10px;
             border-radius: 10px;
             backdrop-filter: blur(10px);
@@ -119,7 +124,7 @@
 
         .progress-bar {
             height: 8px;
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -139,7 +144,7 @@
         }
 
         .badge {
-            background: rgba(255,255,255,0.25);
+            background: rgba(255, 255, 255, 0.25);
             padding: 5px 12px;
             border-radius: 20px;
             font-size: 12px;
@@ -171,16 +176,16 @@
 
         .btn-quick-action {
             padding: 12px 20px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: 1px solid rgba(255,255,255,0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
         .btn-quick-action:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
         }
 
         /* Student Details Modal Styling */
@@ -190,7 +195,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0, 0, 0, 0.7);
             display: none;
             z-index: 1000;
             animation: fadeIn 0.3s ease;
@@ -203,8 +208,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .modal-container {
@@ -219,8 +229,15 @@
         }
 
         @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .modal-sidebar {
@@ -235,7 +252,7 @@
             margin: 0 0 20px 0;
             font-size: 18px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .sidebar-menu-item {
@@ -250,11 +267,11 @@
         }
 
         .sidebar-menu-item:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
         }
 
         .sidebar-menu-item.active {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
             font-weight: 600;
         }
 
@@ -303,8 +320,15 @@
         }
 
         @keyframes fadeInContent {
-            from { opacity: 0; transform: translateX(20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         /* Dashboard Cards Styling */
@@ -312,7 +336,7 @@
             background: white;
             border-radius: 15px;
             padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
 
@@ -460,7 +484,6 @@
     </nav>
 
     <!-- Left Sidebar -->
-    <!-- Left Sidebar -->
     <aside class="left-sidebar" id="leftSidebar">
         <div class="sidebar-content">
             <div class="sidebar-section">
@@ -475,49 +498,68 @@
                 <span>My Students</span>
                 <span class="sidebar-badge">45</span>
             </button>
+
             <button class="sidebar-btn" data-content="tutor-schedule">
                 <span class="sidebar-btn-icon">🗓️</span>
                 <span>My Schedule</span>
             </button>
-            
+
+            <button class="sidebar-btn" data-content="set-package">
+                <span class="sidebar-btn-icon"></span>
+                <span>Set package</span>
+            </button>
+
+            <button class="sidebar-btn" data-content="teaching-methods">
+                <span class="sidebar-btn-icon"></span>
+                <span>Teaching methods</span>
+            </button>
+
+            <button class="sidebar-btn" data-content="requested-sessions">
+                <span class="sidebar-btn-icon">📅</span>
+                <span>Requested Sessions</span>
+                <span class="sidebar-badge">8</span>
+            </button>
+
             <!-- Manage Certifications -->
             <button class="sidebar-btn" data-content="manage-certifications">
                 <span class="sidebar-btn-icon">🎓</span>
                 <span>Manage Certifications</span>
             </button>
-            
+
             <!-- Manage Experience -->
             <button class="sidebar-btn" data-content="manage-experience">
                 <span class="sidebar-btn-icon">💼</span>
                 <span>Manage Experience</span>
             </button>
-            
+
             <!-- Manage Achievements -->
             <button class="sidebar-btn" data-content="manage-achievements">
                 <span class="sidebar-btn-icon">🏆</span>
                 <span>Manage Achievements</span>
             </button>
-            
+
             <!-- Get Certified Button -->
             <button class="sidebar-btn" data-content="get-certified">
                 <span class="sidebar-btn-icon">🏅</span>
                 <span>Get Certified</span>
                 <span class="sidebar-badge new">New</span>
             </button>
-            
+
             <!-- Tutor Features -->
-            <button class="sidebar-btn" data-content="requested-sessions">
-                <span class="sidebar-btn-icon">📅</span>
-                <span>Requested Sessions</span>
-                <span class="sidebar-badge">8</span>
-            </button>
+
             <button class="sidebar-btn" data-content="tutor-earnings">
                 <span class="sidebar-btn-icon">💰</span>
                 <span>Earnings</span>
             </button>
+
             <button class="sidebar-btn" data-content="tutor-tools">
                 <span class="sidebar-btn-icon">🛠️</span>
                 <span>Teaching Tools</span>
+            </button>              
+                        
+            <button class="sidebar-btn" data-content="my-applications">
+                <span class="sidebar-btn-icon"></span>
+                <span>Job Applications</span>
             </button>
         </div>
 
@@ -668,9 +710,9 @@
                                 <span class="verified-badge" id="verification-status">✗ Unverified</span>
                                 <span class="center-score">Rating: <span id="tutor-rating">N/A</span></span>
                             </div>
-                        <div class="gender-info">
-                            <span id="tutor-gender">Male</span>
-                        </div>
+                            <div class="gender-info">
+                                <span id="tutor-gender">Male</span>
+                            </div>
                         </div>
 
                         <div class="rating-section">
@@ -748,7 +790,7 @@
         </section>
 
         <!-- Content Area -->
-       <div class="content-with-sidebar">
+        <div class="content-with-sidebar">
             <!-- Main Content Area -->
             <div class="main-content-area">
                 <!-- Dashboard Content (Default) -->
@@ -756,7 +798,8 @@
                     <!-- About Section -->
                     <section class="profile-about-section">
                         <h3>About Me</h3>
-                        <p id="tutor-bio">Experienced tutor with a passion for teaching Math and Physics. I have been helping students achieve their academic goals for over 7 years.</p>
+                        <p id="tutor-bio">Experienced tutor with a passion for teaching Math and Physics. I have been
+                            helping students achieve their academic goals for over 7 years.</p>
                     </section>
 
                     <!-- Social Links -->
@@ -915,7 +958,8 @@
                     <div class="section-header">
                         <h2 class="section-title">My Students</h2>
                         <div style="display: flex; gap: 10px;">
-                            <input type="text" id="student-search" class="search-input" placeholder="Search students..." style="flex: 1;">
+                            <input type="text" id="student-search" class="search-input" placeholder="Search students..."
+                                style="flex: 1;">
                             <button class="btn-primary" onclick="addNewStudent()">+ Add Student</button>
                         </div>
                     </div>
@@ -967,14 +1011,16 @@
                             </div>
 
                             <div class="student-actions">
-                                <button class="btn-view-details" onclick="openStudentDetailsModal('student1')">View Details</button>
+                                <button class="btn-view-details" onclick="openStudentDetailsModal('student1')">View
+                                    Details</button>
                                 <button class="btn-quick-action" onclick="quickMessage('student1')">📧</button>
                                 <button class="btn-quick-action" onclick="quickCall('student1')">📞</button>
                             </div>
                         </div>
 
                         <!-- Student Card 2 -->
-                        <div class="student-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <div class="student-card"
+                            style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                             <div class="student-header">
                                 <div class="student-avatar">👩‍🎓</div>
                                 <div class="student-info">
@@ -1019,7 +1065,8 @@
                             </div>
 
                             <div class="student-actions">
-                                <button class="btn-view-details" onclick="openStudentDetailsModal('student2')">View Details</button>
+                                <button class="btn-view-details" onclick="openStudentDetailsModal('student2')">View
+                                    Details</button>
                                 <button class="btn-quick-action" onclick="quickMessage('student2')">📧</button>
                                 <button class="btn-quick-action" onclick="quickCall('student2')">📞</button>
                             </div>
@@ -1156,7 +1203,7 @@
 
                     <div class="certification-programs">
                         <h3>Available Certification Programs</h3>
-                        
+
                         <div class="cert-program-grid">
                             <div class="cert-program-card">
                                 <div class="cert-badge">🏅</div>
@@ -1169,7 +1216,8 @@
                                     <li>✓ Online & Self-paced</li>
                                     <li>✓ Lifetime access to materials</li>
                                 </ul>
-                                <button class="btn-primary" onclick="enrollCertification('math-advanced')">Enroll Now</button>
+                                <button class="btn-primary" onclick="enrollCertification('math-advanced')">Enroll
+                                    Now</button>
                             </div>
 
                             <div class="cert-program-card">
@@ -1183,7 +1231,8 @@
                                     <li>✓ Interactive online classes</li>
                                     <li>✓ Certificate of completion</li>
                                 </ul>
-                                <button class="btn-primary" onclick="enrollCertification('digital-teaching')">Enroll Now</button>
+                                <button class="btn-primary" onclick="enrollCertification('digital-teaching')">Enroll
+                                    Now</button>
                             </div>
 
                             <div class="cert-program-card popular">
@@ -1199,7 +1248,8 @@
                                     <li>✓ Job placement assistance</li>
                                     <li>✓ International recognition</li>
                                 </ul>
-                                <button class="btn-success" onclick="enrollCertification('mastery')">Get 20% Off</button>
+                                <button class="btn-success" onclick="enrollCertification('mastery')">Get 20%
+                                    Off</button>
                             </div>
                         </div>
                     </div>
@@ -1214,7 +1264,7 @@
 
                     <div class="certification-programs">
                         <h3>Available Certification Programs</h3>
-                        
+
                         <div class="cert-program-grid">
                             <div class="cert-program-card">
                                 <div class="cert-badge">🏅</div>
@@ -1227,7 +1277,8 @@
                                     <li>✓ Online & Self-paced</li>
                                     <li>✓ Lifetime access to materials</li>
                                 </ul>
-                                <button class="btn-primary" onclick="enrollCertification('math-advanced')">Enroll Now</button>
+                                <button class="btn-primary" onclick="enrollCertification('math-advanced')">Enroll
+                                    Now</button>
                             </div>
 
                             <div class="cert-program-card">
@@ -1241,7 +1292,8 @@
                                     <li>✓ Interactive online classes</li>
                                     <li>✓ Certificate of completion</li>
                                 </ul>
-                                <button class="btn-primary" onclick="enrollCertification('digital-teaching')">Enroll Now</button>
+                                <button class="btn-primary" onclick="enrollCertification('digital-teaching')">Enroll
+                                    Now</button>
                             </div>
 
                             <div class="cert-program-card">
@@ -1255,7 +1307,8 @@
                                     <li>✓ Data-driven evaluation</li>
                                     <li>✓ Practical workshops</li>
                                 </ul>
-                                <button class="btn-primary" onclick="enrollCertification('assessment')">Enroll Now</button>
+                                <button class="btn-primary" onclick="enrollCertification('assessment')">Enroll
+                                    Now</button>
                             </div>
 
                             <div class="cert-program-card popular">
@@ -1271,7 +1324,8 @@
                                     <li>✓ Job placement assistance</li>
                                     <li>✓ International recognition</li>
                                 </ul>
-                                <button class="btn-success" onclick="enrollCertification('mastery')">Get 20% Off</button>
+                                <button class="btn-success" onclick="enrollCertification('mastery')">Get 20%
+                                    Off</button>
                             </div>
                         </div>
 
@@ -1288,7 +1342,8 @@
                         <div class="cert-testimonials">
                             <h3>Success Stories</h3>
                             <div class="testimonial-card">
-                                <p>"The certification program helped me increase my hourly rate by 40% and attract more students!"</p>
+                                <p>"The certification program helped me increase my hourly rate by 40% and attract more
+                                    students!"</p>
                                 <div class="testimonial-author">
                                     <span>- Abebe T., Certified Math Tutor</span>
                                     <span class="rating">⭐⭐⭐⭐⭐</span>
@@ -1700,13 +1755,13 @@
 
             <!-- Right Sidebar (Same as journalist-profile.html) -->
             <div class="right-sidebar">
-                                <!-- Real-time Analytics with Parent & Student Analysis -->
+                <!-- Real-time Analytics with Parent & Student Analysis -->
                 <div class="sidebar-widget analytics-widget">
                     <div class="widget-header">
                         <h3>📊 Real-Time Analytics</h3>
                         <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
                     </div>
-                    
+
                     <div class="analytics-grid">
                         <!-- Parent Satisfaction -->
                         <div class="analytics-card">
@@ -1715,7 +1770,7 @@
                             <div class="label">Parent Satisfaction</div>
                             <div class="change positive">↑ 3% this month</div>
                         </div>
-                        
+
                         <!-- On-Time Payments -->
                         <div class="analytics-card">
                             <div class="icon">💳</div>
@@ -1723,7 +1778,7 @@
                             <div class="label">On-Time Payments</div>
                             <div class="change positive">↑ 5% this month</div>
                         </div>
-                        
+
                         <!-- Student Progress -->
                         <div class="analytics-card">
                             <div class="icon">📈</div>
@@ -1731,7 +1786,7 @@
                             <div class="label">Student Progress</div>
                             <div class="change positive">↑ 7% this month</div>
                         </div>
-                        
+
                         <!-- Active Students -->
                         <div class="analytics-card">
                             <div class="icon">👥</div>
@@ -1739,7 +1794,7 @@
                             <div class="label">Active Students</div>
                             <div class="change positive">↑ 2 new this week</div>
                         </div>
-                        
+
                         <!-- Session Completion -->
                         <div class="analytics-card">
                             <div class="icon">✅</div>
@@ -1747,7 +1802,7 @@
                             <div class="label">Session Completion</div>
                             <div class="change positive">↑ 1% this week</div>
                         </div>
-                        
+
                         <!-- Average Rating -->
                         <div class="analytics-card">
                             <div class="icon">⭐</div>
@@ -1756,7 +1811,7 @@
                             <div class="change">Steady</div>
                         </div>
                     </div>
-                    
+
                     <div class="chart-container" style="margin-top: 20px;">
                         <canvas id="analyticsChart"></canvas>
                         <div class="chart-label">Performance Trends - Last 7 Days</div>
@@ -2525,15 +2580,15 @@
             document.querySelectorAll('.content-section').forEach(section => {
                 section.classList.remove('active');
             });
-            
+
             // Remove active class from all menu items
             document.querySelectorAll('.sidebar-menu-item').forEach(item => {
                 item.classList.remove('active');
             });
-            
+
             // Add active class to selected section
             document.getElementById(sectionId).classList.add('active');
-            
+
             // Add active class to selected menu item
             event.target.closest('.sidebar-menu-item').classList.add('active');
         }

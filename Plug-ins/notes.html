@@ -66,6 +66,7 @@
           <button class="filter-btn active" data-filter="all">All Notes</button>
           <button class="filter-btn" data-filter="recent">Recent</button>
           <button class="filter-btn" data-filter="favorites">Favorites</button>
+          <button class="filter-btn" data-filter="media">Media Notes</button>
         </div>
         <select class="sort-select" id="sortSelect">
           <option value="date-desc">Newest First</option>
@@ -227,6 +228,18 @@
           </div>
           <div class="toolbar-separator"></div>
           <div class="toolbar-group">
+            <button class="toolbar-btn media-btn" onclick="openVoiceRecorder()" title="Voice Note">
+              🎤
+            </button>
+            <button class="toolbar-btn media-btn" onclick="openVideoRecorder()" title="Video Note">
+              🎥
+            </button>
+            <button class="toolbar-btn transcribe-btn" onclick="startTranscription()" title="Transcribe Speech">
+              🎙️
+            </button>
+            <button class="toolbar-btn tts-btn" onclick="openTextToSpeech()" title="Text to Speech">
+              🔊
+            </button>
             <button class="toolbar-btn" onclick="openBackgroundModal()" title="Background">
               🖼️
             </button>
@@ -248,9 +261,19 @@
         <!-- Content Editor -->
         <div class="editor-content-wrapper">
           <div contenteditable="true" class="form-textarea" id="noteContent" placeholder="Start writing your note..."></div>
+          
+          <!-- Media Container -->
+          <div class="media-container" id="mediaContainer">
+            <!-- Media items will be added here dynamically with transcribe buttons -->
+          </div>
+          
           <div class="editor-footer">
             <span id="wordCount">0 words</span>
             <span id="charCount">0 characters</span>
+            <span id="autoSaveIndicator" class="auto-save-indicator">
+              <span class="auto-save-dot"></span>
+              Auto-save enabled
+            </span>
             <span id="lastSaved">Not saved</span>
           </div>
         </div>
@@ -276,6 +299,292 @@
         <div class="history-cards" id="historyCards">
           <!-- History cards will be populated here -->
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Voice Recorder Modal -->
+  <div class="modal" id="voiceRecorderModal">
+    <div class="modal-overlay" onclick="closeVoiceRecorder()"></div>
+    <div class="modal-content recorder-modal">
+      <div class="modal-header">
+        <h3>Record Voice Note</h3>
+        <button class="modal-close" onclick="closeVoiceRecorder()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="recorder-interface">
+          <div class="waveform-container">
+            <canvas id="voiceWaveform" width="400" height="100"></canvas>
+          </div>
+          <div class="recorder-timer" id="voiceTimer">00:00</div>
+          <div class="recorder-controls">
+            <button class="recorder-btn record-btn" id="voiceRecordBtn" onclick="toggleVoiceRecording()">
+              <span class="record-icon">●</span> Start Recording
+            </button>
+            <button class="recorder-btn pause-btn" id="voicePauseBtn" onclick="pauseVoiceRecording()" disabled>
+              ⏸ Pause
+            </button>
+            <button class="recorder-btn stop-btn" id="voiceStopBtn" onclick="stopVoiceRecording()" disabled>
+              ⬛ Stop
+            </button>
+          </div>
+          <div class="recording-status" id="voiceStatus">Ready to record</div>
+          <audio id="voicePlayback" controls style="display: none; width: 100%; margin-top: 20px;"></audio>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeVoiceRecorder()">Cancel</button>
+        <button class="btn btn-primary" id="saveVoiceBtn" onclick="saveVoiceNote()" disabled>Save Voice Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Recorder Modal -->
+  <div class="modal" id="videoRecorderModal">
+    <div class="modal-overlay" onclick="closeVideoRecorder()"></div>
+    <div class="modal-content recorder-modal large">
+      <div class="modal-header">
+        <h3>Record Video Note</h3>
+        <button class="modal-close" onclick="closeVideoRecorder()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="recorder-interface">
+          <div class="video-container">
+            <video id="videoPreview" autoplay muted></video>
+            <video id="videoPlayback" controls style="display: none;"></video>
+          </div>
+          <div class="recorder-timer" id="videoTimer">00:00</div>
+          <div class="recorder-controls">
+            <button class="recorder-btn record-btn" id="videoRecordBtn" onclick="toggleVideoRecording()">
+              <span class="record-icon">●</span> Start Recording
+            </button>
+            <button class="recorder-btn pause-btn" id="videoPauseBtn" onclick="pauseVideoRecording()" disabled>
+              ⏸ Pause
+            </button>
+            <button class="recorder-btn stop-btn" id="videoStopBtn" onclick="stopVideoRecording()" disabled>
+              ⬛ Stop
+            </button>
+            <button class="recorder-btn camera-switch" onclick="switchCamera()" title="Switch Camera">
+              🔄
+            </button>
+          </div>
+          <div class="recording-status" id="videoStatus">Camera ready</div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeVideoRecorder()">Cancel</button>
+        <button class="btn btn-primary" id="saveVideoBtn" onclick="saveVideoNote()" disabled>Save Video Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transcription Modal -->
+  <div class="modal" id="transcriptionModal">
+    <div class="modal-overlay" onclick="closeTranscription()"></div>
+    <div class="modal-content transcription-modal">
+      <div class="modal-header">
+        <h3>Speech to Text Transcription</h3>
+        <button class="modal-close" onclick="closeTranscription()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="transcription-interface">
+          <div class="transcription-visualization">
+            <div class="voice-wave">
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+              <span class="wave-bar"></span>
+            </div>
+          </div>
+          
+          <div class="language-selector">
+            <label for="transcriptionLang">Language:</label>
+            <select id="transcriptionLang" class="form-select">
+              <option value="en-US">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="es-ES">Spanish</option>
+              <option value="fr-FR">French</option>
+              <option value="de-DE">German</option>
+              <option value="it-IT">Italian</option>
+              <option value="pt-BR">Portuguese</option>
+              <option value="ru-RU">Russian</option>
+              <option value="zh-CN">Chinese (Simplified)</option>
+              <option value="ja-JP">Japanese</option>
+              <option value="ko-KR">Korean</option>
+              <option value="ar-SA">Arabic</option>
+            </select>
+          </div>
+          
+          <div class="transcription-controls">
+            <button class="transcription-btn" id="startTranscribeBtn" onclick="toggleTranscription()">
+              <span class="mic-icon">🎤</span> Start Listening
+            </button>
+            <button class="transcription-btn secondary" onclick="clearTranscription()">
+              Clear Text
+            </button>
+          </div>
+          
+          <div class="transcription-status" id="transcriptionStatus">Ready to transcribe</div>
+          
+          <div class="transcription-result">
+            <label>Transcribed Text:</label>
+            <div class="transcription-text" id="transcriptionText" contenteditable="true"></div>
+            <div class="transcription-confidence" id="transcriptionConfidence"></div>
+          </div>
+          
+          <div class="transcription-options">
+            <label class="checkbox-label">
+              <input type="checkbox" id="continuousTranscription" checked>
+              Continuous transcription
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="punctuationMode">
+              Auto-punctuation
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeTranscription()">Cancel</button>
+        <button class="btn btn-primary" onclick="insertTranscription()">Insert to Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Text to Speech Modal -->
+  <div class="modal" id="ttsModal">
+    <div class="modal-overlay" onclick="closeTextToSpeech()"></div>
+    <div class="modal-content tts-modal">
+      <div class="modal-header">
+        <h3>Convert Text to Speech</h3>
+        <button class="modal-close" onclick="closeTextToSpeech()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="tts-interface">
+          <div class="tts-text-input">
+            <label>Text to Convert:</label>
+            <textarea id="ttsText" class="form-textarea" placeholder="Enter or paste text here, or click 'Use Note Content' to convert your entire note..."></textarea>
+            <button class="btn btn-secondary" onclick="useNoteContent()">Use Note Content</button>
+          </div>
+          
+          <div class="tts-settings">
+            <div class="tts-setting-group">
+              <label for="ttsVoice">Voice:</label>
+              <select id="ttsVoice" class="form-select">
+                <!-- Voices will be populated dynamically -->
+              </select>
+            </div>
+            
+            <div class="tts-setting-group">
+              <label for="ttsRate">Speed:</label>
+              <div class="slider-container">
+                <input type="range" id="ttsRate" min="0.5" max="2" value="1" step="0.1">
+                <span id="ttsRateValue">1.0x</span>
+              </div>
+            </div>
+            
+            <div class="tts-setting-group">
+              <label for="ttsPitch">Pitch:</label>
+              <div class="slider-container">
+                <input type="range" id="ttsPitch" min="0.5" max="2" value="1" step="0.1">
+                <span id="ttsPitchValue">1.0</span>
+              </div>
+            </div>
+            
+            <div class="tts-setting-group">
+              <label for="ttsVolume">Volume:</label>
+              <div class="slider-container">
+                <input type="range" id="ttsVolume" min="0" max="1" value="1" step="0.1">
+                <span id="ttsVolumeValue">100%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="tts-controls">
+            <button class="tts-btn play" id="ttsPlayBtn" onclick="playTextToSpeech()">
+              ▶️ Play
+            </button>
+            <button class="tts-btn pause" id="ttsPauseBtn" onclick="pauseTextToSpeech()" disabled>
+              ⏸ Pause
+            </button>
+            <button class="tts-btn stop" id="ttsStopBtn" onclick="stopTextToSpeech()" disabled>
+              ⏹ Stop
+            </button>
+            <button class="tts-btn download" onclick="downloadAudio()">
+              💾 Save as Audio
+            </button>
+          </div>
+          
+          <div class="tts-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="ttsProgress"></div>
+            </div>
+            <span id="ttsStatus">Ready</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeTextToSpeech()">Close</button>
+        <button class="btn btn-primary" onclick="saveAsAudioNote()">Save as Audio Note</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transcribe Audio/Video Modal -->
+  <div class="modal" id="mediaTranscriptionModal">
+    <div class="modal-overlay" onclick="closeMediaTranscription()"></div>
+    <div class="modal-content media-transcription-modal">
+      <div class="modal-header">
+        <h3>Transcribe Media</h3>
+        <button class="modal-close" onclick="closeMediaTranscription()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="media-transcription-interface">
+          <div class="media-player" id="mediaPlayer">
+            <!-- Media element will be inserted here -->
+          </div>
+          
+          <div class="transcription-settings">
+            <label for="mediaTranscriptionLang">Language:</label>
+            <select id="mediaTranscriptionLang" class="form-select">
+              <option value="en-US">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="es-ES">Spanish</option>
+              <option value="fr-FR">French</option>
+              <option value="de-DE">German</option>
+              <option value="it-IT">Italian</option>
+              <option value="pt-BR">Portuguese</option>
+              <option value="ru-RU">Russian</option>
+              <option value="zh-CN">Chinese (Simplified)</option>
+              <option value="ja-JP">Japanese</option>
+              <option value="ko-KR">Korean</option>
+              <option value="ar-SA">Arabic</option>
+            </select>
+          </div>
+          
+          <div class="transcription-controls">
+            <button class="btn btn-primary" onclick="startMediaTranscription()">
+              Start Transcription
+            </button>
+          </div>
+          
+          <div class="transcription-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="mediaTranscriptionProgress"></div>
+            </div>
+            <span id="mediaTranscriptionStatus">Ready to transcribe</span>
+          </div>
+          
+          <div class="transcription-result">
+            <label>Transcription Result:</label>
+            <div class="transcription-text" id="mediaTranscriptionResult" contenteditable="true"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeMediaTranscription()">Cancel</button>
+        <button class="btn btn-primary" onclick="insertMediaTranscription()">Insert to Note</button>
       </div>
     </div>
   </div>
