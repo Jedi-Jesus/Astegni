@@ -504,22 +504,6 @@
                 <span>My Schedule</span>
             </button>
 
-            <button class="sidebar-btn" data-content="set-package">
-                <span class="sidebar-btn-icon"></span>
-                <span>Set package</span>
-            </button>
-
-            <button class="sidebar-btn" data-content="teaching-methods">
-                <span class="sidebar-btn-icon"></span>
-                <span>Teaching methods</span>
-            </button>
-
-            <button class="sidebar-btn" data-content="requested-sessions">
-                <span class="sidebar-btn-icon">📅</span>
-                <span>Requested Sessions</span>
-                <span class="sidebar-badge">8</span>
-            </button>
-
             <!-- Manage Certifications -->
             <button class="sidebar-btn" data-content="manage-certifications">
                 <span class="sidebar-btn-icon">🎓</span>
@@ -538,6 +522,17 @@
                 <span>Manage Achievements</span>
             </button>
 
+            <button class="sidebar-btn" data-content="set-package">
+                <span class="sidebar-btn-icon"></span>
+                <span>Set & view packages</span>
+            </button>
+
+            <button class="sidebar-btn" data-content="requested-sessions">
+                <span class="sidebar-btn-icon">📅</span>
+                <span>Requested Sessions</span>
+                <span class="sidebar-badge">8</span>
+            </button>
+
             <!-- Get Certified Button -->
             <button class="sidebar-btn" data-content="get-certified">
                 <span class="sidebar-btn-icon">🏅</span>
@@ -546,7 +541,6 @@
             </button>
 
             <!-- Tutor Features -->
-
             <button class="sidebar-btn" data-content="tutor-earnings">
                 <span class="sidebar-btn-icon">💰</span>
                 <span>Earnings</span>
@@ -555,11 +549,17 @@
             <button class="sidebar-btn" data-content="tutor-tools">
                 <span class="sidebar-btn-icon">🛠️</span>
                 <span>Teaching Tools</span>
-            </button>              
-                        
+            </button>
+
             <button class="sidebar-btn" data-content="my-applications">
                 <span class="sidebar-btn-icon"></span>
                 <span>Job Applications</span>
+            </button>
+
+            <button class="sidebar-btn" data-content="comments">
+                <span class="sidebar-btn-icon">⭐</span>
+                <span>Ratings & Reviews</span>
+                <span class="sidebar-badge">15</span>
             </button>
         </div>
 
@@ -575,20 +575,15 @@
                 <span>My Classes</span>
                 <span class="sidebar-badge">5</span>
             </button>
-            <button class="sidebar-btn" data-content="books">
+            <button class="sidebar-btn" data-content="Resources">
                 <span class="sidebar-btn-icon">📚</span>
-                <span>My Books</span>
+                <span>My Resources</span>
                 <span class="sidebar-badge">5</span>
             </button>
         </div>
 
         <!-- Permanent Section (UNCHANGED) -->
         <div class="sidebar-section" data-content="permanent">
-            <button class="sidebar-btn" data-content="community">
-                <span class="sidebar-btn-icon">👥</span>
-                <span>Community</span>
-                <span class="sidebar-badge live">Live</span>
-            </button>
             <button class="sidebar-btn" data-content="clubs">
                 <span class="sidebar-btn-icon">🎭</span>
                 <span>Clubs</span>
@@ -620,11 +615,6 @@
                     <span>Notes</span>
                 </button>
             </a>
-            <button class="sidebar-btn" data-content="comments">
-                <span class="sidebar-btn-icon">⭐</span>
-                <span>Ratings & Reviews</span>
-                <span class="sidebar-badge">15</span>
-            </button>
             <button class="sidebar-btn" data-content="share">
                 <span class="sidebar-btn-icon">🔗</span>
                 <span>Share</span>
@@ -699,7 +689,7 @@
             <div class="profile-main-info">
                 <div class="profile-info-wrapper">
                     <div class="profile-avatar-container">
-                        <img src="../pictures/tutor profile.jpg" alt="Tutor Profile" class="profile-avatar">
+                        <img src="../pictures/tutor image.jpg" alt="Tutor Profile" class="profile-avatar">
                         <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
                     </div>
 
@@ -730,15 +720,50 @@
                         <div class="profile-quote" id="profileQuote">
                             <span id="quote">"Education is the key to success."</span>
                         </div>
+
+                        <div class="subject-tags">
+                            <span class="subject-tag">Mathematics</span>
+                            <span class="subject-tag">Physics</span>
+                            <span class="subject-tag">Chemistry</span>
+                            <span class="subject-tag">Advanced Calculus</span>
+                        </div>
+
+                        <div class="teaching-methods-tags">
+                            <span class="teaching-method-tag">Online</span>
+                            <span class="teaching-method-tag">In-person</span>
+                            <span class="teaching-method-tag">Self paced</span>
+                        </div>
+
                         <div class="follow-stats-cards">
-                            <div class="follow-card" onclick="openFollowersModal('followers')">
+                            <div class="follow-card" onclick="openStudentsModal('followers')">
+                                <div class="follow-icon">👥</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">2.5K</span>
+                                    <span class="stat-label">Students Taught</span>
+                                </div>
+                            </div>
+                            <div class="follow-card" onclick="openSessionsModal('followers')">
+                                <div class="follow-icon">📚</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">5,000+</span>
+                                    <span class="stat-label">Sessions</span>
+                                </div>
+                            </div>
+                            <div class="follow-card">
+                                <div class="follow-icon">🎯</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">95%</span>
+                                    <span class="stat-label">Success Rate</span>
+                                </div>
+                            </div>
+                            <div class="follow-card" onclick="openCommunitysModal('followers')">
                                 <div class="follow-icon">👥</div>
                                 <div class="follow-info">
                                     <span class="stat-value">45.2K</span>
                                     <span class="stat-label">Followers</span>
                                 </div>
                             </div>
-                            <div class="follow-card" onclick="openFollowersModal('following')">
+                            <div class="follow-card" onclick="openCommunityModal('following')">
                                 <div class="follow-icon">➕</div>
                                 <div class="follow-info">
                                     <span class="stat-value">234</span>
@@ -759,6 +784,9 @@
                             <button class="profile-action-btn edit-profile" onclick="openEditProfileModal()">
                                 <span class="action-icon">✏️</span>
                                 <span>Edit Profile</span>
+                            </button>
+                            <button class="profile-action-btn" onclick="shareProfile()">
+                                <span>🔗 Share</span>
                             </button>
                         </div>
                     </div>
@@ -1755,68 +1783,6 @@
 
             <!-- Right Sidebar (Same as journalist-profile.html) -->
             <div class="right-sidebar">
-                <!-- Real-time Analytics with Parent & Student Analysis -->
-                <div class="sidebar-widget analytics-widget">
-                    <div class="widget-header">
-                        <h3>📊 Real-Time Analytics</h3>
-                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
-                    </div>
-
-                    <div class="analytics-grid">
-                        <!-- Parent Satisfaction -->
-                        <div class="analytics-card">
-                            <div class="icon">👨‍👩‍👧</div>
-                            <div class="value">92%</div>
-                            <div class="label">Parent Satisfaction</div>
-                            <div class="change positive">↑ 3% this month</div>
-                        </div>
-
-                        <!-- On-Time Payments -->
-                        <div class="analytics-card">
-                            <div class="icon">💳</div>
-                            <div class="value">88%</div>
-                            <div class="label">On-Time Payments</div>
-                            <div class="change positive">↑ 5% this month</div>
-                        </div>
-
-                        <!-- Student Progress -->
-                        <div class="analytics-card">
-                            <div class="icon">📈</div>
-                            <div class="value">85%</div>
-                            <div class="label">Student Progress</div>
-                            <div class="change positive">↑ 7% this month</div>
-                        </div>
-
-                        <!-- Active Students -->
-                        <div class="analytics-card">
-                            <div class="icon">👥</div>
-                            <div class="value">45</div>
-                            <div class="label">Active Students</div>
-                            <div class="change positive">↑ 2 new this week</div>
-                        </div>
-
-                        <!-- Session Completion -->
-                        <div class="analytics-card">
-                            <div class="icon">✅</div>
-                            <div class="value">96%</div>
-                            <div class="label">Session Completion</div>
-                            <div class="change positive">↑ 1% this week</div>
-                        </div>
-
-                        <!-- Average Rating -->
-                        <div class="analytics-card">
-                            <div class="icon">⭐</div>
-                            <div class="value">4.8</div>
-                            <div class="label">Average Rating</div>
-                            <div class="change">Steady</div>
-                        </div>
-                    </div>
-
-                    <div class="chart-container" style="margin-top: 20px;">
-                        <canvas id="analyticsChart"></canvas>
-                        <div class="chart-label">Performance Trends - Last 7 Days</div>
-                    </div>
-                </div>
                 <!-- News Widget -->
                 <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
                     <div class="widget-header">
@@ -1951,7 +1917,72 @@
                         <canvas id="analyticsChart"></canvas>
                         <div class="chart-label">Teaching Performance - Last 24 Hours</div>
                     </div>
+                    <!-- Real-time Analytics with Parent & Student Analysis -->
+                    <div class="sidebar-widget analytics-widget">
+                        <div class="widget-header">
+                            <h3>📊 Real-Time Analytics</h3>
+                            <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                        </div>
+
+                        <div class="analytics-grid">
+                            <!-- Parent Satisfaction -->
+                            <div class="analytics-card">
+                                <div class="icon">👨‍👩‍👧</div>
+                                <div class="value">92%</div>
+                                <div class="label">Parent Satisfaction</div>
+                                <div class="change positive">↑ 3% this month</div>
+                            </div>
+
+                            <!-- On-Time Payments -->
+                            <div class="analytics-card">
+                                <div class="icon">💳</div>
+                                <div class="value">88%</div>
+                                <div class="label">On-Time Payments</div>
+                                <div class="change positive">↑ 5% this month</div>
+                            </div>
+
+                            <!-- Student Progress -->
+                            <div class="analytics-card">
+                                <div class="icon">📈</div>
+                                <div class="value">85%</div>
+                                <div class="label">Student Progress</div>
+                                <div class="change positive">↑ 7% this month</div>
+                            </div>
+
+                            <!-- Active Students -->
+                            <div class="analytics-card">
+                                <div class="icon">👥</div>
+                                <div class="value">45</div>
+                                <div class="label">Active Students</div>
+                                <div class="change positive">↑ 2 new this week</div>
+                            </div>
+
+                            <!-- Session Completion -->
+                            <div class="analytics-card">
+                                <div class="icon">✅</div>
+                                <div class="value">96%</div>
+                                <div class="label">Session Completion</div>
+                                <div class="change positive">↑ 1% this week</div>
+                            </div>
+
+                            <!-- Average Rating -->
+                            <div class="analytics-card">
+                                <div class="icon">⭐</div>
+                                <div class="value">4.8</div>
+                                <div class="label">Average Rating</div>
+                                <div class="change">Steady</div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container" style="margin-top: 20px;">
+                            <canvas id="analyticsChart"></canvas>
+                            <div class="chart-label">Performance Trends - Last 7 Days</div>
+                        </div>
+                    </div>
+
                 </div>
+
+
 
                 <!-- Events Widget -->
                 <div class="bottom-widget events-widget">
@@ -2009,7 +2040,117 @@
     <div id="edit-profile-modal"
         class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
         <!-- Modal content from tutor.html -->
+
+
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content edit-profile-modal">
+            <div class="modal-header">
+                <h2>Edit Tutor Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="form-section">
+                        <label class="form-label">Tutor Name</label>
+                        <input type="text" class="form-input" id="tutorName" placeholder="tutor name">
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Locations</label>
+
+                        <button id="use-my-location" onclick="getLocation()" class="cta-button px-4 py-2 rounded-lg">Use
+                            My Location</button>
+                        <div id="locationsContainer">
+                            <div class="location-item">
+                                <input type="text" class="form-input" placeholder="Location 1">
+                                <button type="button" class="btn-remove" onclick="removeLocation(this)">×</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-add" onclick="addLocation()">+ Add Location</button>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Currently teachs at</label>
+                        <input type="text" class="form-input" id="TeachesAt" placeholder="Teaches @">
+
+                        <div class="relative mb-4">
+                            <input type="text" id="profile-school" class="w-full p-2 border rounded-lg"
+                                placeholder="Search for a school...">
+                            <div id="school-suggestions" class="absolute"></div>
+                            <button id="request-school" class="cta-button px-4 py-2 rounded-lg mt-2 hidden"
+                                onclick="requestSchoolListing()">Request School Listing</button>
+                        </div>
+                        <p id="school-error" class="text-red-500 text-sm mb-2 hidden">Please select a valid school from
+                            the list or
+                            request a new one.</p>
+
+                        <button type="button" class="btn-add" onclick="addSchool()">+ Add School</button>
+                    </div>
+
+                    <div class="form-section">
+
+                        <label class="form-label">Teaching methods</label>
+                        <div id="teachingMethodContainer">
+                            <div class="location-item">
+                                <input type="text" class="form-input" placeholder="Teaching Method 1">
+                                <button type="button" class="btn-remove" onclick="removeTeachingMethod(this)">×</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-add" onclick="addTeachingMethod()">+ Add teaching
+                            method</button>
+                    </div>
+                    <div class="form-section">
+                        <label class="form-label">Courses</label>
+                        <div id="locationsContainer">
+                            <div class="location-item">
+                                <input type="text" class="form-input" placeholder="Course 1">
+                                <button type="button" class="btn-remove" onclick="removeCourse(this)">×</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-add" onclick="addCourse()">+ Add Course</button>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Quote</label>
+                        <textarea class="form-textarea" id="centerQuote" rows="3"
+                            placeholder="Write your quote here"></textarea>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">About Us</label>
+                        <textarea class="form-textarea" id="aboutUs" rows="5"
+                            placeholder="Write about your institute"></textarea>
+                    </div>
+
+                    <div class="form-section">
+                        <label class="form-label">Connect With Us</label>
+                        <div id="socialMediaContainer">
+                            <div class="social-item">
+                                <select class="form-select">
+                                    <option value="facebook">Facebook</option>
+                                    <option value="twitter">Twitter/X</option>
+                                    <option value="instagram">Instagram</option>
+                                    <option value="linkedin">LinkedIn</option>
+                                    <option value="youtube">YouTube</option>
+                                    <option value="tiktok">TikTok</option>
+                                    <option value="telegram">Telegram</option>
+                                    <option value="website">Website</option>
+                                </select>
+                                <input type="text" class="form-input" placeholder="URL or username">
+                                <button type="button" class="btn-remove" onclick="removeSocial(this)">×</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-add" onclick="addSocialMedia()">+ Add Social Media</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+            </div>
+        </div>
     </div>
+
 
     <!-- Upload Video Modal -->
     <div id="upload-video-modal"
@@ -2083,6 +2224,9 @@
                 </div>
                 <div class="sidebar-menu-item" onclick="switchSection('reports-analytics')">
                     <span>📈</span> Reports & Analytics
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('rating-and-review')">
+                    <span>⭐</span> Reviews & Ratings</span>
                 </div>
             </div>
 
