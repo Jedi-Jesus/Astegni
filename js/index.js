@@ -19,16 +19,16 @@ const APP_STATE = {
 };
 // Profile URL mapping based on user role
 const PROFILE_URLS = {
-    'tutor': 'My Profile/tutor-profile.html',
-    'student': 'My Profile/student-profile.html',
-    'guardian': 'My Profile/parent-profile.html',
-    'institute': 'My Profile/institute-profile.html',
-    'bookstore': 'My Profile/bookStore-profile.html',
-    'delivery': 'My Profile/delivery-profile.html',
-    'advertiser': 'My Profile/advertiser-profile.html',
-    'employer': 'My Profile/employer-profile.html',
-    'church': 'My Profile/church-profile.html',
-    'author': 'My Profile/author-profile.html'
+    'tutor': 'My Profile tier 1/tutor-profile.html',
+    'student': 'My Profile tier 1/student-profile.html',
+    'guardian': 'My Profile tier 1/parent-profile.html',
+    'institute': 'My Profile tier 2/institute-profile.html',
+    'bookstore': 'My Profile tier 2/bookStore-profile.html',
+    'delivery': 'My Profile tier 2/delivery-profile.html',
+    'advertiser': 'My Profile tier 1/advertiser-profile.html',
+    'employer': 'My Profile tier 2/employer-profile.html',
+    'church': 'My Profile tier 1/church-profile.html',
+    'author': 'My Profile tier 2/author-profile.html'
 
 };
 
