@@ -22,13 +22,11 @@ const PROFILE_URLS = {
     'tutor': 'My Profile tier 1/tutor-profile.html',
     'student': 'My Profile tier 1/student-profile.html',
     'guardian': 'My Profile tier 1/parent-profile.html',
-    'institute': 'My Profile tier 2/institute-profile.html',
-    'bookstore': 'My Profile tier 2/bookStore-profile.html',
-    'delivery': 'My Profile tier 2/delivery-profile.html',
+    'bookstore': 'My Profile tier 1/bookStore-profile.html',
+    'delivery': 'My Profile tier 1/delivery-profile.html',
     'advertiser': 'My Profile tier 1/advertiser-profile.html',
-    'employer': 'My Profile tier 2/employer-profile.html',
     'church': 'My Profile tier 1/church-profile.html',
-    'author': 'My Profile tier 2/author-profile.html'
+    'author': 'My Profile tier 1/author-profile.html'
 
 };
 
