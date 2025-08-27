@@ -1,0 +1,997 @@
+/* ============================================
+   SIDEBAR CONTENT PANELS - SLICK DESIGN SYSTEM
+   ============================================ */
+
+/* Base Panel Styling */
+.sidebar-content-panel {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    width: 100%;
+    min-height: 600px;
+    padding: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(20px);
+}
+
+.sidebar-content-panel.active {
+    opacity: 1;
+    visibility: visible;
+    position: relative;
+    transform: translateY(0);
+    animation: panelFadeIn 0.5s ease-out;
+}
+
+@keyframes panelFadeIn {
+    from {
+        opacity: 0;
+        filter: blur(10px);
+        transform: translateY(30px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0);
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Section Headers - Universal */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, 
+        rgba(255,255,255,0.1) 0%, 
+        rgba(255,255,255,0.05) 100%);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+.section-header:hover {
+    background: linear-gradient(135deg, 
+        rgba(255,255,255,0.15) 0%, 
+        rgba(255,255,255,0.08) 100%);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.section-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+    animation: titleShimmer 3s ease infinite;
+}
+
+@keyframes titleShimmer {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+/* ============================================
+   1. INVENTORY PANEL
+   ============================================ */
+
+#inventory-content {
+    background: linear-gradient(180deg, 
+        rgba(102, 126, 234, 0.03) 0%, 
+        rgba(118, 75, 162, 0.03) 100%);
+}
+
+.inventory-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+}
+
+.inventory-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.75rem;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.inventory-stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.inventory-stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.inventory-stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.inventory-filters {
+    display: flex;
+    gap: 1rem;
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+}
+
+.inventory-search {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 50px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.inventory-search:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.inventory-filter,
+.stock-filter {
+    padding: 1rem 1.5rem;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 50px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.inventory-filter:hover,
+.stock-filter:hover {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* ============================================
+   2. MY SCHEDULE PANEL
+   ============================================ */
+
+#tutor-schedule-content {
+    background: linear-gradient(180deg, 
+        rgba(72, 187, 120, 0.03) 0%, 
+        rgba(56, 178, 172, 0.03) 100%);
+}
+
+.schedule-calendar {
+    padding: 2rem;
+    background: white;
+    border-radius: 24px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    margin: 0 2rem 2rem;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(0,0,0,0.05);
+}
+
+.calendar-nav {
+    display: flex;
+    gap: 1rem;
+}
+
+.calendar-nav button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #48bb78 0%, #38b2ac 100%);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.calendar-nav button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(72, 187, 120, 0.3);
+}
+
+/* ============================================
+   3. ORDERS & SALES PANEL
+   ============================================ */
+
+#orders-content {
+    background: linear-gradient(180deg, 
+        rgba(237, 137, 54, 0.03) 0%, 
+        rgba(221, 107, 32, 0.03) 100%);
+}
+
+.orders-tabs {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+}
+
+.order-tab {
+    padding: 1rem 2rem;
+    border: none;
+    background: rgba(255,255,255,0.8);
+    border-radius: 16px 16px 0 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    position: relative;
+}
+
+.order-tab::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 80%;
+    height: 3px;
+    background: linear-gradient(90deg, #ed8936 0%, #dd6b20 100%);
+    transition: transform 0.3s ease;
+}
+
+.order-tab:hover::after,
+.order-tab.active::after {
+    transform: translateX(-50%) scaleX(1);
+}
+
+.order-tab.active {
+    background: white;
+    box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+}
+
+.sales-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    padding: 2rem;
+    background: white;
+    margin: 0 2rem 2rem;
+    border-radius: 20px;
+}
+
+.summary-card {
+    text-align: center;
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: linear-gradient(135deg, 
+        rgba(237, 137, 54, 0.1) 0%, 
+        rgba(221, 107, 32, 0.1) 100%);
+    transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(237, 137, 54, 0.2);
+}
+
+/* ============================================
+   4. CUSTOMERS PANEL
+   ============================================ */
+
+#customers-content {
+    background: linear-gradient(180deg, 
+        rgba(159, 122, 234, 0.03) 0%, 
+        rgba(128, 90, 213, 0.03) 100%);
+}
+
+.customer-segments {
+    display: flex;
+    gap: 1.5rem;
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+}
+
+.segment-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 2rem;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    min-width: fit-content;
+}
+
+.segment-card:hover {
+    background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(159, 122, 234, 0.3);
+}
+
+.segment-icon {
+    font-size: 1.5rem;
+}
+
+.segment-count {
+    padding: 0.25rem 0.75rem;
+    background: rgba(159, 122, 234, 0.2);
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+
+/* ============================================
+   5. PUBLISHERS PANEL
+   ============================================ */
+
+#publishers-content {
+    background: linear-gradient(180deg, 
+        rgba(49, 130, 206, 0.03) 0%, 
+        rgba(43, 108, 176, 0.03) 100%);
+}
+
+.publishers-filters {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0 2rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    padding: 0.75rem 1.75rem;
+    border: 2px solid rgba(49, 130, 206, 0.2);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 30px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.filter-chip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(49, 130, 206, 0.3) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: width 0.4s, height 0.4s;
+}
+
+.filter-chip:hover::after {
+    width: 100px;
+    height: 100px;
+}
+
+.filter-chip.active {
+    background: linear-gradient(135deg, #3182ce 0%, #2b6cb0 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 6px 20px rgba(49, 130, 206, 0.35);
+    transform: translateY(-2px);
+}
+
+.publishers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.75rem;
+    padding: 0 2rem 2rem;
+}
+
+.publisher-card {
+    background: white;
+    border-radius: 24px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.publisher-card::before {
+    content: '🏢';
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    font-size: 60px;
+    opacity: 0.08;
+    transform: rotate(15deg);
+    transition: all 0.4s ease;
+}
+
+.publisher-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(49, 130, 206, 0.2);
+}
+
+.publisher-card:hover::before {
+    transform: rotate(25deg) scale(1.2);
+    opacity: 0.15;
+}
+
+/* ============================================
+   6. AUTHORS PANEL
+   ============================================ */
+
+#authors-content {
+    background: linear-gradient(180deg, 
+        rgba(236, 72, 153, 0.03) 0%, 
+        rgba(219, 39, 119, 0.03) 100%);
+}
+
+.authors-featured {
+    padding: 0 2rem;
+    margin-bottom: 2.5rem;
+}
+
+.authors-featured h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1rem;
+    position: relative;
+    padding-left: 1rem;
+}
+
+.authors-featured h3::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 70%;
+    background: linear-gradient(180deg, #ec4899 0%, #db2777 100%);
+    border-radius: 2px;
+}
+
+.featured-authors-carousel {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    padding: 1rem 0;
+    scroll-snap-type: x mandatory;
+}
+
+.featured-authors-carousel::-webkit-scrollbar {
+    height: 8px;
+}
+
+.featured-authors-carousel::-webkit-scrollbar-track {
+    background: rgba(236, 72, 153, 0.1);
+    border-radius: 10px;
+}
+
+.featured-authors-carousel::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
+    border-radius: 10px;
+}
+
+.author-card {
+    min-width: 200px;
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+    scroll-snap-align: start;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    position: relative;
+}
+
+.author-card::after {
+    content: '✍️';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 1.2rem;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+}
+
+.author-card:hover::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.author-card:hover {
+    transform: translateY(-10px) rotateZ(-1deg);
+    box-shadow: 0 12px 35px rgba(236, 72, 153, 0.25);
+}
+
+.authors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+    padding: 0 2rem 2rem;
+}
+
+
+/* ============================================
+   8. PROMOTIONS PANEL (ENHANCED)
+   ============================================ */
+
+#promotions-content {
+    background: linear-gradient(180deg, 
+        rgba(167, 139, 250, 0.04) 0%, 
+        rgba(139, 92, 246, 0.04) 100%);
+}
+
+.active-promotions h3,
+.promotion-analytics h3 {
+    font-size: 1.375rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #333;
+    position: relative;
+    display: inline-block;
+}
+
+.active-promotions h3::after,
+.promotion-analytics h3::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, #a78bfa 0%, #8b5cf6 100%);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.active-promotions:hover h3::after,
+.promotion-analytics:hover h3::after {
+    transform: scaleX(1);
+}
+
+.promotions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.75rem;
+}
+
+.promotion-card {
+    background: white;
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.promotion-card::before {
+    content: '🎁';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    font-size: 100px;
+    opacity: 0.05;
+    transform: rotate(-15deg);
+    transition: all 0.4s ease;
+}
+
+.promotion-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(167, 139, 250, 0.25);
+}
+
+.promotion-card:hover::before {
+    transform: rotate(15deg) scale(1.3);
+    opacity: 0.1;
+}
+
+.analytics-charts {
+    background: white;
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.08);
+    min-height: 300px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ============================================
+   9. RATING & REVIEWS PANEL
+   ============================================ */
+
+#rate-and-reviews-content {
+    background: linear-gradient(180deg, 
+        rgba(16, 185, 129, 0.03) 0%, 
+        rgba(5, 150, 105, 0.03) 100%);
+}
+
+.rate-comment-section {
+    padding: 2rem;
+}
+
+.rating-overview {
+    background: white;
+    border-radius: 24px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+}
+
+.overall-rating {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.rating-number {
+    font-size: 4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.rating-stars {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.star {
+    width: 32px;
+    height: 32px;
+    fill: #10b981;
+    transition: all 0.3s ease;
+}
+
+.star:hover {
+    transform: scale(1.2) rotate(360deg);
+}
+
+.rating-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.rating-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.rating-label {
+    min-width: 60px;
+    font-weight: 500;
+    color: #666;
+}
+
+.rating-progress {
+    flex: 1;
+    height: 12px;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+}
+
+.rating-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    border-radius: 6px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.rating-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent
+    );
+    transform: translateX(-100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.rating-count {
+    min-width: 40px;
+    text-align: right;
+    color: #999;
+    font-size: 0.875rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .publishers-grid,
+    .authors-grid,
+    .promotions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .reviews-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   READING EVENTS PANEL (STANDALONE)
+   ============================================ */
+
+#reading-events-content {
+    background: linear-gradient(180deg, 
+        rgba(99, 102, 241, 0.03) 0%, 
+        rgba(79, 70, 229, 0.03) 100%);
+}
+
+.events-overview {
+    padding: 0 2rem 2rem;
+}
+
+.event-stat-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+}
+
+.event-stat {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 4px 15so rgba(0,0,0,0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-top: 3px solid transparent;
+}
+
+.event-stat:hover {
+    transform: translateY(-5px);
+    border-top-color: #6366f1;
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.2);
+}
+
+.events-timeline {
+    padding: 0 2rem 2rem;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.view-toggles {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.5);
+    padding: 0.25rem;
+    border-radius: 12px;
+}
+
+.view-toggle {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.view-toggle.active {
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* ============================================
+   CLUBS PANEL (SIMPLIFIED)
+   ============================================ */
+
+#clubs-content {
+    background: linear-gradient(180deg, 
+        rgba(234, 88, 12, 0.03) 0%, 
+        rgba(194, 65, 12, 0.03) 100%);
+}
+
+.clubs-stats {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    padding: 1.5rem 2rem;
+    background: white;
+    margin: 0 2rem 2rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.club-stat {
+    text-align: center;
+}
+
+.club-stat .stat-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.club-stat .stat-label {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.25rem;
+}
+
+.clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 0 2rem 2rem;
+}
+
+.club-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.club-card:hover {
+    transform: translateY(-5px) rotate(1deg);
+    box-shadow: 0 10px 30px rgba(234, 88, 12, 0.2);
+}
+/* ============================================
+   *. PROMOTIONS PANEL
+   ============================================ */
+
+#promotions-content {
+    background: linear-gradient(180deg, 
+        rgba(251, 207, 232, 0.05) 0%, 
+        rgba(245, 171, 185, 0.05) 100%);
+}
+
+.active-promotions,
+.promotion-analytics {
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.promotions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.promotion-card {
+    background: white;
+    border-radius: 20px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.promotion-card::before {
+    content: '🎁';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    font-size: 80px;
+    opacity: 0.1;
+    transform: rotate(-15deg);
+}
+
+.promotion-card:hover {
+    transform: translateY(-5px) rotate(1deg);
+    box-shadow: 0 10px 30px rgba(251, 207, 232, 0.3);
+}
+
+/* ============================================
+   UNIVERSAL HOVER EFFECTS & ANIMATIONS
+   ============================================ */
+
+.btn-primary,
+.btn-secondary {
+    padding: 0.875rem 2rem;
+    border: none;
+    border-radius: 50px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-primary:hover::before {
+    width: 300px;
+    height: 300px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+/* Loading Animation */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.loading {
+    background: linear-gradient(
+        90deg,
+        rgba(0,0,0,0.05) 25%,
+        rgba(0,0,0,0.1) 50%,
+        rgba(0,0,0,0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}

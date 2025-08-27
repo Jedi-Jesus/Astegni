@@ -7,6 +7,8 @@
     <title>Yeneta - Bookstore Profile </title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/bookstore.css">
+
 </head>
 
 <body>
@@ -57,7 +59,7 @@
                     <span>Dashboard</span>
                 </button>
             </div>
-            
+
             <!-- NEW BOOKSTORE SECTION - ALL BOOKSTORE FEATURES HERE -->
             <div class="sidebar-section" data-content="bookstore">
                 <button class="sidebar-btn" data-content="inventory">
@@ -65,10 +67,12 @@
                     <span>Inventory</span>
                     <span class="sidebar-badge">2,458</span>
                 </button>
-                <button class="sidebar-btn" data-content="catalog">
-                    <span class="sidebar-btn-icon">📖</span>
-                    <span>Book Catalog</span>
+
+                <button class="sidebar-btn" data-content="tutor-schedule">
+                    <span class="sidebar-btn-icon">🗓️</span>
+                    <span>My Schedule</span>
                 </button>
+
                 <button class="sidebar-btn" data-content="orders">
                     <span class="sidebar-btn-icon">📦</span>
                     <span>Orders & Sales</span>
@@ -89,27 +93,23 @@
                     <span>Authors</span>
                     <span class="sidebar-badge">156</span>
                 </button>
-                <button class="sidebar-btn" data-content="book-reviews">
-                    <span class="sidebar-btn-icon">⭐</span>
-                    <span>Book Reviews</span>
-                    <span class="sidebar-badge">892</span>
-                </button>
-                <button class="sidebar-btn" data-content="reading-events">
-                    <span class="sidebar-btn-icon">🎤</span>
-                    <span>Reading Events</span>
-                    <span class="sidebar-badge">8</span>
-                </button>
+                <!-- In the bookstore section of sidebar -->
+<button class="sidebar-btn" data-content="reading-events">
+    <span class="sidebar-btn-icon">🎤</span>
+    <span>Reading Events</span>
+    <span class="sidebar-badge">8</span>
+</button>
                 <button class="sidebar-btn" data-content="promotions">
                     <span class="sidebar-btn-icon">🎁</span>
                     <span>Promotions</span>
                     <span class="sidebar-badge active">Active</span>
                 </button>
-                                <button class="sidebar-btn" data-content="rate-and-reviews">
+                <button class="sidebar-btn" data-content="rate-and-reviews">
                     <span class="sidebar-btn-icon">⭐</span>
                     <span>Rating & Reviews</span>
                 </button>
             </div>
-            
+
             <!-- UNCHANGED EDUCATION SECTION -->
             <div class="sidebar-section" data-content="education">
                 <button class="sidebar-btn" data-content="jobs">
@@ -124,11 +124,11 @@
                 </button>
                 <button class="sidebar-btn" data-content="books">
                     <span class="sidebar-btn-icon">📚</span>
-                    <span>My Books</span>
+                    <span>My Resources</span>
                     <span class="sidebar-badge">5</span>
                 </button>
             </div>
-            
+
             <!-- UNCHANGED PERMANENT SECTION -->
             <div class="sidebar-section" data-content="permanent">
                 <button class="sidebar-btn" data-content="clubs">
@@ -159,14 +159,14 @@
                     <span class="sidebar-btn-icon">📦</span>
                     <span>My Products</span>
                 </button>
-                
-                    <a href='../Plug-ins/notes.html'>
-                <button class="sidebar-btn" data-content="notes">
+
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
                         <span class="sidebar-btn-icon">📝</span>
                         <span>Notes</span>
-                </button>
-                
-                    </a>
+                    </button>
+
+                </a>
                 <button class="sidebar-btn" data-content="share">
                     <span class="sidebar-btn-icon">🔗</span>
                     <span>Share</span>
@@ -224,10 +224,10 @@
             <button class="sidebar-help-btn">
                 <span class="help-icon">💡</span>
                 <span>Need Help?</span>
-                
+
             </button>
         </div>
-        
+
     </aside>
 
     <!-- Main Container -->
@@ -236,7 +236,7 @@
         <section class="profile-header-section">
             <div class="cover-image-container">
                 <img src="../pictures/bookstore cover.jpg" alt="Cover" class="cover-img">
-<span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
+                <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
                 <div class="cover-overlay"></div>
             </div>
 
@@ -244,7 +244,7 @@
                 <div class="profile-info-wrapper">
                     <div class="profile-avatar-container">
                         <img src="../pictures/bookstore profile.jpg" alt="Bookstore profile" class="profile-avatar">
-<span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+                        <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
                     </div>
 
                     <div class="profile-details-section">
@@ -324,9 +324,9 @@
                                 <span class="action-icon">✏️</span>
                                 <span>Edit Profile</span>
                             </button>
+                        </div>
                     </div>
                 </div>
-            </div>
         </section>
 
         <!-- Advertisement Placeholder -->
@@ -496,14 +496,14 @@
                 </div>
 
                 <!-- NEW BOOKSTORE CONTENT PANELS -->
-                
+
                 <!-- Inventory Content -->
                 <div class="sidebar-content-panel" id="inventory-content">
                     <div class="section-header">
                         <h2 class="section-title">Inventory Management</h2>
                         <button class="btn-primary" onclick="openAddBookModal()">+ Add Books</button>
                     </div>
-                    
+
                     <div class="inventory-stats">
                         <div class="inventory-stat-card">
                             <span class="stat-icon">📚</span>
@@ -534,7 +534,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="inventory-filters">
                         <input type="text" placeholder="Search inventory..." class="inventory-search">
                         <select class="inventory-filter">
@@ -551,7 +551,7 @@
                             <option>Out of Stock</option>
                         </select>
                     </div>
-                    
+
                     <div class="inventory-grid" id="inventoryGrid">
                         <!-- Inventory items will be loaded dynamically -->
                     </div>
@@ -570,7 +570,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="catalog-view-options">
                         <button class="view-option active" data-view="grid">
                             <span>⊞</span> Grid View
@@ -582,7 +582,7 @@
                             <span>📋</span> Detailed View
                         </button>
                     </div>
-                    
+
                     <div class="catalog-grid" id="catalogGrid">
                         <!-- Catalog items will be loaded dynamically -->
                     </div>
@@ -594,7 +594,7 @@
                         <h2 class="section-title">Orders & Sales Management</h2>
                         <button class="btn-primary" onclick="openNewOrderModal()">+ New Order</button>
                     </div>
-                    
+
                     <div class="orders-tabs">
                         <button class="order-tab active">Pending Orders</button>
                         <button class="order-tab">Processing</button>
@@ -602,7 +602,7 @@
                         <button class="order-tab">Completed</button>
                         <button class="order-tab">Returns</button>
                     </div>
-                    
+
                     <div class="sales-summary">
                         <div class="summary-card">
                             <span class="summary-label">Today's Sales</span>
@@ -620,7 +620,7 @@
                             <span class="summary-change up">↑ 15%</span>
                         </div>
                     </div>
-                    
+
                     <div class="orders-list" id="ordersList">
                         <!-- Orders will be loaded dynamically -->
                     </div>
@@ -632,7 +632,7 @@
                         <h2 class="section-title">Customer Management</h2>
                         <button class="btn-primary" onclick="openAddCustomerModal()">+ Add Customer</button>
                     </div>
-                    
+
                     <div class="customer-segments">
                         <div class="segment-card">
                             <span class="segment-icon">⭐</span>
@@ -650,7 +650,7 @@
                             <span class="segment-count">108</span>
                         </div>
                     </div>
-                    
+
                     <div class="customers-grid" id="customersGrid">
                         <!-- Customer profiles will be loaded dynamically -->
                     </div>
@@ -662,7 +662,7 @@
                         <h2 class="section-title">Publishers & Suppliers</h2>
                         <button class="btn-primary" onclick="openAddPublisherModal()">+ Add Publisher</button>
                     </div>
-                    
+
                     <div class="publishers-filters">
                         <button class="filter-chip active">All Publishers</button>
                         <button class="filter-chip">Local</button>
@@ -670,7 +670,7 @@
                         <button class="filter-chip">Academic</button>
                         <button class="filter-chip">Independent</button>
                     </div>
-                    
+
                     <div class="publishers-grid" id="publishersGrid">
                         <!-- Publishers will be loaded dynamically -->
                     </div>
@@ -682,84 +682,35 @@
                         <h2 class="section-title">Author Management</h2>
                         <button class="btn-primary" onclick="openAddAuthorModal()">+ Add Author</button>
                     </div>
-                    
+
                     <div class="authors-featured">
                         <h3>Featured Authors</h3>
                         <div class="featured-authors-carousel">
                             <!-- Featured authors will be displayed here -->
                         </div>
                     </div>
-                    
+
                     <div class="authors-grid" id="authorsGrid">
                         <!-- Authors will be loaded dynamically -->
                     </div>
                 </div>
 
-                <!-- Book Reviews Content -->
-                <div class="sidebar-content-panel" id="book-reviews-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Book Reviews & Ratings</h2>
-                        <button class="btn-primary" onclick="openReviewModerationModal()">Moderate Reviews</button>
-                    </div>
-                    
-                    <div class="reviews-stats">
-                        <div class="review-stat">
-                            <span class="stat-value">892</span>
-                            <span class="stat-label">Total Reviews</span>
-                        </div>
-                        <div class="review-stat">
-                            <span class="stat-value">4.8</span>
-                            <span class="stat-label">Average Rating</span>
-                        </div>
-                        <div class="review-stat">
-                            <span class="stat-value">23</span>
-                            <span class="stat-label">Pending Moderation</span>
-                        </div>
-                    </div>
-                    
-                    <div class="reviews-list" id="bookReviewsList">
-                        <!-- Book reviews will be loaded dynamically -->
-                    </div>
-                </div>
-
-                <!-- Reading Events Content -->
-                <div class="sidebar-content-panel" id="reading-events-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Reading Events & Book Clubs</h2>
-                        <button class="btn-primary" onclick="openCreateEventModal()">+ Create Event</button>
-                    </div>
-                    
-                    <div class="events-tabs">
-                        <button class="event-tab active">Upcoming Events</button>
-                        <button class="event-tab">Book Signings</button>
-                        <button class="event-tab">Reading Clubs</button>
-                        <button class="event-tab">Author Talks</button>
-                        <button class="event-tab">Past Events</button>
-                    </div>
-                    
-                    <div class="events-calendar">
-                        <!-- Event calendar view -->
-                    </div>
-                    
-                    <div class="events-grid" id="readingEventsGrid">
-                        <!-- Events will be loaded dynamically -->
-                    </div>
-                </div>
-
+                
+                
                 <!-- Promotions Content -->
                 <div class="sidebar-content-panel" id="promotions-content">
                     <div class="section-header">
                         <h2 class="section-title">Promotions & Discounts</h2>
                         <button class="btn-primary" onclick="openCreatePromotionModal()">+ Create Promotion</button>
                     </div>
-                    
+
                     <div class="active-promotions">
                         <h3>Active Promotions</h3>
                         <div class="promotions-grid" id="activePromotionsGrid">
                             <!-- Active promotions will be displayed here -->
                         </div>
                     </div>
-                    
+
                     <div class="promotion-analytics">
                         <h3>Promotion Performance</h3>
                         <div class="analytics-charts">
@@ -769,20 +720,20 @@
                 </div>
 
                 <!-- EXISTING EDUCATION CONTENT PANELS (UNCHANGED) -->
-                
+
                 <!-- Jobs Content Section -->
                 <div class="sidebar-content-panel" id="jobs-content">
                     <div class="section-header">
                         <h2 class="section-title">Job Posts</h2>
                         <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
                     </div>
-                    
+
                     <div class="job-filters">
                         <button class="filter-chip active" onclick="filterJobs('all')">All Jobs</button>
                         <button class="filter-chip" onclick="filterJobs('posted')">Posted Jobs</button>
                         <button class="filter-chip" onclick="filterJobs('draft')">Draft Jobs</button>
                     </div>
-                    
+
                     <div class="jobs-grid" id="jobsGrid">
                         <!-- Jobs will be loaded dynamically -->
                     </div>
@@ -811,7 +762,7 @@
                         <!-- Classes will be loaded dynamically -->
                     </div>
                 </div>
-                
+
                 <!-- Books Content Section -->
                 <div class="sidebar-content-panel" id="books-content">
                     <div class="section-header">
@@ -822,39 +773,189 @@
                             <!-- Button will be dynamically added based on books availability -->
                         </div>
                     </div>
-                    
+
                     <div class="books-grid" id="booksGrid">
                         <!-- Books will be loaded dynamically -->
                     </div>
                 </div>
 
                 <!-- EXISTING PERMANENT CONTENT PANELS (UNCHANGED) -->
-                
-                <!-- Community Content (Now opens modal) -->
-                <div class="sidebar-content-panel" id="community-content">
-                    <!-- This will trigger the community modal -->
-                </div>
 
-                <!-- Clubs Content Section -->
-                <div class="sidebar-content-panel" id="clubs-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Clubs</h2>
-                        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
-                    </div>
-                    
-                    <div class="clubs-tabs">
-                        <button class="clubs-tab active" onclick="filterClubs('all')">All Clubs</button>
-                        <button class="clubs-tab" onclick="filterClubs('academic')">Academic</button>
-                        <button class="clubs-tab" onclick="filterClubs('arts')">Arts & Culture</button>
-                        <button class="clubs-tab" onclick="filterClubs('sports')">Sports</button>
-                        <button class="clubs-tab" onclick="filterClubs('technology')">Technology</button>
-                    </div>
-                    
-                    <div class="clubs-grid" id="clubsGrid">
-                        <!-- Clubs will be loaded dynamically -->
-                    </div>
-                </div>
+                <!-- Reading Events Content (Separated) -->
+<div class="sidebar-content-panel" id="reading-events-content">
+    <div class="section-header">
+        <h2 class="section-title">Reading Events & Literary Programs</h2>
+        <div class="header-buttons">
+            <button class="btn-secondary" onclick="openEventCalendarModal()">📅 Full Calendar</button>
+            <button class="btn-primary" onclick="openCreateEventModal()">+ Create Event</button>
+        </div>
+    </div>
 
+    <div class="events-overview">
+        <div class="event-stat-cards">
+            <div class="event-stat">
+                <span class="stat-icon">📚</span>
+                <div class="stat-info">
+                    <span class="stat-value">8</span>
+                    <span class="stat-label">This Month</span>
+                </div>
+            </div>
+            <div class="event-stat">
+                <span class="stat-icon">✍️</span>
+                <div class="stat-info">
+                    <span class="stat-value">3</span>
+                    <span class="stat-label">Author Visits</span>
+                </div>
+            </div>
+            <div class="event-stat">
+                <span class="stat-icon">🎫</span>
+                <div class="stat-info">
+                    <span class="stat-value">245</span>
+                    <span class="stat-label">Tickets Sold</span>
+                </div>
+            </div>
+            <div class="event-stat">
+                <span class="stat-icon">💰</span>
+                <div class="stat-info">
+                    <span class="stat-value">$1,850</span>
+                    <span class="stat-label">Revenue</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="events-tabs">
+        <button class="event-tab active">All Events</button>
+        <button class="event-tab">Book Signings</button>
+        <button class="event-tab">Author Talks</button>
+        <button class="event-tab">Workshops</button>
+        <button class="event-tab">Children's Events</button>
+        <button class="event-tab">Literary Festivals</button>
+        <button class="event-tab">Past Events</button>
+    </div>
+
+    <div class="events-timeline">
+        <div class="timeline-header">
+            <h3>Upcoming Schedule</h3>
+            <div class="view-toggles">
+                <button class="view-toggle active" data-view="timeline">Timeline</button>
+                <button class="view-toggle" data-view="calendar">Calendar</button>
+                <button class="view-toggle" data-view="list">List</button>
+            </div>
+        </div>
+        <div class="events-container" id="eventsContainer">
+            <!-- Events will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Reading Events Content (Separated) -->
+<div class="sidebar-content-panel" id="reading-events-content">
+    <div class="section-header">
+        <h2 class="section-title">Reading Events & Literary Programs</h2>
+        <div class="header-buttons">
+            <button class="btn-secondary" onclick="openEventCalendarModal()">📅 Full Calendar</button>
+            <button class="btn-primary" onclick="openCreateEventModal()">+ Create Event</button>
+        </div>
+    </div>
+
+    <div class="events-overview">
+        <div class="event-stat-cards">
+            <div class="event-stat">
+                <span class="stat-icon">📚</span>
+                <div class="stat-info">
+                    <span class="stat-value">8</span>
+                    <span class="stat-label">This Month</span>
+                </div>
+            </div>
+            <div class="event-stat">
+                <span class="stat-icon">✍️</span>
+                <div class="stat-info">
+                    <span class="stat-value">3</span>
+                    <span class="stat-label">Author Visits</span>
+                </div>
+            </div>
+            <div class="event-stat">
+                <span class="stat-icon">🎫</span>
+                <div class="stat-info">
+                    <span class="stat-value">245</span>
+                    <span class="stat-label">Tickets Sold</span>
+                </div>
+            </div>
+            <div class="event-stat">
+                <span class="stat-icon">💰</span>
+                <div class="stat-info">
+                    <span class="stat-value">$1,850</span>
+                    <span class="stat-label">Revenue</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="events-tabs">
+        <button class="event-tab active">All Events</button>
+        <button class="event-tab">Book Signings</button>
+        <button class="event-tab">Author Talks</button>
+        <button class="event-tab">Workshops</button>
+        <button class="event-tab">Children's Events</button>
+        <button class="event-tab">Literary Festivals</button>
+        <button class="event-tab">Past Events</button>
+    </div>
+
+    <div class="events-timeline">
+        <div class="timeline-header">
+            <h3>Upcoming Schedule</h3>
+            <div class="view-toggles">
+                <button class="view-toggle active" data-view="timeline">Timeline</button>
+                <button class="view-toggle" data-view="calendar">Calendar</button>
+                <button class="view-toggle" data-view="list">List</button>
+            </div>
+        </div>
+        <div class="events-container" id="eventsContainer">
+            <!-- Events will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<!-- Clubs Content (Now separate from events) -->
+<div class="sidebar-content-panel" id="clubs-content">
+    <div class="section-header">
+        <h2 class="section-title">Book Clubs & Reading Groups</h2>
+        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
+    </div>
+
+    <div class="clubs-stats">
+        <div class="club-stat">
+            <span class="stat-value">12</span>
+            <span class="stat-label">Active Clubs</span>
+        </div>
+        <div class="club-stat">
+            <span class="stat-value">234</span>
+            <span class="stat-label">Members</span>
+        </div>
+        <div class="club-stat">
+            <span class="stat-value">45</span>
+            <span class="stat-label">Books Read</span>
+        </div>
+        <div class="club-stat">
+            <span class="stat-value">8</span>
+            <span class="stat-label">Meeting This Week</span>
+        </div>
+    </div>
+
+    <div class="clubs-tabs">
+        <button class="clubs-tab active">All Clubs</button>
+        <button class="clubs-tab">Fiction</button>
+        <button class="clubs-tab">Non-Fiction</button>
+        <button class="clubs-tab">Young Readers</button>
+        <button class="clubs-tab">Poetry Circle</button>
+        <button class="clubs-tab">Book-to-Film</button>
+    </div>
+
+    <div class="clubs-grid" id="clubsGrid">
+        <!-- Clubs will be loaded dynamically -->
+    </div>
+</div>
                 <!-- Podcasts Content with Draft Filter -->
                 <div class="sidebar-content-panel" id="podcasts-content">
                     <div class="section-header">
@@ -865,18 +966,18 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="podcast-filters">
                         <button class="filter-chip active" onclick="filterPodcasts('all')">All Podcasts</button>
                         <button class="filter-chip" onclick="filterPodcasts('published')">Published</button>
                         <button class="filter-chip" onclick="filterPodcasts('draft')">Drafts</button>
                     </div>
-                    
+
                     <div class="podcast-grid">
                         <!-- Podcasts will be loaded dynamically -->
                     </div>
                 </div>
-                              
+
                 <!-- Videos Content with Draft Filter -->
                 <div class="sidebar-content-panel" id="videos-content">
                     <div class="section-header">
@@ -895,13 +996,19 @@
 
                     <div class="video-filters">
                         <div class="video-tabs">
-                            <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All Videos</button>
-                            <button class="video-tab" data-filter="published" onclick="filterVideos('published')">Published</button>
-                            <button class="video-tab" data-filter="draft" onclick="filterVideos('draft')">Drafts</button>
-                            <button class="video-tab" data-filter="shorts" onclick="filterVideos('shorts')">Shorts</button>
-                            <button class="video-tab" data-filter="playlists" onclick="filterVideos('playlists')">Playlists</button>
+                            <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All
+                                Videos</button>
+                            <button class="video-tab" data-filter="published"
+                                onclick="filterVideos('published')">Published</button>
+                            <button class="video-tab" data-filter="draft"
+                                onclick="filterVideos('draft')">Drafts</button>
+                            <button class="video-tab" data-filter="shorts"
+                                onclick="filterVideos('shorts')">Shorts</button>
+                            <button class="video-tab" data-filter="playlists"
+                                onclick="filterVideos('playlists')">Playlists</button>
                         </div>
-                        <button class="btn-create-playlist" onclick="window.trainingCenterProfile.playlists.openModal()">
+                        <button class="btn-create-playlist"
+                            onclick="window.trainingCenterProfile.playlists.openModal()">
                             + Create Playlist
                         </button>
                     </div>
@@ -909,7 +1016,7 @@
                         <!-- Videos will be loaded dynamically -->
                     </div>
                 </div>
-                
+
                 <!-- Blog Content with Draft Filter -->
                 <div class="sidebar-content-panel" id="blog-content">
                     <div class="section-header">
@@ -933,20 +1040,7 @@
                     </div>
                 </div>
 
-                <!-- Comments Content -->
-                <div class="sidebar-content-panel" id="comments-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Reviews & Comments</h2>
-                        <button class="btn-primary" onclick="openCommentsModal()">
-                            <span>💬 View All Comments</span>
-                        </button>
-                    </div>
-
-                    <div class="comments-section">
-                        <!-- Comments will be loaded dynamically -->
-                    </div>
-                </div>
-
+                
                 <!-- My Products Content -->
                 <div class="sidebar-content-panel" id="my-products-content">
                     <div class="section-header">
@@ -955,7 +1049,7 @@
                             <span>🛒</span> Browse Store
                         </button>
                     </div>
-                    
+
                     <div class="product-filters">
                         <button class="filter-chip active" onclick="filterMyProducts('all')">All Products</button>
                         <button class="filter-chip" onclick="filterMyProducts('courses')">Courses</button>
@@ -963,7 +1057,7 @@
                         <button class="filter-chip" onclick="filterMyProducts('software')">Software</button>
                         <button class="filter-chip" onclick="filterMyProducts('materials')">Materials</button>
                     </div>
-                    
+
                     <div class="my-products-grid" id="myProductsGrid">
                         <!-- Purchased products will be loaded dynamically -->
                     </div>
@@ -1458,15 +1552,18 @@
     <footer class="footer-section">
         <div class="footer-wave">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+                <path
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
             </svg>
         </div>
-        
+
         <div class="container mx-auto px-4">
             <div class="footer-content">
                 <div class="footer-section-item">
                     <h3 class="footer-title">About Astegni</h3>
-                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
                     <div class="footer-stats">
                         <div class="stat-item">
                             <span class="stat-number">10k+</span>
@@ -1482,7 +1579,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Quick Links</h3>
                     <ul class="footer-links">
@@ -1494,7 +1591,7 @@
                         <li><a href="#" class="footer-link">Careers</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Support</h3>
                     <ul class="footer-links">
@@ -1506,27 +1603,46 @@
                         <li><a href="#" class="footer-link">Safety</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Connect With Us</h3>
                     <div class="social-links">
                         <a href="#" aria-label="Facebook" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Twitter" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="LinkedIn" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
                         </a>
                         <a href="#" aria-label="YouTube" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
+                            </svg>
                         </a>
                     </div>
-                    
+
                     <div class="newsletter-signup">
                         <h4>Subscribe to Newsletter</h4>
                         <form class="newsletter-form">
@@ -1536,7 +1652,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <div class="footer-bottom-content">
                     <p>&copy; 2025 Astegni. All rights reserved.</p>
