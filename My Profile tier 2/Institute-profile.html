@@ -191,7 +191,6 @@
             <div class="cover-image-container">
                 <img src="../pictures/institute cover.jpg" alt="Cover" class="cover-img">
 <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
-                <div class="cover-overlay"></div>
             </div>
 
             <div class="profile-main-info">
@@ -1715,106 +1714,6 @@
     <script src="../js/institute-profile-3.js"></script>
     <script src="../js/institute-profile-4.js"></script>
     <!-- Additional helper functions that might be missing -->
-    <script>
-
-
-let liftAmount = 0;
-
-function testSidebarLift() {
-    const sidebar = document.querySelector('.left-sidebar');
-    if (sidebar) {
-        if (liftAmount === 0) {
-            // Lift progressively
-            liftAmount = 300; // Lift by 300px
-            sidebar.style.setProperty('--footer-offset', `${liftAmount}px`);
-            sidebar.classList.add('footer-visible');
-            sidebar.classList.add('footer-animating');
-            
-            console.log(`📏 Lifting sidebar by ${liftAmount}px`);
-            
-            setTimeout(() => {
-                sidebar.classList.remove('footer-animating');
-            }, 800);
-            
-            // Show visual feedback
-            sidebar.style.border = '2px solid #f59e0b';
-            setTimeout(() => {
-                sidebar.style.border = '';
-            }, 1000);
-            
-        } else {
-            // Reset
-            liftAmount = 0;
-            sidebar.style.setProperty('--footer-offset', '0px');
-            sidebar.classList.remove('footer-visible');
-            console.log('🔄 Reset sidebar position');
-        }
-    }
-}
-
-// Auto test with different heights
-function autoTestLift() {
-    const heights = [100, 200, 300, 400];
-    let index = 0;
-    
-    const interval = setInterval(() => {
-        const sidebar = document.querySelector('.left-sidebar');
-        if (sidebar && index < heights.length) {
-            const height = heights[index];
-            sidebar.style.setProperty('--footer-offset', `${height}px`);
-            sidebar.classList.add('footer-visible');
-            sidebar.classList.add('footer-animating');
-            
-            console.log(`Testing lift: ${height}px`);
-            
-            setTimeout(() => {
-                sidebar.classList.remove('footer-animating');
-            }, 800);
-            
-            index++;
-        } else {
-            // Reset and stop
-            if (sidebar) {
-                sidebar.style.setProperty('--footer-offset', '0px');
-                sidebar.classList.remove('footer-visible');
-            }
-            clearInterval(interval);
-            console.log('Auto test complete');
-        }
-    }, 2000);
-}
-
-        // Calendar sync functions
-        window.syncGoogleCalendar = function () {
-            Utils.showToast('📅 Connecting to Google Calendar...', 'info');
-            setTimeout(() => {
-                Utils.showToast('✅ Google Calendar connected!', 'success');
-            }, 2000);
-        };
-
-        window.syncOutlookCalendar = function () {
-            Utils.showToast('📆 Connecting to Outlook Calendar...', 'info');
-            setTimeout(() => {
-                Utils.showToast('✅ Outlook Calendar connected!', 'success');
-            }, 2000);
-        };
-
-        // Job related functions
-        window.openJobDetailModal = function (jobId) {
-            Utils.showToast(`💼 Opening job details #${jobId}...`, 'info');
-        };
-
-        window.openMyClassesModal = function () {
-            Utils.showToast('📚 Opening your classes...', 'info');
-        };
-
-        // Switch metric for analytics
-        window.switchMetric = function (metric) {
-            if (window.analyticsManager) {
-                window.analyticsManager.switchMetric(metric);
-            }
-        };
-    </script>
 </body>
 
 </html>

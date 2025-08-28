@@ -8,6 +8,226 @@
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Modal Styles */
+        .upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .upload-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 2px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-inner {
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-close {
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .upload-area {
+            border: 3px dashed #e0e0e0;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .preview-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-upload {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-upload.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-upload.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-upload.secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-upload.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* ===== ONLY ADD THESE SMOOTH SCROLL STYLES TO YOUR EXISTING CSS ===== */
+
+        /* Smooth scroll behavior for the page */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Enhanced Sidebar Animation Styles - Add to your existing .left-sidebar */
+        .left-sidebar {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .left-sidebar.sliding-up {
+            animation: slideUpSidebar 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .left-sidebar.footer-visible {
+            height: calc(100vh - 60px - var(--footer-offset)) !important;
+            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUpSidebar {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(-10px);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -58,7 +278,7 @@
                     <span>Dashboard</span>
                 </button>
             </div>
-            
+
             <!-- NEW DELIVERY SECTION -->
             <div class="sidebar-section" data-content="deliver">
                 <button class="sidebar-btn" data-content="active-delivery">
@@ -108,7 +328,7 @@
                     <span class="sidebar-badge">New</span>
                 </button>
             </div>
-            
+
             <div class="sidebar-section" data-content="education">
                 <button class="sidebar-btn" data-content="jobs">
                     <span class="sidebar-btn-icon">💼</span>
@@ -126,7 +346,7 @@
                     <span class="sidebar-badge">5</span>
                 </button>
             </div>
-            
+
             <div class="sidebar-section" data-content="permanent">
 
                 <button class="sidebar-btn" data-content="clubs">
@@ -149,7 +369,7 @@
                     <span>Blog</span>
                     <span class="sidebar-badge">7</span>
                 </button>
-               
+
                 <button class="sidebar-btn" data-content="image-library">
                     <span class="sidebar-btn-icon">🖼️</span>
                     <span>Image Library</span>
@@ -244,15 +464,14 @@
         <section class="profile-header-section">
             <div class="cover-image-container">
                 <img src="../pictures/delivery cover.png" alt="Cover" class="cover-img">
-<span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
-                <div class="cover-overlay"></div>
+                <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
             </div>
 
             <div class="profile-main-info">
                 <div class="profile-info-wrapper">
                     <div class="profile-avatar-container">
                         <img src="../pictures/delivery profile.jpg" alt="Delivery profile" class="profile-avatar">
-<span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+                        <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
                     </div>
 
                     <div class="profile-details-section">
@@ -267,19 +486,24 @@
                         <div class="rating-section">
                             <div class="stars">
                                 <svg class="star filled" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                                 <svg class="star filled" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                                 <svg class="star filled" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                                 <svg class="star filled" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                                 <svg class="star half" viewBox="0 0 24 24">
-                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
                             </div>
                             <span class="rating-value">4.7/5.0</span>
@@ -315,7 +539,8 @@
                         <div class="profile-next-session" id="profileNextSession">
                             <div class="session-alert">
                                 <span class="alert-icon gradient-text">📦</span>
-                                <span id="nextSessionText"><strong class="gradient-text">Active Delivery:</strong> Order #12345 - Book delivery to 456 Home Ave (ETA: 15 mins)</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Active Delivery:</strong> Order
+                                    #12345 - Book delivery to 456 Home Ave (ETA: 15 mins)</span>
                                 <button class="btn-join-inline" onclick="answerDeliveryCall()">Answer Call</button>
                             </div>
                         </div>
@@ -363,7 +588,13 @@
                     <!-- About Section -->
                     <section class="profile-about-section">
                         <h3>About Me</h3>
-                        <p id="aboutText">Experienced delivery professional with a passion for timely service and customer satisfaction. Specializing in book and educational material deliveries across New York City. Known for handling packages with care and ensuring accurate deliveries. With over 5 years in the delivery industry, I've built strong relationships with local bookstores and customers alike. My commitment to punctuality and professionalism has earned me consistent 5-star ratings. I take pride in being a reliable link between bookstores and book lovers, ensuring that knowledge reaches its destination safely and on time.</p>
+                        <p id="aboutText">Experienced delivery professional with a passion for timely service and
+                            customer satisfaction. Specializing in book and educational material deliveries across New
+                            York City. Known for handling packages with care and ensuring accurate deliveries. With over
+                            5 years in the delivery industry, I've built strong relationships with local bookstores and
+                            customers alike. My commitment to punctuality and professionalism has earned me consistent
+                            5-star ratings. I take pride in being a reliable link between bookstores and book lovers,
+                            ensuring that knowledge reaches its destination safely and on time.</p>
                     </section>
 
                     <!-- Social Links -->
@@ -371,18 +602,24 @@
                         <h3>Connect With Me</h3>
                         <div class="social-links" id="socialLinksContainer">
                             <a href="#" class="social-link twitter" title="Twitter">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                                 </svg>
                             </a>
                             <a href="#" class="social-link linkedin" title="LinkedIn">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
                                 </svg>
                             </a>
                             <a href="#" class="social-link instagram" title="Instagram">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
                                 </svg>
                             </a>
                         </div>
@@ -454,22 +691,23 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <div class="delivery-details-card">
                         <div class="delivery-status-header">
                             <span id="deliveryStatus" class="status-badge pending">Status: Pending</span>
                             <span class="delivery-time">ETA: 15 mins</span>
                         </div>
-                        
+
                         <div class="delivery-info-grid">
                             <div class="info-section">
                                 <h3>Order Information</h3>
                                 <p><strong>Order ID:</strong> #12345</p>
                                 <p><strong>Product:</strong> Book - "The Great Novel"</p>
                                 <p><strong>Price:</strong> $7</p>
-                                <p><strong>Special Notes:</strong> Ensure product is handled with care and verify correct book before delivery.</p>
+                                <p><strong>Special Notes:</strong> Ensure product is handled with care and verify
+                                    correct book before delivery.</p>
                             </div>
-                            
+
                             <div class="info-section">
                                 <h3>Pickup Location</h3>
                                 <p><strong>Bookstore:</strong> City Bookstore</p>
@@ -477,7 +715,7 @@
                                 <p><strong>Contact:</strong> +1 (555) 111-2222</p>
                                 <p><strong>Rating:</strong> 4.9/5</p>
                             </div>
-                            
+
                             <div class="info-section">
                                 <h3>Delivery Location</h3>
                                 <p><strong>Customer:</strong> Jane Smith</p>
@@ -486,7 +724,7 @@
                                 <p><strong>Rating:</strong> 4.8/5</p>
                             </div>
                         </div>
-                        
+
                         <div class="delivery-actions">
                             <button class="btn-success" onclick="acceptDelivery()">Accept Delivery</button>
                             <button class="btn-primary" onclick="viewRoute()">View Route</button>
@@ -504,7 +742,7 @@
                             <button class="btn-secondary" onclick="exportHistory()">Export History</button>
                         </div>
                     </div>
-                    
+
                     <div class="history-filters">
                         <input type="text" placeholder="Search deliveries..." class="search-input">
                         <select class="filter-select">
@@ -515,7 +753,7 @@
                             <option>This Month</option>
                         </select>
                     </div>
-                    
+
                     <div class="history-grid" id="deliveryHistoryGrid">
                         <!-- Delivery history items will be loaded dynamically -->
                     </div>
@@ -526,7 +764,7 @@
                     <div class="section-header">
                         <h2 class="section-title">👥 Customers & Bookstores</h2>
                     </div>
-                    
+
                     <div class="customer-filters">
                         <div class="filter-tabs">
                             <button class="filter-tab active" onclick="filterCustomers('all')">All</button>
@@ -536,7 +774,7 @@
                         </div>
                         <input type="text" placeholder="Search..." class="search-input">
                     </div>
-                    
+
                     <div class="customers-grid" id="customersGrid">
                         <!-- Customer and bookstore cards will be loaded dynamically -->
                     </div>
@@ -548,7 +786,7 @@
                         <h2 class="section-title">📍 My Location</h2>
                         <button class="btn-primary" onclick="updateLocation()">Update Location</button>
                     </div>
-                    
+
                     <div class="location-map-container">
                         <div id="locationMap" class="map-placeholder">
                             <!-- Map will be loaded here -->
@@ -569,7 +807,7 @@
                         <h2 class="section-title">🗺️ Saved Routes</h2>
                         <button class="btn-primary" onclick="addNewRoute()">+ Add Route</button>
                     </div>
-                    
+
                     <div class="routes-grid" id="savedRoutesGrid">
                         <!-- Saved routes will be loaded dynamically -->
                     </div>
@@ -580,7 +818,7 @@
                     <div class="section-header">
                         <h2 class="section-title">⭐ Ratings & Reviews</h2>
                     </div>
-                    
+
                     <div class="rating-summary">
                         <div class="overall-rating">
                             <span class="big-rating">4.7</span>
@@ -590,32 +828,42 @@
                         <div class="rating-breakdown">
                             <div class="rating-bar">
                                 <span>5 ⭐</span>
-                                <div class="bar"><div class="fill" style="width: 70%"></div></div>
+                                <div class="bar">
+                                    <div class="fill" style="width: 70%"></div>
+                                </div>
                                 <span>109</span>
                             </div>
                             <div class="rating-bar">
                                 <span>4 ⭐</span>
-                                <div class="bar"><div class="fill" style="width: 20%"></div></div>
+                                <div class="bar">
+                                    <div class="fill" style="width: 20%"></div>
+                                </div>
                                 <span>31</span>
                             </div>
                             <div class="rating-bar">
                                 <span>3 ⭐</span>
-                                <div class="bar"><div class="fill" style="width: 7%"></div></div>
+                                <div class="bar">
+                                    <div class="fill" style="width: 7%"></div>
+                                </div>
                                 <span>11</span>
                             </div>
                             <div class="rating-bar">
                                 <span>2 ⭐</span>
-                                <div class="bar"><div class="fill" style="width: 2%"></div></div>
+                                <div class="bar">
+                                    <div class="fill" style="width: 2%"></div>
+                                </div>
                                 <span>3</span>
                             </div>
                             <div class="rating-bar">
                                 <span>1 ⭐</span>
-                                <div class="bar"><div class="fill" style="width: 1%"></div></div>
+                                <div class="bar">
+                                    <div class="fill" style="width: 1%"></div>
+                                </div>
                                 <span>2</span>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="reviews-list" id="reviewsList">
                         <!-- Reviews will be loaded dynamically -->
                     </div>
@@ -627,7 +875,7 @@
                         <h2 class="section-title">💰 Earnings</h2>
                         <button class="btn-primary" onclick="withdrawEarnings()">Withdraw</button>
                     </div>
-                    
+
                     <div class="earnings-summary">
                         <div class="earnings-card">
                             <h3>Today's Earnings</h3>
@@ -650,7 +898,7 @@
                             <button class="btn-small" onclick="withdrawEarnings()">Withdraw</button>
                         </div>
                     </div>
-                    
+
                     <div class="earnings-chart-container">
                         <canvas id="earningsChart"></canvas>
                     </div>
@@ -662,11 +910,11 @@
                         <h2 class="section-title">📅 Delivery Schedule</h2>
                         <button class="btn-primary" onclick="setAvailability()">Set Availability</button>
                     </div>
-                    
+
                     <div class="schedule-calendar" id="deliveryCalendar">
                         <!-- Calendar will be loaded here -->
                     </div>
-                    
+
                     <div class="upcoming-deliveries">
                         <h3>Upcoming Deliveries</h3>
                         <div class="delivery-list" id="upcomingDeliveriesList">
@@ -680,7 +928,7 @@
                     <div class="section-header">
                         <h2 class="section-title">🧠 AI Insights & Optimization</h2>
                     </div>
-                    
+
                     <div class="ai-insights-grid">
                         <div class="insight-card">
                             <h3>Route Optimization</h3>
@@ -729,11 +977,13 @@
                                     <span class="news-time">2h ago</span>
                                 </div>
                                 <div class="news-card-image">
-                                    <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400" alt="Tech News">
+                                    <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400"
+                                        alt="Tech News">
                                 </div>
                                 <div class="news-card-content">
                                     <h4>AI Revolution in Education: New Tools Transform Learning</h4>
-                                    <p>Latest AI-powered tools are revolutionizing how students learn and interact with educational content...</p>
+                                    <p>Latest AI-powered tools are revolutionizing how students learn and interact with
+                                        educational content...</p>
                                     <div class="news-stats">
                                         <span class="news-stat">🔥 Trending</span>
                                         <span class="news-stat">👁️ 1.2k views</span>
@@ -954,48 +1204,48 @@
                     <div class="weather-content">
                         <div class="weather-main">
                             <div class="weather-icon">☀️</div>
-                            <div class="weather-temp">68°F</div>
-                            <div class="weather-condition">Partly Cloudy</div>
+                            <div class="weather-temp">72°F</div>
+                            <div class="weather-condition">Sunny</div>
                         </div>
-                        <div class="weather-location">New York, NY</div>
+                        <div class="weather-location">Los Angeles, CA</div>
                         <div class="weather-details">
                             <div class="weather-detail">
                                 <span>High</span>
-                                <span>73°F</span>
+                                <span>78°F</span>
                             </div>
                             <div class="weather-detail">
                                 <span>Low</span>
-                                <span>62°F</span>
+                                <span>65°F</span>
                             </div>
                             <div class="weather-detail">
                                 <span>Humidity</span>
-                                <span>52%</span>
+                                <span>45%</span>
                             </div>
                             <div class="weather-detail">
                                 <span>Wind</span>
-                                <span>10 mph</span>
+                                <span>8 mph</span>
                             </div>
                         </div>
                         <div class="weather-forecast">
                             <div class="forecast-day">
                                 <span>Mon</span>
                                 <span>☀️</span>
-                                <span>71°</span>
+                                <span>75°</span>
                             </div>
                             <div class="forecast-day">
                                 <span>Tue</span>
                                 <span>⛅</span>
-                                <span>69°</span>
+                                <span>73°</span>
                             </div>
                             <div class="forecast-day">
                                 <span>Wed</span>
                                 <span>☁️</span>
-                                <span>66°</span>
+                                <span>70°</span>
                             </div>
                             <div class="forecast-day">
                                 <span>Thu</span>
                                 <span>🌧️</span>
-                                <span>64°</span>
+                                <span>68°</span>
                             </div>
                         </div>
                     </div>
@@ -1086,6 +1336,110 @@
             </div>
         </section>
     </div>
+    <!-- Cover Upload Modal -->
+    <div class="upload-modal" id="coverUploadModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upload Cover Photo</h2>
+                    <button class="modal-close" onclick="closeModal('coverUploadModal')">&times;</button>
+                </div>
+
+                <div class="upload-area" id="coverUploadArea" onclick="document.getElementById('coverInput').click()">
+                    <span class="upload-icon">📷</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint">Recommended: 1920x400px (JPG, PNG, GIF)</p>
+                    <input type="file" id="coverInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'cover')">
+                </div>
+
+                <div class="preview-container" id="coverPreview">
+                    <img src="" alt="Cover preview" class="preview-image" id="coverPreviewImage">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="coverFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="coverFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Dimensions:</span>
+                            <span id="coverDimensions">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-progress" id="coverProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="coverProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-spinner" id="coverSpinner"></div>
+
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('cover')">Change Image</button>
+                    <button class="btn-upload primary" onclick="uploadImage('cover')">Upload Cover</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Upload Modal -->
+    <div class="upload-modal" id="profileUploadModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upload Profile Picture</h2>
+                    <button class="modal-close" onclick="closeModal('profileUploadModal')">&times;</button>
+                </div>
+
+                <div class="upload-area" id="profileUploadArea"
+                    onclick="document.getElementById('profileInput').click()">
+                    <span class="upload-icon">👤</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint">Recommended: 500x500px (JPG, PNG, GIF)</p>
+                    <input type="file" id="profileInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'profile')">
+                </div>
+
+                <div class="preview-container" id="profilePreview">
+                    <img src="" alt="Profile preview" class="preview-image" id="profilePreviewImage">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="profileFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="profileFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Dimensions:</span>
+                            <span id="profileDimensions">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-progress" id="profileProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="profileProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-spinner" id="profileSpinner"></div>
+
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('profile')">Change Image</button>
+                    <button class="btn-upload primary" onclick="uploadImage('profile')">Upload Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- FAB Menu -->
     <div class="fab-container">
@@ -1111,18 +1465,320 @@
             </button>
         </div>
     </div>
-
     <!-- Enhanced Footer (same as journalist profile) -->
     <footer class="footer-section">
         <!-- Same footer content as journalist profile -->
     </footer>
 
     <!-- Scripts -->
+     
+    <script>
+        // Modal Functions
+        function openCoverUploadModal() {
+            document.getElementById('coverUploadModal').classList.add('active');
+        }
+
+        function openProfileUploadModal() {
+            document.getElementById('profileUploadModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            resetUpload(modalId.replace('UploadModal', ''));
+        }
+
+        // Image handling
+        function handleImageSelect(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+
+            // Display preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewContainer = document.getElementById(`${type}Preview`);
+                const previewImage = document.getElementById(`${type}PreviewImage`);
+
+                previewImage.src = e.target.result;
+                previewContainer.classList.add('active');
+
+                // Update file info
+                document.getElementById(`${type}FileName`).textContent = file.name;
+                document.getElementById(`${type}FileSize`).textContent = formatFileSize(file.size);
+
+                // Get image dimensions
+                const img = new Image();
+                img.onload = function () {
+                    document.getElementById(`${type}Dimensions`).textContent = `${this.width} x ${this.height}px`;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function resetUpload(type) {
+            document.getElementById(`${type}Input`).value = '';
+            document.getElementById(`${type}Preview`).classList.remove('active');
+            document.getElementById(`${type}Progress`).classList.remove('active');
+            document.getElementById(`${type}Spinner`).classList.remove('active');
+            document.getElementById(`${type}ProgressFill`).style.width = '0%';
+            document.getElementById(`${type}ProgressText`).textContent = 'Uploading... 0%';
+        }
+
+        function uploadImage(type) {
+            const fileInput = document.getElementById(`${type}Input`);
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select an image first');
+                return;
+            }
+
+            // Show progress
+            document.getElementById(`${type}Progress`).classList.add('active');
+            document.getElementById(`${type}Spinner`).classList.add('active');
+
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+
+                    setTimeout(() => {
+                        alert(`${type === 'cover' ? 'Cover' : 'Profile'} image uploaded successfully!`);
+                        closeModal(`${type}UploadModal`);
+
+                        // Update the actual image on the page
+                        if (type === 'cover') {
+                            // Update cover image
+                            const coverImg = document.querySelector('.cover-img');
+                            if (coverImg) {
+                                coverImg.src = document.getElementById('coverPreviewImage').src;
+                            }
+                        } else {
+                            // Update profile image
+                            const profileImg = document.querySelector('.profile-avatar');
+                            if (profileImg) {
+                                profileImg.src = document.getElementById('profilePreviewImage').src;
+                            }
+                        }
+                    }, 500);
+                }
+
+                document.getElementById(`${type}ProgressFill`).style.width = progress + '%';
+                document.getElementById(`${type}ProgressText`).textContent = `Uploading... ${Math.round(progress)}%`;
+            }, 200);
+        }
+
+        // Drag and drop functionality
+        ['cover', 'profile'].forEach(type => {
+            const uploadArea = document.getElementById(`${type}UploadArea`);
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const fileInput = document.getElementById(`${type}Input`);
+                    fileInput.files = files;
+                    handleImageSelect({ target: fileInput }, type);
+                }
+            });
+        });
+
+        // Enhanced Sidebar Scroll Behavior
+        class SidebarManager {
+            constructor() {
+                this.sidebar = document.querySelector('.left-sidebar');
+                this.footer = document.querySelector('.footer-section');
+                this.lastScrollY = window.scrollY;
+                this.isAnimating = false;
+                this.footerObserver = null;
+
+                if (this.sidebar) {
+                    this.init();
+                }
+            }
+
+            init() {
+                this.setupScrollListener();
+                this.setupFooterObserver();
+                this.updateSidebarHeight();
+            }
+
+            setupScrollListener() {
+                let ticking = false;
+
+                window.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            this.handleScroll();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                });
+            }
+
+            handleScroll() {
+                const currentScrollY = window.scrollY;
+                const scrollDirection = currentScrollY > this.lastScrollY ? 'down' : 'up';
+
+                // Check footer visibility
+                if (this.footer) {
+                    const footerRect = this.footer.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+
+                    if (footerRect.top < windowHeight) {
+                        const footerOffset = windowHeight - footerRect.top;
+                        this.adjustSidebarForFooter(footerOffset);
+                    } else {
+                        this.resetSidebar();
+                    }
+                }
+
+                this.lastScrollY = currentScrollY;
+            }
+
+            setupFooterObserver() {
+                if (!this.footer) return;
+
+                const options = {
+                    root: null,
+                    rootMargin: '100px',
+                    threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+                };
+
+                this.footerObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const footerVisibleHeight = entry.intersectionRect.height;
+                            this.smoothAdjustSidebar(footerVisibleHeight);
+                        } else {
+                            this.resetSidebar();
+                        }
+                    });
+                }, options);
+
+                this.footerObserver.observe(this.footer);
+            }
+
+            smoothAdjustSidebar(footerOffset) {
+                if (this.isAnimating) return;
+
+                this.isAnimating = true;
+                this.sidebar.classList.add('sliding-up');
+
+                // Set CSS variable for dynamic height
+                this.sidebar.style.setProperty('--footer-offset', `${footerOffset}px`);
+                this.sidebar.classList.add('footer-visible');
+
+                // Smooth animation
+                setTimeout(() => {
+                    this.sidebar.classList.remove('sliding-up');
+                    this.isAnimating = false;
+                }, 500);
+            }
+
+            adjustSidebarForFooter(footerOffset) {
+                const sidebarHeight = window.innerHeight - 60 - footerOffset;
+                this.sidebar.style.height = `${Math.max(sidebarHeight, 200)}px`;
+
+                // Add smooth transition effect
+                if (!this.sidebar.style.transition) {
+                    this.sidebar.style.transition = 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                }
+            }
+
+            resetSidebar() {
+                this.sidebar.classList.remove('footer-visible');
+                this.sidebar.style.height = 'calc(100vh - 60px)';
+                this.sidebar.style.removeProperty('--footer-offset');
+            }
+
+            updateSidebarHeight() {
+                // Update on window resize
+                window.addEventListener('resize', () => {
+                    this.handleScroll();
+                });
+            }
+        }
+
+        // Initialize sidebar manager when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarManager = new SidebarManager();
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.upload-modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+
+        // Close modal on background click
+        document.querySelectorAll('.upload-modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+   
+    </script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
     <script src="../js/institute-profile-4.js"></script>
-    <script src="../js/delivery-profile.js"></script>
 </body>
 
 </html>

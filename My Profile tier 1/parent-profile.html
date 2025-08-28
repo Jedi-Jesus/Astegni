@@ -9,7 +9,225 @@
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/parent-profile.css">
 
+<style>
+        /* Modal Styles */
+        .upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
 
+        .upload-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 2px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-inner {
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-close {
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .upload-area {
+            border: 3px dashed #e0e0e0;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .preview-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-upload {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-upload.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-upload.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-upload.secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-upload.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* ===== ONLY ADD THESE SMOOTH SCROLL STYLES TO YOUR EXISTING CSS ===== */
+        
+        /* Smooth scroll behavior for the page */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Enhanced Sidebar Animation Styles - Add to your existing .left-sidebar */
+        .left-sidebar {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .left-sidebar.sliding-up {
+            animation: slideUpSidebar 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .left-sidebar.footer-visible {
+            height: calc(100vh - 60px - var(--footer-offset)) !important;
+            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUpSidebar {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+            50% {
+                transform: translateY(-10px);
+                opacity: 0.9;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+    </style>
 
 </head>
 
@@ -195,7 +413,6 @@
             <div class="cover-image-container">
                 <img src="../pictures/parent cover.webp" alt="Cover" class="cover-img">
                 <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
-                <div class="cover-overlay"></div>
             </div>
 
             <div class="profile-main-info">
@@ -1688,6 +1905,107 @@
         </div>
     </div>
     <!-- Schedule Modal and other existing modals remain the same... -->
+ <!-- Cover Upload Modal -->
+    <div class="upload-modal" id="coverUploadModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upload Cover Photo</h2>
+                    <button class="modal-close" onclick="closeModal('coverUploadModal')">&times;</button>
+                </div>
+                
+                <div class="upload-area" id="coverUploadArea" onclick="document.getElementById('coverInput').click()">
+                    <span class="upload-icon">📷</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint">Recommended: 1920x400px (JPG, PNG, GIF)</p>
+                    <input type="file" id="coverInput" class="upload-input" accept="image/*" onchange="handleImageSelect(event, 'cover')">
+                </div>
+                
+                <div class="preview-container" id="coverPreview">
+                    <img src="" alt="Cover preview" class="preview-image" id="coverPreviewImage">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="coverFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="coverFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Dimensions:</span>
+                            <span id="coverDimensions">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-progress" id="coverProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="coverProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
+                </div>
+                
+                <div class="upload-spinner" id="coverSpinner"></div>
+                
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('cover')">Change Image</button>
+                    <button class="btn-upload primary" onclick="uploadImage('cover')">Upload Cover</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Upload Modal -->
+    <div class="upload-modal" id="profileUploadModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upload Profile Picture</h2>
+                    <button class="modal-close" onclick="closeModal('profileUploadModal')">&times;</button>
+                </div>
+                
+                <div class="upload-area" id="profileUploadArea" onclick="document.getElementById('profileInput').click()">
+                    <span class="upload-icon">👤</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint">Recommended: 500x500px (JPG, PNG, GIF)</p>
+                    <input type="file" id="profileInput" class="upload-input" accept="image/*" onchange="handleImageSelect(event, 'profile')">
+                </div>
+                
+                <div class="preview-container" id="profilePreview">
+                    <img src="" alt="Profile preview" class="preview-image" id="profilePreviewImage">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="profileFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="profileFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Dimensions:</span>
+                            <span id="profileDimensions">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-progress" id="profileProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="profileProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
+                </div>
+                
+                <div class="upload-spinner" id="profileSpinner"></div>
+                
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('profile')">Change Image</button>
+                    <button class="btn-upload primary" onclick="uploadImage('profile')">Upload Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- FAB Menu -->
     <div class="fab-container">
@@ -1838,6 +2156,308 @@
 
 
     <!-- Scripts -->
+     <!-- Scripts -->
+     <script>
+        // Modal Functions
+        function openCoverUploadModal() {
+            document.getElementById('coverUploadModal').classList.add('active');
+        }
+
+        function openProfileUploadModal() {
+            document.getElementById('profileUploadModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            resetUpload(modalId.replace('UploadModal', ''));
+        }
+
+        // Image handling
+        function handleImageSelect(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+
+            // Display preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewContainer = document.getElementById(`${type}Preview`);
+                const previewImage = document.getElementById(`${type}PreviewImage`);
+                
+                previewImage.src = e.target.result;
+                previewContainer.classList.add('active');
+
+                // Update file info
+                document.getElementById(`${type}FileName`).textContent = file.name;
+                document.getElementById(`${type}FileSize`).textContent = formatFileSize(file.size);
+
+                // Get image dimensions
+                const img = new Image();
+                img.onload = function() {
+                    document.getElementById(`${type}Dimensions`).textContent = `${this.width} x ${this.height}px`;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function resetUpload(type) {
+            document.getElementById(`${type}Input`).value = '';
+            document.getElementById(`${type}Preview`).classList.remove('active');
+            document.getElementById(`${type}Progress`).classList.remove('active');
+            document.getElementById(`${type}Spinner`).classList.remove('active');
+            document.getElementById(`${type}ProgressFill`).style.width = '0%';
+            document.getElementById(`${type}ProgressText`).textContent = 'Uploading... 0%';
+        }
+
+        function uploadImage(type) {
+            const fileInput = document.getElementById(`${type}Input`);
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an image first');
+                return;
+            }
+
+            // Show progress
+            document.getElementById(`${type}Progress`).classList.add('active');
+            document.getElementById(`${type}Spinner`).classList.add('active');
+
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    setTimeout(() => {
+                        alert(`${type === 'cover' ? 'Cover' : 'Profile'} image uploaded successfully!`);
+                        closeModal(`${type}UploadModal`);
+                        
+                        // Update the actual image on the page
+                        if (type === 'cover') {
+                            // Update cover image
+                            const coverImg = document.querySelector('.cover-img');
+                            if (coverImg) {
+                                coverImg.src = document.getElementById('coverPreviewImage').src;
+                            }
+                        } else {
+                            // Update profile image
+                            const profileImg = document.querySelector('.profile-avatar');
+                            if (profileImg) {
+                                profileImg.src = document.getElementById('profilePreviewImage').src;
+                            }
+                        }
+                    }, 500);
+                }
+                
+                document.getElementById(`${type}ProgressFill`).style.width = progress + '%';
+                document.getElementById(`${type}ProgressText`).textContent = `Uploading... ${Math.round(progress)}%`;
+            }, 200);
+        }
+
+        // Drag and drop functionality
+        ['cover', 'profile'].forEach(type => {
+            const uploadArea = document.getElementById(`${type}UploadArea`);
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const fileInput = document.getElementById(`${type}Input`);
+                    fileInput.files = files;
+                    handleImageSelect({ target: fileInput }, type);
+                }
+            });
+        });
+
+        // Enhanced Sidebar Scroll Behavior
+        class SidebarManager {
+            constructor() {
+                this.sidebar = document.querySelector('.left-sidebar');
+                this.footer = document.querySelector('.footer-section');
+                this.lastScrollY = window.scrollY;
+                this.isAnimating = false;
+                this.footerObserver = null;
+                
+                if (this.sidebar) {
+                    this.init();
+                }
+            }
+
+            init() {
+                this.setupScrollListener();
+                this.setupFooterObserver();
+                this.updateSidebarHeight();
+            }
+
+            setupScrollListener() {
+                let ticking = false;
+                
+                window.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            this.handleScroll();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                });
+            }
+
+            handleScroll() {
+                const currentScrollY = window.scrollY;
+                const scrollDirection = currentScrollY > this.lastScrollY ? 'down' : 'up';
+                
+                // Check footer visibility
+                if (this.footer) {
+                    const footerRect = this.footer.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+                    
+                    if (footerRect.top < windowHeight) {
+                        const footerOffset = windowHeight - footerRect.top;
+                        this.adjustSidebarForFooter(footerOffset);
+                    } else {
+                        this.resetSidebar();
+                    }
+                }
+                
+                this.lastScrollY = currentScrollY;
+            }
+
+            setupFooterObserver() {
+                if (!this.footer) return;
+                
+                const options = {
+                    root: null,
+                    rootMargin: '100px',
+                    threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+                };
+                
+                this.footerObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const footerVisibleHeight = entry.intersectionRect.height;
+                            this.smoothAdjustSidebar(footerVisibleHeight);
+                        } else {
+                            this.resetSidebar();
+                        }
+                    });
+                }, options);
+                
+                this.footerObserver.observe(this.footer);
+            }
+
+            smoothAdjustSidebar(footerOffset) {
+                if (this.isAnimating) return;
+                
+                this.isAnimating = true;
+                this.sidebar.classList.add('sliding-up');
+                
+                // Set CSS variable for dynamic height
+                this.sidebar.style.setProperty('--footer-offset', `${footerOffset}px`);
+                this.sidebar.classList.add('footer-visible');
+                
+                // Smooth animation
+                setTimeout(() => {
+                    this.sidebar.classList.remove('sliding-up');
+                    this.isAnimating = false;
+                }, 500);
+            }
+
+            adjustSidebarForFooter(footerOffset) {
+                const sidebarHeight = window.innerHeight - 60 - footerOffset;
+                this.sidebar.style.height = `${Math.max(sidebarHeight, 200)}px`;
+                
+                // Add smooth transition effect
+                if (!this.sidebar.style.transition) {
+                    this.sidebar.style.transition = 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                }
+            }
+
+            resetSidebar() {
+                this.sidebar.classList.remove('footer-visible');
+                this.sidebar.style.height = 'calc(100vh - 60px)';
+                this.sidebar.style.removeProperty('--footer-offset');
+            }
+
+            updateSidebarHeight() {
+                // Update on window resize
+                window.addEventListener('resize', () => {
+                    this.handleScroll();
+                });
+            }
+        }
+
+        // Initialize sidebar manager when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarManager = new SidebarManager();
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.upload-modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+
+        // Close modal on background click
+        document.querySelectorAll('.upload-modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+    </script>
     <script>
         // Function to open child details modal
         function openChildDetailsModal(childName) {

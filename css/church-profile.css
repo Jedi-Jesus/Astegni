@@ -2140,22 +2140,22 @@
 }
 
 /* =====================================================
-   9. DONATIONS CONTENT
+   9. Giving CONTENT
    ===================================================== */
-#donations-content {
+#giving-content {
     background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
     padding: 2.5rem;
     border-radius: 24px;
 }
 
-.donation-stats {
+.giving-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
     margin-bottom: 2rem;
 }
 
-.donation-stats .stat-card {
+.giving-stats .stat-card {
     background: white;
     padding: 1.5rem;
     border-radius: 16px;
@@ -2165,17 +2165,17 @@
     position: relative;
 }
 
-.donation-stats .stat-card .change {
+.giving-stats .stat-card .change {
     font-size: 0.9rem;
     font-weight: 600;
     margin-top: 0.5rem;
 }
 
-.donation-stats .stat-card .change.up {
+.giving-stats .stat-card .change.up {
     color: #48bb78;
 }
 
-.donation-stats .stat-card:hover {
+.giving-stats .stat-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
 }
