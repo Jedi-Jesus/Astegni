@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Student Profile | Astegni</title>
+    <title>Astegni - View Student</title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -103,28 +103,31 @@
 
             <!-- Divider -->
             <div class="sidebar-divider"></div>
-            <!-- UNCHANGED PERMANENT SECTION -->
-            <div class="sidebar-section" data-content="permanent">
-
-            <button class="sidebar-btn" data-content="my-products">
-                <span class="sidebar-btn-icon">📦</span>
-                <span>My Products</span>
-            </button>
-            <a href='../Plug-ins/notes.html'>
-                <button class="sidebar-btn" data-content="notes">
-                    <span class="sidebar-btn-icon">📓</span>
-                    <span>Notes</span>
+            <!-- User Actions -->
+            <div class="sidebar-section" data-content="actions">
+                <button class="sidebar-btn" data-content="my-purchases">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>My Purchases</span>
                 </button>
-            </a>
-            <button class="sidebar-btn" data-content="share">
-                <span class="sidebar-btn-icon">🔗</span>
-                <span>Share</span>
-            </button>
-            <button class="sidebar-btn" data-content="settings">
-                <span class="sidebar-btn-icon">⚙️</span>
-                <span>Settings</span>
-            </button>
-        </div>
+                <button class="sidebar-btn" data-content="my-community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>My community</span>
+                </button>
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
+                        <span class="sidebar-btn-icon">📓</span>
+                        <span>Notes</span>
+                    </button>
+                </a>
+                <button class="sidebar-btn" data-content="share">
+                    <span class="sidebar-btn-icon">🔗</span>
+                    <span>Share</span>
+                </button>
+                <button class="sidebar-btn" data-content="settings">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </div>
 
             <!-- Quick Stats Section -->
             <div class="sidebar-quick-stats">
@@ -264,6 +267,10 @@
                         </div>
 
                         <div class="profile-actions-grid">
+                            <button class="profile-action-btn connect-parent" onclick="openConnectModal()">
+                                <span class="action-icon">🤝</span>
+                                <span>Connect</span>
+                            </button>
                             <button class="profile-action-btn" onclick="contactParent()">
                                 <span class="action-icon">👨‍👩‍👧</span>
                                 <span>Connect Parent</span>

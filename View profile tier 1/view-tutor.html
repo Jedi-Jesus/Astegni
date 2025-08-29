@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Tutor Profile | Astegni</title>
+    <title>Astegni - View Tutor</title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -202,6 +202,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -375,7 +376,10 @@
                     <span class="sidebar-btn-icon">👨‍🏫</span>
                     <span>Overview</span>
                 </button>
-
+                <button class="sidebar-btn" data-content="events">
+                    <span class="sidebar-btn-icon">📅</span>
+                    <span>Events</span>
+                </button>
                 <button class="sidebar-btn" data-content="tutor-videos">
                     <span class="sidebar-btn-icon">🎬</span>
                     <span>Videos</span>
@@ -416,11 +420,15 @@
                 </button>
             </div>
 
-            <!-- Permanent Section (Unchanged) -->
-            <div class="sidebar-section" data-content="permanent">
-                <button class="sidebar-btn" data-content="my-products">
+            <!-- User Actions -->
+            <div class="sidebar-section" data-content="actions">
+                <button class="sidebar-btn" data-content="my-purchases">
                     <span class="sidebar-btn-icon">📦</span>
-                    <span>My Products</span>
+                    <span>My Purchases</span>
+                </button>
+                <button class="sidebar-btn" data-content="my-community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>My community</span>
                 </button>
                 <a href='../Plug-ins/notes.html'>
                     <button class="sidebar-btn" data-content="notes">
@@ -486,7 +494,8 @@
                         </div>
 
                         <div class="profile-quote">
-                            <span>"Empowering students to reach their full potential through personalized learning."</span>
+                            <span>"Empowering students to reach their full potential through personalized
+                                learning."</span>
                         </div>
 
                         <div class="subject-tags">
@@ -540,8 +549,9 @@
                             <button class="profile-action-btn" onclick="followTutor()">
                                 <span>➕ Follow</span>
                             </button>
-                            <button class="profile-action-btn" onclick="openChatModal()">
-                                <span>💬 Connect</span>
+                            <button class="profile-action-btn connect-parent" onclick="openConnectModal()">
+                                <span class="action-icon">🤝</span>
+                                <span>Connect</span>
                             </button>
                             <button class="profile-action-btn" onclick="shareProfile()">
                                 <span>🔗 Share</span>
@@ -587,85 +597,88 @@
                             <div class="stat-card hover-lift">
                                 <div class="stat-icon">🕐</div>
                                 <div class="stat-info">
-                                    <div class="stat-number">< 2hrs</div>
-                                    <div class="stat-desc">Response Time</div>
+                                    <div class="stat-number">
+                                        < 2hrs</div>
+                                            <div class="stat-desc">Response Time</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">✅</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">98%</div>
+                                        <div class="stat-desc">Completion Rate</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">📚</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">156</div>
+                                        <div class="stat-desc">Active Students</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">🌍</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">Both</div>
+                                        <div class="stat-desc">Online & In-Person</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">👥</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">45</div>
+                                        <div class="stat-desc">Total Students</div>
+                                        <div class="stat-detail">Active</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">📚</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">5</div>
+                                        <div class="stat-desc">Courses Taught</div>
+                                        <div class="stat-detail">Math, Physics, Chemistry</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">📅</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">156</div>
+                                        <div class="stat-desc">Sessions Completed</div>
+                                        <div class="stat-detail">This Year</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">⭐</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">4.8</div>
+                                        <div class="stat-desc">Average Rating</div>
+                                        <div class="stat-detail">From 234 reviews</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">💰</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">ETB 45K</div>
+                                        <div class="stat-desc">Monthly Earnings</div>
+                                        <div class="stat-detail">Average</div>
+                                    </div>
+                                </div>
+                                <div class="stat-card hover-lift">
+                                    <div class="stat-icon">🏆</div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">7+</div>
+                                        <div class="stat-desc">Years Experience</div>
+                                        <div class="stat-detail">Professional</div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">✅</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">98%</div>
-                                    <div class="stat-desc">Completion Rate</div>
-                                </div>
-                            </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">📚</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">156</div>
-                                    <div class="stat-desc">Active Students</div>
-                                </div>
-                            </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">🌍</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">Both</div>
-                                    <div class="stat-desc">Online & In-Person</div>
-                                </div>
-                            </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">👥</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">45</div>
-                                    <div class="stat-desc">Total Students</div>
-                                    <div class="stat-detail">Active</div>
-                                </div>
-                            </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">📚</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">5</div>
-                                    <div class="stat-desc">Courses Taught</div>
-                                    <div class="stat-detail">Math, Physics, Chemistry</div>
-                                </div>
-                            </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">📅</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">156</div>
-                                    <div class="stat-desc">Sessions Completed</div>
-                                    <div class="stat-detail">This Year</div>
-                                </div>
-                            </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">⭐</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">4.8</div>
-                                    <div class="stat-desc">Average Rating</div>
-                                    <div class="stat-detail">From 234 reviews</div>
-                                </div>
-                            </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">💰</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">ETB 45K</div>
-                                    <div class="stat-desc">Monthly Earnings</div>
-                                    <div class="stat-detail">Average</div>
-                                </div>
-                            </div>
-                            <div class="stat-card hover-lift">
-                                <div class="stat-icon">🏆</div>
-                                <div class="stat-info">
-                                    <div class="stat-number">7+</div>
-                                    <div class="stat-desc">Years Experience</div>
-                                    <div class="stat-detail">Professional</div>
-                                </div>
-                            </div>
-                        </div>
                     </section>
 
                     <section class="profile-about-section">
                         <h3>Quick Introduction</h3>
-                        <p>Award-winning educator with over 7 years of teaching experience and a PhD in Mathematics. Specializing in helping students excel in STEM subjects through innovative teaching methods.</p>
+                        <p>Award-winning educator with over 7 years of teaching experience and a PhD in Mathematics.
+                            Specializing in helping students excel in STEM subjects through innovative teaching methods.
+                        </p>
                     </section>
                     <section class="profile-about-section">
                         <h3>About Me</h3>
@@ -767,7 +780,7 @@
                             </div>
                         </div>
                     </div>
-                
+
                 </div>
 
                 <!-- Video Lessons Content -->
@@ -813,7 +826,7 @@
                 <div class="sidebar-content-panel" id="tutor-packages-content">
                     <section class="teaching-packages">
                         <h3>Teaching Packages</h3>
-                        
+
                         <div class="package-card">
                             <h4>Basic Package</h4>
                             <p class="package-price">ETB 500/session</p>
@@ -855,60 +868,60 @@
                             <button class="btn-primary" onclick="selectPackage('elite')">Select Package</button>
                         </div>
 
-                    <div class="tutor-availability">
-                        <h3>Weekly Schedule</h3>
-                        <div class="availability-slot">
-                            <span>Monday</span>
-                            <span>9:00 AM - 5:00 PM</span>
+                        <div class="tutor-availability">
+                            <h3>Weekly Schedule</h3>
+                            <div class="availability-slot">
+                                <span>Monday</span>
+                                <span>9:00 AM - 5:00 PM</span>
+                            </div>
+                            <div class="availability-slot">
+                                <span>Tuesday</span>
+                                <span>9:00 AM - 5:00 PM</span>
+                            </div>
+                            <div class="availability-slot">
+                                <span>Wednesday</span>
+                                <span>2:00 PM - 8:00 PM</span>
+                            </div>
+                            <div class="availability-slot">
+                                <span>Thursday</span>
+                                <span>9:00 AM - 5:00 PM</span>
+                            </div>
+                            <div class="availability-slot">
+                                <span>Friday</span>
+                                <span>9:00 AM - 3:00 PM</span>
+                            </div>
+                            <div class="availability-slot">
+                                <span>Saturday</span>
+                                <span>10:00 AM - 2:00 PM</span>
+                            </div>
+                            <div class="availability-slot">
+                                <span>Sunday</span>
+                                <span>Closed</span>
+                            </div>
                         </div>
-                        <div class="availability-slot">
-                            <span>Tuesday</span>
-                            <span>9:00 AM - 5:00 PM</span>
-                        </div>
-                        <div class="availability-slot">
-                            <span>Wednesday</span>
-                            <span>2:00 PM - 8:00 PM</span>
-                        </div>
-                        <div class="availability-slot">
-                            <span>Thursday</span>
-                            <span>9:00 AM - 5:00 PM</span>
-                        </div>
-                        <div class="availability-slot">
-                            <span>Friday</span>
-                            <span>9:00 AM - 3:00 PM</span>
-                        </div>
-                        <div class="availability-slot">
-                            <span>Saturday</span>
-                            <span>10:00 AM - 2:00 PM</span>
-                        </div>
-                        <div class="availability-slot">
-                            <span>Sunday</span>
-                            <span>Closed</span>
-                        </div>
-                    </div>
-                                    <div class="session-booking-panel">
-                        <h3>Book a Session</h3>
-                        
-                        <div class="calendar-widget">
-                            <h4>Select Date</h4>
-                            <input type="date" class="form-control" id="bookingDate">
-                        </div>
+                        <div class="session-booking-panel">
+                            <h3>Book a Session</h3>
 
-                        <div class="time-slots">
-                            <h4>Available Time Slots</h4>
-                            <div class="time-slot">9:00 AM</div>
-                            <div class="time-slot">10:00 AM</div>
-                            <div class="time-slot unavailable">11:00 AM</div>
-                            <div class="time-slot">2:00 PM</div>
-                            <div class="time-slot">3:00 PM</div>
-                            <div class="time-slot">4:00 PM</div>
-                            <div class="time-slot">5:00 PM</div>
-                        </div>
+                            <div class="calendar-widget">
+                                <h4>Select Date</h4>
+                                <input type="date" class="form-control" id="bookingDate">
+                            </div>
 
-                        <button class="request-session-btn" style="width: 100%; margin-top: 15px;">
-                            Book Selected Time
-                        </button>
-                    </div>
+                            <div class="time-slots">
+                                <h4>Available Time Slots</h4>
+                                <div class="time-slot">9:00 AM</div>
+                                <div class="time-slot">10:00 AM</div>
+                                <div class="time-slot unavailable">11:00 AM</div>
+                                <div class="time-slot">2:00 PM</div>
+                                <div class="time-slot">3:00 PM</div>
+                                <div class="time-slot">4:00 PM</div>
+                                <div class="time-slot">5:00 PM</div>
+                            </div>
+
+                            <button class="request-session-btn" style="width: 100%; margin-top: 15px;">
+                                Book Selected Time
+                            </button>
+                        </div>
                     </section>
                 </div>
 
@@ -917,7 +930,7 @@
                 <div class="sidebar-content-panel" id="tutor-reviews-content">
                     <section class="reviews-section">
                         <h3>Recent Reviews</h3>
-                        
+
                         <div class="review-card">
                             <div class="review-header">
                                 <div>
@@ -926,7 +939,8 @@
                                 </div>
                                 <div class="review-rating">⭐⭐⭐⭐⭐</div>
                             </div>
-                            <p>Excellent tutor! Very patient and explains concepts thoroughly. My daughter loves her sessions.</p>
+                            <p>Excellent tutor! Very patient and explains concepts thoroughly. My daughter loves her
+                                sessions.</p>
                             <div class="review-helpful">
                                 <button onclick="markHelpful('review1')">👍 Helpful (12)</button>
                             </div>
@@ -1268,7 +1282,9 @@
     <footer class="footer-section">
         <div class="footer-wave">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+                <path
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
             </svg>
         </div>
 
@@ -1276,7 +1292,8 @@
             <div class="footer-content">
                 <div class="footer-section-item">
                     <h3 class="footer-title">About Astegni</h3>
-                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors.</p>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors.</p>
                 </div>
 
                 <div class="footer-section-item">
@@ -1322,13 +1339,13 @@
     <script>
         // Sidebar navigation
         document.querySelectorAll('.sidebar-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const content = this.getAttribute('data-content');
-                
+
                 // Remove active class from all buttons and panels
                 document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
                 document.querySelectorAll('.sidebar-content-panel').forEach(p => p.classList.remove('active'));
-                
+
                 // Add active class to clicked button and corresponding panel
                 this.classList.add('active');
                 const panel = document.getElementById(content + '-content');
@@ -1346,14 +1363,14 @@
 
         // Time slot selection
         document.querySelectorAll('.time-slot:not(.unavailable)').forEach(slot => {
-            slot.addEventListener('click', function() {
+            slot.addEventListener('click', function () {
                 document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
                 this.classList.add('selected');
             });
         });
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Set today's date as minimum for booking
             const today = new Date().toISOString().split('T')[0];
             const bookingDate = document.getElementById('bookingDate');

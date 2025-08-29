@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parent Profile - View | Astegni</title>
+    <title>Astegni - View Parent</title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/view-parent.css">
@@ -99,75 +99,80 @@
 
             <!-- PERMANENT SECTION - UNCHANGED -->
 
-
-            <button class="sidebar-btn" data-content="my-products">
-                <span class="sidebar-btn-icon">📦</span>
-                <span>My Products</span>
-            </button>
-            <a href='../Plug-ins/notes.html'>
-                <button class="sidebar-btn" data-content="notes">
-                    <span class="sidebar-btn-icon">📝</span>
-                    <span>Notes</span>
+            <!-- User Actions -->
+            <div class="sidebar-section" data-content="actions">
+                <button class="sidebar-btn" data-content="my-purchases">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>My Purchases</span>
                 </button>
-            </a>
-            <button class="sidebar-btn" data-content="share">
-                <span class="sidebar-btn-icon">🔗</span>
-                <span>Share</span>
+                <button class="sidebar-btn" data-content="my-community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>My community</span>
+                </button>
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
+                        <span class="sidebar-btn-icon">📝</span>
+                        <span>Notes</span>
+                    </button>
+                </a>
+                <button class="sidebar-btn" data-content="share">
+                    <span class="sidebar-btn-icon">🔗</span>
+                    <span>Share</span>
+                </button>
+                <button class="sidebar-btn" data-content="settings">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats Section -->
+            <div class="sidebar-quick-stats">
+                <h4>Quick Stats</h4>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Children Enrolled</span>
+                    <span class="stat-value">3</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Engagement Rate</span>
+                    <span class="stat-value">92%</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Payment Status</span>
+                    <span class="stat-value">Current</span>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="sidebar-activity">
+                <h4>Recent Activity</h4>
+                <div class="activity-item">
+                    <span class="activity-icon">💳</span>
+                    <div class="activity-text">
+                        <p>Payment made</p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">📅</span>
+                    <div class="activity-text">
+                        <p>Session attended</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">📊</span>
+                    <div class="activity-text">
+                        <p>Progress reviewed</p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Button -->
+            <button class="sidebar-help-btn">
+                <span class="help-icon">💡</span>
+                <span>Need Help?</span>
             </button>
-            <button class="sidebar-btn" data-content="settings">
-                <span class="sidebar-btn-icon">⚙️</span>
-                <span>Settings</span>
-            </button>
-        </div>
-
-        <!-- Quick Stats Section -->
-        <div class="sidebar-quick-stats">
-            <h4>Quick Stats</h4>
-            <div class="quick-stat-item">
-                <span class="stat-label">Children Enrolled</span>
-                <span class="stat-value">3</span>
-            </div>
-            <div class="quick-stat-item">
-                <span class="stat-label">Engagement Rate</span>
-                <span class="stat-value">92%</span>
-            </div>
-            <div class="quick-stat-item">
-                <span class="stat-label">Payment Status</span>
-                <span class="stat-value">Current</span>
-            </div>
-        </div>
-
-        <!-- Recent Activity Feed -->
-        <div class="sidebar-activity">
-            <h4>Recent Activity</h4>
-            <div class="activity-item">
-                <span class="activity-icon">💳</span>
-                <div class="activity-text">
-                    <p>Payment made</p>
-                    <span class="activity-time">2 hours ago</span>
-                </div>
-            </div>
-            <div class="activity-item">
-                <span class="activity-icon">📅</span>
-                <div class="activity-text">
-                    <p>Session attended</p>
-                    <span class="activity-time">5 hours ago</span>
-                </div>
-            </div>
-            <div class="activity-item">
-                <span class="activity-icon">📊</span>
-                <div class="activity-text">
-                    <p>Progress reviewed</p>
-                    <span class="activity-time">1 day ago</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Help Button -->
-        <button class="sidebar-help-btn">
-            <span class="help-icon">💡</span>
-            <span>Need Help?</span>
-        </button>
         </div>
     </aside>
 

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>View Church Profile - Grace Community Church | Astegni</title>
+    <title>Astegni - View Church</title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/view-church.css">
@@ -101,7 +101,7 @@
                 </button>
                 <button class="sidebar-btn" data-content="church-events">
                     <span class="sidebar-btn-icon">📅</span>
-                    <span>Upcoming Events</span>
+                    <span>Events</span>
                     <span class="sidebar-badge">12</span>
                 </button>
                 <button class="sidebar-btn" data-content="book-counseling">
@@ -123,11 +123,15 @@
                 </button>
             </div>
 
-            <!-- PERMANENT SECTION - UNCHANGED -->
-            <div class="sidebar-section" data-content="permanent">
-                <button class="sidebar-btn" data-content="my-products">
+            <!-- User Actions -->
+            <div class="sidebar-section" data-content="actions">
+                <button class="sidebar-btn" data-content="my-purchases">
                     <span class="sidebar-btn-icon">📦</span>
-                    <span>My Products</span>
+                    <span>My Purchases</span>
+                </button>
+                <button class="sidebar-btn" data-content="my-community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>My community</span>
                 </button>
                 <a href='../Plug-ins/notes.html'>
                     <button class="sidebar-btn" data-content="notes">
@@ -302,8 +306,8 @@
                                 <span class="action-icon">➕</span>
                                 <span>Follow Church</span>
                             </button>
-                            <button class="profile-action-btn message-btn" onclick="messageChurch()">
-                                <span class="action-icon">💬</span>
+                            <button class="profile-action-btn connect-parent" onclick="openConnectModal()">
+                                <span class="action-icon">🤝</span>
                                 <span>Connect</span>
                             </button>
                             <button class="profile-action-btn donate-btn" onclick="donateToChurch()">
@@ -1112,7 +1116,7 @@
                     </div>
                 </div>
 
-                
+
                 <!-- Membership Content -->
                 <div class="sidebar-content-panel" id="membership-content">
                     <h2 class="section-title">Become a Member</h2>

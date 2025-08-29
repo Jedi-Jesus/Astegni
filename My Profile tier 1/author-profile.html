@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeneta - Author Profile </title>
+    <title>Astegni - Author Profile </title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <style>
@@ -190,7 +190,7 @@
         }
 
         /* ===== ONLY ADD THESE SMOOTH SCROLL STYLES TO YOUR EXISTING CSS ===== */
-        
+
         /* Smooth scroll behavior for the page */
         html {
             scroll-behavior: smooth;
@@ -215,16 +215,17 @@
                 transform: translateY(0);
                 opacity: 1;
             }
+
             50% {
                 transform: translateY(-10px);
                 opacity: 0.9;
             }
+
             100% {
                 transform: translateY(0);
                 opacity: 1;
             }
         }
-
     </style>
 </head>
 
@@ -276,67 +277,109 @@
                     <span>Dashboard</span>
                 </button>
             </div>
-            <div class="sidebar-section author">
-                <button class="sidebar-btn" data-content="ratings-and-reviews">
-                    <span class="sidebar-btn-icon">⭐</span>
-                    <span>Ratings & Reviews</span>
-                </button>
-            </div>
-            <div class="sidebar-section education">
-                <button class="sidebar-btn" data-content="jobs">
-                    <span class="sidebar-btn-icon">💼</span>
-                    <span>My Job Board</span>
-                    <span class="sidebar-badge">3</span>
-                </button>
-                <button class="sidebar-btn" data-content="classes">
-                    <span class="sidebar-btn-icon">🎓</span>
-                    <span>My Classes</span>
-                    <span class="sidebar-badge">5</span>
-                </button>
+
+            <div class="sidebar-section" data-content="author">
                 <button class="sidebar-btn" data-content="books">
                     <span class="sidebar-btn-icon">📚</span>
                     <span>My Books</span>
                     <span class="sidebar-badge">5</span>
                 </button>
-                
-                
-            </div>
-            <div class="sidebar-section permanent">
-                <button class="sidebar-btn" data-content="clubs">
-                    <span class="sidebar-btn-icon">🎭</span>
-                    <span>Clubs</span>
-                    <span class="sidebar-badge active">Active</span>
-                </button>
-                <button class="sidebar-btn" data-content="podcasts">
-                    <span class="sidebar-btn-icon">🎙️</span>
-                    <span>Podcasts</span>
-                    <span class="sidebar-badge">5</span>
-                </button>
-                <button class="sidebar-btn" data-content="videos">
-                    <span class="sidebar-btn-icon">🎬</span>
-                    <span>Videos</span>
+                <button class="sidebar-btn" data-content="publications">
+                    <span class="sidebar-btn-icon">📖</span>
+                    <span>Publications</span>
                     <span class="sidebar-badge">12</span>
                 </button>
-                <button class="sidebar-btn" data-content="blog">
-                    <span class="sidebar-btn-icon">📝</span>
-                    <span>Blog</span>
-                    <span class="sidebar-badge">7</span>
+                <button class="sidebar-btn" data-content="writing-tools">
+                    <span class="sidebar-btn-icon">🛠️</span>
+                    <span>Writing Tools</span>
                 </button>
-                <button class="sidebar-btn" data-content="image-library">
-                    <span class="sidebar-btn-icon">🖼️</span>
-                    <span>Image Library</span>
+                <button class="sidebar-btn" data-content="writing-analytics">
+                    <span class="sidebar-btn-icon">📈</span>
+                    <span>Writing Analytics</span>
                 </button>
-                <button class="sidebar-btn" data-content="my-products">
-                    <span class="sidebar-btn-icon">📦</span>
+                <button class="sidebar-btn" data-content="my-schedule">
+                    <span class="sidebar-btn-icon">📅</span>
+                    <span>My Schedule</span>
+                </button>
+                <button class="sidebar-btn" data-content="collaborations">
+                    <span class="sidebar-btn-icon">🤝</span>
+                    <span>Collaborations</span>
+                    <span class="sidebar-badge">4</span>
+                </button>
+                <button class="sidebar-btn" data-content="earnings">
+                    <span class="sidebar-btn-icon">💵</span>
+                    <span>Earnings</span>
+                </button>
+                <button class="sidebar-btn" data-content="ratings-and-reviews">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Ratings & Reviews</span>
+                </button>
+            </div>
+        </div>
+
+
+        <div class="sidebar-section education">
+            <button class="sidebar-btn" data-content="jobs">
+                <span class="sidebar-btn-icon">💼</span>
+                <span>My Job Board</span>
+                <span class="sidebar-badge">3</span>
+            </button>
+            <button class="sidebar-btn" data-content="classes">
+                <span class="sidebar-btn-icon">🎓</span>
+                <span>My Classes</span>
+                <span class="sidebar-badge">5</span>
+            </button>
+        </div>
+        <div class="sidebar-section" data-content="media">
+            <button class="sidebar-btn" data-content="events">
+                <span class="sidebar-btn-icon">📅</span>
+                <span>Events</span>
+            </button>
+            <button class="sidebar-btn" data-content="media-kit">
+                <span class="sidebar-btn-icon">📰</span>
+                <span>Media Kit</span>
+            </button>
+            <button class="sidebar-btn" data-content="clubs">
+                <span class="sidebar-btn-icon">🎭</span>
+                <span>Clubs</span>
+                <span class="sidebar-badge active">Active</span>
+            </button>
+            <button class="sidebar-btn" data-content="podcasts">
+                <span class="sidebar-btn-icon">🎙️</span>
+                <span>Podcasts</span>
+                <span class="sidebar-badge">5</span>
+            </button>
+            <button class="sidebar-btn" data-content="videos">
+                <span class="sidebar-btn-icon">🎬</span>
+                <span>Videos</span>
+                <span class="sidebar-badge">12</span>
+            </button>
+            <button class="sidebar-btn" data-content="blog">
+                <span class="sidebar-btn-icon">📝</span>
+                <span>Blog</span>
+                <span class="sidebar-badge">7</span>
+            </button>
+            <button class="sidebar-btn" data-content="image-library">
+                <span class="sidebar-btn-icon">🖼️</span>
+                <span>Image Library</span>
+            </button>
+
+            <!-- User Actions -->
+            <div class="sidebar-section" data-content="actions">
+                <button class="sidebar-btn" data-content="my-purchases>
+                <span class=" sidebar-btn-icon">📦</span>
                     <span>My Products</span>
                 </button>
-                
-                    <a href='../Plug-ins/notes.html'>
-                <button class="sidebar-btn" data-content="notes">
+                <button class="sidebar-btn" data-content="my-community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>My community</span>
+                </button>
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
                         <span class="sidebar-btn-icon">📝</span>
                         <span>Notes</span>
-                </button>
-                    </a>
+                    </button>
+                </a>
                 <button class="sidebar-btn" data-content="share">
                     <span class="sidebar-btn-icon">🔗</span>
                     <span>Share</span>
@@ -394,16 +437,16 @@
             <button class="sidebar-help-btn">
                 <span class="help-icon">💡</span>
                 <span>Need Help?</span>
-                
+
             </button>
+
+        </div>
             <!-- Wave animation at the bottom of sidebar -->
             <div class="sidebar-wave-bottom">
                 <svg viewBox="0 0 280 40" preserveAspectRatio="none">
                     <path d="M0,20 Q70,5 140,20 T280,20 L280,40 L0,40 Z" fill="currentColor" class="wave-path"></path>
                 </svg>
             </div>
-        </div>
-        
     </aside>
 
     <!-- Main Container -->
@@ -412,14 +455,14 @@
         <section class="profile-header-section">
             <div class="cover-image-container">
                 <img src="../pictures/author cover.png" alt="Cover" class="cover-img">
-<span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
+                <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
             </div>
 
             <div class="profile-main-info">
                 <div class="profile-info-wrapper">
                     <div class="profile-avatar-container">
                         <img src="../pictures/author profile 3.jpg" alt="Author profile" class="profile-avatar">
-<span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+                        <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
                     </div>
 
                     <div class="profile-details-section">
@@ -499,9 +542,9 @@
                                 <span class="action-icon">✏️</span>
                                 <span>Edit Profile</span>
                             </button>
+                        </div>
                     </div>
                 </div>
-            </div>
         </section>
 
         <!-- Advertisement Placeholder -->
@@ -670,25 +713,419 @@
                     </section>
                 </div>
 
+                <!-- Publications Content -->
+                <div class="sidebar-content-panel" id="publications-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Publications</h2>
+                        <button class="btn-primary" onclick="openAddPublicationModal()">+ Add Publication</button>
+                    </div>
 
+                    <div class="publication-filters">
+                        <button class="filter-chip active" onclick="filterPublications('all')">All</button>
+                        <button class="filter-chip" onclick="filterPublications('books')">Books</button>
+                        <button class="filter-chip" onclick="filterPublications('articles')">Articles</button>
+                        <button class="filter-chip" onclick="filterPublications('research')">Research Papers</button>
+                        <button class="filter-chip" onclick="filterPublications('anthology')">Anthologies</button>
+                    </div>
 
-<!-- Updated Jobs Content Section -->
-<div class="sidebar-content-panel" id="jobs-content">
-    <div class="section-header">
-        <h2 class="section-title">Job Posts</h2>
-        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
-    </div>
-    
-    <div class="job-filters">
-        <button class="filter-chip active" onclick="filterJobs('all')">All Jobs</button>
-        <button class="filter-chip" onclick="filterJobs('posted')">Posted Jobs</button>
-        <button class="filter-chip" onclick="filterJobs('draft')">Draft Jobs</button>
-    </div>
-    
-    <div class="jobs-grid" id="jobsGrid">
-        <!-- Jobs will be loaded dynamically -->
-    </div>
-</div>
+                    <div class="publications-grid" id="publicationsGrid">
+                        <!-- Publications will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Writing Tools Content -->
+                <div class="sidebar-content-panel" id="writing-tools-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Writing Tools</h2>
+                        <div class="header-buttons">
+                            <button class="btn-primary ai-writer-btn" onclick="openAIWriterModal()">
+                                <span class="sidebar-btn-icon">🤖</span>
+                                <span>AI Writer</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="writing-filters">
+                        <button class="filter-chip active" onclick="filterWriting('all')">All</button>
+                        <button class="filter-chip" onclick="filterWriting('drafts')">Drafts</button>
+                        <button class="filter-chip" onclick="filterWriting('finished')">Finished</button>
+                        <button class="filter-chip" onclick="filterWriting('published')">Published</button>
+                        <button class="filter-chip" onclick="filterWriting('archived')">Archived</button>
+                    </div>
+
+                    <div class="writing-tools-actions">
+                        <button class="tool-btn" onclick="createNewDocument()">
+                            <span>📄</span>
+                            <span>New Document</span>
+                        </button>
+                        <button class="tool-btn" onclick="openTemplates()">
+                            <span>📋</span>
+                            <span>Templates</span>
+                        </button>
+                        <button class="tool-btn" onclick="openGrammarCheck()">
+                            <span>✔️</span>
+                            <span>Grammar Check</span>
+                        </button>
+                        <button class="tool-btn" onclick="openPlagiarismChecker()">
+                            <span>🔍</span>
+                            <span>Plagiarism Check</span>
+                        </button>
+                    </div>
+
+                    <div class="documents-grid" id="documentsGrid">
+                        <div class="document-card draft">
+                            <div class="doc-status-badge">Draft</div>
+                            <h4>Chapter 5 - The Discovery</h4>
+                            <p>Last edited: 2 hours ago</p>
+                            <div class="doc-stats">
+                                <span>3,456 words</span>
+                                <span>45% complete</span>
+                            </div>
+                            <div class="doc-actions">
+                                <button onclick="editDocument('doc1')">Edit</button>
+                                <button onclick="shareDocument('doc1')">Share</button>
+                            </div>
+                        </div>
+
+                        <div class="document-card finished">
+                            <div class="doc-status-badge finished">Finished</div>
+                            <h4>Article - Future of Tech</h4>
+                            <p>Completed: Yesterday</p>
+                            <div class="doc-stats">
+                                <span>2,100 words</span>
+                                <span>Ready to publish</span>
+                            </div>
+                            <div class="doc-actions">
+                                <button onclick="publishDocument('doc2')">Publish</button>
+                                <button onclick="editDocument('doc2')">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="ai-tools-section">
+                        <h3>AI Assistant Tools</h3>
+                        <div class="ai-tools-grid">
+                            <button class="ai-tool-card" onclick="aiRewrite()">
+                                <span class="tool-icon">🔄</span>
+                                <span>Rewrite</span>
+                            </button>
+                            <button class="ai-tool-card" onclick="aiSummarize()">
+                                <span class="tool-icon">📝</span>
+                                <span>Summarize</span>
+                            </button>
+                            <button class="ai-tool-card" onclick="aiExpand()">
+                                <span class="tool-icon">📏</span>
+                                <span>Expand</span>
+                            </button>
+                            <button class="ai-tool-card" onclick="aiProofread()">
+                                <span class="tool-icon">👁️</span>
+                                <span>Proofread</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Schedule Content Panel -->
+                <div class="sidebar-content-panel" id="my-schedule-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Schedule</h2>
+                        <button class="btn-primary" onclick="openAddScheduleModal()">+ Add Event</button>
+                    </div>
+
+                    <div class="schedule-view-options">
+                        <button class="view-option active" onclick="changeScheduleView('calendar')">Calendar</button>
+                        <button class="view-option" onclick="changeScheduleView('list')">List</button>
+                        <button class="view-option" onclick="changeScheduleView('agenda')">Agenda</button>
+                    </div>
+
+                    <div class="schedule-content">
+                        <div class="upcoming-events">
+                            <h3>Today</h3>
+                            <div class="event-item">
+                                <span class="event-time">10:00 AM</span>
+                                <div class="event-details">
+                                    <h4>Writing Session</h4>
+                                    <p>Chapter 12 - 2000 words target</p>
+                                </div>
+                            </div>
+                            <div class="event-item">
+                                <span class="event-time">2:00 PM</span>
+                                <div class="event-details">
+                                    <h4>Editor Meeting</h4>
+                                    <p>Review manuscript edits</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Updated Writing Analytics Content with Drafts -->
+                <div class="sidebar-content-panel" id="writing-analytics-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Writing Analytics</h2>
+                        <button class="btn-secondary" onclick="exportAnalytics()">Export Report</button>
+                    </div>
+
+                    <div class="analytics-filters">
+                        <button class="filter-chip active" onclick="filterAnalytics('overview')">Overview</button>
+                        <button class="filter-chip" onclick="filterAnalytics('drafts')">Drafts</button>
+                        <button class="filter-chip" onclick="filterAnalytics('published')">Published</button>
+                        <button class="filter-chip" onclick="filterAnalytics('performance')">Performance</button>
+                    </div>
+
+                    <div class="analytics-dashboard">
+                        <div class="analytics-stats-row">
+                            <div class="analytics-stat-card">
+                                <span class="stat-icon">✍️</span>
+                                <div class="stat-info">
+                                    <h3>245,892</h3>
+                                    <p>Total Words Written</p>
+                                </div>
+                            </div>
+                            <div class="analytics-stat-card">
+                                <span class="stat-icon">📝</span>
+                                <div class="stat-info">
+                                    <h3>23</h3>
+                                    <p>Active Drafts</p>
+                                </div>
+                            </div>
+                            <div class="analytics-stat-card">
+                                <span class="stat-icon">📄</span>
+                                <div class="stat-info">
+                                    <h3>156</h3>
+                                    <p>Completed Works</p>
+                                </div>
+                            </div>
+                            <div class="analytics-stat-card">
+                                <span class="stat-icon">👁️</span>
+                                <div class="stat-info">
+                                    <h3>1.2M</h3>
+                                    <p>Total Reads</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Drafts Section -->
+                        <div class="drafts-analytics-section" id="draftsSection">
+                            <h3>Draft Progress</h3>
+                            <div class="drafts-list">
+                                <div class="draft-item">
+                                    <div class="draft-header">
+                                        <h4>Chapter 12 - The Journey</h4>
+                                        <span class="draft-status in-progress">In Progress</span>
+                                    </div>
+                                    <div class="draft-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 65%"></div>
+                                        </div>
+                                        <span>6,500 / 10,000 words</span>
+                                    </div>
+                                    <div class="draft-meta">
+                                        <span>Last edited: 2 hours ago</span>
+                                        <span>Est. completion: 3 days</span>
+                                    </div>
+                                </div>
+
+                                <div class="draft-item">
+                                    <div class="draft-header">
+                                        <h4>Article - Tech Innovation</h4>
+                                        <span class="draft-status review">Under Review</span>
+                                    </div>
+                                    <div class="draft-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 90%"></div>
+                                        </div>
+                                        <span>2,700 / 3,000 words</span>
+                                    </div>
+                                    <div class="draft-meta">
+                                        <span>Last edited: Yesterday</span>
+                                        <span>Deadline: Tomorrow</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="draft-summary">
+                                <h4>Draft Statistics</h4>
+                                <div class="summary-grid">
+                                    <div class="summary-item">
+                                        <span>Avg. Completion Time</span>
+                                        <strong>12 days</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Revision Rate</span>
+                                        <strong>3.2 per draft</strong>
+                                    </div>
+                                    <div class="summary-item">
+                                        <span>Publishing Rate</span>
+                                        <strong>78%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="chart-container">
+                            <canvas id="writingProgressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <!-- Collaborations Content -->
+                <div class="sidebar-content-panel" id="collaborations-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Collaborations</h2>
+                        <button class="btn-primary" onclick="openNewCollaborationModal()">+ New Collaboration</button>
+                    </div>
+
+                    <div class="collaboration-tabs">
+                        <button class="collab-tab active" onclick="filterCollabs('active')">Active</button>
+                        <button class="collab-tab" onclick="filterCollabs('pending')">Pending</button>
+                        <button class="collab-tab" onclick="filterCollabs('completed')">Completed</button>
+                    </div>
+
+                    <div class="collaborations-list" id="collaborationsList">
+                        <!-- Collaborations will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Speaking Events Content -->
+                <div class="sidebar-content-panel" id="speaking-events-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Speaking Engagements</h2>
+                        <button class="btn-primary" onclick="openAddEventModal()">+ Add Event</button>
+                    </div>
+
+                    <div class="events-tabs">
+                        <button class="event-tab active" onclick="filterEvents('upcoming')">Upcoming</button>
+                        <button class="event-tab" onclick="filterEvents('past')">Past Events</button>
+                        <button class="event-tab" onclick="filterEvents('invitations')">Invitations</button>
+                    </div>
+
+                    <div class="speaking-events-grid" id="speakingEventsGrid">
+                        <!-- Events will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Media Kit Content -->
+                <div class="sidebar-content-panel" id="media-kit-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Media Kit</h2>
+                        <button class="btn-primary" onclick="downloadMediaKit()">Download Kit</button>
+                    </div>
+
+                    <div class="media-kit-sections">
+                        <div class="media-section">
+                            <h3>Author Bio</h3>
+                            <div class="bio-versions">
+                                <button class="bio-btn" onclick="copyBio('short')">Short Bio (50 words)</button>
+                                <button class="bio-btn" onclick="copyBio('medium')">Medium Bio (150 words)</button>
+                                <button class="bio-btn" onclick="copyBio('long')">Full Bio (500 words)</button>
+                            </div>
+                        </div>
+
+                        <div class="media-section">
+                            <h3>Press Photos</h3>
+                            <div class="photo-gallery" id="pressPhotos">
+                                <!-- Photos will be loaded -->
+                            </div>
+                        </div>
+
+                        <div class="media-section">
+                            <h3>Press Releases</h3>
+                            <div class="releases-list" id="pressReleases">
+                                <!-- Press releases will be loaded -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Writing Schedule Content -->
+                <div class="sidebar-content-panel" id="writing-schedule-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Writing Schedule</h2>
+                        <button class="btn-primary" onclick="openScheduleModal()">+ Add Session</button>
+                    </div>
+
+                    <div class="schedule-view-tabs">
+                        <button class="view-tab active" onclick="changeView('calendar')">Calendar</button>
+                        <button class="view-tab" onclick="changeView('list')">List View</button>
+                        <button class="view-tab" onclick="changeView('goals')">Goals</button>
+                    </div>
+
+                    <div class="writing-calendar" id="writingCalendar">
+                        <!-- Calendar will be rendered here -->
+                    </div>
+
+                    <div class="writing-goals">
+                        <div class="goal-card">
+                            <h4>Daily Word Goal</h4>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 75%"></div>
+                            </div>
+                            <span>1,500 / 2,000 words</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Earnings Content -->
+                <div class="sidebar-content-panel" id="earnings-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Earnings & Revenue</h2>
+                        <button class="btn-secondary" onclick="downloadStatement()">Download Statement</button>
+                    </div>
+
+                    <div class="earnings-overview">
+                        <div class="earnings-stats">
+                            <div class="earning-card">
+                                <span class="period">This Month</span>
+                                <h3>$4,567</h3>
+                                <span class="change up">↑ 23%</span>
+                            </div>
+                            <div class="earning-card">
+                                <span class="period">Last Month</span>
+                                <h3>$3,712</h3>
+                            </div>
+                            <div class="earning-card">
+                                <span class="period">Year to Date</span>
+                                <h3>$45,678</h3>
+                            </div>
+                        </div>
+
+                        <div class="revenue-sources">
+                            <h3>Revenue Sources</h3>
+                            <div class="source-list">
+                                <div class="source-item">
+                                    <span>Book Sales</span>
+                                    <span>$2,345</span>
+                                </div>
+                                <div class="source-item">
+                                    <span>Articles</span>
+                                    <span>$890</span>
+                                </div>
+                                <div class="source-item">
+                                    <span>Speaking Events</span>
+                                    <span>$1,332</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Updated Jobs Content Section -->
+                <div class="sidebar-content-panel" id="jobs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Job Posts</h2>
+                        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
+                    </div>
+
+                    <div class="job-filters">
+                        <button class="filter-chip active" onclick="filterJobs('all')">All Jobs</button>
+                        <button class="filter-chip" onclick="filterJobs('posted')">Posted Jobs</button>
+                        <button class="filter-chip" onclick="filterJobs('draft')">Draft Jobs</button>
+                    </div>
+
+                    <div class="jobs-grid" id="jobsGrid">
+                        <!-- Jobs will be loaded dynamically -->
+                    </div>
+                </div>
 
                 <!-- Classes Content -->
                 <div class="sidebar-content-panel" id="classes-content">
@@ -713,133 +1150,139 @@
                         <!-- Classes will be loaded dynamically -->
                     </div>
                 </div>
-<!-- Updated Books Content Section -->
-<div class="sidebar-content-panel" id="books-content">
-    <div class="section-header">
-        <h2 class="section-title">My Books</h2>
+                <!-- Updated Books Content Section -->
+                <div class="sidebar-content-panel" id="books-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Books</h2>
 
-            <button class="btn-primary" onclick="createPodcast()">
+                        <button class="btn-primary" onclick="createPodcast()">
 
-                                    <span class="sidebar-btn-icon">🤖</span>
-                    <span>AI Writer</span>
-            </button>
-        <div class="header-buttons" id="booksHeaderButtons">
-            <!-- Button will be dynamically added based on books availability -->
-        </div>
-    </div>
-    
-    <div class="books-grid" id="booksGrid">
-        <!-- Books will be loaded dynamically -->
-    </div>
-</div>
+                            <span class="sidebar-btn-icon">🤖</span>
+                            <span>AI Writer</span>
+                        </button>
+                        <div class="header-buttons" id="booksHeaderButtons">
+                            <!-- Button will be dynamically added based on books availability -->
+                        </div>
+                    </div>
 
-<!-- Updated Community Content (Now opens modal) -->
-<div class="sidebar-content-panel" id="community-content">
-    <!-- This will trigger the community modal -->
-</div>
+                    <div class="books-grid" id="booksGrid">
+                        <!-- Books will be loaded dynamically -->
+                    </div>
+                </div>
 
-<!-- Updated Clubs Content Section -->
-<div class="sidebar-content-panel" id="clubs-content">
-    <div class="section-header">
-        <h2 class="section-title">Clubs</h2>
-        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
-    </div>
-    
-    <div class="clubs-tabs">
-        <button class="clubs-tab active" onclick="filterClubs('all')">All Clubs</button>
-        <button class="clubs-tab" onclick="filterClubs('academic')">Academic</button>
-        <button class="clubs-tab" onclick="filterClubs('arts')">Arts & Culture</button>
-        <button class="clubs-tab" onclick="filterClubs('sports')">Sports</button>
-        <button class="clubs-tab" onclick="filterClubs('technology')">Technology</button>
-    </div>
-    
-    <div class="clubs-grid" id="clubsGrid">
-        <!-- Clubs will be loaded dynamically -->
-    </div>
-</div>
+                <!-- Updated Community Content (Now opens modal) -->
+                <div class="sidebar-content-panel" id="community-content">
+                    <!-- This will trigger the community modal -->
+                </div>
 
-<!-- Updated Podcasts Content with Draft Filter -->
-<div class="sidebar-content-panel" id="podcasts-content">
-    <div class="section-header">
-        <h2 class="section-title">Podcast Library</h2>
-        <div class="header-buttons">
-            <button class="btn-primary" onclick="createPodcast()">
-                <span>🎙️</span> Create Podcast
-            </button>
-        </div>
-    </div>
-    
-    <div class="podcast-filters">
-        <button class="filter-chip active" onclick="filterPodcasts('all')">All Podcasts</button>
-        <button class="filter-chip" onclick="filterPodcasts('published')">Published</button>
-        <button class="filter-chip" onclick="filterPodcasts('draft')">Drafts</button>
-    </div>
-    
-    <div class="podcast-grid">
-        <!-- Podcasts will be loaded dynamically -->
-    </div>
-</div>
+                <!-- Updated Clubs Content Section -->
+                <div class="sidebar-content-panel" id="clubs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Clubs</h2>
+                        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
+                    </div>
 
-               
-               
-<!-- Updated Videos Content with Draft Filter -->
-<div class="sidebar-content-panel" id="videos-content">
-    <div class="section-header">
-        <h2 class="section-title">Video Gallery</h2>
-        <div class="header-buttons">
-            <button class="btn-secondary" onclick="openUploadVideoModal()">
-                <span>🎬 Upload Video</span>
-            </button>
-            <a href="../Plug-ins/go-live-modal.html">
-                <button class="btn-primary live-btn">
-                    <span>📹 Go Live</span>
-                </button>
-            </a>
-        </div>
-    </div>
+                    <div class="clubs-tabs">
+                        <button class="clubs-tab active" onclick="filterClubs('all')">All Clubs</button>
+                        <button class="clubs-tab" onclick="filterClubs('academic')">Academic</button>
+                        <button class="clubs-tab" onclick="filterClubs('arts')">Arts & Culture</button>
+                        <button class="clubs-tab" onclick="filterClubs('sports')">Sports</button>
+                        <button class="clubs-tab" onclick="filterClubs('technology')">Technology</button>
+                    </div>
 
-    <div class="video-filters">
-        <div class="video-tabs">
-            <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All Videos</button>
-            <button class="video-tab" data-filter="published" onclick="filterVideos('published')">Published</button>
-            <button class="video-tab" data-filter="draft" onclick="filterVideos('draft')">Drafts</button>
-            <button class="video-tab" data-filter="shorts" onclick="filterVideos('shorts')">Shorts</button>
-            <button class="video-tab" data-filter="playlists" onclick="filterVideos('playlists')">Playlists</button>
-        </div>
-        <button class="btn-create-playlist" onclick="window.trainingCenterProfile.playlists.openModal()">
-            + Create Playlist
-        </button>
-    </div>
-    <div class="videos-grid">
-        <!-- Videos will be loaded dynamically -->
-    </div>
-</div>
+                    <div class="clubs-grid" id="clubsGrid">
+                        <!-- Clubs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Updated Podcasts Content with Draft Filter -->
+                <div class="sidebar-content-panel" id="podcasts-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Podcast Library</h2>
+                        <div class="header-buttons">
+                            <button class="btn-primary" onclick="createPodcast()">
+                                <span>🎙️</span> Create Podcast
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="podcast-filters">
+                        <button class="filter-chip active" onclick="filterPodcasts('all')">All Podcasts</button>
+                        <button class="filter-chip" onclick="filterPodcasts('published')">Published</button>
+                        <button class="filter-chip" onclick="filterPodcasts('draft')">Drafts</button>
+                    </div>
+
+                    <div class="podcast-grid">
+                        <!-- Podcasts will be loaded dynamically -->
+                    </div>
+                </div>
 
 
 
-                
-<!-- Updated Blog Content with Draft Filter -->
-<div class="sidebar-content-panel" id="blog-content">
-    <div class="section-header">
-        <h2 class="section-title">Blog & Articles</h2>
-        <button class="btn-primary" onclick="openCreateBlogModal()">
-            <span>📝 Create Blog Post</span>
-        </button>
-    </div>
+                <!-- Updated Videos Content with Draft Filter -->
+                <div class="sidebar-content-panel" id="videos-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Video Gallery</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="openUploadVideoModal()">
+                                <span>🎬 Upload Video</span>
+                            </button>
+                            <a href="../Plug-ins/go-live-modal.html">
+                                <button class="btn-primary live-btn">
+                                    <span>📹 Go Live</span>
+                                </button>
+                            </a>
+                        </div>
+                    </div>
 
-    <div class="blog-filters">
-        <button class="filter-chip active" onclick="filterBlogs('all')">All Posts</button>
-        <button class="filter-chip" onclick="filterBlogs('published')">Published</button>
-        <button class="filter-chip" onclick="filterBlogs('draft')">Drafts</button>
-        <button class="filter-chip" onclick="filterBlogs('industry')">Industry News</button>
-        <button class="filter-chip" onclick="filterBlogs('tutorials')">Tutorials</button>
-        <button class="filter-chip" onclick="filterBlogs('student')">Student Stories</button>
-    </div>
+                    <div class="video-filters">
+                        <div class="video-tabs">
+                            <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All
+                                Videos</button>
+                            <button class="video-tab" data-filter="published"
+                                onclick="filterVideos('published')">Published</button>
+                            <button class="video-tab" data-filter="draft"
+                                onclick="filterVideos('draft')">Drafts</button>
+                            <button class="video-tab" data-filter="shorts"
+                                onclick="filterVideos('shorts')">Shorts</button>
+                            <button class="video-tab" data-filter="playlists"
+                                onclick="filterVideos('playlists')">Playlists</button>
+                        </div>
+                        <button class="btn-create-playlist"
+                            onclick="window.trainingCenterProfile.playlists.openModal()">
+                            + Create Playlist
+                        </button>
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Videos will be loaded dynamically -->
+                    </div>
+                </div>
 
-    <div class="blog-grid">
-        <!-- Blog posts will be loaded dynamically -->
-    </div>
-</div>
+
+
+
+                <!-- Updated Blog Content with Draft Filter -->
+                <div class="sidebar-content-panel" id="blog-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Blog & Articles</h2>
+                        <button class="btn-primary" onclick="openCreateBlogModal()">
+                            <span>📝 Create Blog Post</span>
+                        </button>
+                    </div>
+
+                    <div class="blog-filters">
+                        <button class="filter-chip active" onclick="filterBlogs('all')">All Posts</button>
+                        <button class="filter-chip" onclick="filterBlogs('published')">Published</button>
+                        <button class="filter-chip" onclick="filterBlogs('draft')">Drafts</button>
+                        <button class="filter-chip" onclick="filterBlogs('industry')">Industry News</button>
+                        <button class="filter-chip" onclick="filterBlogs('tutorials')">Tutorials</button>
+                        <button class="filter-chip" onclick="filterBlogs('student')">Student Stories</button>
+                    </div>
+
+                    <div class="blog-grid">
+                        <!-- Blog posts will be loaded dynamically -->
+                    </div>
+                </div>
 
                 <!-- Comments Content -->
                 <div class="sidebar-content-panel" id="comments-content">
@@ -855,27 +1298,27 @@
                     </div>
                 </div>
 
-<!-- Updated My Products Content -->
-<div class="sidebar-content-panel" id="my-products-content">
-    <div class="section-header">
-        <h2 class="section-title">My Purchased Products</h2>
-        <button class="btn-primary" onclick="navigateToStore()">
-            <span>🛒</span> Browse Store
-        </button>
-    </div>
-    
-    <div class="product-filters">
-        <button class="filter-chip active" onclick="filterMyProducts('all')">All Products</button>
-        <button class="filter-chip" onclick="filterMyProducts('courses')">Courses</button>
-        <button class="filter-chip" onclick="filterMyProducts('books')">Books</button>
-        <button class="filter-chip" onclick="filterMyProducts('software')">Software</button>
-        <button class="filter-chip" onclick="filterMyProducts('materials')">Materials</button>
-    </div>
-    
-    <div class="my-products-grid" id="myProductsGrid">
-        <!-- Purchased products will be loaded dynamically -->
-    </div>
-</div>
+                <!-- Updated My Products Content -->
+                <div class="sidebar-content-panel" id="my-products-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Purchased Products</h2>
+                        <button class="btn-primary" onclick="navigateToStore()">
+                            <span>🛒</span> Browse Store
+                        </button>
+                    </div>
+
+                    <div class="product-filters">
+                        <button class="filter-chip active" onclick="filterMyProducts('all')">All Products</button>
+                        <button class="filter-chip" onclick="filterMyProducts('courses')">Courses</button>
+                        <button class="filter-chip" onclick="filterMyProducts('books')">Books</button>
+                        <button class="filter-chip" onclick="filterMyProducts('software')">Software</button>
+                        <button class="filter-chip" onclick="filterMyProducts('materials')">Materials</button>
+                    </div>
+
+                    <div class="my-products-grid" id="myProductsGrid">
+                        <!-- Purchased products will be loaded dynamically -->
+                    </div>
+                </div>
 
 
                 <!-- Notes Content -->
@@ -1440,61 +1883,61 @@
         </div>
     </div>
 
-   <!-- Updated Community Modal (renamed from Followers Modal) -->
-<div class="modal" id="communityModal">
-    <div class="modal-overlay" onclick="closeCommunityModal()"></div>
-    <div class="modal-content community-modal">
-        <div class="modal-header">
-            <h2 id="communityModalTitle">Community</h2>
-            <button class="modal-close" onclick="closeCommunityModal()">×</button>
-        </div>
-        <div class="modal-body">
-            <div class="community-modal-layout">
-                <div class="community-sidebar">
-                    <div class="community-sidebar-title">
-                        <h3>Community</h3>
+    <!-- Updated Community Modal (renamed from Followers Modal) -->
+    <div class="modal" id="communityModal">
+        <div class="modal-overlay" onclick="closeCommunityModal()"></div>
+        <div class="modal-content community-modal">
+            <div class="modal-header">
+                <h2 id="communityModalTitle">Community</h2>
+                <button class="modal-close" onclick="closeCommunityModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="community-modal-layout">
+                    <div class="community-sidebar">
+                        <div class="community-sidebar-title">
+                            <h3>Community</h3>
+                        </div>
+                        <button class="community-tab active" data-tab="followers">
+                            <span>👥</span>
+                            <span>Followers</span>
+                            <span class="count">45.2K</span>
+                        </button>
+                        <button class="community-tab" data-tab="following">
+                            <span>➕</span>
+                            <span>Following</span>
+                            <span class="count">892</span>
+                        </button>
+                        <button class="community-tab" data-tab="groups">
+                            <span>👨‍👩‍👦‍👦</span>
+                            <span>Groups</span>
+                            <span class="count">12</span>
+                        </button>
+                        <button class="community-tab" data-tab="clubs">
+                            <span>🎭</span>
+                            <span>Clubs</span>
+                            <span class="count">8</span>
+                        </button>
                     </div>
-                    <button class="community-tab active" data-tab="followers">
-                        <span>👥</span>
-                        <span>Followers</span>
-                        <span class="count">45.2K</span>
-                    </button>
-                    <button class="community-tab" data-tab="following">
-                        <span>➕</span>
-                        <span>Following</span>
-                        <span class="count">892</span>
-                    </button>
-                    <button class="community-tab" data-tab="groups">
-                        <span>👨‍👩‍👦‍👦</span>
-                        <span>Groups</span>
-                        <span class="count">12</span>
-                    </button>
-                    <button class="community-tab" data-tab="clubs">
-                        <span>🎭</span>
-                        <span>Clubs</span>
-                        <span class="count">8</span>
-                    </button>
-                </div>
 
-                <div class="community-main">
-                    <div class="community-controls">
-                        <div class="search-wrapper">
-                            <input type="text" class="search-input" placeholder="Search community...">
+                    <div class="community-main">
+                        <div class="community-controls">
+                            <div class="search-wrapper">
+                                <input type="text" class="search-input" placeholder="Search community...">
+                            </div>
+                            <div class="filter-buttons-row">
+                                <button class="filter-btn all-btn"><span>All</span></button>
+                                <button class="filter-btn online-btn"><span>Online</span></button>
+                                <button class="filter-btn active-btn"><span>Active</span></button>
+                            </div>
                         </div>
-                        <div class="filter-buttons-row">
-                            <button class="filter-btn all-btn"><span>All</span></button>
-                            <button class="filter-btn online-btn"><span>Online</span></button>
-                            <button class="filter-btn active-btn"><span>Active</span></button>
+                        <div class="community-list" id="communityList">
+                            <!-- Community members/groups/clubs will be populated here -->
                         </div>
-                    </div>
-                    <div class="community-list" id="communityList">
-                        <!-- Community members/groups/clubs will be populated here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Upload Video Modal -->
     <div class="modal" id="uploadVideoModal">
@@ -1804,7 +2247,7 @@
             </div>
         </div>
     </div>
- <!-- Cover Upload Modal -->
+    <!-- Cover Upload Modal -->
     <div class="upload-modal" id="coverUploadModal">
         <div class="modal-content">
             <div class="modal-inner">
@@ -1812,14 +2255,15 @@
                     <h2 class="modal-title">Upload Cover Photo</h2>
                     <button class="modal-close" onclick="closeModal('coverUploadModal')">&times;</button>
                 </div>
-                
+
                 <div class="upload-area" id="coverUploadArea" onclick="document.getElementById('coverInput').click()">
                     <span class="upload-icon">📷</span>
                     <p class="upload-text">Click to upload or drag and drop</p>
                     <p class="upload-hint">Recommended: 1920x400px (JPG, PNG, GIF)</p>
-                    <input type="file" id="coverInput" class="upload-input" accept="image/*" onchange="handleImageSelect(event, 'cover')">
+                    <input type="file" id="coverInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'cover')">
                 </div>
-                
+
                 <div class="preview-container" id="coverPreview">
                     <img src="" alt="Cover preview" class="preview-image" id="coverPreviewImage">
                     <div class="preview-info">
@@ -1837,16 +2281,16 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="upload-progress" id="coverProgress">
                     <div class="progress-bar">
                         <div class="progress-fill" id="coverProgressFill"></div>
                     </div>
                     <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
                 </div>
-                
+
                 <div class="upload-spinner" id="coverSpinner"></div>
-                
+
                 <div class="upload-actions">
                     <button class="btn-upload secondary" onclick="resetUpload('cover')">Change Image</button>
                     <button class="btn-upload primary" onclick="uploadImage('cover')">Upload Cover</button>
@@ -1863,14 +2307,16 @@
                     <h2 class="modal-title">Upload Profile Picture</h2>
                     <button class="modal-close" onclick="closeModal('profileUploadModal')">&times;</button>
                 </div>
-                
-                <div class="upload-area" id="profileUploadArea" onclick="document.getElementById('profileInput').click()">
+
+                <div class="upload-area" id="profileUploadArea"
+                    onclick="document.getElementById('profileInput').click()">
                     <span class="upload-icon">👤</span>
                     <p class="upload-text">Click to upload or drag and drop</p>
                     <p class="upload-hint">Recommended: 500x500px (JPG, PNG, GIF)</p>
-                    <input type="file" id="profileInput" class="upload-input" accept="image/*" onchange="handleImageSelect(event, 'profile')">
+                    <input type="file" id="profileInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'profile')">
                 </div>
-                
+
                 <div class="preview-container" id="profilePreview">
                     <img src="" alt="Profile preview" class="preview-image" id="profilePreviewImage">
                     <div class="preview-info">
@@ -1888,16 +2334,16 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="upload-progress" id="profileProgress">
                     <div class="progress-bar">
                         <div class="progress-fill" id="profileProgressFill"></div>
                     </div>
                     <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
                 </div>
-                
+
                 <div class="upload-spinner" id="profileSpinner"></div>
-                
+
                 <div class="upload-actions">
                     <button class="btn-upload secondary" onclick="resetUpload('profile')">Change Image</button>
                     <button class="btn-upload primary" onclick="uploadImage('profile')">Upload Profile</button>
@@ -1935,19 +2381,22 @@
     </div>
 
 
-        <!-- Enhanced Footer -->
+    <!-- Enhanced Footer -->
     <footer class="footer-section">
         <div class="footer-wave">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+                <path
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
             </svg>
         </div>
-        
+
         <div class="container mx-auto px-4">
             <div class="footer-content">
                 <div class="footer-section-item">
                     <h3 class="footer-title">About Astegni</h3>
-                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
                     <div class="footer-stats">
                         <div class="stat-item">
                             <span class="stat-number">10k+</span>
@@ -1963,7 +2412,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Quick Links</h3>
                     <ul class="footer-links">
@@ -1975,7 +2424,7 @@
                         <li><a href="#" class="footer-link">Careers</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Support</h3>
                     <ul class="footer-links">
@@ -1987,27 +2436,46 @@
                         <li><a href="#" class="footer-link">Safety</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Connect With Us</h3>
                     <div class="social-links">
                         <a href="#" aria-label="Facebook" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Twitter" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="LinkedIn" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
                         </a>
                         <a href="#" aria-label="YouTube" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
+                            </svg>
                         </a>
                     </div>
-                    
+
                     <div class="newsletter-signup">
                         <h4>Subscribe to Newsletter</h4>
                         <form class="newsletter-form">
@@ -2017,7 +2485,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <div class="footer-bottom-content">
                     <p>&copy; 2025 Astegni. All rights reserved.</p>
@@ -2031,8 +2499,8 @@
         </div>
     </footer>
     <!-- Scripts -->
-     <!-- Scripts -->
-     <script>
+    <!-- Scripts -->
+    <script>
         // Modal Functions
         function openCoverUploadModal() {
             document.getElementById('coverUploadModal').classList.add('active');
@@ -2067,10 +2535,10 @@
 
             // Display preview
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const previewContainer = document.getElementById(`${type}Preview`);
                 const previewImage = document.getElementById(`${type}PreviewImage`);
-                
+
                 previewImage.src = e.target.result;
                 previewContainer.classList.add('active');
 
@@ -2080,7 +2548,7 @@
 
                 // Get image dimensions
                 const img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     document.getElementById(`${type}Dimensions`).textContent = `${this.width} x ${this.height}px`;
                 };
                 img.src = e.target.result;
@@ -2108,7 +2576,7 @@
         function uploadImage(type) {
             const fileInput = document.getElementById(`${type}Input`);
             const file = fileInput.files[0];
-            
+
             if (!file) {
                 alert('Please select an image first');
                 return;
@@ -2125,11 +2593,11 @@
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(interval);
-                    
+
                     setTimeout(() => {
                         alert(`${type === 'cover' ? 'Cover' : 'Profile'} image uploaded successfully!`);
                         closeModal(`${type}UploadModal`);
-                        
+
                         // Update the actual image on the page
                         if (type === 'cover') {
                             // Update cover image
@@ -2146,7 +2614,7 @@
                         }
                     }, 500);
                 }
-                
+
                 document.getElementById(`${type}ProgressFill`).style.width = progress + '%';
                 document.getElementById(`${type}ProgressText`).textContent = `Uploading... ${Math.round(progress)}%`;
             }, 200);
@@ -2155,20 +2623,20 @@
         // Drag and drop functionality
         ['cover', 'profile'].forEach(type => {
             const uploadArea = document.getElementById(`${type}UploadArea`);
-            
+
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
             });
-            
+
             uploadArea.addEventListener('dragleave', () => {
                 uploadArea.classList.remove('dragover');
             });
-            
+
             uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
                 uploadArea.classList.remove('dragover');
-                
+
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
                     const fileInput = document.getElementById(`${type}Input`);
@@ -2186,7 +2654,7 @@
                 this.lastScrollY = window.scrollY;
                 this.isAnimating = false;
                 this.footerObserver = null;
-                
+
                 if (this.sidebar) {
                     this.init();
                 }
@@ -2200,7 +2668,7 @@
 
             setupScrollListener() {
                 let ticking = false;
-                
+
                 window.addEventListener('scroll', () => {
                     if (!ticking) {
                         window.requestAnimationFrame(() => {
@@ -2215,12 +2683,12 @@
             handleScroll() {
                 const currentScrollY = window.scrollY;
                 const scrollDirection = currentScrollY > this.lastScrollY ? 'down' : 'up';
-                
+
                 // Check footer visibility
                 if (this.footer) {
                     const footerRect = this.footer.getBoundingClientRect();
                     const windowHeight = window.innerHeight;
-                    
+
                     if (footerRect.top < windowHeight) {
                         const footerOffset = windowHeight - footerRect.top;
                         this.adjustSidebarForFooter(footerOffset);
@@ -2228,19 +2696,19 @@
                         this.resetSidebar();
                     }
                 }
-                
+
                 this.lastScrollY = currentScrollY;
             }
 
             setupFooterObserver() {
                 if (!this.footer) return;
-                
+
                 const options = {
                     root: null,
                     rootMargin: '100px',
                     threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
                 };
-                
+
                 this.footerObserver = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -2251,20 +2719,20 @@
                         }
                     });
                 }, options);
-                
+
                 this.footerObserver.observe(this.footer);
             }
 
             smoothAdjustSidebar(footerOffset) {
                 if (this.isAnimating) return;
-                
+
                 this.isAnimating = true;
                 this.sidebar.classList.add('sliding-up');
-                
+
                 // Set CSS variable for dynamic height
                 this.sidebar.style.setProperty('--footer-offset', `${footerOffset}px`);
                 this.sidebar.classList.add('footer-visible');
-                
+
                 // Smooth animation
                 setTimeout(() => {
                     this.sidebar.classList.remove('sliding-up');
@@ -2275,7 +2743,7 @@
             adjustSidebarForFooter(footerOffset) {
                 const sidebarHeight = window.innerHeight - 60 - footerOffset;
                 this.sidebar.style.height = `${Math.max(sidebarHeight, 200)}px`;
-                
+
                 // Add smooth transition effect
                 if (!this.sidebar.style.transition) {
                     this.sidebar.style.transition = 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -2299,7 +2767,7 @@
         // Initialize sidebar manager when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             const sidebarManager = new SidebarManager();
-            
+
             // Smooth scroll for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
@@ -2341,71 +2809,71 @@
     <script>
 
 
-let liftAmount = 0;
+        let liftAmount = 0;
 
-function testSidebarLift() {
-    const sidebar = document.querySelector('.left-sidebar');
-    if (sidebar) {
-        if (liftAmount === 0) {
-            // Lift progressively
-            liftAmount = 300; // Lift by 300px
-            sidebar.style.setProperty('--footer-offset', `${liftAmount}px`);
-            sidebar.classList.add('footer-visible');
-            sidebar.classList.add('footer-animating');
-            
-            console.log(`📏 Lifting sidebar by ${liftAmount}px`);
-            
-            setTimeout(() => {
-                sidebar.classList.remove('footer-animating');
-            }, 800);
-            
-            // Show visual feedback
-            sidebar.style.border = '2px solid #f59e0b';
-            setTimeout(() => {
-                sidebar.style.border = '';
-            }, 1000);
-            
-        } else {
-            // Reset
-            liftAmount = 0;
-            sidebar.style.setProperty('--footer-offset', '0px');
-            sidebar.classList.remove('footer-visible');
-            console.log('🔄 Reset sidebar position');
-        }
-    }
-}
-
-// Auto test with different heights
-function autoTestLift() {
-    const heights = [100, 200, 300, 400];
-    let index = 0;
-    
-    const interval = setInterval(() => {
-        const sidebar = document.querySelector('.left-sidebar');
-        if (sidebar && index < heights.length) {
-            const height = heights[index];
-            sidebar.style.setProperty('--footer-offset', `${height}px`);
-            sidebar.classList.add('footer-visible');
-            sidebar.classList.add('footer-animating');
-            
-            console.log(`Testing lift: ${height}px`);
-            
-            setTimeout(() => {
-                sidebar.classList.remove('footer-animating');
-            }, 800);
-            
-            index++;
-        } else {
-            // Reset and stop
+        function testSidebarLift() {
+            const sidebar = document.querySelector('.left-sidebar');
             if (sidebar) {
-                sidebar.style.setProperty('--footer-offset', '0px');
-                sidebar.classList.remove('footer-visible');
+                if (liftAmount === 0) {
+                    // Lift progressively
+                    liftAmount = 300; // Lift by 300px
+                    sidebar.style.setProperty('--footer-offset', `${liftAmount}px`);
+                    sidebar.classList.add('footer-visible');
+                    sidebar.classList.add('footer-animating');
+
+                    console.log(`📏 Lifting sidebar by ${liftAmount}px`);
+
+                    setTimeout(() => {
+                        sidebar.classList.remove('footer-animating');
+                    }, 800);
+
+                    // Show visual feedback
+                    sidebar.style.border = '2px solid #f59e0b';
+                    setTimeout(() => {
+                        sidebar.style.border = '';
+                    }, 1000);
+
+                } else {
+                    // Reset
+                    liftAmount = 0;
+                    sidebar.style.setProperty('--footer-offset', '0px');
+                    sidebar.classList.remove('footer-visible');
+                    console.log('🔄 Reset sidebar position');
+                }
             }
-            clearInterval(interval);
-            console.log('Auto test complete');
         }
-    }, 2000);
-}
+
+        // Auto test with different heights
+        function autoTestLift() {
+            const heights = [100, 200, 300, 400];
+            let index = 0;
+
+            const interval = setInterval(() => {
+                const sidebar = document.querySelector('.left-sidebar');
+                if (sidebar && index < heights.length) {
+                    const height = heights[index];
+                    sidebar.style.setProperty('--footer-offset', `${height}px`);
+                    sidebar.classList.add('footer-visible');
+                    sidebar.classList.add('footer-animating');
+
+                    console.log(`Testing lift: ${height}px`);
+
+                    setTimeout(() => {
+                        sidebar.classList.remove('footer-animating');
+                    }, 800);
+
+                    index++;
+                } else {
+                    // Reset and stop
+                    if (sidebar) {
+                        sidebar.style.setProperty('--footer-offset', '0px');
+                        sidebar.classList.remove('footer-visible');
+                    }
+                    clearInterval(interval);
+                    console.log('Auto test complete');
+                }
+            }, 2000);
+        }
 
         // Calendar sync functions
         window.syncGoogleCalendar = function () {
@@ -2441,4 +2909,3 @@ function autoTestLift() {
 </body>
 
 </html>
-

@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yeneta - Bookstore Profile </title>
+    <title>Astegni - Bookstore Profile </title>
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/bookstore.css">
-<style>
+    <style>
         /* Modal Styles */
         .upload-modal {
             display: none;
@@ -191,7 +191,7 @@
         }
 
         /* ===== ONLY ADD THESE SMOOTH SCROLL STYLES TO YOUR EXISTING CSS ===== */
-        
+
         /* Smooth scroll behavior for the page */
         html {
             scroll-behavior: smooth;
@@ -216,16 +216,17 @@
                 transform: translateY(0);
                 opacity: 1;
             }
+
             50% {
                 transform: translateY(-10px);
                 opacity: 0.9;
             }
+
             100% {
                 transform: translateY(0);
                 opacity: 1;
             }
         }
-
     </style>
 </head>
 
@@ -301,22 +302,12 @@
                     <span>Customers</span>
                     <span class="sidebar-badge">1.2K</span>
                 </button>
-                <button class="sidebar-btn" data-content="publishers">
-                    <span class="sidebar-btn-icon">🏢</span>
-                    <span>Publishers</span>
-                    <span class="sidebar-badge">32</span>
-                </button>
-                <button class="sidebar-btn" data-content="authors">
-                    <span class="sidebar-btn-icon">✍️</span>
-                    <span>Authors</span>
-                    <span class="sidebar-badge">156</span>
-                </button>
                 <!-- In the bookstore section of sidebar -->
-<button class="sidebar-btn" data-content="reading-events">
-    <span class="sidebar-btn-icon">🎤</span>
-    <span>Reading Events</span>
-    <span class="sidebar-badge">8</span>
-</button>
+                <button class="sidebar-btn" data-content="reading-events">
+                    <span class="sidebar-btn-icon">🎤</span>
+                    <span>Reading Events</span>
+                    <span class="sidebar-badge">8</span>
+                </button>
                 <button class="sidebar-btn" data-content="promotions">
                     <span class="sidebar-btn-icon">🎁</span>
                     <span>Promotions</span>
@@ -833,7 +824,7 @@
                         </div>
                         <div class="summary-card">
                             <span class="summary-label">This Month</span>
-                            <span class="summary-value">$67,892</span>
+                            <span class="summary-value">67,892 ETB</span>
                             <span class="summary-change up">↑ 15%</span>
                         </div>
                     </div>
@@ -873,68 +864,6 @@
                     </div>
                 </div>
 
-                <!-- Publishers Content -->
-                <div class="sidebar-content-panel" id="publishers-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Publishers & Suppliers</h2>
-                        <button class="btn-primary" onclick="openAddPublisherModal()">+ Add Publisher</button>
-                    </div>
-
-                    <div class="publishers-filters">
-                        <button class="filter-chip active">All Publishers</button>
-                        <button class="filter-chip">Local</button>
-                        <button class="filter-chip">International</button>
-                        <button class="filter-chip">Academic</button>
-                        <button class="filter-chip">Independent</button>
-                    </div>
-
-                    <div class="publishers-grid" id="publishersGrid">
-                        <!-- Publishers will be loaded dynamically -->
-                    </div>
-                </div>
-
-                <!-- Authors Content -->
-                <div class="sidebar-content-panel" id="authors-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Author Management</h2>
-                        <button class="btn-primary" onclick="openAddAuthorModal()">+ Add Author</button>
-                    </div>
-
-                    <div class="authors-featured">
-                        <h3>Featured Authors</h3>
-                        <div class="featured-authors-carousel">
-                            <!-- Featured authors will be displayed here -->
-                        </div>
-                    </div>
-
-                    <div class="authors-grid" id="authorsGrid">
-                        <!-- Authors will be loaded dynamically -->
-                    </div>
-                </div>
-
-                
-                
-                <!-- Promotions Content -->
-                <div class="sidebar-content-panel" id="promotions-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Promotions & Discounts</h2>
-                        <button class="btn-primary" onclick="openCreatePromotionModal()">+ Create Promotion</button>
-                    </div>
-
-                    <div class="active-promotions">
-                        <h3>Active Promotions</h3>
-                        <div class="promotions-grid" id="activePromotionsGrid">
-                            <!-- Active promotions will be displayed here -->
-                        </div>
-                    </div>
-
-                    <div class="promotion-analytics">
-                        <h3>Promotion Performance</h3>
-                        <div class="analytics-charts">
-                            <!-- Analytics charts for promotions -->
-                        </div>
-                    </div>
-                </div>
 
                 <!-- EXISTING EDUCATION CONTENT PANELS (UNCHANGED) -->
 
@@ -999,180 +928,180 @@
                 <!-- EXISTING PERMANENT CONTENT PANELS (UNCHANGED) -->
 
                 <!-- Reading Events Content (Separated) -->
-<div class="sidebar-content-panel" id="reading-events-content">
-    <div class="section-header">
-        <h2 class="section-title">Reading Events & Literary Programs</h2>
-        <div class="header-buttons">
-            <button class="btn-secondary" onclick="openEventCalendarModal()">📅 Full Calendar</button>
-            <button class="btn-primary" onclick="openCreateEventModal()">+ Create Event</button>
-        </div>
-    </div>
+                <div class="sidebar-content-panel" id="reading-events-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Reading Events & Literary Programs</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="openEventCalendarModal()">📅 Full Calendar</button>
+                            <button class="btn-primary" onclick="openCreateEventModal()">+ Create Event</button>
+                        </div>
+                    </div>
 
-    <div class="events-overview">
-        <div class="event-stat-cards">
-            <div class="event-stat">
-                <span class="stat-icon">📚</span>
-                <div class="stat-info">
-                    <span class="stat-value">8</span>
-                    <span class="stat-label">This Month</span>
+                    <div class="events-overview">
+                        <div class="event-stat-cards">
+                            <div class="event-stat">
+                                <span class="stat-icon">📚</span>
+                                <div class="stat-info">
+                                    <span class="stat-value">8</span>
+                                    <span class="stat-label">This Month</span>
+                                </div>
+                            </div>
+                            <div class="event-stat">
+                                <span class="stat-icon">✍️</span>
+                                <div class="stat-info">
+                                    <span class="stat-value">3</span>
+                                    <span class="stat-label">Author Visits</span>
+                                </div>
+                            </div>
+                            <div class="event-stat">
+                                <span class="stat-icon">🎫</span>
+                                <div class="stat-info">
+                                    <span class="stat-value">245</span>
+                                    <span class="stat-label">Tickets Sold</span>
+                                </div>
+                            </div>
+                            <div class="event-stat">
+                                <span class="stat-icon">💰</span>
+                                <div class="stat-info">
+                                    <span class="stat-value">$1,850</span>
+                                    <span class="stat-label">Revenue</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="events-tabs">
+                        <button class="event-tab active">All Events</button>
+                        <button class="event-tab">Book Signings</button>
+                        <button class="event-tab">Author Talks</button>
+                        <button class="event-tab">Workshops</button>
+                        <button class="event-tab">Children's Events</button>
+                        <button class="event-tab">Literary Festivals</button>
+                        <button class="event-tab">Past Events</button>
+                    </div>
+
+                    <div class="events-timeline">
+                        <div class="timeline-header">
+                            <h3>Upcoming Schedule</h3>
+                            <div class="view-toggles">
+                                <button class="view-toggle active" data-view="timeline">Timeline</button>
+                                <button class="view-toggle" data-view="calendar">Calendar</button>
+                                <button class="view-toggle" data-view="list">List</button>
+                            </div>
+                        </div>
+                        <div class="events-container" id="eventsContainer">
+                            <!-- Events will be loaded dynamically -->
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="event-stat">
-                <span class="stat-icon">✍️</span>
-                <div class="stat-info">
-                    <span class="stat-value">3</span>
-                    <span class="stat-label">Author Visits</span>
+
+                <!-- Reading Events Content (Separated) -->
+                <div class="sidebar-content-panel" id="reading-events-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Reading Events & Literary Programs</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="openEventCalendarModal()">📅 Full Calendar</button>
+                            <button class="btn-primary" onclick="openCreateEventModal()">+ Create Event</button>
+                        </div>
+                    </div>
+
+                    <div class="events-overview">
+                        <div class="event-stat-cards">
+                            <div class="event-stat">
+                                <span class="stat-icon">📚</span>
+                                <div class="stat-info">
+                                    <span class="stat-value">8</span>
+                                    <span class="stat-label">This Month</span>
+                                </div>
+                            </div>
+                            <div class="event-stat">
+                                <span class="stat-icon">✍️</span>
+                                <div class="stat-info">
+                                    <span class="stat-value">3</span>
+                                    <span class="stat-label">Author Visits</span>
+                                </div>
+                            </div>
+                            <div class="event-stat">
+                                <span class="stat-icon">🎫</span>
+                                <div class="stat-info">
+                                    <span class="stat-value">245</span>
+                                    <span class="stat-label">Tickets Sold</span>
+                                </div>
+                            </div>
+                            <div class="event-stat">
+                                <span class="stat-icon">💰</span>
+                                <div class="stat-info">
+                                    <span class="stat-value">$1,850</span>
+                                    <span class="stat-label">Revenue</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="events-tabs">
+                        <button class="event-tab active">All Events</button>
+                        <button class="event-tab">Book Signings</button>
+                        <button class="event-tab">Author Talks</button>
+                        <button class="event-tab">Workshops</button>
+                        <button class="event-tab">Children's Events</button>
+                        <button class="event-tab">Literary Festivals</button>
+                        <button class="event-tab">Past Events</button>
+                    </div>
+
+                    <div class="events-timeline">
+                        <div class="timeline-header">
+                            <h3>Upcoming Schedule</h3>
+                            <div class="view-toggles">
+                                <button class="view-toggle active" data-view="timeline">Timeline</button>
+                                <button class="view-toggle" data-view="calendar">Calendar</button>
+                                <button class="view-toggle" data-view="list">List</button>
+                            </div>
+                        </div>
+                        <div class="events-container" id="eventsContainer">
+                            <!-- Events will be loaded dynamically -->
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="event-stat">
-                <span class="stat-icon">🎫</span>
-                <div class="stat-info">
-                    <span class="stat-value">245</span>
-                    <span class="stat-label">Tickets Sold</span>
+
+                <!-- Clubs Content (Now separate from events) -->
+                <div class="sidebar-content-panel" id="clubs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Book Clubs & Reading Groups</h2>
+                        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
+                    </div>
+
+                    <div class="clubs-stats">
+                        <div class="club-stat">
+                            <span class="stat-value">12</span>
+                            <span class="stat-label">Active Clubs</span>
+                        </div>
+                        <div class="club-stat">
+                            <span class="stat-value">234</span>
+                            <span class="stat-label">Members</span>
+                        </div>
+                        <div class="club-stat">
+                            <span class="stat-value">45</span>
+                            <span class="stat-label">Books Read</span>
+                        </div>
+                        <div class="club-stat">
+                            <span class="stat-value">8</span>
+                            <span class="stat-label">Meeting This Week</span>
+                        </div>
+                    </div>
+
+                    <div class="clubs-tabs">
+                        <button class="clubs-tab active">All Clubs</button>
+                        <button class="clubs-tab">Fiction</button>
+                        <button class="clubs-tab">Non-Fiction</button>
+                        <button class="clubs-tab">Young Readers</button>
+                        <button class="clubs-tab">Poetry Circle</button>
+                        <button class="clubs-tab">Book-to-Film</button>
+                    </div>
+
+                    <div class="clubs-grid" id="clubsGrid">
+                        <!-- Clubs will be loaded dynamically -->
+                    </div>
                 </div>
-            </div>
-            <div class="event-stat">
-                <span class="stat-icon">💰</span>
-                <div class="stat-info">
-                    <span class="stat-value">$1,850</span>
-                    <span class="stat-label">Revenue</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="events-tabs">
-        <button class="event-tab active">All Events</button>
-        <button class="event-tab">Book Signings</button>
-        <button class="event-tab">Author Talks</button>
-        <button class="event-tab">Workshops</button>
-        <button class="event-tab">Children's Events</button>
-        <button class="event-tab">Literary Festivals</button>
-        <button class="event-tab">Past Events</button>
-    </div>
-
-    <div class="events-timeline">
-        <div class="timeline-header">
-            <h3>Upcoming Schedule</h3>
-            <div class="view-toggles">
-                <button class="view-toggle active" data-view="timeline">Timeline</button>
-                <button class="view-toggle" data-view="calendar">Calendar</button>
-                <button class="view-toggle" data-view="list">List</button>
-            </div>
-        </div>
-        <div class="events-container" id="eventsContainer">
-            <!-- Events will be loaded dynamically -->
-        </div>
-    </div>
-</div>
-
-<!-- Reading Events Content (Separated) -->
-<div class="sidebar-content-panel" id="reading-events-content">
-    <div class="section-header">
-        <h2 class="section-title">Reading Events & Literary Programs</h2>
-        <div class="header-buttons">
-            <button class="btn-secondary" onclick="openEventCalendarModal()">📅 Full Calendar</button>
-            <button class="btn-primary" onclick="openCreateEventModal()">+ Create Event</button>
-        </div>
-    </div>
-
-    <div class="events-overview">
-        <div class="event-stat-cards">
-            <div class="event-stat">
-                <span class="stat-icon">📚</span>
-                <div class="stat-info">
-                    <span class="stat-value">8</span>
-                    <span class="stat-label">This Month</span>
-                </div>
-            </div>
-            <div class="event-stat">
-                <span class="stat-icon">✍️</span>
-                <div class="stat-info">
-                    <span class="stat-value">3</span>
-                    <span class="stat-label">Author Visits</span>
-                </div>
-            </div>
-            <div class="event-stat">
-                <span class="stat-icon">🎫</span>
-                <div class="stat-info">
-                    <span class="stat-value">245</span>
-                    <span class="stat-label">Tickets Sold</span>
-                </div>
-            </div>
-            <div class="event-stat">
-                <span class="stat-icon">💰</span>
-                <div class="stat-info">
-                    <span class="stat-value">$1,850</span>
-                    <span class="stat-label">Revenue</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="events-tabs">
-        <button class="event-tab active">All Events</button>
-        <button class="event-tab">Book Signings</button>
-        <button class="event-tab">Author Talks</button>
-        <button class="event-tab">Workshops</button>
-        <button class="event-tab">Children's Events</button>
-        <button class="event-tab">Literary Festivals</button>
-        <button class="event-tab">Past Events</button>
-    </div>
-
-    <div class="events-timeline">
-        <div class="timeline-header">
-            <h3>Upcoming Schedule</h3>
-            <div class="view-toggles">
-                <button class="view-toggle active" data-view="timeline">Timeline</button>
-                <button class="view-toggle" data-view="calendar">Calendar</button>
-                <button class="view-toggle" data-view="list">List</button>
-            </div>
-        </div>
-        <div class="events-container" id="eventsContainer">
-            <!-- Events will be loaded dynamically -->
-        </div>
-    </div>
-</div>
-
-<!-- Clubs Content (Now separate from events) -->
-<div class="sidebar-content-panel" id="clubs-content">
-    <div class="section-header">
-        <h2 class="section-title">Book Clubs & Reading Groups</h2>
-        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
-    </div>
-
-    <div class="clubs-stats">
-        <div class="club-stat">
-            <span class="stat-value">12</span>
-            <span class="stat-label">Active Clubs</span>
-        </div>
-        <div class="club-stat">
-            <span class="stat-value">234</span>
-            <span class="stat-label">Members</span>
-        </div>
-        <div class="club-stat">
-            <span class="stat-value">45</span>
-            <span class="stat-label">Books Read</span>
-        </div>
-        <div class="club-stat">
-            <span class="stat-value">8</span>
-            <span class="stat-label">Meeting This Week</span>
-        </div>
-    </div>
-
-    <div class="clubs-tabs">
-        <button class="clubs-tab active">All Clubs</button>
-        <button class="clubs-tab">Fiction</button>
-        <button class="clubs-tab">Non-Fiction</button>
-        <button class="clubs-tab">Young Readers</button>
-        <button class="clubs-tab">Poetry Circle</button>
-        <button class="clubs-tab">Book-to-Film</button>
-    </div>
-
-    <div class="clubs-grid" id="clubsGrid">
-        <!-- Clubs will be loaded dynamically -->
-    </div>
-</div>
                 <!-- Podcasts Content with Draft Filter -->
                 <div class="sidebar-content-panel" id="podcasts-content">
                     <div class="section-header">
@@ -1257,7 +1186,7 @@
                     </div>
                 </div>
 
-                
+
                 <!-- My Products Content -->
                 <div class="sidebar-content-panel" id="my-products-content">
                     <div class="section-header">
@@ -1735,7 +1664,7 @@
     </div>
 
     <!-- Schedule Modal and other existing modals remain the same... -->
- <!-- Cover Upload Modal -->
+    <!-- Cover Upload Modal -->
     <div class="upload-modal" id="coverUploadModal">
         <div class="modal-content">
             <div class="modal-inner">
@@ -1743,14 +1672,15 @@
                     <h2 class="modal-title">Upload Cover Photo</h2>
                     <button class="modal-close" onclick="closeModal('coverUploadModal')">&times;</button>
                 </div>
-                
+
                 <div class="upload-area" id="coverUploadArea" onclick="document.getElementById('coverInput').click()">
                     <span class="upload-icon">📷</span>
                     <p class="upload-text">Click to upload or drag and drop</p>
                     <p class="upload-hint">Recommended: 1920x400px (JPG, PNG, GIF)</p>
-                    <input type="file" id="coverInput" class="upload-input" accept="image/*" onchange="handleImageSelect(event, 'cover')">
+                    <input type="file" id="coverInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'cover')">
                 </div>
-                
+
                 <div class="preview-container" id="coverPreview">
                     <img src="" alt="Cover preview" class="preview-image" id="coverPreviewImage">
                     <div class="preview-info">
@@ -1768,16 +1698,16 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="upload-progress" id="coverProgress">
                     <div class="progress-bar">
                         <div class="progress-fill" id="coverProgressFill"></div>
                     </div>
                     <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
                 </div>
-                
+
                 <div class="upload-spinner" id="coverSpinner"></div>
-                
+
                 <div class="upload-actions">
                     <button class="btn-upload secondary" onclick="resetUpload('cover')">Change Image</button>
                     <button class="btn-upload primary" onclick="uploadImage('cover')">Upload Cover</button>
@@ -1794,14 +1724,16 @@
                     <h2 class="modal-title">Upload Profile Picture</h2>
                     <button class="modal-close" onclick="closeModal('profileUploadModal')">&times;</button>
                 </div>
-                
-                <div class="upload-area" id="profileUploadArea" onclick="document.getElementById('profileInput').click()">
+
+                <div class="upload-area" id="profileUploadArea"
+                    onclick="document.getElementById('profileInput').click()">
                     <span class="upload-icon">👤</span>
                     <p class="upload-text">Click to upload or drag and drop</p>
                     <p class="upload-hint">Recommended: 500x500px (JPG, PNG, GIF)</p>
-                    <input type="file" id="profileInput" class="upload-input" accept="image/*" onchange="handleImageSelect(event, 'profile')">
+                    <input type="file" id="profileInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'profile')">
                 </div>
-                
+
                 <div class="preview-container" id="profilePreview">
                     <img src="" alt="Profile preview" class="preview-image" id="profilePreviewImage">
                     <div class="preview-info">
@@ -1819,16 +1751,16 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="upload-progress" id="profileProgress">
                     <div class="progress-bar">
                         <div class="progress-fill" id="profileProgressFill"></div>
                     </div>
                     <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
                 </div>
-                
+
                 <div class="upload-spinner" id="profileSpinner"></div>
-                
+
                 <div class="upload-actions">
                     <button class="btn-upload secondary" onclick="resetUpload('profile')">Change Image</button>
                     <button class="btn-upload primary" onclick="uploadImage('profile')">Upload Profile</button>
@@ -1984,8 +1916,8 @@
         </div>
     </footer>
     <!-- Scripts -->
-     <!-- Scripts -->
-     <script>
+    <!-- Scripts -->
+    <script>
         // Modal Functions
         function openCoverUploadModal() {
             document.getElementById('coverUploadModal').classList.add('active');
@@ -2020,10 +1952,10 @@
 
             // Display preview
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 const previewContainer = document.getElementById(`${type}Preview`);
                 const previewImage = document.getElementById(`${type}PreviewImage`);
-                
+
                 previewImage.src = e.target.result;
                 previewContainer.classList.add('active');
 
@@ -2033,7 +1965,7 @@
 
                 // Get image dimensions
                 const img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     document.getElementById(`${type}Dimensions`).textContent = `${this.width} x ${this.height}px`;
                 };
                 img.src = e.target.result;
@@ -2061,7 +1993,7 @@
         function uploadImage(type) {
             const fileInput = document.getElementById(`${type}Input`);
             const file = fileInput.files[0];
-            
+
             if (!file) {
                 alert('Please select an image first');
                 return;
@@ -2078,11 +2010,11 @@
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(interval);
-                    
+
                     setTimeout(() => {
                         alert(`${type === 'cover' ? 'Cover' : 'Profile'} image uploaded successfully!`);
                         closeModal(`${type}UploadModal`);
-                        
+
                         // Update the actual image on the page
                         if (type === 'cover') {
                             // Update cover image
@@ -2099,7 +2031,7 @@
                         }
                     }, 500);
                 }
-                
+
                 document.getElementById(`${type}ProgressFill`).style.width = progress + '%';
                 document.getElementById(`${type}ProgressText`).textContent = `Uploading... ${Math.round(progress)}%`;
             }, 200);
@@ -2108,20 +2040,20 @@
         // Drag and drop functionality
         ['cover', 'profile'].forEach(type => {
             const uploadArea = document.getElementById(`${type}UploadArea`);
-            
+
             uploadArea.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
             });
-            
+
             uploadArea.addEventListener('dragleave', () => {
                 uploadArea.classList.remove('dragover');
             });
-            
+
             uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
                 uploadArea.classList.remove('dragover');
-                
+
                 const files = e.dataTransfer.files;
                 if (files.length > 0) {
                     const fileInput = document.getElementById(`${type}Input`);
@@ -2139,7 +2071,7 @@
                 this.lastScrollY = window.scrollY;
                 this.isAnimating = false;
                 this.footerObserver = null;
-                
+
                 if (this.sidebar) {
                     this.init();
                 }
@@ -2153,7 +2085,7 @@
 
             setupScrollListener() {
                 let ticking = false;
-                
+
                 window.addEventListener('scroll', () => {
                     if (!ticking) {
                         window.requestAnimationFrame(() => {
@@ -2168,12 +2100,12 @@
             handleScroll() {
                 const currentScrollY = window.scrollY;
                 const scrollDirection = currentScrollY > this.lastScrollY ? 'down' : 'up';
-                
+
                 // Check footer visibility
                 if (this.footer) {
                     const footerRect = this.footer.getBoundingClientRect();
                     const windowHeight = window.innerHeight;
-                    
+
                     if (footerRect.top < windowHeight) {
                         const footerOffset = windowHeight - footerRect.top;
                         this.adjustSidebarForFooter(footerOffset);
@@ -2181,19 +2113,19 @@
                         this.resetSidebar();
                     }
                 }
-                
+
                 this.lastScrollY = currentScrollY;
             }
 
             setupFooterObserver() {
                 if (!this.footer) return;
-                
+
                 const options = {
                     root: null,
                     rootMargin: '100px',
                     threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
                 };
-                
+
                 this.footerObserver = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -2204,20 +2136,20 @@
                         }
                     });
                 }, options);
-                
+
                 this.footerObserver.observe(this.footer);
             }
 
             smoothAdjustSidebar(footerOffset) {
                 if (this.isAnimating) return;
-                
+
                 this.isAnimating = true;
                 this.sidebar.classList.add('sliding-up');
-                
+
                 // Set CSS variable for dynamic height
                 this.sidebar.style.setProperty('--footer-offset', `${footerOffset}px`);
                 this.sidebar.classList.add('footer-visible');
-                
+
                 // Smooth animation
                 setTimeout(() => {
                     this.sidebar.classList.remove('sliding-up');
@@ -2228,7 +2160,7 @@
             adjustSidebarForFooter(footerOffset) {
                 const sidebarHeight = window.innerHeight - 60 - footerOffset;
                 this.sidebar.style.height = `${Math.max(sidebarHeight, 200)}px`;
-                
+
                 // Add smooth transition effect
                 if (!this.sidebar.style.transition) {
                     this.sidebar.style.transition = 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -2252,7 +2184,7 @@
         // Initialize sidebar manager when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             const sidebarManager = new SidebarManager();
-            
+
             // Smooth scroll for anchor links
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
