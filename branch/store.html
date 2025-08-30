@@ -10,6 +10,155 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+.deals-widget-special {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+}
+
+.deals-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.deals-badge-live {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: #10B981;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.deals-countdown-mini {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.countdown-unit {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.deal-item-mini {
+  display: flex;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.deal-book-thumb {
+  width: 60px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.deal-info {
+  flex: 1;
+}
+
+.deal-discount {
+  display: inline-block;
+  background: #EF4444;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.deal-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.deal-price {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.price-old {
+  text-decoration: line-through;
+  opacity: 0.7;
+  font-size: 0.75rem;
+}
+
+.price-new {
+  font-weight: 700;
+}
+
+.deals-widget-cta {
+  width: 100%;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.deals-widget-cta:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Sticky Category Navigation */
+.category-nav-sticky {
+  position: sticky;
+  top: 73px; /* Adjust based on your main nav height */
+  z-index: 40;
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .category-nav-sticky {
+  background: rgba(31, 41, 55, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* When scrolled */
+.category-nav-sticky.scrolled {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Ensure proper spacing */
+.category-scroll {
+  padding: 1rem 0;
+}
+</style>
 </head>
 
 <body class="font-sans bg-gray-100 relative overflow-x-hidden">
@@ -665,6 +814,31 @@
                 <!-- Carousel items will be dynamically inserted -->
               </div>
             </div>
+<div class="special-deals-ad">
+                <div class="deals-ad-content">
+                  <div class="deals-ad-left">
+                    <h2>🎯 Special Weekend Deals!</h2>
+                    <p>Get up to 70% OFF on selected titles</p>
+                    <button onclick="filterByGenre('deals')" class="deals-cta-btn">Shop Deals</button>
+                  </div>
+                  <div class="deals-ad-right">
+                    <div class="deal-timer" id="dealTimer">
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealHours">00</span>
+                        <span class="timer-label">Hours</span>
+                      </div>
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealMinutes">00</span>
+                        <span class="timer-label">Minutes</span>
+                      </div>
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealSeconds">00</span>
+                        <span class="timer-label">Seconds</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
             <!-- Books Grid with integrated sections -->
             <div class="books-section-modern" id="booksSection">
@@ -702,6 +876,31 @@
               <!-- More books -->
               <div class="books-grid-modern" id="booksGrid2">
                 <!-- More book cards -->
+              </div>
+<div class="special-deals-ad">
+                <div class="deals-ad-content">
+                  <div class="deals-ad-left">
+                    <h2>🎯 Special Weekend Deals!</h2>
+                    <p>Get up to 70% OFF on selected titles</p>
+                    <button onclick="filterByGenre('deals')" class="deals-cta-btn">Shop Deals</button>
+                  </div>
+                  <div class="deals-ad-right">
+                    <div class="deal-timer" id="dealTimer">
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealHours">00</span>
+                        <span class="timer-label">Hours</span>
+                      </div>
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealMinutes">00</span>
+                        <span class="timer-label">Minutes</span>
+                      </div>
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealSeconds">00</span>
+                        <span class="timer-label">Seconds</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- New Arrivals Section -->
@@ -779,6 +978,59 @@
 
           <!-- Sidebar -->
           <aside class="sidebar-modern">
+
+            <!-- Special Deals Widget - Add this above Popular Authors -->
+<div class="widget-modern deals-widget-special">
+  <div class="deals-widget-header">
+    <div class="deals-badge-live">
+      <span class="live-dot"></span>
+      <span>LIVE DEALS</span>
+    </div>
+    <div class="deals-countdown-mini">
+      <span class="countdown-unit">
+        <span id="sidebarHours">24</span>h
+      </span>
+      <span class="countdown-unit">
+        <span id="sidebarMinutes">00</span>m
+      </span>
+      <span class="countdown-unit">
+        <span id="sidebarSeconds">00</span>s
+      </span>
+    </div>
+  </div>
+  
+  <div class="deals-widget-body">
+    <div class="deal-item-mini">
+      <img src="https://picsum.photos/seed/deal1/60/80" alt="Deal Book" class="deal-book-thumb">
+      <div class="deal-info">
+        <div class="deal-discount">-70%</div>
+        <div class="deal-title">Extreme Math Bundle</div>
+        <div class="deal-price">
+          <span class="price-old">ETB 1,350</span>
+          <span class="price-new">ETB 405</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="deal-item-mini">
+      <img src="https://picsum.photos/seed/deal2/60/80" alt="Deal Book" class="deal-book-thumb">
+      <div class="deal-info">
+        <div class="deal-discount">-50%</div>
+        <div class="deal-title">Grade 12 Complete Set</div>
+        <div class="deal-price">
+          <span class="price-old">ETB 2,200</span>
+          <span class="price-new">ETB 1,100</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <button onclick="filterByGenre('deals')" class="deals-widget-cta">
+    <span>View All Deals</span>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+    </svg>
+  </button>
+</div>
             <!-- Popular Authors Widget -->
             <div class="widget-modern authors-widget">
               <div class="widget-header-modern">
