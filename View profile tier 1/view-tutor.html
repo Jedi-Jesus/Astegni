@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        
         /* View-specific styles */
         .view-mode-badge {
             background: linear-gradient(135deg, #667eea, #764ba2);
@@ -326,7 +325,6 @@
             color: #999;
             cursor: not-allowed;
         }
-        
     </style>
 </head>
 
@@ -410,6 +408,14 @@
                     <span class="sidebar-btn-icon">📦</span>
                     <span>Packages, Schedule & booking</span>
                 </button>
+                <button class="sidebar-btn" data-content="parent-preferences">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Parent Preferences</span>
+                </button>
+                <button class="sidebar-btn" data-content="payment-history">
+                    <span class="sidebar-btn-icon">💳</span>
+                    <span>Payment History</span>
+                </button>
                 <button class="sidebar-btn" data-content="tutor-reviews">
                     <span class="sidebar-btn-icon">⭐</span>
                     <span>Reviews & Ratings</span>
@@ -438,11 +444,6 @@
                         <span>Notes</span>
                     </button>
                 </a>
-
-                <button class="sidebar-btn" data-content="share">
-                    <span class="sidebar-btn-icon">🔗</span>
-                    <span>Share</span>
-                </button>
                 <button class="sidebar-btn" data-content="settings">
                     <span class="sidebar-btn-icon">⚙️</span>
                     <span>Settings</span>
@@ -1446,32 +1447,32 @@
             document.body.classList.toggle('dark-theme');
         }
         function toggleSidebar() {
-    const sidebar = document.getElementById('leftSidebar');
-    const mainContainer = document.querySelector('.main-container');
-    
-    // Toggle the closed class instead of active
-    sidebar.classList.toggle('closed');
-    
-    // Also toggle the sidebar state on main container
-    if (sidebar.classList.contains('closed')) {
-        mainContainer.classList.add('sidebar-closed');
-        mainContainer.classList.remove('with-sidebar');
-    } else {
-        mainContainer.classList.remove('sidebar-closed');
-        mainContainer.classList.add('with-sidebar');
-    }
-}
+            const sidebar = document.getElementById('leftSidebar');
+            const mainContainer = document.querySelector('.main-container');
 
-// Optional: Start with sidebar closed on mobile
-document.addEventListener('DOMContentLoaded', function() {
-    if (window.innerWidth <= 768) {
-        const sidebar = document.getElementById('leftSidebar');
-        const mainContainer = document.querySelector('.main-container');
-        sidebar.classList.add('closed');
-        mainContainer.classList.add('sidebar-closed');
-        mainContainer.classList.remove('with-sidebar');
-    }
-});
+            // Toggle the closed class instead of active
+            sidebar.classList.toggle('closed');
+
+            // Also toggle the sidebar state on main container
+            if (sidebar.classList.contains('closed')) {
+                mainContainer.classList.add('sidebar-closed');
+                mainContainer.classList.remove('with-sidebar');
+            } else {
+                mainContainer.classList.remove('sidebar-closed');
+                mainContainer.classList.add('with-sidebar');
+            }
+        }
+
+        // Optional: Start with sidebar closed on mobile
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.innerWidth <= 768) {
+                const sidebar = document.getElementById('leftSidebar');
+                const mainContainer = document.querySelector('.main-container');
+                sidebar.classList.add('closed');
+                mainContainer.classList.add('sidebar-closed');
+                mainContainer.classList.remove('with-sidebar');
+            }
+        });
     </script>
 </body>
 
