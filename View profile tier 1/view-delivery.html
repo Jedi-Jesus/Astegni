@@ -246,8 +246,14 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-                <span class="logo-icon">🎯</span>
-                <span class="logo-text gradient-text">Astegni</span>
+            <a href="../index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Delivery</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
             </div>
             <div class="nav-menu">
                 <a href="../branch/news.html" class="nav-link">
@@ -357,6 +363,11 @@
             </div>
 
             <div class="sidebar-section" data-content="my-actions">
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">🛒</span>
+                    <span>My Store</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
                 <button class="sidebar-btn" data-content="my-purchases">
                     <span class="sidebar-btn-icon">📦</span>
                     <span>My Purchases</span>
@@ -999,7 +1010,7 @@
                         <div class="professional-card">
                             <img src="../pictures/profile1.jpg" alt="Professional" class="professional-avatar">
                             <div class="professional-info">
-                                <h3>Jane Smith</h3>
+                                <h3>Judi Assefa</h3>
                                 <div class="professional-rating">⭐ 4.8 (234 reviews)</div>
                                 <p class="professional-location">📍 Megenagna/p>
                                 <p class="professional-specialty">Specializes in fragile items</p>
@@ -1014,7 +1025,7 @@
                         <div class="professional-card">
                             <img src="../pictures/profile2.jpg" alt="Professional" class="professional-avatar">
                             <div class="professional-info">
-                                <h3>Mike Johnson</h3>
+                                <h3>Mikiyas Yohannes</h3>
                                 <div class="professional-rating">⭐ 4.6 (189 reviews)</div>
                                 <p class="professional-location">📍 Piyassa</p>
                                 <p class="professional-specialty">Express delivery expert</p>
@@ -1029,7 +1040,7 @@
                         <div class="professional-card">
                             <img src="../pictures/profile3.jpg" alt="Professional" class="professional-avatar">
                             <div class="professional-info">
-                                <h3>Sarah Lee</h3>
+                                <h3>Sarah Lema</h3>
                                 <div class="professional-rating">⭐ 4.9 (412 reviews)</div>
                                 <p class="professional-location">📍 22</p>
                                 <p class="professional-specialty">Business deliveries</p>
@@ -1044,7 +1055,7 @@
                         <div class="professional-card">
                             <img src="../pictures/profile4.jpg" alt="Professional" class="professional-avatar">
                             <div class="professional-info">
-                                <h3>David Chen</h3>
+                                <h3>Dawit Chanyalew</h3>
                                 <div class="professional-rating">⭐ 4.7 (156 reviews)</div>
                                 <p class="professional-location">📍 Hayat</p>
                                 <p class="professional-specialty">Medical supplies</p>
@@ -1233,7 +1244,7 @@
                             <div class="store-trend">
                                 <div class="trend-stat">
                                     <span>Daily Sales</span>
-                                    <span class="trend-value">$24.5K</span>
+                                    <span class="trend-value">Etb24.5K</span>
                                     <span class="change up">↑ 12%</span>
                                 </div>
                                 <div class="trend-stat">
@@ -2504,6 +2515,7 @@
         document.head.appendChild(style);
     </script>
 
+    <script src="../js/auth.js"></script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>

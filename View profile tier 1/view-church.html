@@ -17,8 +17,14 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-                <span class="logo-icon">🎯</span>
-                <span class="logo-text gradient-text">Astegni</span>
+            <a href="../index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Church</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
             </div>
             <div class="nav-menu">
                 <a href="../branch/news.html" class="nav-link">
@@ -129,6 +135,11 @@
 
             <!-- User Actions -->
             <div class="sidebar-section" data-content="my-actions">
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">🛒</span>
+                    <span>My Store</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
                 <button class="sidebar-btn" data-content="my-purchases">
                     <span class="sidebar-btn-icon">📦</span>
                     <span>My Purchases</span>
@@ -1700,6 +1711,7 @@
     </footer>
 
     <!-- Scripts -->
+    <script src="../js/auth.js"></script>
     <script src="../js/view-church.js"></script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>

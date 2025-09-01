@@ -237,8 +237,14 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-                <span class="logo-icon">🎯</span>
-                <span class="logo-text gradient-text">Astegni</span>
+            <a href="../index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Church</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
             </div>
             <div class="nav-menu">
                 <a href="../branch/news.html" class="nav-link">
@@ -383,17 +389,16 @@
                     <span>My Classes</span>
                     <span class="sidebar-badge">5</span>
                 </button>
-                <button class="sidebar-btn" data-content="resources">
-                    <span class="sidebar-btn-icon">📚</span>
-                    <span>My Resources</span>
+            </div>
+            <div class="sidebar-section" data-content="my-actions">
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">🛒</span>
+                    <span>My Store</span>
                     <span class="sidebar-badge">5</span>
                 </button>
-
-            </div>
-            <div class="sidebar-section" data-content="permanent">
-                <button class="sidebar-btn" data-content="my-products">
+                <button class="sidebar-btn" data-content="my-purchases">
                     <span class="sidebar-btn-icon">📦</span>
-                    <span>My Products</span>
+                    <span>My Purchases</span>
                 </button>
                 <a href='../Plug-ins/notes.html'>
                     <button class="sidebar-btn" data-content="notes">
@@ -401,9 +406,9 @@
                         <span>Notes</span>
                     </button>
                 </a>
-                <button class="sidebar-btn" data-content="share">
-                    <span class="sidebar-btn-icon">🔗</span>
-                    <span>Share</span>
+                            <button class="sidebar-btn" data-content="my-community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>My community</span>
                 </button>
                 <button class="sidebar-btn" data-content="settings">
                     <span class="sidebar-btn-icon">⚙️</span>
@@ -3692,6 +3697,8 @@ function uploadResource() {
     console.log('Uploading resource');
 }
 </script>
+
+    <script src="../js/auth.js"></script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>

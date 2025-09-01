@@ -19,17 +19,22 @@
     <!-- Navigation -->
     <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
         <div class="container mx-auto flex justify-between items-center">
-                    <div class="nav-left">
-            <span class="hamburger" id="hamburger">
-                <span></span>
-                <span></span>
-                <span></span>
-            </span>
-            <a href="../index.html" class="logo">Astegni</a>
-        </div>
-            <a href="../index.html" class="text-2xl font-bold">ASTEGNI</a>
+            <div class="nav-left">
+                <span class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </div> 
+                        <a href="../index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Home</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
             <div class="hidden md:flex space-x-6 items-center">
-                <a href="../index.html" class="hover:text-[var(--nav-link-hover)]">Home</a>
                 <a href="find-tutors.html" class="hover:text-[var(--nav-link-hover)]">Find Tutors</a>
                 <a href="reels.html" class="hover:text-[var(--nav-link-hover)]">Reels</a>
                 <div class="relative">
@@ -112,205 +117,205 @@
     <!-- Sidebar Filter -->
     <aside id="sidebar" class="sidebar-container">
         <div class="sidebar-content">
-              <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
+            <!-- Sidebar -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">
+                </div>
+                <nav class="sidebar-nav">
+                    <h3>Menu</h3>
+                    <span class="sidebar-close" id="sidebar-close">&times;</span>
+                    <a href="#" class="sidebar-link" data-action="my-courses">
+                        <span class="sidebar-icon">📚</span>
+                        <span>My Courses</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">💰</span>
+                        <span>Manage Finances</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">📝</span>
+                        <span>Notes</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">🛠️</span>
+                        <span>Tools</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">👥</span>
+                        <span>Followings</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">⭐</span>
+                        <span>Wishlists</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">❤️</span>
+                        <span>Favorites</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">💾</span>
+                        <span>Saved Items</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">📦</span>
+                        <span>My Products</span>
+                    </a>
+                    <div class="sidebar-submenu">
+                        <a href="#" class="sidebar-link sidebar-parent">
+                            <span class="sidebar-icon">📋</span>
+                            <span>My Requests</span>
+                            <span class="sidebar-arrow">▼</span>
+                        </a>
+                        <div class="submenu-items">
+                            <a href="#" class="sidebar-link submenu-item">Requested Courses</a>
+                            <a href="#" class="sidebar-link submenu-item">Request Course - Parent</a>
+                            <a href="#" class="sidebar-link submenu-item">Request Course - Tutor</a>
+                        </div>
+                    </div>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">🎓</span>
+                        <span>Become a Tutor</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">💬</span>
+                        <span>Comment and Rate Us</span>
+                    </a>
+                    <a href="#" class="sidebar-link">
+                        <span class="sidebar-icon">🔗</span>
+                        <span>Share Us</span>
+                    </a>
+                </nav>
+            </div>
         </div>
-        <nav class="sidebar-nav">  
-            <h3>Menu</h3>
-            <span class="sidebar-close" id="sidebar-close">&times;</span>
-            <a href="#" class="sidebar-link" data-action="my-courses">
-                <span class="sidebar-icon">📚</span>
-                <span>My Courses</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">💰</span>
-                <span>Manage Finances</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">📝</span>
-                <span>Notes</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">🛠️</span>
-                <span>Tools</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">👥</span>
-                <span>Followings</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">⭐</span>
-                <span>Wishlists</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">❤️</span>
-                <span>Favorites</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">💾</span>
-                <span>Saved Items</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">📦</span>
-                <span>My Products</span>
-            </a>
-            <div class="sidebar-submenu">
-                <a href="#" class="sidebar-link sidebar-parent">
-                    <span class="sidebar-icon">📋</span>
-                    <span>My Requests</span>
-                    <span class="sidebar-arrow">▼</span>
-                </a>
-                <div class="submenu-items">
-                    <a href="#" class="sidebar-link submenu-item">Requested Courses</a>
-                    <a href="#" class="sidebar-link submenu-item">Request Course - Parent</a>
-                    <a href="#" class="sidebar-link submenu-item">Request Course - Tutor</a>
-                </div>
-            </div>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">🎓</span>
-                <span>Become a Tutor</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">💬</span>
-                <span>Comment and Rate Us</span>
-            </a>
-            <a href="#" class="sidebar-link">
-                <span class="sidebar-icon">🔗</span>
-                <span>Share Us</span>
-            </a>
-        </nav>
-    </div>
-</div>
-</aside>
+    </aside>
 
-        <!-- Profile Header -->
-        <section class="profile-header">
-            <div class="cover-photo">
-                <img src="placeholder-cover.jpg" alt="Cover Photo" class="cover-img">
-                <span class="edit-icon cover-edit">✏️</span>
-            </div>
-                <div class="profile-picture">
-                    <img src="placeholder-profile.jpg" alt="Profile Picture" class="profile-img">
-                    <span class="edit-icon profile-edit">✏️</span>
+    <!-- Profile Header -->
+    <section class="profile-header">
+        <div class="cover-photo">
+            <img src="placeholder-cover.jpg" alt="Cover Photo" class="cover-img">
+            <span class="edit-icon cover-edit">✏️</span>
+        </div>
+        <div class="profile-picture">
+            <img src="placeholder-profile.jpg" alt="Profile Picture" class="profile-img">
+            <span class="edit-icon profile-edit">✏️</span>
+        </div>
+        <div class="profile-main">
+            <div class="profile-info">
+                <div class="profile-header-top">
+                    <h1>John Doe</h1>
+                    <span class="verified-badge verified">✓ Verified</span>
                 </div>
-            <div class="profile-main">
-                <div class="profile-info">
-                    <div class="profile-header-top">
-                        <h1>John Doe</h1>
-                        <span class="verified-badge verified">✓ Verified</span>
-                    </div>
-                    <div class="rating-container">
-                        <span class="rating">
-                            <span class="stars">★★★★☆</span>
-                            <span class="rating-text">4.5/5</span>
-                        </span>
-                        <div class="rating-tooltip">
-                            <div class="tooltip-item">
-                                <span>Class Activity</span>
-                                <div class="progress-bar-mini">
-                                    <div class="progress-fill" style="width: 80%"></div>
-                                </div>
-                                <span>80%</span>
+                <div class="rating-container">
+                    <span class="rating">
+                        <span class="stars">★★★★☆</span>
+                        <span class="rating-text">4.5/5</span>
+                    </span>
+                    <div class="rating-tooltip">
+                        <div class="tooltip-item">
+                            <span>Class Activity</span>
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill" style="width: 80%"></div>
                             </div>
-                            <div class="tooltip-item">
-                                <span>Discipline</span>
-                                <div class="progress-bar-mini">
-                                    <div class="progress-fill" style="width: 85%"></div>
-                                </div>
-                                <span>85%</span>
+                            <span>80%</span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span>Discipline</span>
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill" style="width: 85%"></div>
                             </div>
-                            <div class="tooltip-item">
-                                <span>Punctuality</span>
-                                <div class="progress-bar-mini">
-                                    <div class="progress-fill" style="width: 90%"></div>
-                                </div>
-                                <span>90%</span>
+                            <span>85%</span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span>Punctuality</span>
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill" style="width: 90%"></div>
                             </div>
-                            <div class="tooltip-item">
-                                <span>Communication</span>
-                                <div class="progress-bar-mini">
-                                    <div class="progress-fill" style="width: 75%"></div>
-                                </div>
-                                <span>75%</span>
+                            <span>90%</span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span>Communication</span>
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill" style="width: 75%"></div>
                             </div>
-                            <div class="tooltip-item">
-                                <span>Subject Intake</span>
-                                <div class="progress-bar-mini">
-                                    <div class="progress-fill" style="width: 88%"></div>
-                                </div>
-                                <span>88%</span>
+                            <span>75%</span>
+                        </div>
+                        <div class="tooltip-item">
+                            <span>Subject Intake</span>
+                            <div class="progress-bar-mini">
+                                <div class="progress-fill" style="width: 88%"></div>
                             </div>
+                            <span>88%</span>
                         </div>
                     </div>
-                    <div class="profile-details">
-                        <div class="detail-item">
-                            <span class="detail-icon">📱</span>
-                            <span>(123) 456-7890</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-icon">✉️</span>
-                            <span>john.doe@example.com</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-icon">📍</span>
-                            <span>New York, NY</span>
-                        </div>
+                </div>
+                <div class="profile-details">
+                    <div class="detail-item">
+                        <span class="detail-icon">📱</span>
+                        <span>(123) 456-7890</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">✉️</span>
+                        <span>john.doe@example.com</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-icon">📍</span>
+                        <span>New York, NY</span>
+                    </div>
 
-                    </div>
-                    <div class="profile-bio">
-                        <p><strong>Bio:</strong> Passionate about learning and technology.</p>
-                        <p><strong>Quote:</strong> <em>"Knowledge is power."</em></p>
-                    </div>
-                    <div class="profile-actions">
-                        <button class="btn btn-primary edit-profile-btn">
-                            <span class="btn-icon">✏️</span>
-                            Edit Profile
-                        </button>
-                        <button class="btn btn-primary view-admin-comments">
-                            <span class="btn-icon">✏️</span>
-                            View Admin Comments
-                        </button>
-                    </div>
+                </div>
+                <div class="profile-bio">
+                    <p><strong>Bio:</strong> Passionate about learning and technology.</p>
+                    <p><strong>Quote:</strong> <em>"Knowledge is power."</em></p>
+                </div>
+                <div class="profile-actions">
+                    <button class="btn btn-primary edit-profile-btn">
+                        <span class="btn-icon">✏️</span>
+                        Edit Profile
+                    </button>
+                    <button class="btn btn-primary view-admin-comments">
+                        <span class="btn-icon">✏️</span>
+                        View Admin Comments
+                    </button>
                 </div>
             </div>
-        </section>
+        </div>
+    </section>
     <!-- Admin Dashboard -->
     <section class="py-16">
         <div class="container mx-auto px-4">
             <h2 class="text-3xl font-bold mb-8">Admin Dashboard</h2>
-            
-                <div>
-                    <div class="dashboard-grid mb-6">
-                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.1s;">
-                            <h3 class="text-lg font-semibold">Pending Ad Reviews</h3>
-                            <p id="pending-reviews" class="text-2xl font-bold">0</p>
-                        </div>
-                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.2s;">
-                            <h3 class="text-lg font-semibold">School Listing Requests</h3>
-                            <p id="school-listing-requests" class="text-2xl font-bold">0</p>
-                        </div>
-                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.3s;">
-                            <h3 class="text-lg font-semibold">Requested Courses</h3>
-                            <p id="requested-courses-count" class="text-2xl font-bold">0</p>
-                        </div>
+
+            <div>
+                <div class="dashboard-grid mb-6">
+                    <div class="card p-4 animate-fadeIn" style="animation-delay: 0.1s;">
+                        <h3 class="text-lg font-semibold">Pending Ad Reviews</h3>
+                        <p id="pending-reviews" class="text-2xl font-bold">0</p>
                     </div>
-                    <div class="dashboard-grid-second-row mb-6">
-                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.4s;">
-                            <h3 class="text-lg font-semibold">Tutor Confirmations</h3>
-                            <p id="tutor-confirmations" class="text-2xl font-bold">0</p>
-                        </div>
-                        <div class="card p-4 animate-fadeIn" style="animation-delay: 0.5s;">
-                            <h3 class="text-lg font-semibold">Astegni Comments</h3>
-                            <p id="user-comments" class="text-2xl font-bold">0</p>
-                        </div>
+                    <div class="card p-4 animate-fadeIn" style="animation-delay: 0.2s;">
+                        <h3 class="text-lg font-semibold">School Listing Requests</h3>
+                        <p id="school-listing-requests" class="text-2xl font-bold">0</p>
                     </div>
-                    <div class="flex space-x-4">
-                        <button onclick="openSystemImageModal()" class="px-4 py-2 rounded-lg cta-button">Upload System
-                            Image</button>
-                        <button onclick="openUploadNewsModal()" class="px-4 py-2 rounded-lg cta-button">Upload
-                            News</button>
+                    <div class="card p-4 animate-fadeIn" style="animation-delay: 0.3s;">
+                        <h3 class="text-lg font-semibold">Requested Courses</h3>
+                        <p id="requested-courses-count" class="text-2xl font-bold">0</p>
                     </div>
+                </div>
+                <div class="dashboard-grid-second-row mb-6">
+                    <div class="card p-4 animate-fadeIn" style="animation-delay: 0.4s;">
+                        <h3 class="text-lg font-semibold">Tutor Confirmations</h3>
+                        <p id="tutor-confirmations" class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="card p-4 animate-fadeIn" style="animation-delay: 0.5s;">
+                        <h3 class="text-lg font-semibold">Astegni Comments</h3>
+                        <p id="user-comments" class="text-2xl font-bold">0</p>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <button onclick="openSystemImageModal()" class="px-4 py-2 rounded-lg cta-button">Upload System
+                        Image</button>
+                    <button onclick="openUploadNewsModal()" class="px-4 py-2 rounded-lg cta-button">Upload
+                        News</button>
+                </div>
             </div>
 
 
@@ -537,8 +542,9 @@
     </section>
 
     <!-- Modals -->
-     <!-- Edit Cover Photo Modal -->
-    <div id="cover-pic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20" role="dialog" aria-modal="true" aria-label="Upload Cover Photo">
+    <!-- Edit Cover Photo Modal -->
+    <div id="cover-pic-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20"
+        role="dialog" aria-modal="true" aria-label="Upload Cover Photo">
         <div class="modal-content p-6 rounded-lg w-full max-w-md max-h-[80vh] overflow-y-auto">
             <h3 class="text-2xl font-bold mb-4">Upload Cover Photo</h3>
             <input type="file" id="cover-pic-upload" accept="image/*" class="w-full p-2 border rounded-lg mb-4">
@@ -920,15 +926,18 @@
     <footer class="footer-section">
         <div class="footer-wave">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+                <path
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
             </svg>
         </div>
-        
+
         <div class="container mx-auto px-4">
             <div class="footer-content">
                 <div class="footer-section-item">
                     <h3 class="footer-title">About Astegni</h3>
-                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
                     <div class="footer-stats">
                         <div class="stat-item">
                             <span class="stat-number">10k+</span>
@@ -944,7 +953,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Quick Links</h3>
                     <ul class="footer-links">
@@ -956,7 +965,7 @@
                         <li><a href="#" class="footer-link">Careers</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Support</h3>
                     <ul class="footer-links">
@@ -968,27 +977,46 @@
                         <li><a href="#" class="footer-link">Safety</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Connect With Us</h3>
                     <div class="social-links">
                         <a href="#" aria-label="Facebook" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Twitter" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="LinkedIn" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
                         </a>
                         <a href="#" aria-label="YouTube" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
+                            </svg>
                         </a>
                     </div>
-                    
+
                     <div class="newsletter-signup">
                         <h4>Subscribe to Newsletter</h4>
                         <form class="newsletter-form">
@@ -998,7 +1026,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <div class="footer-bottom-content">
                     <p>&copy; 2025 Astegni. All rights reserved.</p>

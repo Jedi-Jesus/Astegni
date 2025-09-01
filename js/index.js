@@ -6,6 +6,33 @@
 // Add this to your index.js file - Replace the existing handleRegister function and updateUIForLoggedInUser function
 
 // Update the APP_STATE to include userRole
+
+// API Configuration
+const API_BASE_URL = 'http://localhost:8000';
+
+// Helper function for API calls
+async function apiCall(endpoint, method = 'GET', body = null, token = null) {
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    const config = {
+        method,
+        headers,
+    };
+    
+    if (body) {
+        config.body = JSON.stringify(body);
+    }
+    
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    return response;
+}
+
 const APP_STATE = {
     isLoggedIn: false,
     currentUser: null,
@@ -19,6 +46,7 @@ const APP_STATE = {
 };
 // Profile URL mapping based on user role
 const PROFILE_URLS = {
+    'user': 'My Profile tier 1/user-profile.html',
     'tutor': 'My Profile tier 1/tutor-profile.html',
     'student': 'My Profile tier 1/student-profile.html',
     'guardian': 'My Profile tier 1/parent-profile.html',
@@ -150,8 +178,11 @@ const VIDEO_DATA = [
 // ============================================
 //   INITIALIZATION
 // ============================================
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
+        // Verify authentication first
+        const isAuthenticated = await AuthManager.verifyAndRestoreAuth();
+        
         // Initialize theme
         initializeTheme();
         
@@ -174,6 +205,15 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeTooltips();
         initializeLazyLoading();
         
+        // Update UI if user is authenticated
+        if (isAuthenticated) {
+            updateUIForLoggedInUser();
+            updateProfileLink(APP_STATE.userRole);
+        }
+        
+        // Load real data from API
+        await loadRealData();
+        
         // Hide loading screen
         setTimeout(() => {
             const loadingScreen = document.getElementById('loading-screen');
@@ -186,6 +226,25 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Initialization error:', error);
     }
 });
+async function loadRealData() {
+    try {
+        // Load counters
+        const countersResponse = await apiCall('/api/counters');
+        if (countersResponse.ok) {
+            const counters = await countersResponse.json();
+            counters.forEach(counter => {
+                const element = document.getElementById(`counter-${counter.counter_type}`);
+                if (element) {
+                    animateCounter(element, counter.count, '+');
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Failed to load data:', error);
+    }
+}
+
+
 // Initialize on page load - check if user is already logged in
 document.addEventListener('DOMContentLoaded', () => {
     // Check for saved user session
@@ -202,6 +261,72 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+
+// Authentication Manager
+const AuthManager = {
+    async verifyAndRestoreAuth() {
+        const token = localStorage.getItem('token');
+        if (!token) return false;
+        
+        try {
+            const response = await apiCall('/api/verify-token', 'GET', null, token);
+            if (response.ok) {
+                const data = await response.json();
+                
+                // Update APP_STATE with verified user data
+                APP_STATE.isLoggedIn = true;
+                APP_STATE.currentUser = {
+                    name: `${data.user.first_name} ${data.user.last_name}`,
+                    email: data.user.email,
+                    role: data.user.role,
+                    ...data.user
+                };
+                APP_STATE.userRole = data.user.role;
+                
+                // Update localStorage with fresh data
+                localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
+                
+                return true;
+            } else {
+                // Token is invalid, clear everything
+                this.clearAuth();
+                return false;
+            }
+        } catch (error) {
+            console.error('Auth verification failed:', error);
+            // On network error, try to use cached data
+            return this.restoreFromCache();
+        }
+    },
+    
+    restoreFromCache() {
+        const savedUser = localStorage.getItem('currentUser');
+        if (savedUser) {
+            try {
+                APP_STATE.currentUser = JSON.parse(savedUser);
+                APP_STATE.userRole = APP_STATE.currentUser.role;
+                APP_STATE.isLoggedIn = true;
+                return true;
+            } catch (error) {
+                this.clearAuth();
+                return false;
+            }
+        }
+        return false;
+    },
+    
+    clearAuth() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('userRole');
+        APP_STATE.isLoggedIn = false;
+        APP_STATE.currentUser = null;
+        APP_STATE.userRole = null;
+    }
+};
+
+// Make it globally available
+window.AuthManager = AuthManager;
 
 // ============================================
 //   THEME MANAGEMENT
@@ -1368,70 +1493,71 @@ function switchModal(fromModal, toModal) {
 }
 
 // Replace the existing handleLogin function to also update profile link
-function handleLogin(e) {
+async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('login-email')?.value;
     const password = document.getElementById('login-password')?.value;
     
-    // Simulate login - in real app, you'd fetch user data including role from server
-    if (email && password) {
-        // Check if user data exists in localStorage (for demo purposes)
-        const savedUser = localStorage.getItem('currentUser');
-        const savedRole = localStorage.getItem('userRole');
+    try {
+        const response = await apiCall('/api/login', 'POST', { email, password });
         
-        if (savedUser && savedRole) {
-            APP_STATE.currentUser = JSON.parse(savedUser);
-            APP_STATE.userRole = savedRole;
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('token', data.access_token);
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            
+            APP_STATE.isLoggedIn = true;
+            APP_STATE.currentUser = data.user;
+            APP_STATE.userRole = data.user.role;
+            
+            updateUIForLoggedInUser();
+            updateProfileLink(data.user.role);
+            closeModal('login-modal');
+            showToast('Welcome back!', 'success');
         } else {
-            // Default to student if no role is saved (for demo)
-            APP_STATE.userRole = 'student';
-            APP_STATE.currentUser = { 
-                name: 'John Doe', 
-                email: email,
-                role: 'student'
-            };
+            showToast('Invalid credentials', 'error');
         }
-        
-        APP_STATE.isLoggedIn = true;
-        
-        updateUIForLoggedInUser();
-        updateProfileLink(APP_STATE.userRole); // Update profile link
-        closeModal('login-modal');
-        showToast('Welcome back!', 'success');
+    } catch (error) {
+        showToast('Connection error', 'error');
     }
 }
 
-
 // Replace the existing handleRegister function
-function handleRegister(e) {
+async function handleRegister(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
     
-    const firstName = formData.get('register-firstname');
-    const lastName = formData.get('register-lastname');
-    const email = formData.get('register-email');
-    const role = document.getElementById('register-as')?.value; // Get the selected role
+    const userData = {
+        first_name: formData.get('register-firstname'),
+        last_name: formData.get('register-lastname'),
+        email: formData.get('register-email'),
+        phone: document.getElementById('register-phone')?.value,
+        password: document.getElementById('register-password')?.value,
+        role: document.getElementById('register-as')?.value
+    };
     
-    // Simulate registration
-    if (firstName && lastName && email && role) {
-        APP_STATE.isLoggedIn = true;
-        APP_STATE.userRole = role; // Store the user's role
-        APP_STATE.currentUser = {
-            name: firstName + ' ' + lastName,
-            email: email,
-            role: role // Also store in currentUser object
-        };
+    try {
+        const response = await apiCall('/api/register', 'POST', userData);
         
-        // Save to localStorage for persistence
-        localStorage.setItem('userRole', role);
-        localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
-        
-        updateUIForLoggedInUser();
-        updateProfileLink(role); // Update the profile link based on role
-        closeModal('register-modal');
-        showToast(`Registration successful! Welcome to Astegni as a ${role}!`, 'success');
-    } else {
-        showToast('Please fill all required fields', 'warning');
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('token', data.access_token);
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            
+            APP_STATE.isLoggedIn = true;
+            APP_STATE.currentUser = data.user;
+            APP_STATE.userRole = data.user.role;
+            
+            updateUIForLoggedInUser();
+            updateProfileLink(data.user.role);
+            closeModal('register-modal');
+            showToast('Registration successful!', 'success');
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Registration failed', 'error');
+        }
+    } catch (error) {
+        showToast('Network error. Please try again.', 'error');
     }
 }
 
@@ -1932,7 +2058,10 @@ function scrollToSection(sectionId) {
 }
 
 function handleNavLinkClick(e, link) {
-    if (!APP_STATE.isLoggedIn && link !== 'store') {
+    // Pages that require authentication
+    const protectedPages = ['find-tutors', 'store', 'find-jobs', 'reels'];
+    
+    if (!APP_STATE.isLoggedIn && protectedPages.includes(link)) {
         e.preventDefault();
         showToast('Please login to access this feature', 'warning');
         openModal('login-modal');

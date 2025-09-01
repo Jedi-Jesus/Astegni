@@ -52,8 +52,14 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-                <span class="logo-icon">🎯</span>
-                <span class="logo-text gradient-text">Astegni</span>
+            <a href="../index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Author</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
             </div>
             <div class="nav-menu">
                 <a href="../branch/news.html" class="nav-link">
@@ -116,7 +122,7 @@
                     <span class="sidebar-btn-icon">📰</span>
                     <span>Media Kit</span>
                 </button>
-                                <button class="sidebar-btn" data-content="share">
+                <button class="sidebar-btn" data-content="share">
                     <span class="sidebar-btn-icon">🔗</span>
                     <span>Share</span>
                 </button>
@@ -165,6 +171,11 @@
 
             <!-- User Actions -->
             <div class="sidebar-section" data-content="actions">
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">🛒</span>
+                    <span>My Store</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
                 <button class="sidebar-btn" data-content="my-purchases">
                     <span class="sidebar-btn-icon">📦</span>
                     <span>My Purchases</span>
@@ -179,10 +190,10 @@
                         <span>My Notes</span>
                     </button>
                 </a>
-            <button class="sidebar-btn" data-content="settings">
-                <span class="sidebar-btn-icon">⚙️</span>
-                <span>Settings</span>
-            </button>
+                <button class="sidebar-btn" data-content="settings">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
             </div>
 
             <!-- Author Quick Stats -->
@@ -315,7 +326,8 @@
                         <div class="profile-next-session" id="profileNextSession">
                             <div class="session-alert">
                                 <span class="alert-icon gradient-text">⏰</span>
-                                <span id="nextSessionText"><strong class="gradient-text">Next Event:</strong> Book Signing & Reading - Tomorrow at 3:00 PM EST - Barnes & Noble, 5th Avenue</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Next Event:</strong> Book
+                                    Signing & Reading - Tomorrow at 3:00 PM EST - Barnes & Noble, 5th Avenue</span>
                                 <button class="btn-join-inline" onclick="registerForEvent()">Register</button>
                             </div>
                         </div>
@@ -375,7 +387,11 @@
                     <!-- About Section -->
                     <section class="profile-about-section">
                         <h3>About the Author</h3>
-                        <p id="aboutText">Sarah Mitchell is an award-winning author of contemporary fiction and literary non-fiction. With over 20 published works spanning two decades, she has captivated readers worldwide with her profound storytelling and unique voice. Her work explores themes of identity, belonging, and the human experience, earning her numerous accolades including the prestigious National Book Award and the Pulitzer Prize for Fiction.</p>
+                        <p id="aboutText">Sarah Mitchell is an award-winning author of contemporary fiction and literary
+                            non-fiction. With over 20 published works spanning two decades, she has captivated readers
+                            worldwide with her profound storytelling and unique voice. Her work explores themes of
+                            identity, belonging, and the human experience, earning her numerous accolades including the
+                            prestigious National Book Award and the Pulitzer Prize for Fiction.</p>
                     </section>
 
                     <!-- Social Links -->
@@ -593,7 +609,7 @@
                             </div>
                             <div class="total-reviews">Based on 1,247 reviews</div>
                         </div>
-                        
+
                         <div class="rating-breakdown">
                             <div class="rating-bar-item">
                                 <span>5 stars</span>
@@ -744,7 +760,7 @@
                             <button class="video-tab" onclick="filterVideos('tutorials')">Writing Tips</button>
                         </div>
                     </div>
-                    
+
                     <div class="videos-grid">
                         <!-- Videos will be loaded dynamically -->
                     </div>
@@ -1000,6 +1016,7 @@
             console.log('Sharing profile...');
         }
     </script>
+    <script src="../js/auth.js"></script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>

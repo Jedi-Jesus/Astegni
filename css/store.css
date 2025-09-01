@@ -241,39 +241,6 @@
   margin: 0 auto;
 }
 
-/* Logo Styles */
-.logo-container {
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
-.logo-container:hover {
-  transform: scale(1.05);
-}
-
-.logo-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.logo-main {
-  font-size: 1.5rem;
-  font-weight: 800;
-  background: linear-gradient(135deg, #F59E0B, #D97706);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.logo-sub {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 2px;
-  color: var(--text-muted);
-  text-transform: uppercase;
-}
 
 /* Menu Trigger */
 .menu-trigger {

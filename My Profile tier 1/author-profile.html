@@ -235,8 +235,14 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-                <span class="logo-icon">🎯</span>
-                <span class="logo-text gradient-text">Astegni</span>
+                <a href="../index.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Author</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+
             </div>
             <div class="nav-menu">
                 <a href="../branch/news.html" class="nav-link">
@@ -289,6 +295,10 @@
                     <span>Publications</span>
                     <span class="sidebar-badge">12</span>
                 </button>
+                <button class="sidebar-btn" data-content="media-kit">
+                    <span class="sidebar-btn-icon">📰</span>
+                    <span>Media Kit</span>
+                </button>
                 <button class="sidebar-btn" data-content="writing-tools">
                     <span class="sidebar-btn-icon">🛠️</span>
                     <span>Writing Tools</span>
@@ -335,10 +345,6 @@
                 <span class="sidebar-btn-icon">📅</span>
                 <span>Events</span>
             </button>
-            <button class="sidebar-btn" data-content="media-kit">
-                <span class="sidebar-btn-icon">📰</span>
-                <span>Media Kit</span>
-            </button>
             <button class="sidebar-btn" data-content="clubs">
                 <span class="sidebar-btn-icon">🎭</span>
                 <span>Clubs</span>
@@ -363,90 +369,92 @@
                 <span class="sidebar-btn-icon">🖼️</span>
                 <span>Image Library</span>
             </button>
-
-            <!-- User Actions -->
-            <div class="sidebar-section" data-content="actions">
-                <button class="sidebar-btn" data-content="my-purchases>
+        </div>
+        <!-- User Actions -->
+        <div class="sidebar-section" data-content="actions">
+                            <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">🛒</span>
+                    <span>My Store</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+            <button class="sidebar-btn" data-content="my-purchases>
                 <span class=" sidebar-btn-icon">📦</span>
-                    <span>My Products</span>
-                </button>
-                <button class="sidebar-btn" data-content="my-community">
-                    <span class="sidebar-btn-icon">👥</span>
-                    <span>My community</span>
-                </button>
-                <a href='../Plug-ins/notes.html'>
-                    <button class="sidebar-btn" data-content="notes">
-                        <span class="sidebar-btn-icon">📝</span>
-                        <span>Notes</span>
-                    </button>
-                </a>
-                <button class="sidebar-btn" data-content="share">
-                    <span class="sidebar-btn-icon">🔗</span>
-                    <span>Share</span>
-                </button>
-                <button class="sidebar-btn" data-content="settings">
-                    <span class="sidebar-btn-icon">⚙️</span>
-                    <span>Settings</span>
-                </button>
-            </div>
-
-            <!-- Quick Stats Section -->
-            <div class="sidebar-quick-stats">
-                <h4>Quick Stats</h4>
-                <div class="quick-stat-item">
-                    <span class="stat-label">Active Courses</span>
-                    <span class="stat-value">8</span>
-                </div>
-                <div class="quick-stat-item">
-                    <span class="stat-label">Completion Rate</span>
-                    <span class="stat-value">92%</span>
-                </div>
-                <div class="quick-stat-item">
-                    <span class="stat-label">Total Hours</span>
-                    <span class="stat-value">246</span>
-                </div>
-            </div>
-
-            <!-- Recent Activity Feed -->
-            <div class="sidebar-activity">
-                <h4>Recent Activity</h4>
-                <div class="activity-item">
-                    <span class="activity-icon">🎥</span>
-                    <div class="activity-text">
-                        <p>New video uploaded</p>
-                        <span class="activity-time">2 hours ago</span>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <span class="activity-icon">💬</span>
-                    <div class="activity-text">
-                        <p>5 new comments</p>
-                        <span class="activity-time">5 hours ago</span>
-                    </div>
-                </div>
-                <div class="activity-item">
-                    <span class="activity-icon">✅</span>
-                    <div class="activity-text">
-                        <p>Course completed</p>
-                        <span class="activity-time">1 day ago</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Help Button -->
-            <button class="sidebar-help-btn">
-                <span class="help-icon">💡</span>
-                <span>Need Help?</span>
-
+                <span>My Purchases</span>
             </button>
+            <button class="sidebar-btn" data-content="my-community">
+                <span class="sidebar-btn-icon">👥</span>
+                <span>My community</span>
+            </button>
+            <a href='../Plug-ins/notes.html'>
+                <button class="sidebar-btn" data-content="notes">
+                    <span class="sidebar-btn-icon">📝</span>
+                    <span>Notes</span>
+                </button>
+            </a>
+
+            <button class="sidebar-btn" data-content="settings">
+                <span class="sidebar-btn-icon">⚙️</span>
+                <span>Settings</span>
+            </button>
+        </div>
+
+        <!-- Quick Stats Section -->
+        <div class="sidebar-quick-stats">
+            <h4>Quick Stats</h4>
+            <div class="quick-stat-item">
+                <span class="stat-label">Active Courses</span>
+                <span class="stat-value">8</span>
+            </div>
+            <div class="quick-stat-item">
+                <span class="stat-label">Completion Rate</span>
+                <span class="stat-value">92%</span>
+            </div>
+            <div class="quick-stat-item">
+                <span class="stat-label">Total Hours</span>
+                <span class="stat-value">246</span>
+            </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="sidebar-activity">
+            <h4>Recent Activity</h4>
+            <div class="activity-item">
+                <span class="activity-icon">🎥</span>
+                <div class="activity-text">
+                    <p>New video uploaded</p>
+                    <span class="activity-time">2 hours ago</span>
+                </div>
+            </div>
+            <div class="activity-item">
+                <span class="activity-icon">💬</span>
+                <div class="activity-text">
+                    <p>5 new comments</p>
+                    <span class="activity-time">5 hours ago</span>
+                </div>
+            </div>
+            <div class="activity-item">
+                <span class="activity-icon">✅</span>
+                <div class="activity-text">
+                    <p>Course completed</p>
+                    <span class="activity-time">1 day ago</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Button -->
+        <button class="sidebar-help-btn">
+            <span class="help-icon">💡</span>
+            <span>Need Help?</span>
+
+        </button>
 
         </div>
-            <!-- Wave animation at the bottom of sidebar -->
-            <div class="sidebar-wave-bottom">
-                <svg viewBox="0 0 280 40" preserveAspectRatio="none">
-                    <path d="M0,20 Q70,5 140,20 T280,20 L280,40 L0,40 Z" fill="currentColor" class="wave-path"></path>
-                </svg>
-            </div>
+        <!-- Wave animation at the bottom of sidebar -->
+        <div class="sidebar-wave-bottom">
+            <svg viewBox="0 0 280 40" preserveAspectRatio="none">
+                <path d="M0,20 Q70,5 140,20 T280,20 L280,40 L0,40 Z" fill="currentColor" class="wave-path"></path>
+            </svg>
+        </div>
     </aside>
 
     <!-- Main Container -->
@@ -2906,6 +2914,8 @@
             }
         };
     </script>
+
+    <script src="../js/auth.js"></script>
 </body>
 
 </html>

@@ -23,6 +23,58 @@
     animation: pulse 2s infinite;
 }
 
+
+/* Logo Styles */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.logo-container:hover {
+  transform: scale(1.05);
+}
+
+.logo-main {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  padding-bottom: 4px;
+}
+
+.logo-sub {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  background: transparent;
+  margin-top: -8px;
+}
+
+.logo-badge {
+  padding: 0.2rem 0.5rem;
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  align-self: flex-start;
+}
 /* ============================================
    ENHANCED SEARCH COMPONENTS
    ============================================ */

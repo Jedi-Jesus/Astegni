@@ -236,8 +236,14 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-                <span class="logo-icon">🎯</span>
-                <span class="logo-text gradient-text">Astegni</span>
+                <a href="../index.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Bookstore</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+
             </div>
             <div class="nav-menu">
                 <a href="../branch/news.html" class="nav-link">
@@ -336,15 +342,14 @@
                     <span>My Classes</span>
                     <span class="sidebar-badge">5</span>
                 </button>
-                <button class="sidebar-btn" data-content="books">
-                    <span class="sidebar-btn-icon">📚</span>
-                    <span>My Resources</span>
-                    <span class="sidebar-badge">5</span>
-                </button>
             </div>
 
             <!-- UNCHANGED PERMANENT SECTION -->
             <div class="sidebar-section" data-content="permanent">
+                <button class="sidebar-btn" data-content="events">
+                    <span class="sidebar-btn-icon">📅</span>
+                    <span>Events</span>
+                </button>
                 <button class="sidebar-btn" data-content="clubs">
                     <span class="sidebar-btn-icon">🎭</span>
                     <span>Clubs</span>
@@ -369,6 +374,13 @@
                     <span class="sidebar-btn-icon">🖼️</span>
                     <span>Image Library</span>
                 </button>
+            </div>
+            <div class="sidebar-section" data-content="my-actions">
+                                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">🛒</span>
+                    <span>My Store</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
                 <button class="sidebar-btn" data-content="my-products">
                     <span class="sidebar-btn-icon">📦</span>
                     <span>My Products</span>
@@ -381,9 +393,10 @@
                     </button>
 
                 </a>
-                <button class="sidebar-btn" data-content="share">
-                    <span class="sidebar-btn-icon">🔗</span>
-                    <span>Share</span>
+
+                <button class="sidebar-btn" data-content="my-community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>My community</span>
                 </button>
                 <button class="sidebar-btn" data-content="settings">
                     <span class="sidebar-btn-icon">⚙️</span>
@@ -2223,6 +2236,8 @@
             });
         });
     </script>
+
+    <script src="../js/auth.js"></script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
