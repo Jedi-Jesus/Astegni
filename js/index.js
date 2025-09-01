@@ -50,7 +50,7 @@ const PROFILE_URLS = {
     'tutor': 'My Profile tier 1/tutor-profile.html',
     'student': 'My Profile tier 1/student-profile.html',
     'guardian': 'My Profile tier 1/parent-profile.html',
-    'bookstore': 'My Profile tier 1/bookStore-profile.html',
+    'bookstore': 'My Profile tier 1/bookstore-profile.html',
     'delivery': 'My Profile tier 1/delivery-profile.html',
     'advertiser': 'My Profile tier 1/advertiser-profile.html',
     'church': 'My Profile tier 1/church-profile.html',
