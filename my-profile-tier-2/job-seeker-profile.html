@@ -1,0 +1,1945 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>John Doe - Talent Profile | Astegni</title>
+    <link rel="stylesheet" href="../css/institute.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navigation (Same as employer-profile) -->
+    <nav class="navbar glass">
+        <div class="container nav-container">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="nav-brand">
+            <a href="../index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Home</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
+            </div>
+            <div class="nav-menu">
+                <a href="../branch/news.html" class="nav-link">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </a>
+                <a href="../branch/find-tutors.html" class="nav-link">
+                    <span class="nav-icon">👨‍🏫</span>
+                    <span>Find Tutors</span>
+                </a>
+                <a href="../branch/reels.html" class="nav-link">
+                    <span class="nav-icon">🎬</span>
+                    <span>Reels</span>
+                </a>
+                <a href="../branch/store.html" class="nav-link">
+                    <span class="nav-icon">🛒</span>
+                    <span>Store</span>
+                </a>
+                <a href="../branch/find-jobs.html" class="nav-link">
+                    <span class="nav-icon">💼</span>
+                    <span>Find Jobs</span>
+                </a>
+                <button class="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge pulse">5</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar" id="leftSidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <button class="sidebar-btn active" data-content="dashboard">
+                    <span class="sidebar-btn-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+            </div>
+            
+            <!-- NEW JOB SEEKER SECTION - ALL JOB SEEKER FEATURES GO HERE -->
+            <div class="sidebar-section" data-content="job-seeker">
+                <button class="sidebar-btn" data-content="ai-career-coach">
+                    <span class="sidebar-btn-icon">🤖</span>
+                    <span>AI Career Coach</span>
+                    <span class="sidebar-badge">AI</span>
+                </button>
+                <button class="sidebar-btn" data-content="job-search">
+                    <span class="sidebar-btn-icon">🔍</span>
+                    <span>Job Search</span>
+                    <span class="sidebar-badge">234</span>
+                </button>
+                <button class="sidebar-btn" data-content="applications">
+                    <span class="sidebar-btn-icon">📮</span>
+                    <span>My Applications</span>
+                    <span class="sidebar-badge">45</span>
+                </button>
+                <button class="sidebar-btn" data-content="resume-builder">
+                    <span class="sidebar-btn-icon">📄</span>
+                    <span>Resume Builder</span>
+                    <span class="sidebar-badge">AI</span>
+                </button>
+                <button class="sidebar-btn" data-content="cover-letters">
+                    <span class="sidebar-btn-icon">✉️</span>
+                    <span>Cover Letters</span>
+                    <span class="sidebar-badge">12</span>
+                </button>
+                <button class="sidebar-btn" data-content="experience">
+                    <span class="sidebar-btn-icon">💼</span>
+                    <span>Experience</span>
+                    <span class="sidebar-badge">8</span>
+                </button>
+                <button class="sidebar-btn" data-content="certifications">
+                    <span class="sidebar-btn-icon">🏆</span>
+                    <span>Certifications</span>
+                    <span class="sidebar-badge">15</span>
+                </button>
+                <button class="sidebar-btn" data-content="skills-assessment">
+                    <span class="sidebar-btn-icon">📊</span>
+                    <span>Skills Assessment</span>
+                    <span class="sidebar-badge">New</span>
+                </button>
+                <button class="sidebar-btn" data-content="interview-prep">
+                    <span class="sidebar-btn-icon">🎤</span>
+                    <span>Interview Prep</span>
+                    <span class="sidebar-badge">AI</span>
+                </button>
+                <button class="sidebar-btn" data-content="job-alerts">
+                    <span class="sidebar-btn-icon">🔔</span>
+                    <span>Job Alerts</span>
+                    <span class="sidebar-badge">On</span>
+                </button>
+                <button class="sidebar-btn" data-content="saved-jobs">
+                    <span class="sidebar-btn-icon">💾</span>
+                    <span>Saved Jobs</span>
+                    <span class="sidebar-badge">67</span>
+                </button>
+                <button class="sidebar-btn" data-content="portfolio">
+                    <span class="sidebar-btn-icon">🎨</span>
+                    <span>Portfolio</span>
+                    <span class="sidebar-badge">23</span>
+                </button>
+                <button class="sidebar-btn" data-content="networking">
+                    <span class="sidebar-btn-icon">🤝</span>
+                    <span>Networking</span>
+                    <span class="sidebar-badge">156</span>
+                </button>
+                <button class="sidebar-btn" data-content="career-insights">
+                    <span class="sidebar-btn-icon">📈</span>
+                    <span>Career Insights</span>
+                </button>
+            </div>
+            
+            <!-- Education Section (Unchanged from employer-profile) -->
+            <div class="sidebar-section" data-content="education">
+                <button class="sidebar-btn" data-content="jobs">
+                    <span class="sidebar-btn-icon">💼</span>
+                    <span>My Job Board</span>
+                    <span class="sidebar-badge">3</span>
+                </button>
+                <button class="sidebar-btn" data-content="classes">
+                    <span class="sidebar-btn-icon">🎓</span>
+                    <span>My Classes</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">📚</span>
+                    <span>My Books</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+            </div>
+            
+            <!-- Permanent Section (Unchanged from employer-profile) -->
+            <div class="sidebar-section" data-content="permanent">
+                <button class="sidebar-btn" data-content="community">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>Community</span>
+                    <span class="sidebar-badge live">Live</span>
+                </button>
+                <button class="sidebar-btn" data-content="clubs">
+                    <span class="sidebar-btn-icon">🎭</span>
+                    <span>Clubs</span>
+                    <span class="sidebar-badge active">Active</span>
+                </button>
+                <button class="sidebar-btn" data-content="podcasts">
+                    <span class="sidebar-btn-icon">🎙️</span>
+                    <span>Podcasts</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="videos">
+                    <span class="sidebar-btn-icon">🎬</span>
+                    <span>Videos</span>
+                    <span class="sidebar-badge">12</span>
+                </button>
+                <button class="sidebar-btn" data-content="blog">
+                    <span class="sidebar-btn-icon">📝</span>
+                    <span>Blog</span>
+                    <span class="sidebar-badge">7</span>
+                </button>
+                <button class="sidebar-btn" data-content="comments">
+                    <span class="sidebar-btn-icon">💬</span>
+                    <span>Comments</span>
+                    <span class="sidebar-badge">15</span>
+                </button>
+                <button class="sidebar-btn" data-content="my-products">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>My Products</span>
+                </button>
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
+                        <span class="sidebar-btn-icon">📝</span>
+                        <span>Notes</span>
+                    </button>
+                </a>
+                <button class="sidebar-btn" data-content="rate-comment">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Rate & Comment</span>
+                </button>
+                <button class="sidebar-btn" data-content="share">
+                    <span class="sidebar-btn-icon">🔗</span>
+                    <span>Share</span>
+                </button>
+                <button class="sidebar-btn" data-content="settings">
+                    <span class="sidebar-btn-icon">⚙️</span>
+                    <span>Settings</span>
+                </button>
+            </div>
+
+            <!-- Quick Stats Section -->
+            <div class="sidebar-quick-stats">
+                <h4>Quick Stats</h4>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Profile Views</span>
+                    <span class="stat-value">342</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Applications Sent</span>
+                    <span class="stat-value">45</span>
+                </div>
+                <div class="quick-stat-item">
+                    <span class="stat-label">Interview Invites</span>
+                    <span class="stat-value">8</span>
+                </div>
+            </div>
+
+            <!-- Recent Activity Feed -->
+            <div class="sidebar-activity">
+                <h4>Recent Activity</h4>
+                <div class="activity-item">
+                    <span class="activity-icon">📮</span>
+                    <div class="activity-text">
+                        <p>Applied to Senior Developer</p>
+                        <span class="activity-time">2 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">🎤</span>
+                    <div class="activity-text">
+                        <p>Interview scheduled</p>
+                        <span class="activity-time">5 hours ago</span>
+                    </div>
+                </div>
+                <div class="activity-item">
+                    <span class="activity-icon">📄</span>
+                    <div class="activity-text">
+                        <p>Resume updated</p>
+                        <span class="activity-time">1 day ago</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Button -->
+            <button class="sidebar-help-btn">
+                <span class="help-icon">💡</span>
+                <span>Need Help?</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container with-sidebar">
+        <!-- Profile Header Section (Changed to Job Seeker Profile) -->
+        <section class="profile-header-section">
+            <div class="cover-image-container">
+                <img src="../pictures/job cover.jpg" alt="Cover"
+                    class="cover-img">
+<span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
+                <div class="cover-overlay"></div>
+            </div>
+
+            <div class="profile-main-info">
+                <div class="profile-info-wrapper">
+                    <div class="profile-avatar-container">
+                        <img src="../pictures/job seeker profile.jpg"
+                            alt="Job seeker profile" class="profile-avatar">
+<span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+                    </div>
+
+                    <div class="profile-details-section">
+                        <div class="profile-name-row">
+                            <h1 class="center-name" id="centerName">Talent Profile</h1>
+                            <div class="badges-row">
+                                <span class="verified-badge">✓ Verified Professional</span>
+                                <span class="center-score">Profile Strength: 92%</span>
+                            </div>
+                        </div>
+
+                        <div class="rating-section">
+                            <div class="stars">
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star half" viewBox="0 0 24 24">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            </div>
+                            <span class="rating-value">4.8/5.0</span>
+                            <span class="review-count">(23 reviews)</span>
+                        </div>
+
+                        <div class="location-info">
+                            <span class="location-icon">📍</span>
+                            <span id="locationText">Addis Ababa, Ethiopia | Senior Software Engineer</span>
+                        </div>
+
+                        <div class="profile-quote" id="profileQuote">
+                            "Passionate about creating innovative solutions that make a difference"
+                        </div>
+
+                        <div class="follow-stats-cards">
+                            <div class="follow-card" onclick="openFollowersModal('connections')">
+                                <div class="follow-icon">🤝</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">1.2K</span>
+                                    <span class="stat-label">Connections</span>
+                                </div>
+                            </div>
+                            <div class="follow-card" onclick="openFollowersModal('endorsements')">
+                                <div class="follow-icon">👍</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">89</span>
+                                    <span class="stat-label">Endorsements</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-next-session" id="profileNextSession">
+                            <div class="session-alert">
+                                <span class="alert-icon gradient-text">⏰</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Upcoming:</strong> Technical Interview with Tech Corp - Tomorrow at 2:00 PM</span>
+                                <button class="btn-join-inline">Prepare</button>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions-grid">
+                            <button class="profile-action-btn edit-profile" onclick="openEditProfileModal()">
+                                <span class="action-icon">✏️</span>
+                                <span>Edit Profile</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advertisement Placeholder (Unchanged) -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Area -->
+        <div class="content-with-sidebar">
+            <!-- Main Content Area -->
+            <div class="main-content-area">
+                <!-- Dashboard Content (Default) -->
+                <div class="sidebar-content-panel active" id="dashboard-content">
+                    <!-- About Section -->
+                    <section class="profile-about-section">
+                        <h3>About Me</h3>
+                        <p id="aboutText">Experienced Senior Software Engineer with 8+ years of expertise in full-stack development, specializing in React, Node.js, and cloud technologies. Proven track record of leading cross-functional teams and delivering scalable solutions for enterprise clients. Passionate about clean code, agile methodologies, and continuous learning. Currently seeking opportunities to contribute to innovative projects that challenge technical boundaries. Expert in microservices architecture, DevOps practices, and modern JavaScript frameworks. Strong problem-solving skills with experience in optimizing application performance and implementing best practices. Committed to mentoring junior developers and fostering collaborative team environments.</p>
+                    </section>
+
+                    <!-- Social Links -->
+                    <section class="profile-socials-section">
+                        <h3>Connect With Me</h3>
+                        <div class="social-links" id="socialLinksContainer">
+                            <a href="#" class="social-link github" title="GitHub">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link linkedin" title="LinkedIn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link portfolio" title="Portfolio">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm1 16.057v-3.057h2.994c-.059 1.143-.212 2.24-.456 3.279-.823-.12-1.674-.188-2.538-.222zm1.957 2.162c-.499 1.33-1.159 2.497-1.957 3.456v-3.62c.666.028 1.319.081 1.957.164zm-1.957-7.219v-3.015c.868-.034 1.721-.103 2.548-.224.238 1.027.389 2.111.446 3.239h-2.994zm0-5.014v-3.661c.806.969 1.471 2.15 1.971 3.496-.642.084-1.3.137-1.971.165zm2.703-3.267c1.237.496 2.354 1.228 3.29 2.146-.642.234-1.311.442-2.019.607-.344-.992-.775-1.91-1.271-2.753zm-7.241 13.56c-.244-1.039-.398-2.136-.456-3.279h2.994v3.057c-.865.034-1.714.102-2.538.222zm2.538 1.776v3.62c-.798-.959-1.458-2.126-1.957-3.456.638-.083 1.291-.136 1.957-.164zm-2.994-7.055c.057-1.128.207-2.212.446-3.239.827.121 1.68.19 2.548.224v3.015h-2.994zm1.024-5.179c.5-1.346 1.165-2.527 1.97-3.496v3.661c-.671-.028-1.329-.081-1.97-.165zm-2.005-.35c-.708-.165-1.377-.373-2.018-.607.937-.918 2.053-1.65 3.29-2.146-.496.844-.927 1.762-1.272 2.753zm-.549 1.918c-.264 1.151-.434 2.36-.492 3.611h-3.933c.165-1.658.739-3.197 1.617-4.518.88.361 1.816.67 2.808.907zm.009 9.262c-.988.236-1.92.542-2.797.9-.89-1.328-1.471-2.879-1.637-4.551h3.934c.058 1.265.231 2.488.5 3.651zm.553 1.917c.342.976.768 1.881 1.257 2.712-1.223-.49-2.326-1.211-3.256-2.115.636-.229 1.299-.435 1.999-.597zm9.924 0c.7.163 1.362.367 1.999.597-.931.903-2.034 1.625-3.257 2.116.489-.832.915-1.737 1.258-2.713zm.553-1.917c.27-1.163.442-2.386.501-3.651h3.934c-.167 1.672-.748 3.223-1.638 4.551-.877-.358-1.81-.664-2.797-.9zm.501-5.651c-.058-1.251-.229-2.46-.492-3.611.992-.237 1.929-.546 2.809-.907.877 1.321 1.451 2.86 1.616 4.518h-3.933z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- Quick Stats Widget -->
+                    <section class="quick-stats-widget">
+                        <h2 class="section-title">Career Statistics</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">💼</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">8+</div>
+                                    <div class="stat-desc">Years Experience</div>
+                                    <div class="stat-detail">Senior Level</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📮</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">45</div>
+                                    <div class="stat-desc">Applications Sent</div>
+                                    <div class="stat-detail">This Month</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">🎯</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">18%</div>
+                                    <div class="stat-desc">Response Rate</div>
+                                    <div class="stat-detail">Above Average</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">🎤</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">8</div>
+                                    <div class="stat-desc">Interviews</div>
+                                    <div class="stat-detail">Scheduled</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">🏆</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">15</div>
+                                    <div class="stat-desc">Certifications</div>
+                                    <div class="stat-detail">Verified</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">⭐</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">4.8</div>
+                                    <div class="stat-desc">Rating</div>
+                                    <div class="stat-detail">From Employers</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Skills Showcase -->
+                    <section class="awards-section">
+                        <h2 class="section-title">Top Skills</h2>
+                        <div class="awards-grid">
+                            <div class="award-card">
+                                <div class="award-icon">💻</div>
+                                <h3>Full-Stack Development</h3>
+                                <p>React, Node.js, Python</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">☁️</div>
+                                <h3>Cloud Architecture</h3>
+                                <p>AWS, Azure, Docker</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">🤖</div>
+                                <h3>Machine Learning</h3>
+                                <p>TensorFlow, PyTorch</p>
+                            </div>
+                            <div class="award-card">
+                                <div class="award-icon">📱</div>
+                                <h3>Mobile Development</h3>
+                                <p>React Native, Flutter</p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- NEW JOB SEEKER CONTENT PANELS -->
+                
+                <!-- AI Career Coach Content -->
+                <div class="sidebar-content-panel" id="ai-career-coach-content">
+                    <div class="section-header">
+                        <h2 class="section-title">🤖 AI Career Coach</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="refreshAIInsights()">
+                                <i class="fas fa-sync-alt"></i> Refresh Insights
+                            </button>
+                            <button class="btn-primary" onclick="startAICoaching()">
+                                <i class="fas fa-robot"></i> Start Session
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Career Analysis -->
+                    <div class="ai-career-analysis">
+                        <div class="analysis-card premium">
+                            <div class="card-header">
+                                <span class="card-icon">🎯</span>
+                                <h3>Career Path Analysis</h3>
+                                <span class="ai-badge">AI Powered</span>
+                            </div>
+                            <div class="analysis-content">
+                                <div class="career-score">
+                                    <div class="score-circle">
+                                        <span class="score-value">87%</span>
+                                        <span class="score-label">Career Match</span>
+                                    </div>
+                                    <div class="score-details">
+                                        <p>Based on your skills and experience, you're well-positioned for senior engineering roles with 87% compatibility.</p>
+                                    </div>
+                                </div>
+                                <div class="recommended-paths">
+                                    <h4>Recommended Career Paths</h4>
+                                    <div class="path-item">
+                                        <span class="path-icon">🚀</span>
+                                        <div class="path-info">
+                                            <h5>Tech Lead</h5>
+                                            <p>Natural progression - 92% match</p>
+                                            <button class="btn-explore">Explore Path</button>
+                                        </div>
+                                    </div>
+                                    <div class="path-item">
+                                        <span class="path-icon">🏗️</span>
+                                        <div class="path-info">
+                                            <h5>Solutions Architect</h5>
+                                            <p>High potential - 85% match</p>
+                                            <button class="btn-explore">Explore Path</button>
+                                        </div>
+                                    </div>
+                                    <div class="path-item">
+                                        <span class="path-icon">📊</span>
+                                        <div class="path-info">
+                                            <h5>Engineering Manager</h5>
+                                            <p>Leadership track - 78% match</p>
+                                            <button class="btn-explore">Explore Path</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Skill Gap Analysis -->
+                        <div class="analysis-card">
+                            <div class="card-header">
+                                <span class="card-icon">📊</span>
+                                <h3>Skill Gap Analysis</h3>
+                            </div>
+                            <div class="skill-gaps">
+                                <div class="gap-item">
+                                    <div class="gap-header">
+                                        <span>Kubernetes</span>
+                                        <span class="gap-priority high">High Demand</span>
+                                    </div>
+                                    <div class="gap-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 40%"></div>
+                                        </div>
+                                        <span class="progress-text">40% Proficiency</span>
+                                    </div>
+                                    <button class="btn-learn">Start Learning</button>
+                                </div>
+                                <div class="gap-item">
+                                    <div class="gap-header">
+                                        <span>GraphQL</span>
+                                        <span class="gap-priority medium">Trending</span>
+                                    </div>
+                                    <div class="gap-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: 25%"></div>
+                                        </div>
+                                        <span class="progress-text">25% Proficiency</span>
+                                    </div>
+                                    <button class="btn-learn">Start Learning</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Interview Preparation -->
+                        <div class="analysis-card">
+                            <div class="card-header">
+                                <span class="card-icon">🎤</span>
+                                <h3>Interview Readiness</h3>
+                            </div>
+                            <div class="interview-readiness">
+                                <div class="readiness-score">
+                                    <div class="circular-progress">
+                                        <span class="progress-value">78%</span>
+                                    </div>
+                                    <div class="readiness-details">
+                                        <h4>Overall Readiness Score</h4>
+                                        <p>You're well-prepared but could improve in behavioral questions.</p>
+                                    </div>
+                                </div>
+                                <div class="preparation-tips">
+                                    <h4>AI Recommendations</h4>
+                                    <ul class="tips-list">
+                                        <li>Practice STAR method for behavioral questions</li>
+                                        <li>Review system design fundamentals</li>
+                                        <li>Prepare 5 recent project examples</li>
+                                        <li>Update portfolio with latest projects</li>
+                                    </ul>
+                                    <button class="btn-primary" onclick="startMockInterview()">
+                                        <i class="fas fa-microphone"></i> Start Mock Interview
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Salary Intelligence -->
+                        <div class="analysis-card">
+                            <div class="card-header">
+                                <span class="card-icon">💰</span>
+                                <h3>Salary Intelligence</h3>
+                            </div>
+                            <div class="salary-insights">
+                                <div class="salary-range">
+                                    <h4>Your Market Value</h4>
+                                    <div class="range-display">
+                                        <span class="range-min">$95,000</span>
+                                        <span class="range-bar"></span>
+                                        <span class="range-max">$135,000</span>
+                                    </div>
+                                    <p class="range-label">Based on your skills and location</p>
+                                </div>
+                                <div class="salary-factors">
+                                    <h4>Value Drivers</h4>
+                                    <div class="factor-item positive">
+                                        <span>✅</span> 8+ years experience (+$15k)
+                                    </div>
+                                    <div class="factor-item positive">
+                                        <span>✅</span> AWS certification (+$8k)
+                                    </div>
+                                    <div class="factor-item neutral">
+                                        <span>⚠️</span> Add leadership experience (+$12k potential)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Search Content with AI Matching -->
+                <div class="sidebar-content-panel" id="job-search-content">
+                    <div class="section-header">
+                        <h2 class="section-title">AI-Powered Job Search</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="openSavedSearches()">
+                                <i class="fas fa-bookmark"></i> Saved Searches
+                            </button>
+                            <button class="btn-primary" onclick="openAdvancedJobSearch()">
+                                <i class="fas fa-filter"></i> Advanced Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Job Matching Assistant -->
+                    <div class="ai-job-assistant">
+                        <div class="ai-assistant-header">
+                            <span class="ai-icon">🤖</span>
+                            <h3>AI Job Matcher</h3>
+                            <span class="ai-badge">Smart Matching</span>
+                        </div>
+                        <div class="ai-search-box">
+                            <textarea 
+                                id="aiJobSearchQuery" 
+                                class="ai-search-textarea" 
+                                placeholder="Tell me what you're looking for...&#10;&#10;Example: 'I want a remote senior developer role at a startup, working with React and Node.js, with good work-life balance and competitive salary.'"
+                                rows="4"></textarea>
+                            <div class="ai-search-actions">
+                                <button class="btn-secondary" onclick="getJobSuggestions()">
+                                    <i class="fas fa-lightbulb"></i> Get Suggestions
+                                </button>
+                                <button class="btn-primary" onclick="performAIJobSearch()">
+                                    <i class="fas fa-search"></i> Find Jobs
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Job Match Filters -->
+                    <div class="job-match-filters">
+                        <div class="filter-chips">
+                            <button class="filter-chip active">Best Matches</button>
+                            <button class="filter-chip">Remote Only</button>
+                            <button class="filter-chip">High Salary</button>
+                            <button class="filter-chip">Quick Apply</button>
+                            <button class="filter-chip">Startup</button>
+                            <button class="filter-chip">Enterprise</button>
+                        </div>
+                    </div>
+
+                    <!-- Job Results with AI Match Scores -->
+                    <div class="job-results" id="jobSearchResults">
+                        <!-- Jobs will be loaded dynamically with AI match scores -->
+                    </div>
+                </div>
+
+                <!-- Applications Management -->
+                <div class="sidebar-content-panel" id="applications-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Applications</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="exportApplications()">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                            <button class="btn-primary" onclick="trackNewApplication()">
+                                <i class="fas fa-plus"></i> Track Application
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="application-stats">
+                        <div class="stat-box">
+                            <span class="stat-number">45</span>
+                            <span class="stat-label">Total Applied</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">12</span>
+                            <span class="stat-label">In Review</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">8</span>
+                            <span class="stat-label">Interviews</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number">2</span>
+                            <span class="stat-label">Offers</span>
+                        </div>
+                    </div>
+
+                    <div class="application-filters">
+                        <button class="filter-chip active">All</button>
+                        <button class="filter-chip">Applied</button>
+                        <button class="filter-chip">In Review</button>
+                        <button class="filter-chip">Interview</button>
+                        <button class="filter-chip">Offer</button>
+                        <button class="filter-chip">Rejected</button>
+                    </div>
+
+                    <div class="applications-timeline" id="applicationsTimeline">
+                        <!-- Applications will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- AI Resume Builder -->
+                <div class="sidebar-content-panel" id="resume-builder-content">
+                    <div class="section-header">
+                        <h2 class="section-title">AI Resume Builder</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="viewResumes()">
+                                <i class="fas fa-folder"></i> My Resumes
+                            </button>
+                            <button class="btn-primary" onclick="createNewResume()">
+                                <i class="fas fa-plus"></i> Create Resume
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Resume Assistant -->
+                    <div class="ai-resume-assistant">
+                        <div class="assistant-banner">
+                            <span class="ai-icon">🤖</span>
+                            <h3>AI Resume Optimizer</h3>
+                            <p>Let AI help you create ATS-optimized resumes tailored to specific jobs</p>
+                        </div>
+
+                        <div class="resume-actions">
+                            <button class="action-card" onclick="generateFromLinkedIn()">
+                                <span class="action-icon">🔗</span>
+                                <h4>Import from LinkedIn</h4>
+                                <p>Auto-fill from your LinkedIn profile</p>
+                            </button>
+                            <button class="action-card" onclick="optimizeForJob()">
+                                <span class="action-icon">🎯</span>
+                                <h4>Optimize for Job</h4>
+                                <p>Tailor resume to job description</p>
+                            </button>
+                            <button class="action-card" onclick="aiResumeReview()">
+                                <span class="action-icon">✨</span>
+                                <h4>AI Review</h4>
+                                <p>Get AI feedback and suggestions</p>
+                            </button>
+                        </div>
+
+                        <!-- ATS Score -->
+                        <div class="ats-score-card">
+                            <h4>ATS Compatibility Score</h4>
+                            <div class="ats-score">
+                                <div class="score-circle">
+                                    <span class="score-value">92%</span>
+                                </div>
+                                <div class="score-details">
+                                    <p>Your resume is highly compatible with ATS systems</p>
+                                    <ul class="score-breakdown">
+                                        <li>✅ Keywords optimized</li>
+                                        <li>✅ Clean formatting</li>
+                                        <li>✅ Proper sections</li>
+                                        <li>⚠️ Add more metrics</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resume Templates -->
+                    <div class="resume-templates">
+                        <h3>Choose Template</h3>
+                        <div class="templates-grid">
+                            <div class="template-card">
+                                <div class="template-preview"></div>
+                                <h4>Professional</h4>
+                                <button class="btn-use">Use Template</button>
+                            </div>
+                            <div class="template-card">
+                                <div class="template-preview"></div>
+                                <h4>Modern</h4>
+                                <button class="btn-use">Use Template</button>
+                            </div>
+                            <div class="template-card">
+                                <div class="template-preview"></div>
+                                <h4>Creative</h4>
+                                <button class="btn-use">Use Template</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cover Letters with AI -->
+                <div class="sidebar-content-panel" id="cover-letters-content">
+                    <div class="section-header">
+                        <h2 class="section-title">AI Cover Letter Generator</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="viewSavedLetters()">
+                                <i class="fas fa-folder"></i> Saved Letters
+                            </button>
+                            <button class="btn-primary" onclick="createCoverLetter()">
+                                <i class="fas fa-plus"></i> Create Letter
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="ai-cover-letter">
+                        <div class="letter-generator">
+                            <h3>Generate Cover Letter</h3>
+                            <div class="form-group">
+                                <label>Job URL or Description</label>
+                                <textarea placeholder="Paste job posting URL or description..." rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Key Points to Highlight</label>
+                                <input type="text" placeholder="e.g., Leadership experience, React expertise">
+                            </div>
+                            <div class="generation-options">
+                                <label>
+                                    <input type="radio" name="tone" value="professional" checked>
+                                    Professional
+                                </label>
+                                <label>
+                                    <input type="radio" name="tone" value="enthusiastic">
+                                    Enthusiastic
+                                </label>
+                                <label>
+                                    <input type="radio" name="tone" value="creative">
+                                    Creative
+                                </label>
+                            </div>
+                            <button class="btn-primary" onclick="generateCoverLetter()">
+                                <i class="fas fa-magic"></i> Generate with AI
+                            </button>
+                        </div>
+
+                        <div class="saved-letters">
+                            <h3>Recent Cover Letters</h3>
+                            <div class="letters-list" id="coverLettersList">
+                                <!-- Cover letters will be loaded dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Experience Management -->
+                <div class="sidebar-content-panel" id="experience-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Work Experience</h2>
+                        <button class="btn-primary" onclick="addExperience()">
+                            <i class="fas fa-plus"></i> Add Experience
+                        </button>
+                    </div>
+
+                    <div class="experience-timeline" id="experienceTimeline">
+                        <div class="experience-item">
+                            <div class="exp-marker"></div>
+                            <div class="exp-content">
+                                <div class="exp-header">
+                                    <h3>Senior Software Engineer</h3>
+                                    <span class="exp-duration">2020 - Present</span>
+                                </div>
+                                <div class="exp-company">
+                                    <span class="company-name">Tech Solutions Inc.</span>
+                                    <span class="company-location">Addis Ababa, Ethiopia</span>
+                                </div>
+                                <div class="exp-description">
+                                    <ul>
+                                        <li>Led development of microservices architecture serving 1M+ users</li>
+                                        <li>Reduced system latency by 40% through optimization</li>
+                                        <li>Mentored team of 5 junior developers</li>
+                                    </ul>
+                                </div>
+                                <div class="exp-skills">
+                                    <span class="skill-tag">React</span>
+                                    <span class="skill-tag">Node.js</span>
+                                    <span class="skill-tag">AWS</span>
+                                    <span class="skill-tag">Docker</span>
+                                </div>
+                                <div class="exp-actions">
+                                    <button class="btn-edit" onclick="editExperience(1)">Edit</button>
+                                    <button class="btn-verify" onclick="verifyExperience(1)">Verify</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- More experience items will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Certifications Management -->
+                <div class="sidebar-content-panel" id="certifications-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Certifications & Credentials</h2>
+                        <button class="btn-primary" onclick="addCertification()">
+                            <i class="fas fa-plus"></i> Add Certification
+                        </button>
+                    </div>
+
+                    <div class="certifications-grid" id="certificationsGrid">
+                        <div class="certification-card verified">
+                            <div class="cert-badge">
+                                <img src="https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=100&h=100&fit=crop" alt="AWS">
+                                <span class="verify-badge">✓ Verified</span>
+                            </div>
+                            <div class="cert-details">
+                                <h3>AWS Solutions Architect</h3>
+                                <div class="cert-info">
+                                    <p><strong>Issuing Organization:</strong> Amazon Web Services</p>
+                                    <p><strong>Issue Date:</strong> March 2023</p>
+                                    <p><strong>Expiry Date:</strong> March 2026</p>
+                                    <p><strong>Credential ID:</strong> AWS-SAA-2023-1234</p>
+                                    <p><strong>Location:</strong> Seattle, WA, USA</p>
+                                </div>
+                                <div class="cert-actions">
+                                    <button class="btn-view" onclick="viewCertificate(1)">
+                                        <i class="fas fa-eye"></i> View Certificate
+                                    </button>
+                                    <button class="btn-share" onclick="shareCertificate(1)">
+                                        <i class="fas fa-share"></i> Share
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- More certification cards will be loaded dynamically -->
+                    </div>
+
+                    <div class="cert-upload-section">
+                        <h3>Upload New Certification</h3>
+                        <div class="upload-form">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Certification Name</label>
+                                    <input type="text" placeholder="e.g., AWS Solutions Architect">
+                                </div>
+                                <div class="form-group">
+                                    <label>Issuing Organization</label>
+                                    <input type="text" placeholder="e.g., Amazon Web Services">
+                                </div>
+                                <div class="form-group">
+                                    <label>Certification Type</label>
+                                    <select>
+                                        <option>Professional Certification</option>
+                                        <option>Technical Certification</option>
+                                        <option>Course Completion</option>
+                                        <option>Degree/Diploma</option>
+                                        <option>License</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Location</label>
+                                    <input type="text" placeholder="City, Country">
+                                </div>
+                                <div class="form-group">
+                                    <label>Certificate File</label>
+                                    <div class="file-upload">
+                                        <input type="file" id="certFile" accept=".pdf,.jpg,.png">
+                                        <label for="certFile">
+                                            <i class="fas fa-cloud-upload-alt"></i> Choose File
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn-primary" onclick="uploadCertification()">
+                                <i class="fas fa-upload"></i> Upload Certification
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills Assessment -->
+                <div class="sidebar-content-panel" id="skills-assessment-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Skills Assessment & Validation</h2>
+                        <button class="btn-primary" onclick="startAssessment()">
+                            <i class="fas fa-clipboard-check"></i> Start Assessment
+                        </button>
+                    </div>
+
+                    <div class="skills-overview">
+                        <h3>Your Skill Profile</h3>
+                        <div class="skills-chart">
+                            <canvas id="skillsRadarChart"></canvas>
+                        </div>
+
+                        <div class="skill-categories">
+                            <div class="skill-category">
+                                <h4>Technical Skills</h4>
+                                <div class="skill-items">
+                                    <div class="skill-item">
+                                        <span class="skill-name">JavaScript</span>
+                                        <div class="skill-level">
+                                            <div class="level-bar">
+                                                <div class="level-fill" style="width: 90%"></div>
+                                            </div>
+                                            <span class="level-label">Expert</span>
+                                        </div>
+                                        <button class="btn-test">Take Test</button>
+                                    </div>
+                                    <div class="skill-item">
+                                        <span class="skill-name">Python</span>
+                                        <div class="skill-level">
+                                            <div class="level-bar">
+                                                <div class="level-fill" style="width: 75%"></div>
+                                            </div>
+                                            <span class="level-label">Advanced</span>
+                                        </div>
+                                        <button class="btn-test">Take Test</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="skill-category">
+                                <h4>Soft Skills</h4>
+                                <div class="skill-items">
+                                    <div class="skill-item">
+                                        <span class="skill-name">Leadership</span>
+                                        <div class="skill-level">
+                                            <div class="level-bar">
+                                                <div class="level-fill" style="width: 80%"></div>
+                                            </div>
+                                            <span class="level-label">Strong</span>
+                                        </div>
+                                        <button class="btn-assess">Assess</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="skill-recommendations">
+                            <h4>AI Recommendations</h4>
+                            <div class="recommendation-cards">
+                                <div class="rec-card">
+                                    <span class="rec-icon">💡</span>
+                                    <p>Complete Kubernetes assessment to increase profile visibility by 35%</p>
+                                    <button class="btn-action">Start Now</button>
+                                </div>
+                                <div class="rec-card">
+                                    <span class="rec-icon">🎯</span>
+                                    <p>Your React skills are in high demand - showcase them!</p>
+                                    <button class="btn-action">Add Badge</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Interview Prep with AI -->
+                <div class="sidebar-content-panel" id="interview-prep-content">
+                    <div class="section-header">
+                        <h2 class="section-title">AI Interview Preparation</h2>
+                        <button class="btn-primary" onclick="startMockInterview()">
+                            <i class="fas fa-microphone"></i> Start Mock Interview
+                        </button>
+                    </div>
+
+                    <div class="interview-prep-hub">
+                        <!-- AI Mock Interview -->
+                        <div class="mock-interview-card">
+                            <h3>AI Mock Interviews</h3>
+                            <div class="interview-types">
+                                <button class="interview-type-btn" onclick="startInterview('behavioral')">
+                                    <span class="type-icon">💬</span>
+                                    <h4>Behavioral</h4>
+                                    <p>Practice STAR method</p>
+                                </button>
+                                <button class="interview-type-btn" onclick="startInterview('technical')">
+                                    <span class="type-icon">💻</span>
+                                    <h4>Technical</h4>
+                                    <p>Coding challenges</p>
+                                </button>
+                                <button class="interview-type-btn" onclick="startInterview('system-design')">
+                                    <span class="type-icon">🏗️</span>
+                                    <h4>System Design</h4>
+                                    <p>Architecture problems</p>
+                                </button>
+                                <button class="interview-type-btn" onclick="startInterview('case-study')">
+                                    <span class="type-icon">📊</span>
+                                    <h4>Case Study</h4>
+                                    <p>Problem solving</p>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Interview Calendar -->
+                        <div class="interview-calendar-card">
+                            <h3>Upcoming Interviews</h3>
+                            <div class="interview-list">
+                                <div class="interview-item">
+                                    <div class="interview-date">
+                                        <span class="day">15</span>
+                                        <span class="month">Jan</span>
+                                    </div>
+                                    <div class="interview-details">
+                                        <h4>Tech Corp - Senior Developer</h4>
+                                        <p>Technical Round - 2:00 PM</p>
+                                        <button class="btn-prepare">Prepare</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Interview Resources -->
+                        <div class="interview-resources">
+                            <h3>Preparation Resources</h3>
+                            <div class="resource-tabs">
+                                <button class="tab active">Questions Bank</button>
+                                <button class="tab">Company Research</button>
+                                <button class="tab">Tips & Strategies</button>
+                            </div>
+                            <div class="resource-content" id="interviewResources">
+                                <!-- Resources will be loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- AI Feedback -->
+                        <div class="interview-feedback">
+                            <h3>Recent Mock Interview Feedback</h3>
+                            <div class="feedback-card">
+                                <div class="feedback-score">
+                                    <span class="score">85%</span>
+                                    <span class="label">Performance Score</span>
+                                </div>
+                                <div class="feedback-details">
+                                    <h4>Strengths</h4>
+                                    <ul>
+                                        <li>✅ Clear communication</li>
+                                        <li>✅ Good technical knowledge</li>
+                                        <li>✅ Structured answers</li>
+                                    </ul>
+                                    <h4>Areas to Improve</h4>
+                                    <ul>
+                                        <li>⚠️ Provide more specific examples</li>
+                                        <li>⚠️ Reduce filler words</li>
+                                        <li>⚠️ Ask clarifying questions</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Alerts -->
+                <div class="sidebar-content-panel" id="job-alerts-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Smart Job Alerts</h2>
+                        <button class="btn-primary" onclick="createJobAlert()">
+                            <i class="fas fa-plus"></i> Create Alert
+                        </button>
+                    </div>
+
+                    <div class="job-alerts-manager">
+                        <div class="alerts-list" id="jobAlertsList">
+                            <div class="alert-item active">
+                                <div class="alert-header">
+                                    <h4>Senior React Developer - Remote</h4>
+                                    <div class="alert-toggle">
+                                        <input type="checkbox" checked>
+                                        <label>Active</label>
+                                    </div>
+                                </div>
+                                <div class="alert-criteria">
+                                    <span class="criteria-tag">React</span>
+                                    <span class="criteria-tag">Remote</span>
+                                    <span class="criteria-tag">$100k+</span>
+                                    <span class="criteria-tag">Senior</span>
+                                </div>
+                                <div class="alert-stats">
+                                    <span>12 new jobs this week</span>
+                                    <button class="btn-view">View Jobs</button>
+                                </div>
+                            </div>
+                            <!-- More alerts will be loaded dynamically -->
+                        </div>
+
+                        <div class="alert-frequency">
+                            <h3>Notification Settings</h3>
+                            <div class="frequency-options">
+                                <label>
+                                    <input type="radio" name="frequency" value="instant">
+                                    Instant
+                                </label>
+                                <label>
+                                    <input type="radio" name="frequency" value="daily" checked>
+                                    Daily Digest
+                                </label>
+                                <label>
+                                    <input type="radio" name="frequency" value="weekly">
+                                    Weekly Summary
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saved Jobs -->
+                <div class="sidebar-content-panel" id="saved-jobs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Saved Jobs</h2>
+                        <div class="header-buttons">
+                            <select class="sort-select">
+                                <option>Sort by: Date Saved</option>
+                                <option>Sort by: Deadline</option>
+                                <option>Sort by: Match Score</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="saved-jobs-grid" id="savedJobsGrid">
+                        <!-- Saved jobs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Portfolio -->
+                <div class="sidebar-content-panel" id="portfolio-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Portfolio & Projects</h2>
+                        <button class="btn-primary" onclick="addProject()">
+                            <i class="fas fa-plus"></i> Add Project
+                        </button>
+                    </div>
+
+                    <div class="portfolio-grid" id="portfolioGrid">
+                        <div class="portfolio-item">
+                            <div class="portfolio-image">
+                                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop" alt="Project">
+                            </div>
+                            <div class="portfolio-content">
+                                <h3>E-Commerce Platform</h3>
+                                <p>Full-stack e-commerce solution with React and Node.js</p>
+                                <div class="portfolio-tech">
+                                    <span class="tech-tag">React</span>
+                                    <span class="tech-tag">Node.js</span>
+                                    <span class="tech-tag">MongoDB</span>
+                                </div>
+                                <div class="portfolio-actions">
+                                    <a href="#" class="btn-view">View Project</a>
+                                    <a href="#" class="btn-github">GitHub</a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- More portfolio items will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Networking -->
+                <div class="sidebar-content-panel" id="networking-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Professional Network</h2>
+                        <button class="btn-primary" onclick="findConnections()">
+                            <i class="fas fa-user-plus"></i> Find Connections
+                        </button>
+                    </div>
+
+                    <div class="networking-hub">
+                        <div class="network-stats">
+                            <div class="stat">
+                                <span class="stat-value">156</span>
+                                <span class="stat-label">Connections</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">23</span>
+                                <span class="stat-label">Recruiters</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">45</span>
+                                <span class="stat-label">Industry Peers</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-value">12</span>
+                                <span class="stat-label">Mentors</span>
+                            </div>
+                        </div>
+
+                        <div class="connection-suggestions">
+                            <h3>Suggested Connections</h3>
+                            <div class="suggestions-list" id="connectionSuggestions">
+                                <!-- Connection suggestions will be loaded dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="networking-events">
+                            <h3>Networking Events</h3>
+                            <div class="events-list" id="networkingEvents">
+                                <!-- Events will be loaded dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Career Insights -->
+                <div class="sidebar-content-panel" id="career-insights-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Career Analytics & Insights</h2>
+                        <div class="time-filter">
+                            <select>
+                                <option>Last 30 Days</option>
+                                <option>Last 3 Months</option>
+                                <option>Last Year</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="career-analytics">
+                        <div class="analytics-cards">
+                            <div class="analytics-card">
+                                <h4>Profile Performance</h4>
+                                <div class="chart-container">
+                                    <canvas id="profileViewsChart"></canvas>
+                                </div>
+                                <div class="insights">
+                                    <p>Your profile views increased by <strong>45%</strong> this month</p>
+                                    <p>Most views from: <strong>Recruiters (67%)</strong></p>
+                                </div>
+                            </div>
+
+                            <div class="analytics-card">
+                                <h4>Application Success Rate</h4>
+                                <div class="success-metrics">
+                                    <div class="metric">
+                                        <span class="metric-value">18%</span>
+                                        <span class="metric-label">Response Rate</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value">8</span>
+                                        <span class="metric-label">Interviews</span>
+                                    </div>
+                                    <div class="metric">
+                                        <span class="metric-value">2</span>
+                                        <span class="metric-label">Offers</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="analytics-card">
+                                <h4>Market Demand for Your Skills</h4>
+                                <div class="demand-chart">
+                                    <canvas id="skillsDemandChart"></canvas>
+                                </div>
+                                <div class="trending-skills">
+                                    <h5>Trending in Your Field</h5>
+                                    <div class="skill-trend">
+                                        <span>React</span>
+                                        <span class="trend up">↑ 23%</span>
+                                    </div>
+                                    <div class="skill-trend">
+                                        <span>Kubernetes</span>
+                                        <span class="trend up">↑ 45%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="analytics-card">
+                                <h4>Career Growth Trajectory</h4>
+                                <div class="growth-prediction">
+                                    <p>Based on your current trajectory:</p>
+                                    <ul>
+                                        <li>Next role: <strong>Tech Lead</strong> (1-2 years)</li>
+                                        <li>Salary increase: <strong>25-35%</strong></li>
+                                        <li>Skills to focus: <strong>Leadership, System Design</strong></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- EXISTING CONTENT PANELS FROM EMPLOYER-PROFILE (education and permanent sections) remain unchanged -->
+                <!-- Jobs Content Section -->
+                <div class="sidebar-content-panel" id="jobs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Job Posts</h2>
+                        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
+                    </div>
+                    <div class="jobs-grid" id="jobsGrid">
+                        <!-- Jobs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Classes Content -->
+                <div class="sidebar-content-panel" id="classes-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Courses</h2>
+                        <button class="btn-primary" onclick="openClassModal()">+ Create Class</button>
+                    </div>
+                    <div class="classes-grid">
+                        <!-- Classes will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Books Content Section -->
+                <div class="sidebar-content-panel" id="books-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Books</h2>
+                        <button class="btn-primary" onclick="createBook()">
+                            <span class="sidebar-btn-icon">🤖</span>
+                            <span>AI Book Writer</span>
+                        </button>
+                    </div>
+                    <div class="books-grid" id="booksGrid">
+                        <!-- Books will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- All permanent section content panels remain unchanged -->
+                <div class="sidebar-content-panel" id="community-content">
+                    <!-- Community content -->
+                </div>
+
+                <div class="sidebar-content-panel" id="clubs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Clubs</h2>
+                        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
+                    </div>
+                    <div class="clubs-grid" id="clubsGrid">
+                        <!-- Clubs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="podcasts-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Podcast Library</h2>
+                        <button class="btn-primary" onclick="createPodcast()">
+                            <span>🎙️</span> Create Podcast
+                        </button>
+                    </div>
+                    <div class="podcast-grid">
+                        <!-- Podcasts will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="videos-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Video Gallery</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="openUploadVideoModal()">
+                                <span>🎬 Upload Video</span>
+                            </button>
+                            <a href="../Plug-ins/go-live-modal.html">
+                                <button class="btn-primary live-btn">
+                                    <span>📹 Go Live</span>
+                                </button>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Videos will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="blog-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Blog & Articles</h2>
+                        <button class="btn-primary" onclick="openCreateBlogModal()">
+                            <span>📝 Create Blog Post</span>
+                        </button>
+                    </div>
+                    <div class="blog-grid">
+                        <!-- Blog posts will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="comments-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Reviews & Comments</h2>
+                    </div>
+                    <div class="comments-section">
+                        <!-- Comments will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="my-products-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Purchased Products</h2>
+                        <button class="btn-primary" onclick="navigateToStore()">
+                            <span>🛒</span> Browse Store
+                        </button>
+                    </div>
+                    <div class="my-products-grid" id="myProductsGrid">
+                        <!-- Products will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="notes-content">
+                    <h2 class="section-title">My Notes</h2>
+                    <div class="notes-section">
+                        <!-- Notes content -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="rate-comment-content">
+                    <h2 class="section-title">Rate & Comment</h2>
+                    <div class="rate-comment-section">
+                        <!-- Rate & comment content -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="share-content">
+                    <h2 class="section-title">Share Profile</h2>
+                    <div class="share-section">
+                        <!-- Share content -->
+                    </div>
+                </div>
+
+                <div class="sidebar-content-panel" id="settings-content">
+                    <h2 class="section-title">Settings</h2>
+                    <div class="settings-section">
+                        <!-- Settings content -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar (Unchanged from employer-profile) -->
+            <div class="right-sidebar">
+                <!-- News Widget -->
+                <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <h3>📰 Latest News</h3>
+                        <a href="../branch/news.html" class="widget-action">View All</a>
+                    </div>
+                    <div class="news-carousel">
+                        <div class="news-card-container">
+                            <div class="news-card active" data-category="tech">
+                                <div class="news-card-header">
+                                    <span class="news-category-badge tech">Tech</span>
+                                    <span class="news-time">2h ago</span>
+                                </div>
+                                <div class="news-card-image">
+                                    <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400" alt="Tech News">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4>AI Revolution in Education: New Tools Transform Learning</h4>
+                                    <p>Latest AI-powered tools are revolutionizing how students learn and interact with educational content...</p>
+                                    <div class="news-stats">
+                                        <span class="news-stat">🔥 Trending</span>
+                                        <span class="news-stat">👁️ 1.2k views</span>
+                                        <span class="news-stat">💬 45 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Trends Widget -->
+                <div class="sidebar-widget market-widget" onclick="navigateToMarket()">
+                    <div class="widget-header">
+                        <h3>💹 Market Trends</h3>
+                        <a href="../branch/yeneta-exchange.html" class="widget-action">Details</a>
+                    </div>
+                    <div class="market-sections">
+                        <div class="market-section">
+                            <h4>Astegni Store</h4>
+                            <div class="store-trend">
+                                <div class="trend-stat">
+                                    <span>Daily Sales</span>
+                                    <span class="trend-value">$24.5K</span>
+                                    <span class="change up">↑ 12%</span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Active Listings</span>
+                                    <span class="trend-value">1,234</span>
+                                    <span class="change up">↑ 8%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="market-section">
+                            <h4>Ethiopian Stock Exchange (ESX)</h4>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span>🏦</span>
+                                    <span>Banking Sector</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="1245.67">1,245.67</span>
+                                    <span class="change up">↑ 2.34%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Advertisement (Unchanged) -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Widgets Section (Updated Analytics for Job Seeker) -->
+        <section class="bottom-widgets">
+            <div class="bottom-widgets-grid">
+
+                <!-- Weather Widget (Unchanged) -->
+                <div class="bottom-widget weather-widget" data-weather-theme="royal-blue">
+                    <div class="widget-header">
+                        <h3>🌤️ Weather</h3>
+                        <div class="weather-widget-actions">
+                            <button class="widget-action" onclick="window.weatherManager.toggleSettings()">
+                                <span class="settings-icon">⚙️</span>
+                            </button>
+                            <button class="widget-action" onclick="window.weatherManager.showForecast()">
+                                Forecast
+                            </button>
+                        </div>
+                    </div>
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="weather-icon">☀️</div>
+                            <div class="weather-temp">72°F</div>
+                            <div class="weather-condition">Sunny</div>
+                        </div>
+                        <div class="weather-location">Addis Ababa, Ethiopia</div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span>High</span>
+                                <span>75°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Low</span>
+                                <span>65°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Humidity</span>
+                                <span>45%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Wind</span>
+                                <span>8 mph</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Analytics Widget (Updated for Job Seeker) -->
+                <div class="bottom-widget analytics-widget compact">
+                    <div class="widget-header">
+                        <h3>📊 Real-Time Analytics</h3>
+                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                    </div>
+                    <div class="real-time-stats compact">
+                        <div class="rt-stat active" data-metric="views" onclick="switchMetric('views')">
+                            <span class="rt-icon">👁️</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="342">342</span>
+                                <span class="rt-label">Profile Views</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="searches" onclick="switchMetric('searches')">
+                            <span class="rt-icon">🔍</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="23">23</span>
+                                <span class="rt-label">Search Appearances</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="messages" onclick="switchMetric('messages')">
+                            <span class="rt-icon">💬</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="15">15</span>
+                                <span class="rt-label">Recruiter Messages</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="applications" onclick="switchMetric('applications')">
+                            <span class="rt-icon">📮</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="45">45</span>
+                                <span class="rt-label">Applications</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="analyticsChart"></canvas>
+                        <div class="chart-label">Job Search Activity - Last 30 Days</div>
+                    </div>
+                </div>
+
+                <!-- Events Widget (Updated for Job Seeker) -->
+                <div class="bottom-widget events-widget">
+                    <div class="widget-header">
+                        <h3>📅 Upcoming Events</h3>
+                        <button class="widget-action" onclick="openAllEventsModal()">View All</button>
+                    </div>
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">2:00 PM</span>
+                                <span class="date">Tomorrow</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Tech Corp Interview</h4>
+                                <p>Technical Round - Zoom</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">10:00 AM</span>
+                                <span class="date">Jan 18</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Career Fair</h4>
+                                <p>Local Tech Hub</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">3:00 PM</span>
+                                <span class="date">Jan 20</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Networking Event</h4>
+                                <p>Developer Meetup</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- FAB Menu (Updated for Job Seeker) -->
+    <div class="fab-container">
+        <button class="fab" id="main-fab">
+            <span class="fab-icon">+</span>
+            <span class="fab-label">Quick Action</span>
+        </button>
+        <div class="fab-menu">
+            <button class="fab-option" onclick="quickApply()">
+                <span>📮</span> Quick Apply
+            </button>
+            <button class="fab-option" onclick="updateResume()">
+                <span>📄</span> Update Resume
+            </button>
+            <button class="fab-option" onclick="startMockInterview()">
+                <span>🎤</span> Mock Interview
+            </button>
+            <button class="fab-option" onclick="searchJobs()">
+                <span>🔍</span> Search Jobs
+            </button>
+            <button class="fab-option" onclick="networkingHub()">
+                <span>🤝</span> Network
+            </button>
+            <button class="fab-option" onclick="careerCoach()">
+                <span>🤖</span> AI Coach
+            </button>
+        </div>
+    </div>
+
+    <!-- Enhanced Footer (Unchanged) -->
+    <footer class="footer-section">
+        <div class="footer-wave">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+            </svg>
+        </div>
+
+        <div class="container mx-auto px-4">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Twitter" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="LinkedIn" class="social-link">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form">
+                            <input type="email" placeholder="Your email address" class="newsletter-input">
+                            <button type="submit" class="newsletter-btn">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p>&copy; 2025 Astegni. All rights reserved.</p>
+                    <div class="footer-badges">
+                        <span class="badge">🔒 SSL Secured</span>
+                        <span class="badge">✓ Verified Platform</span>
+                        <span class="badge">🏆 Award Winner 2024</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts --><!-- In student-profile.html or any protected page -->
+<script src="../js/auth.js"></script>
+<script>
+    // Check authentication on page load
+    (async function() {
+        const auth = window.AuthManager;
+        
+        if (!auth.isAuthenticated()) {
+            // Try to restore session
+            const restored = await auth.restoreSession();
+            
+            if (!restored) {
+                alert('Please login to access this page');
+                window.location.href = '../index.html';
+                return;
+            }
+        }
+        
+        // Check if user has the right role
+        const userRole = auth.getUserRole();
+        if (userRole !== 'student') {
+            alert('This page is for students only');
+            window.location.href = '../index.html';
+            return;
+        }
+        
+        // Page is accessible, load user data
+        const user = auth.getUser();
+        console.log('Current user:', user);
+        // ... rest of your page-specific code
+    })();
+</script>
+    <script src="../js/institute-profile-1.js"></script>
+    <script src="../js/institute-profile-2.js"></script>
+    <script src="../js/institute-profile-3.js"></script>
+    <script src="../js/institute-profile-4.js"></script>
+</body>
+
+</html>
