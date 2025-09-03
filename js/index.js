@@ -1720,7 +1720,7 @@ function initializeTestimonials() {
 //   PARTNERS
 // ============================================
 function initializePartners() {
-    const partners = ["future partner 1", "future partner 2", "future partner 3", "future partner 4", "future partner 5"];
+    const partners = ["Partner 1", "Partner 2", "Partner 3", "Partner 4", "Partner 5", "Partner 6"];
     const track = document.getElementById("partners-track");
     if (!track) return;
 
