@@ -277,3 +277,8 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // At the end of auth.js
 window.AuthManager = new AuthenticationManager();
+
+
+
+
+

@@ -48,6 +48,54 @@
                     <span class="nav-icon">💼</span>
                     <span>Find Jobs</span>
                 </a>
+                <!-- Profile container -->
+                    <div id="profile-container" class="profile-dropdown-container hidden">
+                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                            onclick="toggleProfileDropdown()">
+                            <img id="profile-pic" class="profile-pic" alt="Profile">
+                            <span id="profile-name" class="profile-name"></span>
+                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+
+                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                            <!-- User info header -->
+                            <div class="dropdown-header">
+                                <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
+                                <div class="dropdown-user-info">
+                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                </div>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Role switcher (shown only if user has multiple roles) -->
+                            <div id="role-switcher-section" class="role-switcher-section hidden">
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-item-header">Switch Role</div>
+                                <div id="role-options" class="role-options">
+                                    <!-- Role options will be dynamically added here -->
+                                </div>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <button class="dropdown-item logout-item" onclick="logout()">
+                                <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                    </path>
+                                </svg>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+
                 <button class="notification-btn">
                     <span class="notification-icon">🔔</span>
                     <span class="notification-badge pulse">5</span>

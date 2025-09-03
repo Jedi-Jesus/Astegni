@@ -53,33 +53,71 @@
 
                 <!-- Right Section: Navigation Links -->
                 <div class="nav-links hidden md:flex">
-                    <a class="nav-link px-2 py-1 rounded" href="branch/news.html">
+                    <a class="nav-link px-2 py-1 rounded" href="#">
                         <span class="nav-icon">📰</span> News
                     </a>
-                    <a class="nav-link px-2 py-1 rounded" href="branch/find-tutors.html"
-                        onclick="handleNavLinkClick(event, 'find-tutors')">
-                        <span class="nav-icon">👨‍🏫</span> Find Tutors
-                    </a>
-                    <a class="nav-link px-2 py-1 rounded" href="branch/store.html"
-                        onclick="handleNavLinkClick(event, 'store')">
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
                         <span class="nav-icon">📚</span> Bookstore
                     </a>
-                    <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
+                    <a class="nav-link px-2 py-1 rounded" href="reels.html"
                         onclick="handleNavLinkClick(event, 'reels')">
                         <span class="nav-icon">🎬</span> Reels
                     </a>
-                    <a class="nav-link px-2 py-1 rounded" href="branch/find-jobs.html"
-                        onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
                         <span class="nav-icon">💼</span> Find a Job
                     </a>
-                    <a href="profile.html" class="profile-link flex items-center space-x-2">
-                        <img src="https://via.placeholder.com/32" alt="Profile"
-                            class="w-8 h-8 rounded-full border-2 border-gray-300">
-                        <span class="font-medium lg:inline">John Doe</span>
-                    </a>
+
+                    <!-- Profile container -->
+                    <div id="profile-container" class="profile-dropdown-container hidden">
+                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                            onclick="toggleProfileDropdown()">
+                            <img id="profile-pic" class="profile-pic" alt="Profile">
+                            <span id="profile-name" class="profile-name"></span>
+                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+
+                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                            <!-- User info header -->
+                            <div class="dropdown-header">
+                                <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
+                                <div class="dropdown-user-info">
+                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                </div>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Role switcher (shown only if user has multiple roles) -->
+                            <div id="role-switcher-section" class="role-switcher-section hidden">
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-item-header">Switch Role</div>
+                                <div id="role-options" class="role-options">
+                                    <!-- Role options will be dynamically added here -->
+                                </div>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <button class="dropdown-item logout-item" onclick="logout()">
+                                <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                    </path>
+                                </svg>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+
+
                     <button id="notificationBtn" aria-label="Notifications"
                         class="notification-btn relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
-
                         <span class="notification-icon">🔔</span>
                         <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full pulse"></span>
                     </button>
@@ -106,11 +144,7 @@
                 <!-- Mobile Menu Button -->
                 <div class="md:hidden flex items-center space-x-2">
                     <button id="notificationBtnMobile" aria-label="Notifications" class="notification-btn relative p-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-5-5.917V4a3 3 0 10-6 0v1.083A6 6 0 002 11v3.159c0 .538-.214 1.055-.595 1.436L0 17h5m10 0v1a3 3 0 11-6 0v-1m6 0H9">
-                            </path>
-                        </svg>
+                        <span class="notification-icon">🔔</span>
                         <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full pulse"></span>
                     </button>
                     <button id="themeToggleMobile" class="theme-toggle-btn p-2" aria-label="Toggle Theme">
@@ -150,6 +184,7 @@
                     <img src="https://via.placeholder.com/24" alt="Profile" class="w-6 h-6 rounded-full">
                     <span>Profile</span>
                 </a>
+                
             </div>
         </div>
     </nav>
@@ -512,7 +547,7 @@
 
 
     <!-- Enhanced Footer -->
-   <footer class="footer-section" id="footer" role="contentinfo">
+    <footer class="footer-section" id="footer" role="contentinfo">
         <div class="footer-wave" aria-hidden="true">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
                 <defs>
@@ -524,9 +559,13 @@
                     </linearGradient>
                 </defs>
                 <!-- Main wave fill with explicit class -->
-                <path class="wave-fill" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+                <path class="wave-fill"
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
                 <!-- Animated line following the wave curve -->
-                <path class="wave-line" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32"></path>
+                <path class="wave-line"
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32">
+                </path>
             </svg>
         </div>
 
@@ -534,7 +573,8 @@
             <div class="footer-content">
                 <div class="footer-section-item">
                     <h3 class="footer-title">About Astegni</h3>
-                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
                     <div class="footer-stats">
                         <div class="stat-item">
                             <span class="stat-number">10k+</span>
@@ -585,12 +625,16 @@
                         </a>
                         <a href="#" aria-label="Twitter" class="social-link">
                             <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
                             </svg>
                         </a>
                         <a href="#" aria-label="LinkedIn" class="social-link">
                             <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+                                <path
+                                    d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
                                 <circle cx="4" cy="4" r="2"></circle>
                             </svg>
                         </a>
@@ -603,7 +647,9 @@
                         </a>
                         <a href="#" aria-label="YouTube" class="social-link">
                             <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path>
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
                             </svg>
                         </a>
                     </div>
@@ -611,14 +657,8 @@
                     <div class="newsletter-signup">
                         <h4>Subscribe to Newsletter</h4>
                         <form class="newsletter-form" id="newsletterForm">
-                            <input 
-                                type="email" 
-                                placeholder="Your email address" 
-                                class="newsletter-input" 
-                                id="emailInput"
-                                aria-label="Email address"
-                                required
-                            >
+                            <input type="email" placeholder="Your email address" class="newsletter-input"
+                                id="emailInput" aria-label="Email address" required>
                             <button type="submit" class="newsletter-btn" id="submitBtn">Subscribe</button>
                             <div class="newsletter-feedback" id="feedback"></div>
                         </form>
@@ -660,7 +700,7 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
     <!-- Updated Frontend Code for Profile Picture Integration -->
-<script>
+    <script>
         // Newsletter form validation and submission
         const form = document.getElementById('newsletterForm');
         const emailInput = document.getElementById('emailInput');
@@ -671,7 +711,7 @@
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         // Real-time validation
-        emailInput.addEventListener('input', function() {
+        emailInput.addEventListener('input', function () {
             if (this.value && !emailRegex.test(this.value)) {
                 this.classList.add('error');
                 this.classList.remove('success');
@@ -684,31 +724,31 @@
         });
 
         // Form submission
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const email = emailInput.value.trim();
-            
+
             // Reset feedback
             feedback.classList.remove('show', 'error', 'success');
-            
+
             // Validate email
             if (!email) {
                 showFeedback('Please enter your email address', 'error');
                 emailInput.classList.add('error');
                 return;
             }
-            
+
             if (!emailRegex.test(email)) {
                 showFeedback('Please enter a valid email address', 'error');
                 emailInput.classList.add('error');
                 return;
             }
-            
+
             // Show loading state
             submitBtn.classList.add('loading');
             submitBtn.textContent = 'Subscribing...';
-            
+
             // Simulate API call
             setTimeout(() => {
                 // Success response
@@ -723,7 +763,7 @@
         function showFeedback(message, type) {
             feedback.textContent = message;
             feedback.classList.add('show', type);
-            
+
             // Hide after 5 seconds
             setTimeout(() => {
                 feedback.classList.remove('show');

@@ -53,23 +53,21 @@
             <div class="hidden md:flex items-center gap-4">
                 <div class="nav-items">
                     <!-- Desktop Navigation -->
-                    <a class="nav-link px-2 py-1 rounded" href="branch/news.html">
+                    <a class="nav-link px-2 py-1 rounded" href="#">
                         <span class="nav-icon">📰</span> News
                     </a>
                     <a class="nav-link px-2 py-1 rounded" href="branch/find-tutors.html"
                         onclick="handleNavLinkClick(event, 'find-tutors')">
                         <span class="nav-icon">👨‍🏫</span> Find Tutors
                     </a>
-                    <a class="nav-link px-2 py-1 rounded" href="branch/store.html"
-                        onclick="handleNavLinkClick(event, 'store')">
-                        <span class="nav-icon">📚</span> Bookstore
-                    </a>
                     <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
                         onclick="handleNavLinkClick(event, 'reels')">
                         <span class="nav-icon">🎬</span> Reels
                     </a>
-                    <a class="nav-link px-2 py-1 rounded" href="branch/find-jobs.html"
-                        onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
+                        <span class="nav-icon">📚</span> Bookstore
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
                         <span class="nav-icon">💼</span> Find a Job
                     </a>
                 </div>
@@ -96,7 +94,7 @@
                         <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
                             <!-- User info header -->
                             <div class="dropdown-header">
-                                <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
+                                <img id="dropdown-profile-pic" class="profile-pic" alt="Profile">
                                 <div class="dropdown-user-info">
                                     <span id="dropdown-user-name" class="dropdown-user-name"></span>
                                     <span id="dropdown-user-email" class="dropdown-user-email"></span>
@@ -163,13 +161,13 @@
                     onclick="handleNavLinkClick(event, 'find-tutors')">
                     <span class="nav-icon">👨‍🏫</span> Find Tutors
                 </a>
-                <a class="nav-link px-2 py-1 rounded" href="branch/store.html"
-                    onclick="handleNavLinkClick(event, 'store')">
-                    <span class="nav-icon">🛒</span> Store
-                </a>
                 <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
                     onclick="handleNavLinkClick(event, 'reels')">
                     <span class="nav-icon">🎬</span> Reels
+                </a>
+                <a class="nav-link px-2 py-1 rounded" href="branch/store.html"
+                    onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">🛒</span> Store
                 </a>
                 <a class="nav-link px-2 py-1 rounded" href="branch/find-jobs.html"
                     onclick="handleNavLinkClick(event, 'find-jobs')">
@@ -705,11 +703,7 @@
                         <option value="tutor">Tutor</option>
                         <option value="student">Student</option>
                         <option value="guardian">Guardian</option>
-                        <option value="bookstore">Bookstore</option>
-                        <option value="delivery">Delivery</option>
                         <option value="advertiser">Advertiser</option>
-                        <option value="author">Author</option>
-                        <option value="church">Church</option>
                     </select>
                 </div>
 
@@ -1298,384 +1292,7 @@
         `;
         document.head.appendChild(style);
     </script>
-    <script>
 
-        // Add these functions to your index.js file for the minimal dropdown
-
-        // ============================================
-        //   MINIMAL PROFILE DROPDOWN
-        // ============================================
-
-
-        // Fetch current user data from database
-        async function fetchCurrentUserData() {
-            try {
-                const response = await fetch('http://localhost:8000/api/me', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const userData = await response.json();
-
-                    // Update APP_STATE with fresh data
-                    APP_STATE.currentUser = {
-                        id: userData.id,
-                        name: `${userData.first_name} ${userData.last_name}`,
-                        first_name: userData.first_name,
-                        last_name: userData.last_name,
-                        email: userData.email,
-                        phone: userData.phone,
-                        role: userData.role,
-                        profile_picture: userData.profile_picture,
-                        created_at: userData.created_at,
-                        is_active: userData.is_active,
-                        email_verified: userData.email_verified
-                    };
-
-                    APP_STATE.userRole = userData.role;
-
-                    // Save to localStorage
-                    localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
-                    localStorage.setItem('userRole', userData.role);
-
-                    // Now fetch the user's roles
-                    await fetchUserRoles();
-
-                    return true;
-                }
-                return false;
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                return false;
-            }
-        }
-
-        // Fetch user roles from database
-        async function fetchUserRoles() {
-            try {
-                const response = await fetch('http://localhost:8000/api/my-roles', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    // Update current user with roles array
-                    if (APP_STATE.currentUser) {
-                        APP_STATE.currentUser.roles = data.roles || [];
-                        APP_STATE.userRole = data.active_role || APP_STATE.userRole;
-
-                        // Update localStorage
-                        localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
-                        localStorage.setItem('userRole', data.active_role);
-                    }
-
-                    return data.roles;
-                }
-                return [];
-            } catch (error) {
-                console.error('Error fetching user roles:', error);
-                return [];
-            }
-        }
-
-        function toggleProfileDropdown() {
-            const toggle = document.getElementById('profile-dropdown-toggle');
-            const menu = document.getElementById('profile-dropdown-menu');
-
-            if (!toggle || !menu) return;
-
-            const isOpen = !menu.classList.contains('hidden');
-
-            if (isOpen) {
-                closeProfileDropdown();
-            } else {
-                openProfileDropdown();
-            }
-        }
-
-        // Updated openProfileDropdown to refresh data when opening
-        function openProfileDropdown() {
-            const toggle = document.getElementById('profile-dropdown-toggle');
-            const menu = document.getElementById('profile-dropdown-menu');
-
-            if (!toggle || !menu) return;
-
-            toggle.classList.add('active');
-            menu.classList.remove('hidden');
-
-            setTimeout(() => {
-                menu.classList.add('show');
-            }, 10);
-
-            // Fetch fresh data from database when opening dropdown
-            updateProfileDropdown();
-
-            document.addEventListener('click', handleClickOutside);
-            document.addEventListener('keydown', handleEscapeKey);
-        }
-        function closeProfileDropdown() {
-            const toggle = document.getElementById('profile-dropdown-toggle');
-            const menu = document.getElementById('profile-dropdown-menu');
-
-            if (!toggle || !menu) return;
-
-            toggle.classList.remove('active');
-            menu.classList.remove('show');
-
-            setTimeout(() => {
-                menu.classList.add('hidden');
-            }, 300);
-
-            document.removeEventListener('click', handleClickOutside);
-            document.removeEventListener('keydown', handleEscapeKey);
-        }
-
-        function handleClickOutside(event) {
-            const container = document.getElementById('profile-container');
-            if (container && !container.contains(event.target)) {
-                closeProfileDropdown();
-            }
-        }
-
-        function handleEscapeKey(event) {
-            if (event.key === 'Escape') {
-                closeProfileDropdown();
-            }
-        }
-
-        // Updated updateProfileDropdown to fetch fresh data
-        async function updateProfileDropdown() {
-            // Fetch fresh user data from database first
-            await fetchCurrentUserData();
-
-            if (!APP_STATE.currentUser) return;
-
-            // Update dropdown user info
-            const dropdownUserName = document.getElementById('dropdown-user-name');
-            const dropdownUserEmail = document.getElementById('dropdown-user-email');
-            const dropdownUserRole = document.getElementById('dropdown-user-role');
-            const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
-
-            const userName = APP_STATE.currentUser.name ||
-                `${APP_STATE.currentUser.first_name} ${APP_STATE.currentUser.last_name}`;
-
-            if (dropdownUserName) {
-                dropdownUserName.textContent = userName;
-            }
-
-            if (dropdownUserEmail) {
-                dropdownUserEmail.textContent = APP_STATE.currentUser.email || '';
-            }
-
-            if (dropdownUserRole) {
-                dropdownUserRole.textContent = formatRoleName(APP_STATE.userRole);
-            }
-
-            if (dropdownProfilePic) {
-                // Use profile picture from database if available
-                if (APP_STATE.currentUser.profile_picture) {
-                    dropdownProfilePic.src = APP_STATE.currentUser.profile_picture;
-                } else if (APP_STATE.userRole) {
-                    const userAvatar = getUserAvatar(APP_STATE.userRole);
-                    dropdownProfilePic.src = userAvatar;
-                }
-
-                dropdownProfilePic.alt = `${APP_STATE.userRole || 'User'} avatar`;
-
-                dropdownProfilePic.onerror = () => {
-                    dropdownProfilePic.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=6366f1&color=fff`;
-                };
-            }
-
-            // Setup role switcher with fresh data from database
-            await setupRoleSwitcher();
-        }
-
-        // Enhanced setupRoleSwitcher that fetches from database
-        async function setupRoleSwitcher() {
-            const roleSwitcherSection = document.getElementById('role-switcher-section');
-            const roleOptions = document.getElementById('role-options');
-
-            if (!roleSwitcherSection || !roleOptions) return;
-
-            try {
-                // Fetch user's roles from the database
-                const response = await fetch('http://localhost:8000/api/my-roles', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (!response.ok) {
-                    console.error('Failed to fetch user roles');
-                    roleSwitcherSection.classList.add('hidden');
-                    return;
-                }
-
-                const data = await response.json();
-                const userRoles = data.roles || [];
-                const activeRole = data.active_role || APP_STATE.userRole;
-
-                // Update local state with fetched data
-                if (APP_STATE.currentUser) {
-                    APP_STATE.currentUser.roles = userRoles;
-                }
-                APP_STATE.userRole = activeRole;
-                localStorage.setItem('userRole', activeRole);
-
-                // Hide role switcher if user has only one role
-                if (userRoles.length <= 1) {
-                    roleSwitcherSection.classList.add('hidden');
-                    return;
-                }
-
-                // Show role switcher and populate options
-                roleSwitcherSection.classList.remove('hidden');
-                roleOptions.innerHTML = '';
-
-                // Add role options from database
-                userRoles.forEach(role => {
-                    const roleOption = document.createElement('div');
-                    roleOption.className = 'role-option';
-
-                    if (role === activeRole) {
-                        roleOption.classList.add('active');
-                    }
-
-                    roleOption.innerHTML = `
-                <span class="role-name">${formatRoleName(role)}</span>
-                ${role === activeRole ? '<span class="role-badge">ACTIVE</span>' : ''}
-            `;
-
-                    roleOption.onclick = () => switchToRole(role);
-                    roleOptions.appendChild(roleOption);
-                });
-
-                // Update the displayed role in the dropdown header
-                const dropdownUserRole = document.getElementById('dropdown-user-role');
-                if (dropdownUserRole) {
-                    dropdownUserRole.textContent = formatRoleName(activeRole);
-                }
-
-            } catch (error) {
-                console.error('Error fetching user roles:', error);
-                roleSwitcherSection.classList.add('hidden');
-            }
-        }
-
-        async function switchToRole(newRole) {
-    if (newRole === APP_STATE.userRole) return;
-    
-    closeProfileDropdown();
-    showToast(`Switching to ${formatRoleName(newRole)} role...`, 'info');
-    
-    try {
-        const response = await fetch('http://localhost:8000/api/switch-role', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ new_role: newRole }) // Ensure correct field name
-        });
-        
-        if (response.ok) {
-            const data = await response.json();
-            
-            // Update local state
-            APP_STATE.userRole = data.active_role;
-            localStorage.setItem('userRole', data.active_role);
-            
-            // Update current user's active role
-            if (APP_STATE.currentUser) {
-                APP_STATE.currentUser.role = data.active_role;
-                localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
-            }
-            
-            // Update all UI elements
-            updateUIForLoggedInUser();
-            updateProfileDropdown();
-            updateProfileLink(data.active_role);
-            
-            showToast(`Switched to ${formatRoleName(data.active_role)} role`, 'success');
-            
-            // Navigate to role-specific profile page after a short delay
-            setTimeout(() => {
-                const profileUrl = PROFILE_URLS[data.active_role] || 'index.html';
-                window.location.href = profileUrl;
-            }, 500);
-        } else {
-            const error = await response.json();
-            showToast(error.detail || 'Failed to switch role', 'error');
-        }
-    } catch (error) {
-        console.error('Role switch error:', error);
-        showToast('Error switching role', 'error');
-    }
-}
-
-        // Format role name for display
-        function formatRoleName(role) {
-            const roleNames = {
-                'user': 'User',
-                'student': 'Student',
-                'tutor': 'Tutor',
-                'guardian': 'Guardian',
-                'bookstore': 'Bookstore',
-                'delivery': 'Delivery',
-                'advertiser': 'Advertiser',
-                'author': 'Author',
-                'church': 'Church'
-            };
-
-            return roleNames[role] || role.charAt(0).toUpperCase() + role.slice(1);
-        }
-
-        // Add this to your existing updateUIForLoggedInUser function
-        const originalUpdateUIForLoggedInUser = window.updateUIForLoggedInUser;
-        window.updateUIForLoggedInUser = function () {
-            // Call original function
-            if (originalUpdateUIForLoggedInUser) {
-                originalUpdateUIForLoggedInUser();
-            }
-
-            // Update dropdown
-            updateProfileDropdown();
-        };
-
-        // Export functions
-        window.toggleProfileDropdown = toggleProfileDropdown;
-        window.openProfileDropdown = openProfileDropdown;
-        window.closeProfileDropdown = closeProfileDropdown;
-        window.switchToRole = switchToRole;
-        window.formatRoleName = formatRoleName;
-        window.updateProfileDropdown = updateProfileDropdown;
-        window.fetchCurrentUserData = fetchCurrentUserData;
-        window.setupRoleSwitcher = setupRoleSwitcher;
-
-        // Initialize dropdown on page load
-        document.addEventListener('DOMContentLoaded', async () => {
-            // Check if user is logged in
-            if (APP_STATE.isLoggedIn && localStorage.getItem('token')) {
-                // Fetch fresh user data on page load
-                await fetchCurrentUserData();
-
-                // Setup the dropdown with fresh data
-                await updateProfileDropdown();
-            }
-        });
-    </script>
     <script src="js/auth.js"></script>
     <script src="js/index.js"></script>
 </body>

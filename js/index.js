@@ -1,11 +1,9 @@
-// Enhanced index.js - With improved video player, comments, and share functionality
+// Enhanced index.js - Cleaned and Optimized Version
 
 // ============================================
 //   GLOBAL STATE & CONFIGURATION
 // ============================================
-// Add this to your index.js file - Replace the existing handleRegister function and updateUIForLoggedInUser function
 
-// Update the APP_STATE to include userRole
 // Error handler to ensure loading screen is removed
 window.addEventListener("error", (e) => {
     console.error("Script error:", e);
@@ -14,8 +12,10 @@ window.addEventListener("error", (e) => {
         loadingScreen.style.display = "none";
     }
 });
+
 // API Configuration
 const API_BASE_URL = "http://localhost:8000";
+
 // Helper function for API calls
 async function apiCall(endpoint, method = "GET", body = null, token = null) {
     const headers = {
@@ -39,10 +39,11 @@ async function apiCall(endpoint, method = "GET", body = null, token = null) {
     return response;
 }
 
+// Application State
 const APP_STATE = {
     isLoggedIn: false,
     currentUser: null,
-    userRole: null, // Add this line
+    userRole: null,
     theme: localStorage.getItem("theme") || "light",
     notifications: [],
     cart: [],
@@ -50,6 +51,7 @@ const APP_STATE = {
     currentVideo: null,
     videoComments: [],
 };
+
 // Profile URL mapping based on user role
 const PROFILE_URLS = {
     user: "my-profile-tier-1/user-profile.html",
@@ -71,7 +73,7 @@ const CONFIG = {
     COUNTER_DURATION: 2000,
 };
 
-// Comprehensive avatar system with multiple defaults per role
+// Comprehensive avatar system
 const ROLE_AVATAR_SYSTEM = {
     student: {
         category: "Student",
@@ -80,48 +82,15 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "student-boy-young",
                 path: "pictures/student-kid-boy.jpeg",
                 label: "Young Student (Boy)",
-                gender: "male",
-                ageGroup: "child",
             },
             {
                 id: "student-girl-young",
                 path: "pictures/student-kid-girl.jpeg",
                 label: "Young Student (Girl)",
-                gender: "female",
-                ageGroup: "child",
-            },
-            {
-                id: "student-boy-teen",
-                path: "pictures/student-teenage-boy.jpeg",
-                label: "Teen Student (Boy)",
-                gender: "male",
-                ageGroup: "teen",
-            },
-            {
-                id: "student-girl-teen",
-                path: "pictures/student-teenage-girl.jpeg",
-                label: "Teen Student (Girl)",
-                gender: "female",
-                ageGroup: "teen",
-            },
-            {
-                id: "student-male-college",
-                path: "pictures/student-college-boy.jpeg",
-                label: "College Student (Male)",
-                gender: "male",
-                ageGroup: "adult",
-            },
-            {
-                id: "student-female-college",
-                path: "pictures/student-college-girl.jpeg",
-                label: "College Student (Female)",
-                gender: "female",
-                ageGroup: "adult",
             },
         ],
         fallbackColor: "10b981",
     },
-
     tutor: {
         category: "Tutor",
         defaults: [
@@ -129,20 +98,15 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "tutor-male-professional",
                 path: "pictures/tutor-man.jpg",
                 label: "Professional Male Tutor",
-                gender: "male",
-                specialty: "professional",
             },
             {
                 id: "tutor-female-professional",
                 path: "pictures/tutor-woman.jpg",
                 label: "Professional Female Tutor",
-                gender: "female",
-                specialty: "professional",
             },
         ],
         fallbackColor: "f59e0b",
     },
-
     guardian: {
         category: "Parent/Guardian",
         defaults: [
@@ -150,20 +114,15 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "parent-father-young",
                 path: "pictures/Dad-profile.jpg",
                 label: "Young Father",
-                gender: "male",
-                type: "father",
             },
             {
                 id: "parent-mother-young",
                 path: "pictures/Mom-profile.jpg",
                 label: "Young Mother",
-                gender: "female",
-                type: "mother",
             },
         ],
         fallbackColor: "ef4444",
     },
-
     bookstore: {
         category: "Bookstore",
         defaults: [
@@ -171,12 +130,10 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "bookstore-modern",
                 path: "pictures/bookstore-profile.jpg",
                 label: "Modern Bookstore",
-                style: "modern",
             },
         ],
         fallbackColor: "8b5cf6",
     },
-
     delivery: {
         category: "Delivery Service",
         defaults: [
@@ -184,18 +141,10 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "delivery-person-male",
                 path: "pictures/delivery-man.jpg",
                 label: "Male Delivery Person",
-                gender: "male",
-            },
-            {
-                id: "delivery-person-female",
-                path: "pictures/delivery-woman.jpg",
-                label: "Female Delivery Person",
-                gender: "female",
             },
         ],
         fallbackColor: "06b6d4",
     },
-
     advertiser: {
         category: "Advertiser",
         defaults: [
@@ -203,30 +152,10 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "advertiser-agency",
                 path: "pictures/ad-profile-1.jpeg",
                 label: "Ad Agency",
-                type: "agency",
-            },
-            {
-                id: "advertiser-digital",
-                path: "pictures/ad-profile-2.jpeg",
-                label: "Digital Marketing",
-                type: "digital",
-            },
-            {
-                id: "advertiser-creative",
-                path: "pictures/ad-profile-3.jpeg",
-                label: "Creative Agency",
-                type: "creative",
-            },
-            {
-                id: "advertiser-corporate",
-                path: "pictures/ad-profile-4.png",
-                label: "Corporate",
-                type: "corporate",
             },
         ],
         fallbackColor: "ec4899",
     },
-
     author: {
         category: "Author",
         defaults: [
@@ -234,36 +163,10 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "author-male-young",
                 path: "pictures/author-boy.jpg",
                 label: "Young Male Author",
-                gender: "male",
-            },
-            {
-                id: "author-male-young",
-                path: "pictures/author-male-young.jpg",
-                label: "Young Male Author",
-                gender: "male",
-            },
-            {
-                id: "author-female-young",
-                path: "pictures/author-female-young.jpg",
-                label: "Young Female Author",
-                gender: "female",
-            },
-            {
-                id: "author-male-professional",
-                path: "pictures/professional-author-male.jpg",
-                label: "Professional Author",
-                gender: "male",
-            },
-            {
-                id: "author-male-senior",
-                path: "pictures/author-male-senior.jpg",
-                label: "Senior Male Author",
-                gender: "male",
             },
         ],
         fallbackColor: "6366f1",
     },
-
     church: {
         category: "Church/Religious Organization",
         defaults: [
@@ -271,42 +174,10 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "church-cross",
                 path: "pictures/jesus-image-butterfly.jpg",
                 label: "Church Cross",
-                type: "christian",
-            },
-            {
-                id: "church-building",
-                path: "pictures/church-building.jpg",
-                label: "Church Building",
-                type: "building",
-            },
-            {
-                id: "church-dove",
-                path: "pictures/jesus-teaching.jpg",
-                label: "Jesus teaching",
-                type: "symbol",
-            },
-            {
-                id: "church-bible",
-                path: "pictures/church-bible.jpg",
-                label: "Holy Bible",
-                type: "book",
-            },
-            {
-                id: "church-hands",
-                path: "pictures/jesus-image.jpg",
-                label: "Jesus Image",
-                type: "symbol",
-            },
-            {
-                id: "church-hands",
-                path: "pictures/bible-stydy.jpg",
-                label: "Bible study",
-                type: "symbol",
             },
         ],
         fallbackColor: "a855f7",
     },
-
     user: {
         category: "General User",
         defaults: [
@@ -314,269 +185,596 @@ const ROLE_AVATAR_SYSTEM = {
                 id: "user-avatar-1",
                 path: "pictures/boy-user-image.jpg",
                 label: "User Avatar 1",
-                style: "modern",
-            },
-            {
-                id: "user-avatar-2",
-                path: "pictures/girl-user-image.jpg",
-                label: "User Avatar 2",
-                style: "classic",
-            },
-            {
-                id: "user-avatar-3",
-                path: "pictures/teenage-boy-user.jpg",
-                label: "User Avatar 3",
-                style: "minimal",
-            },
-            {
-                id: "user-avatar-1",
-                path: "pictures/teenage-girl-user.jpg",
-                label: "User Avatar 1",
-                style: "modern",
-            },
-            {
-                id: "user-avatar-2",
-                path: "pictures/man-user.jpg",
-                label: "User Avatar 2",
-                style: "classic",
-            },
-            {
-                id: "user-avatar-3",
-                path: "pictures/woman-user.jpg",
-                label: "User Avatar 3",
-                style: "minimal",
             },
         ],
         fallbackColor: "6366f1",
     },
 };
 
-// Avatar management functions
-function getCurrentUserAvatar() {
-    // Priority chain for avatar selection
-    if (APP_STATE.currentUser?.profile_picture) {
-        return APP_STATE.currentUser.profile_picture;
-    }
-
-    const selectedDefault = localStorage.getItem(
-        `${APP_STATE.userRole}_selected_default`
-    );
-    if (selectedDefault) {
-        return selectedDefault;
-    }
-
-    const roleConfig = ROLE_AVATAR_SYSTEM[APP_STATE.userRole];
-    if (roleConfig?.defaults?.[0]) {
-        return roleConfig.defaults[0].path;
-    }
-
-    // Fallback to UI Avatar API
-    const name = APP_STATE.currentUser?.name || "User";
-    const color = roleConfig?.fallbackColor || "6366f1";
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(
-        name
-    )}&background=${color}&color=fff&size=200`;
-}
-
-// Sample video data with comments
+// Sample video data
 const VIDEO_DATA = [
     {
         id: 1,
         title: "Introduction to Astegni Platform",
-        description:
-            "Learn how to navigate and use all features of Astegni educational platform. This comprehensive guide covers everything from finding tutors to enrolling in courses.",
+        description: "Learn how to navigate and use all features of Astegni educational platform.",
         duration: "5:23",
         views: "10K",
         category: "intro",
         likes: 523,
         dislikes: 12,
-        comments: [
-            {
-                id: 1,
-                author: "Abebe Tadesse",
-                avatar: "https://picsum.photos/40?random=1",
-                text: "This is exactly what I needed to get started!",
-                time: "2 days ago",
-                likes: 45,
-            },
-            {
-                id: 2,
-                author: "Sara Bekele",
-                avatar: "https://picsum.photos/40?random=2",
-                text: "Great introduction! Very clear and helpful.",
-                time: "1 week ago",
-                likes: 23,
-            },
-            {
-                id: 3,
-                author: "Daniel Girma",
-                avatar: "https://picsum.photos/40?random=3",
-                text: "Can you make a video about advanced features?",
-                time: "2 weeks ago",
-                likes: 15,
-            },
-        ],
-    },
-    {
-        id: 2,
-        title: "How to Find Perfect Tutors",
-        description:
-            "Step-by-step guide on finding and connecting with the best tutors for your learning needs. Tips on evaluating tutor profiles and scheduling sessions.",
-        duration: "8:15",
-        views: "8.5K",
-        category: "tutorials",
-        likes: 412,
-        dislikes: 8,
-        comments: [
-            {
-                id: 4,
-                author: "Marta Alemu",
-                avatar: "https://picsum.photos/40?random=4",
-                text: "Found my math tutor using these tips!",
-                time: "3 days ago",
-                likes: 67,
-            },
-            {
-                id: 5,
-                author: "Yohannes Haile",
-                avatar: "https://picsum.photos/40?random=5",
-                text: "Very informative tutorial",
-                time: "5 days ago",
-                likes: 34,
-            },
-        ],
-    },
-    {
-        id: 3,
-        title: "Student Success Story - Sara",
-        description:
-            "Sara shares her inspiring journey of improving grades from C to A+ with the help of Astegni tutors. Learn about her study strategies and tips.",
-        duration: "6:30",
-        views: "15K",
-        category: "success",
-        likes: 892,
-        dislikes: 5,
-        comments: [
-            {
-                id: 6,
-                author: "Tigist Mengistu",
-                avatar: "https://picsum.photos/40?random=6",
-                text: "So inspiring! Congratulations Sara!",
-                time: "1 day ago",
-                likes: 123,
-            },
-            {
-                id: 7,
-                author: "Kebede Wolde",
-                avatar: "https://picsum.photos/40?random=7",
-                text: "This motivated me to work harder",
-                time: "4 days ago",
-                likes: 89,
-            },
-            {
-                id: 8,
-                author: "Helen Tesfaye",
-                avatar: "https://picsum.photos/40?random=8",
-                text: "Which tutor did you use for math?",
-                time: "1 week ago",
-                likes: 45,
-            },
-        ],
-    },
-    {
-        id: 4,
-        title: "Advanced Math Techniques",
-        description:
-            "Master advanced mathematical concepts with proven problem-solving techniques. Perfect for high school and university students.",
-        duration: "12:45",
-        views: "5K",
-        category: "courses",
-        likes: 234,
-        dislikes: 15,
-        comments: [
-            {
-                id: 9,
-                author: "Solomon Assefa",
-                avatar: "https://picsum.photos/40?random=9",
-                text: "Best math tutorial on the platform!",
-                time: "6 hours ago",
-                likes: 78,
-            },
-        ],
-    },
-    {
-        id: 5,
-        title: "Study Tips for Exams",
-        description:
-            "Effective study strategies and time management tips to ace your exams. Learn how to prepare efficiently and reduce exam anxiety.",
-        duration: "7:20",
-        views: "20K",
-        category: "tips",
-        likes: 1523,
-        dislikes: 23,
-        comments: [
-            {
-                id: 10,
-                author: "Bethlehem Kassa",
-                avatar: "https://picsum.photos/40?random=10",
-                text: "These tips helped me pass my finals!",
-                time: "2 days ago",
-                likes: 234,
-            },
-            {
-                id: 11,
-                author: "Dawit Lemma",
-                avatar: "https://picsum.photos/40?random=11",
-                text: "Please make more videos like this",
-                time: "3 days ago",
-                likes: 112,
-            },
-        ],
-    },
-    {
-        id: 6,
-        title: "Online Learning Best Practices",
-        description:
-            "Get the most out of online learning with these proven strategies. Tips for staying focused and engaged during virtual classes.",
-        duration: "9:10",
-        views: "12K",
-        category: "tutorials",
-        likes: 678,
-        dislikes: 19,
-        comments: [],
-    },
-    {
-        id: 7,
-        title: "Fun Learning Games",
-        description:
-            "Make learning enjoyable with these educational games and activities. Perfect for young learners and interactive study sessions.",
-        duration: "10:15",
-        views: "25K",
-        category: "entertainment",
-        likes: 2134,
-        dislikes: 45,
-        comments: [],
-    },
-    {
-        id: 8,
-        title: "Educational Comedy Sketches",
-        description:
-            "Learn while you laugh! Educational content presented in fun and memorable comedy sketches.",
-        duration: "15:30",
-        views: "30K",
-        category: "entertainment",
-        likes: 3456,
-        dislikes: 67,
         comments: [],
     },
 ];
+
+// ============================================
+//   PROFILE AND AUTHENTICATION MANAGEMENT
+// ============================================
+
+// Fetch current user data from database
+async function fetchCurrentUserData() {
+    try {
+        const response = await fetch('http://localhost:8000/api/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const userData = await response.json();
+
+            APP_STATE.currentUser = {
+                id: userData.id,
+                name: `${userData.first_name} ${userData.last_name}`,
+                first_name: userData.first_name,
+                last_name: userData.last_name,
+                email: userData.email,
+                phone: userData.phone,
+                role: userData.role,
+                profile_picture: userData.profile_picture,
+                created_at: userData.created_at,
+                is_active: userData.is_active,
+                email_verified: userData.email_verified
+            };
+
+            APP_STATE.userRole = userData.role;
+
+            localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
+            localStorage.setItem('userRole', userData.role);
+
+            await fetchUserRoles();
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+        return false;
+    }
+}
+
+// Fetch user roles from database
+async function fetchUserRoles() {
+    try {
+        const response = await fetch('http://localhost:8000/api/my-roles', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            if (APP_STATE.currentUser) {
+                APP_STATE.currentUser.roles = data.roles || [];
+                APP_STATE.userRole = data.active_role || APP_STATE.userRole;
+
+                localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
+                localStorage.setItem('userRole', data.active_role);
+            }
+            return data.roles;
+        }
+        return [];
+    } catch (error) {
+        console.error('Error fetching user roles:', error);
+        return [];
+    }
+}
+
+// FIX 1 & 2: Enhanced UI update with proper profile picture handling
+function updateUIForLoggedInUser() {
+    if (!APP_STATE.currentUser) return;
+    
+    // Hide ALL login/register buttons
+    const loginButtons = document.querySelectorAll(
+        '#login-btn, #register-btn, #hero-login-btn, #hero-register-btn, ' +
+        '#mobile-login-btn, #mobile-register-btn'
+    );
+    loginButtons.forEach(btn => {
+        if (btn) {
+            btn.style.display = 'none';
+            btn.classList.add('hidden');
+        }
+    });
+    
+    // Show profile container and notifications
+    const profileContainer = document.getElementById('profile-container');
+    const notificationBell = document.getElementById('notification-bell');
+    
+    if (profileContainer) {
+        profileContainer.classList.remove('hidden');
+        profileContainer.style.display = 'flex';
+        profileContainer.style.visibility = 'visible';
+    }
+    
+    if (notificationBell) {
+        notificationBell.classList.remove('hidden');
+        notificationBell.style.display = 'flex';
+    }
+    
+    // Update profile name
+    const profileName = document.getElementById('profile-name');
+    if (profileName) {
+        const userName = APP_STATE.currentUser.name || 
+            `${APP_STATE.currentUser.first_name} ${APP_STATE.currentUser.last_name}`;
+        profileName.textContent = userName;
+    }
+    
+    // FIX 2: Update all profile pictures
+    updateProfilePictures();
+    
+    // Update mobile menu
+    addMobileProfileOptions();
+    
+    // Update dropdown
+    updateProfileDropdown();
+}
+
+// FIX 2: Synchronized profile picture updates
+function updateProfilePictures() {
+    let avatarUrl = null;
+    
+    // Priority: user's uploaded picture > role default > UI Avatar
+    if (APP_STATE.currentUser?.profile_picture) {
+        avatarUrl = APP_STATE.currentUser.profile_picture;
+    } else {
+        const roleConfig = ROLE_AVATAR_SYSTEM[APP_STATE.userRole];
+        if (roleConfig?.defaults?.[0]) {
+            avatarUrl = roleConfig.defaults[0].path;
+        } else {
+            const name = APP_STATE.currentUser?.name || 'User';
+            const color = roleConfig?.fallbackColor || '6366f1';
+            avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${color}&color=fff`;
+        }
+    }
+    
+    // Update ALL profile picture elements
+    const profilePic = document.getElementById('profile-pic');
+    const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
+    const mobileProfilePic = document.querySelector('.mobile-profile-pic');
+    
+    [profilePic, dropdownProfilePic, mobileProfilePic].forEach(element => {
+        if (element) {
+            element.src = avatarUrl;
+            element.alt = `${APP_STATE.userRole || 'User'} avatar`;
+            
+            element.onerror = () => {
+                const name = APP_STATE.currentUser?.name || 'User';
+                element.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`;
+            };
+        }
+    });
+}
+
+// Profile dropdown management
+function toggleProfileDropdown() {
+    const toggle = document.getElementById('profile-dropdown-toggle');
+    const menu = document.getElementById('profile-dropdown-menu');
+
+    if (!toggle || !menu) return;
+
+    const isOpen = !menu.classList.contains('hidden');
+    if (isOpen) {
+        closeProfileDropdown();
+    } else {
+        openProfileDropdown();
+    }
+}
+
+function openProfileDropdown() {
+    const toggle = document.getElementById('profile-dropdown-toggle');
+    const menu = document.getElementById('profile-dropdown-menu');
+
+    if (!toggle || !menu) return;
+
+    toggle.classList.add('active');
+    menu.classList.remove('hidden');
+
+    setTimeout(() => {
+        menu.classList.add('show');
+    }, 10);
+
+    updateProfileDropdown();
+
+    document.addEventListener('click', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+}
+
+function closeProfileDropdown() {
+    const toggle = document.getElementById('profile-dropdown-toggle');
+    const menu = document.getElementById('profile-dropdown-menu');
+
+    if (!toggle || !menu) return;
+
+    toggle.classList.remove('active');
+    menu.classList.remove('show');
+
+    setTimeout(() => {
+        menu.classList.add('hidden');
+    }, 300);
+
+    document.removeEventListener('click', handleClickOutside);
+    document.removeEventListener('keydown', handleEscapeKey);
+}
+
+function handleClickOutside(event) {
+    const container = document.getElementById('profile-container');
+    if (container && !container.contains(event.target)) {
+        closeProfileDropdown();
+    }
+}
+
+function handleEscapeKey(event) {
+    if (event.key === 'Escape') {
+        closeProfileDropdown();
+    }
+}
+
+// FIX 3: Update profile dropdown with clickable header
+async function updateProfileDropdown() {
+    await fetchCurrentUserData();
+
+    if (!APP_STATE.currentUser) return;
+
+    const dropdownUserName = document.getElementById('dropdown-user-name');
+    const dropdownUserEmail = document.getElementById('dropdown-user-email');
+    const dropdownUserRole = document.getElementById('dropdown-user-role');
+
+    const userName = APP_STATE.currentUser.name ||
+        `${APP_STATE.currentUser.first_name} ${APP_STATE.currentUser.last_name}`;
+
+    if (dropdownUserName) dropdownUserName.textContent = userName;
+    if (dropdownUserEmail) dropdownUserEmail.textContent = APP_STATE.currentUser.email || '';
+    if (dropdownUserRole) dropdownUserRole.textContent = formatRoleName(APP_STATE.userRole);
+
+    // Update profile pictures
+    updateProfilePictures();
+
+    // FIX 3: Make dropdown header clickable
+    const dropdownHeader = document.querySelector('.dropdown-header');
+    if (dropdownHeader) {
+        dropdownHeader.style.cursor = 'pointer';
+        dropdownHeader.onclick = () => {
+            const profileUrl = PROFILE_URLS[APP_STATE.userRole] || 'my-profile-tier-1/user-profile.html';
+            window.location.href = profileUrl;
+        };
+    }
+
+    // Setup role switcher
+    await setupRoleSwitcher();
+}
+
+// FIX 5: Enhanced role switcher with Add Role option
+async function setupRoleSwitcher() {
+    const roleSwitcherSection = document.getElementById('role-switcher-section');
+    const roleOptions = document.getElementById('role-options');
+
+    if (!roleSwitcherSection || !roleOptions) return;
+
+    try {
+        const response = await fetch('http://localhost:8000/api/my-roles', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            console.error('Failed to fetch user roles');
+            roleSwitcherSection.classList.add('hidden');
+            return;
+        }
+
+        const data = await response.json();
+        const userRoles = data.roles || [];
+        const activeRole = data.active_role || APP_STATE.userRole;
+
+        if (APP_STATE.currentUser) {
+            APP_STATE.currentUser.roles = userRoles;
+        }
+        APP_STATE.userRole = activeRole;
+        localStorage.setItem('userRole', activeRole);
+
+        // Always show role switcher
+        roleSwitcherSection.classList.remove('hidden');
+        roleOptions.innerHTML = '';
+
+        if (userRoles.length === 1) {
+            // FIX 5: Show current role and Add Role option
+            const currentRoleOption = document.createElement('div');
+            currentRoleOption.className = 'role-option active disabled';
+            currentRoleOption.innerHTML = `
+                <span class="role-name">${formatRoleName(activeRole)}</span>
+                <span class="role-badge">CURRENT</span>
+            `;
+            roleOptions.appendChild(currentRoleOption);
+
+            const addRoleOption = document.createElement('div');
+            addRoleOption.className = 'role-option add-role-option';
+            addRoleOption.innerHTML = `
+                <span class="add-role-icon">+</span>
+                <span class="role-name">Add New Role</span>
+            `;
+            addRoleOption.onclick = () => {
+                closeProfileDropdown();
+                openModal('register-modal');
+                showToast('Register with same email to add a new role', 'info');
+            };
+            roleOptions.appendChild(addRoleOption);
+        } else {
+            // Multiple roles
+            userRoles.forEach(role => {
+                const roleOption = document.createElement('div');
+                roleOption.className = 'role-option';
+                
+                if (role === activeRole) {
+                    roleOption.classList.add('active');
+                }
+                
+                roleOption.innerHTML = `
+                    <span class="role-name">${formatRoleName(role)}</span>
+                    ${role === activeRole ? '<span class="role-badge">ACTIVE</span>' : ''}
+                `;
+                
+                roleOption.onclick = () => switchToRole(role);
+                roleOptions.appendChild(roleOption);
+            });
+
+            // Add "Add Role" option
+            const addRoleOption = document.createElement('div');
+            addRoleOption.className = 'role-option add-role-option';
+            addRoleOption.innerHTML = `
+                <span class="add-role-icon">+</span>
+                <span class="role-name">Add New Role</span>
+            `;
+            addRoleOption.onclick = () => {
+                closeProfileDropdown();
+                openModal('register-modal');
+                showToast('Register with same email to add a new role', 'info');
+            };
+            roleOptions.appendChild(addRoleOption);
+        }
+
+        const dropdownUserRole = document.getElementById('dropdown-user-role');
+        if (dropdownUserRole) {
+            dropdownUserRole.textContent = formatRoleName(activeRole);
+        }
+
+    } catch (error) {
+        console.error('Error fetching user roles:', error);
+        roleSwitcherSection.classList.add('hidden');
+    }
+}
+
+async function switchToRole(newRole) {
+    if (newRole === APP_STATE.userRole) return;
+
+    closeProfileDropdown();
+    showToast(`Switching to ${formatRoleName(newRole)} role...`, 'info');
+
+    try {
+        const response = await fetch('http://localhost:8000/api/switch-role', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ new_role: newRole })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+
+            APP_STATE.userRole = data.active_role;
+            localStorage.setItem('userRole', data.active_role);
+
+            if (APP_STATE.currentUser) {
+                APP_STATE.currentUser.role = data.active_role;
+                localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
+            }
+
+            updateUIForLoggedInUser();
+            updateProfileDropdown();
+            updateProfileLink(data.active_role);
+
+            showToast(`Switched to ${formatRoleName(data.active_role)} role`, 'success');
+
+            setTimeout(() => {
+                const profileUrl = PROFILE_URLS[data.active_role] || 'index.html';
+                window.location.href = profileUrl;
+            }, 500);
+        } else {
+            const error = await response.json();
+            showToast(error.detail || 'Failed to switch role', 'error');
+        }
+    } catch (error) {
+        console.error('Role switch error:', error);
+        showToast('Error switching role', 'error');
+    }
+}
+
+function formatRoleName(role) {
+    const roleNames = {
+        'user': 'User',
+        'student': 'Student',
+        'tutor': 'Tutor',
+        'guardian': 'Guardian',
+        'bookstore': 'Bookstore',
+        'delivery': 'Delivery',
+        'advertiser': 'Advertiser',
+        'author': 'Author',
+        'church': 'Church'
+    };
+
+    return roleNames[role] || role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+// Authentication handlers
+async function handleLogin(e) {
+    e.preventDefault();
+    const email = document.getElementById("login-email")?.value;
+    const password = document.getElementById("login-password")?.value;
+
+    const result = await window.AuthManager.login(email, password);
+
+    if (result.success) {
+        // Update APP_STATE immediately before calling updateUI
+        APP_STATE.isLoggedIn = true;
+        APP_STATE.currentUser = result.user;
+        APP_STATE.userRole = result.user.role;
+        
+        // Immediately hide buttons and show profile
+        updateUIForLoggedInUser();
+        updateProfileLink(result.user.role);
+        closeModal("login-modal");
+        showToast("Welcome back!", "success");
+
+        const intendedDestination = localStorage.getItem("intendedDestination");
+        if (intendedDestination) {
+            localStorage.removeItem("intendedDestination");
+            setTimeout(() => {
+                window.location.href = intendedDestination;
+            }, 500);
+        }
+    } else {
+        showToast(result.error || "Invalid credentials", "error");
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    const userData = {
+        first_name: formData.get("register-firstname"),
+        last_name: formData.get("register-lastname"),
+        email: formData.get("register-email"),
+        phone: document.getElementById("register-phone")?.value,
+        password: document.getElementById("register-password")?.value,
+        role: document.getElementById("register-as")?.value,
+    };
+
+    const result = await window.AuthManager.register(userData);
+
+    if (result.success) {
+        // Update APP_STATE immediately before calling updateUI
+        APP_STATE.isLoggedIn = true;
+        APP_STATE.currentUser = result.user;
+        APP_STATE.userRole = result.user.role;
+        
+        // Immediately hide buttons and show profile
+        updateUIForLoggedInUser();
+        updateProfileLink(result.user.role);
+        closeModal("register-modal");
+        showToast("Registration successful!", "success");
+    } else {
+        showToast(result.error || "Registration failed", "error");
+    }
+}
+
+// FIX 4: Logout without redirect
+function logout() {
+    APP_STATE.isLoggedIn = false;
+    APP_STATE.currentUser = null;
+    APP_STATE.userRole = null;
+    
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('token');
+    
+    // Show login/register buttons
+    const loginButtons = document.querySelectorAll(
+        '#login-btn, #register-btn, #hero-login-btn, #hero-register-btn, ' +
+        '#mobile-login-btn, #mobile-register-btn'
+    );
+    loginButtons.forEach(btn => {
+        if (btn) {
+            btn.classList.remove('hidden');
+            btn.style.display = '';
+            btn.style.visibility = 'visible';
+        }
+    });
+    
+    // Hide profile elements
+    const profileContainer = document.getElementById('profile-container');
+    const notificationBell = document.getElementById('notification-bell');
+    
+    if (profileContainer) {
+        profileContainer.classList.add('hidden');
+        profileContainer.style.display = 'none';
+    }
+    
+    if (notificationBell) {
+        notificationBell.classList.add('hidden');
+        notificationBell.style.display = 'none';
+    }
+    
+    // Remove mobile profile section
+    const mobileProfileSection = document.getElementById('mobile-profile-section');
+    if (mobileProfileSection) {
+        mobileProfileSection.remove();
+    }
+    
+    // Call backend logout
+    const token = localStorage.getItem('token');
+    if (token) {
+        fetch('http://localhost:8000/api/logout', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        }).catch(error => console.error('Logout API error:', error));
+    }
+    
+    showToast('Logged out successfully', 'info');
+    // NO REDIRECT - stay on current page
+}
+
+function updateProfileLink(role) {
+    const profileLinks = document.querySelectorAll('a[href*="profile.html"]');
+    const profileUrl = PROFILE_URLS[role] || "index.html";
+
+    profileLinks.forEach((link) => {
+        if (link.textContent.includes("My Profile")) {
+            link.href = profileUrl;
+        }
+    });
+
+    const mobileProfileLink = document.querySelector('.mobile-menu a[href*="profile.html"]');
+    if (mobileProfileLink) {
+        mobileProfileLink.href = "branch/" + profileUrl;
+    }
+}
 
 // ============================================
 //   INITIALIZATION
 // ============================================
 document.addEventListener("DOMContentLoaded", async () => {
     try {
-        // Check for saved user session first
+        // Check for saved user session
         const savedUser = localStorage.getItem("currentUser");
         const savedRole = localStorage.getItem("userRole");
         const savedToken = localStorage.getItem("token");
@@ -587,13 +785,11 @@ document.addEventListener("DOMContentLoaded", async () => {
                 APP_STATE.userRole = savedRole;
                 APP_STATE.isLoggedIn = true;
 
-                // Verify token is still valid
                 const isValid = await window.AuthManager.verifyToken();
                 if (isValid) {
                     updateUIForLoggedInUser();
                     updateProfileLink(savedRole);
                 } else {
-                    // Token invalid, clear session
                     window.AuthManager.clearAuth();
                 }
             } catch (error) {
@@ -602,10 +798,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
         }
 
-        // Initialize navigation authentication checks
+        // Initialize all features
         initializeNavigationAuth();
-
-        // Rest of your initialization code...
         initializeTheme();
         initializeNavigation();
         initializeHeroSection();
@@ -623,24 +817,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         initializeTooltips();
         initializeLazyLoading();
 
-        // Load real data
         await loadRealData();
 
         // Hide loading screen
-        // Replace the existing loading screen timeout with this:
         setTimeout(() => {
             const loadingScreen = document.getElementById("loading-screen");
             if (loadingScreen) {
                 loadingScreen.classList.add("fade-out");
-
-                // Add staggered animations to main content
                 document.body.style.overflow = "hidden";
 
                 setTimeout(() => {
                     loadingScreen.style.display = "none";
                     document.body.style.overflow = "";
 
-                    // Animate content sections in sequence
                     const sections = document.querySelectorAll(
                         ".hero-section, .features-section, .news-section"
                     );
@@ -648,8 +837,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         section.style.opacity = "0";
                         section.style.transform = "translateY(30px)";
                         setTimeout(() => {
-                            section.style.transition =
-                                "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+                            section.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
                             section.style.opacity = "1";
                             section.style.transform = "translateY(0)";
                         }, index * 150);
@@ -663,152 +851,40 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 // ============================================
-//   LOAD REAL DATA FROM YOUR BACKEND
+//   DATA LOADING
 // ============================================
-
 async function loadRealData() {
     try {
-        // Load counters
         const countersResponse = await apiCall("/api/counters");
         if (countersResponse.ok) {
             const counters = await countersResponse.json();
             counters.forEach((counter) => {
-                const element = document.getElementById(
-                    `counter-${counter.counter_type}`
-                );
+                const element = document.getElementById(`counter-${counter.counter_type}`);
                 if (element) {
-                    // Use the animation function from your existing code
                     animateCounter(element, counter.count, "+");
                 }
             });
         }
 
-        // Load news
         const newsResponse = await apiCall("/api/news");
         if (newsResponse.ok) {
             const newsItems = await newsResponse.json();
-            // Update your news section with real data
             if (newsItems.length > 0 && window.updateNewsWithRealData) {
                 window.updateNewsWithRealData(newsItems);
             }
         }
 
-        // Load videos
         const videosResponse = await apiCall("/api/videos");
         if (videosResponse.ok) {
             const videos = await videosResponse.json();
-            // Update your video carousel with real data
             if (videos.length > 0 && window.updateVideosWithRealData) {
                 window.updateVideosWithRealData(videos);
-            }
-        }
-
-        // Load partners
-        const partnersResponse = await apiCall("/api/partners");
-        if (partnersResponse.ok) {
-            const partners = await partnersResponse.json();
-            // Update partners section
-            if (partners.length > 0 && window.updatePartnersWithRealData) {
-                window.updatePartnersWithRealData(partners);
-            }
-        }
-
-        // Load courses
-        const coursesResponse = await apiCall("/api/courses");
-        if (coursesResponse.ok) {
-            const courses = await coursesResponse.json();
-            // Update courses section
-            if (courses.length > 0 && window.updateCoursesWithRealData) {
-                window.updateCoursesWithRealData(courses);
-            }
-        }
-
-        // Load testimonials
-        const testimonialsResponse = await apiCall("/api/testimonials");
-        if (testimonialsResponse.ok) {
-            const testimonials = await testimonialsResponse.json();
-            // Update testimonials section
-            if (testimonials.length > 0 && window.updateTestimonialsWithRealData) {
-                window.updateTestimonialsWithRealData(testimonials);
             }
         }
     } catch (error) {
         console.error("Failed to load data:", error);
     }
 }
-
-function showRoleSwitcher() {
-    if (APP_STATE.currentUser?.roles?.length > 1) {
-        // Show role switcher in UI
-        const switcher = `
-            <select onchange="switchRole(this.value)">
-                ${APP_STATE.currentUser.roles
-                .map(
-                    (role) =>
-                        `<option value="${role}" ${role === APP_STATE.userRole ? "selected" : ""
-                        }>${role}</option>`
-                )
-                .join("")}
-            </select>
-        `;
-        // Add to navigation or profile dropdown
-    }
-}
-
-async function switchRole(newRole) {
-    const response = await fetch("http://localhost:8000/api/switch-role", {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ new_role: newRole }),
-    });
-
-    if (response.ok) {
-        APP_STATE.userRole = newRole;
-        updateProfileLink(newRole);
-        showToast(`Switched to ${newRole} role`, "success");
-    }
-}
-
-// Initialize on page load - check if user is already logged in
-document.addEventListener("DOMContentLoaded", () => {
-    // Check for saved user session
-    const savedUser = localStorage.getItem("currentUser");
-    const savedRole = localStorage.getItem("userRole");
-
-    if (savedUser && savedRole) {
-        APP_STATE.currentUser = JSON.parse(savedUser);
-        APP_STATE.userRole = savedRole;
-        APP_STATE.isLoggedIn = true;
-
-        updateUIForLoggedInUser();
-        updateProfileLink(savedRole);
-    }
-});
-
-// Authentication Manager
-// Replace the AuthManager section in index.js (around lines 370-385) with this:
-
-// Authentication Manager - Fixed version
-const AuthManager = {
-    async verifyAndRestoreAuth() {
-        // Call the actual AuthManager from auth.js
-        if (window.AuthManager && window.AuthManager.restoreSession) {
-            return await window.AuthManager.restoreSession();
-        }
-        return false;
-    },
-
-    clearAuth() {
-        // Call the actual AuthManager from auth.js WITHOUT reassigning
-        if (window.AuthManager && window.AuthManager.clearAuth) {
-            // Call the original clearAuth from auth.js
-            window.AuthManager.clearAuth();
-        }
-    },
-};
 
 // ============================================
 //   THEME MANAGEMENT
@@ -818,11 +894,8 @@ function initializeTheme() {
     document.documentElement.setAttribute("data-theme", theme);
     updateThemeIcons(theme);
 
-    // Attach theme toggle to buttons
     const themeToggleBtn = document.getElementById("theme-toggle-btn");
-    const mobileThemeToggleBtn = document.getElementById(
-        "mobile-theme-toggle-btn"
-    );
+    const mobileThemeToggleBtn = document.getElementById("mobile-theme-toggle-btn");
 
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener("click", toggleTheme);
@@ -845,10 +918,9 @@ function toggleTheme() {
 }
 
 function updateThemeIcons(theme) {
-    const iconPath =
-        theme === "light"
-            ? "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-            : "M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z";
+    const iconPath = theme === "light"
+        ? "M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
+        : "M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z";
 
     const themeIcon = document.querySelector("#theme-icon path");
     const mobileThemeIcon = document.querySelector("#mobile-theme-icon path");
@@ -865,7 +937,6 @@ function initializeNavigation() {
     const menuBtn = document.getElementById("menu-btn");
     const mobileMenu = document.getElementById("mobile-menu");
 
-    // Navbar scroll effect
     window.addEventListener("scroll", () => {
         if (window.scrollY > CONFIG.SCROLL_THRESHOLD) {
             navbar?.classList.add("scrolled");
@@ -874,18 +945,14 @@ function initializeNavigation() {
         }
     });
 
-    // Mobile menu toggle
     if (menuBtn) {
         menuBtn.addEventListener("click", () => {
             menuBtn.classList.toggle("active");
             mobileMenu?.classList.toggle("hidden");
-            document.body.style.overflow = mobileMenu?.classList.contains("hidden")
-                ? ""
-                : "hidden";
+            document.body.style.overflow = mobileMenu?.classList.contains("hidden") ? "" : "hidden";
         });
     }
 
-    // Close mobile menu on link click
     document.querySelectorAll(".mobile-menu-item").forEach((item) => {
         item.addEventListener("click", () => {
             menuBtn?.classList.remove("active");
@@ -895,34 +962,37 @@ function initializeNavigation() {
     });
 }
 
+function initializeNavigationAuth() {
+    const navLinks = document.querySelectorAll(".nav-link, .mobile-menu a");
+
+    navLinks.forEach((link) => {
+        if (!link.href || !link.getAttribute("href")) return;
+        if (link.href.includes("news.html")) return;
+
+        const protectedPages = ["find-tutors", "store", "find-jobs", "reels"];
+        const isProtected = protectedPages.some((page) => link.href.includes(page));
+
+        if (isProtected) {
+            link.addEventListener("click", (e) => {
+                if (!APP_STATE.isLoggedIn) {
+                    e.preventDefault();
+                    showToast("Please login to access this feature", "warning");
+                    localStorage.setItem("intendedDestination", link.href);
+                    openModal("login-modal");
+                }
+            });
+        }
+    });
+}
+
 // ============================================
 //   HERO SECTION
 // ============================================
 function initializeHeroSection() {
-    // Hero text typing animation with original texts
     const heroTexts = [
         "Discover Expert Tutors with Astegni",
-        "Are you a tutor?",
-        "Join us and connect with millions of students worldwide!",
-        "Astegni",
-        "Pride of Black Lion",
-        "Advertise with us",
-        "and",
-        "reach highly targeted audiences",
-        "Astegni - Ethiopia's first social media platform!",
-        "Contributing in realizing Digital Ethiopia!",
-        "Learn with us",
-        "Connect with tutors and training centers!",
-        "Want to become a tutor?",
-        "Join, learn and earn!",
-        "Looking for a job?",
-        "Same!",
-        "Expert tutors?",
-        "Just one click away!",
         "Learn Anytime, Anywhere",
-        "Top Educators, books and jobs!",
-        "Astegni - Your Learning Partner",
-        "Empowering Education in Ethiopia",
+        "Your Learning Partner",
     ];
 
     let textIndex = 0;
@@ -932,16 +1002,10 @@ function initializeHeroSection() {
         typeWriterEffect(textElement, heroTexts, textIndex);
     }
 
-    // Particle animation
     createParticles();
-
-    // Hero slideshow background
     initializeHeroSlideshow();
-
-    // Initialize counter reduction on scroll
     initializeCounterScrollEffect();
 
-    // Hero button event listeners
     const heroLoginBtn = document.getElementById("hero-login-btn");
     const heroRegisterBtn = document.getElementById("hero-register-btn");
 
@@ -949,9 +1013,7 @@ function initializeHeroSection() {
         heroLoginBtn.addEventListener("click", () => openModal("login-modal"));
     }
     if (heroRegisterBtn) {
-        heroRegisterBtn.addEventListener("click", () =>
-            openModal("register-modal")
-        );
+        heroRegisterBtn.addEventListener("click", () => openModal("register-modal"));
     }
 }
 
@@ -1024,7 +1086,7 @@ function initializeHeroSlideshow() {
 }
 
 // ============================================
-//   COUNTERS WITH SCROLL EFFECT
+//   COUNTERS
 // ============================================
 function initializeCounters() {
     const counters = [
@@ -1058,7 +1120,6 @@ function initializeCounters() {
         if (element) observer.observe(element);
     });
 
-    // Store counters globally for scroll effect
     window.countersData = counters;
 }
 
@@ -1073,10 +1134,8 @@ function initializeCounterScrollEffect() {
         const rect = heroSection.getBoundingClientRect();
         const isVisible = rect.bottom > 0;
 
-        // When hero section scrolls out of view
         if (!isVisible && !hasScrolledOut) {
             hasScrolledOut = true;
-            // Reduce counters to half
             window.countersData.forEach((counter) => {
                 const element = document.getElementById(counter.id);
                 if (element) {
@@ -1087,20 +1146,13 @@ function initializeCounterScrollEffect() {
             });
         }
 
-        // When hero section comes back into view
         if (isVisible && hasScrolledOut && !isResetting) {
             hasScrolledOut = false;
             isResetting = true;
-            // Animate counters from half to full
             window.countersData.forEach((counter) => {
                 const element = document.getElementById(counter.id);
                 if (element) {
-                    animateCounterFromValue(
-                        element,
-                        counter.current,
-                        counter.target,
-                        counter.suffix
-                    );
+                    animateCounterFromValue(element, counter.current, counter.target, counter.suffix);
                     counter.current = counter.target;
                 }
             });
@@ -1144,30 +1196,15 @@ function animateCounterFromValue(element, start, target, suffix) {
 }
 
 // ============================================
-//   NEWS SECTION WITH TYPING ANIMATION
+//   NEWS SECTION
 // ============================================
 function initializeNewsSection() {
     const newsItems = [
         {
             title: "New AI-Powered Learning Features Launched",
-            content:
-                "Experience personalized learning with our new AI tutor assistant, helping you learn 3x faster with customized study plans.",
+            content: "Experience personalized learning with our new AI tutor assistant.",
             category: "Technology",
             date: "Today",
-        },
-        {
-            title: "Partnership with Top Universities",
-            content:
-                "We've partnered with 10 leading universities to bring you certified courses and direct admission opportunities.",
-            category: "Partnership",
-            date: "Yesterday",
-        },
-        {
-            title: "Student Success Rate Hits 95%",
-            content:
-                "Our latest report shows that 95% of students improved their grades within 3 months of joining Astegni.",
-            category: "Achievement",
-            date: "2 days ago",
         },
     ];
 
@@ -1176,23 +1213,14 @@ function initializeNewsSection() {
     const contentElement = document.getElementById("news-content-text");
 
     if (titleElement && contentElement) {
-        typeNewsItem(
-            newsItems[currentNewsIndex],
-            titleElement,
-            contentElement,
-            () => {
-                setInterval(() => {
-                    currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
-                    deleteNewsItem(titleElement, contentElement, () => {
-                        typeNewsItem(
-                            newsItems[currentNewsIndex],
-                            titleElement,
-                            contentElement
-                        );
-                    });
-                }, 8000);
-            }
-        );
+        typeNewsItem(newsItems[currentNewsIndex], titleElement, contentElement, () => {
+            setInterval(() => {
+                currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
+                deleteNewsItem(titleElement, contentElement, () => {
+                    typeNewsItem(newsItems[currentNewsIndex], titleElement, contentElement);
+                });
+            }, 8000);
+        });
     }
 }
 
@@ -1202,14 +1230,12 @@ function typeNewsItem(news, titleEl, contentEl, callback) {
     let titleIndex = 0;
     let contentIndex = 0;
 
-    // Type title
     const typeTitle = setInterval(() => {
         if (titleIndex < news.title.length) {
             titleEl.textContent = news.title.substring(0, titleIndex + 1);
             titleIndex++;
         } else {
             clearInterval(typeTitle);
-            // Start typing content
             const typeContent = setInterval(() => {
                 if (contentIndex < news.content.length) {
                     contentEl.textContent = news.content.substring(0, contentIndex + 1);
@@ -1226,13 +1252,11 @@ function typeNewsItem(news, titleEl, contentEl, callback) {
 function deleteNewsItem(titleEl, contentEl, callback) {
     if (!titleEl || !contentEl) return;
 
-    // Delete content first
     const deleteContent = setInterval(() => {
         if (contentEl.textContent.length > 0) {
             contentEl.textContent = contentEl.textContent.slice(0, -1);
         } else {
             clearInterval(deleteContent);
-            // Delete title
             const deleteTitle = setInterval(() => {
                 if (titleEl.textContent.length > 0) {
                     titleEl.textContent = titleEl.textContent.slice(0, -1);
@@ -1246,34 +1270,29 @@ function deleteNewsItem(titleEl, contentEl, callback) {
 }
 
 // ============================================
-//   ENHANCED VIDEO CAROUSEL WITH COMMENTS
+//   VIDEO CAROUSEL
 // ============================================
 function initializeVideoCarousel() {
     const carousel = document.getElementById("video-carousel");
     if (!carousel) return;
 
-    // Clear existing content
     carousel.innerHTML = "";
 
-    // Generate video cards
     VIDEO_DATA.forEach((video, index) => {
         const card = createVideoCard(video, index);
         carousel.appendChild(card);
     });
 
-    // Duplicate for seamless loop
     VIDEO_DATA.forEach((video, index) => {
         const card = createVideoCard(video, index);
         carousel.appendChild(card);
     });
 
-    // Set up carousel navigation
     let currentPosition = 0;
-    const cardWidth = 320 + 24; // card width + gap
+    const cardWidth = 320 + 24;
     const totalCards = VIDEO_DATA.length;
 
-    // Make navigateCarousel available globally
-    window.navigateCarousel = function (direction) {
+    window.navigateCarousel = function(direction) {
         if (!carousel) return;
 
         if (direction === "left") {
@@ -1286,28 +1305,22 @@ function initializeVideoCarousel() {
         carousel.style.transform = `translateX(-${scrollAmount}px)`;
     };
 
-    // Auto-scroll
     setInterval(() => {
         currentPosition = (currentPosition + 1) % totalCards;
         if (currentPosition === 0) {
-            // Reset without animation
             carousel.style.transition = "none";
             carousel.style.transform = "translateX(0)";
             setTimeout(() => {
                 carousel.style.transition = "transform 0.5s ease";
             }, 50);
         } else {
-            carousel.style.transform = `translateX(-${currentPosition * cardWidth
-                }px)`;
+            carousel.style.transform = `translateX(-${currentPosition * cardWidth}px)`;
         }
     }, 5000);
 
-    // Category filters
     document.querySelectorAll(".category-btn").forEach((btn) => {
         btn.addEventListener("click", (e) => {
-            document
-                .querySelector(".category-btn.active")
-                ?.classList.remove("active");
+            document.querySelector(".category-btn.active")?.classList.remove("active");
             e.target.classList.add("active");
             filterVideos(e.target.dataset.category);
         });
@@ -1328,10 +1341,7 @@ function createVideoCard(video, index) {
         </div>
         <div class="video-info">
             <h4 class="video-title">${video.title}</h4>
-            <p class="video-description">${video.description.substring(
-        0,
-        100
-    )}...</p>
+            <p class="video-description">${video.description.substring(0, 100)}...</p>
             <div class="video-meta">
                 <span class="video-views">${video.views} views</span>
                 <span class="video-duration">${video.duration}</span>
@@ -1354,25 +1364,15 @@ function filterVideos(category) {
     });
 }
 
-// ============================================
-//   ENHANCED VIDEO PLAYER WITH COMMENTS
-// ============================================
+// Video player functions
 function openVideoPlayer(video) {
     APP_STATE.currentVideo = video;
-
-    // Update video title and description
     const titleEl = document.getElementById("video-title");
     const descEl = document.getElementById("video-description");
-
     if (titleEl) titleEl.textContent = video.title;
     if (descEl) descEl.textContent = video.description;
-
-    // Load comments
     loadVideoComments(video);
-
-    // Open modal
     openModal("video-player-modal");
-
     showToast("Loading video...", "info");
 }
 
@@ -1388,8 +1388,7 @@ function loadVideoComments(video) {
             commentsList.appendChild(commentEl);
         });
     } else {
-        commentsList.innerHTML =
-            '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No comments yet. Be the first to comment!</p>';
+        commentsList.innerHTML = '<p style="text-align: center; color: var(--text-muted); padding: 2rem;">No comments yet. Be the first to comment!</p>';
     }
 }
 
@@ -1397,8 +1396,7 @@ function createCommentElement(comment) {
     const div = document.createElement("div");
     div.className = "comment-item";
     div.innerHTML = `
-        <img src="${comment.avatar}" alt="${comment.author
-        }" class="comment-avatar">
+        <img src="${comment.avatar}" alt="${comment.author}" class="comment-avatar">
         <div class="comment-content">
             <div class="comment-header">
                 <span class="comment-author">${comment.author}</span>
@@ -1422,229 +1420,6 @@ function createCommentElement(comment) {
         </div>
     `;
     return div;
-}
-
-// YouTube-style comment box expansion
-function expandCommentBox() {
-    const input = document.getElementById("comment-input");
-    const actions = document.getElementById("comment-actions");
-
-    if (input) {
-        input.classList.add("expanded");
-        input.style.minHeight = "80px";
-    }
-    if (actions) {
-        actions.classList.remove("hidden");
-    }
-}
-
-function collapseCommentBox() {
-    const input = document.getElementById("comment-input");
-    const actions = document.getElementById("comment-actions");
-
-    if (input) {
-        input.classList.remove("expanded");
-        input.style.minHeight = "";
-        input.value = "";
-    }
-    if (actions) {
-        actions.classList.add("hidden");
-    }
-}
-
-function submitComment() {
-    if (!APP_STATE.isLoggedIn) {
-        showToast("Please login to comment", "warning");
-        openModal("login-modal");
-        // Make login modal appear in front
-        const loginModal = document.getElementById("login-modal");
-        if (loginModal) loginModal.classList.add("front");
-        return;
-    }
-
-    const input = document.getElementById("comment-input");
-    if (!input || !input.value.trim()) {
-        showToast("Please write a comment", "warning");
-        return;
-    }
-
-    // Create new comment
-    const newComment = {
-        id: Date.now(),
-        author: APP_STATE.currentUser?.name || "You",
-        avatar: "https://picsum.photos/40?random=" + Date.now(),
-        text: input.value.trim(),
-        time: "Just now",
-        likes: 0,
-    };
-
-    // Add to current video's comments
-    if (APP_STATE.currentVideo) {
-        if (!APP_STATE.currentVideo.comments) {
-            APP_STATE.currentVideo.comments = [];
-        }
-        APP_STATE.currentVideo.comments.unshift(newComment);
-
-        // Refresh comments display
-        loadVideoComments(APP_STATE.currentVideo);
-    }
-
-    // Clear input
-    collapseCommentBox();
-    showToast("Comment posted!", "success");
-}
-
-function likeVideo() {
-    if (!APP_STATE.isLoggedIn) {
-        showToast("Please login to like videos", "warning");
-        openModal("login-modal");
-        const loginModal = document.getElementById("login-modal");
-        if (loginModal) loginModal.classList.add("front");
-        return;
-    }
-    showToast("Video liked!", "success");
-}
-
-function dislikeVideo() {
-    if (!APP_STATE.isLoggedIn) {
-        showToast("Please login to rate videos", "warning");
-        openModal("login-modal");
-        const loginModal = document.getElementById("login-modal");
-        if (loginModal) loginModal.classList.add("front");
-        return;
-    }
-    showToast("Feedback recorded", "info");
-}
-
-function shareVideo() {
-    // Open share modal instead of just showing toast
-    openModal("share-modal");
-}
-
-function toggleSaveMenu() {
-    if (!APP_STATE.isLoggedIn) {
-        showToast("Please login to save videos", "warning");
-        // Make sure login modal appears in front of video modal
-        const videoModal = document.getElementById("video-player-modal");
-        const loginModal = document.getElementById("login-modal");
-
-        if (loginModal) {
-            loginModal.classList.add("front");
-            openModal("login-modal");
-        }
-        return;
-    }
-
-    const menu = document.getElementById("save-menu");
-    if (menu) {
-        menu.classList.toggle("hidden");
-    }
-}
-
-function saveToFavorites() {
-    if (!APP_STATE.isLoggedIn) {
-        showToast("Please login to save to favorites", "warning");
-        openModal("login-modal");
-        const loginModal = document.getElementById("login-modal");
-        if (loginModal) loginModal.classList.add("front");
-        return;
-    }
-
-    showToast("Video saved to favorites!", "success");
-    const menu = document.getElementById("save-menu");
-    if (menu) menu.classList.add("hidden");
-}
-
-function createPlaylist() {
-    if (!APP_STATE.isLoggedIn) {
-        showToast("Please login to create playlists", "warning");
-        openModal("login-modal");
-        const loginModal = document.getElementById("login-modal");
-        if (loginModal) loginModal.classList.add("front");
-        return;
-    }
-
-    const playlistName = prompt("Enter playlist name:");
-    if (playlistName) {
-        showToast(`Playlist "${playlistName}" created!`, "success");
-    }
-    const menu = document.getElementById("save-menu");
-    if (menu) menu.classList.add("hidden");
-}
-
-function addToPlaylist() {
-    if (!APP_STATE.isLoggedIn) {
-        showToast("Please login to add to playlist", "warning");
-        openModal("login-modal");
-        const loginModal = document.getElementById("login-modal");
-        if (loginModal) loginModal.classList.add("front");
-        return;
-    }
-
-    showToast("Select a playlist to add this video", "info");
-    const menu = document.getElementById("save-menu");
-    if (menu) menu.classList.add("hidden");
-}
-
-function navigateVideo(direction) {
-    showToast(`Loading ${direction} video...`, "info");
-}
-
-// Share functionality
-function copyShareLink() {
-    const input = document.getElementById("share-link");
-    if (input) {
-        input.select();
-        document.execCommand("copy");
-        showToast("Link copied to clipboard!", "success");
-    }
-}
-
-function shareToSocial(platform) {
-    const shareUrl =
-        document.getElementById("share-link")?.value ||
-        "https://astegni.et/video/12345";
-    const shareText =
-        APP_STATE.currentVideo?.title || "Check out this amazing video on Astegni!";
-
-    let url = "";
-    switch (platform) {
-        case "facebook":
-            url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                shareUrl
-            )}`;
-            break;
-        case "twitter":
-            url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                shareUrl
-            )}&text=${encodeURIComponent(shareText)}`;
-            break;
-        case "whatsapp":
-            url = `https://wa.me/?text=${encodeURIComponent(
-                shareText + " " + shareUrl
-            )}`;
-            break;
-        case "telegram":
-            url = `https://t.me/share/url?url=${encodeURIComponent(
-                shareUrl
-            )}&text=${encodeURIComponent(shareText)}`;
-            break;
-        case "linkedin":
-            url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-                shareUrl
-            )}`;
-            break;
-        case "email":
-            url = `mailto:?subject=${encodeURIComponent(
-                shareText
-            )}&body=${encodeURIComponent("Check out this video: " + shareUrl)}`;
-            break;
-    }
-
-    if (url) {
-        window.open(url, "_blank");
-        showToast(`Sharing to ${platform}...`, "info");
-    }
 }
 
 // ============================================
@@ -1945,23 +1720,12 @@ function initializeTestimonials() {
 //   PARTNERS
 // ============================================
 function initializePartners() {
-    const partners = [
-        "telebirr",
-        "Google",
-        "Microsoft",
-        "Coursera",
-        "Addis Ababa University",
-        "Amazon",
-        "Meta",
-        "LinkedIn Learning",
-    ];
-
+    const partners = ["future partner 1", "future partner 2", "future partner 3", "future partner 4", "future partner 5"];
     const track = document.getElementById("partners-track");
     if (!track) return;
 
     track.innerHTML = "";
 
-    // Create partner logos
     partners.forEach((partner) => {
         const logo = document.createElement("div");
         logo.className = "partner-logo";
@@ -1969,7 +1733,6 @@ function initializePartners() {
         track.appendChild(logo);
     });
 
-    // Duplicate for seamless scroll
     partners.forEach((partner) => {
         const logo = document.createElement("div");
         logo.className = "partner-logo";
@@ -1982,7 +1745,6 @@ function initializePartners() {
 //   MODALS
 // ============================================
 function initializeModals() {
-    // Close modal on overlay click
     document.querySelectorAll(".modal").forEach((modal) => {
         modal.addEventListener("click", (e) => {
             if (e.target === modal) {
@@ -1991,7 +1753,6 @@ function initializeModals() {
         });
     });
 
-    // Initialize form submissions
     const loginForm = document.getElementById("login-form");
     const registerForm = document.getElementById("register-form");
 
@@ -2031,489 +1792,17 @@ function switchModal(fromModal, toModal) {
 }
 
 // ============================================
-//   UPDATED HANDLERS FOR YOUR FORMS
-// ============================================
-async function handleLogin(e) {
-    e.preventDefault();
-    const email = document.getElementById("login-email")?.value;
-    const password = document.getElementById("login-password")?.value;
-
-    const result = await window.AuthManager.login(email, password);
-
-    if (result.success) {
-        // Update UI
-        updateUIForLoggedInUser();
-        updateProfileLink(result.user.role);
-        closeModal("login-modal");
-        showToast("Welcome back!", "success");
-
-        // Check if there was an intended destination
-        const intendedDestination = localStorage.getItem("intendedDestination");
-        if (intendedDestination) {
-            localStorage.removeItem("intendedDestination");
-            // Navigate to intended page after short delay
-            setTimeout(() => {
-                window.location.href = intendedDestination;
-            }, 500);
-        }
-    } else {
-        showToast(result.error || "Invalid credentials", "error");
-    }
-}
-
-async function handleRegister(e) {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-
-    const userData = {
-        first_name: formData.get("register-firstname"),
-        last_name: formData.get("register-lastname"),
-        email: formData.get("register-email"),
-        phone: document.getElementById("register-phone")?.value,
-        password: document.getElementById("register-password")?.value,
-        role: document.getElementById("register-as")?.value,
-    };
-
-    const result = await window.AuthManager.register(userData);
-
-    if (result.success) {
-        // Update UI
-        updateUIForLoggedInUser();
-        updateProfileLink(result.user.role);
-        closeModal("register-modal");
-        showToast("Registration successful!", "success");
-    } else {
-        showToast(result.error || "Registration failed", "error");
-    }
-}
-
-function logout() {
-    window.AuthManager.logout();
-}
-
-// Replace the initializeNavigationAuth function in index.js with this fixed version:
-
-function initializeNavigationAuth() {
-    // Add authentication check to ALL navigation links
-    const navLinks = document.querySelectorAll(".nav-link, .mobile-menu a");
-
-    navLinks.forEach((link) => {
-        // Check if link has href attribute
-        if (!link.href || !link.getAttribute("href")) return;
-
-        // Skip if it's the News link (always accessible)
-        if (link.href.includes("news.html")) return;
-
-        // Protected pages
-        const protectedPages = ["find-tutors", "store", "find-jobs", "reels"];
-        const isProtected = protectedPages.some((page) => link.href.includes(page));
-
-        if (isProtected) {
-            link.addEventListener("click", (e) => {
-                if (!APP_STATE.isLoggedIn) {
-                    e.preventDefault();
-                    showToast("Please login to access this feature", "warning");
-                    localStorage.setItem("intendedDestination", link.href);
-                    openModal("login-modal");
-                }
-            });
-        }
-    });
-}
-
-// New function to update profile links
-function updateProfileLink(role) {
-    // Get all profile links (desktop and mobile)
-    const profileLinks = document.querySelectorAll('a[href*="profile.html"]');
-
-    // Get the appropriate profile URL based on role
-    const profileUrl = PROFILE_URLS[role] || "index.html"; // Default fallback
-
-    // Update all profile links
-    profileLinks.forEach((link) => {
-        // Check if it's the main profile link in the dropdown
-        if (link.textContent.includes("My Profile")) {
-            link.href = profileUrl; // Adjust path as needed
-        }
-    });
-
-    // Also update mobile menu if it exists
-    const mobileProfileLink = document.querySelector(
-        '.mobile-menu a[href*="profile.html"]'
-    );
-    if (mobileProfileLink) {
-        mobileProfileLink.href = "branch/" + profileUrl;
-    }
-}
-
-
-// Enhanced updateUIForLoggedInUser function
-function updateUIForLoggedInUser() {
-    if (!APP_STATE.currentUser) return;
-    
-    // Hide ALL login/register buttons (desktop and mobile)
-    const loginButtons = document.querySelectorAll(
-        '#login-btn, #register-btn, #hero-login-btn, #hero-register-btn, ' +
-        '#mobile-login-btn, #mobile-register-btn'
-    );
-    loginButtons.forEach(btn => {
-        if (btn) {
-            btn.style.display = 'none';
-            btn.classList.add('hidden');
-        }
-    });
-    
-    // Show profile container and notifications
-    const profileContainer = document.getElementById('profile-container');
-    const notificationBell = document.getElementById('notification-bell');
-    
-    if (profileContainer) {
-        profileContainer.classList.remove('hidden');
-        profileContainer.style.display = 'flex';
-    }
-    
-    if (notificationBell) {
-        notificationBell.classList.remove('hidden');
-        notificationBell.style.display = 'flex';
-    }
-    
-    // Update profile name
-    const profileName = document.getElementById('profile-name');
-    if (profileName) {
-        const userName = APP_STATE.currentUser.name || 
-            `${APP_STATE.currentUser.first_name} ${APP_STATE.currentUser.last_name}`;
-        profileName.textContent = userName;
-    }
-    
-    // Update profile picture
-    const profilePic = document.getElementById('profile-pic');
-    if (profilePic) {
-        if (APP_STATE.currentUser.profile_picture) {
-            profilePic.src = APP_STATE.currentUser.profile_picture;
-        } else {
-            const userAvatar = getUserAvatar(APP_STATE.userRole);
-            profilePic.src = userAvatar;
-        }
-        
-        profilePic.alt = `${APP_STATE.userRole || 'User'} avatar`;
-        
-        profilePic.onerror = () => {
-            const name = APP_STATE.currentUser.name || 'User';
-            profilePic.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`;
-        };
-    }
-    
-    // Update mobile menu
-    addMobileProfileOptions();
-    
-    // Update notification count
-    const notificationCount = document.getElementById('notification-count');
-    if (notificationCount) {
-        notificationCount.textContent = '3';
-    }
-    
-    // Update dropdown immediately
-    updateProfileDropdown();
-}
-
-// Multiple avatars for each role
-const ROLE_AVATAR_COLLECTIONS = {
-    user: [
-        "👤",
-        "https://ui-avatars.com/api/?name=User&background=6366f1&color=fff",
-        "https://picsum.photos/200?random=1",
-    ],
-    student: [
-        "pictures/student-profile-kid.jpg", // Fixed path (no ../)
-        "pictures/student-profile-kid-girl.jpg",
-        "pictures/student-profile-kid-boy.jpg",
-        "pictures/student-profile-boy.jpg",
-        "pictures/student-profile-girl.jpg",
-        "pictures/Young-girl-studing-online.jpg",
-        // Fallback URLs if local images don't exist
-        "https://ui-avatars.com/api/?name=Student&background=10b981&color=fff",
-        "https://picsum.photos/200?random=2",
-    ],
-    tutor: [
-        "pictures/tutor-man.jpg",
-        "pictures/tutor-woman.jpg",
-        "https://ui-avatars.com/api/?name=Tutor&background=f59e0b&color=fff",
-        "https://picsum.photos/200?random=3",
-    ],
-    guardian: [
-        "pictures/Dad-profile.jpg",
-        "pictures/Mom-profile.jpg",
-        "https://ui-avatars.com/api/?name=Parent&background=ef4444&color=fff",
-        "https://picsum.photos/200?random=4",
-    ],
-    bookstore: [
-        "https://ui-avatars.com/api/?name=Bookstore&background=8b5cf6&color=fff",
-    ],
-    delivery: [
-        "https://ui-avatars.com/api/?name=Delivery&background=06b6d4&color=fff",
-    ],
-    advertiser: [
-        "https://ui-avatars.com/api/?name=Advertiser&background=ec4899&color=fff",
-    ],
-    author: [
-        "https://ui-avatars.com/api/?name=Author&background=6366f1&color=fff",
-    ],
-    church: [
-        "https://ui-avatars.com/api/?name=Church&background=a855f7&color=fff",
-    ],
-};
-
-// Get random avatar for role
-function getRandomRoleAvatar(role) {
-    const avatars = ROLE_AVATAR_COLLECTIONS[role];
-    if (avatars && avatars.length > 0) {
-        const randomIndex = Math.floor(Math.random() * avatars.length);
-        return avatars[randomIndex];
-    }
-    return "👤"; // Fallback
-}
-
-// Get specific avatar by index (for user selection)
-function getRoleAvatarByIndex(role, index) {
-    const avatars = ROLE_AVATAR_COLLECTIONS[role];
-    if (avatars && avatars[index]) {
-        return avatars[index];
-    }
-    return getRandomRoleAvatar(role);
-}
-
-// Save user's avatar choice
-function saveUserAvatar(avatarUrl) {
-    localStorage.setItem("userAvatar", avatarUrl);
-}
-
-// Replace the old getUserAvatar function (around line 3850)
-function getUserAvatar(role) {
-    return getCurrentUserAvatar();
-}
-
-// Keep your existing getRandomRoleAvatar but modify it
-function getRandomRoleAvatar(role) {
-    const roleConfig = ROLE_AVATAR_SYSTEM[role];
-    if (roleConfig?.defaults && roleConfig.defaults.length > 0) {
-        const randomIndex = Math.floor(Math.random() * roleConfig.defaults.length);
-        return roleConfig.defaults[randomIndex].path;
-    }
-    return getCurrentUserAvatar();
-}
-
-// Create mobile profile section with enhanced styling
-const profileSection = document.createElement("div");
-profileSection.id = "mobile-profile-section";
-profileSection.innerHTML = `
-    <div class="mobile-menu-divider"></div>
-    <div class="mobile-profile-header">
-        <img src="${APP_STATE.currentUser?.avatar || "https://picsum.photos/32"
-    }" alt="Profile" class="mobile-profile-pic">
-        <div class="mobile-profile-info">
-            <span class="mobile-profile-name">${APP_STATE.currentUser?.name || "User"
-    }</span>
-            <span class="mobile-profile-role">${APP_STATE.userRole || "Member"
-    }</span>
-        </div>
-    </div>
-    <a class="mobile-menu-item" href="branch/${PROFILE_URLS[APP_STATE.userRole] || "profile.html"
-    }">
-        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-        </svg>
-        My Profile
-    </a>
-    <a class="mobile-menu-item" href="branch/dashboard.html">
-        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-        </svg>
-        Dashboard
-    </a>
-    <a class="mobile-menu-item" href="branch/settings.html">
-        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-        </svg>
-        Settings
-    </a>
-    <div class="mobile-menu-divider"></div>
-    <button class="mobile-menu-item text-red-500" onclick="logout()">
-        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-        </svg>
-        Logout
-    </button>
-`;
-
-function addMobileProfileOptions() {
-    const mobileMenu = document.getElementById("mobile-menu");
-    if (!mobileMenu || !APP_STATE.isLoggedIn) return;
-
-    // Remove existing profile section if any
-    const existingSection = document.getElementById("mobile-profile-section");
-    if (existingSection) existingSection.remove();
-
-    // Create mobile profile section with correct profile URL
-    const profileUrl =
-        PROFILE_URLS[APP_STATE.userRole] || "myProfile/student-profile.html";
-
-    const profileSection = document.createElement("div");
-    profileSection.id = "mobile-profile-section";
-    profileSection.innerHTML = `
-        <div class="mobile-menu-divider"></div>
-        <div class="mobile-profile-header">
-            <img src="${APP_STATE.currentUser?.avatar || "https://picsum.photos/32"
-        }" alt="Profile" class="mobile-profile-pic">
-            <div class="mobile-profile-info">
-                <span class="mobile-profile-name">${APP_STATE.currentUser?.name || "User"
-        }</span>
-                <span class="mobile-profile-role">${APP_STATE.userRole || "Member"
-        }</span>
-            </div>
-        </div>
-        <a class="mobile-menu-item" href="${profileUrl}">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-            </svg>
-            My Profile
-        </a>
-        <a class="mobile-menu-item" href="branch/dashboard.html">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
-            </svg>
-            Dashboard
-        </a>
-        <a class="mobile-menu-item" href="branch/settings.html">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-        </svg>
-        Settings
-        </a>
-        <div class="mobile-menu-divider"></div>
-        <button class="mobile-menu-item text-red-500" onclick="logout()">
-            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-            </svg>
-            Logout
-        </button>
-    `;
-
-    // Insert after the main menu items
-    const menuContent = mobileMenu.querySelector(".mobile-menu-content");
-    if (menuContent) {
-        menuContent.appendChild(profileSection);
-    }
-}
-
-// Update the logout function to clear role data
-
-// Enhanced logout function
-function logout() {
-    // Clear state
-    APP_STATE.isLoggedIn = false;
-    APP_STATE.currentUser = null;
-    APP_STATE.userRole = null;
-    
-    // Clear localStorage
-    localStorage.removeItem('currentUser');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('token');
-    
-    // Reset ALL UI elements
-    const loginButtons = document.querySelectorAll(
-        '#login-btn, #register-btn, #hero-login-btn, #hero-register-btn, ' +
-        '#mobile-login-btn, #mobile-register-btn'
-    );
-    loginButtons.forEach(btn => {
-        if (btn) {
-            btn.classList.remove('hidden');
-            btn.style.display = '';
-        }
-    });
-    
-    // Hide profile elements
-    const profileContainer = document.getElementById('profile-container');
-    const notificationBell = document.getElementById('notification-bell');
-    
-    if (profileContainer) {
-        profileContainer.classList.add('hidden');
-        profileContainer.style.display = 'none';
-    }
-    
-    if (notificationBell) {
-        notificationBell.classList.add('hidden');
-        notificationBell.style.display = 'none';
-    }
-    
-    // Remove mobile profile section
-    const mobileProfileSection = document.getElementById('mobile-profile-section');
-    if (mobileProfileSection) {
-        mobileProfileSection.remove();
-    }
-    
-    // Call backend logout endpoint
-    if (localStorage.getItem('token')) {
-        fetch('http://localhost:8000/api/logout', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        });
-    }
-    
-    showToast('Logged out successfully', 'info');
-    
-    // Redirect to home after a short delay
-    setTimeout(() => {
-        window.location.href = '/';
-    }, 500);
-}
-
-// Update social login to assign a default role
-function socialLogin(platform) {
-    showToast(`Logging in with ${platform}...`, "info");
-    setTimeout(() => {
-        // For social login, you might want to prompt for role or default to student
-        const defaultRole = "student"; // Or show a modal to select role
-
-        APP_STATE.isLoggedIn = true;
-        APP_STATE.userRole = defaultRole;
-        APP_STATE.currentUser = {
-            name: "Social User",
-            email: "user@" + platform + ".com",
-            role: defaultRole,
-        };
-
-        // Save to localStorage
-        localStorage.setItem("userRole", defaultRole);
-        localStorage.setItem("currentUser", JSON.stringify(APP_STATE.currentUser));
-
-        updateUIForLoggedInUser();
-        updateProfileLink(defaultRole);
-        closeModal("login-modal");
-        showToast("Login successful!", "success");
-    }, 1500);
-}
-
-// ============================================
 //   SCROLL EFFECTS
 // ============================================
 function initializeScrollEffects() {
-    // Scroll progress bar
     window.addEventListener("scroll", () => {
         const scrollProgress = document.getElementById("scroll-progress");
         if (scrollProgress) {
-            const scrollPercent =
-                (window.scrollY /
-                    (document.documentElement.scrollHeight - window.innerHeight)) *
-                100;
+            const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
             scrollProgress.style.width = scrollPercent + "%";
         }
     });
 
-    // Back to top button
     const backToTop = document.getElementById("back-to-top");
     window.addEventListener("scroll", () => {
         if (backToTop) {
@@ -2531,7 +1820,6 @@ function initializeScrollEffects() {
         });
     }
 
-    // Parallax effects
     const observerOptions = {
         threshold: 0.1,
         rootMargin: "0px",
@@ -2545,186 +1833,21 @@ function initializeScrollEffects() {
         });
     }, observerOptions);
 
-    document
-        .querySelectorAll(".feature-card, .course-flip-card, .testimonial-card")
-        .forEach((el) => {
-            observer.observe(el);
-        });
-}
-
-// Update profile links based on user role
-function updateProfileLink(role) {
-    const profileUrl =
-        PROFILE_URLS[role] || "my-profile-tier-1/user-profile.html";
-
-    // Update desktop profile link
-    const profileLink = document.getElementById("profile-link");
-    if (profileLink) {
-        // The profile link should be a proper anchor tag
-        profileLink.href = profileUrl;
-        profileLink.onclick = (e) => {
-            if (!APP_STATE.isLoggedIn) {
-                e.preventDefault();
-                showToast("Please login to access your profile", "warning");
-                openModal("login-modal");
-            }
-        };
-    }
-
-    // Update mobile profile link
-    const mobileProfileLink = document.querySelector(
-        '#mobile-profile-section a[href*="profile"]'
-    );
-    if (mobileProfileLink) {
-        mobileProfileLink.href = profileUrl;
-    }
-}
-
-// ============================================
-//   REMAINING HELPER FUNCTIONS
-// ============================================
-function initializeSearch() {
-    const searchInput = document.getElementById("global-search");
-    const suggestions = document.getElementById("search-suggestions");
-
-    if (searchInput) {
-        searchInput.addEventListener("input", (e) => {
-            const query = e.target.value.toLowerCase();
-            if (query.length > 2) {
-                showSearchSuggestions(query, suggestions);
-            } else if (suggestions) {
-                suggestions.innerHTML = "";
-            }
-        });
-    }
-}
-
-function openSearchModal() {
-    const modal = document.getElementById("search-modal");
-    if (modal) {
-        modal.style.display = "flex";
-        setTimeout(() => {
-            const searchInput = document.getElementById("global-search");
-            if (searchInput) searchInput.focus();
-        }, 100);
-    }
-}
-
-function showSearchSuggestions(query, container) {
-    if (!container) return;
-
-    const suggestions = [
-        "Mathematics Tutors",
-        "Physics Course",
-        "English Language",
-        "Programming Basics",
-        "Study Tips",
-        "Exam Preparation",
-    ].filter((s) => s.toLowerCase().includes(query));
-
-    container.innerHTML = suggestions
-        .map(
-            (s) => `
-        <div class="suggestion-item" onclick="selectSuggestion('${s}')">
-            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-            </svg>
-            ${s}
-        </div>
-    `
-        )
-        .join("");
-}
-
-function selectSuggestion(suggestion) {
-    const searchInput = document.getElementById("global-search");
-    if (searchInput) {
-        searchInput.value = suggestion;
-    }
-
-    const suggestions = document.getElementById("search-suggestions");
-    if (suggestions) {
-        suggestions.innerHTML = "";
-    }
-
-    showToast(`Searching for "${suggestion}"...`, "info");
-}
-
-function initializeNotifications() {
-    // Simulate new notifications
-    setInterval(() => {
-        if (APP_STATE.isLoggedIn && Math.random() > 0.8) {
-            addNotification({
-                title: "New Message",
-                content: "You have a new message from your tutor",
-                type: "info",
-            });
-        }
-    }, 30000);
-}
-
-function addNotification(notification) {
-    APP_STATE.notifications.push(notification);
-    updateNotificationBadge();
-}
-
-function updateNotificationBadge() {
-    const badge = document.getElementById("notification-count");
-    if (badge) {
-        badge.textContent = APP_STATE.notifications.length.toString();
-        badge.style.display = APP_STATE.notifications.length > 0 ? "flex" : "none";
-    }
-}
-
-function initializeFormValidation() {
-    // Password strength indicator
-    const passwordInput = document.getElementById("register-password");
-    if (passwordInput) {
-        passwordInput.addEventListener("input", (e) => {
-            const strength = calculatePasswordStrength(e.target.value);
-            const indicator = document.getElementById("password-strength");
-            if (indicator) {
-                indicator.style.setProperty("--strength", strength + "%");
-            }
-        });
-    }
-}
-
-function calculatePasswordStrength(password) {
-    let strength = 0;
-    if (password.length > 6) strength += 25;
-    if (password.length > 10) strength += 25;
-    if (/[A-Z]/.test(password)) strength += 25;
-    if (/[0-9]/.test(password)) strength += 25;
-    return strength;
-}
-
-function togglePassword(inputId) {
-    const input = document.getElementById(inputId);
-    if (input) {
-        input.type = input.type === "password" ? "text" : "password";
-    }
-}
-
-function toggleRegisterFields() {
-    const select = document.getElementById("register-as");
-    if (select) {
-        const role = select.value;
-        showToast(`Registering as ${role}`, "info");
-    }
+    document.querySelectorAll(".feature-card, .course-flip-card, .testimonial-card").forEach((el) => {
+        observer.observe(el);
+    });
 }
 
 // ============================================
 //   UTILITIES
 // ============================================
 function showToast(message, type = "info") {
-    const container =
-        document.getElementById("toast-container") || createToastContainer();
+    const container = document.getElementById("toast-container") || createToastContainer();
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
 
     const icons = {
-        success: "✓",
+        success: "✔",
         error: "✗",
         warning: "⚠",
         info: "ℹ",
@@ -2751,6 +1874,131 @@ function createToastContainer() {
     return container;
 }
 
+// Mobile profile options
+function addMobileProfileOptions() {
+    const mobileMenu = document.getElementById("mobile-menu");
+    if (!mobileMenu || !APP_STATE.isLoggedIn) return;
+
+    const existingSection = document.getElementById("mobile-profile-section");
+    if (existingSection) existingSection.remove();
+
+    const profileUrl = PROFILE_URLS[APP_STATE.userRole] || "myProfile/student-profile.html";
+
+    const profileSection = document.createElement("div");
+    profileSection.id = "mobile-profile-section";
+    profileSection.innerHTML = `
+        <div class="mobile-menu-divider"></div>
+        <div class="mobile-profile-header">
+            <img src="${APP_STATE.currentUser?.avatar || "https://picsum.photos/32"}" alt="Profile" class="mobile-profile-pic">
+            <div class="mobile-profile-info">
+                <span class="mobile-profile-name">${APP_STATE.currentUser?.name || "User"}</span>
+                <span class="mobile-profile-role">${APP_STATE.userRole || "Member"}</span>
+            </div>
+        </div>
+        <a class="mobile-menu-item" href="${profileUrl}">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+            </svg>
+            My Profile
+        </a>
+        <div class="mobile-menu-divider"></div>
+        <button class="mobile-menu-item text-red-500" onclick="logout()">
+            <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            Logout
+        </button>
+    `;
+
+    const menuContent = mobileMenu.querySelector(".mobile-menu-content");
+    if (menuContent) {
+        menuContent.appendChild(profileSection);
+    }
+}
+
+// Remaining initialization functions
+function initializeFormValidation() {
+    const passwordInput = document.getElementById("register-password");
+    if (passwordInput) {
+        passwordInput.addEventListener("input", (e) => {
+            const strength = calculatePasswordStrength(e.target.value);
+            const indicator = document.getElementById("password-strength");
+            if (indicator) {
+                indicator.style.setProperty("--strength", strength + "%");
+            }
+        });
+    }
+}
+
+function calculatePasswordStrength(password) {
+    let strength = 0;
+    if (password.length > 6) strength += 25;
+    if (password.length > 10) strength += 25;
+    if (/[A-Z]/.test(password)) strength += 25;
+    if (/[0-9]/.test(password)) strength += 25;
+    return strength;
+}
+
+function initializeSearch() {
+    const searchInput = document.getElementById("global-search");
+    const suggestions = document.getElementById("search-suggestions");
+
+    if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase();
+            if (query.length > 2) {
+                showSearchSuggestions(query, suggestions);
+            } else if (suggestions) {
+                suggestions.innerHTML = "";
+            }
+        });
+    }
+}
+
+function showSearchSuggestions(query, container) {
+    if (!container) return;
+
+    const suggestions = [
+        "Mathematics Tutors",
+        "Physics Course",
+        "English Language",
+    ].filter((s) => s.toLowerCase().includes(query));
+
+    container.innerHTML = suggestions.map((s) => `
+        <div class="suggestion-item" onclick="selectSuggestion('${s}')">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            ${s}
+        </div>
+    `).join("");
+}
+
+function initializeNotifications() {
+    setInterval(() => {
+        if (APP_STATE.isLoggedIn && Math.random() > 0.8) {
+            addNotification({
+                title: "New Message",
+                content: "You have a new message from your tutor",
+                type: "info",
+            });
+        }
+    }, 30000);
+}
+
+function addNotification(notification) {
+    APP_STATE.notifications.push(notification);
+    updateNotificationBadge();
+}
+
+function updateNotificationBadge() {
+    const badge = document.getElementById("notification-count");
+    if (badge) {
+        badge.textContent = APP_STATE.notifications.length.toString();
+        badge.style.display = APP_STATE.notifications.length > 0 ? "flex" : "none";
+    }
+}
+
 function initializeTooltips() {
     document.querySelectorAll("[data-tooltip]").forEach((el) => {
         el.addEventListener("mouseenter", showTooltip);
@@ -2766,8 +2014,7 @@ function showTooltip(e) {
 
     const rect = e.target.getBoundingClientRect();
     tooltip.style.top = rect.top - tooltip.offsetHeight - 10 + "px";
-    tooltip.style.left =
-        rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + "px";
+    tooltip.style.left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + "px";
 }
 
 function hideTooltip() {
@@ -2791,239 +2038,7 @@ function initializeLazyLoading() {
     images.forEach((img) => imageObserver.observe(img));
 }
 
-function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        section.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-}
-
-function handleNavLinkClick(e, link) {
-    // Don't interfere if user is logged in
-    if (APP_STATE.isLoggedIn) {
-        return true; // Allow normal navigation
-    }
-
-    // Pages that require authentication
-    const protectedPages = ["find-tutors", "store", "find-jobs", "reels"];
-
-    if (protectedPages.includes(link)) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
-
-        // Store intended destination
-        localStorage.setItem("intendedDestination", e.target.href);
-
-        openModal("login-modal");
-        return false;
-    }
-
-    return true; // Allow navigation for unprotected pages
-}
-
-// Dummy function for showTestimonial (if needed for legacy code)
-function showTestimonial(index) {
-    // This function is handled by initializeTestimonials now
-    console.log("Testimonial index:", index);
-}
-
-let selectedAvatarUrl = null;
-
-function openAvatarSelection() {
-    const modal = document.getElementById("avatar-modal");
-    if (!modal) return;
-
-    const roleConfig =
-        ROLE_AVATAR_SYSTEM[APP_STATE.userRole] || ROLE_AVATAR_SYSTEM["user"];
-    const currentAvatar = getCurrentUserAvatar();
-
-    // Create modal content
-    const modalContent = modal.querySelector(".modal-content");
-    modalContent.innerHTML = `
-        <button class="modal-close-enhanced" onclick="closeModal('avatar-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
-        </button>
-        <h3 class="modal-title">Choose Your Avatar</h3>
-        
-        <div class="avatar-selection-container">
-            <!-- Upload Section -->
-            <div class="avatar-upload-section">
-                <button class="upload-btn" onclick="triggerAvatarUpload()">
-                    Upload Custom Picture
-                </button>
-            </div>
-            
-            <!-- Default Avatars Grid -->
-            <div class="avatar-grid" id="avatar-grid">
-                <!-- Will be populated -->
-            </div>
-            
-            <button class="submit-btn" onclick="saveAvatarChoice()">Save Avatar</button>
-        </div>
-    `;
-
-    // Populate avatar grid
-    const grid = document.getElementById("avatar-grid");
-    roleConfig.defaults.forEach((avatar) => {
-        const card = document.createElement("div");
-        card.className = "avatar-option";
-        if (currentAvatar === avatar.path) {
-            card.classList.add("selected");
-        }
-
-        card.innerHTML = `
-            <img src="${avatar.path}" alt="${avatar.label}" 
-                 onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(
-            avatar.label
-        )}&background=${roleConfig.fallbackColor}&color=fff'">
-            <span class="avatar-label">${avatar.label}</span>
-        `;
-
-        card.onclick = () => selectAvatar(avatar.path, card);
-        grid.appendChild(card);
-    });
-
-    openModal("avatar-modal");
-    initializeAvatarUpload();
-}
-
-function selectAvatar(avatarUrl, element) {
-    // Remove previous selection
-    document.querySelectorAll(".avatar-option").forEach((opt) => {
-        opt.classList.remove("selected");
-    });
-
-    // Mark new selection
-    element.classList.add("selected");
-    selectedAvatarUrl = avatarUrl;
-}
-
-function saveAvatarChoice() {
-    if (selectedAvatarUrl) {
-        // Save selected default for this role
-        localStorage.setItem(
-            `${APP_STATE.userRole}_selected_default`,
-            selectedAvatarUrl
-        );
-
-        // Update profile picture in state
-        if (APP_STATE.currentUser) {
-            APP_STATE.currentUser.profile_picture = selectedAvatarUrl;
-            localStorage.setItem(
-                "currentUser",
-                JSON.stringify(APP_STATE.currentUser)
-            );
-        }
-
-        // Update all avatar elements
-        updateAllAvatarElements(selectedAvatarUrl);
-
-        showToast("Avatar updated!", "success");
-        closeModal("avatar-modal");
-    } else {
-        showToast("Please select an avatar", "warning");
-    }
-}
-
-// Add this after your selectAvatar function (around line 4300)
-function initializeAvatarUpload() {
-    let fileInput = document.getElementById("avatar-file-input");
-    if (!fileInput) {
-        fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.id = "avatar-file-input";
-        fileInput.accept = "image/*";
-        fileInput.style.display = "none";
-        document.body.appendChild(fileInput);
-
-        fileInput.addEventListener("change", handleAvatarUpload);
-    }
-}
-
-function triggerAvatarUpload() {
-    document.getElementById("avatar-file-input")?.click();
-}
-
-async function handleAvatarUpload(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-        showToast("Please select an image file", "error");
-        return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-        showToast("Image size should be less than 5MB", "error");
-        return;
-    }
-
-    try {
-        const base64 = await fileToBase64(file);
-
-        const response = await fetch(
-            "http://localhost:8000/api/update-profile-picture",
-            {
-                method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ profile_picture: base64 }),
-            }
-        );
-
-        if (response.ok) {
-            const data = await response.json();
-
-            if (APP_STATE.currentUser) {
-                APP_STATE.currentUser.profile_picture = data.profile_picture;
-                localStorage.setItem(
-                    "currentUser",
-                    JSON.stringify(APP_STATE.currentUser)
-                );
-            }
-
-            updateAllAvatarElements(data.profile_picture);
-            showToast("Profile picture uploaded!", "success");
-            closeModal("avatar-modal");
-        }
-    } catch (error) {
-        console.error("Upload error:", error);
-        showToast("Failed to upload image", "error");
-    }
-}
-
-function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-    });
-}
-
-function updateAllAvatarElements(avatarUrl) {
-    const elements = [
-        document.getElementById("profile-pic"),
-        document.getElementById("dropdown-profile-pic"),
-        document.querySelector(".mobile-profile-pic"),
-    ];
-
-    elements.forEach((el) => {
-        if (el) {
-            el.src = avatarUrl;
-        }
-    });
-}
-
-// ============================================
-//   EXPORT GLOBAL FUNCTIONS
-// ============================================
+// Export all necessary functions
 window.toggleTheme = toggleTheme;
 window.openModal = openModal;
 window.closeModal = closeModal;
@@ -3031,34 +2046,316 @@ window.switchModal = switchModal;
 window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
 window.logout = logout;
-window.socialLogin = socialLogin;
-window.openSearchModal = openSearchModal;
-window.selectSuggestion = selectSuggestion;
 window.showToast = showToast;
-window.handleNavLinkClick = handleNavLinkClick;
+window.handleNavLinkClick = function(e, link) {
+    if (APP_STATE.isLoggedIn) return true;
+    const protectedPages = ["find-tutors", "store", "find-jobs", "reels"];
+    if (protectedPages.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
+        // Don't save intended destination - user stays on current page after login
+        openModal("login-modal");
+        return false;
+    }
+    return true;
+};
 window.handleCourseClick = handleCourseClick;
-window.handleViewMoreCourses = handleViewMoreCourses;
+window.handleViewMoreCourses = function() {
+    if (!APP_STATE.isLoggedIn) {
+        openModal("login-modal");
+    } else {
+        window.location.href = "/courses";
+    }
+};
+window.toggleProfileDropdown = toggleProfileDropdown;
+window.openProfileDropdown = openProfileDropdown;
+window.closeProfileDropdown = closeProfileDropdown;
+window.switchToRole = switchToRole;
+window.formatRoleName = formatRoleName;
+window.updateProfileDropdown = updateProfileDropdown;
+window.fetchCurrentUserData = fetchCurrentUserData;
+window.setupRoleSwitcher = setupRoleSwitcher;
+window.updateUIForLoggedInUser = updateUIForLoggedInUser;
+window.updateProfilePictures = updateProfilePictures;
+
+// Additional video player functions
+window.likeVideo = function() {
+    if (!APP_STATE.isLoggedIn) {
+        showToast("Please login to like videos", "warning");
+        openModal("login-modal");
+        return;
+    }
+    showToast("Video liked!", "success");
+};
+
+window.dislikeVideo = function() {
+    if (!APP_STATE.isLoggedIn) {
+        showToast("Please login to rate videos", "warning");
+        openModal("login-modal");
+        return;
+    }
+    showToast("Feedback recorded", "info");
+};
+
+window.shareVideo = function() {
+    openModal("share-modal");
+};
+
+window.toggleSaveMenu = function() {
+    if (!APP_STATE.isLoggedIn) {
+        showToast("Please login to save videos", "warning");
+        openModal("login-modal");
+        return;
+    }
+    const menu = document.getElementById("save-menu");
+    if (menu) menu.classList.toggle("hidden");
+};
+
+window.expandCommentBox = function() {
+    const input = document.getElementById("comment-input");
+    const actions = document.getElementById("comment-actions");
+    if (input) {
+        input.classList.add("expanded");
+        input.style.minHeight = "80px";
+    }
+    if (actions) actions.classList.remove("hidden");
+};
+
+window.collapseCommentBox = function() {
+    const input = document.getElementById("comment-input");
+    const actions = document.getElementById("comment-actions");
+    if (input) {
+        input.classList.remove("expanded");
+        input.style.minHeight = "";
+        input.value = "";
+    }
+    if (actions) actions.classList.add("hidden");
+};
+
+window.submitComment = function() {
+    if (!APP_STATE.isLoggedIn) {
+        showToast("Please login to comment", "warning");
+        openModal("login-modal");
+        return;
+    }
+    const input = document.getElementById("comment-input");
+    if (!input || !input.value.trim()) {
+        showToast("Please write a comment", "warning");
+        return;
+    }
+    const newComment = {
+        id: Date.now(),
+        author: APP_STATE.currentUser?.name || "You",
+        avatar: "https://picsum.photos/40?random=" + Date.now(),
+        text: input.value.trim(),
+        time: "Just now",
+        likes: 0,
+    };
+    if (APP_STATE.currentVideo) {
+        if (!APP_STATE.currentVideo.comments) {
+            APP_STATE.currentVideo.comments = [];
+        }
+        APP_STATE.currentVideo.comments.unshift(newComment);
+        loadVideoComments(APP_STATE.currentVideo);
+    }
+    collapseCommentBox();
+    showToast("Comment posted!", "success");
+};
+
 window.openVideoPlayer = openVideoPlayer;
-window.likeVideo = likeVideo;
-window.dislikeVideo = dislikeVideo;
-window.shareVideo = shareVideo;
-window.toggleSaveMenu = toggleSaveMenu;
-window.saveToFavorites = saveToFavorites;
-window.createPlaylist = createPlaylist;
-window.addToPlaylist = addToPlaylist;
-window.navigateVideo = navigateVideo;
-window.showTestimonial = showTestimonial;
-window.scrollToSection = scrollToSection;
-window.togglePassword = togglePassword;
-window.toggleRegisterFields = toggleRegisterFields;
-window.expandCommentBox = expandCommentBox;
-window.collapseCommentBox = collapseCommentBox;
-window.submitComment = submitComment;
-window.copyShareLink = copyShareLink;
-window.shareToSocial = shareToSocial;
-// Add these to your existing exports (around line 4400+)
-window.getCurrentUserAvatar = getCurrentUserAvatar;
-window.initializeAvatarUpload = initializeAvatarUpload;
-window.triggerAvatarUpload = triggerAvatarUpload;
-window.handleAvatarUpload = handleAvatarUpload;
-window.updateAllAvatarElements = updateAllAvatarElements;
+window.navigateVideo = function(direction) {
+    showToast(`Loading ${direction} video...`, "info");
+};
+
+window.saveToFavorites = function() {
+    if (!APP_STATE.isLoggedIn) {
+        showToast("Please login to save to favorites", "warning");
+        openModal("login-modal");
+        return;
+    }
+    showToast("Video saved to favorites!", "success");
+    const menu = document.getElementById("save-menu");
+    if (menu) menu.classList.add("hidden");
+};
+
+window.createPlaylist = function() {
+    if (!APP_STATE.isLoggedIn) {
+        showToast("Please login to create playlists", "warning");
+        openModal("login-modal");
+        return;
+    }
+    const playlistName = prompt("Enter playlist name:");
+    if (playlistName) {
+        showToast(`Playlist "${playlistName}" created!`, "success");
+    }
+    const menu = document.getElementById("save-menu");
+    if (menu) menu.classList.add("hidden");
+};
+
+window.addToPlaylist = function() {
+    if (!APP_STATE.isLoggedIn) {
+        showToast("Please login to add to playlist", "warning");
+        openModal("login-modal");
+        return;
+    }
+    showToast("Select a playlist to add this video", "info");
+    const menu = document.getElementById("save-menu");
+    if (menu) menu.classList.add("hidden");
+};
+
+window.copyShareLink = function() {
+    const input = document.getElementById("share-link");
+    if (input) {
+        input.select();
+        document.execCommand("copy");
+        showToast("Link copied to clipboard!", "success");
+    }
+};
+
+window.shareToSocial = function(platform) {
+    const shareUrl = document.getElementById("share-link")?.value || "https://astegni.et/video/12345";
+    const shareText = APP_STATE.currentVideo?.title || "Check out this amazing video on Astegni!";
+    let url = "";
+    
+    switch(platform) {
+        case "facebook":
+            url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+            break;
+        case "twitter":
+            url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+            break;
+        case "whatsapp":
+            url = `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`;
+            break;
+        case "telegram":
+            url = `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
+            break;
+        case "linkedin":
+            url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+            break;
+        case "email":
+            url = `mailto:?subject=${encodeURIComponent(shareText)}&body=${encodeURIComponent("Check out this video: " + shareUrl)}`;
+            break;
+    }
+    
+    if (url) {
+        window.open(url, "_blank");
+        showToast(`Sharing to ${platform}...`, "info");
+    }
+};
+
+window.scrollToSection = function(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+};
+
+window.togglePassword = function(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) {
+        input.type = input.type === "password" ? "text" : "password";
+    }
+};
+
+window.toggleRegisterFields = function() {
+    const select = document.getElementById("register-as");
+    if (select) {
+        const role = select.value;
+        showToast(`Registering as ${role}`, "info");
+    }
+};
+
+window.selectSuggestion = function(suggestion) {
+    const searchInput = document.getElementById("global-search");
+    if (searchInput) {
+        searchInput.value = suggestion;
+    }
+    const suggestions = document.getElementById("search-suggestions");
+    if (suggestions) {
+        suggestions.innerHTML = "";
+    }
+    showToast(`Searching for "${suggestion}"...`, "info");
+};
+
+window.socialLogin = function(platform) {
+    showToast(`Logging in with ${platform}...`, "info");
+    setTimeout(() => {
+        const defaultRole = "student";
+        APP_STATE.isLoggedIn = true;
+        APP_STATE.userRole = defaultRole;
+        APP_STATE.currentUser = {
+            name: "Social User",
+            email: "user@" + platform + ".com",
+            role: defaultRole,
+        };
+        localStorage.setItem("userRole", defaultRole);
+        localStorage.setItem("currentUser", JSON.stringify(APP_STATE.currentUser));
+        updateUIForLoggedInUser();
+        updateProfileLink(defaultRole);
+        closeModal("login-modal");
+        showToast("Login successful!", "success");
+    }, 1500);
+};
+
+window.openSearchModal = function() {
+    const modal = document.getElementById("search-modal");
+    if (modal) {
+        modal.style.display = "flex";
+        setTimeout(() => {
+            const searchInput = document.getElementById("global-search");
+            if (searchInput) searchInput.focus();
+        }, 100);
+    }
+};
+
+window.showTestimonial = function(index) {
+    console.log("Testimonial index:", index);
+};
+
+// Add styles for the new features
+const styleElement = document.createElement('style');
+styleElement.textContent = `
+    .add-role-option {
+        border-top: 1px solid var(--border-color);
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .add-role-icon {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: bold;
+    }
+    
+    .role-option.disabled {
+        opacity: 0.7;
+        cursor: default;
+    }
+    
+    .dropdown-header {
+        transition: background-color 0.3s ease;
+    }
+    
+    .dropdown-header:hover {
+        background-color: var(--hover-bg);
+        border-radius: 8px;
+    }
+`;
+
+if (!document.getElementById('add-role-styles')) {
+    styleElement.id = 'add-role-styles';
+    document.head.appendChild(styleElement);
+}
