@@ -70,57 +70,60 @@ class AuthenticationManager {
     // ============================================
     //   AUTHENTICATION METHODS
     // ============================================
-    async login(email, password) {
-        try {
-            const response = await this.apiCall('/api/login', 'POST', {
-                email,
-                password
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.detail || 'Login failed');
-            }
-            
-            const data = await response.json();
-            
-            // Store token and user data
-            this.token = data.access_token;
-            this.user = data.user;
-            
-            // Format user data for frontend compatibility
-            const formattedUser = {
-                id: data.user.id,
-                name: `${data.user.first_name} ${data.user.last_name}`,
-                first_name: data.user.first_name,
-                last_name: data.user.last_name,
-                email: data.user.email,
-                phone: data.user.phone,
-                role: data.user.role,
-                created_at: data.user.created_at,
-                is_active: data.user.is_active
-            };
-            
-            // Save to localStorage
-            localStorage.setItem('token', this.token);
-            localStorage.setItem('currentUser', JSON.stringify(formattedUser));
-            localStorage.setItem('userRole', data.user.role);
-            
-            // Update global state
-            if (window.APP_STATE) {
-                window.APP_STATE.isLoggedIn = true;
-                window.APP_STATE.currentUser = formattedUser;
-                window.APP_STATE.userRole = data.user.role;
-            }
-            
-            return { success: true, user: formattedUser };
-            
-        } catch (error) {
-            console.error('Login error:', error);
-            return { success: false, error: error.message };
+    // In the AuthenticationManager class, update the login method:
+async login(email, password) {
+    try {
+        const response = await this.apiCall('/api/login', 'POST', {
+            email,
+            password
+        });
+        
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Login failed');
         }
+        
+        const data = await response.json();
+        
+        // Store token and user data
+        this.token = data.access_token;
+        this.user = data.user;
+        
+        // Format user data with profile picture
+        const formattedUser = {
+            id: data.user.id,
+            name: `${data.user.first_name} ${data.user.last_name}`,
+            first_name: data.user.first_name,
+            last_name: data.user.last_name,
+            email: data.user.email,
+            phone: data.user.phone,
+            role: data.user.role,
+            profile_picture: data.user.profile_picture, // Include this
+            created_at: data.user.created_at,
+            is_active: data.user.is_active,
+            email_verified: data.user.email_verified
+        };
+        
+        // Save to localStorage
+        localStorage.setItem('token', this.token);
+        localStorage.setItem('currentUser', JSON.stringify(formattedUser));
+        localStorage.setItem('userRole', data.user.role);
+        
+        // Update global state
+        if (window.APP_STATE) {
+            window.APP_STATE.isLoggedIn = true;
+            window.APP_STATE.currentUser = formattedUser;
+            window.APP_STATE.userRole = data.user.role;
+        }
+        
+        return { success: true, user: formattedUser };
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        return { success: false, error: error.message };
     }
-    
+}
+
     async register(userData) {
         try {
             const response = await this.apiCall('/api/register', 'POST', userData);

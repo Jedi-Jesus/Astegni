@@ -540,18 +540,26 @@ def register(request: Request, user_data: UserRegister, db: Session = Depends(ge
         )
     }
 
-# Add endpoint to switch roles (keep this one)
-
-
 @app.post("/api/switch-role")
-def switch_role(new_role: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def switch_role(
+    request_data: dict,  # Accept JSON body
+    current_user: User = Depends(get_current_user), 
+    db: Session = Depends(get_db)
+):
+    new_role = request_data.get('new_role')
+    
+    if not new_role:
+        raise HTTPException(status_code=400, detail="New role not provided")
+        
     if new_role not in current_user.roles:
         raise HTTPException(
-            status_code=400, detail="You don't have access to this role")
-
+            status_code=400, 
+            detail="You don't have access to this role"
+        )
+    
     current_user.active_role = new_role
     db.commit()
-
+    
     return {"message": f"Switched to {new_role} role", "active_role": new_role}
 
 # Add endpoint to get user's roles
@@ -759,14 +767,13 @@ def verify_token(current_user: User = Depends(get_current_user)):
             "last_name": current_user.last_name,
             "email": current_user.email,
             "phone": current_user.phone,
-            "role": current_user.active_role,
-            "profile_picture": current_user.profile_picture,  # ADD THIS
+            "role": current_user.active_role or current_user.roles[0] if current_user.roles else 'user',
+            "profile_picture": current_user.profile_picture,
             "created_at": current_user.created_at.isoformat(),
             "is_active": current_user.is_active,
             "email_verified": current_user.email_verified
         }
     }
-
 # Data Endpoints (keeping your existing ones)
 
 
