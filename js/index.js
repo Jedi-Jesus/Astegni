@@ -664,19 +664,159 @@ async function handleLogin(e) {
     }
 }
 
+// ============================================
+//   PASSWORD CONFIRMATION VALIDATION
+// ============================================
+
+function validatePasswordMatch() {
+    const password = document.getElementById('register-password');
+    const confirmPassword = document.getElementById('register-confirm-password');
+    const indicator = document.getElementById('password-match-indicator');
+    
+    if (!password || !confirmPassword || !indicator) return;
+    
+    // Only show indicator if confirm password has value
+    if (confirmPassword.value === '') {
+        indicator.textContent = '';
+        indicator.className = 'password-match-indicator';
+        return;
+    }
+    
+    if (password.value === confirmPassword.value) {
+        indicator.textContent = '✓ Passwords match';
+        indicator.className = 'password-match-indicator match';
+    } else {
+        indicator.textContent = '✗ Passwords do not match';
+        indicator.className = 'password-match-indicator no-match';
+    }
+}
+
+// Enhanced password strength calculator
+function calculatePasswordStrength(password) {
+    let strength = 0;
+    const strengthIndicator = document.getElementById('password-strength');
+    
+    if (password.length > 7) strength += 20;
+    if (password.length > 10) strength += 20;
+    if (/[a-z]/.test(password)) strength += 20;
+    if (/[A-Z]/.test(password)) strength += 20;
+    if (/[0-9]/.test(password)) strength += 10;
+    if (/[^a-zA-Z0-9]/.test(password)) strength += 10;
+    
+    if (strengthIndicator) {
+        let color = '#dc2626'; // red
+        let text = 'Weak';
+        
+        if (strength > 30 && strength <= 60) {
+            color = '#f59e0b'; // orange
+            text = 'Fair';
+        } else if (strength > 60 && strength <= 80) {
+            color = '#3b82f6'; // blue
+            text = 'Good';
+        } else if (strength > 80) {
+            color = '#10b981'; // green
+            text = 'Strong';
+        }
+        
+        strengthIndicator.innerHTML = `
+            <div style="width: 100%; height: 4px; background: #e5e7eb; border-radius: 2px; margin-top: 8px;">
+                <div style="width: ${strength}%; height: 100%; background: ${color}; border-radius: 2px; transition: all 0.3s ease;"></div>
+            </div>
+            <span style="font-size: 0.75rem; color: ${color}; margin-top: 4px; display: block;">${text} password</span>
+        `;
+    }
+    
+    return strength;
+}
+
+// ============================================
+//   COMING SOON MODAL
+// ============================================
+
+function openComingSoonModal(feature) {
+    const modal = document.getElementById('coming-soon-modal');
+    const message = document.getElementById('coming-soon-message');
+    
+    if (!modal || !message) return;
+    
+    // Customize message based on feature
+    const messages = {
+        'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
+        'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
+        'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
+    };
+    
+    message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
+    
+    openModal('coming-soon-modal');
+}
+
+function handleComingSoonNotification(e) {
+    e.preventDefault();
+    const email = document.getElementById('notify-email')?.value;
+    
+    if (!email) {
+        showToast('Please enter your email address', 'warning');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Subscribing...';
+    
+    // Simulate API call
+    setTimeout(() => {
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        
+        // Show success message
+        showToast('You will be notified when this feature launches!', 'success');
+        
+        // Clear form
+        document.getElementById('notify-email').value = '';
+        
+        // Close modal
+        setTimeout(() => {
+            closeModal('coming-soon-modal');
+        }, 2000);
+    }, 1500);
+}
+
+// Replace your existing handleRegister with this enhanced version
 async function handleRegister(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
+    
+    // Get password fields
+    const password = document.getElementById("register-password")?.value;
+    const confirmPassword = document.getElementById("register-confirm-password")?.value;
+    
+    // Validate passwords match
+    if (password !== confirmPassword) {
+        showToast('Passwords do not match!', 'error');
+        return;
+    }
+    
+    // Check password strength
+    const strength = calculatePasswordStrength(password);
+    if (strength < 40) {
+        showToast('Please choose a stronger password', 'warning');
+        return;
+    }
 
     const userData = {
         first_name: formData.get("register-firstname"),
         last_name: formData.get("register-lastname"),
         email: formData.get("register-email"),
         phone: document.getElementById("register-phone")?.value,
-        password: document.getElementById("register-password")?.value,
+        password: password,
         role: document.getElementById("register-as")?.value,
     };
 
+    // Use your existing async/await pattern
     const result = await window.AuthManager.register(userData);
 
     if (result.success) {
@@ -770,6 +910,110 @@ function updateProfileLink(role) {
 }
 
 // ============================================
+//   FORGOT PASSWORD FUNCTIONALITY
+// ============================================
+
+function openForgotPasswordModal(event) {
+    if (event) event.preventDefault();
+    closeModal('login-modal');
+    setTimeout(() => {
+        openModal('forgot-password-modal');
+    }, 300);
+}
+
+function handleForgotPassword(e) {
+    e.preventDefault();
+    const email = document.getElementById('forgot-email')?.value;
+    
+    if (!email) {
+        showToast('Please enter your email address', 'warning');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+    
+    // Simulate API call
+    setTimeout(() => {
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        
+        // Show success message
+        showToast('Password reset link sent to your email!', 'success');
+        
+        // Clear form
+        document.getElementById('forgot-email').value = '';
+        
+        // Close modal after delay
+        setTimeout(() => {
+            closeModal('forgot-password-modal');
+            openModal('login-modal');
+        }, 2000);
+    }, 2000);
+}
+
+// ============================================
+//   RESPONSIVE NAVIGATION IMPROVEMENTS
+// ============================================
+
+function improveNavbarResponsiveness() {
+    const navbar = document.querySelector('.navbar');
+    const menuBtn = document.getElementById('menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    // Add resize listener for better responsiveness
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            if (window.innerWidth >= 1024) {
+                // Close mobile menu on larger screens
+                if (menuBtn?.classList.contains('active')) {
+                    menuBtn.classList.remove('active');
+                    mobileMenu?.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            }
+        }, 250);
+    });
+    
+    // Improve scroll behavior
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    
+    function updateNavbar() {
+        const currentScrollY = window.scrollY;
+        
+        if (currentScrollY > 100) {
+            navbar?.classList.add('scrolled', 'compact');
+        } else {
+            navbar?.classList.remove('scrolled', 'compact');
+        }
+        
+        // Hide/show navbar on scroll
+        if (currentScrollY > lastScrollY && currentScrollY > 200) {
+            navbar?.classList.add('navbar-hidden');
+        } else {
+            navbar?.classList.remove('navbar-hidden');
+        }
+        
+        lastScrollY = currentScrollY;
+        ticking = false;
+    }
+    
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(updateNavbar);
+            ticking = true;
+        }
+    });
+}
+
+// ============================================
 //   INITIALIZATION
 // ============================================
 document.addEventListener("DOMContentLoaded", async () => {
@@ -797,7 +1041,41 @@ document.addEventListener("DOMContentLoaded", async () => {
                 window.AuthManager.clearAuth();
             }
         }
-
+    // Add event listeners for new forms
+    const forgotPasswordForm = document.getElementById('forgot-password-form');
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener('submit', handleForgotPassword);
+    }
+    
+    const comingSoonForm = document.getElementById('coming-soon-form');
+    if (comingSoonForm) {
+        comingSoonForm.addEventListener('submit', handleComingSoonNotification);
+    }
+    
+    // Replace the existing register form handler with enhanced version
+const registerForm = document.getElementById('register-form');
+if (registerForm) {
+    // Just add the event listener, no need to remove/re-add
+    registerForm.addEventListener('submit', handleRegister);
+}
+    
+    // Add password match validation listeners
+    const registerPassword = document.getElementById('register-password');
+    const registerConfirmPassword = document.getElementById('register-confirm-password');
+    
+    if (registerPassword) {
+        registerPassword.addEventListener('input', (e) => {
+            calculatePasswordStrength(e.target.value);
+            validatePasswordMatch();
+        });
+    }
+    
+    if (registerConfirmPassword) {
+        registerConfirmPassword.addEventListener('input', validatePasswordMatch);
+    }
+    
+    // Initialize improved navbar responsiveness
+    improveNavbarResponsiveness();
         // Initialize all features
         initializeNavigationAuth();
         initializeTheme();
@@ -2038,6 +2316,35 @@ function initializeLazyLoading() {
     images.forEach((img) => imageObserver.observe(img));
 }
 
+// Add CSS for navbar hide/show animation
+const navbarStyles = document.createElement('style');
+navbarStyles.textContent = `
+    .navbar {
+        transition: transform 0.3s ease-in-out, padding 0.3s ease;
+    }
+    
+    .navbar.navbar-hidden {
+        transform: translateY(-100%);
+    }
+    
+    .navbar.compact {
+        padding: 0.5rem 0;
+    }
+    
+    .navbar.compact .logo-main {
+        font-size: 1.125rem;
+    }
+    
+    .navbar.compact .nav-link {
+        padding: 0.375rem 0.75rem !important;
+    }
+`;
+document.head.appendChild(navbarStyles);
+// Export new functions
+window.openForgotPasswordModal = openForgotPasswordModal;
+window.openComingSoonModal = openComingSoonModal;
+window.validatePasswordMatch = validatePasswordMatch;
+
 // Export all necessary functions
 window.toggleTheme = toggleTheme;
 window.openModal = openModal;
@@ -2047,17 +2354,31 @@ window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
 window.logout = logout;
 window.showToast = showToast;
+// Improved handleNavLinkClick function for coming soon features
 window.handleNavLinkClick = function(e, link) {
+    // Define coming soon features
+    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+    
+    // Check if it's a coming soon feature
+    if (comingSoonFeatures.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        openComingSoonModal(link);
+        return false;
+    }
+    
+    // Existing protected pages logic
     if (APP_STATE.isLoggedIn) return true;
-    const protectedPages = ["find-tutors", "store", "find-jobs", "reels"];
+    
+    const protectedPages = ['find-tutors', 'reels'];
     if (protectedPages.includes(link)) {
         e.preventDefault();
         e.stopPropagation();
         showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
-        // Don't save intended destination - user stays on current page after login
         openModal("login-modal");
         return false;
     }
+    
     return true;
 };
 window.handleCourseClick = handleCourseClick;
@@ -2252,10 +2573,40 @@ window.scrollToSection = function(sectionId) {
     }
 };
 
+// ============================================
+//   PASSWORD VISIBILITY TOGGLE
+// ============================================
+
 window.togglePassword = function(inputId) {
     const input = document.getElementById(inputId);
-    if (input) {
-        input.type = input.type === "password" ? "text" : "password";
+    const button = input?.nextElementSibling;
+    
+    if (!input) return;
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (button) {
+            button.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21">
+                    </path>
+                </svg>
+            `;
+        }
+    } else {
+        input.type = 'password';
+        if (button) {
+            button.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                    </path>
+                </svg>
+            `;
+        }
     }
 };
 
