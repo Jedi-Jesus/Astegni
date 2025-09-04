@@ -607,25 +607,7 @@ function closeNotificationModal() {
     }
 }
 
-// Open Video Modal - FIXED
-function openVideoModal(reelId) {
-    currentVideoIndex = filteredReelIds.indexOf(reelId);
-    updateVideoModal(reelId);
-    
-    const modal = document.getElementById("video-modal");
-    if (modal) {
-        modal.classList.remove("hidden");
-        document.body.style.overflow = "hidden";
-    }
-    
-    // Track history
-    if (!history[reelId]) history[reelId] = { reelId, userIds: [] };
-    if (!history[reelId].userIds.includes(currentUser.id)) {
-        history[reelId].userIds.push(currentUser.id);
-        logAction(`Viewed reel ${reelId}`);
-        updateFilterCounts();
-    }
-}
+
 
 
 // Update Video Modal

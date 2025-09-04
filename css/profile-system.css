@@ -1,0 +1,311 @@
+/* ============================================
+   PROFILE SYSTEM STYLES - Reusable Component
+   ============================================ */
+
+/* Profile Container */
+.profile-dropdown-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.profile-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 25px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.profile-dropdown-toggle:hover,
+.profile-dropdown-toggle.active {
+    background: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+}
+
+.profile-pic,
+.dropdown-profile-pic {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary-color);
+}
+
+.profile-name {
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-arrow {
+    transition: transform 0.3s ease;
+}
+
+.profile-dropdown-toggle.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+/* Profile Dropdown Menu */
+.profile-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    min-width: 280px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.profile-dropdown-menu.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.dropdown-header {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 8px;
+}
+
+.dropdown-header:hover {
+    background-color: var(--hover-bg);
+}
+
+.dropdown-user-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.dropdown-user-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--heading);
+}
+
+.dropdown-user-email {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.dropdown-user-role {
+    font-size: 11px;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(var(--border-rgb), 0.2);
+    margin: 0.5rem 0;
+}
+
+.dropdown-item {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: rgba(var(--button-bg-rgb), 0.1);
+    transform: translateX(5px);
+}
+
+.dropdown-item.logout-item {
+    color: #ef4444;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.dropdown-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.dropdown-item-header {
+    padding: 0.5rem 1rem;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+/* Role Switcher */
+.role-switcher-section {
+    padding: 0.5rem 0;
+}
+
+.role-options {
+    padding: 0.5rem;
+}
+
+.role-option {
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 8px;
+}
+
+.role-option:hover {
+    background: rgba(var(--button-bg-rgb), 0.1);
+}
+
+.role-option.active {
+    background: rgba(var(--button-bg-rgb), 0.15);
+    font-weight: 600;
+}
+
+.role-option.disabled {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.role-name {
+    font-size: 14px;
+}
+
+.role-badge {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    background: var(--button-bg);
+    color: white;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.add-role-option {
+    border-top: 1px solid var(--border-color);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.add-role-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* Mobile Profile Section */
+.mobile-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 12px;
+    margin: 10px 20px;
+    color: white;
+}
+
+.mobile-profile-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-profile-name {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.mobile-profile-role {
+    font-size: 12px;
+    opacity: 0.9;
+    text-transform: capitalize;
+}
+
+.mobile-profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .profile-dropdown-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .profile-dropdown-toggle:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .profile-dropdown-menu {
+    background: var(--card-bg-dark, #1f2937);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .mobile-profile-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-dropdown-container {
+        display: none;
+    }
+    
+    .mobile-profile-section {
+        display: block;
+    }
+}
+
+/* CSS Variables (ensure these are defined in your main CSS) */
+/*
+Required CSS variables:
+--card-bg: background color for cards
+--border-color: border color
+--primary-color: primary brand color
+--secondary-color: secondary brand color
+--heading: heading text color
+--text: main text color
+--text-muted: muted text color
+--hover-bg: hover background color
+--button-bg: button background color
+--button-bg-rgb: button background RGB values (for rgba)
+--border-rgb: border RGB values (for rgba)
+*/

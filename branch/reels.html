@@ -9,7 +9,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link href="../css/reels.css" rel="stylesheet">
     <link href="../css/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/auth-modal.css">
     <link href="../css/videoplayer.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css/profile-system.css"> <!-- Profile system CSS -->
 </head>
 
 <body class="font-sans">
@@ -38,72 +40,67 @@
                             d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                 </div>
- 
+
             </div>
 
             <!-- Right Section: Navigation Links -->
-                <div class="nav-links hidden md:flex">
-                    <a class="nav-link px-2 py-1 rounded" href="#">
-                        <span class="nav-icon">📰</span> News
-                    </a>
-                    <a class="nav-link px-2 py-1 rounded" href="find-tutors.html"
-                        onclick="handleNavLinkClick(event, 'find-tutors')">
-                        <span class="nav-icon">👨‍🏫</span> Find Tutors
-                    </a>
-                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
-                        <span class="nav-icon">📚</span> Bookstore
-                    </a>
-                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
-                        <span class="nav-icon">💼</span> Find a Job
-                    </a>
+            <div class="nav-links hidden md:flex">
+                <a class="nav-link px-2 py-1 rounded" href="#">
+                    <span class="nav-icon">📰</span> News
+                </a>
+                <a class="nav-link px-2 py-1 rounded" href="find-tutors.html"
+                    onclick="handleNavLinkClick(event, 'find-tutors')">
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
+                </a>
+                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">📚</span> Bookstore
+                </a>
+                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <span class="nav-icon">💼</span> Find a Job
+                </a>
 
-                    <!-- Profile container -->
-                    <div id="profile-container" class="profile-dropdown-container hidden">
-                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
-                            onclick="toggleProfileDropdown()">
-                            <img id="profile-pic" class="profile-pic" alt="Profile">
-                            <span id="profile-name" class="profile-name"></span>
-                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
+                    <!-- Profile container in navigation -->
+<div id="profile-container" class="profile-dropdown-container hidden">
+    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle" onclick="toggleProfileDropdown()">
+        <img id="profile-pic" class="profile-pic" alt="Profile">
+        <span id="profile-name" class="profile-name"></span>
+        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+        </svg>
+    </button>
 
-                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
-                            <!-- User info header -->
-                            <div class="dropdown-header">
-                                <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
-                                <div class="dropdown-user-info">
-                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
-                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
-                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
-                                </div>
-                            </div>
+    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+        <!-- User info header -->
+        <div class="dropdown-header">
+            <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
+            <div class="dropdown-user-info">
+                <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                <span id="dropdown-user-role" class="dropdown-user-role"></span>
+            </div>
+        </div>
 
-                            <div class="dropdown-divider"></div>
+        <div class="dropdown-divider"></div>
 
-                            <!-- Role switcher (shown only if user has multiple roles) -->
-                            <div id="role-switcher-section" class="role-switcher-section hidden">
-                                <div class="dropdown-divider"></div>
-                                <div class="dropdown-item-header">Switch Role</div>
-                                <div id="role-options" class="role-options">
-                                    <!-- Role options will be dynamically added here -->
-                                </div>
-                            </div>
+        <!-- Role switcher section -->
+        <div id="role-switcher-section" class="role-switcher-section hidden">
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item-header">Switch Role</div>
+            <div id="role-options" class="role-options">
+                <!-- Role options will be dynamically added -->
+            </div>
+        </div>
 
-                            <div class="dropdown-divider"></div>
+        <div class="dropdown-divider"></div>
 
-                            <button class="dropdown-item logout-item" onclick="logout()">
-                                <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                    </path>
-                                </svg>
-                                Logout
-                            </button>
-                        </div>
-                    </div>
+        <button class="dropdown-item logout-item" onclick="logout()">
+            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            Logout
+        </button>
+    </div>
+</div>
 
                 <button id="notification-bell" class="relative p-2 rounded-full hover-glow transition-all duration-300"
                     onclick="openNotificationModal()" aria-label="View notifications">
@@ -115,19 +112,19 @@
                 <button id="theme-toggle-btn" class="p-2 rounded-full hover-glow transition-all duration-500"
                     aria-label="Toggle theme">
                     <!-- Sun Icon (shows in dark mode) -->
-                        <svg class="sun-icon w-6 h-6 hidden dark:block" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                            </path>
-                        </svg>
-                        <!-- Moon Icon (shows in light mode) -->
-                        <svg class="moon-icon w-6 h-6 block dark:hidden" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
-                            </path>
-                        </svg>
+                    <svg class="sun-icon w-6 h-6 hidden dark:block" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                    <!-- Moon Icon (shows in light mode) -->
+                    <svg class="moon-icon w-6 h-6 block dark:hidden" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
                 </button>
             </div>
 
@@ -151,19 +148,19 @@
                 </button>
                 <button id="mobile-theme-toggle-btn" class="p-2" aria-label="Theme" onclick="toggleTheme()">
                     <!-- Sun Icon (shows in dark mode) -->
-                        <svg class="sun-icon w-6 h-6 hidden dark:block" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                            </path>
-                        </svg>
-                        <!-- Moon Icon (shows in light mode) -->
-                        <svg class="moon-icon w-6 h-6 block dark:hidden" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
-                            </path>
-                        </svg>
+                    <svg class="sun-icon w-6 h-6 hidden dark:block" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                    <!-- Moon Icon (shows in light mode) -->
+                    <svg class="moon-icon w-6 h-6 block dark:hidden" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                        </path>
+                    </svg>
                 </button>
                 <button id="menu-btn" class="p-2 hamburger-menu" aria-label="Menu" aria-expanded="false">
                     <span class="hamburger-line"></span>
@@ -177,23 +174,23 @@
         <div id="mobile-menu" class="md:hidden">
             <a href="#" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
                 <span class="flex items-center gap-3">
-                        <span class="nav-icon">📰</span> News
+                    <span class="nav-icon">📰</span> News
                 </span>
             </a>
             <a href="find-tutors.html"
                 class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
                 <span class="flex items-center gap-3">
-                        <span class="nav-icon">👨‍🏫</span> Find Tutors
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
                 </span>
             </a>
             <a href="#" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
                 <span class="flex items-center gap-3">
-                        <span class="nav-icon">📚</span> Bookstore
+                    <span class="nav-icon">📚</span> Bookstore
                 </span>
             </a>
             <a href="#" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
                 <span class="flex items-center gap-3">
-                        <span class="nav-icon">💼</span> Find a Job
+                    <span class="nav-icon">💼</span> Find a Job
                 </span>
             </a>
             <a href="profile.html" class="block py-3 px-4 hover:bg-[var(--highlight-bg)] transition-all duration-300">
@@ -380,7 +377,322 @@
             </div>
         </div>
     </div>
+    <!-- Enhanced Auth Modal -->
+    <div id="authRequiredModal" class="auth-modal-overlay">
+        <div class="auth-modal-container">
+            <div class="auth-modal-content">
+                <div class="auth-modal-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                </div>
+                <h2 class="auth-modal-title">Authentication Required</h2>
+                <p class="auth-modal-message" id="authModalMessage">
+                    Please login to access this page. You'll be redirected to the login page to continue.
+                </p>
+                <div class="auth-modal-buttons">
+                    <button class="auth-modal-btn primary" onclick="redirectToLogin()">
+                        Login Now
+                    </button>
+                    <button class="auth-modal-btn secondary" onclick="goBack()">
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Add this HTML right before the closing </body> tag in reels.html -->
+
+    <!-- Ultimate Video Modal (from videoplayer.html) -->
+    <div class="ultimate-video-modal" id="ultimate-video-modal">
+        <div class="video-theater-container enhanced-bg-primary">
+            <!-- Animated Background Effects -->
+            <div class="mesh-overlay"></div>
+
+            <!-- Main Video Section -->
+            <div class="video-main-section">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle-btn btn glass-effect" id="themeToggle" title="Toggle Theme">
+                    <div class="theme-icon">
+                        <svg viewBox="0 0 24 24" id="themeIcon">
+                            <path
+                                d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z" />
+                        </svg>
+                    </div>
+                </button>
+
+                <!-- Video Counter Display -->
+                <div class="video-counter glass-effect">
+                    <span id="videoCountText">Video 1 of 1</span>
+                    <div class="video-counter-dots" id="videoDots"></div>
+                </div>
+
+                <div class="video-wrapper-advanced">
+                    <!-- Video Element -->
+                    <video class="enhanced-video" id="enhancedVideo">
+                        <source src="" type="video/mp4">
+                    </video>
+
+                    <!-- Loading Spinner -->
+                    <div class="video-loading-spinner">
+                        <div class="spinner-ring"></div>
+                    </div>
+
+                    <!-- Gesture Indicator -->
+                    <div class="gesture-indicator" id="gestureIndicator"></div>
+
+                    <!-- Advanced Controls -->
+                    <div class="video-controls-advanced glass-effect" id="videoControls">
+                        <!-- Progress Bar -->
+                        <div class="progress-container-advanced" id="progressContainer">
+                            <div class="progress-buffer" id="progressBuffer"></div>
+                            <div class="progress-played" id="progressPlayed"></div>
+                            <div class="progress-scrubber" id="progressScrubber"></div>
+                            <div class="progress-hover-preview" id="progressPreview">0:00</div>
+                        </div>
+
+                        <!-- Control Buttons Row -->
+                        <div class="controls-row">
+                            <!-- Left Controls -->
+                            <div class="controls-left">
+                                <button class="control-btn play-pause" id="playPauseBtn">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M8 5v14l11-7z" />
+                                    </svg>
+                                </button>
+
+                                <button class="control-btn" id="skipBackBtn">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M11 18V6l-8.5 6 8.5 6zm.5-6l8.5 6V6l-8.5 6z" />
+                                    </svg>
+                                </button>
+
+                                <button class="control-btn" id="skipForwardBtn">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
+                                    </svg>
+                                </button>
+
+                                <!-- Volume Control -->
+                                <div class="volume-control">
+                                    <button class="control-btn" id="volumeBtn">
+                                        <svg viewBox="0 0 24 24">
+                                            <path
+                                                d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                                        </svg>
+                                    </button>
+                                    <div class="volume-slider-container">
+                                        <div class="volume-slider" id="volumeSlider">
+                                            <div class="volume-level" id="volumeLevel">
+                                                <div class="volume-handle"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="time-display">
+                                    <span id="currentTime">0:00</span>
+                                    <span class="time-separator">/</span>
+                                    <span id="duration">0:00</span>
+                                </div>
+                            </div>
+
+                            <!-- Right Controls -->
+                            <div class="controls-right">
+                                <div class="speed-selector">
+                                    <button class="control-btn speed-btn" id="speedBtn">1x</button>
+                                    <div class="speed-menu glass-effect" id="speedMenu">
+                                        <div class="speed-option" data-speed="0.25">0.25x</div>
+                                        <div class="speed-option" data-speed="0.5">0.5x</div>
+                                        <div class="speed-option" data-speed="0.75">0.75x</div>
+                                        <div class="speed-option active" data-speed="1">Normal</div>
+                                        <div class="speed-option" data-speed="1.25">1.25x</div>
+                                        <div class="speed-option" data-speed="1.5">1.5x</div>
+                                        <div class="speed-option" data-speed="1.75">1.75x</div>
+                                        <div class="speed-option" data-speed="2">2x</div>
+                                    </div>
+                                </div>
+
+                                <div class="quality-selector">
+                                    <button class="control-btn quality-badge" id="qualityBtn">HD</button>
+                                    <div class="quality-menu glass-effect" id="qualityMenu">
+                                        <div class="quality-option" data-quality="2160">
+                                            <span class="quality-label">4K</span>
+                                            <span class="quality-tag">Ultra</span>
+                                        </div>
+                                        <div class="quality-option" data-quality="1440">
+                                            <span class="quality-label">1440p</span>
+                                            <span class="quality-tag">QHD</span>
+                                        </div>
+                                        <div class="quality-option active" data-quality="1080">
+                                            <span class="quality-label">1080p</span>
+                                            <span class="quality-tag">HD</span>
+                                        </div>
+                                        <div class="quality-option" data-quality="720">
+                                            <span class="quality-label">720p</span>
+                                        </div>
+                                        <div class="quality-option" data-quality="480">
+                                            <span class="quality-label">480p</span>
+                                        </div>
+                                        <div class="quality-option" data-quality="360">
+                                            <span class="quality-label">360p</span>
+                                        </div>
+                                        <div class="quality-option" data-quality="auto">
+                                            <span class="quality-label">Auto</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button class="control-btn pip-btn" id="pipBtn">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M19 11h-8v6h8v-6zm4 8V4.98C23 3.88 22.1 3 21 3H3c-1.1 0-2 .88-2 1.98V19c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2zm-2 .02H3V4.97h18v14.05z" />
+                                    </svg>
+                                    <span class="pip-indicator"></span>
+                                </button>
+
+                                <button class="control-btn" id="fullscreenBtn">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Keyboard Shortcuts Overlay -->
+                <div class="shortcuts-overlay enhanced-card glass-effect" id="shortcutsOverlay">
+                    <h3 class="shortcuts-title gradient-text">Keyboard Shortcuts</h3>
+                    <div class="shortcut-item">
+                        <span class="shortcut-action">Play/Pause</span>
+                        <span class="shortcut-key">Space</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-action">Skip Back 10s</span>
+                        <span class="shortcut-key">J</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-action">Skip Forward 10s</span>
+                        <span class="shortcut-key">L</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-action">Mute/Unmute</span>
+                        <span class="shortcut-key">M</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-action">Fullscreen</span>
+                        <span class="shortcut-key">F</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-action">Previous Video</span>
+                        <span class="shortcut-key">Shift + ↑</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-action">Next Video</span>
+                        <span class="shortcut-key">Shift + ↓</span>
+                    </div>
+                    <div class="shortcut-item">
+                        <span class="shortcut-action">Show Shortcuts</span>
+                        <span class="shortcut-key">?</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Sidebar -->
+            <div class="video-info-sidebar-enhanced">
+                <!-- Sidebar Header -->
+                <div class="sidebar-header-enhanced enhanced-bg-warm">
+                    <h2 class="video-title-enhanced" id="ultimate-video-title">Loading...</h2>
+                    <div class="video-meta-enhanced">
+                        <span class="view-count" id="ultimate-view-count">0 views</span>
+                        <span class="upload-date" id="ultimate-upload-date">Today</span>
+                    </div>
+                </div>
+
+                <!-- Creator Section -->
+                <div class="creator-section">
+                    <div class="creator-avatar gradient-orb" id="ultimate-creator-avatar">T</div>
+                    <div class="creator-info">
+                        <div class="creator-name" id="ultimate-creator-name">Loading...</div>
+                        <div class="creator-stats" id="ultimate-creator-stats">Loading...</div>
+                    </div>
+                    <button class="follow-btn-enhanced btn btn-primary" id="followBtn">Follow</button>
+                </div>
+
+                <!-- Enhanced Engagement Bar -->
+                <div class="engagement-bar-enhanced" id="ultimate-engagement-bar">
+                    <!-- Will be dynamically populated -->
+                </div>
+
+                <!-- Tabs Section -->
+                <div class="tabs-section">
+                    <div class="tabs-header">
+                        <button class="tab-btn active" data-tab="comments">Comments</button>
+                        <button class="tab-btn" data-tab="description">Description</button>
+                        <button class="tab-btn" data-tab="chapters">Chapters</button>
+                    </div>
+
+                    <div class="tabs-content">
+                        <!-- Comments Tab -->
+                        <div class="tab-content comments-enhanced" id="commentsTab">
+                            <!-- Will be dynamically populated -->
+                        </div>
+
+                        <!-- Description Tab -->
+                        <div class="tab-content" id="descriptionTab" style="display: none;">
+                            <!-- Will be dynamically populated -->
+                        </div>
+
+                        <!-- Chapters Tab -->
+                        <div class="tab-content" id="chaptersTab" style="display: none;">
+                            <!-- Will be dynamically populated -->
+                        </div>
+                    </div>
+
+                    <!-- Video Navigation Section -->
+                    <div class="video-navigation-section">
+                        <div class="video-nav-buttons">
+                            <button class="video-nav-btn btn btn-secondary hover-lift" id="prevVideoBtn">
+                                <svg viewBox="0 0 24 24" width="24" height="24">
+                                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor" />
+                                </svg>
+                                <div class="nav-btn-content">
+                                    <span class="nav-btn-label">Previous</span>
+                                    <span class="nav-btn-title" id="prevVideoTitle">No previous video</span>
+                                </div>
+                            </button>
+
+                            <button class="video-nav-btn btn btn-secondary hover-lift" id="nextVideoBtn">
+                                <div class="nav-btn-content">
+                                    <span class="nav-btn-label">Next</span>
+                                    <span class="nav-btn-title" id="nextVideoTitle">Loading...</span>
+                                </div>
+                                <svg viewBox="0 0 24 24" width="24" height="24">
+                                    <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z" fill="currentColor" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Close Button -->
+            <button class="modal-close-btn-enhanced btn glass-effect" onclick="closeUltimateModal()">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Fullscreen Transition -->
+        <div class="fullscreen-transition" id="fullscreenTransition"></div>
+    </div>
     <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
         <div class="footer-wave" aria-hidden="true">
@@ -539,7 +851,7 @@
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
     <!-- Updated Frontend Code for Profile Picture Integration -->
-<script>
+    <script>
         // Newsletter form validation and submission
         const form = document.getElementById('newsletterForm');
         const emailInput = document.getElementById('emailInput');
@@ -550,7 +862,7 @@
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         // Real-time validation
-        emailInput.addEventListener('input', function() {
+        emailInput.addEventListener('input', function () {
             if (this.value && !emailRegex.test(this.value)) {
                 this.classList.add('error');
                 this.classList.remove('success');
@@ -563,31 +875,31 @@
         });
 
         // Form submission
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const email = emailInput.value.trim();
-            
+
             // Reset feedback
             feedback.classList.remove('show', 'error', 'success');
-            
+
             // Validate email
             if (!email) {
                 showFeedback('Please enter your email address', 'error');
                 emailInput.classList.add('error');
                 return;
             }
-            
+
             if (!emailRegex.test(email)) {
                 showFeedback('Please enter a valid email address', 'error');
                 emailInput.classList.add('error');
                 return;
             }
-            
+
             // Show loading state
             submitBtn.classList.add('loading');
             submitBtn.textContent = 'Subscribing...';
-            
+
             // Simulate API call
             setTimeout(() => {
                 // Success response
@@ -602,7 +914,7 @@
         function showFeedback(message, type) {
             feedback.textContent = message;
             feedback.classList.add('show', type);
-            
+
             // Hide after 5 seconds
             setTimeout(() => {
                 feedback.classList.remove('show');
@@ -681,11 +993,134 @@
         document.head.appendChild(style);
     </script>
 
-    <!-- JavaScript for Interactivity --><!-- In student-profile.html or any protected page -->
+    <!-- JavaScript for Interactivity -->
     <script src="../js/auth.js"></script>
-    <script src="../js/protected-page.js"></script>
+    <script>
+        // Check authentication on page load
+        (async function () {
+            const auth = window.AuthManager;
+
+            // Check if user is authenticated
+            if (!auth.isAuthenticated()) {
+                const restored = await auth.restoreSession();
+                if (!restored) {
+                    // Show enhanced modal instead of alert
+                    showAuthModal();
+                    return;
+                }
+            }
+
+            // Get user data
+            const user = auth.getUser();
+            const userRole = auth.getUserRole();
+
+            // Reels is accessible to all authenticated users
+            // No role-specific check needed
+            console.log('User authenticated:', user.email);
+            console.log('User role:', userRole);
+
+            // Update UI with user info
+            if (user) {
+                // Update profile elements if they exist
+                const profilePic = document.getElementById('profile-pic');
+                const profileName = document.getElementById('profile-name');
+                const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
+                const dropdownUserName = document.getElementById('dropdown-user-name');
+                const dropdownUserEmail = document.getElementById('dropdown-user-email');
+                const dropdownUserRole = document.getElementById('dropdown-user-role');
+
+                if (profilePic && user.profile_picture) {
+                    profilePic.src = user.profile_picture;
+                }
+                if (profileName) {
+                    profileName.textContent = user.first_name;
+                }
+                if (dropdownProfilePic && user.profile_picture) {
+                    dropdownProfilePic.src = user.profile_picture;
+                }
+                if (dropdownUserName) {
+                    dropdownUserName.textContent = user.name || `${user.first_name} ${user.last_name}`;
+                }
+                if (dropdownUserEmail) {
+                    dropdownUserEmail.textContent = user.email;
+                }
+                if (dropdownUserRole) {
+                    dropdownUserRole.textContent = userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : 'User';
+                }
+
+                // Show profile container
+                const profileContainer = document.getElementById('profile-container');
+                if (profileContainer) {
+                    profileContainer.classList.remove('hidden');
+                }
+            }
+
+            console.log('Access granted to Reels page');
+        })();
+
+        // Logout function
+        function logout() {
+            const auth = window.AuthManager;
+            auth.logout();
+        }
+
+        // Profile dropdown toggle
+        function toggleProfileDropdown() {
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.toggle('hidden');
+            }
+        }
+
+        // Show authentication modal
+        function showAuthModal() {
+            const modal = document.getElementById('authRequiredModal');
+            const message = document.getElementById('authModalMessage');
+
+            // Customize message based on page
+            const pageMessages = {
+                'reels': 'Login to access Reels and watch amazing educational videos.',
+                'find-tutors': 'Login to find the perfect tutors for your learning journey.',
+                'advertiser-profile': 'Login to access advertiser features and campaigns.',
+                'view-parent': 'Login to view parent profiles and engagement details.'
+            };
+
+            // Get current page type from URL or page identifier
+            const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+
+            if (pageMessages[currentPage]) {
+                message.textContent = pageMessages[currentPage];
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Redirect to login
+        function redirectToLogin() {
+            // Store the intended destination
+            localStorage.setItem('redirectAfterLogin', window.location.href);
+            window.location.href = '../index.html';
+        }
+
+        // Go back to previous page
+        function goBack() {
+            window.history.back();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const profileContainer = document.getElementById('profile-container');
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+
+            if (profileContainer && !profileContainer.contains(event.target) && dropdownMenu) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+    </script>
     <script src="../js/reels.js"></script>
+    <script src="../js/reels-player-bridge.js"></script>
     <script src="../js/videoplayer.js"></script>
+<script src="../js/profile-system.js"></script> <!-- Profile system JS -->
 </body>
 
 </html>

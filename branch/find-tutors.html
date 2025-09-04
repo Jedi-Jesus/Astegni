@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/find-tutors.css">
+    <link rel="stylesheet" href="../css/profile-system.css"> <!-- Profile system CSS -->
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
@@ -67,55 +68,48 @@
                         <span class="nav-icon">💼</span> Find a Job
                     </a>
 
-                    <!-- Profile container -->
-                    <div id="profile-container" class="profile-dropdown-container hidden">
-                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
-                            onclick="toggleProfileDropdown()">
-                            <img id="profile-pic" class="profile-pic" alt="Profile">
-                            <span id="profile-name" class="profile-name"></span>
-                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
+                    <!-- Profile container in navigation -->
+<div id="profile-container" class="profile-dropdown-container hidden">
+    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle" onclick="toggleProfileDropdown()">
+        <img id="profile-pic" class="profile-pic" alt="Profile">
+        <span id="profile-name" class="profile-name"></span>
+        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+        </svg>
+    </button>
 
-                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
-                            <!-- User info header -->
-                            <div class="dropdown-header">
-                                <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
-                                <div class="dropdown-user-info">
-                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
-                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
-                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
-                                </div>
-                            </div>
+    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+        <!-- User info header -->
+        <div class="dropdown-header">
+            <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
+            <div class="dropdown-user-info">
+                <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                <span id="dropdown-user-role" class="dropdown-user-role"></span>
+            </div>
+        </div>
 
-                            <div class="dropdown-divider"></div>
+        <div class="dropdown-divider"></div>
 
-                            <!-- Role switcher (shown only if user has multiple roles) -->
-                            <div id="role-switcher-section" class="role-switcher-section hidden">
-                                <div class="dropdown-divider"></div>
-                                <div class="dropdown-item-header">Switch Role</div>
-                                <div id="role-options" class="role-options">
-                                    <!-- Role options will be dynamically added here -->
-                                </div>
-                            </div>
+        <!-- Role switcher section -->
+        <div id="role-switcher-section" class="role-switcher-section hidden">
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-item-header">Switch Role</div>
+            <div id="role-options" class="role-options">
+                <!-- Role options will be dynamically added -->
+            </div>
+        </div>
 
-                            <div class="dropdown-divider"></div>
+        <div class="dropdown-divider"></div>
 
-                            <button class="dropdown-item logout-item" onclick="logout()">
-                                <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                    </path>
-                                </svg>
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-
-
+        <button class="dropdown-item logout-item" onclick="logout()">
+            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            Logout
+        </button>
+    </div>
+</div>
                     <button id="notificationBtn" aria-label="Notifications"
                         class="notification-btn relative p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
                         <span class="notification-icon">🔔</span>
@@ -184,7 +178,7 @@
                     <img src="https://via.placeholder.com/24" alt="Profile" class="w-6 h-6 rounded-full">
                     <span>Profile</span>
                 </a>
-                
+
             </div>
         </div>
     </nav>
@@ -544,7 +538,32 @@
             </form>
         </div>
     </div>
-
+<!-- Enhanced Auth Modal -->
+<div id="authRequiredModal" class="auth-modal-overlay">
+    <div class="auth-modal-container">
+        <div class="auth-modal-content">
+            <div class="auth-modal-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                    </path>
+                </svg>
+            </div>
+            <h2 class="auth-modal-title">Authentication Required</h2>
+            <p class="auth-modal-message" id="authModalMessage">
+                Please login to access this page. You'll be redirected to the login page to continue.
+            </p>
+            <div class="auth-modal-buttons">
+                <button class="auth-modal-btn primary" onclick="redirectToLogin()">
+                    Login Now
+                </button>
+                <button class="auth-modal-btn secondary" onclick="goBack()">
+                    Go Back
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
     <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
         <div class="footer-wave" aria-hidden="true">
@@ -844,8 +863,95 @@
         `;
         document.head.appendChild(style);
     </script>
-    <!-- In student-profile.html or any protected page -->
+    <!-- Authentication Scripts -->
     <script src="../js/auth.js"></script>
+    <script>
+        // Check authentication on page load
+        (async function () {
+            const auth = window.AuthManager;
+
+            // Check if user is authenticated
+            if (!auth.isAuthenticated()) {
+                const restored = await auth.restoreSession();
+                if (!restored) {
+                    alert('Please login to find tutors');
+                    window.location.href = '../index.html';
+                    return;
+                }
+            }
+
+            // Get user data
+            const user = auth.getUser();
+            const userRole = auth.getUserRole();
+
+            // Find Tutors is accessible to all authenticated users
+            console.log('User authenticated:', user.email);
+            console.log('User role:', userRole);
+
+            // Update UI with user info
+            if (user) {
+                // Update profile elements
+                const profilePic = document.getElementById('profile-pic');
+                const profileName = document.getElementById('profile-name');
+                const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
+                const dropdownUserName = document.getElementById('dropdown-user-name');
+                const dropdownUserEmail = document.getElementById('dropdown-user-email');
+                const dropdownUserRole = document.getElementById('dropdown-user-role');
+
+                if (profilePic && user.profile_picture) {
+                    profilePic.src = user.profile_picture;
+                }
+                if (profileName) {
+                    profileName.textContent = user.first_name;
+                }
+                if (dropdownProfilePic && user.profile_picture) {
+                    dropdownProfilePic.src = user.profile_picture;
+                }
+                if (dropdownUserName) {
+                    dropdownUserName.textContent = user.name || `${user.first_name} ${user.last_name}`;
+                }
+                if (dropdownUserEmail) {
+                    dropdownUserEmail.textContent = user.email;
+                }
+                if (dropdownUserRole) {
+                    dropdownUserRole.textContent = userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : 'User';
+                }
+
+                // Show profile container
+                const profileContainer = document.getElementById('profile-container');
+                if (profileContainer) {
+                    profileContainer.classList.remove('hidden');
+                }
+            }
+
+            console.log('Access granted to Find Tutors page');
+        })();
+
+        // Logout function
+        function logout() {
+            const auth = window.AuthManager;
+            auth.logout();
+        }
+
+        // Profile dropdown toggle
+        function toggleProfileDropdown() {
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.toggle('hidden');
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const profileContainer = document.getElementById('profile-container');
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+
+            if (profileContainer && !profileContainer.contains(event.target) && dropdownMenu) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+    </script>
+<script src="../js/profile-system.js"></script> <!-- Profile system JS -->
     <script src="../js/find-tutors.js"></script>
 </body>
 

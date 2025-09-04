@@ -313,6 +313,27 @@ function setupEventListeners() {
         chapter.addEventListener('click', handleChapterClick);
     });
     
+
+    // 1. CLOSE FUNCTIONALITY
+// ============================================
+
+// Update the close button function
+function closeUltimateModal() {
+    const modal = document.getElementById("ultimate-video-modal");
+    if (modal) {
+        // Save watch progress before closing
+        saveWatchProgress();
+        
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+    
+    const video = document.getElementById('enhancedVideo');
+    if (video) {
+        video.pause();
+    }
+}
+
     // Keyboard shortcuts
     document.addEventListener('keydown', handleKeyboard);
     
@@ -667,9 +688,16 @@ function handleChapterClick(e) {
     showNotification(`⏭️ Jumped to: ${e.currentTarget.querySelector('.chapter-title').textContent}`);
 }
 
+
+
 // Keyboard Shortcuts
 function handleKeyboard(e) {
+        const modal = document.getElementById('ultimate-video-modal');
+    if (!modal || !modal.classList.contains('active')) return;
     switch(e.key) {
+                case 'Escape':
+            closeUltimateModal();
+            break;
         case ' ':
             e.preventDefault();
             togglePlayPause();
@@ -760,6 +788,22 @@ function handleKeyboard(e) {
     }
 }
 
+// Add close button on top of video
+function addVideoOverlayControls() {
+    const videoWrapper = document.querySelector('.video-wrapper-advanced');
+    if (!videoWrapper.querySelector('.video-overlay-close')) {
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'video-overlay-close';
+        closeBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="24" height="24">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="currentColor"/>
+            </svg>
+        `;
+        closeBtn.onclick = closeUltimateModal;
+        videoWrapper.appendChild(closeBtn);
+    }
+}
+
 // UI Helper Functions
 function showControls() {
     videoControls.classList.add('visible');
@@ -830,3 +874,4 @@ window.closeModal = closeModal;
 document.addEventListener('DOMContentLoaded', initializePlayer);
 
 console.log('🎬 Ultimate Video Player Initialized!');
+

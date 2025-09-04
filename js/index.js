@@ -664,6 +664,20 @@ async function handleLogin(e) {
     }
 }
 
+// After successful login
+function handleLoginSuccess() {
+    // Check if there's a redirect URL stored
+    const redirectUrl = localStorage.getItem('redirectAfterLogin');
+    
+    if (redirectUrl) {
+        localStorage.removeItem('redirectAfterLogin');
+        window.location.href = redirectUrl;
+    } else {
+        // Default behavior after login
+        closeModal('login-modal');
+        updateUIAfterLogin();
+    }
+}
 // ============================================
 //   PASSWORD CONFIRMATION VALIDATION
 // ============================================

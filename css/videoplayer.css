@@ -1076,3 +1076,489 @@
         min-width: unset;
     }
 }
+
+
+/* ============================================
+   ADDITIONAL VIDEO PLAYER ENHANCEMENTS CSS
+   Add these to your videoplayer.css
+   ============================================ */
+
+/* 1. CLOSE BUTTON ON VIDEO */
+.video-overlay-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+.video-overlay-close:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1) rotate(90deg);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.video-overlay-close svg {
+    fill: white;
+    opacity: 0.9;
+}
+
+.video-overlay-close:hover svg {
+    opacity: 1;
+}
+
+/* 2. ENHANCED COMMENTS STYLES */
+.comment-action-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    margin-left: auto;
+}
+
+.comment-action-btn:hover {
+    opacity: 1;
+}
+
+.comment-action-btn svg {
+    stroke: var(--text-muted);
+}
+
+.reply-box {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(var(--button-bg-rgb), 0.05);
+    border-radius: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+.reply-box .comment-field {
+    flex: 1;
+    min-height: 60px;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 13px;
+}
+
+.comment-replies {
+    margin-top: 12px;
+    padding-left: 40px;
+    border-left: 2px solid rgba(var(--button-bg-rgb), 0.1);
+}
+
+.comment-reply {
+    display: flex;
+    gap: 8px;
+    padding: 8px 0;
+    position: relative;
+}
+
+.reply-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.reply-content {
+    flex: 1;
+    font-size: 14px;
+}
+
+.reply-author {
+    font-weight: 600;
+    color: var(--text);
+    margin-right: 8px;
+}
+
+.reply-text {
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.reply-delete-btn {
+    position: absolute;
+    right: 0;
+    top: 8px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 20px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.comment-reply:hover .reply-delete-btn {
+    opacity: 0.5;
+}
+
+.reply-delete-btn:hover {
+    opacity: 1 !important;
+    color: #e74c3c;
+}
+
+/* 3. BUFFERING STATE STYLES */
+.buffering-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+    text-align: center;
+}
+
+.buffering-spinner {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    position: relative;
+    animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spinner-blade {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 3px;
+    height: 20px;
+    background: linear-gradient(to bottom, 
+        rgba(255, 255, 255, 0),
+        rgba(255, 255, 255, 0.8));
+    border-radius: 3px;
+    transform-origin: center -10px;
+}
+
+.spinner-blade:nth-child(1) { transform: translateX(-50%) rotate(0deg); }
+.spinner-blade:nth-child(2) { transform: translateX(-50%) rotate(45deg); }
+.spinner-blade:nth-child(3) { transform: translateX(-50%) rotate(90deg); }
+.spinner-blade:nth-child(4) { transform: translateX(-50%) rotate(135deg); }
+.spinner-blade:nth-child(5) { transform: translateX(-50%) rotate(180deg); }
+.spinner-blade:nth-child(6) { transform: translateX(-50%) rotate(225deg); }
+.spinner-blade:nth-child(7) { transform: translateX(-50%) rotate(270deg); }
+.spinner-blade:nth-child(8) { transform: translateX(-50%) rotate(315deg); }
+
+.buffering-text {
+    margin-top: 20px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Progress Buffer Enhanced */
+.progress-buffer {
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(var(--button-bg-rgb), 0.2),
+        rgba(var(--button-bg-rgb), 0.2) 10px,
+        rgba(var(--button-bg-rgb), 0.3) 10px,
+        rgba(var(--button-bg-rgb), 0.3) 20px
+    );
+    animation: bufferAnimation 1s linear infinite;
+}
+
+@keyframes bufferAnimation {
+    from { background-position: 0 0; }
+    to { background-position: 20px 0; }
+}
+
+/* 4. MOBILE RESPONSIVENESS ENHANCEMENTS */
+@media (max-width: 768px) {
+    /* Mobile controls overlay */
+    .mobile-controls .video-controls-advanced {
+        background: transparent;
+        padding: 0;
+    }
+    
+    .mobile-controls-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        pointer-events: none;
+    }
+    
+    .mobile-controls-overlay button {
+        pointer-events: all;
+    }
+    
+    .mobile-top-controls {
+        display: flex;
+        justify-content: flex-end;
+        padding: 20px;
+        background: linear-gradient(to bottom, 
+            rgba(0, 0, 0, 0.5),
+            transparent);
+    }
+    
+    .mobile-center-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 40px;
+        padding: 20px;
+    }
+    
+    .mobile-control-btn,
+    .mobile-skip-btn,
+    .mobile-play-btn {
+        background: rgba(0, 0, 0, 0.5);
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .mobile-control-btn {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .mobile-skip-btn {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .mobile-play-btn {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .mobile-control-btn:active,
+    .mobile-skip-btn:active,
+    .mobile-play-btn:active {
+        transform: scale(0.9);
+        background: rgba(0, 0, 0, 0.7);
+    }
+    
+    /* Simplify sidebar for mobile */
+    .video-info-sidebar-enhanced {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 40vh;
+        width: 100%;
+        transform: translateY(calc(100% - 60px));
+        transition: transform 0.3s ease;
+        border-radius: 20px 20px 0 0;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .video-info-sidebar-enhanced.expanded {
+        transform: translateY(0);
+    }
+    
+    /* Swipe indicator for mobile sidebar */
+    .video-info-sidebar-enhanced::before {
+        content: '';
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: rgba(var(--button-bg-rgb), 0.3);
+        border-radius: 2px;
+    }
+    
+    /* Adjust video for mobile */
+    .enhanced-video {
+        max-height: 60vh;
+        width: 100%;
+    }
+    
+    /* Mobile engagement bar */
+    .engagement-bar-enhanced {
+        flex-wrap: wrap;
+        padding: 10px;
+    }
+    
+    .engagement-btn-enhanced {
+        flex: 0 0 calc(25% - 5px);
+        padding: 8px;
+    }
+    
+    .engagement-icon-enhanced {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .engagement-label {
+        display: none;
+    }
+    
+    .engagement-count-enhanced {
+        font-size: 12px;
+    }
+    
+    /* Mobile tabs */
+    .tabs-header {
+        position: sticky;
+        top: 0;
+        background: var(--sidebar-bg);
+        z-index: 10;
+    }
+    
+    .tab-btn {
+        font-size: 14px;
+        padding: 12px;
+    }
+    
+    .tabs-content {
+        height: calc(40vh - 180px);
+    }
+    
+    /* Mobile comments */
+    .comment-input-enhanced {
+        padding: 10px;
+    }
+    
+    .comment-field {
+        font-size: 14px;
+    }
+    
+    .comment-item-enhanced {
+        padding: 10px;
+    }
+    
+    /* Hide complex controls on mobile */
+    .quality-selector,
+    .speed-selector {
+        display: none;
+    }
+    
+    /* Simplify progress bar for mobile */
+    .progress-container-advanced {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    .progress-container-advanced:hover {
+        height: 3px;
+    }
+    
+    .progress-scrubber {
+        display: none;
+    }
+    
+    /* Mobile close button */
+    .modal-close-btn-enhanced {
+        display: none;
+    }
+    
+    .video-overlay-close {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+    }
+}
+
+/* 5. WATCH PROGRESS INDICATOR */
+.watch-progress-badge {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    z-index: 5;
+}
+
+.watch-progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.watch-progress-fill {
+    height: 100%;
+    background: var(--button-bg);
+    transition: width 0.3s ease;
+}
+
+/* 6. GESTURE FEEDBACK */
+.gesture-indicator {
+    background: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+/* 7. ACCESSIBILITY IMPROVEMENTS */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Dark mode optimizations */
+@media (prefers-color-scheme: dark) {
+    .buffering-spinner .spinner-blade {
+        background: linear-gradient(to bottom,
+            rgba(255, 255, 255, 0),
+            rgba(255, 255, 255, 0.6));
+    }
+}
+
+/* Touch-friendly controls */
+@media (hover: none) and (pointer: coarse) {
+    .control-btn,
+    .engagement-btn-enhanced,
+    .tab-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .comment-field {
+        min-height: 44px;
+    }
+}
