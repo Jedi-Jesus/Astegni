@@ -1,6 +1,11 @@
-// Ultimate Enhanced Reels JavaScript
+// ============================================
+// OPTIMIZED REELS JAVASCRIPT
+// Clean version with Ultimate Video Player Integration
+// ============================================
 
-// Theme Toggle
+// ============================================
+// THEME MANAGEMENT
+// ============================================
 function toggleTheme() {
     const html = document.documentElement;
     const currentTheme = html.getAttribute("data-theme");
@@ -9,6 +14,9 @@ function toggleTheme() {
     localStorage.setItem("theme", newTheme);
     updateThemeToggleIcon(newTheme);
 }
+
+
+
 
 function updateThemeToggleIcon(theme) {
     const icon = theme === "light"
@@ -26,7 +34,15 @@ function updateThemeToggleIcon(theme) {
     }
 }
 
-// Data Objects
+function applyTheme() {
+    const savedTheme = localStorage.getItem("theme") || "light";
+    document.documentElement.setAttribute("data-theme", savedTheme);
+    updateThemeToggleIcon(savedTheme);
+}
+
+// ============================================
+// DATA OBJECTS
+// ============================================
 const currentUser = {
     id: 1,
     name: "John Doe",
@@ -100,7 +116,7 @@ const reels = {
     }
 };
 
-// Initialize all data structures
+// Initialize engagement data structures
 const likes = {};
 const dislikes = {};
 const favorites = {};
@@ -123,9 +139,15 @@ Object.keys(reels).forEach(id => {
 });
 
 // Add sample comment
-comments[1].comments.push({ userId: 1, text: "Great video! Very helpful.", date: "2025-05-20" });
+comments[1].comments.push({ 
+    userId: 1, 
+    text: "Great video! Very helpful.", 
+    date: "2025-05-20" 
+});
 
-// Video Navigation State
+// ============================================
+// STATE MANAGEMENT
+// ============================================
 let currentVideoIndex = 0;
 let currentFilter = "all";
 let filteredReelIds = Object.keys(reels).map(Number);
@@ -134,35 +156,37 @@ let selectedReelId = null;
 let currentAdIndex = 0;
 let adInterval = null;
 
-// Initialize - FIXED
+// ============================================
+// INITIALIZATION
+// ============================================
 function init() {
-    // Add hidden class to all modals on initialization
+    // Hide all modals initially
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.classList.add('hidden');
     });
-    document.querySelectorAll('.video-modal-overlay').forEach(modal => {
-        modal.classList.add('hidden');
-    });
     
+    // Initialize core features
     updateUserProfile();
     enableCommentFunctionality();
     updateReels("all");
     updateFilterCounts();
     checkNotifications();
     setupEventListeners();
-    setupKeyboardNavigation();
     initializeAds();
     applyTheme();
+    
+    // Initialize Ultimate Video Player
+    initializeVideoPlayer();
 }
 
-// Apply saved theme
-function applyTheme() {
-    const savedTheme = localStorage.getItem("theme") || "light";
-    document.documentElement.setAttribute("data-theme", savedTheme);
-    updateThemeToggleIcon(savedTheme);
+function initializeVideoPlayer() {
+    // This will be handled by the video-player-integration.js
+    console.log('Video player initialization will be handled by integration script');
 }
 
-// Update User Profile
+// ============================================
+// USER INTERFACE FUNCTIONS
+// ============================================
 function updateUserProfile() {
     const profileName = document.getElementById("profile-name");
     if (profileName) {
@@ -170,7 +194,6 @@ function updateUserProfile() {
     }
 }
 
-// Enable Comment Functionality
 function enableCommentFunctionality() {
     if (currentUser) {
         const commentInput = document.getElementById("new-comment");
@@ -180,7 +203,9 @@ function enableCommentFunctionality() {
     }
 }
 
-// Setup Event Listeners - FIXED (updated section)
+// ============================================
+// EVENT LISTENERS SETUP
+// ============================================
 function setupEventListeners() {
     // Search handlers
     const navSearch = document.getElementById("nav-search-input");
@@ -205,7 +230,7 @@ function setupEventListeners() {
     if (themeToggleBtn) themeToggleBtn.addEventListener("click", toggleTheme);
     if (mobileThemeToggleBtn) mobileThemeToggleBtn.addEventListener("click", toggleTheme);
     
-    // Close modals on outside click - FIXED
+    // Modal close handlers
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal && !modal.classList.contains('hidden')) {
@@ -216,41 +241,15 @@ function setupEventListeners() {
             }
         });
     });
-    
-    // Video modal outside click - FIXED
-    const videoModal = document.getElementById('video-modal');
-    if (videoModal) {
-        videoModal.addEventListener('click', (e) => {
-            if (e.target === videoModal && !videoModal.classList.contains('hidden')) {
-                closeVideoModal();
-            }
-        });
-    }
-}
-// Setup Keyboard Navigation
-function setupKeyboardNavigation() {
-    document.addEventListener("keydown", (e) => {
-        const videoModal = document.getElementById("video-modal");
-        if (!videoModal || videoModal.classList.contains("hidden")) return;
-        
-        if (e.key === "ArrowUp") {
-            e.preventDefault();
-            navigateVideo("prev");
-        } else if (e.key === "ArrowDown") {
-            e.preventDefault();
-            navigateVideo("next");
-        } else if (e.key === "Escape") {
-            closeVideoModal();
-        }
-    });
 }
 
-// Initialize Enhanced Ads - FIXED
+// ============================================
+// ADVERTISEMENT FUNCTIONS
+// ============================================
 function initializeAds() {
     const ads = document.querySelectorAll('.ad-slide');
     if (ads.length === 0) return;
     
-    // Set background gradients using inline styles instead of CSS variables
     ads.forEach(ad => {
         const bg = ad.getAttribute('data-bg');
         if (bg) {
@@ -258,13 +257,9 @@ function initializeAds() {
         }
     });
     
-    // Show first ad immediately
     showAd(0);
-    
-    // Start ad rotation
     startAdRotation();
 }
-
 
 function startAdRotation() {
     if (adInterval) clearInterval(adInterval);
@@ -274,7 +269,6 @@ function startAdRotation() {
         showAd(currentAdIndex);
     }, 7000);
     
-    // Start progress animation
     const progress = document.querySelector('.ad-progress');
     if (progress) {
         progress.style.width = '0';
@@ -297,7 +291,6 @@ function showAd(index) {
         indicator.classList.toggle('active', i === index);
     });
     
-    // Reset progress bar
     const progress = document.querySelector('.ad-progress');
     if (progress) {
         progress.style.transition = 'none';
@@ -311,7 +304,9 @@ function showAd(index) {
     currentAdIndex = index;
 }
 
-// Search Handler
+// ============================================
+// SEARCH AND FILTER FUNCTIONS
+// ============================================
 function handleSearch(e) {
     searchQuery = e.target.value.trim().toLowerCase();
     updateReels(currentFilter);
@@ -323,7 +318,6 @@ function handleSearch(e) {
     if (mobileSearch) mobileSearch.value = searchQuery;
 }
 
-// Filter Reels
 function filterReels(filter) {
     currentFilter = filter;
     const buttons = document.querySelectorAll(".filter-btn");
@@ -333,7 +327,6 @@ function filterReels(filter) {
     updateReels(filter);
 }
 
-// Update Filter Counts
 function updateFilterCounts() {
     const allCount = Object.keys(reels).length;
     const favoritesCount = Object.values(favorites).filter(f => f.userIds.includes(currentUser?.id)).length;
@@ -353,7 +346,9 @@ function updateFilterCounts() {
     updateCount('history-count', historyCount);
 }
 
-// Update Reels Grid
+// ============================================
+// REELS DISPLAY
+// ============================================
 function updateReels(filter) {
     const reelsGrid = document.getElementById("reels-grid");
     if (!reelsGrid) return;
@@ -400,99 +395,152 @@ function updateReels(filter) {
     }
     
     if (filteredReels.length === 0) {
-        reelsGrid.innerHTML = `
-            <div class="col-span-full empty-state">
-                <svg class="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M5 12h14M3 16h4m10 0h4M8 4h8a1 1 0 011 1v14a1 1 0 01-1 1H8a1 1 0 01-1-1V5a1 1 0 011-1z"></path>
-                </svg>
-                <p class="text-center text-lg opacity-70">No videos found</p>
-                <p class="text-center text-sm opacity-50 mt-2">Try adjusting your filters or search query</p>
-            </div>
-        `;
+        reelsGrid.innerHTML = renderEmptyState();
         return;
     }
     
     filteredReels.forEach((reel, index) => {
-        const tutor = tutors[reel.tutorId];
-        const likeCount = likes[reel.id]?.userIds?.length || 0;
-        const dislikeCount = dislikes[reel.id]?.userIds?.length || 0;
-        const commentCount = comments[reel.id]?.comments?.length || 0;
-        const isLiked = likes[reel.id]?.userIds?.includes(currentUser?.id);
-        const isDisliked = dislikes[reel.id]?.userIds?.includes(currentUser?.id);
-        const isFavorite = favorites[reel.id]?.userIds?.includes(currentUser?.id);
-        const isSaved = savedVideos[reel.id]?.userIds?.includes(currentUser?.id);
-        const isFollowed = follows[reel.tutorId]?.userIds?.includes(currentUser?.id);
-        
-        const div = document.createElement("div");
-        div.className = "reel-card";
-        div.style.animationDelay = `${index * 0.1}s`;
-        div.innerHTML = `
-            <video class="reel-card-video" onclick="openVideoModal(${reel.id})">
-                <source src="${reel.videoUrl}" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-            <div class="p-4">
-                <h3 class="text-lg font-bold mb-1">${reel.title} ${reel.videoNumber}</h3>
-                <p class="text-sm mb-2 opacity-80">
-                    <a href="view-tutor.html?tutorId=${tutor.id}" class="hover:text-[var(--nav-link-hover)] transition-colors">
-                        ${tutor.name}
-                    </a> • ${tutor.subject}
-                </p>
-                <p class="text-sm mb-3 line-clamp-2">${reel.description}</p>
-                <p class="text-xs mb-3 opacity-60">${reel.date}</p>
-                <div class="reel-actions">
-                    <button class="action-btn favorite-btn ${isFavorite ? "active" : ""}" 
-                        onclick="toggleFavorite(${reel.id})" ${!currentUser ? "disabled" : ""}>
-                        <svg class="w-4 h-4" fill="${isFavorite ? "currentColor" : "none"}" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                        </svg>
-                        <span>Favorite</span>
-                    </button>
-                    <button class="action-btn ${isLiked ? "active" : ""}" 
-                        onclick="toggleLike(${reel.id})" ${!currentUser ? "disabled" : ""}>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                        </svg>
-                        <span>${likeCount}</span>
-                    </button>
-                    <button class="action-btn ${isDisliked ? "active" : ""}" 
-                        onclick="toggleDislike(${reel.id})" ${!currentUser ? "disabled" : ""}>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                        </svg>
-                        <span>${dislikeCount}</span>
-                    </button>
-                    <button class="action-btn" onclick="openCommentModal(${reel.id})">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.05M12 10h.05M16 10h.05M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                        </svg>
-                        <span>${commentCount}</span>
-                    </button>
-                    <button class="action-btn" onclick="shareReel(${reel.id})">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                        </svg>
-                    </button>
-                    <button class="action-btn ${isSaved ? "active" : ""}" 
-                        onclick="openPlaylistModal(${reel.id})" ${!currentUser ? "disabled" : ""}>
-                        <svg class="w-4 h-4" fill="${isSaved ? "currentColor" : "none"}" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                        </svg>
-                    </button>
-                    <button class="action-btn ${isFollowed ? "active" : ""}" 
-                        onclick="toggleFollow(${reel.tutorId})" ${!currentUser ? "disabled" : ""}>
-                        <span>${isFollowed ? "Following" : "Follow"}</span>
-                    </button>
-                </div>
-            </div>
-        `;
-        reelsGrid.appendChild(div);
+        const reelCard = createReelCard(reel, index);
+        reelsGrid.appendChild(reelCard);
     });
     
     updateFilterCounts();
 }
 
-// Toggle Favorite
+function renderEmptyState() {
+    return `
+        <div class="col-span-full empty-state">
+            <svg class="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M5 12h14M3 16h4m10 0h4M8 4h8a1 1 0 011 1v14a1 1 0 01-1 1H8a1 1 0 01-1-1V5a1 1 0 011-1z"></path>
+            </svg>
+            <p class="text-center text-lg opacity-70">No videos found</p>
+            <p class="text-center text-sm opacity-50 mt-2">Try adjusting your filters or search query</p>
+        </div>
+    `;
+}
+
+function createReelCard(reel, index) {
+    const tutor = tutors[reel.tutorId];
+    const engagementStats = getEngagementStats(reel.id);
+    
+    const div = document.createElement("div");
+    div.className = "reel-card";
+    div.style.animationDelay = `${index * 0.1}s`;
+    div.innerHTML = `
+        <video class="reel-card-video" onclick="console.log('Click detected'); openVideoModal(${reel.id})">
+            <source src="${reel.videoUrl}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        <div class="p-4">
+            <h3 class="text-lg font-bold mb-1" onclick="console.log('Click detected'); openVideoModal(${reel.id})">${reel.title} ${reel.videoNumber}</h3>
+            <p class="text-sm mb-2 opacity-80">
+                <a href="../view-profile-tier-1/view-tutor.html?tutorId=${tutor.id}" class="hover:text-[var(--nav-link-hover)] transition-colors">
+                    ${tutor.name}
+                </a> • ${tutor.subject}
+            </p>
+            <p class="text-sm mb-3 line-clamp-2">${reel.description}</p>
+            <p class="text-xs mb-3 opacity-60">${reel.date}</p>
+            ${renderReelActions(reel.id, engagementStats)}
+        </div>
+    `;
+    return div;
+}
+
+function getEngagementStats(reelId) {
+    return {
+        likeCount: likes[reelId]?.userIds?.length || 0,
+        dislikeCount: dislikes[reelId]?.userIds?.length || 0,
+        commentCount: comments[reelId]?.comments?.length || 0,
+        isLiked: likes[reelId]?.userIds?.includes(currentUser?.id),
+        isDisliked: dislikes[reelId]?.userIds?.includes(currentUser?.id),
+        isFavorite: favorites[reelId]?.userIds?.includes(currentUser?.id),
+        isSaved: savedVideos[reelId]?.userIds?.includes(currentUser?.id),
+        isFollowed: follows[reels[reelId].tutorId]?.userIds?.includes(currentUser?.id)
+    };
+}
+
+function renderReelActions(reelId, stats) {
+    return `
+        <div class="reel-actions">
+            <button class="action-btn favorite-btn ${stats.isFavorite ? "active" : ""}" 
+                onclick="toggleFavorite(${reelId})" ${!currentUser ? "disabled" : ""}>
+                <svg class="w-4 h-4" fill="${stats.isFavorite ? "currentColor" : "none"}" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                </svg>
+                <span>Favorite</span>
+            </button>
+            <button class="action-btn ${stats.isLiked ? "active" : ""}" 
+                onclick="toggleLike(${reelId})" ${!currentUser ? "disabled" : ""}>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+                </svg>
+                <span>${stats.likeCount}</span>
+            </button>
+            <button class="action-btn ${stats.isDisliked ? "active" : ""}" 
+                onclick="toggleDislike(${reelId})" ${!currentUser ? "disabled" : ""}>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+                <span>${stats.dislikeCount}</span>
+            </button>
+            <button class="action-btn" onclick="openCommentModal(${reelId})">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.05M12 10h.05M16 10h.05M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                </svg>
+                <span>${stats.commentCount}</span>
+            </button>
+            <button class="action-btn" onclick="shareReel(${reelId})">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                </svg>
+            </button>
+            <button class="action-btn ${stats.isSaved ? "active" : ""}" 
+                onclick="openPlaylistModal(${reelId})" ${!currentUser ? "disabled" : ""}>
+                <svg class="w-4 h-4" fill="${stats.isSaved ? "currentColor" : "none"}" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                </svg>
+            </button>
+            <button class="action-btn ${stats.isFollowed ? "active" : ""}" 
+                onclick="toggleFollow(${reels[reelId].tutorId})" ${!currentUser ? "disabled" : ""}>
+                <span>${stats.isFollowed ? "Following" : "Follow"}</span>
+            </button>
+        </div>
+    `;
+}
+
+
+// Improved handleNavLinkClick function for coming soon features
+window.handleNavLinkClick = function(e, link) {
+    // Define coming soon features
+    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+    
+    // Check if it's a coming soon feature
+    if (comingSoonFeatures.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        openComingSoonModal(link);
+        return false;
+    }
+    
+    // Existing protected pages logic
+    if (APP_STATE.isLoggedIn) return true;
+    
+    const protectedPages = ['find-tutors', 'reels'];
+    if (protectedPages.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
+        openModal("login-modal");
+        return false;
+    }
+    
+    return true;
+};
+
+
+// ============================================
+// ENGAGEMENT ACTIONS
+// ============================================
 function toggleFavorite(reelId) {
     if (!favorites[reelId]) favorites[reelId] = { reelId, userIds: [] };
     const userId = currentUser.id;
@@ -506,10 +554,8 @@ function toggleFavorite(reelId) {
     
     logAction(`${isFavorite ? "Unfavorited" : "Favorited"} reel ${reelId}`);
     updateReels(currentFilter);
-    updateVideoModalIfOpen();
 }
 
-// Toggle Like
 function toggleLike(reelId) {
     if (!likes[reelId]) likes[reelId] = { reelId, userIds: [] };
     const userId = currentUser.id;
@@ -527,10 +573,8 @@ function toggleLike(reelId) {
     
     logAction(`${isLiked ? "Unliked" : "Liked"} reel ${reelId}`);
     updateReels(currentFilter);
-    updateVideoModalIfOpen();
 }
 
-// Toggle Dislike
 function toggleDislike(reelId) {
     if (!dislikes[reelId]) dislikes[reelId] = { reelId, userIds: [] };
     const userId = currentUser.id;
@@ -548,10 +592,8 @@ function toggleDislike(reelId) {
     
     logAction(`${isDisliked ? "Undisliked" : "Disliked"} reel ${reelId}`);
     updateReels(currentFilter);
-    updateVideoModalIfOpen();
 }
 
-// Toggle Follow
 function toggleFollow(tutorId) {
     if (!follows[tutorId]) follows[tutorId] = { tutorId, userIds: [] };
     const userId = currentUser.id;
@@ -565,292 +607,8 @@ function toggleFollow(tutorId) {
     
     logAction(`${isFollowed ? "Unfollowed" : "Followed"} tutor ${tutorId}`);
     updateReels(currentFilter);
-    updateVideoModalIfOpen();
 }
 
-// Open Notification Modal - FIXED
-function openNotificationModal() {
-    const notificationContent = document.getElementById("notification-content");
-    const notificationList = Object.values(notifications);
-    
-    if (notificationContent) {
-        if (notificationList.length === 0) {
-            notificationContent.innerHTML = `
-                <div class="empty-state">
-                    <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 00-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 01-6 0v-1m6 0H9"></path>
-                    </svg>
-                    <p class="text-center opacity-70">No new notifications</p>
-                </div>
-            `;
-        } else {
-            notificationContent.innerHTML = notificationList.map(n => `
-                <div class="notification-item">
-                    <p>${n.message}</p>
-                    <p class="text-xs opacity-60 mt-1">${n.date}</p>
-                </div>
-            `).join("");
-        }
-    }
-    
-    const modal = document.getElementById("notification-modal");
-    if (modal) {
-        modal.classList.remove("hidden");
-    }
-}
-
-// Close Notification Modal - FIXED
-function closeNotificationModal() {
-    const modal = document.getElementById("notification-modal");
-    if (modal) {
-        modal.classList.add("hidden");
-    }
-}
-
-
-
-
-// Update Video Modal
-function updateVideoModal(reelId) {
-    const reel = reels[reelId];
-    if (!reel) return;
-    
-    const tutor = tutors[reel.tutorId];
-    const likeCount = likes[reelId]?.userIds?.length || 0;
-    const dislikeCount = dislikes[reelId]?.userIds?.length || 0;
-    const commentCount = comments[reelId]?.comments?.length || 0;
-    const isLiked = likes[reelId]?.userIds?.includes(currentUser?.id);
-    const isDisliked = dislikes[reelId]?.userIds?.includes(currentUser?.id);
-    const isFavorite = favorites[reelId]?.userIds?.includes(currentUser?.id);
-    const isSaved = savedVideos[reelId]?.userIds?.includes(currentUser?.id);
-    const isFollowed = follows[reel.tutorId]?.userIds?.includes(currentUser?.id);
-    
-    // Update video source
-    const modalVideo = document.getElementById("modal-video");
-    if (modalVideo) {
-        modalVideo.src = reel.videoUrl;
-        modalVideo.load();
-        modalVideo.play().catch(e => console.log("Autoplay prevented:", e));
-    }
-    
-    // Update sidebar content
-    const sidebarContent = document.getElementById("video-sidebar-content");
-    if (sidebarContent) {
-        sidebarContent.innerHTML = `
-            <div class="mb-4">
-                <h2 class="text-2xl font-bold mb-2">${reel.title} ${reel.videoNumber}</h2>
-                <div class="flex items-center justify-between mb-3">
-                    <div>
-                        <a href="view-tutor.html?tutorId=${tutor.id}" class="text-sm hover:text-[var(--nav-link-hover)] transition-colors">
-                            ${tutor.name}
-                        </a>
-                        <span class="text-sm opacity-70"> • ${tutor.subject}</span>
-                    </div>
-                    <button class="follow-icon-btn ${isFollowed ? "following" : ""}" 
-                        onclick="toggleFollow(${reel.tutorId})" ${!currentUser ? "disabled" : ""}>
-                        <svg class="w-5 h-5" fill="${isFollowed ? "currentColor" : "none"}" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9m-3 3a3 3 0 01-3-3V4a3 3 0 116 0v5a3 3 0 01-3 3zm-3 10v-8a3 3 0 00-3-3H8a3 3 0 00-3 3v8m11 0H5"></path>
-                        </svg>
-                    </button>
-                </div>
-                <p class="text-sm opacity-60 mb-3">${reel.date}</p>
-                <p class="mb-4">${reel.description}</p>
-            </div>
-            
-            <div class="video-engagement-bar">
-                <button class="engagement-btn like-btn ${isLiked ? "active" : ""}" 
-                    onclick="toggleLike(${reelId})" ${!currentUser ? "disabled" : ""}>
-                    <svg class="engagement-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
-                    </svg>
-                    <span class="engagement-count">${likeCount}</span>
-                </button>
-                <button class="engagement-btn dislike-btn ${isDisliked ? "active" : ""}" 
-                    onclick="toggleDislike(${reelId})" ${!currentUser ? "disabled" : ""}>
-                    <svg class="engagement-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
-                    <span class="engagement-count">${dislikeCount}</span>
-                </button>
-                <button class="engagement-btn favorite-btn ${isFavorite ? "active" : ""}" 
-                    onclick="toggleFavorite(${reelId})" ${!currentUser ? "disabled" : ""}>
-                    <svg class="engagement-icon" fill="${isFavorite ? "currentColor" : "none"}" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
-                    </svg>
-                    <span class="engagement-count">Fav</span>
-                </button>
-                <button class="engagement-btn" onclick="openCommentModal(${reelId})">
-                    <svg class="engagement-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.05M12 10h.05M16 10h.05M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
-                    </svg>
-                    <span class="engagement-count">${commentCount}</span>
-                </button>
-                <button class="engagement-btn" onclick="shareReel(${reelId})">
-                    <svg class="engagement-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
-                    </svg>
-                    <span class="engagement-count">Share</span>
-                </button>
-                <button class="engagement-btn ${isSaved ? "active" : ""}" 
-                    onclick="openPlaylistModal(${reelId})" ${!currentUser ? "disabled" : ""}>
-                    <svg class="engagement-icon" fill="${isSaved ? "currentColor" : "none"}" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                    </svg>
-                    <span class="engagement-count">Save</span>
-                </button>
-            </div>
-            
-            <div class="comment-section">
-                <h3 class="font-semibold mb-3">Comments</h3>
-                <div class="comment-list">
-                    ${getCommentsHTML(reelId)}
-                </div>
-                <button onclick="openCommentModal(${reelId})" class="text-sm text-[var(--button-bg)] hover:underline mt-2">
-                    View all comments
-                </button>
-            </div>
-        `;
-    }
-    
-    updateVideoNavigation();
-}
-
-// Get Comments HTML
-function getCommentsHTML(reelId) {
-    const reelComments = comments[reelId]?.comments || [];
-    if (reelComments.length === 0) {
-        return '<p class="text-sm opacity-60">No comments yet. Be the first!</p>';
-    }
-    
-    return reelComments.slice(0, 3).map(comment => `
-        <div class="comment-item">
-            <p class="text-sm">${comment.text}</p>
-            <p class="text-xs opacity-60 mt-1">User ${comment.userId} • ${comment.date}</p>
-        </div>
-    `).join('');
-}
-
-// Update Video Modal If Open - FIXED
-function updateVideoModalIfOpen() {
-    const videoModal = document.getElementById("video-modal");
-    if (videoModal && !videoModal.classList.contains("hidden")) {
-        updateVideoModal(filteredReelIds[currentVideoIndex]);
-    }
-}
-
-// Close Video Modal - FIXED
-function closeVideoModal() {
-    const modal = document.getElementById("video-modal");
-    if (modal) {
-        modal.classList.add("hidden");
-        document.body.style.overflow = "";
-    }
-    
-    const modalVideo = document.getElementById("modal-video");
-    if (modalVideo) {
-        modalVideo.pause();
-    }
-}
-// Update Video Navigation
-function updateVideoNavigation() {
-    const prevBtn = document.getElementById("prev-video-btn");
-    const nextBtn = document.getElementById("next-video-btn");
-    if (prevBtn) prevBtn.disabled = currentVideoIndex === 0;
-    if (nextBtn) nextBtn.disabled = currentVideoIndex === filteredReelIds.length - 1;
-}
-
-// Navigate Video
-function navigateVideo(direction) {
-    if (direction === "prev" && currentVideoIndex > 0) {
-        currentVideoIndex--;
-    } else if (direction === "next" && currentVideoIndex < filteredReelIds.length - 1) {
-        currentVideoIndex++;
-    }
-    
-    const newReelId = filteredReelIds[currentVideoIndex];
-    updateVideoModal(newReelId);
-    
-    // Track history
-    if (!history[newReelId]) history[newReelId] = { reelId: newReelId, userIds: [] };
-    if (!history[newReelId].userIds.includes(currentUser?.id)) {
-        history[newReelId].userIds.push(currentUser?.id);
-        logAction(`Viewed reel ${newReelId}`);
-        updateFilterCounts();
-    }
-}
-
-// Open Comment Modal - FIXED
-function openCommentModal(reelId) {
-    selectedReelId = reelId;
-    updateCommentList();
-    const modal = document.getElementById("comment-modal");
-    if (modal) {
-        modal.classList.remove("hidden");
-    }
-}
-
-// Close Comment Modal - FIXED
-function closeCommentModal() {
-    const modal = document.getElementById("comment-modal");
-    if (modal) {
-        modal.classList.add("hidden");
-    }
-    selectedReelId = null;
-}
-
-// Update Comment List
-function updateCommentList() {
-    const commentList = document.getElementById("comment-list");
-    if (!commentList) return;
-    
-    const reelComments = comments[selectedReelId]?.comments || [];
-    
-    if (reelComments.length === 0) {
-        commentList.innerHTML = `
-            <div class="empty-state">
-                <p class="text-center opacity-60">No comments yet. Be the first to comment!</p>
-            </div>
-        `;
-        return;
-    }
-    
-    commentList.innerHTML = reelComments.map(comment => `
-        <div class="comment-item">
-            <p>${comment.text}</p>
-            <p class="text-xs opacity-60 mt-1">User ${comment.userId} • ${comment.date}</p>
-        </div>
-    `).join('');
-}
-
-// Add Comment
-function addComment() {
-    const textInput = document.getElementById("new-comment");
-    if (!textInput) return;
-    
-    const text = textInput.value.trim();
-    if (!text) {
-        alert("Please enter a comment");
-        return;
-    }
-    
-    if (!comments[selectedReelId]) {
-        comments[selectedReelId] = { reelId: selectedReelId, comments: [] };
-    }
-    
-    comments[selectedReelId].comments.push({
-        userId: currentUser.id,
-        text: text,
-        date: new Date().toISOString().split("T")[0],
-    });
-    
-    logAction(`Commented on reel ${selectedReelId}: ${text}`);
-    updateCommentList();
-    textInput.value = "";
-    updateReels(currentFilter);
-    updateVideoModalIfOpen();
-}
-
-// Share Reel
 function shareReel(reelId) {
     const reel = reels[reelId];
     const url = `https://astegni.netlify.app/reel/${reelId}`;
@@ -878,22 +636,78 @@ function copyToClipboard(text) {
     });
 }
 
-// Show Toast Notification
-function showToast(message, type = "success") {
-    const toast = document.createElement("div");
-    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up ${
-        type === "success" ? "bg-green-500" : "bg-red-500"
-    } text-white`;
-    toast.textContent = message;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.style.animation = "slideDown 0.3s ease-out";
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+// ============================================
+// COMMENT MANAGEMENT
+// ============================================
+function openCommentModal(reelId) {
+    selectedReelId = reelId;
+    updateCommentList();
+    const modal = document.getElementById("comment-modal");
+    if (modal) {
+        modal.classList.remove("hidden");
+    }
 }
 
-// Open Playlist Modal - FIXED
+function closeCommentModal() {
+    const modal = document.getElementById("comment-modal");
+    if (modal) {
+        modal.classList.add("hidden");
+    }
+    selectedReelId = null;
+}
+
+function updateCommentList() {
+    const commentList = document.getElementById("comment-list");
+    if (!commentList) return;
+    
+    const reelComments = comments[selectedReelId]?.comments || [];
+    
+    if (reelComments.length === 0) {
+        commentList.innerHTML = `
+            <div class="empty-state">
+                <p class="text-center opacity-60">No comments yet. Be the first to comment!</p>
+            </div>
+        `;
+        return;
+    }
+    
+    commentList.innerHTML = reelComments.map(comment => `
+        <div class="comment-item">
+            <p>${comment.text}</p>
+            <p class="text-xs opacity-60 mt-1">User ${comment.userId} • ${comment.date}</p>
+        </div>
+    `).join('');
+}
+
+function addComment() {
+    const textInput = document.getElementById("new-comment");
+    if (!textInput) return;
+    
+    const text = textInput.value.trim();
+    if (!text) {
+        alert("Please enter a comment");
+        return;
+    }
+    
+    if (!comments[selectedReelId]) {
+        comments[selectedReelId] = { reelId: selectedReelId, comments: [] };
+    }
+    
+    comments[selectedReelId].comments.push({
+        userId: currentUser.id,
+        text: text,
+        date: new Date().toISOString().split("T")[0],
+    });
+    
+    logAction(`Commented on reel ${selectedReelId}: ${text}`);
+    updateCommentList();
+    textInput.value = "";
+    updateReels(currentFilter);
+}
+
+// ============================================
+// PLAYLIST MANAGEMENT
+// ============================================
 function openPlaylistModal(reelId) {
     selectedReelId = reelId;
     updatePlaylistList();
@@ -903,7 +717,6 @@ function openPlaylistModal(reelId) {
     }
 }
 
-// Close Playlist Modal - FIXED
 function closePlaylistModal() {
     const modal = document.getElementById("playlist-modal");
     if (modal) {
@@ -912,8 +725,6 @@ function closePlaylistModal() {
     selectedReelId = null;
 }
 
-
-// Create Playlist
 function createPlaylist() {
     const nameInput = document.getElementById("new-playlist-name");
     if (!nameInput) return;
@@ -945,10 +756,8 @@ function createPlaylist() {
     updatePlaylistList();
     nameInput.value = "";
     updateReels(currentFilter);
-    updateVideoModalIfOpen();
 }
 
-// Update Playlist List
 function updatePlaylistList() {
     const playlistList = document.getElementById("existing-playlists");
     if (!playlistList) return;
@@ -975,7 +784,6 @@ function updatePlaylistList() {
     }).join('');
 }
 
-// Toggle Playlist
 function togglePlaylist(playlistId, reelId) {
     const playlist = playlists[playlistId];
     if (!playlist) return;
@@ -1007,10 +815,11 @@ function togglePlaylist(playlistId, reelId) {
     
     logAction(`${isInPlaylist ? "Removed" : "Added"} reel ${reelId} ${isInPlaylist ? "from" : "to"} playlist ${playlist.name}`);
     updateReels(currentFilter);
-    updateVideoModalIfOpen();
 }
 
-// Notification Functions
+// ============================================
+// NOTIFICATION MANAGEMENT
+// ============================================
 function checkNotifications() {
     const hasNotifications = Object.values(notifications).length > 0;
     const notificationDot = document.getElementById("notification-dot");
@@ -1019,7 +828,7 @@ function checkNotifications() {
     if (notificationDot) notificationDot.classList.toggle("hidden", !hasNotifications);
     if (mobileNotificationDot) mobileNotificationDot.classList.toggle("hidden", !hasNotifications);
 }
-// Open Notification Modal - FIXED
+
 function openNotificationModal() {
     const notificationContent = document.getElementById("notification-content");
     const notificationList = Object.values(notifications);
@@ -1050,7 +859,6 @@ function openNotificationModal() {
     }
 }
 
-// Close Notification Modal - FIXED
 function closeNotificationModal() {
     const modal = document.getElementById("notification-modal");
     if (modal) {
@@ -1058,19 +866,23 @@ function closeNotificationModal() {
     }
 }
 
-
-// Footer Functions
-function openLoginRegisterModal() {
-    showToast("Login/Register feature coming soon!");
-    logAction("Opened login/register modal");
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+function showToast(message, type = "success") {
+    const toast = document.createElement("div");
+    toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up ${
+        type === "success" ? "bg-green-500" : "bg-red-500"
+    } text-white`;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = "slideDown 0.3s ease-out";
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
 
-function openAdvertiseModal() {
-    showToast("Advertise feature coming soon!");
-    logAction("Opened advertise modal");
-}
-
-// Logging
 function logAction(action) {
     const logId = Object.keys(logs).length + 1;
     logs[logId] = {
@@ -1083,5 +895,47 @@ function logAction(action) {
     console.log(`[LOG] ${action}`);
 }
 
-// Initialize on DOM Load
+// ============================================
+// FOOTER FUNCTIONS (Placeholder)
+// ============================================
+function openLoginRegisterModal() {
+    showToast("Login/Register feature coming soon!");
+    logAction("Opened login/register modal");
+}
+
+function openAdvertiseModal() {
+    showToast("Advertise feature coming soon!");
+    logAction("Opened advertise modal");
+}
+
+// ============================================
+// INITIALIZE ON DOM LOAD
+// ============================================
 document.addEventListener("DOMContentLoaded", init);
+
+// ============================================
+// EXPORT GLOBAL FUNCTIONS FOR INTEGRATION
+// ============================================
+window.toggleTheme = toggleTheme;
+window.filterReels = filterReels;
+window.toggleFavorite = toggleFavorite;
+window.toggleLike = toggleLike;
+window.toggleDislike = toggleDislike;
+window.toggleFollow = toggleFollow;
+window.shareReel = shareReel;
+window.openCommentModal = openCommentModal;
+window.closeCommentModal = closeCommentModal;
+window.addComment = addComment;
+window.openPlaylistModal = openPlaylistModal;
+window.closePlaylistModal = closePlaylistModal;
+window.createPlaylist = createPlaylist;
+window.togglePlaylist = togglePlaylist;
+window.openNotificationModal = openNotificationModal;
+window.closeNotificationModal = closeNotificationModal;
+window.updateReels = updateReels;
+window.updateFilterCounts = updateFilterCounts;
+
+// These will be overridden by the video-player-integration.js
+window.openVideoModal = function(reelId) {
+    console.log('openVideoModal will be handled by video player integration');
+};

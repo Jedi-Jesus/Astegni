@@ -857,6 +857,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+
     // Filter event listeners
     genderCheckboxes.forEach(cb => cb.addEventListener('change', applyFilters));
     nearMeCheckbox?.addEventListener('change', applyFilters);

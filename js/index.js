@@ -743,61 +743,6 @@ function calculatePasswordStrength(password) {
     return strength;
 }
 
-// ============================================
-//   COMING SOON MODAL
-// ============================================
-
-function openComingSoonModal(feature) {
-    const modal = document.getElementById('coming-soon-modal');
-    const message = document.getElementById('coming-soon-message');
-    
-    if (!modal || !message) return;
-    
-    // Customize message based on feature
-    const messages = {
-        'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
-        'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
-        'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
-    };
-    
-    message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
-    
-    openModal('coming-soon-modal');
-}
-
-function handleComingSoonNotification(e) {
-    e.preventDefault();
-    const email = document.getElementById('notify-email')?.value;
-    
-    if (!email) {
-        showToast('Please enter your email address', 'warning');
-        return;
-    }
-    
-    // Show loading state
-    const submitBtn = e.target.querySelector('.submit-btn');
-    const originalText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Subscribing...';
-    
-    // Simulate API call
-    setTimeout(() => {
-        // Reset button
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
-        
-        // Show success message
-        showToast('You will be notified when this feature launches!', 'success');
-        
-        // Clear form
-        document.getElementById('notify-email').value = '';
-        
-        // Close modal
-        setTimeout(() => {
-            closeModal('coming-soon-modal');
-        }, 2000);
-    }, 1500);
-}
 
 // Replace your existing handleRegister with this enhanced version
 async function handleRegister(e) {
@@ -2368,41 +2313,6 @@ window.handleLogin = handleLogin;
 window.handleRegister = handleRegister;
 window.logout = logout;
 window.showToast = showToast;
-// Improved handleNavLinkClick function for coming soon features
-window.handleNavLinkClick = function(e, link) {
-    // Define coming soon features
-    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
-    
-    // Check if it's a coming soon feature
-    if (comingSoonFeatures.includes(link)) {
-        e.preventDefault();
-        e.stopPropagation();
-        openComingSoonModal(link);
-        return false;
-    }
-    
-    // Existing protected pages logic
-    if (APP_STATE.isLoggedIn) return true;
-    
-    const protectedPages = ['find-tutors', 'reels'];
-    if (protectedPages.includes(link)) {
-        e.preventDefault();
-        e.stopPropagation();
-        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
-        openModal("login-modal");
-        return false;
-    }
-    
-    return true;
-};
-window.handleCourseClick = handleCourseClick;
-window.handleViewMoreCourses = function() {
-    if (!APP_STATE.isLoggedIn) {
-        openModal("login-modal");
-    } else {
-        window.location.href = "/courses";
-    }
-};
 window.toggleProfileDropdown = toggleProfileDropdown;
 window.openProfileDropdown = openProfileDropdown;
 window.closeProfileDropdown = closeProfileDropdown;
@@ -2413,6 +2323,16 @@ window.fetchCurrentUserData = fetchCurrentUserData;
 window.setupRoleSwitcher = setupRoleSwitcher;
 window.updateUIForLoggedInUser = updateUIForLoggedInUser;
 window.updateProfilePictures = updateProfilePictures;
+
+
+window.handleCourseClick = handleCourseClick;
+window.handleViewMoreCourses = function() {
+    if (!APP_STATE.isLoggedIn) {
+        openModal("login-modal");
+    } else {
+        window.location.href = "/courses";
+    }
+};
 
 // Additional video player functions
 window.likeVideo = function() {

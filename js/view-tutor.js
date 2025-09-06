@@ -183,6 +183,36 @@
     });
 
     // Modal Functions
+
+        // Improved handleNavLinkClick function for coming soon features
+window.handleNavLinkClick = function(e, link) {
+    // Define coming soon features
+    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+    
+    // Check if it's a coming soon feature
+    if (comingSoonFeatures.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        openComingSoonModal(link);
+        return false;
+    }
+    
+    // Existing protected pages logic
+    if (APP_STATE.isLoggedIn) return true;
+    
+    const protectedPages = ['find-tutors', 'reels'];
+    if (protectedPages.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
+        openModal("login-modal");
+        return false;
+    }
+    
+    return true;
+};
+
+    
     function openToolsModal() {
       document.getElementById('tools-modal').classList.remove('hidden');
     }

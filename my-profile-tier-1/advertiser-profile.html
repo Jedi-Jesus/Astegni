@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="../css/institute.css">
     <link rel="stylesheet" href="../css/main.css">
     <link rel="stylesheet" href="../css/profile-system.css"> <!-- Profile system CSS -->
+    <link rel="stylesheet" href="../css/auth-modal.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="../js/xlsx.full.min.js"></script>
     <script defer src="../js/chart.min.js"></script>
@@ -231,6 +232,8 @@
             }
         }
     </style>
+<link rel="stylesheet" href="../css/coming-soon-modal.css">
+    
 </head>
 
 <body>
@@ -249,25 +252,22 @@
 
             </div>
             <div class="nav-menu">
-                <a href="#" class="nav-link">
-                    <span class="nav-icon">📰</span>
-                    <span>News</span>
+                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
+                    <span class="nav-icon">📰</span> News
                 </a>
-                <a href="../branch/find-tutors.html" class="nav-link">
-                    <span class="nav-icon">👨‍🏫</span>
-                    <span>Find Tutors</span>
+                <a class="nav-link px-2 py-1 rounded" href="../branch/find-tutors.html"
+                    onclick="handleNavLinkClick(event, 'find-tutors')">
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
                 </a>
-                <a href="../branch/reels.html" class="nav-link">
-                    <span class="nav-icon">🎬</span>
-                    <span>Reels</span>
+                <a class="nav-link px-2 py-1 rounded" href="../branch/reels.html"
+                    onclick="handleNavLinkClick(event, 'reels')">
+                    <span class="nav-icon">🎬</span> Reels
                 </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-icon">📚</span>
-                    <span>Bookstore</span>
+                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">📚</span> Bookstore
                 </a>
-                <a href="#" class="nav-link">
-                    <span class="nav-icon">💼</span>
-                    <span>Find Jobs</span>
+                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <span class="nav-icon">💼</span> Find a Job
                 </a>
                                     <!-- Profile container in navigation -->
 <div id="profile-container" class="profile-dropdown-container hidden">
@@ -1644,6 +1644,62 @@
         </div>
     </div>
 
+<!-- Enhanced Auth Modal -->
+    <div id="authRequiredModal" class="auth-modal-overlay">
+        <div class="auth-modal-container">
+            <div class="auth-modal-content">
+                <div class="auth-modal-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
+                        </path>
+                    </svg>
+                </div>
+                <h2 class="auth-modal-title">Authentication Required</h2>
+                <p class="auth-modal-message" id="authModalMessage">
+                    Please login to access this page. You'll be redirected to the login page to continue.
+                </p>
+                <div class="auth-modal-buttons">
+                    <button class="auth-modal-btn primary" onclick="redirectToLogin()">
+                        Login Now
+                    </button>
+                    <button class="auth-modal-btn secondary" onclick="goBack()">
+                        Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Coming Soon Modal -->
+<div id="coming-soon-modal" class="modal">
+    <div class="modal-content enhanced coming-soon-content">
+        <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                </path>
+            </svg>
+        </button>
+        
+        <div class="coming-soon-header">
+            <div class="coming-soon-icon">
+                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+            </div>
+            <h3 class="modal-title">Coming Soon!</h3>
+            <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay tuned!</p>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
     <!-- FAB Menu -->
     <div class="fab-container">
         <button class="fab" id="main-fab">
@@ -1672,17 +1728,30 @@
         </div>
     </div>
 
-    <!-- Enhanced Footer -->
-    <footer class="footer-section">
-        <div class="footer-wave">
+<!-- Enhanced Footer -->
+    <footer class="footer-section" id="footer" role="contentinfo">
+        <div class="footer-wave" aria-hidden="true">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path
+                <defs>
+                    <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:var(--footer-accent);stop-opacity:0" />
+                        <stop offset="25%" style="stop-color:var(--footer-accent);stop-opacity:1" />
+                        <stop offset="75%" style="stop-color:var(--footer-hover);stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:var(--footer-hover);stop-opacity:0" />
+                    </linearGradient>
+                </defs>
+                <!-- Main wave fill with explicit class -->
+                <path class="wave-fill"
                     d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
+                <!-- Animated line following the wave curve -->
+                <path class="wave-line"
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32">
                 </path>
             </svg>
         </div>
 
-        <div class="container mx-auto px-4">
+        <div class="container">
             <div class="footer-content">
                 <div class="footer-section-item">
                     <h3 class="footer-title">About Astegni</h3>
@@ -1731,35 +1800,37 @@
                 <div class="footer-section-item">
                     <h3 class="footer-title">Connect With Us</h3>
                     <div class="social-links">
-                        <a href="#" aria-label="Facebook" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <a href="#" aria-label="Facebook" class="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
                             </svg>
                         </a>
-                        <a href="#" aria-label="Twitter" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <a href="#" aria-label="Twitter" class="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
                                 </path>
                             </svg>
                         </a>
-                        <a href="#" aria-label="LinkedIn" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <a href="#" aria-label="LinkedIn" class="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
                                 </path>
                                 <circle cx="4" cy="4" r="2"></circle>
                             </svg>
                         </a>
-                        <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <a href="#" aria-label="Instagram" class="social-link" target="_blank"
+                            rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                                 <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
                                 <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
                             </svg>
                         </a>
-                        <a href="#" aria-label="YouTube" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <a href="https://www.youtube.com/@Astegni" aria-label="YouTube" class="social-link"
+                            target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                 <path
                                     d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
                                 </path>
@@ -1769,29 +1840,165 @@
 
                     <div class="newsletter-signup">
                         <h4>Subscribe to Newsletter</h4>
-                        <form class="newsletter-form">
-                            <input type="email" placeholder="Your email address" class="newsletter-input">
-                            <button type="submit" class="newsletter-btn">Subscribe</button>
+                        <form class="newsletter-form" id="newsletterForm">
+                            <input type="email" placeholder="Your email address" class="newsletter-input"
+                                id="emailInput" aria-label="Email address" required>
+                            <button type="submit" class="newsletter-btn" id="submitBtn">Subscribe</button>
+                            <div class="newsletter-feedback" id="feedback"></div>
                         </form>
                     </div>
                 </div>
             </div>
 
-            <div class="footer-bottom">
-                <div class="footer-bottom-content">
-                    <p>&copy; 2025 Astegni. All rights reserved.</p>
-                    <div class="footer-badges">
-                        <span class="badge">🔒 SSL Secured</span>
-                        <span class="badge">✔ Verified Platform</span>
-                        <span class="badge">🏆 Award Winner 2024</span>
+            <div class="footer-bottom-content">
+                <div class="footer-badges">
+                    <div class="company-brand">
+                        <span>From the deep of</span>
+                        <span class="trademark-symbol">™</span>
+                        <span class="company-text">Eshtaol</span>
                     </div>
+                    <a href="tel:+251935244245" class="phone-link">
+                        <span class="phone-icon">📞</span>
+                        <span>+251-935-24-42-45</span>
+                        <span>+251-997-40-98-66</span>
+                    </a>
+                </div>
+                <div class="footer-badges">
+                    <p class="copyright">© </p>
+                    <p>2025 Astegni. All rights reserved.</p>
+                </div>
+                <div class="footer-badges">
+                    <span class="badge glow" tabindex="0">🔒 SSL Secured</span>
+                    <span class="badge" tabindex="0">✓ Verified Platform</span>
+                    <span class="badge" tabindex="0">🏆 Future Awards Winner</span>
                 </div>
             </div>
         </div>
     </footer>
 
     <!-- Scripts -->
-    <!-- Scripts -->
+     <script>
+        // Check authentication on page load
+        (async function () {
+            const auth = window.AuthManager;
+
+            // Check if user is authenticated
+            if (!auth.isAuthenticated()) {
+                const restored = await auth.restoreSession();
+                if (!restored) {
+                    // Show enhanced modal instead of alert
+                    showAuthModal();
+                    return;
+                }
+            }
+
+            // Get user data
+            const user = auth.getUser();
+            const userRole = auth.getUserRole();
+
+            // Reels is accessible to all authenticated users
+            // No role-specific check needed
+            console.log('User authenticated:', user.email);
+            console.log('User role:', userRole);
+
+            // Update UI with user info
+            if (user) {
+                // Update profile elements if they exist
+                const profilePic = document.getElementById('profile-pic');
+                const profileName = document.getElementById('profile-name');
+                const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
+                const dropdownUserName = document.getElementById('dropdown-user-name');
+                const dropdownUserEmail = document.getElementById('dropdown-user-email');
+                const dropdownUserRole = document.getElementById('dropdown-user-role');
+
+                if (profilePic && user.profile_picture) {
+                    profilePic.src = user.profile_picture;
+                }
+                if (profileName) {
+                    profileName.textContent = user.first_name;
+                }
+                if (dropdownProfilePic && user.profile_picture) {
+                    dropdownProfilePic.src = user.profile_picture;
+                }
+                if (dropdownUserName) {
+                    dropdownUserName.textContent = user.name || `${user.first_name} ${user.last_name}`;
+                }
+                if (dropdownUserEmail) {
+                    dropdownUserEmail.textContent = user.email;
+                }
+                if (dropdownUserRole) {
+                    dropdownUserRole.textContent = userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : 'User';
+                }
+
+                // Show profile container
+                const profileContainer = document.getElementById('profile-container');
+                if (profileContainer) {
+                    profileContainer.classList.remove('hidden');
+                }
+            }
+
+            console.log('Access granted to Reels page');
+        })();
+
+        // Logout function
+        function logout() {
+            const auth = window.AuthManager;
+            auth.logout();
+        }
+
+        // Profile dropdown toggle
+        function toggleProfileDropdown() {
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+            if (dropdownMenu) {
+                dropdownMenu.classList.toggle('hidden');
+            }
+        }
+
+        // Show authentication modal
+        function showAuthModal() {
+            const modal = document.getElementById('authRequiredModal');
+            const message = document.getElementById('authModalMessage');
+
+            // Customize message based on page
+            const pageMessages = {
+                'reels': 'Login to access Reels and watch amazing educational videos.',
+                'find-tutors': 'Login to find the perfect tutors for your learning journey.',
+                'advertiser-profile': 'Login to access advertiser features and campaigns.',
+                'view-parent': 'Login to view parent profiles and engagement details.'
+            };
+
+            // Get current page type from URL or page identifier
+            const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
+
+            if (pageMessages[currentPage]) {
+                message.textContent = pageMessages[currentPage];
+            }
+
+            modal.classList.add('active');
+        }
+
+        // Redirect to login
+        function redirectToLogin() {
+            // Store the intended destination
+            localStorage.setItem('redirectAfterLogin', window.location.href);
+            window.location.href = '../index.html';
+        }
+
+        // Go back to previous page
+        function goBack() {
+            window.history.back();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const profileContainer = document.getElementById('profile-container');
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+
+            if (profileContainer && !profileContainer.contains(event.target) && dropdownMenu) {
+                dropdownMenu.classList.add('hidden');
+            }
+        });
+    </script>
     <script>
         // Modal Functions
         function openCoverUploadModal() {
@@ -2136,7 +2343,8 @@
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
-    <script src="../js/institute-profile-4.js"></script>
+    <script src="../js/institute-profile-4.js"></script>   
+<script src="../js/coming-soon-modal.js"></script>
 
 </body>
 

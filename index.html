@@ -20,6 +20,7 @@
     <!-- Styles -->
     <link href="css/main.css" rel="stylesheet" />
     <link href="css/index.css" rel="stylesheet" />
+    <link href="css/coming-soon-modal.css" rel="stylesheet" />
     <!-- <link href="css/enhancement.css" rel="stylesheet"/> -->
 
     <!-- Favicon -->
@@ -40,21 +41,120 @@
     <div class="scroll-progress" id="scroll-progress"></div>
 
     <!-- Enhanced Navigation -->
-   
-<!-- Enhanced Navigation with Better Responsiveness -->
-<nav class="navbar py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
-    <div class="container mx-auto px-4 flex justify-between items-center">
-        <a href="index.html" class="logo-container">
-            <div class="logo-text">
-                <span class="logo-main">Astegni</span>
-                <span class="logo-sub">Home</span>
-            </div>
-            <span class="logo-badge">Beta</span>
-        </a>
 
-        <!-- Desktop Navigation -->
-        <div class="hidden lg:flex items-center gap-4">
-            <div class="nav-items">
+    <!-- Enhanced Navigation with Better Responsiveness -->
+    <nav class="navbar py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Home</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden lg:flex items-center gap-4">
+                <div class="nav-items">
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
+                        <span class="nav-icon">📰</span> News
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="branch/find-tutors.html"
+                        onclick="handleNavLinkClick(event, 'find-tutors')">
+                        <span class="nav-icon">👨‍🏫</span> Find Tutors
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
+                        onclick="handleNavLinkClick(event, 'reels')">
+                        <span class="nav-icon">🎬</span> Reels
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
+                        <span class="nav-icon">📚</span> Bookstore
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                        <span class="nav-icon">💼</span> Find a Job
+                    </a>
+                </div>
+
+                <div class="nav-actions">
+                    <button id="login-btn" class="nav-btn primary" onclick="openModal('login-modal')">Login</button>
+                    <button id="register-btn" class="nav-btn secondary"
+                        onclick="openModal('register-modal')">Register</button>
+
+                    <!-- Profile container -->
+                    <div id="profile-container" class="profile-dropdown-container hidden">
+                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                            onclick="toggleProfileDropdown()">
+                            <img id="profile-pic" class="profile-pic" alt="Profile">
+                            <span id="profile-name" class="profile-name"></span>
+                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+
+                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                            <!-- User info header -->
+                            <div class="dropdown-header">
+                                <img id="dropdown-profile-pic" class="profile-pic" alt="Profile">
+                                <div class="dropdown-user-info">
+                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                </div>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Role switcher (shown only if user has multiple roles) -->
+                            <div id="role-switcher-section" class="role-switcher-section hidden">
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-item-header">Switch Role</div>
+                                <div id="role-options" class="role-options">
+                                    <!-- Role options will be dynamically added here -->
+                                </div>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <button class="dropdown-item logout-item" onclick="logout()">
+                                <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                    </path>
+                                </svg>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="notification-bell" class="icon-btn relative hidden"
+                        onclick="openModal('notification-modal')">
+                        <span class="notification-icon">🔔</span>
+                        <span id="notification-count" class="notification-badge pulse">3</span>
+                    </button>
+
+                    <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
+                        <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="lg:hidden focus:outline-none hamburger" id="menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu hidden" id="mobile-menu">
+            <div class="mobile-menu-content">
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
                     <span class="nav-icon">📰</span> News
                 </a>
@@ -67,125 +167,26 @@
                     <span class="nav-icon">🎬</span> Reels
                 </a>
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
-                    <span class="nav-icon">📚</span> Bookstore
+                    <span class="nav-icon">🛒</span> Store
                 </a>
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
                     <span class="nav-icon">💼</span> Find a Job
                 </a>
-            </div>
-
-            <div class="nav-actions">
-                <button id="login-btn" class="nav-btn primary" onclick="openModal('login-modal')">Login</button>
-                <button id="register-btn" class="nav-btn secondary"
+                <div class="mobile-menu-divider"></div>
+                <button id="mobile-login-btn" class="mobile-menu-item" onclick="openModal('login-modal')">Login</button>
+                <button id="mobile-register-btn" class="mobile-menu-item"
                     onclick="openModal('register-modal')">Register</button>
-
-                <!-- Profile container -->
-                <div id="profile-container" class="profile-dropdown-container hidden">
-                    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
-                        onclick="toggleProfileDropdown()">
-                        <img id="profile-pic" class="profile-pic" alt="Profile">
-                        <span id="profile-name" class="profile-name"></span>
-                        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd"
-                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                clip-rule="evenodd"></path>
-                        </svg>
-                    </button>
-
-                    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
-                        <!-- User info header -->
-                        <div class="dropdown-header">
-                            <img id="dropdown-profile-pic" class="profile-pic" alt="Profile">
-                            <div class="dropdown-user-info">
-                                <span id="dropdown-user-name" class="dropdown-user-name"></span>
-                                <span id="dropdown-user-email" class="dropdown-user-email"></span>
-                                <span id="dropdown-user-role" class="dropdown-user-role"></span>
-                            </div>
-                        </div>
-
-                        <div class="dropdown-divider"></div>
-
-                        <!-- Role switcher (shown only if user has multiple roles) -->
-                        <div id="role-switcher-section" class="role-switcher-section hidden">
-                            <div class="dropdown-divider"></div>
-                            <div class="dropdown-item-header">Switch Role</div>
-                            <div id="role-options" class="role-options">
-                                <!-- Role options will be dynamically added here -->
-                            </div>
-                        </div>
-
-                        <div class="dropdown-divider"></div>
-
-                        <button class="dropdown-item logout-item" onclick="logout()">
-                            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                </path>
-                            </svg>
-                            Logout
-                        </button>
-                    </div>
-                </div>
-
-                <button id="notification-bell" class="icon-btn relative hidden"
-                    onclick="openModal('notification-modal')">
-                    <span class="notification-icon">🔔</span>
-                    <span id="notification-count" class="notification-badge pulse">3</span>
-                </button>
-
-                <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
-                    <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button id="mobile-theme-toggle-btn" class="mobile-menu-item">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
                         </path>
                     </svg>
+                    Toggle Theme
                 </button>
             </div>
         </div>
-
-        <!-- Mobile Menu Button -->
-        <button class="lg:hidden focus:outline-none hamburger" id="menu-btn">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </div>
-
-    <!-- Mobile Menu -->
-    <div class="mobile-menu hidden" id="mobile-menu">
-        <div class="mobile-menu-content">
-            <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
-                <span class="nav-icon">📰</span> News
-            </a>
-            <a class="nav-link px-2 py-1 rounded" href="branch/find-tutors.html"
-                onclick="handleNavLinkClick(event, 'find-tutors')">
-                <span class="nav-icon">👨‍🏫</span> Find Tutors
-            </a>
-            <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
-                onclick="handleNavLinkClick(event, 'reels')">
-                <span class="nav-icon">🎬</span> Reels
-            </a>
-            <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
-                <span class="nav-icon">🛒</span> Store
-            </a>
-            <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
-                <span class="nav-icon">💼</span> Find a Job
-            </a>
-            <div class="mobile-menu-divider"></div>
-            <button id="mobile-login-btn" class="mobile-menu-item" onclick="openModal('login-modal')">Login</button>
-            <button id="mobile-register-btn" class="mobile-menu-item"
-                onclick="openModal('register-modal')">Register</button>
-            <button id="mobile-theme-toggle-btn" class="mobile-menu-item">
-                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                    </path>
-                </svg>
-                Toggle Theme
-            </button>
-        </div>
-    </div>
-</nav>
+    </nav>
 
     <!-- Enhanced Hero Section -->
     <section class="hero-section py-16 hero-slideshow text-center">
@@ -527,12 +528,6 @@
                     </div>
                 </div>
             </div>
-
-            <div class="testimonial-dots">
-                <span class="dot active" onclick="showTestimonial(0)"></span>
-                <span class="dot" onclick="showTestimonial(1)"></span>
-                <span class="dot" onclick="showTestimonial(2)"></span>
-            </div>
         </div>
     </section>
 
@@ -578,80 +573,80 @@
 
     <!-- Enhanced Login Modal -->
     <!-- Enhanced Login Modal with Show Password -->
-<div id="login-modal" class="modal">
-    <div class="modal-content enhanced">
-        <button class="modal-close-enhanced" onclick="closeModal('login-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                </path>
-            </svg>
-        </button>
-        <div class="modal-header">
-            <h3 class="modal-title">Welcome Back</h3>
-            <p class="modal-subtitle">Login to continue your learning journey</p>
-        </div>
-
-        <div class="social-login-section">
-            <button class="social-btn google" onclick="socialLogin('google')">
-                <svg class="w-5 h-5" viewBox="0 0 24 24">
-                    <path fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                    <path fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                    <path fill="#FBBC05"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                    <path fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+    <div id="login-modal" class="modal">
+        <div class="modal-content enhanced">
+            <button class="modal-close-enhanced" onclick="closeModal('login-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
                 </svg>
-                Continue with Google
             </button>
-            <button class="social-btn facebook" onclick="socialLogin('facebook')">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path
-                        d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
-                </svg>
-                Continue with Facebook
-            </button>
-        </div>
-
-        <div class="divider">
-            <span>OR</span>
-        </div>
-
-        <form id="login-form" class="auth-form">
-            <div class="form-group">
-                <label>Email or Phone</label>
-                <input type="text" id="login-email" placeholder="Enter your email or phone" required>
+            <div class="modal-header">
+                <h3 class="modal-title">Welcome Back</h3>
+                <p class="modal-subtitle">Login to continue your learning journey</p>
             </div>
-            <div class="form-group">
-                <label>Password</label>
-                <div class="password-input-wrapper">
-                    <input type="password" id="login-password" placeholder="Enter your password" required>
-                    <button type="button" class="password-toggle" onclick="togglePassword('login-password')">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                            </path>
-                        </svg>
-                    </button>
+
+            <div class="social-login-section">
+                <button class="social-btn google" onclick="socialLogin('google')">
+                    <svg class="w-5 h-5" viewBox="0 0 24 24">
+                        <path fill="#4285F4"
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                        <path fill="#34A853"
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                        <path fill="#FBBC05"
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
+                        <path fill="#EA4335"
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
+                    </svg>
+                    Continue with Google
+                </button>
+                <button class="social-btn facebook" onclick="socialLogin('facebook')">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path
+                            d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                    </svg>
+                    Continue with Facebook
+                </button>
+            </div>
+
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+            <form id="login-form" class="auth-form">
+                <div class="form-group">
+                    <label>Email or Phone</label>
+                    <input type="text" id="login-email" placeholder="Enter your email or phone" required>
                 </div>
-            </div>
-            <div class="form-options">
-                <label class="checkbox-label">
-                    <input type="checkbox" id="remember-me"> Remember me for 30 days
-                </label>
-                <a href="#" class="forgot-link" onclick="openForgotPasswordModal(event)">Forgot Password?</a>
-            </div>
-            <button type="submit" class="submit-btn">Login</button>
-        </form>
-        <p class="auth-footer">
-            Don't have an account?
-            <a href="#" onclick="switchModal('login-modal', 'register-modal')">Register now</a>
-        </p>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('login-password')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="remember-me"> Remember me for 30 days
+                    </label>
+                    <a href="#" class="forgot-link" onclick="openForgotPasswordModal(event)">Forgot Password?</a>
+                </div>
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            <p class="auth-footer">
+                Don't have an account?
+                <a href="#" onclick="switchModal('login-modal', 'register-modal')">Register now</a>
+            </p>
+        </div>
     </div>
-</div>
 
     <!-- Avatar Selection Modal -->
     <div id="avatar-modal" class="modal">
@@ -673,202 +668,204 @@
     </div>
 
     <!-- Enhanced Register Modal with Confirm Password -->
-<div id="register-modal" class="modal">
-    <div class="modal-content enhanced">
-        <button class="modal-close-enhanced" onclick="closeModal('register-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                </path>
-            </svg>
-        </button>
-        <div class="modal-header">
-            <h3 class="modal-title">Join Astegni</h3>
-            <p class="modal-subtitle">Create your account and start learning today</p>
-        </div>
+    <div id="register-modal" class="modal">
+        <div class="modal-content enhanced">
+            <button class="modal-close-enhanced" onclick="closeModal('register-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+            <div class="modal-header">
+                <h3 class="modal-title">Join Astegni</h3>
+                <p class="modal-subtitle">Create your account and start learning today</p>
+            </div>
 
-        <form id="register-form" class="auth-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>First Name</label>
-                    <input type="text" id="register-firstname" name="register-firstname" placeholder="First name"
-                        required>
+            <form id="register-form" class="auth-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" id="register-firstname" name="register-firstname" placeholder="First name"
+                            required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" id="register-lastname" name="register-lastname" placeholder="Last name"
+                            required>
+                    </div>
                 </div>
+
                 <div class="form-group">
-                    <label>Last Name</label>
-                    <input type="text" id="register-lastname" name="register-lastname" placeholder="Last name"
-                        required>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Register As</label>
-                <select id="register-as" onchange="toggleRegisterFields()" required>
-                    <option value="">Select Role</option>
-                    <option value="user">User</option>
-                    <option value="tutor">Tutor</option>
-                    <option value="student">Student</option>
-                    <option value="guardian">Guardian</option>
-                    <option value="advertiser">Advertiser</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="register-email" name="register-email" placeholder="your@email.com" required>
-            </div>
-
-            <div class="form-group">
-                <label>Phone Number</label>
-                <div class="phone-input-group">
-                    <select id="country-code" class="country-code">
-                        <option value="+251">🇪🇹 +251</option>
-                        <option value="+1">🇺🇸 +1</option>
-                        <option value="+44">🇬🇧 +44</option>
+                    <label>Register As</label>
+                    <select id="register-as" onchange="toggleRegisterFields()" required>
+                        <option value="">Select Role</option>
+                        <option value="user">User</option>
+                        <option value="tutor">Tutor</option>
+                        <option value="student">Student</option>
+                        <option value="guardian">Guardian</option>
+                        <option value="advertiser">Advertiser</option>
                     </select>
-                    <input type="tel" id="register-phone" placeholder="912345678" required>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label>Password</label>
-                <div class="password-input-wrapper">
-                    <input type="password" id="register-password" placeholder="Create a strong password" required>
-                    <button type="button" class="password-toggle" onclick="togglePassword('register-password')">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                            </path>
-                        </svg>
-                    </button>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="register-email" name="register-email" placeholder="your@email.com" required>
                 </div>
-                <div class="password-strength" id="password-strength"></div>
-            </div>
 
-            <div class="form-group">
-                <label>Confirm Password</label>
-                <div class="password-input-wrapper">
-                    <input type="password" id="register-confirm-password" placeholder="Repeat your password" required>
-                    <button type="button" class="password-toggle" onclick="togglePassword('register-confirm-password')">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                            </path>
-                        </svg>
-                    </button>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <div class="phone-input-group">
+                        <select id="country-code" class="country-code">
+                            <option value="+251">🇪🇹 +251</option>
+                            <option value="+1">🇺🇸 +1</option>
+                            <option value="+44">🇬🇧 +44</option>
+                        </select>
+                        <input type="tel" id="register-phone" placeholder="912345678" required>
+                    </div>
                 </div>
-                <div class="password-match-indicator" id="password-match-indicator"></div>
-            </div>
 
-            <div class="form-group">
-                <label class="checkbox-label">
-                    <input type="checkbox" required>
-                    I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
-                </label>
-            </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="register-password" placeholder="Create a strong password" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('register-password')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="password-strength"></div>
+                </div>
 
-            <button type="submit" class="submit-btn">Create Account</button>
-        </form>
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="register-confirm-password" placeholder="Repeat your password"
+                            required>
+                        <button type="button" class="password-toggle"
+                            onclick="togglePassword('register-confirm-password')">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
+                                </path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="password-match-indicator" id="password-match-indicator"></div>
+                </div>
 
-        <p class="auth-footer">
-            Already have an account?
-            <a href="#" onclick="switchModal('register-modal', 'login-modal')">Login</a>
-        </p>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" required>
+                        I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Account</button>
+            </form>
+
+            <p class="auth-footer">
+                Already have an account?
+                <a href="#" onclick="switchModal('register-modal', 'login-modal')">Login</a>
+            </p>
+        </div>
     </div>
-</div>
 
-<!-- Forgot Password Modal -->
-<div id="forgot-password-modal" class="modal">
-    <div class="modal-content enhanced">
-        <button class="modal-close-enhanced" onclick="closeModal('forgot-password-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                </path>
-            </svg>
-        </button>
-        
-        <div class="modal-header">
-            <div class="forgot-icon">
-                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+    <!-- Forgot Password Modal -->
+    <div id="forgot-password-modal" class="modal">
+        <div class="modal-content enhanced">
+            <button class="modal-close-enhanced" onclick="closeModal('forgot-password-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
+            </button>
+
+            <div class="modal-header">
+                <div class="forgot-icon">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="modal-title">Reset Password</h3>
+                <p class="modal-subtitle">Enter your email address and we'll send you a link to reset your password</p>
             </div>
-            <h3 class="modal-title">Reset Password</h3>
-            <p class="modal-subtitle">Enter your email address and we'll send you a link to reset your password</p>
+
+            <form id="forgot-password-form" class="auth-form">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="forgot-email" placeholder="Enter your registered email" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Send Reset Link</button>
+            </form>
+
+            <p class="auth-footer">
+                Remember your password?
+                <a href="#" onclick="switchModal('forgot-password-modal', 'login-modal')">Back to Login</a>
+            </p>
         </div>
-
-        <form id="forgot-password-form" class="auth-form">
-            <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="forgot-email" placeholder="Enter your registered email" required>
-            </div>
-            
-            <button type="submit" class="submit-btn">Send Reset Link</button>
-        </form>
-        
-        <p class="auth-footer">
-            Remember your password?
-            <a href="#" onclick="switchModal('forgot-password-modal', 'login-modal')">Back to Login</a>
-        </p>
     </div>
-</div>
 
-<!-- Coming Soon Modal -->
-<div id="coming-soon-modal" class="modal">
-    <div class="modal-content enhanced coming-soon-content">
-        <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                </path>
-            </svg>
-        </button>
-        
-        <div class="coming-soon-header">
-            <div class="coming-soon-icon">
-                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+    <!-- Coming Soon Modal -->
+    <div id="coming-soon-modal" class="modal">
+        <div class="modal-content enhanced coming-soon-content">
+            <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
+            </button>
+
+            <div class="coming-soon-header">
+                <div class="coming-soon-icon">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="modal-title">Coming Soon!</h3>
+                <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay
+                    tuned!</p>
             </div>
-            <h3 class="modal-title">Coming Soon!</h3>
-            <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay tuned!</p>
+
+            <div class="coming-soon-features">
+                <div class="feature-item">
+                    <span class="feature-icon">🚀</span>
+                    <span>Launching Soon</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">🔔</span>
+                    <span>Get Notified</span>
+                </div>
+                <div class="feature-item">
+                    <span class="feature-icon">⚡</span>
+                    <span>Be First to Try</span>
+                </div>
+            </div>
+
+            <form id="coming-soon-form" class="auth-form">
+                <div class="form-group">
+                    <label>Get notified when this feature launches</label>
+                    <input type="email" id="notify-email" placeholder="Enter your email" required>
+                </div>
+
+                <button type="submit" class="submit-btn">Notify Me</button>
+            </form>
+
+
         </div>
 
-        <div class="coming-soon-features">
-            <div class="feature-item">
-                <span class="feature-icon">🚀</span>
-                <span>Launching Soon</span>
-            </div>
-            <div class="feature-item">
-                <span class="feature-icon">🔔</span>
-                <span>Get Notified</span>
-            </div>
-            <div class="feature-item">
-                <span class="feature-icon">⚡</span>
-                <span>Be First to Try</span>
-            </div>
-        </div>
-
-        <form id="coming-soon-form" class="auth-form">
-            <div class="form-group">
-                <label>Get notified when this feature launches</label>
-                <input type="email" id="notify-email" placeholder="Enter your email" required>
-            </div>
-            
-            <button type="submit" class="submit-btn">Notify Me</button>
-        </form>
-        
-        <p class="auth-footer">
-            Expected launch: <strong>Q2 2025</strong>
-        </p>
     </div>
-</div>
 
     <!-- Notification Modal -->
     <div id="notification-modal" class="modal">
@@ -1406,9 +1403,818 @@
         `;
         document.head.appendChild(style);
     </script>
+    <script>
 
+// Updated Coming Soon Modal with Fix for Logged-In Message Display
+function openComingSoonModal(feature) {
+    const modal = document.getElementById('coming-soon-modal');
+    const message = document.getElementById('coming-soon-message');
+
+    if (!modal || !message) {
+        console.error('Coming soon modal elements not found');
+        return;
+    }
+
+    // Customize message based on feature
+    const messages = {
+        'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
+        'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
+        'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
+    };
+
+    message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
+
+    // Update content based on authentication status
+    updateComingSoonModalContent();
+
+    // Open the modal
+    openModal('coming-soon-modal');
+}
+
+function updateComingSoonModalContent() {
+    console.log('Updating coming soon modal content...');
+    console.log('User logged in:', APP_STATE.isLoggedIn);
+    console.log('Current user:', APP_STATE.currentUser);
+    
+    const form = document.getElementById('coming-soon-form');
+    const authFooter = document.querySelector('.auth-footer');
+    const featuresSection = document.querySelector('.coming-soon-features');
+    
+    if (!form) {
+        console.error('Form element not found');
+        return;
+    }
+    
+    // Check if user is authenticated using APP_STATE
+    if (APP_STATE.isLoggedIn && APP_STATE.currentUser) {
+        console.log('User is logged in, hiding form and features...');
+        
+        // Hide form and features
+        form.style.display = 'none';
+        
+        if (featuresSection) {
+            featuresSection.style.display = 'none';
+            console.log('Features section hidden');
+        }
+        
+        // Remove any existing logged-in message first
+        let existingMessage = document.getElementById('coming-soon-logged-in-message');
+        if (existingMessage) {
+            existingMessage.remove();
+            console.log('Removed existing logged-in message');
+        }
+        
+        // Create new logged-in message
+        let loggedInMessage = document.createElement('div');
+        loggedInMessage.id = 'coming-soon-logged-in-message';
+        loggedInMessage.className = 'logged-in-message';
+        loggedInMessage.style.display = 'block'; // Ensure it's visible
+        
+        // Get user's name and email
+        const userName = APP_STATE.currentUser.first_name || 
+                        APP_STATE.currentUser.name?.split(' ')[0] || 
+                        'there';
+        const userEmail = APP_STATE.currentUser.email || 'your registered email';
+        
+        console.log('Creating message for:', userName, userEmail);
+        
+        // Set the HTML content
+        loggedInMessage.innerHTML = `
+            <div class="success-check">
+                <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+            </div>
+            <h3 class="logged-in-title">You're all set, ${userName}!</h3>
+            <p class="logged-in-text">
+                We'll notify you at <strong>${userEmail}</strong> when this feature launches.
+            </p>
+            <div class="logged-in-benefits">
+                <div class="benefit-item">
+                    <span class="benefit-icon">✨</span>
+                    <span>Early access guaranteed</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🎯</span>
+                    <span>Priority notifications</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🎁</span>
+                    <span>Exclusive launch offers</span>
+                </div>
+            </div>
+                                <p class="auth-footer">
+                Expected launch: <strong>Q2 2025</strong>
+            </p>
+        `;
+        
+        // Find the best place to insert the message
+        // Try multiple insertion points
+        let inserted = false;
+        
+        // Try 1: After features section (even if hidden)
+        if (featuresSection && featuresSection.parentNode) {
+            featuresSection.parentNode.insertBefore(loggedInMessage, featuresSection.nextSibling);
+            console.log('Inserted after features section');
+            inserted = true;
+        }
+        // Try 2: Before form (even if hidden)
+        else if (form && form.parentNode) {
+            form.parentNode.insertBefore(loggedInMessage, form);
+            console.log('Inserted before form');
+            inserted = true;
+        }
+        // Try 3: Inside modal content div
+        else {
+            const modalContent = document.querySelector('.coming-soon-content');
+            if (modalContent) {
+                // Find auth-footer and insert before it
+                const authFooterElement = modalContent.querySelector('.auth-footer');
+                if (authFooterElement) {
+                    modalContent.insertBefore(loggedInMessage, authFooterElement);
+                    console.log('Inserted before auth-footer');
+                } else {
+                    modalContent.appendChild(loggedInMessage);
+                    console.log('Appended to modal content');
+                }
+                inserted = true;
+            }
+        }
+        
+        if (!inserted) {
+            console.error('Could not insert logged-in message anywhere!');
+        } else {
+            console.log('Logged-in message successfully inserted and displayed');
+        }
+        
+        // Update footer text for logged-in users
+        if (authFooter) {
+            authFooter.innerHTML = `
+                You're on the list! Expected launch: <strong>Q2 2025</strong>
+            `;
+        }
+        
+    } else {
+        console.log('User is not logged in, showing form and features...');
+        
+        // User is not logged in - show BOTH features and form
+        form.style.display = 'block';
+        
+        // Show the features section
+        if (featuresSection) {
+            featuresSection.style.display = 'flex';
+            console.log('Features section shown');
+        }
+        
+        // Remove logged-in message if it exists
+        const loggedInMessage = document.getElementById('coming-soon-logged-in-message');
+        if (loggedInMessage) {
+            loggedInMessage.remove();
+            console.log('Removed logged-in message');
+        }
+        
+        // Restore original footer text
+        if (authFooter) {
+            authFooter.innerHTML = `
+                Expected launch: <strong>Q2 2025</strong>
+            `;
+        }
+    }
+}
+
+function handleComingSoonNotification(e) {
+    e.preventDefault();
+    
+    // This should only run if user is not logged in (form is visible)
+    if (APP_STATE.isLoggedIn) {
+        showToast('You are already on the notification list!', 'info');
+        return;
+    }
+    
+    const email = document.getElementById('notify-email')?.value;
+
+    if (!email) {
+        showToast('Please enter your email address', 'warning');
+        return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showToast('Please enter a valid email address', 'warning');
+        return;
+    }
+
+    // Show loading state
+    const submitBtn = e.target.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Subscribing...';
+
+    // Simulate API call
+    setTimeout(() => {
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+
+        // Show success message
+        showToast('You will be notified when this feature launches!', 'success');
+
+        // Clear form
+        document.getElementById('notify-email').value = '';
+
+        // Close modal after delay
+        setTimeout(() => {
+            closeModal('coming-soon-modal');
+        }, 2000);
+    }, 1500);
+}
+
+// Add CSS for the logged-in message styling
+const comingSoonAuthStyles = document.createElement('style');
+comingSoonAuthStyles.textContent = `
+    /* Ensure visibility of logged-in message */
+    #coming-soon-logged-in-message {
+        display: block !important;
+    }
+    
+    /* Hide features section smoothly */
+    .coming-soon-features {
+        transition: all 0.3s ease;
+    }
+    
+    .logged-in-message {
+        text-align: center;
+        padding: 1.5rem 0;
+        animation: fadeIn 0.5s ease;
+        min-height: 200px; /* Ensure it takes space */
+    }
+    
+    .success-check {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .dark .success-check,
+    [data-theme="dark"] .success-check {
+        background: linear-gradient(135deg, #10b981, #047857);
+    }
+    
+    .check-icon {
+        width: 50px;
+        height: 50px;
+        color: white;
+        animation: checkDraw 0.8s ease 0.3s both;
+    }
+    
+    .logged-in-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #10b981;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dark .logged-in-title,
+    [data-theme="dark"] .logged-in-title {
+        color: #10b981;
+    }
+    
+    .logged-in-text {
+        color: #6b7280;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+    
+    .logged-in-text strong {
+        color: #F59E0B;
+        font-weight: 600;
+    }
+    
+    .dark .logged-in-text,
+    [data-theme="dark"] .logged-in-text {
+        color: #9ca3af;
+    }
+    
+    .dark .logged-in-text strong,
+    [data-theme="dark"] .logged-in-text strong {
+        color: #FFD54F;
+    }
+    
+    .logged-in-benefits {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+        border-radius: 12px;
+        border: 1px solid rgba(16, 185, 129, 0.1);
+    }
+    
+    .dark .logged-in-benefits,
+    [data-theme="dark"] .logged-in-benefits {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+    
+    .benefit-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #059669;
+    }
+    
+    .dark .benefit-item,
+    [data-theme="dark"] .benefit-item {
+        color: #10b981;
+    }
+    
+    .benefit-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    @keyframes scaleIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes checkDraw {
+        0% {
+            stroke-dasharray: 0 100;
+        }
+        100% {
+            stroke-dasharray: 100 0;
+        }
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .logged-in-benefits {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .benefit-item {
+            flex-direction: row;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .success-check {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .check-icon {
+            width: 35px;
+            height: 35px;
+        }
+    }
+`;
+
+// Add styles if not already added
+if (!document.getElementById('coming-soon-auth-styles')) {
+    comingSoonAuthStyles.id = 'coming-soon-auth-styles';
+    document.head.appendChild(comingSoonAuthStyles);
+}
+
+// Initialize on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('Initializing coming soon modal handlers...');
+    
+    // Bind form submission
+    const comingSoonForm = document.getElementById('coming-soon-form');
+    if (comingSoonForm) {
+        comingSoonForm.addEventListener('submit', handleComingSoonNotification);
+        console.log('Form handler attached');
+    }
+    
+    // Listen for auth state changes (if user logs in/out in another tab)
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'token' || e.key === 'currentUser') {
+            // Refresh modal if it's open
+            const modal = document.getElementById('coming-soon-modal');
+            if (modal && modal.classList.contains('active')) {
+                console.log('Auth state changed, refreshing modal...');
+                updateComingSoonModalContent();
+            }
+        }
+    });
+});
+
+// Export functions to window object for global access
+window.openComingSoonModal = openComingSoonModal;
+window.handleComingSoonNotification = handleComingSoonNotification;
+window.updateComingSoonModalContent = updateComingSoonModalContent;
+
+// Update handleNavLinkClick to use the new function
+window.handleNavLinkClick = function(e, link) {
+    // Define coming soon features
+    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+
+    // Check if it's a coming soon feature
+    if (comingSoonFeatures.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        openComingSoonModal(link);
+        return false;
+    }
+
+    // Existing protected pages logic
+    if (APP_STATE.isLoggedIn) return true;
+
+    const protectedPages = ['find-tutors', 'reels'];
+    if (protectedPages.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
+        openModal("login-modal");
+        return false;
+    }
+
+    return true;
+};
+
+    </script>
+
+    
+    
     <script src="js/auth.js"></script>
     <script src="js/index.js"></script>
+<script>
+    // Add this to your existing index.js or at the bottom of find-tutors.html in a script tag
+
+// Coming Soon Modal Authentication Integration
+function openComingSoonModal(feature) {
+    const modal = document.getElementById('coming-soon-modal');
+    const message = document.getElementById('coming-soon-message');
+    const form = document.getElementById('coming-soon-form');
+
+    if (!modal || !message) return;
+
+    // Customize message based on feature
+    const messages = {
+        'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
+        'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
+        'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
+    };
+
+    message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
+
+    // Update content based on authentication status
+    updateComingSoonModalContent();
+
+    // Open the modal
+    openModal('coming-soon-modal');
+}
+
+function updateComingSoonModalContent() {
+    const form = document.getElementById('coming-soon-form');
+    const authFooter = document.querySelector('.auth-footer');
+    
+    if (!form) return;
+    
+    // Check if user is authenticated using APP_STATE
+    if (APP_STATE.isLoggedIn && APP_STATE.currentUser) {
+        // User is logged in - hide form and show personalized message
+        form.style.display = 'none';
+        
+        // Create or update the logged-in message
+        let loggedInMessage = document.getElementById('coming-soon-logged-in-message');
+        
+        if (!loggedInMessage) {
+            loggedInMessage = document.createElement('div');
+            loggedInMessage.id = 'coming-soon-logged-in-message';
+            loggedInMessage.className = 'logged-in-message';
+            
+            // Insert it where the form was
+            form.parentNode.insertBefore(loggedInMessage, form);
+        }
+        
+        // Get user's name and email
+        const userName = APP_STATE.currentUser.first_name || 
+                        APP_STATE.currentUser.name?.split(' ')[0] || 
+                        'there';
+        const userEmail = APP_STATE.currentUser.email || 'your registered email';
+        
+        loggedInMessage.innerHTML = `
+            <div class="success-check">
+                <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+            </div>
+            <h3 class="logged-in-title">You're all set, ${userName}!</h3>
+            <p class="logged-in-text">
+                We'll notify you at <strong>${userEmail}</strong> when this feature launches.
+            </p>
+            <div class="logged-in-benefits">
+                <div class="benefit-item">
+                    <span class="benefit-icon">✨</span>
+                    <span>Early access guaranteed</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🎯</span>
+                    <span>Priority notifications</span>
+                </div>
+                <div class="benefit-item">
+                    <span class="benefit-icon">🎁</span>
+                    <span>Exclusive launch offers</span>
+                </div>
+            </div>
+        `;
+        
+        // Update footer text for logged-in users
+        if (authFooter) {
+            authFooter.innerHTML = `
+                You're on the list! Expected launch: <strong>Q2 2025</strong>
+            `;
+        }
+    } else {
+        // User is not logged in - show form
+        form.style.display = 'block';
+        
+        // Remove logged-in message if it exists
+        const loggedInMessage = document.getElementById('coming-soon-logged-in-message');
+        if (loggedInMessage) {
+            loggedInMessage.remove();
+        }
+        
+        // Restore original footer text
+        if (authFooter) {
+            authFooter.innerHTML = `
+                Expected launch: <strong>Q2 2025</strong>
+            `;
+        }
+    }
+}
+
+function handleComingSoonNotification(e) {
+    e.preventDefault();
+    
+    // This should only run if user is not logged in (form is visible)
+    if (APP_STATE.isLoggedIn) {
+        showToast('You are already on the notification list!', 'info');
+        return;
+    }
+    
+    const email = document.getElementById('notify-email')?.value;
+
+    if (!email) {
+        showToast('Please enter your email address', 'warning');
+        return;
+    }
+
+    // Show loading state
+    const submitBtn = e.target.querySelector('.submit-btn');
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Subscribing...';
+
+    // Simulate API call
+    setTimeout(() => {
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+
+        // Show success message
+        showToast('You will be notified when this feature launches!', 'success');
+
+        // Clear form
+        document.getElementById('notify-email').value = '';
+
+        // Close modal after delay
+        setTimeout(() => {
+            closeModal('coming-soon-modal');
+        }, 2000);
+    }, 1500);
+}
+
+// Add CSS for the logged-in message styling
+const comingSoonAuthStyles = document.createElement('style');
+comingSoonAuthStyles.textContent = `
+    .logged-in-message {
+        text-align: center;
+        padding: 1.5rem 0;
+        animation: fadeIn 0.5s ease;
+    }
+    
+    .success-check {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+    
+    .dark .success-check,
+    [data-theme="dark"] .success-check {
+        background: linear-gradient(135deg, #10b981, #047857);
+    }
+    
+    .check-icon {
+        width: 50px;
+        height: 50px;
+        color: white;
+        animation: checkDraw 0.8s ease 0.3s both;
+    }
+    
+    .logged-in-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #10b981;
+        margin-bottom: 0.5rem;
+    }
+    
+    .dark .logged-in-title,
+    [data-theme="dark"] .logged-in-title {
+        color: #10b981;
+    }
+    
+    .logged-in-text {
+        color: #6b7280;
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+    
+    .logged-in-text strong {
+        color: #F59E0B;
+        font-weight: 600;
+    }
+    
+    .dark .logged-in-text,
+    [data-theme="dark"] .logged-in-text {
+        color: #9ca3af;
+    }
+    
+    .dark .logged-in-text strong,
+    [data-theme="dark"] .logged-in-text strong {
+        color: #FFD54F;
+    }
+    
+    .logged-in-benefits {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(5, 150, 105, 0.05));
+        border-radius: 12px;
+        border: 1px solid rgba(16, 185, 129, 0.1);
+    }
+    
+    .dark .logged-in-benefits,
+    [data-theme="dark"] .logged-in-benefits {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+        border-color: rgba(16, 185, 129, 0.2);
+    }
+    
+    .benefit-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.875rem;
+        color: #059669;
+    }
+    
+    .dark .benefit-item,
+    [data-theme="dark"] .benefit-item {
+        color: #10b981;
+    }
+    
+    .benefit-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    @keyframes scaleIn {
+        0% {
+            transform: scale(0);
+            opacity: 0;
+        }
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes checkDraw {
+        0% {
+            stroke-dasharray: 0 100;
+        }
+        100% {
+            stroke-dasharray: 100 0;
+        }
+    }
+    
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .logged-in-benefits {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .benefit-item {
+            flex-direction: row;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .success-check {
+            width: 60px;
+            height: 60px;
+        }
+        
+        .check-icon {
+            width: 35px;
+            height: 35px;
+        }
+    }
+`;
+
+// Add styles if not already added
+if (!document.getElementById('coming-soon-auth-styles')) {
+    comingSoonAuthStyles.id = 'coming-soon-auth-styles';
+    document.head.appendChild(comingSoonAuthStyles);
+}
+
+// Export functions to window object for global access
+window.openComingSoonModal = openComingSoonModal;
+window.handleComingSoonNotification = handleComingSoonNotification;
+window.updateComingSoonModalContent = updateComingSoonModalContent;
+
+// Update handleNavLinkClick to use the new function
+window.handleNavLinkClick = function(e, link) {
+    // Define coming soon features
+    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+
+    // Check if it's a coming soon feature
+    if (comingSoonFeatures.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        openComingSoonModal(link);
+        return false;
+    }
+
+    // Existing protected pages logic
+    if (APP_STATE.isLoggedIn) return true;
+
+    const protectedPages = ['find-tutors', 'reels'];
+    if (protectedPages.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
+        openModal("login-modal");
+        return false;
+    }
+
+    return true;
+};
+</script>
 </body>
 
 </html>

@@ -1928,6 +1928,8 @@ function initializeUploadArea(type) {
     });
 }
 
+
+
 function handleFileSelect(file, type) {
     if (!file.type.startsWith('image/')) {
         notifications.show('Please select an image file', 'error');
@@ -1993,6 +1995,34 @@ function closeModal(modalId) {
 function openEditProfileModal() {
     openModal('edit-profile-modal');
 }
+
+// Improved handleNavLinkClick function for coming soon features
+window.handleNavLinkClick = function(e, link) {
+    // Define coming soon features
+    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+    
+    // Check if it's a coming soon feature
+    if (comingSoonFeatures.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        openComingSoonModal(link);
+        return false;
+    }
+    
+    // Existing protected pages logic
+    if (APP_STATE.isLoggedIn) return true;
+    
+    const protectedPages = ['find-tutors', 'reels'];
+    if (protectedPages.includes(link)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
+        openModal("login-modal");
+        return false;
+    }
+    
+    return true;
+};
 
 function saveProfile() {
     const name = document.getElementById('edit-company-name').value;
