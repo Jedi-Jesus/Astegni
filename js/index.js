@@ -1327,12 +1327,12 @@ function initializeHeroSlideshow() {
 // ============================================
 function initializeCounters() {
     const counters = [
-        { id: "counter-parents", target: 1000, current: 0, suffix: "+" },
-        { id: "counter-students", target: 5000, current: 0, suffix: "+" },
-        { id: "counter-tutors", target: 300, current: 0, suffix: "+" },
-        { id: "counter-centers", target: 50, current: 0, suffix: "+" },
-        { id: "counter-books", target: 100, current: 0, suffix: "+" },
-        { id: "counter-jobs", target: 10, current: 0, suffix: "+" },
+        { id: "counter-parents", target: 1273, current: 0, suffix: "+" },
+        { id: "counter-students", target: 5670, current: 0, suffix: "+" },
+        { id: "counter-tutors", target: 327, current: 0, suffix: "+" },
+        { id: "counter-centers", target: 59, current: 0, suffix: "+" },
+        { id: "counter-books", target: 13879, current: 0, suffix: "+" },
+        { id: "counter-jobs", target: 47, current: 0, suffix: "+" },
     ];
 
     const observerOptions = {
@@ -1872,36 +1872,42 @@ function initializeTestimonials() {
             author: "Sara Tadesse",
             role: "Grade 12 Student",
             avatar: "https://picsum.photos/60",
+            dataType: "Mock"
         },
         {
             text: "As a tutor, Astegni gave me the platform to reach students nationwide. I now teach over 50 students online!",
             author: "Daniel Bekele",
             role: "Physics Tutor",
             avatar: "https://picsum.photos/61",
+            dataType: "Mock"            
         },
         {
             text: "The variety of courses and quality of instructors on Astegni is unmatched. Best investment in my child's education!",
             author: "Marta Alemu",
             role: "Parent",
             avatar: "https://picsum.photos/62",
+            dataType: "Mock"
         },
         {
             text: "I found my dream job through Astegni's job portal. The platform is truly life-changing!",
             author: "Yohannes Girma",
             role: "Software Developer",
             avatar: "https://picsum.photos/63",
+            dataType: "Mock"
         },
         {
             text: "Our training center reached 10x more students after joining Astegni. Highly recommended!",
             author: "Tigist Haile",
             role: "Training Center Director",
             avatar: "https://picsum.photos/64",
+            dataType: "Mock"
         },
         {
             text: "The online learning tools and resources are amazing. I can learn at my own pace!",
             author: "Abebe Mengistu",
             role: "University Student",
             avatar: "https://picsum.photos/65",
+            dataType: "Mock"
         },
     ];
 
@@ -1929,6 +1935,7 @@ function initializeTestimonials() {
                             <h4>${testimonial.author}</h4>
                             <p>${testimonial.role}</p>
                             <div class="rating">⭐⭐⭐⭐⭐</div>
+                            <p>${testimonial.dataType}</p>
                         </div>
                     </div>
                 </div>
@@ -2644,3 +2651,6 @@ if (!document.getElementById('add-role-styles')) {
     styleElement.id = 'add-role-styles';
     document.head.appendChild(styleElement);
 }
+
+
+    

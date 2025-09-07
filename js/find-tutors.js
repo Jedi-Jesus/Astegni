@@ -332,9 +332,10 @@ document.addEventListener('DOMContentLoaded', () => {
             experience: 5,
             bio: 'Passionate educator with expertise in Math and Physics.',
             quote: 'Learning is a journey, not a destination.',
-            isTrainingCenter: false
+            isTrainingCenter: false,
+            dataType: 'Mock'
         },
-        { 
+        /*{ 
             name: 'Yene Akal Learning Center', 
             courses: ['Elementary Math', 'Reading', 'Science'], 
             grades: ['KG', 'Grade 1-4', 'Grade 5-6'], 
@@ -350,8 +351,9 @@ document.addEventListener('DOMContentLoaded', () => {
             experience: 10,
             bio: 'Premier training center for young learners with certified teachers.',
             quote: 'Building strong foundations for lifelong learning.',
-            isTrainingCenter: true
-        },
+            isTrainingCenter: true,
+            dataType: 'Mock'
+        },*/
         { 
             name: 'Selam Tesfaye', 
             courses: ['English', 'Literature'], 
@@ -368,9 +370,10 @@ document.addEventListener('DOMContentLoaded', () => {
             experience: 4,
             bio: 'Dedicated English teacher specializing in creative writing.',
             quote: 'Words have the power to change the world.',
-            isTrainingCenter: false
+            isTrainingCenter: false,
+            dataType: 'Mock'
         },
-        { 
+        /*{ 
             name: 'EthioTech Professional Training', 
             courses: ['AWS Certification', 'Azure', 'Google Cloud'], 
             grades: [], 
@@ -386,8 +389,9 @@ document.addEventListener('DOMContentLoaded', () => {
             experience: 8,
             bio: 'Industry-leading certification training center with 95% pass rate.',
             quote: 'Your gateway to cloud computing excellence.',
-            isTrainingCenter: true
-        },
+            isTrainingCenter: true,
+            dataType: 'Mock'
+        },*/
         { 
             name: 'Tewodros Alemayehu', 
             courses: ['Chemistry', 'Biology'], 
@@ -404,7 +408,8 @@ document.addEventListener('DOMContentLoaded', () => {
             experience: 6,
             bio: 'Research scientist turned educator.',
             quote: 'Science is a way of thinking.',
-            isTrainingCenter: false
+            isTrainingCenter: false,
+            dataType: 'Mock'
         },
         { 
             name: 'Meron Getachew', 
@@ -422,7 +427,8 @@ document.addEventListener('DOMContentLoaded', () => {
             experience: 3,
             bio: 'Making history come alive through engaging storytelling.',
             quote: 'History teaches us about our future.',
-            isTrainingCenter: false
+            isTrainingCenter: false,
+            dataType: 'Mock'
         }
     ];
     
@@ -547,6 +553,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Price:</span> <strong>${tutor.price}/hr</strong>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Data type:</span> <strong>${tutor.dataType}</strong>
                 </div>
             </div>
             <a href="../view-profile-tier-1/view-tutor.html" class="view-tutor-btn">View Full Profile</a>

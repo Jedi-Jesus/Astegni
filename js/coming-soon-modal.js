@@ -12,7 +12,8 @@ function openComingSoonModal(feature) {
     const messages = {
         'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
         'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
-        'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
+        'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!',
+        'market': 'Our market place is being '
     };
 
     message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";

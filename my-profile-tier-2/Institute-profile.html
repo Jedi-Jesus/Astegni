@@ -15,13 +15,13 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-            <a href="../index.html" class="logo-container">
-                <div class="logo-text">
-                    <span class="logo-main">Astegni</span>
-                    <span class="logo-sub">Home</span>
-                </div>
-                <span class="logo-badge">Beta</span>
-            </a>
+                <a href="../index.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Home</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
 
             </div>
             <div class="nav-menu">
@@ -115,14 +115,14 @@
                     <span class="sidebar-btn-icon">📦</span>
                     <span>My Products</span>
                 </button>
-                
-                    <a href='../Plug-ins/notes.html'>
-                <button class="sidebar-btn" data-content="notes">
+
+                <a href='../Plug-ins/notes.html'>
+                    <button class="sidebar-btn" data-content="notes">
                         <span class="sidebar-btn-icon">📝</span>
                         <span>Notes</span>
-                </button>
-                
-                    </a>
+                    </button>
+
+                </a>
                 <button class="sidebar-btn" data-content="rate-comment">
                     <span class="sidebar-btn-icon">⭐</span>
                     <span>Rate & Comment</span>
@@ -184,10 +184,10 @@
             <button class="sidebar-help-btn">
                 <span class="help-icon">💡</span>
                 <span>Need Help?</span>
-                
+
             </button>
         </div>
-        
+
     </aside>
 
     <!-- Main Container -->
@@ -196,14 +196,14 @@
         <section class="profile-header-section">
             <div class="cover-image-container">
                 <img src="../pictures/institute cover.jpg" alt="Cover" class="cover-img">
-<span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
+                <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
             </div>
 
             <div class="profile-main-info">
                 <div class="profile-info-wrapper">
                     <div class="profile-avatar-container">
                         <img src="../pictures/institute profile.jpg" alt="Institute profile" class="profile-avatar">
-<span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+                        <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
                     </div>
 
                     <div class="profile-details-section">
@@ -283,9 +283,9 @@
                                 <span class="action-icon">✏️</span>
                                 <span>Edit Profile</span>
                             </button>
+                        </div>
                     </div>
                 </div>
-            </div>
         </section>
 
         <!-- Advertisement Placeholder -->
@@ -456,23 +456,23 @@
 
 
 
-<!-- Updated Jobs Content Section -->
-<div class="sidebar-content-panel" id="jobs-content">
-    <div class="section-header">
-        <h2 class="section-title">Job Posts</h2>
-        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
-    </div>
-    
-    <div class="job-filters">
-        <button class="filter-chip active" onclick="filterJobs('all')">All Jobs</button>
-        <button class="filter-chip" onclick="filterJobs('posted')">Posted Jobs</button>
-        <button class="filter-chip" onclick="filterJobs('draft')">Draft Jobs</button>
-    </div>
-    
-    <div class="jobs-grid" id="jobsGrid">
-        <!-- Jobs will be loaded dynamically -->
-    </div>
-</div>
+                <!-- Updated Jobs Content Section -->
+                <div class="sidebar-content-panel" id="jobs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Job Posts</h2>
+                        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
+                    </div>
+
+                    <div class="job-filters">
+                        <button class="filter-chip active" onclick="filterJobs('all')">All Jobs</button>
+                        <button class="filter-chip" onclick="filterJobs('posted')">Posted Jobs</button>
+                        <button class="filter-chip" onclick="filterJobs('draft')">Draft Jobs</button>
+                    </div>
+
+                    <div class="jobs-grid" id="jobsGrid">
+                        <!-- Jobs will be loaded dynamically -->
+                    </div>
+                </div>
 
                 <!-- Classes Content -->
                 <div class="sidebar-content-panel" id="classes-content">
@@ -497,155 +497,161 @@
                         <!-- Classes will be loaded dynamically -->
                     </div>
                 </div>
-<!-- Updated Books Content Section -->
-<div class="sidebar-content-panel" id="books-content">
-    <div class="section-header">
-        <h2 class="section-title">My Books</h2>
+                <!-- Updated Books Content Section -->
+                <div class="sidebar-content-panel" id="books-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Books</h2>
 
-            <button class="btn-primary" onclick="createPodcast()">
+                        <button class="btn-primary" onclick="createPodcast()">
 
-                                    <span class="sidebar-btn-icon">🤖</span>
-                    <span>AI Writer</span>
-            </button>
-        <div class="header-buttons" id="booksHeaderButtons">
-            <!-- Button will be dynamically added based on books availability -->
-        </div>
-    </div>
-    
-    <div class="books-grid" id="booksGrid">
-        <!-- Books will be loaded dynamically -->
-    </div>
-</div>
+                            <span class="sidebar-btn-icon">🤖</span>
+                            <span>AI Writer</span>
+                        </button>
+                        <div class="header-buttons" id="booksHeaderButtons">
+                            <!-- Button will be dynamically added based on books availability -->
+                        </div>
+                    </div>
 
-<!-- Updated Community Content (Now opens modal) -->
-<div class="sidebar-content-panel" id="community-content">
-    <!-- This will trigger the community modal -->
-</div>
+                    <div class="books-grid" id="booksGrid">
+                        <!-- Books will be loaded dynamically -->
+                    </div>
+                </div>
 
-<!-- Updated Clubs Content Section -->
-<div class="sidebar-content-panel" id="clubs-content">
-    <div class="section-header">
-        <h2 class="section-title">Clubs</h2>
-        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
-    </div>
-    
-    <div class="clubs-tabs">
-        <button class="clubs-tab active" onclick="filterClubs('all')">All Clubs</button>
-        <button class="clubs-tab" onclick="filterClubs('academic')">Academic</button>
-        <button class="clubs-tab" onclick="filterClubs('arts')">Arts & Culture</button>
-        <button class="clubs-tab" onclick="filterClubs('sports')">Sports</button>
-        <button class="clubs-tab" onclick="filterClubs('technology')">Technology</button>
-    </div>
-    
-    <div class="clubs-grid" id="clubsGrid">
-        <!-- Clubs will be loaded dynamically -->
-    </div>
-</div>
+                <!-- Updated Community Content (Now opens modal) -->
+                <div class="sidebar-content-panel" id="community-content">
+                    <!-- This will trigger the community modal -->
+                </div>
 
-<!-- Updated Podcasts Content with Draft Filter -->
-<div class="sidebar-content-panel" id="podcasts-content">
-    <div class="section-header">
-        <h2 class="section-title">Podcast Library</h2>
-        <div class="header-buttons">
-            <button class="btn-primary" onclick="createPodcast()">
-                <span>🎙️</span> Create Podcast
-            </button>
-        </div>
-    </div>
-    
-    <div class="podcast-filters">
-        <button class="filter-chip active" onclick="filterPodcasts('all')">All Podcasts</button>
-        <button class="filter-chip" onclick="filterPodcasts('published')">Published</button>
-        <button class="filter-chip" onclick="filterPodcasts('draft')">Drafts</button>
-    </div>
-    
-    <div class="podcast-grid">
-        <!-- Podcasts will be loaded dynamically -->
-    </div>
-</div>
+                <!-- Updated Clubs Content Section -->
+                <div class="sidebar-content-panel" id="clubs-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Clubs</h2>
+                        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
+                    </div>
 
-               
-               
-<!-- Updated Videos Content with Draft Filter -->
-<div class="sidebar-content-panel" id="videos-content">
-    <div class="section-header">
-        <h2 class="section-title">Video Gallery</h2>
-        <div class="header-buttons">
-            <button class="btn-secondary" onclick="openUploadVideoModal()">
-                <span>🎬 Upload Video</span>
-            </button>
-            <a href="../Plug-ins/go-live-modal.html">
-                <button class="btn-primary live-btn">
-                    <span>📹 Go Live</span>
-                </button>
-            </a>
-        </div>
-    </div>
+                    <div class="clubs-tabs">
+                        <button class="clubs-tab active" onclick="filterClubs('all')">All Clubs</button>
+                        <button class="clubs-tab" onclick="filterClubs('academic')">Academic</button>
+                        <button class="clubs-tab" onclick="filterClubs('arts')">Arts & Culture</button>
+                        <button class="clubs-tab" onclick="filterClubs('sports')">Sports</button>
+                        <button class="clubs-tab" onclick="filterClubs('technology')">Technology</button>
+                    </div>
 
-    <div class="video-filters">
-        <div class="video-tabs">
-            <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All Videos</button>
-            <button class="video-tab" data-filter="published" onclick="filterVideos('published')">Published</button>
-            <button class="video-tab" data-filter="draft" onclick="filterVideos('draft')">Drafts</button>
-            <button class="video-tab" data-filter="shorts" onclick="filterVideos('shorts')">Shorts</button>
-            <button class="video-tab" data-filter="playlists" onclick="filterVideos('playlists')">Playlists</button>
-        </div>
-        <button class="btn-create-playlist" onclick="window.trainingCenterProfile.playlists.openModal()">
-            + Create Playlist
-        </button>
-    </div>
-    <div class="videos-grid">
-        <!-- Videos will be loaded dynamically -->
-    </div>
-</div>
+                    <div class="clubs-grid" id="clubsGrid">
+                        <!-- Clubs will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Updated Podcasts Content with Draft Filter -->
+                <div class="sidebar-content-panel" id="podcasts-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Podcast Library</h2>
+                        <div class="header-buttons">
+                            <button class="btn-primary" onclick="createPodcast()">
+                                <span>🎙️</span> Create Podcast
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="podcast-filters">
+                        <button class="filter-chip active" onclick="filterPodcasts('all')">All Podcasts</button>
+                        <button class="filter-chip" onclick="filterPodcasts('published')">Published</button>
+                        <button class="filter-chip" onclick="filterPodcasts('draft')">Drafts</button>
+                    </div>
+
+                    <div class="podcast-grid">
+                        <!-- Podcasts will be loaded dynamically -->
+                    </div>
+                </div>
 
 
 
-                
-<!-- Updated Blog Content with Draft Filter -->
-<div class="sidebar-content-panel" id="blog-content">
-    <div class="section-header">
-        <h2 class="section-title">Blog & Articles</h2>
-        <button class="btn-primary" onclick="openCreateBlogModal()">
-            <span>📝 Create Blog Post</span>
-        </button>
-    </div>
+                <!-- Updated Videos Content with Draft Filter -->
+                <div class="sidebar-content-panel" id="videos-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Video Gallery</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="openUploadVideoModal()">
+                                <span>🎬 Upload Video</span>
+                            </button>
+                            <a href="../Plug-ins/go-live-modal.html">
+                                <button class="btn-primary live-btn">
+                                    <span>📹 Go Live</span>
+                                </button>
+                            </a>
+                        </div>
+                    </div>
 
-    <div class="blog-filters">
-        <button class="filter-chip active" onclick="filterBlogs('all')">All Posts</button>
-        <button class="filter-chip" onclick="filterBlogs('published')">Published</button>
-        <button class="filter-chip" onclick="filterBlogs('draft')">Drafts</button>
-        <button class="filter-chip" onclick="filterBlogs('industry')">Industry News</button>
-        <button class="filter-chip" onclick="filterBlogs('tutorials')">Tutorials</button>
-        <button class="filter-chip" onclick="filterBlogs('student')">Student Stories</button>
-    </div>
+                    <div class="video-filters">
+                        <div class="video-tabs">
+                            <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All
+                                Videos</button>
+                            <button class="video-tab" data-filter="published"
+                                onclick="filterVideos('published')">Published</button>
+                            <button class="video-tab" data-filter="draft"
+                                onclick="filterVideos('draft')">Drafts</button>
+                            <button class="video-tab" data-filter="shorts"
+                                onclick="filterVideos('shorts')">Shorts</button>
+                            <button class="video-tab" data-filter="playlists"
+                                onclick="filterVideos('playlists')">Playlists</button>
+                        </div>
+                        <button class="btn-create-playlist"
+                            onclick="window.trainingCenterProfile.playlists.openModal()">
+                            + Create Playlist
+                        </button>
+                    </div>
+                    <div class="videos-grid">
+                        <!-- Videos will be loaded dynamically -->
+                    </div>
+                </div>
 
-    <div class="blog-grid">
-        <!-- Blog posts will be loaded dynamically -->
-    </div>
-</div>
 
-<!-- Updated My Products Content -->
-<div class="sidebar-content-panel" id="my-products-content">
-    <div class="section-header">
-        <h2 class="section-title">My Purchased Products</h2>
-        <button class="btn-primary" onclick="navigateToStore()">
-            <span>🛒</span> Browse Store
-        </button>
-    </div>
-    
-    <div class="product-filters">
-        <button class="filter-chip active" onclick="filterMyProducts('all')">All Products</button>
-        <button class="filter-chip" onclick="filterMyProducts('courses')">Courses</button>
-        <button class="filter-chip" onclick="filterMyProducts('books')">Books</button>
-        <button class="filter-chip" onclick="filterMyProducts('software')">Software</button>
-        <button class="filter-chip" onclick="filterMyProducts('materials')">Materials</button>
-    </div>
-    
-    <div class="my-products-grid" id="myProductsGrid">
-        <!-- Purchased products will be loaded dynamically -->
-    </div>
-</div>
+
+
+                <!-- Updated Blog Content with Draft Filter -->
+                <div class="sidebar-content-panel" id="blog-content">
+                    <div class="section-header">
+                        <h2 class="section-title">Blog & Articles</h2>
+                        <button class="btn-primary" onclick="openCreateBlogModal()">
+                            <span>📝 Create Blog Post</span>
+                        </button>
+                    </div>
+
+                    <div class="blog-filters">
+                        <button class="filter-chip active" onclick="filterBlogs('all')">All Posts</button>
+                        <button class="filter-chip" onclick="filterBlogs('published')">Published</button>
+                        <button class="filter-chip" onclick="filterBlogs('draft')">Drafts</button>
+                        <button class="filter-chip" onclick="filterBlogs('industry')">Industry News</button>
+                        <button class="filter-chip" onclick="filterBlogs('tutorials')">Tutorials</button>
+                        <button class="filter-chip" onclick="filterBlogs('student')">Student Stories</button>
+                    </div>
+
+                    <div class="blog-grid">
+                        <!-- Blog posts will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Updated My Products Content -->
+                <div class="sidebar-content-panel" id="my-products-content">
+                    <div class="section-header">
+                        <h2 class="section-title">My Purchased Products</h2>
+                        <button class="btn-primary" onclick="navigateToStore()">
+                            <span>🛒</span> Browse Store
+                        </button>
+                    </div>
+
+                    <div class="product-filters">
+                        <button class="filter-chip active" onclick="filterMyProducts('all')">All Products</button>
+                        <button class="filter-chip" onclick="filterMyProducts('courses')">Courses</button>
+                        <button class="filter-chip" onclick="filterMyProducts('books')">Books</button>
+                        <button class="filter-chip" onclick="filterMyProducts('software')">Software</button>
+                        <button class="filter-chip" onclick="filterMyProducts('materials')">Materials</button>
+                    </div>
+
+                    <div class="my-products-grid" id="myProductsGrid">
+                        <!-- Purchased products will be loaded dynamically -->
+                    </div>
+                </div>
 
 
                 <!-- Comments Content -->
@@ -1083,8 +1089,8 @@
 
                     <div class="form-section">
                         <label class="form-label">About Us</label>
-                        <textarea class="form-textarea" id="aboutUs"
-                            rows="5" placeholder="write something about you"></textarea>
+                        <textarea class="form-textarea" id="aboutUs" rows="5"
+                            placeholder="write something about you"></textarea>
 
                     </div>
 
@@ -1225,61 +1231,61 @@
         </div>
     </div>
 
-   <!-- Updated Community Modal (renamed from Followers Modal) -->
-<div class="modal" id="communityModal">
-    <div class="modal-overlay" onclick="closeCommunityModal()"></div>
-    <div class="modal-content community-modal">
-        <div class="modal-header">
-            <h2 id="communityModalTitle">Community</h2>
-            <button class="modal-close" onclick="closeCommunityModal()">×</button>
-        </div>
-        <div class="modal-body">
-            <div class="community-modal-layout">
-                <div class="community-sidebar">
-                    <div class="community-sidebar-title">
-                        <h3>Community</h3>
+    <!-- Updated Community Modal (renamed from Followers Modal) -->
+    <div class="modal" id="communityModal">
+        <div class="modal-overlay" onclick="closeCommunityModal()"></div>
+        <div class="modal-content community-modal">
+            <div class="modal-header">
+                <h2 id="communityModalTitle">Community</h2>
+                <button class="modal-close" onclick="closeCommunityModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="community-modal-layout">
+                    <div class="community-sidebar">
+                        <div class="community-sidebar-title">
+                            <h3>Community</h3>
+                        </div>
+                        <button class="community-tab active" data-tab="followers">
+                            <span>👥</span>
+                            <span>Followers</span>
+                            <span class="count">45.2K</span>
+                        </button>
+                        <button class="community-tab" data-tab="following">
+                            <span>➕</span>
+                            <span>Following</span>
+                            <span class="count">892</span>
+                        </button>
+                        <button class="community-tab" data-tab="groups">
+                            <span>👨‍👩‍👦‍👦</span>
+                            <span>Groups</span>
+                            <span class="count">12</span>
+                        </button>
+                        <button class="community-tab" data-tab="clubs">
+                            <span>🎭</span>
+                            <span>Clubs</span>
+                            <span class="count">8</span>
+                        </button>
                     </div>
-                    <button class="community-tab active" data-tab="followers">
-                        <span>👥</span>
-                        <span>Followers</span>
-                        <span class="count">45.2K</span>
-                    </button>
-                    <button class="community-tab" data-tab="following">
-                        <span>➕</span>
-                        <span>Following</span>
-                        <span class="count">892</span>
-                    </button>
-                    <button class="community-tab" data-tab="groups">
-                        <span>👨‍👩‍👦‍👦</span>
-                        <span>Groups</span>
-                        <span class="count">12</span>
-                    </button>
-                    <button class="community-tab" data-tab="clubs">
-                        <span>🎭</span>
-                        <span>Clubs</span>
-                        <span class="count">8</span>
-                    </button>
-                </div>
 
-                <div class="community-main">
-                    <div class="community-controls">
-                        <div class="search-wrapper">
-                            <input type="text" class="search-input" placeholder="Search community...">
+                    <div class="community-main">
+                        <div class="community-controls">
+                            <div class="search-wrapper">
+                                <input type="text" class="search-input" placeholder="Search community...">
+                            </div>
+                            <div class="filter-buttons-row">
+                                <button class="filter-btn all-btn"><span>All</span></button>
+                                <button class="filter-btn online-btn"><span>Online</span></button>
+                                <button class="filter-btn active-btn"><span>Active</span></button>
+                            </div>
                         </div>
-                        <div class="filter-buttons-row">
-                            <button class="filter-btn all-btn"><span>All</span></button>
-                            <button class="filter-btn online-btn"><span>Online</span></button>
-                            <button class="filter-btn active-btn"><span>Active</span></button>
+                        <div class="community-list" id="communityList">
+                            <!-- Community members/groups/clubs will be populated here -->
                         </div>
-                    </div>
-                    <div class="community-list" id="communityList">
-                        <!-- Community members/groups/clubs will be populated here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Upload Video Modal -->
     <div class="modal" id="uploadVideoModal">
@@ -1408,6 +1414,7 @@
                             <h3>2.5M+</h3>
                             <p>Monthly Impressions</p>
                         </div>
+                        <span>Mock</span>
                     </div>
                     <div class="ad-stat-card">
                         <div class="ad-stat-icon">🎯</div>
@@ -1415,6 +1422,7 @@
                             <h3>4.2%</h3>
                             <p>Average CTR</p>
                         </div>
+                        <span>Mock</span>
                     </div>
                     <div class="ad-stat-card">
                         <div class="ad-stat-icon">💰</div>
@@ -1422,6 +1430,7 @@
                             <h3>$0.45</h3>
                             <p>Average CPC</p>
                         </div>
+                        <span>Mock</span>
                     </div>
                     <div class="ad-stat-card">
                         <div class="ad-stat-icon">📈</div>
@@ -1429,6 +1438,7 @@
                             <h3>325%</h3>
                             <p>Average ROI</p>
                         </div>
+                        <span>Mock</span>
                     </div>
                 </div>
 
@@ -1437,19 +1447,19 @@
                     <div class="advertisers-grid">
                         <div class="advertiser-card">
                             <img src="https://via.placeholder.com/80" alt="Adobe">
-                            <span>Adobe Creative</span>
+                            <span>Your company name</span>
                         </div>
                         <div class="advertiser-card">
                             <img src="https://via.placeholder.com/80" alt="Canon">
-                            <span>Canon</span>
+                            <span>Your company name</span>
                         </div>
                         <div class="advertiser-card">
                             <img src="https://via.placeholder.com/80" alt="Netflix">
-                            <span>Netflix Studios</span>
+                            <span>Your company name</span>
                         </div>
                         <div class="advertiser-card">
                             <img src="https://via.placeholder.com/80" alt="Sony">
-                            <span>Sony Pictures</span>
+                            <span>Your company name</span>
                         </div>
                     </div>
                 </div>
@@ -1465,8 +1475,9 @@
                             <div class="testimonial-author">
                                 <img src="https://via.placeholder.com/40" alt="Author">
                                 <div>
-                                    <h4>Sarah Johnson</h4>
+                                    <h4>Sarah Yohannes</h4>
                                     <span>Marketing Director, FilmGear Pro</span>
+                                    <span>Mock</span>
                                 </div>
                             </div>
                         </div>
@@ -1478,8 +1489,9 @@
                             <div class="testimonial-author">
                                 <img src="https://via.placeholder.com/40" alt="Author">
                                 <div>
-                                    <h4>Michael Chen</h4>
+                                    <h4>Christian Abebe</h4>
                                     <span>CEO, Digital Arts Academy</span>
+                                    <span>Mock</span>
                                 </div>
                             </div>
                         </div>
@@ -1490,28 +1502,79 @@
                     <h3>Advertising Packages</h3>
                     <div class="packages-grid">
                         <div class="package-card">
-                            <h4>Starter</h4>
-                            <div class="package-price">$299/mo</div>
+                            <h4>Upto Three days</h4>
+                            <div class="package-price">2000 ETB/day</div>
                             <ul>
-                                <li>50,000 impressions</li>
-                                <li>Basic targeting</li>
-                                <li>Performance reports</li>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
                             </ul>
                         </div>
                         <div class="package-card featured">
                             <div class="featured-badge">Most Popular</div>
-                            <h4>Professional</h4>
-                            <div class="package-price">$999/mo</div>
+                            <h4>Upto seven days</h4>
+                            <div class="package-price">/1800 ETB/day</div>
                             <ul>
-                                <li>250,000 impressions</li>
-                                <li>Advanced targeting</li>
-                                <li>A/B testing</li>
-                                <li>Dedicated manager</li>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
                             </ul>
                         </div>
                         <div class="package-card">
-                            <h4>Enterprise</h4>
-                            <div class="package-price">Custom</div>
+                            <h4>Upto Half a month</h4>
+                            <div class="package-price">1500 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto a Month</h4>
+                            <div class="package-price">1200 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto Three Months</h4>
+                            <div class="package-price">1000 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Up to Six Months</h4>
+                            <div class="package-price">800 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto Nine Months</h4>
+                            <div class="package-price">600 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto a Year</h4>
+                            <div class="package-price">400 ETB/day</div>
                             <ul>
                                 <li>Unlimited impressions</li>
                                 <li>Custom targeting</li>
@@ -1619,19 +1682,22 @@
     </div>
 
 
-        <!-- Enhanced Footer -->
+    <!-- Enhanced Footer -->
     <footer class="footer-section">
         <div class="footer-wave">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
-                <path d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+                <path
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
             </svg>
         </div>
-        
+
         <div class="container mx-auto px-4">
             <div class="footer-content">
                 <div class="footer-section-item">
                     <h3 class="footer-title">About Astegni</h3>
-                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
                     <div class="footer-stats">
                         <div class="stat-item">
                             <span class="stat-number">10k+</span>
@@ -1647,7 +1713,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Quick Links</h3>
                     <ul class="footer-links">
@@ -1659,7 +1725,7 @@
                         <li><a href="#" class="footer-link">Careers</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Support</h3>
                     <ul class="footer-links">
@@ -1671,27 +1737,46 @@
                         <li><a href="#" class="footer-link">Safety</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="footer-section-item">
                     <h3 class="footer-title">Connect With Us</h3>
                     <div class="social-links">
                         <a href="#" aria-label="Facebook" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Twitter" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
+                            </svg>
                         </a>
                         <a href="#" aria-label="LinkedIn" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path><circle cx="4" cy="4" r="2"></circle></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
                         </a>
                         <a href="#" aria-label="Instagram" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
                         </a>
                         <a href="#" aria-label="YouTube" class="social-link">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path></svg>
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
+                            </svg>
                         </a>
                     </div>
-                    
+
                     <div class="newsletter-signup">
                         <h4>Subscribe to Newsletter</h4>
                         <form class="newsletter-form">
@@ -1701,7 +1786,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <div class="footer-bottom-content">
                     <p>&copy; 2025 Astegni. All rights reserved.</p>
@@ -1715,37 +1800,37 @@
         </div>
     </footer>
     <!-- Scripts --><!-- In student-profile.html or any protected page -->
-<script src="../js/auth.js"></script>
-<script>
-    // Check authentication on page load
-    (async function() {
-        const auth = window.AuthManager;
-        
-        if (!auth.isAuthenticated()) {
-            // Try to restore session
-            const restored = await auth.restoreSession();
-            
-            if (!restored) {
-                alert('Please login to access this page');
+    <script src="../js/auth.js"></script>
+    <script>
+        // Check authentication on page load
+        (async function () {
+            const auth = window.AuthManager;
+
+            if (!auth.isAuthenticated()) {
+                // Try to restore session
+                const restored = await auth.restoreSession();
+
+                if (!restored) {
+                    alert('Please login to access this page');
+                    window.location.href = '../index.html';
+                    return;
+                }
+            }
+
+            // Check if user has the right role
+            const userRole = auth.getUserRole();
+            if (userRole !== 'student') {
+                alert('This page is for students only');
                 window.location.href = '../index.html';
                 return;
             }
-        }
-        
-        // Check if user has the right role
-        const userRole = auth.getUserRole();
-        if (userRole !== 'student') {
-            alert('This page is for students only');
-            window.location.href = '../index.html';
-            return;
-        }
-        
-        // Page is accessible, load user data
-        const user = auth.getUser();
-        console.log('Current user:', user);
-        // ... rest of your page-specific code
-    })();
-</script>
+
+            // Page is accessible, load user data
+            const user = auth.getUser();
+            console.log('Current user:', user);
+            // ... rest of your page-specific code
+        })();
+    </script>
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
@@ -1754,4 +1839,3 @@
 </body>
 
 </html>
-

@@ -206,21 +206,25 @@
                             <div class="counter-icon">👨‍👩‍👧‍👦</div>
                             <h3 id="counter-parents" class="counter-number">0</h3>
                             <p class="counter-label">Registered Parents</p>
+                            <span>Mock</span>
                         </div>
                         <div class="counter-card-enhanced hover-lift">
                             <div class="counter-icon">🎓</div>
                             <h3 id="counter-students" class="counter-number">0</h3>
                             <p class="counter-label">Students</p>
+                            <span>Mock</span>
                         </div>
                         <div class="counter-card-enhanced hover-lift">
                             <div class="counter-icon">👨‍🏫</div>
                             <h3 id="counter-tutors" class="counter-number">0</h3>
                             <p class="counter-label">Expert Tutors</p>
+                            <span>Mock</span>
                         </div>
                         <div class="counter-card-enhanced hover-lift">
                             <div class="counter-icon">🏢</div>
                             <h3 id="counter-centers" class="counter-number">0</h3>
                             <p class="counter-label">Training Centers</p>
+                            <span>Mock</span>
                         </div>
                     </div>
                     <div class="counter-grid-bottom">
@@ -228,11 +232,13 @@
                             <div class="counter-icon">📚</div>
                             <h3 id="counter-books" class="counter-number">0</h3>
                             <p class="counter-label">Books Available</p>
+                            <span>Mock</span>
                         </div>
                         <div class="counter-card-enhanced hover-lift">
                             <div class="counter-icon">💼</div>
                             <h3 id="counter-jobs" class="counter-number">0</h3>
                             <p class="counter-label">Job Opportunities</p>
+                            <span>Mock</span>
                         </div>
                     </div>
                 </div>
@@ -327,13 +333,11 @@
                 <div class="ad-backdrop"></div>
                 <div class="ad-content-wrapper">
                     <div class="ad-text-content">
-                        <span class="ad-tag">FEATURED</span>
-                        <h3 class="ad-headline">Transform Your Learning Experience</h3>
-                        <p class="ad-description">Premium tutoring services now available with special discounts for
-                            early subscribers</p>
+                        <span class="ad-tag">Place your Ad. here</span>
+                        <h3 class="ad-headline">Transform Your Ad. Experience</h3>
+                        <p class="ad-description">Advertise to the most targated audience.</p>
                         <div class="ad-buttons">
-                            <button class="ad-primary-btn">Explore Premium</button>
-                            <button class="ad-secondary-btn">Learn More</button>
+                            <button class="ad-primary-btn"  onclick="openAdAnalyticsModal()">Learn more</button>
                         </div>
                     </div>
                     <div class="ad-visual-content">
@@ -345,6 +349,8 @@
             </div>
         </div>
     </section>
+
+
 
     <!-- Enhanced News Section with Larger Text -->
     <section class="news-section py-16">
@@ -368,9 +374,10 @@
                         <div class="news-meta">
                             <span class="news-date">Today</span>
                             <span class="news-category">Education</span>
+                            <span>Mock</span>
                         </div>
                     </div>
-                    <a href="news.html" class="news-cta">
+                    <a href="#" onclick="handleNavLinkClick(event, 'news')" class="news-cta">
                         Read All News
                         <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
@@ -1104,6 +1111,201 @@
         </div>
     </div>
 
+    <!-- Ad Analytics Modal -->
+    <div class="modal" id="adAnalyticsModal">
+        <div class="modal-overlay" onclick="closeAdAnalyticsModal()"></div>
+        <div class="modal-content ad-analytics-modal">
+            <div class="modal-header">
+                <h2>Advertisement Analytics & Information</h2>
+                <button class="modal-close" onclick="closeAdAnalyticsModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="ad-stats-grid">
+                    <div class="ad-stat-card">
+                        <div class="ad-stat-icon">👁️</div>
+                        <div class="ad-stat-info">
+                            <h3>2.5M+</h3>
+                            <p>Monthly Impressions</p>
+                        </div>
+                        <span>Mock</span>
+                    </div>
+                    <div class="ad-stat-card">
+                        <div class="ad-stat-icon">🎯</div>
+                        <div class="ad-stat-info">
+                            <h3>4.2%</h3>
+                            <p>Average CTR</p>
+                        </div>
+                        <span>Mock</span>
+                    </div>
+                    <div class="ad-stat-card">
+                        <div class="ad-stat-icon">💰</div>
+                        <div class="ad-stat-info">
+                            <h3>$0.45</h3>
+                            <p>Average CPC</p>
+                        </div>
+                        <span>Mock</span>
+                    </div>
+                    <div class="ad-stat-card">
+                        <div class="ad-stat-icon">📈</div>
+                        <div class="ad-stat-info">
+                            <h3>325%</h3>
+                            <p>Average ROI</p>
+                        </div>
+                        <span>Mock</span>
+                    </div>
+                </div>
+
+                <div class="advertisers-section">
+                    <h3>Our Premium Advertisers</h3>
+                    <div class="advertisers-grid">
+                        <div class="advertiser-card">
+                            <img src="https://via.placeholder.com/80" alt="Adobe">
+                            <span>Your company name</span>
+                        </div>
+                        <div class="advertiser-card">
+                            <img src="https://via.placeholder.com/80" alt="Canon">
+                            <span>Your company name</span>
+                        </div>
+                        <div class="advertiser-card">
+                            <img src="https://via.placeholder.com/80" alt="Netflix">
+                            <span>Your company name</span>
+                        </div>
+                        <div class="advertiser-card">
+                            <img src="https://via.placeholder.com/80" alt="Sony">
+                            <span>Your company name</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonials-section">
+                    <h3>Client Testimonials</h3>
+                    <div class="testimonials-carousel">
+                        <div class="testimonial-card">
+                            <div class="testimonial-content">
+                                <p>"Advertising on Astegni has been game-changing for our film equipment business. We've
+                                    seen a 400% increase in qualified leads."</p>
+                            </div>
+                            <div class="testimonial-author">
+                                <img src="https://via.placeholder.com/40" alt="Author">
+                                <div>
+                                    <h4>Sarah Yohannes</h4>
+                                    <span>Marketing Director, FilmGear Pro</span>
+                                    <span>Mock</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="testimonial-card">
+                            <div class="testimonial-content">
+                                <p>"The targeted audience on this platform is exactly what we needed. Our course
+                                    enrollments have doubled since we started advertising here."</p>
+                            </div>
+                            <div class="testimonial-author">
+                                <img src="https://via.placeholder.com/40" alt="Author">
+                                <div>
+                                    <h4>Christian Abebe</h4>
+                                    <span>CEO, Digital Arts Academy</span>
+                                    <span>Mock</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ad-packages">
+                    <h3>Advertising Packages</h3>
+                    <div class="packages-grid">
+                        <div class="package-card">
+                            <h4>Upto Three days</h4>
+                            <div class="package-price">2000 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card featured">
+                            <div class="featured-badge">Most Popular</div>
+                            <h4>Upto seven days</h4>
+                            <div class="package-price">/1800 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto Half a month</h4>
+                            <div class="package-price">1500 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto a Month</h4>
+                            <div class="package-price">1200 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto Three Months</h4>
+                            <div class="package-price">1000 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Up to Six Months</h4>
+                            <div class="package-price">800 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto Nine Months</h4>
+                            <div class="package-price">600 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                        <div class="package-card">
+                            <h4>Upto a Year</h4>
+                            <div class="package-price">400 ETB/day</div>
+                            <ul>
+                                <li>Unlimited impressions</li>
+                                <li>Custom targeting</li>
+                                <li>Priority placement</li>
+                                <li>Full analytics suite</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeAdAnalyticsModal()">Close</button>
+                <button class="btn-primary" onclick="startAdvertising()">Start Advertising</button>
+            </div>
+        </div>
+    </div>
+
+
     <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
         <div class="footer-wave" aria-hidden="true">
@@ -1405,81 +1607,81 @@
     </script>
     <script>
 
-// Updated Coming Soon Modal with Fix for Logged-In Message Display
-function openComingSoonModal(feature) {
-    const modal = document.getElementById('coming-soon-modal');
-    const message = document.getElementById('coming-soon-message');
+        // Updated Coming Soon Modal with Fix for Logged-In Message Display
+        function openComingSoonModal(feature) {
+            const modal = document.getElementById('coming-soon-modal');
+            const message = document.getElementById('coming-soon-message');
 
-    if (!modal || !message) {
-        console.error('Coming soon modal elements not found');
-        return;
-    }
+            if (!modal || !message) {
+                console.error('Coming soon modal elements not found');
+                return;
+            }
 
-    // Customize message based on feature
-    const messages = {
-        'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
-        'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
-        'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
-    };
+            // Customize message based on feature
+            const messages = {
+                'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
+                'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
+                'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
+            };
 
-    message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
+            message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
 
-    // Update content based on authentication status
-    updateComingSoonModalContent();
+            // Update content based on authentication status
+            updateComingSoonModalContent();
 
-    // Open the modal
-    openModal('coming-soon-modal');
-}
-
-function updateComingSoonModalContent() {
-    console.log('Updating coming soon modal content...');
-    console.log('User logged in:', APP_STATE.isLoggedIn);
-    console.log('Current user:', APP_STATE.currentUser);
-    
-    const form = document.getElementById('coming-soon-form');
-    const authFooter = document.querySelector('.auth-footer');
-    const featuresSection = document.querySelector('.coming-soon-features');
-    
-    if (!form) {
-        console.error('Form element not found');
-        return;
-    }
-    
-    // Check if user is authenticated using APP_STATE
-    if (APP_STATE.isLoggedIn && APP_STATE.currentUser) {
-        console.log('User is logged in, hiding form and features...');
-        
-        // Hide form and features
-        form.style.display = 'none';
-        
-        if (featuresSection) {
-            featuresSection.style.display = 'none';
-            console.log('Features section hidden');
+            // Open the modal
+            openModal('coming-soon-modal');
         }
-        
-        // Remove any existing logged-in message first
-        let existingMessage = document.getElementById('coming-soon-logged-in-message');
-        if (existingMessage) {
-            existingMessage.remove();
-            console.log('Removed existing logged-in message');
-        }
-        
-        // Create new logged-in message
-        let loggedInMessage = document.createElement('div');
-        loggedInMessage.id = 'coming-soon-logged-in-message';
-        loggedInMessage.className = 'logged-in-message';
-        loggedInMessage.style.display = 'block'; // Ensure it's visible
-        
-        // Get user's name and email
-        const userName = APP_STATE.currentUser.first_name || 
-                        APP_STATE.currentUser.name?.split(' ')[0] || 
-                        'there';
-        const userEmail = APP_STATE.currentUser.email || 'your registered email';
-        
-        console.log('Creating message for:', userName, userEmail);
-        
-        // Set the HTML content
-        loggedInMessage.innerHTML = `
+
+        function updateComingSoonModalContent() {
+            console.log('Updating coming soon modal content...');
+            console.log('User logged in:', APP_STATE.isLoggedIn);
+            console.log('Current user:', APP_STATE.currentUser);
+
+            const form = document.getElementById('coming-soon-form');
+            const authFooter = document.querySelector('.auth-footer');
+            const featuresSection = document.querySelector('.coming-soon-features');
+
+            if (!form) {
+                console.error('Form element not found');
+                return;
+            }
+
+            // Check if user is authenticated using APP_STATE
+            if (APP_STATE.isLoggedIn && APP_STATE.currentUser) {
+                console.log('User is logged in, hiding form and features...');
+
+                // Hide form and features
+                form.style.display = 'none';
+
+                if (featuresSection) {
+                    featuresSection.style.display = 'none';
+                    console.log('Features section hidden');
+                }
+
+                // Remove any existing logged-in message first
+                let existingMessage = document.getElementById('coming-soon-logged-in-message');
+                if (existingMessage) {
+                    existingMessage.remove();
+                    console.log('Removed existing logged-in message');
+                }
+
+                // Create new logged-in message
+                let loggedInMessage = document.createElement('div');
+                loggedInMessage.id = 'coming-soon-logged-in-message';
+                loggedInMessage.className = 'logged-in-message';
+                loggedInMessage.style.display = 'block'; // Ensure it's visible
+
+                // Get user's name and email
+                const userName = APP_STATE.currentUser.first_name ||
+                    APP_STATE.currentUser.name?.split(' ')[0] ||
+                    'there';
+                const userEmail = APP_STATE.currentUser.email || 'your registered email';
+
+                console.log('Creating message for:', userName, userEmail);
+
+                // Set the HTML content
+                loggedInMessage.innerHTML = `
             <div class="success-check">
                 <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -1509,132 +1711,132 @@ function updateComingSoonModalContent() {
                 Expected launch: <strong>Q2 2025</strong>
             </p>
         `;
-        
-        // Find the best place to insert the message
-        // Try multiple insertion points
-        let inserted = false;
-        
-        // Try 1: After features section (even if hidden)
-        if (featuresSection && featuresSection.parentNode) {
-            featuresSection.parentNode.insertBefore(loggedInMessage, featuresSection.nextSibling);
-            console.log('Inserted after features section');
-            inserted = true;
-        }
-        // Try 2: Before form (even if hidden)
-        else if (form && form.parentNode) {
-            form.parentNode.insertBefore(loggedInMessage, form);
-            console.log('Inserted before form');
-            inserted = true;
-        }
-        // Try 3: Inside modal content div
-        else {
-            const modalContent = document.querySelector('.coming-soon-content');
-            if (modalContent) {
-                // Find auth-footer and insert before it
-                const authFooterElement = modalContent.querySelector('.auth-footer');
-                if (authFooterElement) {
-                    modalContent.insertBefore(loggedInMessage, authFooterElement);
-                    console.log('Inserted before auth-footer');
-                } else {
-                    modalContent.appendChild(loggedInMessage);
-                    console.log('Appended to modal content');
+
+                // Find the best place to insert the message
+                // Try multiple insertion points
+                let inserted = false;
+
+                // Try 1: After features section (even if hidden)
+                if (featuresSection && featuresSection.parentNode) {
+                    featuresSection.parentNode.insertBefore(loggedInMessage, featuresSection.nextSibling);
+                    console.log('Inserted after features section');
+                    inserted = true;
                 }
-                inserted = true;
-            }
-        }
-        
-        if (!inserted) {
-            console.error('Could not insert logged-in message anywhere!');
-        } else {
-            console.log('Logged-in message successfully inserted and displayed');
-        }
-        
-        // Update footer text for logged-in users
-        if (authFooter) {
-            authFooter.innerHTML = `
+                // Try 2: Before form (even if hidden)
+                else if (form && form.parentNode) {
+                    form.parentNode.insertBefore(loggedInMessage, form);
+                    console.log('Inserted before form');
+                    inserted = true;
+                }
+                // Try 3: Inside modal content div
+                else {
+                    const modalContent = document.querySelector('.coming-soon-content');
+                    if (modalContent) {
+                        // Find auth-footer and insert before it
+                        const authFooterElement = modalContent.querySelector('.auth-footer');
+                        if (authFooterElement) {
+                            modalContent.insertBefore(loggedInMessage, authFooterElement);
+                            console.log('Inserted before auth-footer');
+                        } else {
+                            modalContent.appendChild(loggedInMessage);
+                            console.log('Appended to modal content');
+                        }
+                        inserted = true;
+                    }
+                }
+
+                if (!inserted) {
+                    console.error('Could not insert logged-in message anywhere!');
+                } else {
+                    console.log('Logged-in message successfully inserted and displayed');
+                }
+
+                // Update footer text for logged-in users
+                if (authFooter) {
+                    authFooter.innerHTML = `
                 You're on the list! Expected launch: <strong>Q2 2025</strong>
             `;
-        }
-        
-    } else {
-        console.log('User is not logged in, showing form and features...');
-        
-        // User is not logged in - show BOTH features and form
-        form.style.display = 'block';
-        
-        // Show the features section
-        if (featuresSection) {
-            featuresSection.style.display = 'flex';
-            console.log('Features section shown');
-        }
-        
-        // Remove logged-in message if it exists
-        const loggedInMessage = document.getElementById('coming-soon-logged-in-message');
-        if (loggedInMessage) {
-            loggedInMessage.remove();
-            console.log('Removed logged-in message');
-        }
-        
-        // Restore original footer text
-        if (authFooter) {
-            authFooter.innerHTML = `
+                }
+
+            } else {
+                console.log('User is not logged in, showing form and features...');
+
+                // User is not logged in - show BOTH features and form
+                form.style.display = 'block';
+
+                // Show the features section
+                if (featuresSection) {
+                    featuresSection.style.display = 'flex';
+                    console.log('Features section shown');
+                }
+
+                // Remove logged-in message if it exists
+                const loggedInMessage = document.getElementById('coming-soon-logged-in-message');
+                if (loggedInMessage) {
+                    loggedInMessage.remove();
+                    console.log('Removed logged-in message');
+                }
+
+                // Restore original footer text
+                if (authFooter) {
+                    authFooter.innerHTML = `
                 Expected launch: <strong>Q2 2025</strong>
             `;
+                }
+            }
         }
-    }
-}
 
-function handleComingSoonNotification(e) {
-    e.preventDefault();
-    
-    // This should only run if user is not logged in (form is visible)
-    if (APP_STATE.isLoggedIn) {
-        showToast('You are already on the notification list!', 'info');
-        return;
-    }
-    
-    const email = document.getElementById('notify-email')?.value;
+        function handleComingSoonNotification(e) {
+            e.preventDefault();
 
-    if (!email) {
-        showToast('Please enter your email address', 'warning');
-        return;
-    }
+            // This should only run if user is not logged in (form is visible)
+            if (APP_STATE.isLoggedIn) {
+                showToast('You are already on the notification list!', 'info');
+                return;
+            }
 
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        showToast('Please enter a valid email address', 'warning');
-        return;
-    }
+            const email = document.getElementById('notify-email')?.value;
 
-    // Show loading state
-    const submitBtn = e.target.querySelector('.submit-btn');
-    const originalText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Subscribing...';
+            if (!email) {
+                showToast('Please enter your email address', 'warning');
+                return;
+            }
 
-    // Simulate API call
-    setTimeout(() => {
-        // Reset button
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showToast('Please enter a valid email address', 'warning');
+                return;
+            }
 
-        // Show success message
-        showToast('You will be notified when this feature launches!', 'success');
+            // Show loading state
+            const submitBtn = e.target.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Subscribing...';
 
-        // Clear form
-        document.getElementById('notify-email').value = '';
+            // Simulate API call
+            setTimeout(() => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
 
-        // Close modal after delay
-        setTimeout(() => {
-            closeModal('coming-soon-modal');
-        }, 2000);
-    }, 1500);
-}
+                // Show success message
+                showToast('You will be notified when this feature launches!', 'success');
 
-// Add CSS for the logged-in message styling
-const comingSoonAuthStyles = document.createElement('style');
-comingSoonAuthStyles.textContent = `
+                // Clear form
+                document.getElementById('notify-email').value = '';
+
+                // Close modal after delay
+                setTimeout(() => {
+                    closeModal('coming-soon-modal');
+                }, 2000);
+            }, 1500);
+        }
+
+        // Add CSS for the logged-in message styling
+        const comingSoonAuthStyles = document.createElement('style');
+        comingSoonAuthStyles.textContent = `
     /* Ensure visibility of logged-in message */
     #coming-soon-logged-in-message {
         display: block !important;
@@ -1800,132 +2002,132 @@ comingSoonAuthStyles.textContent = `
     }
 `;
 
-// Add styles if not already added
-if (!document.getElementById('coming-soon-auth-styles')) {
-    comingSoonAuthStyles.id = 'coming-soon-auth-styles';
-    document.head.appendChild(comingSoonAuthStyles);
-}
-
-// Initialize on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Initializing coming soon modal handlers...');
-    
-    // Bind form submission
-    const comingSoonForm = document.getElementById('coming-soon-form');
-    if (comingSoonForm) {
-        comingSoonForm.addEventListener('submit', handleComingSoonNotification);
-        console.log('Form handler attached');
-    }
-    
-    // Listen for auth state changes (if user logs in/out in another tab)
-    window.addEventListener('storage', (e) => {
-        if (e.key === 'token' || e.key === 'currentUser') {
-            // Refresh modal if it's open
-            const modal = document.getElementById('coming-soon-modal');
-            if (modal && modal.classList.contains('active')) {
-                console.log('Auth state changed, refreshing modal...');
-                updateComingSoonModalContent();
-            }
+        // Add styles if not already added
+        if (!document.getElementById('coming-soon-auth-styles')) {
+            comingSoonAuthStyles.id = 'coming-soon-auth-styles';
+            document.head.appendChild(comingSoonAuthStyles);
         }
-    });
-});
 
-// Export functions to window object for global access
-window.openComingSoonModal = openComingSoonModal;
-window.handleComingSoonNotification = handleComingSoonNotification;
-window.updateComingSoonModalContent = updateComingSoonModalContent;
+        // Initialize on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Initializing coming soon modal handlers...');
 
-// Update handleNavLinkClick to use the new function
-window.handleNavLinkClick = function(e, link) {
-    // Define coming soon features
-    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+            // Bind form submission
+            const comingSoonForm = document.getElementById('coming-soon-form');
+            if (comingSoonForm) {
+                comingSoonForm.addEventListener('submit', handleComingSoonNotification);
+                console.log('Form handler attached');
+            }
 
-    // Check if it's a coming soon feature
-    if (comingSoonFeatures.includes(link)) {
-        e.preventDefault();
-        e.stopPropagation();
-        openComingSoonModal(link);
-        return false;
-    }
+            // Listen for auth state changes (if user logs in/out in another tab)
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'token' || e.key === 'currentUser') {
+                    // Refresh modal if it's open
+                    const modal = document.getElementById('coming-soon-modal');
+                    if (modal && modal.classList.contains('active')) {
+                        console.log('Auth state changed, refreshing modal...');
+                        updateComingSoonModalContent();
+                    }
+                }
+            });
+        });
 
-    // Existing protected pages logic
-    if (APP_STATE.isLoggedIn) return true;
+        // Export functions to window object for global access
+        window.openComingSoonModal = openComingSoonModal;
+        window.handleComingSoonNotification = handleComingSoonNotification;
+        window.updateComingSoonModalContent = updateComingSoonModalContent;
 
-    const protectedPages = ['find-tutors', 'reels'];
-    if (protectedPages.includes(link)) {
-        e.preventDefault();
-        e.stopPropagation();
-        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
-        openModal("login-modal");
-        return false;
-    }
+        // Update handleNavLinkClick to use the new function
+        window.handleNavLinkClick = function (e, link) {
+            // Define coming soon features
+            const comingSoonFeatures = ['news', 'store', 'find-jobs'];
 
-    return true;
-};
+            // Check if it's a coming soon feature
+            if (comingSoonFeatures.includes(link)) {
+                e.preventDefault();
+                e.stopPropagation();
+                openComingSoonModal(link);
+                return false;
+            }
+
+            // Existing protected pages logic
+            if (APP_STATE.isLoggedIn) return true;
+
+            const protectedPages = ['find-tutors', 'reels'];
+            if (protectedPages.includes(link)) {
+                e.preventDefault();
+                e.stopPropagation();
+                showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
+                openModal("login-modal");
+                return false;
+            }
+
+            return true;
+        };
 
     </script>
 
-    
-    
+
+
     <script src="js/auth.js"></script>
     <script src="js/index.js"></script>
-<script>
-    // Add this to your existing index.js or at the bottom of find-tutors.html in a script tag
+    <script>
+        // Add this to your existing index.js or at the bottom of find-tutors.html in a script tag
 
-// Coming Soon Modal Authentication Integration
-function openComingSoonModal(feature) {
-    const modal = document.getElementById('coming-soon-modal');
-    const message = document.getElementById('coming-soon-message');
-    const form = document.getElementById('coming-soon-form');
+        // Coming Soon Modal Authentication Integration
+        function openComingSoonModal(feature) {
+            const modal = document.getElementById('coming-soon-modal');
+            const message = document.getElementById('coming-soon-message');
+            const form = document.getElementById('coming-soon-form');
 
-    if (!modal || !message) return;
+            if (!modal || !message) return;
 
-    // Customize message based on feature
-    const messages = {
-        'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
-        'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
-        'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
-    };
+            // Customize message based on feature
+            const messages = {
+                'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
+                'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
+                'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!'
+            };
 
-    message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
+            message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
 
-    // Update content based on authentication status
-    updateComingSoonModalContent();
+            // Update content based on authentication status
+            updateComingSoonModalContent();
 
-    // Open the modal
-    openModal('coming-soon-modal');
-}
-
-function updateComingSoonModalContent() {
-    const form = document.getElementById('coming-soon-form');
-    const authFooter = document.querySelector('.auth-footer');
-    
-    if (!form) return;
-    
-    // Check if user is authenticated using APP_STATE
-    if (APP_STATE.isLoggedIn && APP_STATE.currentUser) {
-        // User is logged in - hide form and show personalized message
-        form.style.display = 'none';
-        
-        // Create or update the logged-in message
-        let loggedInMessage = document.getElementById('coming-soon-logged-in-message');
-        
-        if (!loggedInMessage) {
-            loggedInMessage = document.createElement('div');
-            loggedInMessage.id = 'coming-soon-logged-in-message';
-            loggedInMessage.className = 'logged-in-message';
-            
-            // Insert it where the form was
-            form.parentNode.insertBefore(loggedInMessage, form);
+            // Open the modal
+            openModal('coming-soon-modal');
         }
-        
-        // Get user's name and email
-        const userName = APP_STATE.currentUser.first_name || 
-                        APP_STATE.currentUser.name?.split(' ')[0] || 
-                        'there';
-        const userEmail = APP_STATE.currentUser.email || 'your registered email';
-        
-        loggedInMessage.innerHTML = `
+
+        function updateComingSoonModalContent() {
+            const form = document.getElementById('coming-soon-form');
+            const authFooter = document.querySelector('.auth-footer');
+
+            if (!form) return;
+
+            // Check if user is authenticated using APP_STATE
+            if (APP_STATE.isLoggedIn && APP_STATE.currentUser) {
+                // User is logged in - hide form and show personalized message
+                form.style.display = 'none';
+
+                // Create or update the logged-in message
+                let loggedInMessage = document.getElementById('coming-soon-logged-in-message');
+
+                if (!loggedInMessage) {
+                    loggedInMessage = document.createElement('div');
+                    loggedInMessage.id = 'coming-soon-logged-in-message';
+                    loggedInMessage.className = 'logged-in-message';
+
+                    // Insert it where the form was
+                    form.parentNode.insertBefore(loggedInMessage, form);
+                }
+
+                // Get user's name and email
+                const userName = APP_STATE.currentUser.first_name ||
+                    APP_STATE.currentUser.name?.split(' ')[0] ||
+                    'there';
+                const userEmail = APP_STATE.currentUser.email || 'your registered email';
+
+                loggedInMessage.innerHTML = `
             <div class="success-check">
                 <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
@@ -1952,76 +2154,76 @@ function updateComingSoonModalContent() {
                 </div>
             </div>
         `;
-        
-        // Update footer text for logged-in users
-        if (authFooter) {
-            authFooter.innerHTML = `
+
+                // Update footer text for logged-in users
+                if (authFooter) {
+                    authFooter.innerHTML = `
                 You're on the list! Expected launch: <strong>Q2 2025</strong>
             `;
-        }
-    } else {
-        // User is not logged in - show form
-        form.style.display = 'block';
-        
-        // Remove logged-in message if it exists
-        const loggedInMessage = document.getElementById('coming-soon-logged-in-message');
-        if (loggedInMessage) {
-            loggedInMessage.remove();
-        }
-        
-        // Restore original footer text
-        if (authFooter) {
-            authFooter.innerHTML = `
+                }
+            } else {
+                // User is not logged in - show form
+                form.style.display = 'block';
+
+                // Remove logged-in message if it exists
+                const loggedInMessage = document.getElementById('coming-soon-logged-in-message');
+                if (loggedInMessage) {
+                    loggedInMessage.remove();
+                }
+
+                // Restore original footer text
+                if (authFooter) {
+                    authFooter.innerHTML = `
                 Expected launch: <strong>Q2 2025</strong>
             `;
+                }
+            }
         }
-    }
-}
 
-function handleComingSoonNotification(e) {
-    e.preventDefault();
-    
-    // This should only run if user is not logged in (form is visible)
-    if (APP_STATE.isLoggedIn) {
-        showToast('You are already on the notification list!', 'info');
-        return;
-    }
-    
-    const email = document.getElementById('notify-email')?.value;
+        function handleComingSoonNotification(e) {
+            e.preventDefault();
 
-    if (!email) {
-        showToast('Please enter your email address', 'warning');
-        return;
-    }
+            // This should only run if user is not logged in (form is visible)
+            if (APP_STATE.isLoggedIn) {
+                showToast('You are already on the notification list!', 'info');
+                return;
+            }
 
-    // Show loading state
-    const submitBtn = e.target.querySelector('.submit-btn');
-    const originalText = submitBtn.textContent;
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Subscribing...';
+            const email = document.getElementById('notify-email')?.value;
 
-    // Simulate API call
-    setTimeout(() => {
-        // Reset button
-        submitBtn.disabled = false;
-        submitBtn.textContent = originalText;
+            if (!email) {
+                showToast('Please enter your email address', 'warning');
+                return;
+            }
 
-        // Show success message
-        showToast('You will be notified when this feature launches!', 'success');
+            // Show loading state
+            const submitBtn = e.target.querySelector('.submit-btn');
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Subscribing...';
 
-        // Clear form
-        document.getElementById('notify-email').value = '';
+            // Simulate API call
+            setTimeout(() => {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
 
-        // Close modal after delay
-        setTimeout(() => {
-            closeModal('coming-soon-modal');
-        }, 2000);
-    }, 1500);
-}
+                // Show success message
+                showToast('You will be notified when this feature launches!', 'success');
 
-// Add CSS for the logged-in message styling
-const comingSoonAuthStyles = document.createElement('style');
-comingSoonAuthStyles.textContent = `
+                // Clear form
+                document.getElementById('notify-email').value = '';
+
+                // Close modal after delay
+                setTimeout(() => {
+                    closeModal('coming-soon-modal');
+                }, 2000);
+            }, 1500);
+        }
+
+        // Add CSS for the logged-in message styling
+        const comingSoonAuthStyles = document.createElement('style');
+        comingSoonAuthStyles.textContent = `
     .logged-in-message {
         text-align: center;
         padding: 1.5rem 0;
@@ -2176,45 +2378,46 @@ comingSoonAuthStyles.textContent = `
     }
 `;
 
-// Add styles if not already added
-if (!document.getElementById('coming-soon-auth-styles')) {
-    comingSoonAuthStyles.id = 'coming-soon-auth-styles';
-    document.head.appendChild(comingSoonAuthStyles);
-}
+        // Add styles if not already added
+        if (!document.getElementById('coming-soon-auth-styles')) {
+            comingSoonAuthStyles.id = 'coming-soon-auth-styles';
+            document.head.appendChild(comingSoonAuthStyles);
+        }
 
-// Export functions to window object for global access
-window.openComingSoonModal = openComingSoonModal;
-window.handleComingSoonNotification = handleComingSoonNotification;
-window.updateComingSoonModalContent = updateComingSoonModalContent;
+        // Export functions to window object for global access
+        window.openComingSoonModal = openComingSoonModal;
+        window.handleComingSoonNotification = handleComingSoonNotification;
+        window.updateComingSoonModalContent = updateComingSoonModalContent;
 
-// Update handleNavLinkClick to use the new function
-window.handleNavLinkClick = function(e, link) {
-    // Define coming soon features
-    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+        // Update handleNavLinkClick to use the new function
+        window.handleNavLinkClick = function (e, link) {
+            // Define coming soon features
+            const comingSoonFeatures = ['news', 'store', 'find-jobs'];
 
-    // Check if it's a coming soon feature
-    if (comingSoonFeatures.includes(link)) {
-        e.preventDefault();
-        e.stopPropagation();
-        openComingSoonModal(link);
-        return false;
-    }
+            // Check if it's a coming soon feature
+            if (comingSoonFeatures.includes(link)) {
+                e.preventDefault();
+                e.stopPropagation();
+                openComingSoonModal(link);
+                return false;
+            }
 
-    // Existing protected pages logic
-    if (APP_STATE.isLoggedIn) return true;
+            // Existing protected pages logic
+            if (APP_STATE.isLoggedIn) return true;
 
-    const protectedPages = ['find-tutors', 'reels'];
-    if (protectedPages.includes(link)) {
-        e.preventDefault();
-        e.stopPropagation();
-        showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
-        openModal("login-modal");
-        return false;
-    }
+            const protectedPages = ['find-tutors', 'reels'];
+            if (protectedPages.includes(link)) {
+                e.preventDefault();
+                e.stopPropagation();
+                showToast(`Please login to access ${link.replace("-", " ")}`, "warning");
+                openModal("login-modal");
+                return false;
+            }
 
-    return true;
-};
-</script>
+            return true;
+        };
+
+    </script>
 </body>
 
 </html>
