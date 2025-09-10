@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Astegni Delivery-Profile</title>
+    <link rel="stylesheet" href="../css/institute.css">
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Modal Styles */
+        .upload-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .upload-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 2px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+        }
+
+        .modal-inner {
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-close {
+            width: 35px;
+            height: 35px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: rotate(90deg);
+        }
+
+        .upload-area {
+            border: 3px dashed #e0e0e0;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            background: #fafafa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .upload-text {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 14px;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .preview-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            color: #999;
+            font-size: 14px;
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-upload {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-upload.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-upload.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-upload.secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-upload.secondary:hover {
+            background: #e0e0e0;
+        }
+
+        /* ===== ONLY ADD THESE SMOOTH SCROLL STYLES TO YOUR EXISTING CSS ===== */
+
+        /* Smooth scroll behavior for the page */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Enhanced Sidebar Animation Styles - Add to your existing .left-sidebar */
+        .left-sidebar {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .left-sidebar.sliding-up {
+            animation: slideUpSidebar 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .left-sidebar.footer-visible {
+            height: calc(100vh - 60px - var(--footer-offset)) !important;
+            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUpSidebar {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            50% {
+                transform: translateY(-10px);
+                opacity: 0.9;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar glass">
+        <div class="container nav-container">
+            <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+            <div class="nav-brand">
+                <a href="../index.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Delivery</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+
+            </div>
+            <div class="nav-menu">
+                <a href="../branch/news.html" class="nav-link">
+                    <span class="nav-icon">📰</span>
+                    <span>News</span>
+                </a>
+                <a href="../branch/find-tutors.html" class="nav-link">
+                    <span class="nav-icon">👨‍🏫</span>
+                    <span>Find Tutors</span>
+                </a>
+                <a href="../branch/reels.html" class="nav-link">
+                    <span class="nav-icon">🎬</span>
+                    <span>Reels</span>
+                </a>
+                <a href="../branch/store.html" class="nav-link">
+                    <span class="nav-icon">🛒</span>
+                    <span>Store</span>
+                </a>
+                <a href="../branch/find-jobs.html" class="nav-link">
+                    <span class="nav-icon">💼</span>
+                    <span>Find Jobs</span>
+                </a>
+                <button class="notification-btn">
+                    <span class="notification-icon">🔔</span>
+                    <span class="notification-badge pulse">5</span>
+                </button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Left Sidebar -->
+    <aside class="left-sidebar" id="leftSidebar">
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <button class="sidebar-btn active" data-content="dashboard">
+                    <span class="sidebar-btn-icon">📊</span>
+                    <span>Dashboard</span>
+                </button>
+            </div>
+
+            <!-- NEW DELIVERY SECTION -->
+            <div class="sidebar-section" data-content="deliver">
+                <button class="sidebar-btn" data-content="ai-insights">
+                    <span class="sidebar-btn-icon">🧠</span>
+                    <span>AI Insights</span>
+                    <span class="sidebar-badge">New</span>
+                </button>
+                <button class="sidebar-btn" data-content="my-location">
+                    <span class="sidebar-btn-icon">📍</span>
+                    <span>My Location</span>
+                    <span class="sidebar-badge live">Live</span>
+                </button>
+                <button class="sidebar-btn" data-content="active-delivery">
+                    <span class="sidebar-btn-icon">📦</span>
+                    <span>Active Delivery</span>
+                    <span class="sidebar-badge live">Live</span>
+                </button>
+                <button class="sidebar-btn" data-content="saved-routes">
+                    <span class="sidebar-btn-icon">🗺️</span>
+                    <span>Saved Routes</span>
+                    <span class="sidebar-badge">28</span>
+                </button>
+
+                <button class="sidebar-btn" data-content="delivery-history">
+                    <span class="sidebar-btn-icon">📋</span>
+                    <span>Delivery History</span>
+                    <span class="sidebar-badge">234</span>
+                </button>
+                <button class="sidebar-btn" data-content="delivery-schedule">
+                    <span class="sidebar-btn-icon">📅</span>
+                    <span>Schedule</span>
+                </button>
+                <button class="sidebar-btn" data-content="calls">
+                    <span class="sidebar-btn-icon">📞</span>
+                    <span>Calls</span>
+                    <span class="sidebar-badge">23</span>
+                </button>
+                <button class="sidebar-btn" data-content="customers">
+                    <span class="sidebar-btn-icon">👥</span>
+                    <span>Customers</span>
+                    <span class="sidebar-badge">156</span>
+                </button>
+                <button class="sidebar-btn" data-content="ratings-reviews">
+                    <span class="sidebar-btn-icon">⭐</span>
+                    <span>Ratings & Reviews</span>
+                    <span class="sidebar-badge">4.7</span>
+                </button>
+                <button class="sidebar-btn" data-content="earnings">
+                    <span class="sidebar-btn-icon">💰</span>
+                    <span>Earnings</span>
+                </button>
+            </div>
+
+            <div class="sidebar-section" data-content="education">
+                <button class="sidebar-btn" data-content="jobs">
+                    <span class="sidebar-btn-icon">💼</span>
+                    <span>My Job Board</span>
+                    <span class="sidebar-badge">3</span>
+                </button>
+                <button class="sidebar-btn" data-content="classes">
+                    <span class="sidebar-btn-icon">🎓</span>
+                    <span>My Classes</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+
+            </div>
+
+            <div class="sidebar-section" data-content="entertainment">
+                <button class="sidebar-btn" data-content="events">
+                    <span class="sidebar-btn-icon">📅</span>
+                    <span>Events</span>
+                </button>
+                <button class="sidebar-btn" data-content="clubs">
+                    <span class="sidebar-btn-icon">🎭</span>
+                    <span>Clubs</span>
+                    <span class="sidebar-badge active">Active</span>
+                </button>
+                <button class="sidebar-btn" data-content="podcasts">
+                    <span class="sidebar-btn-icon">🎙️</span>
+                    <span>Podcasts</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <button class="sidebar-btn" data-content="videos">
+                    <span class="sidebar-btn-icon">🎬</span>
+                    <span>Videos</span>
+                    <span class="sidebar-badge">12</span>
+                </button>
+                <button class="sidebar-btn" data-content="blog">
+                    <span class="sidebar-btn-icon">📝</span>
+                    <span>Blog</span>
+                    <span class="sidebar-badge">7</span>
+                </button>
+
+                <button class="sidebar-btn" data-content="image-library">
+                    <span class="sidebar-btn-icon">🖼️</span>
+                    <span>Image Library</span>
+                </button>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-section" data-content="my-actions">
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">🛒</span>
+                    <span>My Store</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+                <div class="sidebar-section" data-content="my-actions">
+                    <button class="sidebar-btn" data-content="my-purchases">
+                        <span class="sidebar-btn-icon">📦</span>
+                        <span>My Purchases</span>
+                    </button>
+                    <a href='../Plug-ins/notes.html'>
+                        <button class="sidebar-btn" data-content="notes">
+                            <span class="sidebar-btn-icon">📝</span>
+                            <span>Notes</span>
+                        </button>
+                    </a>
+
+                    <button class="sidebar-btn" data-content="my-community">
+                        <span class="sidebar-btn-icon">👥</span>
+                        <span>My community</span>
+                    </button>
+                    <button class="sidebar-btn" data-content="settings">
+                        <span class="sidebar-btn-icon">⚙️</span>
+                        <span>Settings</span>
+                    </button>
+                </div>
+
+                <!-- Quick Stats Section -->
+                <div class="sidebar-quick-stats">
+                    <h4>Quick Stats</h4>
+                    <div class="quick-stat-item">
+                        <span class="stat-label">Deliveries Today</span>
+                        <span class="stat-value">12</span>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span class="stat-label">Calls Today</span>
+                        <span class="stat-value">23</span>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span class="stat-label">Rating</span>
+                        <span class="stat-value">4.7/5</span>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span class="stat-label">Earnings Today</span>
+                        <span class="stat-value">$156</span>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Feed -->
+                <div class="sidebar-activity">
+                    <h4>Recent Activity</h4>
+                    <div class="activity-item">
+                        <span class="activity-icon">📦</span>
+                        <div class="activity-text">
+                            <p>Delivery completed</p>
+                            <span class="activity-time">30 min ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">📞</span>
+                        <div class="activity-text">
+                            <p>Customer call answered</p>
+                            <span class="activity-time">1 hour ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">⭐</span>
+                        <div class="activity-text">
+                            <p>5-star rating received</p>
+                            <span class="activity-time">2 hours ago</span>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <span class="activity-icon">💰</span>
+                        <div class="activity-text">
+                            <p>Payment received</p>
+                            <span class="activity-time">3 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Help Button -->
+                <button class="sidebar-help-btn">
+                    <span class="help-icon">💡</span>
+                    <span>Need Help?</span>
+                </button>
+            </div>
+    </aside>
+
+    <!-- Main Container -->
+    <div class="main-container with-sidebar">
+        <!-- Profile Header Section - Always Visible -->
+        <section class="profile-header-section">
+            <div class="cover-image-container">
+                <img src="../pictures/delivery cover.png" alt="Cover" class="cover-img">
+                <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
+            </div>
+
+            <div class="profile-main-info">
+                <div class="profile-info-wrapper">
+                    <div class="profile-avatar-container">
+                        <img src="../pictures/delivery-man.jpg" alt="Delivery profile" class="profile-avatar">
+                        <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+                    </div>
+
+                    <div class="profile-details-section">
+                        <div class="profile-name-row">
+                            <h1 class="center-name" id="centerName">Delivery profile</h1>
+                            <div class="badges-row">
+                                <span class="verified-badge">✓ Verified Delivery Professional</span>
+                                <span class="center-score">Rating: 4.7/5</span>
+                            </div>
+                        </div>
+
+                        <div class="rating-section">
+                            <div class="stars">
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star filled" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                                <svg class="star half" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                                </svg>
+                            </div>
+                            <span class="rating-value">4.7/5.0</span>
+                            <span class="review-count">(156 reviews)</span>
+                        </div>
+
+                        <div class="location-info">
+                            <span class="location-icon">📍</span>
+                            <span id="locationText">Addis Ababa, Ethiopia | Delivery Professional</span>
+                        </div>
+
+                        <div class="profile-quote" id="profileQuote">
+                            "Delivering smiles, one package at a time!"
+                        </div>
+
+                        <div class="follow-stats-cards">
+                            <div class="follow-card" onclick="openFollowersModal('followers')">
+                                <div class="follow-icon">👥</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">12.5K</span>
+                                    <span class="stat-label">Followers</span>
+                                </div>
+                            </div>
+                            <div class="follow-card" onclick="openFollowersModal('following')">
+                                <div class="follow-icon">➕</div>
+                                <div class="follow-info">
+                                    <span class="stat-value">842</span>
+                                    <span class="stat-label">Following</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="profile-next-session" id="profileNextSession">
+                            <div class="session-alert">
+                                <span class="alert-icon gradient-text">📦</span>
+                                <span id="nextSessionText"><strong class="gradient-text">Active Delivery:</strong> Order
+                                    #12345 - Book delivery to 456 Home Ave (ETA: 15 mins)</span>
+                                <button class="btn-join-inline" onclick="answerDeliveryCall()">Answer Call</button>
+                            </div>
+                        </div>
+
+                        <div class="profile-actions-grid">
+                            <button class="profile-action-btn edit-profile" onclick="openEditProfileModal()">
+                                <span class="action-icon">✏️</span>
+                                <span>Edit Profile</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Advertisement Placeholder -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Area -->
+        <div class="content-with-sidebar">
+            <!-- Main Content Area -->
+            <div class="main-content-area">
+                <!-- Dashboard Content (Default) -->
+                <div class="sidebar-content-panel active" id="dashboard-content">
+                    <!-- About Section -->
+                    <section class="profile-about-section">
+                        <h3>About Me</h3>
+                        <p id="aboutText">Experienced delivery professional with a passion for timely service and
+                            customer satisfaction. Specializing in book and educational material deliveries across New
+                            York City. Known for handling packages with care and ensuring accurate deliveries. With over
+                            5 years in the delivery industry, I've built strong relationships with local bookstores and
+                            customers alike. My commitment to punctuality and professionalism has earned me consistent
+                            5-star ratings. I take pride in being a reliable link between bookstores and book lovers,
+                            ensuring that knowledge reaches its destination safely and on time.</p>
+                    </section>
+
+                    <!-- Social Links -->
+                    <section class="profile-socials-section">
+                        <h3>Connect With Me</h3>
+                        <div class="social-links" id="socialLinksContainer">
+                            <a href="#" class="social-link twitter" title="Twitter">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link linkedin" title="LinkedIn">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                                </svg>
+                            </a>
+                            <a href="#" class="social-link instagram" title="Instagram">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="currentColor">
+                                    <path
+                                        d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                                </svg>
+                            </a>
+                        </div>
+                    </section>
+
+                    <!-- Quick Stats Widget -->
+                    <section class="quick-stats-widget">
+                        <h2 class="section-title">Delivery Performance & Statistics</h2>
+                        <div class="stats-grid">
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📦</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">234</div>
+                                    <div class="stat-desc">Total Deliveries</div>
+                                    <div class="stat-detail">This Month</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">⭐</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">4.7</div>
+                                    <div class="stat-desc">Average Rating</div>
+                                    <div class="stat-detail">156 Reviews</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">⏱️</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">98%</div>
+                                    <div class="stat-desc">On-Time Delivery</div>
+                                    <div class="stat-detail">Performance</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">💰</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">$2,456</div>
+                                    <div class="stat-desc">Earnings</div>
+                                    <div class="stat-detail">This Month</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">🏆</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">12</div>
+                                    <div class="stat-desc">Perfect Weeks</div>
+                                    <div class="stat-detail">No Issues</div>
+                                </div>
+                            </div>
+                            <div class="stat-card hover-lift">
+                                <div class="stat-icon">📚</div>
+                                <div class="stat-info">
+                                    <div class="stat-number">12</div>
+                                    <div class="stat-desc">Partner Stores</div>
+                                    <div class="stat-detail">Active</div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+
+                <!-- Active Delivery Content -->
+                <div class="sidebar-content-panel" id="active-delivery-content">
+                    <div class="section-header">
+                        <h2 class="section-title">📦 Active Delivery</h2>
+                        <div class="header-buttons">
+                            <button class="btn-primary live-btn" onclick="answerDeliveryCall()">
+                                <i class="fas fa-phone"></i> Answer Call
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="delivery-details-card">
+                        <div class="delivery-status-header">
+                            <span id="deliveryStatus" class="status-badge pending">Status: Pending</span>
+                            <span class="delivery-time">ETA: 15 mins</span>
+                        </div>
+
+                        <div class="delivery-info-grid">
+                            <div class="info-section">
+                                <h3>Order Information</h3>
+                                <p><strong>Order ID:</strong> #12345</p>
+                                <p><strong>Product:</strong> Book - "The Great Novel"</p>
+                                <p><strong>Price:</strong> $7</p>
+                                <p><strong>Special Notes:</strong> Ensure product is handled with care and verify
+                                    correct book before delivery.</p>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>Pickup Location</h3>
+                                <p><strong>Bookstore:</strong> City Bookstore</p>
+                                <p><strong>Address:</strong> 123 Book St, City</p>
+                                <p><strong>Contact:</strong> +1 (555) 111-2222</p>
+                                <p><strong>Rating:</strong> 4.9/5</p>
+                            </div>
+
+                            <div class="info-section">
+                                <h3>Delivery Location</h3>
+                                <p><strong>Customer:</strong> Jane Smith</p>
+                                <p><strong>Address:</strong> 456 Home Ave, City</p>
+                                <p><strong>Contact:</strong> +1 (555) 987-6543</p>
+                                <p><strong>Rating:</strong> 4.8/5</p>
+                            </div>
+                        </div>
+
+                        <div class="delivery-actions">
+                            <button class="btn-success" onclick="acceptDelivery()">Accept Delivery</button>
+                            <button class="btn-primary" onclick="viewRoute()">View Route</button>
+                            <button class="btn-secondary" onclick="contactCustomer()">Contact Customer</button>
+                            <button class="btn-secondary" onclick="contactBookstore()">Contact Bookstore</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Delivery History Content -->
+                <div class="sidebar-content-panel" id="delivery-history-content">
+                    <div class="section-header">
+                        <h2 class="section-title">📋 Delivery History</h2>
+                        <div class="header-buttons">
+                            <button class="btn-secondary" onclick="exportHistory()">Export History</button>
+                        </div>
+                    </div>
+
+                    <div class="history-filters">
+                        <input type="text" placeholder="Search deliveries..." class="search-input">
+                        <select class="filter-select">
+                            <option>All Deliveries</option>
+                            <option>Completed</option>
+                            <option>Cancelled</option>
+                            <option>This Week</option>
+                            <option>This Month</option>
+                        </select>
+                    </div>
+
+                    <div class="history-grid" id="deliveryHistoryGrid">
+                        <!-- Delivery history items will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Customers Content -->
+                <div class="sidebar-content-panel" id="customers-content">
+                    <div class="section-header">
+                        <h2 class="section-title">👥 Customers & Bookstores</h2>
+                    </div>
+
+                    <div class="customer-filters">
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" onclick="filterCustomers('all')">All</button>
+                            <button class="filter-tab" onclick="filterCustomers('customers')">Customers</button>
+                            <button class="filter-tab" onclick="filterCustomers('bookstores')">Bookstores</button>
+                            <button class="filter-tab" onclick="filterCustomers('favorites')">Favorites</button>
+                        </div>
+                        <input type="text" placeholder="Search..." class="search-input">
+                    </div>
+
+                    <div class="customers-grid" id="customersGrid">
+                        <!-- Customer and bookstore cards will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- My Location Content -->
+                <div class="sidebar-content-panel" id="my-location-content">
+                    <div class="section-header">
+                        <h2 class="section-title">📍 My Location</h2>
+                        <button class="btn-primary" onclick="updateLocation()">Update Location</button>
+                    </div>
+
+                    <div class="location-map-container">
+                        <div id="locationMap" class="map-placeholder">
+                            <!-- Map will be loaded here -->
+                            <p>Live location tracking map</p>
+                        </div>
+                        <div class="location-info-panel">
+                            <h3>Current Location</h3>
+                            <p><strong>Address:</strong> 789 Delivery Lane, New York, NY</p>
+                            <p><strong>Status:</strong> <span class="status-online">Online</span></p>
+                            <p><strong>Last Updated:</strong> 2 minutes ago</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Saved Routes Content -->
+                <div class="sidebar-content-panel" id="saved-routes-content">
+                    <div class="section-header">
+                        <h2 class="section-title">🗺️ Saved Routes</h2>
+                        <button class="btn-primary" onclick="addNewRoute()">+ Add Route</button>
+                    </div>
+
+                    <div class="routes-grid" id="savedRoutesGrid">
+                        <!-- Saved routes will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Ratings & Reviews Content -->
+                <div class="sidebar-content-panel" id="ratings-reviews-content">
+                    <div class="section-header">
+                        <h2 class="section-title">⭐ Ratings & Reviews</h2>
+                    </div>
+
+                    <div class="rating-summary">
+                        <div class="overall-rating">
+                            <span class="big-rating">4.7</span>
+                            <div class="rating-stars">⭐⭐⭐⭐⭐</div>
+                            <p>Based on 156 reviews</p>
+                        </div>
+                        <div class="rating-breakdown">
+                            <div class="rating-bar">
+                                <span>5 ⭐</span>
+                                <div class="bar">
+                                    <div class="fill" style="width: 70%"></div>
+                                </div>
+                                <span>109</span>
+                            </div>
+                            <div class="rating-bar">
+                                <span>4 ⭐</span>
+                                <div class="bar">
+                                    <div class="fill" style="width: 20%"></div>
+                                </div>
+                                <span>31</span>
+                            </div>
+                            <div class="rating-bar">
+                                <span>3 ⭐</span>
+                                <div class="bar">
+                                    <div class="fill" style="width: 7%"></div>
+                                </div>
+                                <span>11</span>
+                            </div>
+                            <div class="rating-bar">
+                                <span>2 ⭐</span>
+                                <div class="bar">
+                                    <div class="fill" style="width: 2%"></div>
+                                </div>
+                                <span>3</span>
+                            </div>
+                            <div class="rating-bar">
+                                <span>1 ⭐</span>
+                                <div class="bar">
+                                    <div class="fill" style="width: 1%"></div>
+                                </div>
+                                <span>2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="reviews-list" id="reviewsList">
+                        <!-- Reviews will be loaded dynamically -->
+                    </div>
+                </div>
+
+                <!-- Earnings Content -->
+                <div class="sidebar-content-panel" id="earnings-content">
+                    <div class="section-header">
+                        <h2 class="section-title">💰 Earnings</h2>
+                        <button class="btn-primary" onclick="withdrawEarnings()">Withdraw</button>
+                    </div>
+
+                    <div class="earnings-summary">
+                        <div class="earnings-card">
+                            <h3>Today's Earnings</h3>
+                            <p class="earnings-amount">156 ETB</p>
+                            <span class="earnings-detail">12 deliveries</span>
+                        </div>
+                        <div class="earnings-card">
+                            <h3>This Week</h3>
+                            <p class="earnings-amount">892 ETB</p>
+                            <span class="earnings-detail">67 deliveries</span>
+                        </div>
+                        <div class="earnings-card">
+                            <h3>This Month</h3>
+                            <p class="earnings-amount">2,456 ETB</p>
+                            <span class="earnings-detail">234 deliveries</span>
+                        </div>
+                        <div class="earnings-card">
+                            <h3>Available Balance</h3>
+                            <p class="earnings-amount">1,234 ETB</p>
+                            <button class="btn-small" onclick="withdrawEarnings()">Withdraw</button>
+                        </div>
+                    </div>
+
+                    <div class="earnings-chart-container">
+                        <canvas id="earningsChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Delivery Schedule Content -->
+                <div class="sidebar-content-panel" id="delivery-schedule-content">
+                    <div class="section-header">
+                        <h2 class="section-title">📅 Delivery Schedule</h2>
+                        <button class="btn-primary" onclick="setAvailability()">Set Availability</button>
+                    </div>
+
+                    <div class="schedule-calendar" id="deliveryCalendar">
+                        <!-- Calendar will be loaded here -->
+                    </div>
+
+                    <div class="upcoming-deliveries">
+                        <h3>Upcoming Deliveries</h3>
+                        <div class="delivery-list" id="upcomingDeliveriesList">
+                            <!-- Upcoming deliveries will be loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Insights Content -->
+                <div class="sidebar-content-panel" id="ai-insights-content">
+                    <div class="section-header">
+                        <h2 class="section-title">🧠 AI Insights & Optimization</h2>
+                    </div>
+
+                    <div class="ai-insights-grid">
+                        <div class="insight-card">
+                            <h3>Route Optimization</h3>
+                            <p>AI suggests optimal routes that could save you 30 minutes daily</p>
+                            <button class="btn-primary" onclick="viewOptimizedRoutes()">View Routes</button>
+                        </div>
+                        <div class="insight-card">
+                            <h3>Peak Hours</h3>
+                            <p>Best delivery times: 10 AM - 12 PM, 3 PM - 5 PM</p>
+                            <div class="peak-hours-chart">
+                                <!-- Chart visualization -->
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <h3>Performance Tips</h3>
+                            <p>Your ratings improve 15% when you send delivery updates to customers</p>
+                            <button class="btn-secondary" onclick="viewTips()">View All Tips</button>
+                        </div>
+                        <div class="insight-card">
+                            <h3>Earnings Forecast</h3>
+                            <p>Predicted earnings for next week: $956 based on current trends</p>
+                            <button class="btn-secondary" onclick="viewForecast()">View Details</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Remaining sections (Jobs, Classes, Books, Community, etc.) remain the same as journalist profile -->
+                <!-- ... (copy these sections from journalist-profile.html) ... -->
+
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="right-sidebar">
+                <!-- News Widget -->
+                <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
+                    <div class="widget-header">
+                        <h3>📰 Latest News</h3>
+                        <a href="../branch/news.html" class="widget-action">View All</a>
+                    </div>
+
+                    <div class="news-carousel">
+                        <div class="news-card-container">
+                            <div class="news-card active" data-category="tech">
+                                <div class="news-card-header">
+                                    <span class="news-category-badge tech">Tech</span>
+                                    <span class="news-time">2h ago</span>
+                                </div>
+                                <div class="news-card-image">
+                                    <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400"
+                                        alt="Tech News">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4>AI Revolution in Education: New Tools Transform Learning</h4>
+                                    <p>Latest AI-powered tools are revolutionizing how students learn and interact with
+                                        educational content...</p>
+                                    <div class="news-stats">
+                                        <span class="news-stat">🔥 Trending</span>
+                                        <span class="news-stat">👁️ 1.2k views</span>
+                                        <span class="news-stat">💬 45 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Trends Widget -->
+                <div class="sidebar-widget market-widget" onclick="navigateToMarket()">
+                    <div class="widget-header">
+                        <h3>💹 Market Trends</h3>
+                        <a href="../branch/yeneta-exchange.html" class="widget-action">Details</a>
+                    </div>
+                    <div class="market-sections">
+                        <!-- Store Market Trend -->
+                        <div class="market-section">
+                            <h4>Astegni Store</h4>
+                            <div class="store-trend">
+                                <div class="trend-stat">
+                                    <span>Daily Sales</span>
+                                    <span class="trend-value">$24.5K</span>
+                                    <span class="change up">↑ 12%</span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Active Listings</span>
+                                    <span class="trend-value">1,234</span>
+                                    <span class="change up">↑ 8%</span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Top Category</span>
+                                    <span class="trend-value">Courses</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Ethiopian Stock Exchange -->
+                        <div class="market-section">
+                            <h4>Ethiopian Stock Exchange (ESX)</h4>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span>🏦</span>
+                                    <span>Banking Sector</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="1245.67">1,245.67</span>
+                                    <span class="change up">↑ 2.34%</span>
+                                </div>
+                            </div>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span>📱</span>
+                                    <span>Telecom Sector</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="892.45">892.45</span>
+                                    <span class="change up">↑ 1.87%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Forex & Crypto -->
+                        <div class="market-section">
+                            <h4>Forex Exchange</h4>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span class="currency-flag">🇺🇸</span>
+                                    <span>USD/ETB</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="56.85">56.85</span>
+                                    <span class="change up">↑ 0.25%</span>
+                                </div>
+                            </div>
+                            <div class="exchange-item">
+                                <div class="exchange-pair">
+                                    <span class="currency-flag">🇪🇺</span>
+                                    <span>EUR/ETB</span>
+                                </div>
+                                <div class="exchange-value">
+                                    <span class="rate" data-value="61.23">61.23</span>
+                                    <span class="change up">↑ 0.18%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Bottom Advertisement -->
+        <section class="ad-placeholder-section">
+            <div class="ad-container premium-ad">
+                <div class="ad-animation">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                </div>
+                <div class="ad-content">
+                    <span class="ad-label">Advertisement</span>
+                    <h3 class="ad-title">Boost Your Reach Today</h3>
+                    <p class="ad-text">Premium placement available</p>
+                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                </div>
+                <div class="ad-visual">
+                    <div class="ad-circles">
+                        <div class="circle circle-1"></div>
+                        <div class="circle circle-2"></div>
+                        <div class="circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Widgets Section -->
+        <section class="bottom-widgets">
+            <div class="bottom-widgets-grid">
+
+                <!-- Weather Widget with Background Changer -->
+                <div class="bottom-widget weather-widget" data-weather-theme="royal-blue">
+                    <div class="widget-header">
+                        <h3>🌤️ Weather</h3>
+                        <div class="weather-widget-actions">
+                            <button class="widget-action" onclick="window.weatherManager.toggleSettings()">
+                                <span class="settings-icon">⚙️</span>
+                            </button>
+                            <button class="widget-action" onclick="window.weatherManager.showForecast()">
+                                Forecast
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Weather Theme Selector (Hidden by default) -->
+                    <div class="weather-theme-selector" id="weatherThemeSelector">
+                        <div class="theme-selector-header">
+                            <span>Choose Theme</span>
+                            <button class="close-selector" onclick="window.weatherManager.closeSettings()">×</button>
+                        </div>
+                        <div class="weather-themes-grid">
+                            <div class="weather-theme-option" data-theme="sky-blue"
+                                onclick="window.weatherManager.changeTheme('sky-blue')">
+                                <div class="theme-preview sky-blue-preview"></div>
+                                <span>Sky Blue</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="royal-blue"
+                                onclick="window.weatherManager.changeTheme('royal-blue')">
+                                <div class="theme-preview royal-blue-preview"></div>
+                                <span>Royal Blue</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="midnight"
+                                onclick="window.weatherManager.changeTheme('midnight')">
+                                <div class="theme-preview midnight-preview"></div>
+                                <span>Midnight</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="sunset"
+                                onclick="window.weatherManager.changeTheme('sunset')">
+                                <div class="theme-preview sunset-preview"></div>
+                                <span>Sunset</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="aurora"
+                                onclick="window.weatherManager.changeTheme('aurora')">
+                                <div class="theme-preview aurora-preview"></div>
+                                <span>Aurora</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="storm"
+                                onclick="window.weatherManager.changeTheme('storm')">
+                                <div class="theme-preview storm-preview"></div>
+                                <span>Storm</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="forest"
+                                onclick="window.weatherManager.changeTheme('forest')">
+                                <div class="theme-preview forest-preview"></div>
+                                <span>Forest</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="ocean"
+                                onclick="window.weatherManager.changeTheme('ocean')">
+                                <div class="theme-preview ocean-preview"></div>
+                                <span>Ocean</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="purple-haze"
+                                onclick="window.weatherManager.changeTheme('purple-haze')">
+                                <div class="theme-preview purple-haze-preview"></div>
+                                <span>Purple Haze</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="coral"
+                                onclick="window.weatherManager.changeTheme('coral')">
+                                <div class="theme-preview coral-preview"></div>
+                                <span>Coral Reef</span>
+                            </div>
+                            <div class="weather-theme-option" data-theme="custom"
+                                onclick="window.weatherManager.openCustomPicker()">
+                                <div class="theme-preview custom-preview">
+                                    <span class="custom-icon">🎨</span>
+                                </div>
+                                <span>Custom</span>
+                            </div>
+                        </div>
+                        <!-- Custom Color Picker -->
+                        <div class="custom-color-picker" id="customColorPicker" style="display: none;">
+                            <div class="color-inputs">
+                                <div class="color-input-group">
+                                    <label>Start Color:</label>
+                                    <input type="color" id="startColor" value="#87CEEB">
+                                </div>
+                                <div class="color-input-group">
+                                    <label>End Color:</label>
+                                    <input type="color" id="endColor" value="#2E7BC4">
+                                </div>
+                            </div>
+                            <button class="apply-custom-btn" onclick="window.weatherManager.applyCustomColors()">
+                                Apply Custom Colors
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Weather Content -->
+                    <div class="weather-content">
+                        <div class="weather-main">
+                            <div class="weather-icon">☀️</div>
+                            <div class="weather-temp">72°F</div>
+                            <div class="weather-condition">Sunny</div>
+                        </div>
+                        <div class="weather-location">Los Angeles, CA</div>
+                        <div class="weather-details">
+                            <div class="weather-detail">
+                                <span>High</span>
+                                <span>78°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Low</span>
+                                <span>65°F</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Humidity</span>
+                                <span>45%</span>
+                            </div>
+                            <div class="weather-detail">
+                                <span>Wind</span>
+                                <span>8 mph</span>
+                            </div>
+                        </div>
+                        <div class="weather-forecast">
+                            <div class="forecast-day">
+                                <span>Mon</span>
+                                <span>☀️</span>
+                                <span>75°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Tue</span>
+                                <span>⛅</span>
+                                <span>73°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Wed</span>
+                                <span>☁️</span>
+                                <span>70°</span>
+                            </div>
+                            <div class="forecast-day">
+                                <span>Thu</span>
+                                <span>🌧️</span>
+                                <span>68°</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Analytics Widget -->
+                <div class="bottom-widget analytics-widget compact">
+                    <div class="widget-header">
+                        <h3>📊 Real-Time Analytics</h3>
+                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                    </div>
+                    <div class="real-time-stats compact">
+                        <div class="rt-stat active" data-metric="deliveries" onclick="switchMetric('deliveries')">
+                            <span class="rt-icon">📦</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="12">12</span>
+                                <span class="rt-label">Deliveries Today</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="earnings" onclick="switchMetric('earnings')">
+                            <span class="rt-icon">💰</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="156">$156</span>
+                                <span class="rt-label">Today's Earnings</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="rating" onclick="switchMetric('rating')">
+                            <span class="rt-icon">⭐</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="4.7">4.7</span>
+                                <span class="rt-label">Average Rating</span>
+                            </div>
+                        </div>
+                        <div class="rt-stat" data-metric="distance" onclick="switchMetric('distance')">
+                            <span class="rt-icon">🚗</span>
+                            <div class="rt-info">
+                                <span class="rt-value" data-value="45">45 mi</span>
+                                <span class="rt-label">Distance Covered</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="analyticsChart"></canvas>
+                        <div class="chart-label">Delivery Performance - Last 24 Hours</div>
+                    </div>
+                </div>
+
+                <!-- Events Widget -->
+                <div class="bottom-widget events-widget">
+                    <div class="widget-header">
+                        <h3>📅 Upcoming Deliveries</h3>
+                        <button class="widget-action" onclick="openAllDeliveriesModal()">View All</button>
+                    </div>
+                    <div class="events-list">
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">10:00 AM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Book Delivery</h4>
+                                <p>City Bookstore → 123 Main St</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">2:00 PM</span>
+                                <span class="date">Today</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Educational Materials</h4>
+                                <p>Academic Books → University</p>
+                            </div>
+                        </div>
+                        <div class="event-item">
+                            <div class="event-time">
+                                <span class="time">9:00 AM</span>
+                                <span class="date">Tomorrow</span>
+                            </div>
+                            <div class="event-info">
+                                <h4>Bulk Order</h4>
+                                <p>Multiple deliveries scheduled</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <!-- Cover Upload Modal -->
+    <div class="upload-modal" id="coverUploadModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upload Cover Photo</h2>
+                    <button class="modal-close" onclick="closeModal('coverUploadModal')">&times;</button>
+                </div>
+
+                <div class="upload-area" id="coverUploadArea" onclick="document.getElementById('coverInput').click()">
+                    <span class="upload-icon">📷</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint">Recommended: 1920x400px (JPG, PNG, GIF)</p>
+                    <input type="file" id="coverInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'cover')">
+                </div>
+
+                <div class="preview-container" id="coverPreview">
+                    <img src="" alt="Cover preview" class="preview-image" id="coverPreviewImage">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="coverFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="coverFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Dimensions:</span>
+                            <span id="coverDimensions">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-progress" id="coverProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="coverProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-spinner" id="coverSpinner"></div>
+
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('cover')">Change Image</button>
+                    <button class="btn-upload primary" onclick="uploadImage('cover')">Upload Cover</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Upload Modal -->
+    <div class="upload-modal" id="profileUploadModal">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upload Profile Picture</h2>
+                    <button class="modal-close" onclick="closeModal('profileUploadModal')">&times;</button>
+                </div>
+
+                <div class="upload-area" id="profileUploadArea"
+                    onclick="document.getElementById('profileInput').click()">
+                    <span class="upload-icon">👤</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint">Recommended: 500x500px (JPG, PNG, GIF)</p>
+                    <input type="file" id="profileInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'profile')">
+                </div>
+
+                <div class="preview-container" id="profilePreview">
+                    <img src="" alt="Profile preview" class="preview-image" id="profilePreviewImage">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="profileFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="profileFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Dimensions:</span>
+                            <span id="profileDimensions">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-progress" id="profileProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="profileProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-spinner" id="profileSpinner"></div>
+
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('profile')">Change Image</button>
+                    <button class="btn-upload primary" onclick="uploadImage('profile')">Upload Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAB Menu -->
+    <div class="fab-container">
+        <button class="fab" id="main-fab">
+            <span class="fab-icon">+</span>
+            <span class="fab-label">Quick Action</span>
+        </button>
+        <div class="fab-menu">
+            <button class="fab-option" onclick="answerIncomingCall()">
+                <span>📞</span> Answer Call
+            </button>
+            <button class="fab-option" onclick="updateLocation()">
+                <span>📍</span> Update Location
+            </button>
+            <button class="fab-option" onclick="viewActiveDelivery()">
+                <span>📦</span> Active Delivery
+            </button>
+            <button class="fab-option" onclick="uploadDeliveryVideo()">
+                <span>🎥</span> Upload Video
+            </button>
+            <button class="fab-option" onclick="checkEarnings()">
+                <span>💰</span> Check Earnings
+            </button>
+        </div>
+    </div>
+    <!-- Enhanced Footer (same as journalist profile) -->
+    <footer class="footer-section">
+        <!-- Same footer content as journalist profile -->
+    </footer>
+
+    <!-- Scripts -->
+
+    <script>
+        // Modal Functions
+        function openCoverUploadModal() {
+            document.getElementById('coverUploadModal').classList.add('active');
+        }
+
+        function openProfileUploadModal() {
+            document.getElementById('profileUploadModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            resetUpload(modalId.replace('UploadModal', ''));
+        }
+
+        // Image handling
+        function handleImageSelect(event, type) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+
+            // Display preview
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const previewContainer = document.getElementById(`${type}Preview`);
+                const previewImage = document.getElementById(`${type}PreviewImage`);
+
+                previewImage.src = e.target.result;
+                previewContainer.classList.add('active');
+
+                // Update file info
+                document.getElementById(`${type}FileName`).textContent = file.name;
+                document.getElementById(`${type}FileSize`).textContent = formatFileSize(file.size);
+
+                // Get image dimensions
+                const img = new Image();
+                img.onload = function () {
+                    document.getElementById(`${type}Dimensions`).textContent = `${this.width} x ${this.height}px`;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        function resetUpload(type) {
+            document.getElementById(`${type}Input`).value = '';
+            document.getElementById(`${type}Preview`).classList.remove('active');
+            document.getElementById(`${type}Progress`).classList.remove('active');
+            document.getElementById(`${type}Spinner`).classList.remove('active');
+            document.getElementById(`${type}ProgressFill`).style.width = '0%';
+            document.getElementById(`${type}ProgressText`).textContent = 'Uploading... 0%';
+        }
+
+        function uploadImage(type) {
+            const fileInput = document.getElementById(`${type}Input`);
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select an image first');
+                return;
+            }
+
+            // Show progress
+            document.getElementById(`${type}Progress`).classList.add('active');
+            document.getElementById(`${type}Spinner`).classList.add('active');
+
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+
+                    setTimeout(() => {
+                        alert(`${type === 'cover' ? 'Cover' : 'Profile'} image uploaded successfully!`);
+                        closeModal(`${type}UploadModal`);
+
+                        // Update the actual image on the page
+                        if (type === 'cover') {
+                            // Update cover image
+                            const coverImg = document.querySelector('.cover-img');
+                            if (coverImg) {
+                                coverImg.src = document.getElementById('coverPreviewImage').src;
+                            }
+                        } else {
+                            // Update profile image
+                            const profileImg = document.querySelector('.profile-avatar');
+                            if (profileImg) {
+                                profileImg.src = document.getElementById('profilePreviewImage').src;
+                            }
+                        }
+                    }, 500);
+                }
+
+                document.getElementById(`${type}ProgressFill`).style.width = progress + '%';
+                document.getElementById(`${type}ProgressText`).textContent = `Uploading... ${Math.round(progress)}%`;
+            }, 200);
+        }
+
+        // Drag and drop functionality
+        ['cover', 'profile'].forEach(type => {
+            const uploadArea = document.getElementById(`${type}UploadArea`);
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    const fileInput = document.getElementById(`${type}Input`);
+                    fileInput.files = files;
+                    handleImageSelect({ target: fileInput }, type);
+                }
+            });
+        });
+
+        // Enhanced Sidebar Scroll Behavior
+        class SidebarManager {
+            constructor() {
+                this.sidebar = document.querySelector('.left-sidebar');
+                this.footer = document.querySelector('.footer-section');
+                this.lastScrollY = window.scrollY;
+                this.isAnimating = false;
+                this.footerObserver = null;
+
+                if (this.sidebar) {
+                    this.init();
+                }
+            }
+
+            init() {
+                this.setupScrollListener();
+                this.setupFooterObserver();
+                this.updateSidebarHeight();
+            }
+
+            setupScrollListener() {
+                let ticking = false;
+
+                window.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            this.handleScroll();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                });
+            }
+
+            handleScroll() {
+                const currentScrollY = window.scrollY;
+                const scrollDirection = currentScrollY > this.lastScrollY ? 'down' : 'up';
+
+                // Check footer visibility
+                if (this.footer) {
+                    const footerRect = this.footer.getBoundingClientRect();
+                    const windowHeight = window.innerHeight;
+
+                    if (footerRect.top < windowHeight) {
+                        const footerOffset = windowHeight - footerRect.top;
+                        this.adjustSidebarForFooter(footerOffset);
+                    } else {
+                        this.resetSidebar();
+                    }
+                }
+
+                this.lastScrollY = currentScrollY;
+            }
+
+            setupFooterObserver() {
+                if (!this.footer) return;
+
+                const options = {
+                    root: null,
+                    rootMargin: '100px',
+                    threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+                };
+
+                this.footerObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const footerVisibleHeight = entry.intersectionRect.height;
+                            this.smoothAdjustSidebar(footerVisibleHeight);
+                        } else {
+                            this.resetSidebar();
+                        }
+                    });
+                }, options);
+
+                this.footerObserver.observe(this.footer);
+            }
+
+            smoothAdjustSidebar(footerOffset) {
+                if (this.isAnimating) return;
+
+                this.isAnimating = true;
+                this.sidebar.classList.add('sliding-up');
+
+                // Set CSS variable for dynamic height
+                this.sidebar.style.setProperty('--footer-offset', `${footerOffset}px`);
+                this.sidebar.classList.add('footer-visible');
+
+                // Smooth animation
+                setTimeout(() => {
+                    this.sidebar.classList.remove('sliding-up');
+                    this.isAnimating = false;
+                }, 500);
+            }
+
+            adjustSidebarForFooter(footerOffset) {
+                const sidebarHeight = window.innerHeight - 60 - footerOffset;
+                this.sidebar.style.height = `${Math.max(sidebarHeight, 200)}px`;
+
+                // Add smooth transition effect
+                if (!this.sidebar.style.transition) {
+                    this.sidebar.style.transition = 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                }
+            }
+
+            resetSidebar() {
+                this.sidebar.classList.remove('footer-visible');
+                this.sidebar.style.height = 'calc(100vh - 60px)';
+                this.sidebar.style.removeProperty('--footer-offset');
+            }
+
+            updateSidebarHeight() {
+                // Update on window resize
+                window.addEventListener('resize', () => {
+                    this.handleScroll();
+                });
+            }
+        }
+
+        // Initialize sidebar manager when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarManager = new SidebarManager();
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+
+        // Close modal on escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.upload-modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+
+        // Close modal on background click
+        document.querySelectorAll('.upload-modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+    </script>
+<!-- In student-profile.html or any protected page -->
+<script src="../js/auth.js"></script>
+<script>
+    // Check authentication on page load
+    (async function() {
+        const auth = window.AuthManager;
+        
+        if (!auth.isAuthenticated()) {
+            // Try to restore session
+            const restored = await auth.restoreSession();
+            
+            if (!restored) {
+                alert('Please login to access this page');
+                window.location.href = '../index.html';
+                return;
+            }
+        }
+        
+        // Check if user has the right role
+        const userRole = auth.getUserRole();
+        if (userRole !== 'delivery') {
+            alert('This page is for delivery personnel only');
+            window.location.href = '../index.html';
+            return;
+        }
+        
+        // Page is accessible, load user data
+        const user = auth.getUser();
+        console.log('Current user:', user);
+        // ... rest of your page-specific code
+    })();
+</script>
+    <script src="../js/institute-profile-1.js"></script>
+    <script src="../js/institute-profile-2.js"></script>
+    <script src="../js/institute-profile-3.js"></script>
+    <script src="../js/institute-profile-4.js"></script>
+</body>
+
+</html>

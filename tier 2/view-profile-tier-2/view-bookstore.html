@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astegni - View Bookstore </title>
+  <link rel="stylesheet" href="../css/institute.css">
+  <link rel="stylesheet" href="../css/main.css">
+  <link rel="stylesheet" href="../css/bookstore.css">
+  <style>
+    /* ===== ONLY ADD THESE SMOOTH SCROLL STYLES TO YOUR EXISTING CSS ===== */
+
+    /* Smooth scroll behavior for the page */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Enhanced Sidebar Animation Styles - Add to your existing .left-sidebar */
+    .left-sidebar {
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .left-sidebar.sliding-up {
+      animation: slideUpSidebar 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .left-sidebar.footer-visible {
+      height: calc(100vh - 60px - var(--footer-offset)) !important;
+      transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes slideUpSidebar {
+      0% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      50% {
+        transform: translateY(-10px);
+        opacity: 0.9;
+      }
+
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar glass">
+    <div class="container nav-container">
+      <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="nav-brand">
+            <a href="../index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Bookstore</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
+      </div>
+      <div class="nav-menu">
+        <a href="../branch/news.html" class="nav-link">
+          <span class="nav-icon">📰</span>
+          <span>News</span>
+        </a>
+        <a href="../branch/find-tutors.html" class="nav-link">
+          <span class="nav-icon">👨‍🏫</span>
+          <span>Find Tutors</span>
+        </a>
+        <a href="../branch/reels.html" class="nav-link">
+          <span class="nav-icon">🎬</span>
+          <span>Reels</span>
+        </a>
+        <a href="../branch/store.html" class="nav-link">
+          <span class="nav-icon">🛒</span>
+          <span>Store</span>
+        </a>
+        <a href="../branch/find-jobs.html" class="nav-link">
+          <span class="nav-icon">💼</span>
+          <span>Find Jobs</span>
+        </a>
+        <button class="notification-btn">
+          <span class="notification-icon">🔔</span>
+          <span class="notification-badge pulse">5</span>
+        </button>
+        <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Left Sidebar -->
+  <aside class="left-sidebar" id="leftSidebar">
+    <div class="sidebar-content">
+      <div class="sidebar-section">
+        <button class="sidebar-btn active" data-content="dashboard">
+          <span class="sidebar-btn-icon">📊</span>
+          <span>Dashboard</span>
+        </button>
+      </div>
+
+      <!-- NEW BOOKSTORE SECTION - ALL BOOKSTORE FEATURES HERE -->
+      <div class="sidebar-section" data-content="bookstore">
+        <button class="sidebar-btn" data-content="browse-books">
+          <span class="sidebar-btn-icon">📚</span>
+          <span>Browse Books</span>
+          <span class="sidebar-badge">2,458</span>
+        </button>
+        <button class="sidebar-btn" data-content="view-events">
+          <span class="sidebar-btn-icon">📅</span>
+          <span>Events</span>
+          <span class="sidebar-badge">8</span>
+        </button>
+        <button class="sidebar-btn" data-content="promotions">
+          <span class="sidebar-btn-icon">🎁</span>
+          <span>Promotions</span>
+          <span class="sidebar-badge active">Active</span>
+        </button>
+
+        <button class="sidebar-btn" data-content="clubs">
+          <span class="sidebar-btn-icon">🎭</span>
+          <span>Clubs</span>
+          <span class="sidebar-badge active">Active</span>
+        </button>
+        <button class="sidebar-btn" data-content="podcasts">
+          <span class="sidebar-btn-icon">🎙️</span>
+          <span>Podcasts</span>
+          <span class="sidebar-badge">5</span>
+        </button>
+        <button class="sidebar-btn" data-content="videos">
+          <span class="sidebar-btn-icon">🎬</span>
+          <span>Videos</span>
+          <span class="sidebar-badge">12</span>
+        </button>
+        <button class="sidebar-btn" data-content="blog">
+          <span class="sidebar-btn-icon">📝</span>
+          <span>Blog</span>
+          <span class="sidebar-badge">7</span>
+        </button>
+        <button class="sidebar-btn" data-content="image-library">
+          <span class="sidebar-btn-icon">🖼️</span>
+          <span>Image Library</span>
+        </button>
+                        <button class="sidebar-btn" data-content="share">
+                    <span class="sidebar-btn-icon">🔗</span>
+                    <span>Share</span>
+                </button>
+        <button class="sidebar-btn" data-content="reviews-ratings-content">
+          <span class="sidebar-btn-icon">⭐</span>
+          <span>Rating & Reviews</span>
+        </button>
+      </div>
+
+
+      <!-- User Actions -->
+      <div class="sidebar-section" data-content="actions">
+                <button class="sidebar-btn" data-content="books">
+                    <span class="sidebar-btn-icon">🛒</span>
+                    <span>My Store</span>
+                    <span class="sidebar-badge">5</span>
+                </button>
+        <div class="sidebar-section" data-content="bookstore">
+          <button class="sidebar-btn" data-content="my-purchases">
+            <span class="sidebar-btn-icon">📦</span>
+            <span>My Purchases</span>
+          </button>
+          <button class="sidebar-btn" data-content="my-community">
+            <span class="sidebar-btn-icon">👥</span>
+            <span>My community</span>
+          </button>
+          <a href='../Plug-ins/notes.html'>
+            <button class="sidebar-btn" data-content="notes">
+              <span class="sidebar-btn-icon">📝</span>
+              <span>Notes</span>
+            </button>
+
+          </a>
+          <button class="sidebar-btn" data-content="settings">
+            <span class="sidebar-btn-icon">⚙️</span>
+            <span>Settings</span>
+          </button>
+        </div>
+
+        <!-- Quick Stats Section -->
+        <div class="sidebar-quick-stats">
+          <h4>Quick Stats</h4>
+          <div class="quick-stat-item">
+            <span class="stat-label">Books in Stock</span>
+            <span class="stat-value">2,458</span>
+          </div>
+          <div class="quick-stat-item">
+            <span class="stat-label">Today's Sales</span>
+            <span class="stat-value">$3,245</span>
+          </div>
+          <div class="quick-stat-item">
+            <span class="stat-label">Active Customers</span>
+            <span class="stat-value">1,234</span>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="sidebar-activity">
+          <h4>Recent Activity</h4>
+          <div class="activity-item">
+            <span class="activity-icon">📦</span>
+            <div class="activity-text">
+              <p>New order received</p>
+              <span class="activity-time">2 hours ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon">⭐</span>
+            <div class="activity-text">
+              <p>5-star review received</p>
+              <span class="activity-time">5 hours ago</span>
+            </div>
+          </div>
+          <div class="activity-item">
+            <span class="activity-icon">📚</span>
+            <div class="activity-text">
+              <p>50 books restocked</p>
+              <span class="activity-time">1 day ago</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Help Button -->
+        <button class="sidebar-help-btn">
+          <span class="help-icon">💡</span>
+          <span>Need Help?</span>
+
+        </button>
+      </div>
+
+  </aside>
+
+  <!-- Main Container -->
+  <div class="main-container with-sidebar">
+    <!-- Profile Header Section - Always Visible -->
+    <section class="profile-header-section">
+      <div class="cover-image-container">
+        <img src="../pictures/bookstore cover.jpg" alt="Cover" class="cover-img">
+        <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
+      </div>
+
+      <div class="profile-main-info">
+        <div class="profile-info-wrapper">
+          <div class="profile-avatar-container">
+            <img src="../pictures/bookstore profile.jpg" alt="Bookstore profile" class="profile-avatar">
+            <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
+          </div>
+
+          <div class="profile-details-section">
+            <div class="profile-name-row">
+              <h1 class="center-name" id="centerName">View Bookstore</h1>
+              <div class="badges-row">
+                <span class="verified-badge">✓ Verified</span>
+                <span class="center-score">Score: 98/100</span>
+              </div>
+            </div>
+
+            <div class="rating-section">
+              <div class="stars">
+                <svg class="star filled" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <svg class="star filled" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <svg class="star filled" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <svg class="star filled" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+                <svg class="star half" viewBox="0 0 24 24">
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+              </div>
+              <span class="rating-value">4.9/5.0</span>
+              <span class="review-count">(2,847 reviews)</span>
+            </div>
+
+            <div class="location-info">
+              <span class="location-icon">📍</span>
+              <span id="locationText">Bole, Addis Ababa, Ethiopia | Global Online</span>
+            </div>
+
+            <div class="profile-quote" id="profileQuote">
+              "Empowering minds, transforming futures through innovative education"
+            </div>
+
+            <div class="follow-stats-cards">
+              <div class="follow-card" onclick="openFollowersModal('followers')">
+                <div class="follow-icon">👥</div>
+                <div class="follow-info">
+                  <span class="stat-value">45.2K</span>
+                  <span class="stat-label">Followers</span>
+                </div>
+              </div>
+              <div class="follow-card" onclick="openFollowersModal('following')">
+                <div class="follow-icon">➕</div>
+                <div class="follow-info">
+                  <span class="stat-value">892</span>
+                  <span class="stat-label">Following</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="profile-next-session" id="profileNextSession">
+              <div class="session-alert">
+                <span class="alert-icon gradient-text">⏰</span>
+                <span id="nextSessionText"><strong class="gradient-text">Next Event:</strong> Film
+                  Production Masterclass - Today
+                  at 4:00 PM EAT (Live in 2 hours) - 156 attending</span>
+                <button class="btn-join-inline">Join Event</button>
+              </div>
+            </div>
+
+            <div class="profile-actions-grid">
+              <button class="profile-action-btn connect-parent" onclick="openConnectModal()">
+                <span class="action-icon">🤝</span>
+                <span>Connect</span>
+              </button>
+              <button class="profile-action-btn" onclick="shareProfile()">
+                <span>🔗 Share</span>
+              </button>
+            </div>
+          </div>
+        </div>
+    </section>
+
+    <!-- Advertisement Placeholder -->
+    <section class="ad-placeholder-section">
+      <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+        <div class="ad-animation">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+        </div>
+        <div class="ad-content">
+          <span class="ad-label">Advertisement</span>
+          <h3 class="ad-title">Boost Your Reach Today</h3>
+          <p class="ad-text">Premium placement available</p>
+          <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+        </div>
+        <div class="ad-visual">
+          <div class="ad-circles">
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            <div class="circle circle-3"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Content Area -->
+    <div class="content-with-sidebar">
+      <!-- Main Content Area -->
+      <div class="main-content-area">
+        <!-- Dashboard Content (Default) -->
+        <div class="sidebar-content-panel active" id="dashboard-content">
+          <!-- About Section -->
+          <section class="profile-about-section">
+            <h3>About Us</h3>
+            <p id="aboutText">Zenith Academy is a premier online education platform specializing in film
+              production, digital media, and creative arts. With over 5 years of excellence in education,
+              we've
+              trained thousands of students worldwide, helping them achieve their career goals in the
+              entertainment industry. Our state-of-the-art virtual classrooms and industry-expert
+              instructors ensure that every student receives world-class education from anywhere in the
+              world.</p>
+          </section>
+
+          <!-- Social Links -->
+          <section class="profile-socials-section">
+            <h3>Connect With Us</h3>
+            <div class="social-links" id="socialLinksContainer">
+              <a href="#" class="social-link facebook" title="Facebook">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+              </a>
+              <a href="#" class="social-link twitter" title="X (Twitter)">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
+              </a>
+              <a href="#" class="social-link instagram" title="Instagram">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1 1 12.324 0 6.162 6.162 0 0 1-12.324 0zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm4.965-10.405a1.44 1.44 0 1 1 2.881.001 1.44 1.44 0 0 1-2.881-.001z" />
+                </svg>
+              </a>
+              <a href="#" class="social-link linkedin" title="LinkedIn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                </svg>
+              </a>
+              <a href="#" class="social-link youtube" title="YouTube">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                  <path
+                    d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
+                </svg>
+              </a>
+            </div>
+          </section>
+
+          <!-- Quick Stats Widget -->
+          <section class="quick-stats-widget">
+            <h2 class="section-title">Achievements & Statistics</h2>
+            <div class="stats-grid">
+              <div class="stat-card hover-lift">
+                <div class="stat-icon">📚</div>
+                <div class="stat-info">
+                  <div class="stat-number">12,458</div>
+                  <div class="stat-desc">Books in Collection</div>
+                  <div class="stat-detail">All Genres</div>
+                </div>
+              </div>
+              <div class="stat-card hover-lift">
+                <div class="stat-icon">👥</div>
+                <div class="stat-info">
+                  <div class="stat-number">3,842</div>
+                  <div class="stat-desc">Active Members</div>
+                  <div class="stat-detail">Monthly Readers</div>
+                </div>
+              </div>
+              <div class="stat-card hover-lift">
+                <div class="stat-icon">🌍</div>
+                <div class="stat-info">
+                  <div class="stat-number">89</div>
+                  <div class="stat-desc">Countries Served</div>
+                  <div class="stat-detail">Global Delivery</div>
+                </div>
+              </div>
+              <div class="stat-card hover-lift">
+                <div class="stat-icon">✍️</div>
+                <div class="stat-info">
+                  <div class="stat-number">156</div>
+                  <div class="stat-desc">Featured Authors</div>
+                  <div class="stat-detail">Local & International</div>
+                </div>
+              </div>
+              <div class="stat-card hover-lift">
+                <div class="stat-icon">📖</div>
+                <div class="stat-info">
+                  <div class="stat-number">8,924</div>
+                  <div class="stat-desc">Books Sold</div>
+                  <div class="stat-detail">This Month</div>
+                </div>
+              </div>
+              <div class="stat-card hover-lift">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-info">
+                  <div class="stat-number">4.9</div>
+                  <div class="stat-desc">Customer Rating</div>
+                  <div class="stat-detail">2,847 Reviews</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Awards Showcase -->
+          <section class="awards-section">
+            <h2 class="section-title">Awards & Recognition</h2>
+            <div class="awards-grid">
+              <div class="award-card">
+                <div class="award-icon">🥇</div>
+                <h3>Best Bookstore 2024</h3>
+                <p>Ethiopian Literary Awards</p>
+              </div>
+              <div class="award-card">
+                <div class="award-icon">🌟</div>
+                <h3>Excellence in Service</h3>
+                <p>Reader's Choice Award</p>
+              </div>
+              <div class="award-card">
+                <div class="award-icon">📚</div>
+                <h3>Top Literary Hub</h3>
+                <p>National Book Council</p>
+              </div>
+              <div class="award-card">
+                <div class="award-icon">💎</div>
+                <h3>Customer Excellence</h3>
+                <p>Retail Association 2023</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- NEW BOOKSTORE CONTENT PANELS -->
+        <!-- Browse Books Content -->
+        <div class="sidebar-content-panel" id="browse-books-content">
+          <div class="section-header">
+            <h2 class="section-title">Browse Our Collection</h2>
+            <div class="header-buttons">
+              <button class="btn-secondary" onclick="openAdvancedSearchModal()">Advanced Search</button>
+              <button class="btn-primary" onclick="viewNewArrivals()">New Arrivals</button>
+            </div>
+          </div>
+
+          <div class="browse-filters">
+            <input type="text" placeholder="Search books, authors, ISBN..." class="search-input">
+            <select class="filter-select">
+              <option>All Categories</option>
+              <option>Fiction</option>
+              <option>Non-Fiction</option>
+              <option>Academic</option>
+              <option>Children's Books</option>
+              <option>Young Adult</option>
+              <option>Biography</option>
+              <option>Self-Help</option>
+            </select>
+            <select class="filter-select">
+              <option>All Prices</option>
+              <option>Under 200 ETB</option>
+              <option>200-500 ETB</option>
+              <option>500-1000 ETB</option>
+              <option>Above 1000 ETB</option>
+            </select>
+            <select class="filter-select">
+              <option>Sort By</option>
+              <option>Newest First</option>
+              <option>Price: Low to High</option>
+              <option>Price: High to Low</option>
+              <option>Best Sellers</option>
+              <option>Highest Rated</option>
+            </select>
+          </div>
+
+          <div class="books-display-grid" id="booksDisplayGrid">
+            <!-- Books will be loaded dynamically with add to cart, wishlist options -->
+          </div>
+        </div>
+
+        <!-- Reading Events Content -->
+        <div class="sidebar-content-panel" id="view-reading-events-content">
+          <div class="section-header">
+            <h2 class="section-title">Upcoming Events</h2>
+            <div class="header-buttons">
+              <button class="btn-secondary" onclick="viewPastEvents()">Past Events</button>
+              <button class="btn-primary" onclick="viewMyTickets()">My Tickets</button>
+            </div>
+          </div>
+
+          <div class="events-filter-tabs">
+            <button class="event-tab active">All Events</button>
+            <button class="event-tab">Free Events</button>
+            <button class="event-tab">Author Meetups</button>
+            <button class="event-tab">Book Launches</button>
+            <button class="event-tab">Workshops</button>
+            <button class="event-tab">Kids Programs</button>
+          </div>
+
+          <div class="events-calendar-view">
+            <div class="calendar-toggle">
+              <button class="view-btn active" data-view="list">List View</button>
+              <button class="view-btn" data-view="calendar">Calendar View</button>
+            </div>
+          </div>
+
+          <div class="events-list" id="publicEventsList">
+            <!-- Events with RSVP/ticket purchase options -->
+          </div>
+        </div>
+
+        <!-- Promotions Content -->
+        <div class="sidebar-content-panel" id="promotions-content">
+          <div class="section-header">
+            <h2 class="section-title">Special Offers & Promotions</h2>
+            <div class="header-buttons">
+              <button class="btn-primary" onclick="viewMembershipDeals()">Member Exclusive</button>
+            </div>
+          </div>
+
+          <div class="promo-categories">
+            <button class="promo-filter active">All Deals</button>
+            <button class="promo-filter">Flash Sales</button>
+            <button class="promo-filter">Bundle Offers</button>
+            <button class="promo-filter">Student Discounts</button>
+            <button class="promo-filter">Clearance</button>
+            <button class="promo-filter">Buy One Get One</button>
+          </div>
+
+          <div class="active-promotions-grid" id="customerPromotionsGrid">
+            <!-- Promotional offers with countdown timers, discount badges -->
+          </div>
+
+          <div class="loyalty-program-banner">
+            <h3>Join Our Loyalty Program</h3>
+            <p>Earn points with every purchase and unlock exclusive discounts!</p>
+            <button class="btn-join-loyalty">Join Now</button>
+          </div>
+        </div>
+
+        <!-- Reviews & Ratings Content -->
+        <div class="sidebar-content-panel" id="reviews-ratings-content">
+          <div class="section-header">
+            <h2 class="section-title">Customer Reviews</h2>
+            <button class="btn-primary" onclick="openWriteReviewModal()">Write a Review</button>
+          </div>
+
+          <div class="reviews-summary">
+            <div class="overall-rating">
+              <div class="rating-score">4.8</div>
+              <div class="rating-stars">
+                <!-- Star rating display -->
+              </div>
+              <div class="total-reviews">Based on 2,847 reviews</div>
+            </div>
+
+            <div class="rating-breakdown">
+              <div class="rating-bar-item">
+                <span>5 stars</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: 75%"></div>
+                </div>
+                <span>75%</span>
+              </div>
+              <div class="rating-bar-item">
+                <span>4 stars</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: 15%"></div>
+                </div>
+                <span>15%</span>
+              </div>
+              <div class="rating-bar-item">
+                <span>3 stars</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: 7%"></div>
+                </div>
+                <span>7%</span>
+              </div>
+              <div class="rating-bar-item">
+                <span>2 stars</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: 2%"></div>
+                </div>
+                <span>2%</span>
+              </div>
+              <div class="rating-bar-item">
+                <span>1 star</span>
+                <div class="rating-bar">
+                  <div class="rating-fill" style="width: 1%"></div>
+                </div>
+                <span>1%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="reviews-filter">
+            <select class="review-sort">
+              <option>Most Recent</option>
+              <option>Most Helpful</option>
+              <option>Highest Rated</option>
+              <option>Lowest Rated</option>
+              <option>Verified Purchases</option>
+            </select>
+          </div>
+
+          <div class="reviews-list" id="customerReviewsList">
+            <!-- Individual reviews with helpful votes, responses -->
+          </div>
+        </div>
+
+        <!-- Clubs Content (Now separate from events) -->
+        <div class="sidebar-content-panel" id="clubs-content">
+          <div class="section-header">
+            <h2 class="section-title">Book Clubs & Reading Groups</h2>
+            <button class="btn-create-playlist" onclick="window.trainingCenterProfile.playlists.openModal()">
+              + Create Playlist
+            </button>
+          </div>
+
+          <div class="clubs-stats">
+            <div class="club-stat">
+              <span class="stat-value">12</span>
+              <span class="stat-label">Active Clubs</span>
+            </div>
+            <div class="club-stat">
+              <span class="stat-value">234</span>
+              <span class="stat-label">Members</span>
+            </div>
+            <div class="club-stat">
+              <span class="stat-value">45</span>
+              <span class="stat-label">Books Read</span>
+            </div>
+            <div class="club-stat">
+              <span class="stat-value">8</span>
+              <span class="stat-label">Meeting This Week</span>
+            </div>
+          </div>
+
+          <div class="clubs-tabs">
+            <button class="clubs-tab active">All Clubs</button>
+            <button class="clubs-tab">Fiction</button>
+            <button class="clubs-tab">Non-Fiction</button>
+            <button class="clubs-tab">Young Readers</button>
+            <button class="clubs-tab">Poetry Circle</button>
+            <button class="clubs-tab">Book-to-Film</button>
+          </div>
+
+          <div class="clubs-grid" id="clubsGrid">
+            <!-- Clubs will be loaded dynamically -->
+          </div>
+        </div>
+        <!-- Podcasts Content with Draft Filter -->
+        <div class="sidebar-content-panel" id="podcasts-content">
+          <div class="section-header">
+            <h2 class="section-title">Podcast Library</h2>
+            <div class="header-buttons">
+              <button class="btn-create-playlist" onclick="window.trainingCenterProfile.playlists.openModal()">
+                + Create Playlist
+              </button>
+            </div>
+          </div>
+
+          <div class="podcast-filters">
+            <button class="filter-chip active" onclick="filterPodcasts('all')">All Podcasts</button>
+          </div>
+
+          <div class="podcast-grid">
+            <!-- Podcasts will be loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- Videos Content with Draft Filter -->
+        <div class="sidebar-content-panel" id="videos-content">
+          <div class="section-header">
+            <h2 class="section-title">Video Gallery</h2>
+          </div>
+
+          <div class="video-filters">
+            <div class="video-tabs">
+              <button class="video-tab active" data-filter="all" onclick="filterVideos('all')">All
+                Videos</button>
+              <button class="video-tab" data-filter="videos" onclick="filterVideos('videos')">Videos/button>
+                <button class="video-tab" data-filter="shorts" onclick="filterVideos('shorts')">Shorts</button>
+                <button class="video-tab" data-filter="playlists" onclick="filterVideos('playlists')">Playlists</button>
+            </div>
+            <button class="btn-create-playlist" onclick="window.trainingCenterProfile.playlists.openModal()">
+              + Create Playlist
+            </button>
+          </div>
+          <div class="videos-grid">
+            <!-- Videos will be loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- Blog Content with Draft Filter -->
+        <div class="sidebar-content-panel" id="blog-content">
+          <div class="section-header">
+            <h2 class="section-title">Blog & Articles</h2>
+
+          </div>
+
+          <div class="blog-filters">
+            <button class="filter-chip active" onclick="filterBlogs('all')">All Posts</button>
+            <button class="filter-chip" onclick="filterBlogs('industry')">Industry News</button>
+            <button class="filter-chip" onclick="filterBlogs('tutorials')">Tutorials</button>
+            <button class="filter-chip" onclick="filterBlogs('student')">Student Stories</button>
+          </div>
+
+          <div class="blog-grid">
+            <!-- Blog posts will be loaded dynamically -->
+          </div>
+        </div>
+
+
+        <!-- My Products Content -->
+        <div class="sidebar-content-panel" id="my-products-content">
+          <div class="section-header">
+            <h2 class="section-title">My Purchased Products</h2>
+            <button class="btn-primary" onclick="navigateToStore()">
+              <span>🛒</span> Browse Store
+            </button>
+          </div>
+
+          <div class="product-filters">
+            <button class="filter-chip active" onclick="filterMyProducts('all')">All Products</button>
+            <button class="filter-chip" onclick="filterMyProducts('courses')">Courses</button>
+            <button class="filter-chip" onclick="filterMyProducts('books')">Books</button>
+            <button class="filter-chip" onclick="filterMyProducts('software')">Software</button>
+            <button class="filter-chip" onclick="filterMyProducts('materials')">Materials</button>
+          </div>
+
+          <div class="my-products-grid" id="myProductsGrid">
+            <!-- Purchased products will be loaded dynamically -->
+          </div>
+        </div>
+
+        <!-- Notes Content -->
+        <div class="sidebar-content-panel" id="notes-content">
+          <h2 class="section-title">My Notes</h2>
+          <div class="notes-section">
+            <!-- Notes content -->
+          </div>
+        </div>
+
+        <!-- Rate & Comment Content -->
+        <div class="sidebar-content-panel" id="rate-comment-content">
+          <h2 class="section-title">Rate & Comment</h2>
+          <div class="rate-comment-section">
+            <!-- Rate & comment content -->
+          </div>
+        </div>
+
+        <!-- Share Content -->
+        <div class="sidebar-content-panel" id="share-content">
+          <h2 class="section-title">Share Profile</h2>
+          <div class="share-section">
+            <!-- Share content -->
+          </div>
+        </div>
+
+        <!-- Settings Content -->
+        <div class="sidebar-content-panel" id="settings-content">
+          <h2 class="section-title">Settings</h2>
+          <div class="settings-section">
+            <!-- Settings content -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div class="right-sidebar">
+        <!-- News Widget -->
+        <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
+          <div class="widget-header">
+            <h3>📰 Latest News</h3>
+            <a href="../branch/news.html" class="widget-action">View All</a>
+          </div>
+
+          <div class="news-carousel">
+            <div class="news-card-container">
+              <div class="news-card active" data-category="tech">
+                <div class="news-card-header">
+                  <span class="news-category-badge tech">Tech</span>
+                  <span class="news-time">2h ago</span>
+                </div>
+                <div class="news-card-image">
+                  <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400" alt="Tech News">
+                </div>
+                <div class="news-card-content">
+                  <h4>AI Revolution in Education: New Tools Transform Learning</h4>
+                  <p>Latest AI-powered tools are revolutionizing how students learn and interact with
+                    educational content...</p>
+                  <div class="news-stats">
+                    <span class="news-stat">🔥 Trending</span>
+                    <span class="news-stat">👁️ 1.2k views</span>
+                    <span class="news-stat">💬 45 comments</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Market Trends Widget -->
+        <div class="sidebar-widget market-widget" onclick="navigateToMarket()">
+          <div class="widget-header">
+            <h3>💹 Market Trends</h3>
+            <a href="../branch/yeneta-exchange.html" class="widget-action">Details</a>
+          </div>
+          <div class="market-sections">
+            <!-- Store Market Trend -->
+            <div class="market-section">
+              <h4>Astegni Store</h4>
+              <div class="store-trend">
+                <div class="trend-stat">
+                  <span>Daily Sales</span>
+                  <span class="trend-value">$24.5K</span>
+                  <span class="change up">↑ 12%</span>
+                </div>
+                <div class="trend-stat">
+                  <span>Active Listings</span>
+                  <span class="trend-value">1,234</span>
+                  <span class="change up">↑ 8%</span>
+                </div>
+                <div class="trend-stat">
+                  <span>Top Category</span>
+                  <span class="trend-value">Courses</span>
+                </div>
+              </div>
+            </div>
+            <!-- Ethiopian Stock Exchange -->
+            <div class="market-section">
+              <h4>Ethiopian Stock Exchange (ESX)</h4>
+              <div class="exchange-item">
+                <div class="exchange-pair">
+                  <span>🏦</span>
+                  <span>Banking Sector</span>
+                </div>
+                <div class="exchange-value">
+                  <span class="rate" data-value="1245.67">1,245.67</span>
+                  <span class="change up">↑ 2.34%</span>
+                </div>
+              </div>
+              <div class="exchange-item">
+                <div class="exchange-pair">
+                  <span>📱</span>
+                  <span>Telecom Sector</span>
+                </div>
+                <div class="exchange-value">
+                  <span class="rate" data-value="892.45">892.45</span>
+                  <span class="change up">↑ 1.87%</span>
+                </div>
+              </div>
+            </div>
+            <!-- Forex & Crypto -->
+            <div class="market-section">
+              <h4>Forex Exchange</h4>
+              <div class="exchange-item">
+                <div class="exchange-pair">
+                  <span class="currency-flag">🇺🇸</span>
+                  <span>USD/ETB</span>
+                </div>
+                <div class="exchange-value">
+                  <span class="rate" data-value="56.85">56.85</span>
+                  <span class="change up">↑ 0.25%</span>
+                </div>
+              </div>
+              <div class="exchange-item">
+                <div class="exchange-pair">
+                  <span class="currency-flag">🇪🇺</span>
+                  <span>EUR/ETB</span>
+                </div>
+                <div class="exchange-value">
+                  <span class="rate" data-value="61.23">61.23</span>
+                  <span class="change up">↑ 0.18%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom Advertisement -->
+    <section class="ad-placeholder-section">
+      <div class="ad-container premium-ad">
+        <div class="ad-animation">
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+        </div>
+        <div class="ad-content">
+          <span class="ad-label">Advertisement</span>
+          <h3 class="ad-title">Boost Your Reach Today</h3>
+          <p class="ad-text">Premium placement available</p>
+          <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+        </div>
+        <div class="ad-visual">
+          <div class="ad-circles">
+            <div class="circle circle-1"></div>
+            <div class="circle circle-2"></div>
+            <div class="circle circle-3"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bottom Widgets Section -->
+    <section class="bottom-widgets">
+      <div class="bottom-widgets-grid">
+
+        <!-- Weather Widget with Background Changer -->
+        <div class="bottom-widget weather-widget" data-weather-theme="royal-blue">
+          <div class="widget-header">
+            <h3>🌤️ Weather</h3>
+            <div class="weather-widget-actions">
+              <button class="widget-action" onclick="window.weatherManager.toggleSettings()">
+                <span class="settings-icon">⚙️</span>
+              </button>
+              <button class="widget-action" onclick="window.weatherManager.showForecast()">
+                Forecast
+              </button>
+            </div>
+          </div>
+
+          <!-- Weather Theme Selector (Hidden by default) -->
+          <div class="weather-theme-selector" id="weatherThemeSelector">
+            <div class="theme-selector-header">
+              <span>Choose Theme</span>
+              <button class="close-selector" onclick="window.weatherManager.closeSettings()">×</button>
+            </div>
+            <div class="weather-themes-grid">
+              <div class="weather-theme-option" data-theme="sky-blue"
+                onclick="window.weatherManager.changeTheme('sky-blue')">
+                <div class="theme-preview sky-blue-preview"></div>
+                <span>Sky Blue</span>
+              </div>
+              <div class="weather-theme-option" data-theme="royal-blue"
+                onclick="window.weatherManager.changeTheme('royal-blue')">
+                <div class="theme-preview royal-blue-preview"></div>
+                <span>Royal Blue</span>
+              </div>
+              <div class="weather-theme-option" data-theme="midnight"
+                onclick="window.weatherManager.changeTheme('midnight')">
+                <div class="theme-preview midnight-preview"></div>
+                <span>Midnight</span>
+              </div>
+              <div class="weather-theme-option" data-theme="sunset"
+                onclick="window.weatherManager.changeTheme('sunset')">
+                <div class="theme-preview sunset-preview"></div>
+                <span>Sunset</span>
+              </div>
+              <div class="weather-theme-option" data-theme="aurora"
+                onclick="window.weatherManager.changeTheme('aurora')">
+                <div class="theme-preview aurora-preview"></div>
+                <span>Aurora</span>
+              </div>
+              <div class="weather-theme-option" data-theme="storm" onclick="window.weatherManager.changeTheme('storm')">
+                <div class="theme-preview storm-preview"></div>
+                <span>Storm</span>
+              </div>
+              <div class="weather-theme-option" data-theme="forest"
+                onclick="window.weatherManager.changeTheme('forest')">
+                <div class="theme-preview forest-preview"></div>
+                <span>Forest</span>
+              </div>
+              <div class="weather-theme-option" data-theme="ocean" onclick="window.weatherManager.changeTheme('ocean')">
+                <div class="theme-preview ocean-preview"></div>
+                <span>Ocean</span>
+              </div>
+              <div class="weather-theme-option" data-theme="purple-haze"
+                onclick="window.weatherManager.changeTheme('purple-haze')">
+                <div class="theme-preview purple-haze-preview"></div>
+                <span>Purple Haze</span>
+              </div>
+              <div class="weather-theme-option" data-theme="coral" onclick="window.weatherManager.changeTheme('coral')">
+                <div class="theme-preview coral-preview"></div>
+                <span>Coral Reef</span>
+              </div>
+              <div class="weather-theme-option" data-theme="custom" onclick="window.weatherManager.openCustomPicker()">
+                <div class="theme-preview custom-preview">
+                  <span class="custom-icon">🎨</span>
+                </div>
+                <span>Custom</span>
+              </div>
+            </div>
+            <!-- Custom Color Picker -->
+            <div class="custom-color-picker" id="customColorPicker" style="display: none;">
+              <div class="color-inputs">
+                <div class="color-input-group">
+                  <label>Start Color:</label>
+                  <input type="color" id="startColor" value="#87CEEB">
+                </div>
+                <div class="color-input-group">
+                  <label>End Color:</label>
+                  <input type="color" id="endColor" value="#2E7BC4">
+                </div>
+              </div>
+              <button class="apply-custom-btn" onclick="window.weatherManager.applyCustomColors()">
+                Apply Custom Colors
+              </button>
+            </div>
+          </div>
+
+          <!-- Weather Content -->
+          <div class="weather-content">
+            <div class="weather-main">
+              <div class="weather-icon">☀️</div>
+              <div class="weather-temp">72°F</div>
+              <div class="weather-condition">Sunny</div>
+            </div>
+            <div class="weather-location">Los Angeles, CA</div>
+            <div class="weather-details">
+              <div class="weather-detail">
+                <span>High</span>
+                <span>78°F</span>
+              </div>
+              <div class="weather-detail">
+                <span>Low</span>
+                <span>65°F</span>
+              </div>
+              <div class="weather-detail">
+                <span>Humidity</span>
+                <span>45%</span>
+              </div>
+              <div class="weather-detail">
+                <span>Wind</span>
+                <span>8 mph</span>
+              </div>
+            </div>
+            <div class="weather-forecast">
+              <div class="forecast-day">
+                <span>Mon</span>
+                <span>☀️</span>
+                <span>75°</span>
+              </div>
+              <div class="forecast-day">
+                <span>Tue</span>
+                <span>⛅</span>
+                <span>73°</span>
+              </div>
+              <div class="forecast-day">
+                <span>Wed</span>
+                <span>☁️</span>
+                <span>70°</span>
+              </div>
+              <div class="forecast-day">
+                <span>Thu</span>
+                <span>🌧️</span>
+                <span>68°</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Analytics Widget (Modified for Bookstore) -->
+        <div class="bottom-widget analytics-widget compact">
+          <div class="widget-header">
+            <h3>📊 Real-Time Analytics</h3>
+            <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+          </div>
+          <div class="real-time-stats compact">
+            <div class="rt-stat active" data-metric="sales" onclick="switchMetric('sales')">
+              <span class="rt-icon">💰</span>
+              <div class="rt-info">
+                <span class="rt-value" data-value="3245">$3,245</span>
+                <span class="rt-label">Today's Sales</span>
+              </div>
+            </div>
+            <div class="rt-stat" data-metric="orders" onclick="switchMetric('orders')">
+              <span class="rt-icon">📦</span>
+              <div class="rt-info">
+                <span class="rt-value" data-value="45">45</span>
+                <span class="rt-label">New Orders</span>
+              </div>
+            </div>
+            <div class="rt-stat" data-metric="visitors" onclick="switchMetric('visitors')">
+              <span class="rt-icon">👥</span>
+              <div class="rt-info">
+                <span class="rt-value" data-value="892">892</span>
+                <span class="rt-label">Store Visitors</span>
+              </div>
+            </div>
+            <div class="rt-stat" data-metric="books" onclick="switchMetric('books')">
+              <span class="rt-icon">📚</span>
+              <div class="rt-info">
+                <span class="rt-value" data-value="156">156</span>
+                <span class="rt-label">Books Sold Today</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="analyticsChart"></canvas>
+            <div class="chart-label">Bookstore Performance - Last 24 Hours</div>
+          </div>
+        </div>
+
+        <!-- Events Widget -->
+        <div class="bottom-widget events-widget">
+          <div class="widget-header">
+            <h3>📅 Upcoming Events</h3>
+            <button class="widget-action" onclick="openAllEventsModal()">View All</button>
+          </div>
+          <div class="events-list">
+            <!-- Events will be dynamically loaded -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+
+  <!-- FAB Menu -->
+  <div class="fab-container">
+    <button class="fab" id="main-fab">
+      <span class="fab-icon">+</span>
+      <span class="fab-label">Quick Action</span>
+    </button>
+    <div class="fab-menu">
+      <button class="fab-option" onclick="scrollToSection('browse-books')">
+        <span>📚</span> Browse Books
+      </button>
+      <button class="fab-option" onclick="scrollToSection('promotions')">
+        <span>🎁</span> View Deals
+      </button>
+      <button class="fab-option" onclick="scrollToSection('reading-events')">
+        <span>🎤</span> View Events
+      </button>
+      <button class="fab-option" onclick="scrollToSection('clubs')">
+        <span>🎭</span> Join Clubs
+      </button>
+      <button class="fab-option" onclick="scrollToSection('image-library')">
+        <span>🖼️</span> Gallery
+      </button>
+      <button class="fab-option" onclick="scrollToSection('blog')">
+        <span>📝</span> Read Blog
+      </button>
+      <button class="fab-option" onclick="scrollToSection('podcasts')">
+        <span>🎙️</span> Listen Podcasts
+      </button>
+      <button class="fab-option" onclick="scrollToSection('videos')">
+        <span>🎬</span> Watch Videos
+      </button>
+    </div>
+  </div>
+
+
+  <!-- Enhanced Footer -->
+  <footer class="footer-section">
+    <div class="footer-wave">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+        <path
+          d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+        </path>
+      </svg>
+    </div>
+
+    <div class="container mx-auto px-4">
+      <div class="footer-content">
+        <div class="footer-section-item">
+          <h3 class="footer-title">About Astegni</h3>
+          <p class="footer-description">Ethiopia's premier educational platform connecting students with
+            expert tutors and quality learning resources.</p>
+          <div class="footer-stats">
+            <div class="stat-item">
+              <span class="stat-number">10k+</span>
+              <span class="stat-label">Active Users</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">500+</span>
+              <span class="stat-label">Courses</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-number">95%</span>
+              <span class="stat-label">Success Rate</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="footer-section-item">
+          <h3 class="footer-title">Quick Links</h3>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">About Us</a></li>
+            <li><a href="#" class="footer-link">How It Works</a></li>
+            <li><a href="#" class="footer-link">Pricing</a></li>
+            <li><a href="#" class="footer-link">Success Stories</a></li>
+            <li><a href="#" class="footer-link">Blog</a></li>
+            <li><a href="#" class="footer-link">Careers</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section-item">
+          <h3 class="footer-title">Support</h3>
+          <ul class="footer-links">
+            <li><a href="#" class="footer-link">Help Center</a></li>
+            <li><a href="#" class="footer-link">Contact Us</a></li>
+            <li><a href="#" class="footer-link">FAQs</a></li>
+            <li><a href="#" class="footer-link">Terms of Service</a></li>
+            <li><a href="#" class="footer-link">Privacy Policy</a></li>
+            <li><a href="#" class="footer-link">Safety</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section-item">
+          <h3 class="footer-title">Connect With Us</h3>
+          <div class="social-links">
+            <a href="#" aria-label="Facebook" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+              </svg>
+            </a>
+            <a href="#" aria-label="Twitter" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                </path>
+              </svg>
+            </a>
+            <a href="#" aria-label="LinkedIn" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                </path>
+                <circle cx="4" cy="4" r="2"></circle>
+              </svg>
+            </a>
+            <a href="#" aria-label="Instagram" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+              </svg>
+            </a>
+            <a href="#" aria-label="YouTube" class="social-link">
+              <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path
+                  d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                </path>
+              </svg>
+            </a>
+          </div>
+
+          <div class="newsletter-signup">
+            <h4>Subscribe to Newsletter</h4>
+            <form class="newsletter-form">
+              <input type="email" placeholder="Your email address" class="newsletter-input">
+              <button type="submit" class="newsletter-btn">Subscribe</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="footer-bottom-content">
+          <p>&copy; 2025 Astegni. All rights reserved.</p>
+          <div class="footer-badges">
+            <span class="badge">🔒 SSL Secured</span>
+            <span class="badge">✓ Verified Platform</span>
+            <span class="badge">🏆 Award Winner 2024</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <!-- Scripts -->
+  <script>
+    // Enhanced Sidebar Scroll Behavior
+    class SidebarManager {
+      constructor() {
+        this.sidebar = document.querySelector('.left-sidebar');
+        this.footer = document.querySelector('.footer-section');
+        this.lastScrollY = window.scrollY;
+        this.isAnimating = false;
+        this.footerObserver = null;
+
+        if (this.sidebar) {
+          this.init();
+        }
+      }
+
+      init() {
+        this.setupScrollListener();
+        this.setupFooterObserver();
+        this.updateSidebarHeight();
+      }
+
+      setupScrollListener() {
+        let ticking = false;
+
+        window.addEventListener('scroll', () => {
+          if (!ticking) {
+            window.requestAnimationFrame(() => {
+              this.handleScroll();
+              ticking = false;
+            });
+            ticking = true;
+          }
+        });
+      }
+
+      handleScroll() {
+        const currentScrollY = window.scrollY;
+        const scrollDirection = currentScrollY > this.lastScrollY ? 'down' : 'up';
+
+        // Check footer visibility
+        if (this.footer) {
+          const footerRect = this.footer.getBoundingClientRect();
+          const windowHeight = window.innerHeight;
+
+          if (footerRect.top < windowHeight) {
+            const footerOffset = windowHeight - footerRect.top;
+            this.adjustSidebarForFooter(footerOffset);
+          } else {
+            this.resetSidebar();
+          }
+        }
+
+        this.lastScrollY = currentScrollY;
+      }
+
+      setupFooterObserver() {
+        if (!this.footer) return;
+
+        const options = {
+          root: null,
+          rootMargin: '100px',
+          threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+        };
+
+        this.footerObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const footerVisibleHeight = entry.intersectionRect.height;
+              this.smoothAdjustSidebar(footerVisibleHeight);
+            } else {
+              this.resetSidebar();
+            }
+          });
+        }, options);
+
+        this.footerObserver.observe(this.footer);
+      }
+
+      smoothAdjustSidebar(footerOffset) {
+        if (this.isAnimating) return;
+
+        this.isAnimating = true;
+        this.sidebar.classList.add('sliding-up');
+
+        // Set CSS variable for dynamic height
+        this.sidebar.style.setProperty('--footer-offset', `${footerOffset}px`);
+        this.sidebar.classList.add('footer-visible');
+
+        // Smooth animation
+        setTimeout(() => {
+          this.sidebar.classList.remove('sliding-up');
+          this.isAnimating = false;
+        }, 500);
+      }
+
+      adjustSidebarForFooter(footerOffset) {
+        const sidebarHeight = window.innerHeight - 60 - footerOffset;
+        this.sidebar.style.height = `${Math.max(sidebarHeight, 200)}px`;
+
+        // Add smooth transition effect
+        if (!this.sidebar.style.transition) {
+          this.sidebar.style.transition = 'height 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+        }
+      }
+
+      resetSidebar() {
+        this.sidebar.classList.remove('footer-visible');
+        this.sidebar.style.height = 'calc(100vh - 60px)';
+        this.sidebar.style.removeProperty('--footer-offset');
+      }
+
+      updateSidebarHeight() {
+        // Update on window resize
+        window.addEventListener('resize', () => {
+          this.handleScroll();
+        });
+      }
+    }
+
+    // Initialize sidebar manager when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebarManager = new SidebarManager();
+
+      // Smooth scroll for anchor links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            target.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
+        });
+      });
+    });
+    function scrollToSection(contentId) {
+      // Trigger the sidebar button click
+      const sidebarBtn = document.querySelector(`[data-content="${contentId}"]`);
+      if (sidebarBtn) {
+        sidebarBtn.click();
+      }
+    }
+
+  </script>
+    <script src="../js/auth.js"></script>
+  <script src="../js/institute-profile-1.js"></script>
+  <script src="../js/institute-profile-2.js"></script>
+  <script src="../js/institute-profile-3.js"></script>
+  <script src="../js/institute-profile-4.js"></script>
+</body>
+
+</html>

@@ -12,228 +12,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script defer src="../js/xlsx.full.min.js"></script>
     <script defer src="../js/chart.min.js"></script>
-    <style>
-        /* Modal Styles */
-        .upload-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 10000;
-            animation: fadeIn 0.3s ease;
-        }
+    <link rel="stylesheet" href="../css/coming-soon-modal.css">
+    <link rel="stylesheet" href="../css/ad-modal.css">
 
-        .upload-modal.active {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 20px;
-            padding: 2px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: slideUp 0.4s ease;
-        }
-
-        .modal-inner {
-            background: #fff;
-            border-radius: 18px;
-            padding: 30px;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .modal-title {
-            font-size: 24px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .modal-close {
-            width: 35px;
-            height: 35px;
-            border: none;
-            background: #f0f0f0;
-            border-radius: 50%;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .modal-close:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: rotate(90deg);
-        }
-
-        .upload-area {
-            border: 3px dashed #e0e0e0;
-            border-radius: 15px;
-            padding: 40px 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            background: #fafafa;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-area:hover {
-            border-color: #667eea;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
-        }
-
-        .upload-area.dragover {
-            border-color: #764ba2;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            transform: scale(1.02);
-        }
-
-        .upload-icon {
-            font-size: 60px;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .upload-text {
-            color: #666;
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
-
-        .upload-hint {
-            color: #999;
-            font-size: 14px;
-        }
-
-        .upload-input {
-            display: none;
-        }
-
-        .preview-container {
-            margin-top: 20px;
-            display: none;
-        }
-
-        .preview-container.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-
-        .preview-image {
-            width: 100%;
-            max-height: 300px;
-            object-fit: cover;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-
-        .preview-info {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-        }
-
-        .file-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            color: #999;
-            font-size: 14px;
-        }
-
-        .upload-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-upload {
-            flex: 1;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-upload.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-
-        .btn-upload.primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-upload.secondary {
-            background: #f0f0f0;
-            color: #666;
-        }
-
-        .btn-upload.secondary:hover {
-            background: #e0e0e0;
-        }
-
-        /* ===== ONLY ADD THESE SMOOTH SCROLL STYLES TO YOUR EXISTING CSS ===== */
-
-        /* Smooth scroll behavior for the page */
-        html {
-            scroll-behavior: smooth;
-        }
-
-        /* Enhanced Sidebar Animation Styles - Add to your existing .left-sidebar */
-        .left-sidebar {
-            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .left-sidebar.sliding-up {
-            animation: slideUpSidebar 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        .left-sidebar.footer-visible {
-            height: calc(100vh - 60px - var(--footer-offset)) !important;
-            transition: height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes slideUpSidebar {
-            0% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-
-            50% {
-                transform: translateY(-10px);
-                opacity: 0.9;
-            }
-
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-    </style>
-<link rel="stylesheet" href="../css/coming-soon-modal.css">
-    
 </head>
 
 <body>
@@ -269,48 +50,53 @@
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
                     <span class="nav-icon">💼</span> Find a Job
                 </a>
-                                    <!-- Profile container in navigation -->
-<div id="profile-container" class="profile-dropdown-container hidden">
-    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle" onclick="toggleProfileDropdown()">
-        <img id="profile-pic" class="profile-pic" alt="Profile">
-        <span id="profile-name" class="profile-name"></span>
-        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-        </svg>
-    </button>
+                <!-- Profile container in navigation -->
+                <div id="profile-container" class="profile-dropdown-container hidden">
+                    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                        onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic" alt="Profile">
+                        <span id="profile-name" class="profile-name"></span>
+                        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
 
-    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
-        <!-- User info header -->
-        <div class="dropdown-header">
-            <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
-            <div class="dropdown-user-info">
-                <span id="dropdown-user-name" class="dropdown-user-name"></span>
-                <span id="dropdown-user-email" class="dropdown-user-email"></span>
-                <span id="dropdown-user-role" class="dropdown-user-role"></span>
-            </div>
-        </div>
+                    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                        <!-- User info header -->
+                        <div class="dropdown-header">
+                            <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
+                            <div class="dropdown-user-info">
+                                <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                            </div>
+                        </div>
 
-        <div class="dropdown-divider"></div>
+                        <div class="dropdown-divider"></div>
 
-        <!-- Role switcher section -->
-        <div id="role-switcher-section" class="role-switcher-section hidden">
-            <div class="dropdown-divider"></div>
-            <div class="dropdown-item-header">Switch Role</div>
-            <div id="role-options" class="role-options">
-                <!-- Role options will be dynamically added -->
-            </div>
-        </div>
+                        <!-- Role switcher section -->
+                        <div id="role-switcher-section" class="role-switcher-section hidden">
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-item-header">Switch Role</div>
+                            <div id="role-options" class="role-options">
+                                <!-- Role options will be dynamically added -->
+                            </div>
+                        </div>
 
-        <div class="dropdown-divider"></div>
+                        <div class="dropdown-divider"></div>
 
-        <button class="dropdown-item logout-item" onclick="logout()">
-            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
-            </svg>
-            Logout
-        </button>
-    </div>
-</div>
+                        <button class="dropdown-item logout-item" onclick="logout()">
+                            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
 
                 <button class="notification-btn">
                     <span class="notification-icon">🔔</span>
@@ -616,7 +402,7 @@
                     <span class="ad-label">Advertisement</span>
                     <h3 class="ad-title">Boost Your Reach Today</h3>
                     <p class="ad-text">Premium placement available</p>
-                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+                    <button class="ad-cta" onclick="openAdModal()">Learn More</button>
                 </div>
                 <div class="ad-visual">
                     <div class="ad-circles">
@@ -1231,7 +1017,8 @@
             <!-- Right Sidebar -->
             <div class="right-sidebar">
                 <!-- News Widget -->
-                <div class="sidebar-widget news-widget" onclick="handleNavLinkClick(event, 'news')" style="cursor: pointer;">
+                <div class="sidebar-widget news-widget" onclick="handleNavLinkClick(event, 'news')"
+                    style="cursor: pointer;">
                     <div class="widget-header">
                         <h3>📰 Latest News</h3>
                         <a href="#" onclick="handleNavLinkClick(event, 'news')" class="widget-action">View All</a>
@@ -1644,7 +1431,7 @@
         </div>
     </div>
 
-<!-- Enhanced Auth Modal -->
+    <!-- Enhanced Auth Modal -->
     <div id="authRequiredModal" class="auth-modal-overlay">
         <div class="auth-modal-container">
             <div class="auth-modal-content">
@@ -1671,33 +1458,34 @@
         </div>
     </div>
 
-<!-- Coming Soon Modal -->
-<div id="coming-soon-modal" class="modal">
-    <div class="modal-content enhanced coming-soon-content">
-        <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                </path>
-            </svg>
-        </button>
-        
-        <div class="coming-soon-header">
-            <div class="coming-soon-icon">
-                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+    <!-- Coming Soon Modal -->
+    <div id="coming-soon-modal" class="modal">
+        <div class="modal-content enhanced coming-soon-content">
+            <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
+            </button>
+
+            <div class="coming-soon-header">
+                <div class="coming-soon-icon">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="modal-title">Coming Soon!</h3>
+                <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay
+                    tuned!</p>
             </div>
-            <h3 class="modal-title">Coming Soon!</h3>
-            <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay tuned!</p>
+
+
         </div>
-
-
     </div>
-</div>
 
-<!-- Ad Analytics Modal -->
+    <!-- Ad Analytics Modal -->
     <div class="modal" id="adAnalyticsModal">
         <div class="modal-overlay" onclick="closeAdAnalyticsModal()"></div>
         <div class="modal-content ad-analytics-modal">
@@ -1708,36 +1496,36 @@
             <div class="modal-body">
                 <div class="ad-stats-grid">
                     <div class="ad-stat-card">
+                        <span class="mock-label">Mock</span>
                         <div class="ad-stat-icon">👁️</div>
                         <div class="ad-stat-info">
                             <h3>2.5M+</h3>
                             <p>Monthly Impressions</p>
-                        </div>
-                        <span>Mock</span>
+                        </div>\
                     </div>
                     <div class="ad-stat-card">
+                        <span class="mock-label">Mock</span>
                         <div class="ad-stat-icon">🎯</div>
                         <div class="ad-stat-info">
                             <h3>4.2%</h3>
                             <p>Average CTR</p>
                         </div>
-                        <span>Mock</span>
                     </div>
                     <div class="ad-stat-card">
+                        <span class="mock-label">Mock</span>
                         <div class="ad-stat-icon">💰</div>
                         <div class="ad-stat-info">
                             <h3>$0.45</h3>
                             <p>Average CPC</p>
                         </div>
-                        <span>Mock</span>
                     </div>
                     <div class="ad-stat-card">
+                        <span class="mock-label">Mock</span>
                         <div class="ad-stat-icon">📈</div>
                         <div class="ad-stat-info">
                             <h3>325%</h3>
                             <p>Average ROI</p>
                         </div>
-                        <span>Mock</span>
                     </div>
                 </div>
 
@@ -1800,87 +1588,6 @@
                 <div class="ad-packages">
                     <h3>Advertising Packages</h3>
                     <div class="packages-grid">
-                        <div class="package-card">
-                            <h4>Upto Three days</h4>
-                            <div class="package-price">2000 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card featured">
-                            <div class="featured-badge">Most Popular</div>
-                            <h4>Upto seven days</h4>
-                            <div class="package-price">/1800 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto Half a month</h4>
-                            <div class="package-price">1500 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto a Month</h4>
-                            <div class="package-price">1200 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto Three Months</h4>
-                            <div class="package-price">1000 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Up to Six Months</h4>
-                            <div class="package-price">800 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto Nine Months</h4>
-                            <div class="package-price">600 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
-                        <div class="package-card">
-                            <h4>Upto a Year</h4>
-                            <div class="package-price">400 ETB/day</div>
-                            <ul>
-                                <li>Unlimited impressions</li>
-                                <li>Custom targeting</li>
-                                <li>Priority placement</li>
-                                <li>Full analytics suite</li>
-                            </ul>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -1920,7 +1627,7 @@
         </div>
     </div>
 
-<!-- Enhanced Footer -->
+    <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
         <div class="footer-wave" aria-hidden="true">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
@@ -2069,7 +1776,7 @@
     </footer>
 
     <!-- Scripts -->
-     <script>
+    <script>
         // Check authentication on page load
         (async function () {
             const auth = window.AuthManager;
@@ -2492,51 +2199,53 @@
             });
         });
     </script>
-<!-- In student-profile.html or any protected page -->
-<script src="../js/auth.js"></script>
-<script>
-    // Check authentication on page load
-    (async function() {
-        const auth = window.AuthManager;
-        
-        if (!auth.isAuthenticated()) {
-            const restored = await auth.restoreSession();
-            if (!restored) {
-                alert('Please login to access this page');
+    <!-- In student-profile.html or any protected page -->
+    <script src="../js/auth.js"></script>
+    <script>
+        // Check authentication on page load
+        (async function () {
+            const auth = window.AuthManager;
+
+            if (!auth.isAuthenticated()) {
+                const restored = await auth.restoreSession();
+                if (!restored) {
+                    alert('Please login to access this page');
+                    window.location.href = '../index.html';
+                    return;
+                }
+            }
+
+            // Get user data
+            const user = auth.getUser();
+            const userRole = auth.getUserRole();
+
+            // Debug - see what we're working with
+            console.log('Current role:', userRole);
+            console.log('User roles:', user.roles);
+
+            // Check if user has advertiser role
+            if (userRole !== 'advertiser' && !user.roles?.includes('advertiser')) {
+                alert('This page is for advertisers only');
                 window.location.href = '../index.html';
                 return;
             }
-        }
-        
-        // Get user data
-        const user = auth.getUser();
-        const userRole = auth.getUserRole();
-        
-        // Debug - see what we're working with
-        console.log('Current role:', userRole);
-        console.log('User roles:', user.roles);
-        
-        // Check if user has advertiser role
-        if (userRole !== 'advertiser' && !user.roles?.includes('advertiser')) {
-            alert('This page is for advertisers only');
-            window.location.href = '../index.html';
-            return;
-        }
-        
-        // If they have the role but it's not active, show a message
-        if (userRole !== 'advertiser' && user.roles?.includes('advertiser')) {
-            console.log('You have advertiser role but it\'s not active. Consider switching roles.');
-        }
-        
-        console.log('Access granted to advertiser page');
-    })();
-</script>
-<script src="../js/profile-system.js"></script> <!-- Profile system JS -->
+
+            // If they have the role but it's not active, show a message
+            if (userRole !== 'advertiser' && user.roles?.includes('advertiser')) {
+                console.log('You have advertiser role but it\'s not active. Consider switching roles.');
+            }
+
+            console.log('Access granted to advertiser page');
+        })();
+    </script>
+
+<script src="../js/ad-modal.js"></script>
+    <script src="../js/profile-system.js"></script> <!-- Profile system JS -->
     <script src="../js/institute-profile-1.js"></script>
     <script src="../js/institute-profile-2.js"></script>
     <script src="../js/institute-profile-3.js"></script>
-    <script src="../js/institute-profile-4.js"></script>   
-<script src="../js/coming-soon-modal.js"></script>
+    <script src="../js/institute-profile-4.js"></script>
+    <script src="../js/coming-soon-modal.js"></script>
 
 </body>
 

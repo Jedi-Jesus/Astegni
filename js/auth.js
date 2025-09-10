@@ -106,6 +106,12 @@ async login(email, password) {
         
         // Save to localStorage
         localStorage.setItem('token', this.token);
+
+        // In auth.js, in the login method after successful login:
+// Store token with both keys for compatibility
+localStorage.setItem('token', data.access_token);         // For auth.js compatibility
+localStorage.setItem('access_token', data.access_token);  // For reels_dynamic.js
+localStorage.setItem('refresh_token', data.refresh_token); // For token refresh
         localStorage.setItem('currentUser', JSON.stringify(formattedUser));
         localStorage.setItem('userRole', data.user.role);
         

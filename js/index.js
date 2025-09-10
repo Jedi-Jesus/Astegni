@@ -80,12 +80,12 @@ const ROLE_AVATAR_SYSTEM = {
         defaults: [
             {
                 id: "student-boy-young",
-                path: "pictures/student-kid-boy.jpeg",
+                path: "pictures/student-college-boy.jpg",
                 label: "Young Student (Boy)",
             },
             {
                 id: "student-girl-young",
-                path: "pictures/student-kid-girl.jpeg",
+                path: "pictures/student-college-girl.jpg",
                 label: "Young Student (Girl)",
             },
         ],
@@ -96,7 +96,7 @@ const ROLE_AVATAR_SYSTEM = {
         defaults: [
             {
                 id: "tutor-male-professional",
-                path: "pictures/tutor-man.jpg",
+                path: "",
                 label: "Professional Male Tutor",
             },
             {

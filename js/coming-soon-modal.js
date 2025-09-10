@@ -13,7 +13,7 @@ function openComingSoonModal(feature) {
         'news': 'Our news section is being crafted to bring you the latest updates in education and technology!',
         'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
         'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!',
-        'market': 'Our market place is being '
+        'market': 'Our marketplace and trading platform is being developed to provide real-time market insights and trading capabilities!'
     };
 
     message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";
@@ -197,7 +197,7 @@ function handleComingSoonNotification(e) {
 // Line 161 in coming-soon-modal.js should be:
 window.handleNavLinkClick = function (e, link) {
     // Define coming soon features
-    const comingSoonFeatures = ['news', 'store', 'find-jobs'];
+    const comingSoonFeatures = ['news', 'store', 'find-jobs', 'market'];
 
     // Check if it's a coming soon feature
     if (comingSoonFeatures.includes(link)) {

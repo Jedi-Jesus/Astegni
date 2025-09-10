@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yeneta Exchange - Professional Multi-Asset Trading Platform</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/yeneta-exchange.css">
+</head>
+
+<body data-theme="dark">
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <div class="logo">
+                    <span class="logo-icon">¥</span>
+                    <span class="logo-text">Yeneta Exchange</span>
+                </div>
+
+                <!-- Hamburger Menu for Mobile -->
+                <button class="hamburger" id="hamburgerBtn">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <div class="nav-menu" id="navMenu">
+                    <button class="nav-btn active" data-market="forex">Forex</button>
+                    <button class="nav-btn" data-market="stocks">Stocks</button>
+                    <button class="nav-btn" data-market="crypto">Crypto</button>
+                    <button class="nav-btn" data-market="futures">Futures</button>
+                    <button class="nav-btn" data-market="news">News</button>
+                    <button class="nav-btn" data-market="p2p">P2P</button>
+                    <button class="nav-btn" id="convertBtn">Convert</button>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="wallet-info">
+                    <span class="wallet-label">Balance:</span>
+                    <span class="wallet-amount">$125,430.58</span>
+                </div>
+                <button class="btn-deposit">Deposit</button>
+                <button class="btn-withdraw">Withdraw</button>
+                <button class="btn-transfer">Transfer</button>
+                <a href="profile.html" class="user-menu">
+                    <img src="https://via.placeholder.com/32" alt="User" class="user-avatar">
+                    <span class="user-name">John Doe</span>
+                </a>
+            </div>
+            <button class="theme-toggle" id="themeToggle">
+                <span class="theme-icon">🌙</span>
+            </button>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div class="mobile-nav" id="mobileNav">
+            <div class="mobile-nav-items">
+                <button class="mobile-nav-btn active" data-market="forex">Forex</button>
+                <button class="mobile-nav-btn" data-market="stocks">Stocks</button>
+                <button class="mobile-nav-btn" data-market="crypto">Crypto</button>
+                <button class="mobile-nav-btn" data-market="futures">Futures</button>
+                <button class="mobile-nav-btn" data-market="p2p">P2P</button>
+                <button class="mobile-nav-btn" id="convertBtnMobile">Convert</button>
+                <button class="mobile-nav-btn" data-market="news">News</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Trading Interface -->
+    <div class="exchange-container" id="mainContainer">
+        <!-- Left Sidebar - Market List -->
+        <aside class="market-sidebar">
+            <div class="market-search">
+                <input type="text" placeholder="Search markets..." class="search-input">
+            </div>
+
+            <!-- Stock Filters (Hidden by default) -->
+            <div class="stock-filters" id="stockFilters" style="display: none;">
+                <select class="stock-region-filter" id="stockRegionFilter">
+                    <option value="national">National (ESX)</option>
+                    <option value="continental">Continental</option>
+                    <option value="international">International</option>
+                </select>
+
+                <div class="stock-sectors" id="stockSectors" style="display: none;">
+                    <button class="sector-btn active" data-sector="all">All</button>
+                    <button class="sector-btn" data-sector="banking">Banking</button>
+                    <button class="sector-btn" data-sector="telecom">Telecom</button>
+                    <button class="sector-btn" data-sector="manufacturing">Manufacturing</button>
+                    <button class="sector-btn" data-sector="agriculture">Agriculture</button>
+                    <button class="sector-btn" data-sector="gold">Gold</button>
+                    <button class="sector-btn" data-sector="realestate">Real Estate</button>
+                    <button class="sector-btn" data-sector="energy">Energy</button>
+                </div>
+            </div>
+
+            <!-- Forex Filters (Visible by default) -->
+            <div class="forex-filters" id="forexFilters">
+                <div class="forex-filter-buttons">
+                    <button class="forex-filter-btn" data-filter="all">All Pairs</button>
+                    <button class="forex-filter-btn" data-filter="major">Major</button>
+                    <button class="forex-filter-btn active" data-filter="etb">ETB Pairs</button>
+                </div>
+            </div>
+
+            <!-- Futures Filters (Hidden by default) -->
+            <div class="futures-filters" id="futuresFilters" style="display: none;">
+                <div class="futures-filter-buttons">
+                    <button class="futures-filter-btn active" data-filter="local">Local</button>
+                    <button class="futures-filter-btn" data-filter="international">International</button>
+                </div>
+            </div>
+
+            <div class="market-tabs">
+                <button class="tab-btn active">All</button>
+                <button class="tab-btn">Favorites</button>
+                <button class="tab-btn">Gainers</button>
+                <button class="tab-btn">Losers</button>
+            </div>
+            <div class="market-list" id="marketList">
+                <!-- Market items will be populated by JS -->
+            </div>
+        </aside>
+
+        <!-- Center - Main Trading Area -->
+        <main class="trading-main" id="tradingMain">
+            <!-- Trading Header -->
+            <div class="trading-header">
+                <div class="asset-info">
+                    <h1 class="asset-pair">USD/ETB</h1>
+                    <span class="asset-name">US Dollar/Ethiopian Birr</span>
+                </div>
+                <div class="price-info">
+                    <div class="current-price">
+                        <span class="price-value">56.45</span>
+                        <span class="price-change positive">+0.12%</span>
+                    </div>
+                    <div class="price-stats">
+                        <div class="stat">
+                            <span class="stat-label">24h High</span>
+                            <span class="stat-value">56.67</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">24h Low</span>
+                            <span class="stat-value">56.23</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">24h Volume</span>
+                            <span class="stat-value">$234M</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart Area -->
+            <div class="chart-container">
+                <div class="chart-controls">
+                    <div class="chart-timeframes">
+                        <button class="timeframe-btn">1m</button>
+                        <button class="timeframe-btn">5m</button>
+                        <button class="timeframe-btn">15m</button>
+                        <button class="timeframe-btn">1h</button>
+                        <button class="timeframe-btn active">4h</button>
+                        <button class="timeframe-btn">1d</button>
+                        <button class="timeframe-btn">1w</button>
+                        <button class="timeframe-btn">1M</button>
+                        <button class="timeframe-btn">3M</button>
+                        <button class="timeframe-btn">6M</button>
+                        <button class="timeframe-btn">9M</button>
+                        <button class="timeframe-btn">1Y</button>
+                    </div>
+                    <div class="chart-tools">
+                        <button class="tool-btn">📊</button>
+                        <button class="tool-btn">📈</button>
+                        <button class="tool-btn">🔧</button>
+                    </div>
+                </div>
+                <canvas id="priceChart"></canvas>
+            </div>
+
+            <!-- Order Book and Trade History -->
+            <div class="market-data-row">
+                <div class="order-book">
+                    <div class="book-header">
+                        <h3>Order Book</h3>
+                        <div class="book-controls">
+                            <button class="book-btn active">All</button>
+                            <button class="book-btn">Bids</button>
+                            <button class="book-btn">Asks</button>
+                        </div>
+                    </div>
+                    <div class="book-content">
+                        <div class="book-asks" id="orderBookAsks">
+                            <!-- Asks will be populated by JS -->
+                        </div>
+                        <div class="book-spread">
+                            <span class="spread-value">56.45</span>
+                            <span class="spread-label">Spread: 0.02%</span>
+                        </div>
+                        <div class="book-bids" id="orderBookBids">
+                            <!-- Bids will be populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trade-history">
+                    <div class="history-header">
+                        <h3>Recent Trades</h3>
+                    </div>
+                    <div class="history-content" id="tradeHistory">
+                        <!-- Trade history will be populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- News Section (Hidden by default) -->
+        <main class="news-main" id="newsMain" style="display: none;">
+            <div class="news-header">
+                <div class="news-header-content">
+                    <div class="news-title-section">
+                        <h1 class="news-main-title">
+                            <span class="title-gradient">Market News</span>
+                            <span class="title-accent">& Analysis</span>
+                        </h1>
+                        <p class="news-subtitle">Stay updated with the latest market trends and insights</p>
+                    </div>
+                    <div class="news-controls">
+                        <div class="news-search-box">
+                            <input type="text" placeholder="Search news..." class="news-search-input">
+                            <button class="news-search-btn">🔍</button>
+                        </div>
+                        <select class="news-sort">
+                            <option>Latest</option>
+                            <option>Popular</option>
+                            <option>Trending</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="news-filters">
+                    <button class="news-filter-btn active" data-filter="all">
+                        <span class="filter-icon">📰</span>
+                        All News
+                    </button>
+                    <button class="news-filter-btn" data-filter="crypto">
+                        <span class="filter-icon">₿</span>
+                        Crypto
+                    </button>
+                    <button class="news-filter-btn" data-filter="esx">
+                        <span class="filter-icon">📈</span>
+                        ESX
+                    </button>
+                    <button class="news-filter-btn" data-filter="forex">
+                        <span class="filter-icon">💱</span>
+                        Forex
+                    </button>
+                    <button class="news-filter-btn" data-filter="analysis">
+                        <span class="filter-icon">📊</span>
+                        Analysis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Featured News Carousel -->
+            <div class="featured-news-section">
+                <div class="featured-news-carousel">
+                    <div class="featured-article">
+                        <div class="featured-image-wrapper">
+                            <img src="https://via.placeholder.com/800x400" alt="Featured" class="featured-image">
+                            <div class="featured-overlay">
+                                <span class="featured-badge">FEATURED</span>
+                            </div>
+                        </div>
+                        <div class="featured-content">
+                            <span class="featured-category">ESX BREAKING</span>
+                            <h2 class="featured-title">Commercial Bank of Ethiopia Announces Record Profits, Stock
+                                Surges 15%</h2>
+                            <p class="featured-excerpt">CBE reports unprecedented Q4 earnings driven by digital
+                                transformation and expanded lending portfolio...</p>
+                            <div class="featured-meta">
+                                <div class="featured-author">
+                                    <img src="https://via.placeholder.com/40" alt="Author" class="featured-author-img">
+                                    <div>
+                                        <span class="author-name">Abebe Tadesse</span>
+                                        <span class="publish-time">2 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="featured-stats">
+                                    <span>👁️ 15.2k views</span>
+                                    <span>💬 234 comments</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- News Grid with Mixed Layout -->
+            <div class="news-container">
+                <div class="news-grid-enhanced" id="newsGrid">
+                    <!-- News cards will be populated by JS -->
+                </div>
+
+                <!-- Trending News Sidebar -->
+                <div class="trending-news-sidebar">
+                    <div class="trending-header">
+                        <h3>🔥 Trending Now</h3>
+                        <span class="trending-indicator"></span>
+                    </div>
+                    <div class="trending-list">
+                        <div class="trending-item">
+                            <span class="trending-number">1</span>
+                            <div class="trending-content">
+                                <h4>Ethio Telecom IPO Announcement</h4>
+                                <span class="trending-meta">5 min ago • 8.5k reads</span>
+                            </div>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-number">2</span>
+                            <div class="trending-content">
+                                <h4>USD/ETB Reaches New High</h4>
+                                <span class="trending-meta">15 min ago • 6.2k reads</span>
+                            </div>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-number">3</span>
+                            <div class="trending-content">
+                                <h4>Gold Mining Stocks Rally</h4>
+                                <span class="trending-meta">1 hour ago • 4.8k reads</span>
+                            </div>
+                        </div>
+                        <div class="trending-item">
+                            <span class="trending-number">4</span>
+                            <div class="trending-content">
+                                <h4>Coffee Export Prices Surge</h4>
+                                <span class="trending-meta">2 hours ago • 3.5k reads</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- P2P Trading Section (Hidden by default) -->
+        <main class="p2p-main" id="p2pMain" style="display: none;">
+            <div class="p2p-header">
+                <h1>P2P Trading</h1>
+                <div class="p2p-controls">
+                    <button class="p2p-tab active">Buy</button>
+                    <button class="p2p-tab">Sell</button>
+                    <select class="p2p-currency">
+                        <option>USDT</option>
+                        <option>BTC</option>
+                        <option>ETH</option>
+                    </select>
+                    <select class="p2p-payment">
+                        <option>All Payments</option>
+                        <option>Bank Transfer</option>
+                        <option>CBE Birr</option>
+                        <option>Telebirr</option>
+                        <option>M-PESA</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="p2p-offers" id="p2pOffers">
+                <!-- P2P offers will be populated by JS -->
+            </div>
+        </main>
+
+        <!-- Right Sidebar - Trading Panel / News Widget -->
+        <aside class="trading-sidebar" id="tradingSidebar">
+            <div class="trading-panel">
+                <div class="panel-tabs">
+                    <button class="panel-tab active" data-type="spot">Spot</button>
+                    <button class="panel-tab" data-type="margin">Margin</button>
+                    <button class="panel-tab" data-type="futures">Futures</button>
+                </div>
+
+                <div class="order-form">
+                    <div class="order-type-selector">
+                        <button class="order-type-btn buy active">Buy</button>
+                        <button class="order-type-btn sell">Sell</button>
+                    </div>
+
+                    <div class="order-method">
+                        <select class="form-select">
+                            <option>Limit Order</option>
+                            <option>Market Order</option>
+                            <option>Stop-Limit</option>
+                            <option>OCO</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Price</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" value="56.45">
+                            <span class="input-suffix">ETB</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Amount</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" placeholder="0.00">
+                            <span class="input-suffix">USD</span>
+                        </div>
+                    </div>
+
+                    <div class="amount-slider">
+                        <input type="range" min="0" max="100" value="0" class="slider">
+                        <div class="slider-marks">
+                            <span>25%</span>
+                            <span>50%</span>
+                            <span>75%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Total</label>
+                        <div class="input-group">
+                            <input type="number" class="form-input" placeholder="0.00" readonly>
+                            <span class="input-suffix">ETB</span>
+                        </div>
+                    </div>
+
+                    <div class="available-balance">
+                        <span>Available:</span>
+                        <span class="balance-value">10,000.00 ETB</span>
+                    </div>
+
+                    <button class="btn-place-order buy">Place Buy Order</button>
+                </div>
+            </div>
+
+            <!-- Open Orders -->
+            <div class="open-orders">
+                <div class="orders-header">
+                    <h3>Open Orders</h3>
+                    <button class="btn-cancel-all">Cancel All</button>
+                </div>
+                <div class="orders-list" id="openOrders">
+                    <!-- Open orders will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Portfolio Summary -->
+            <div class="portfolio-summary">
+                <h3>Portfolio</h3>
+                <div class="portfolio-stats">
+                    <div class="portfolio-stat">
+                        <span class="stat-label">Total Value</span>
+                        <span class="stat-value">$125,430.58</span>
+                    </div>
+                    <div class="portfolio-stat">
+                        <span class="stat-label">24h P&L</span>
+                        <span class="stat-value positive">+$3,245.12</span>
+                    </div>
+                </div>
+                <div class="holdings-list" id="holdings">
+                    <!-- Holdings will be populated by JS -->
+                </div>
+            </div>
+        </aside>
+
+        <!-- News Sidebar (Hidden by default) -->
+        <aside class="news-sidebar" id="newsSidebar" style="display: none;">
+            <div class="popular-authors">
+                <h3>Popular Authors</h3>
+                <div class="authors-list" id="authorsList">
+                    <!-- Authors will be populated by JS -->
+                </div>
+            </div>
+
+            <div class="trending-topics">
+                <h3>Trending Topics</h3>
+                <div class="topics-list">
+                    <span class="topic-tag">#Bitcoin</span>
+                    <span class="topic-tag">#ESX</span>
+                    <span class="topic-tag">#DeFi</span>
+                    <span class="topic-tag">#CBEBirr</span>
+                    <span class="topic-tag">#Trading</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Bottom Ticker -->
+    <div class="bottom-ticker">
+        <div class="ticker-content" id="tickerContent">
+            <!-- Ticker items will be populated by JS -->
+        </div>
+    </div>
+
+    <!-- All Modals remain the same -->
+    <!-- ... (keep all modal code as is) ... -->
+
+    <!-- Modals -->
+
+    <!-- Enhanced Deposit Modal -->
+    <div class="modal" id="depositModal">
+        <div class="modal-content modal-enhanced">
+            <div class="modal-decoration">
+                <div class="modal-glow"></div>
+            </div>
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-icon">💰</span>
+                    <h2>Deposit Funds</h2>
+                </div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="deposit-amount-section">
+                    <label class="modal-label">Amount to Deposit</label>
+                    <div class="amount-input-group">
+                        <input type="number" placeholder="Enter amount" class="modal-input-large">
+                        <select class="currency-select">
+                            <option>USD</option>
+                            <option>EUR</option>
+                            <option>ETB</option>
+                            <option>GBP</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="deposit-options">
+                    <div class="deposit-option">
+                        <span class="option-icon">💳</span>
+                        <span>Credit Card</span>
+                        <span class="option-badge">Instant</span>
+                    </div>
+                    <div class="deposit-option">
+                        <span class="option-icon">🏦</span>
+                        <span>Bank Transfer</span>
+                        <span class="option-badge">1-3 days</span>
+                    </div>
+                    <div class="deposit-option">
+                        <span class="option-icon">₿</span>
+                        <span>Crypto</span>
+                        <span class="option-badge">10 mins</span>
+                    </div>
+                    <div class="deposit-option">
+                        <span class="option-icon">📱</span>
+                        <span>CBE Birr</span>
+                        <span class="option-badge">Instant</span>
+                    </div>
+                    <div class="deposit-option">
+                        <span class="option-icon">📱</span>
+                        <span>Telebirr</span>
+                        <span class="option-badge">Instant</span>
+                    </div>
+                    <div class="deposit-option">
+                        <span class="option-icon">📱</span>
+                        <span>M-PESA</span>
+                        <span class="option-badge">Instant</span>
+                    </div>
+                </div>
+                <button class="btn-modal-primary">Continue to Deposit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Withdrawal Modal -->
+    <div class="modal" id="withdrawModal">
+        <div class="modal-content modal-enhanced">
+            <div class="modal-decoration">
+                <div class="modal-glow"></div>
+            </div>
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-icon">💸</span>
+                    <h2>Withdraw Funds</h2>
+                </div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="withdrawal-tabs">
+                    <button class="withdrawal-tab active">Crypto</button>
+                    <button class="withdrawal-tab">Fiat</button>
+                    <button class="withdrawal-tab">Local Bank</button>
+                </div>
+
+                <div class="withdrawal-form">
+                    <div class="form-group">
+                        <label class="modal-label">Select Asset</label>
+                        <select class="modal-select">
+                            <option>BTC - Bitcoin (Available: 0.5234)</option>
+                            <option>ETH - Ethereum (Available: 5.678)</option>
+                            <option>USDT - Tether (Available: 10,000)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="modal-label">Withdrawal Address</label>
+                        <div class="address-input-group">
+                            <input type="text" class="modal-input" placeholder="Enter wallet address">
+                            <button class="btn-scan">📷</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="modal-label">Network</label>
+                        <div class="network-options">
+                            <div class="network-option active">
+                                <span class="network-name">ERC-20</span>
+                                <span class="network-fee">Fee: 0.005 ETH</span>
+                            </div>
+                            <div class="network-option">
+                                <span class="network-name">TRC-20</span>
+                                <span class="network-fee">Fee: 1 USDT</span>
+                            </div>
+                            <div class="network-option">
+                                <span class="network-name">BEP-20</span>
+                                <span class="network-fee">Fee: 0.0005 BNB</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="modal-label">Amount</label>
+                        <div class="amount-input-wrapper">
+                            <input type="number" class="modal-input" placeholder="0.00">
+                            <button class="btn-max">MAX</button>
+                        </div>
+                        <div class="amount-info">
+                            <span>Minimum: 0.001 BTC</span>
+                            <span>Daily Limit: 10 BTC</span>
+                        </div>
+                    </div>
+
+                    <div class="withdrawal-summary">
+                        <div class="summary-item">
+                            <span>Amount:</span>
+                            <span>0.00 BTC</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>Network Fee:</span>
+                            <span>0.0005 BTC</span>
+                        </div>
+                        <div class="summary-item total">
+                            <span>You will receive:</span>
+                            <span>0.00 BTC</span>
+                        </div>
+                    </div>
+
+                    <div class="security-verification">
+                        <input type="checkbox" id="confirmWithdraw">
+                        <label for="confirmWithdraw">I confirm the withdrawal address is correct</label>
+                    </div>
+
+                    <button class="btn-modal-primary">Withdraw</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Transfer Modal -->
+    <div class="modal" id="transferModal">
+        <div class="modal-content modal-enhanced">
+            <div class="modal-decoration">
+                <div class="modal-glow"></div>
+            </div>
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-icon">🔄</span>
+                    <h2>Transfer Assets</h2>
+                </div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="transfer-type-selector">
+                    <div class="transfer-type active">
+                        <span class="type-icon">👤</span>
+                        <span>Internal Transfer</span>
+                    </div>
+                    <div class="transfer-type">
+                        <span class="type-icon">🌍</span>
+                        <span>External Transfer</span>
+                    </div>
+                </div>
+
+                <div class="transfer-form">
+                    <div class="form-group">
+                        <label class="modal-label">From</label>
+                        <select class="modal-select">
+                            <option>Spot Wallet</option>
+                            <option>Futures Wallet</option>
+                            <option>Margin Wallet</option>
+                        </select>
+                    </div>
+
+                    <div class="transfer-arrow">↓</div>
+
+                    <div class="form-group">
+                        <label class="modal-label">To</label>
+                        <select class="modal-select">
+                            <option>Futures Wallet</option>
+                            <option>Spot Wallet</option>
+                            <option>Margin Wallet</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="modal-label">Asset</label>
+                        <select class="modal-select">
+                            <option>BTC - Bitcoin</option>
+                            <option>ETH - Ethereum</option>
+                            <option>USDT - Tether</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="modal-label">Amount</label>
+                        <div class="amount-input-wrapper">
+                            <input type="number" class="modal-input" placeholder="0.00">
+                            <button class="btn-max">ALL</button>
+                        </div>
+                        <span class="available-text">Available: 10,000 USDT</span>
+                    </div>
+
+                    <button class="btn-modal-primary">Transfer Now</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Beautiful Convert/Swap Modal -->
+    <div class="modal" id="convertModal">
+        <div class="modal-content modal-enhanced modal-convert">
+            <div class="modal-decoration">
+                <div class="modal-glow"></div>
+                <div class="floating-coins">
+                    <span class="coin coin-1">₿</span>
+                    <span class="coin coin-2">Ξ</span>
+                    <span class="coin coin-3">$</span>
+                </div>
+            </div>
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-icon">✨</span>
+                    <h2>Instant Convert</h2>
+                </div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="convert-container">
+                    <div class="convert-card from-card">
+                        <div class="convert-label">From</div>
+                        <div class="convert-input-wrapper">
+                            <input type="number" placeholder="0.00" class="convert-amount-input">
+                            <div class="convert-currency-selector">
+                                <img src="https://via.placeholder.com/24" alt="" class="currency-icon">
+                                <select class="convert-currency-select">
+                                    <option>ETB (Birr)</option>
+                                    <option>USD</option>
+                                    <option>EUR</option>
+                                    <option>GBP</option>
+                                    <option>CNY (Yuan)</option>
+                                    <option>BTC</option>
+                                    <option>ETH</option>
+                                    <option>USDT</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="convert-balance">
+                            <span>Balance: 50,000.00 ETB</span>
+                            <button class="btn-use-max">Use Max</button>
+                        </div>
+                    </div>
+
+                    <div class="convert-switch">
+                        <button class="btn-swap-currencies">
+                            <span class="swap-icon">⇅</span>
+                        </button>
+                        <div class="swap-rate">1 ETB = 0.0177 USD</div>
+                    </div>
+
+                    <div class="convert-card to-card">
+                        <div class="convert-label">To</div>
+                        <div class="convert-input-wrapper">
+                            <input type="number" placeholder="0.00" class="convert-amount-input" readonly>
+                            <div class="convert-currency-selector">
+                                <img src="https://via.placeholder.com/24" alt="" class="currency-icon">
+                                <select class="convert-currency-select">
+                                    <option>BTC</option>
+                                    <option>ETH</option>
+                                    <option>USDT</option>
+                                    <option>USD</option>
+                                    <option>EUR</option>
+                                    <option>GBP</option>
+                                    <option>CNY (Yuan)</option>
+                                    <option>ETB (Birr)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="convert-estimate">
+                            Estimated value: $0.00
+                        </div>
+                    </div>
+
+                    <div class="convert-details">
+                        <div class="detail-item">
+                            <span>Exchange Rate</span>
+                            <span>1 ETB = 0.0177 USD</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Fee</span>
+                            <span>0.1%</span>
+                        </div>
+                        <div class="detail-item">
+                            <span>Estimated Time</span>
+                            <span>Instant</span>
+                        </div>
+                    </div>
+
+                    <button class="btn-convert-now">
+                        <span class="btn-text">Convert Now</span>
+                        <span class="btn-shimmer"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- News Detail Modal -->
+    <div class="modal" id="newsModal">
+        <div class="modal-content news-modal-content">
+            <div class="modal-header">
+                <h2 id="newsModalTitle">News Title</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body news-modal-body">
+                <div class="news-detail-content" id="newsDetailContent">
+                    <!-- News content will be populated by JS -->
+                </div>
+
+                <!-- Comments Sidebar -->
+                <div class="comments-sidebar" id="commentsSidebar" style="display: none;">
+                    <div class="comments-header">
+                        <h3>Comments</h3>
+                        <button class="close-comments">×</button>
+                    </div>
+                    <div class="comments-list" id="commentsList">
+                        <!-- Comments will be populated by JS -->
+                    </div>
+                    <div class="comment-input">
+                        <input type="text" placeholder="Add a comment..." class="comment-field">
+                        <button class="btn-send-comment">Send</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer news-actions">
+                <button class="news-action-btn" data-action="like">
+                    <span class="action-icon">👍</span>
+                    <span class="action-count">234</span>
+                </button>
+                <button class="news-action-btn" data-action="dislike">
+                    <span class="action-icon">👎</span>
+                    <span class="action-count">12</span>
+                </button>
+                <button class="news-action-btn" data-action="share">
+                    <span class="action-icon">📤</span>
+                    <span>Share</span>
+                </button>
+                <button class="news-action-btn" data-action="save">
+                    <span class="action-icon">📑</span>
+                    <span>Save</span>
+                </button>
+                <button class="news-action-btn" id="commentBtn" data-action="comment">
+                    <span class="action-icon">💬</span>
+                    <span class="action-count">45</span>
+                </button>
+            </div>
+        </div>
+    </div><!-- In student-profile.html or any protected page -->
+<script src="../js/auth.js"></script>
+<script>
+    // Check authentication on page load
+    (async function() {
+        const auth = window.AuthManager;
+        
+        if (!auth.isAuthenticated()) {
+            // Try to restore session
+            const restored = await auth.restoreSession();
+            
+            if (!restored) {
+                alert('Please login to access this page');
+                window.location.href = '../index.html';
+                return;
+            }
+        }
+        
+        // Check if user has the right role
+        const userRole = auth.getUserRole();
+        if (userRole !== 'student') {
+            alert('This page is for students only');
+            window.location.href = '../index.html';
+            return;
+        }
+        
+        // Page is accessible, load user data
+        const user = auth.getUser();
+        console.log('Current user:', user);
+        // ... rest of your page-specific code
+    })();
+</script>
+<script src="../js/protected-page.js"></script>
+    <script src="../js/yeneta-exchange.js"></script>
+</body>
+
+</html>

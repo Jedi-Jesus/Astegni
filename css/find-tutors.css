@@ -379,22 +379,7 @@ body {
         rgba(17, 24, 39, 0.97) 100%);
 }
 
-/* Background image classes */
-.bg-1::before { background-image: url('../pictures/tutor-image-1.jpg'); }
-.bg-2::before { background-image: url('../pictures/tutor-image-2.jpg'); }
-.bg-3::before { background-image: url('../pictures/tutor-image-3.jpg'); }
-.bg-4::before { background-image: url('../pictures/tutor-image-4.jpg'); }
-.bg-5::before { background-image: url('../pictures/tutor-image-5.jpg'); }
-.bg-6::before { background-image: url('../pictures/tutor-image-6.jpg'); }
-.bg-7::before { background-image: url('../pictures/tutor-image-7.jpg'); }
-.bg-8::before { background-image: url('../pictures/tutor-image-8.jpg'); }
-.bg-9::before { background-image: url('../pictures/tutor-image-9.jpg'); }
-.bg-10::before { background-image: url('../pictures/tutor-image-10.jpg'); }
-.bg-11::before { background-image: url('../pictures/tutor-image-11.jpg'); }
-.bg-12::before { background-image: url('../pictures/tutor-image-12.jpg'); }
-.bg-13::before { background-image: url('../pictures/tutor-image-13.jpg'); }
-.bg-14::before { background-image: url('../pictures/tutor-image-14.jpg'); }
-.bg-15::before { background-image: url('../pictures/tutor-image-15.jpg'); }
+
 
 /* Responsive sidebar shift for large screens */
 @media (min-width: 1024px) {

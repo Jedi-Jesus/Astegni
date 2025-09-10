@@ -13,6 +13,7 @@
     <link href="../css/videoplayer.css" rel="stylesheet">
     <link rel="stylesheet" href="../css/profile-system.css"> <!-- Profile system CSS -->
     <link rel="stylesheet" href="../css/coming-soon-modal.css">
+    <link rel="stylesheet" href="../css/ad-modal.css">
 </head>
 
 <body class="font-sans">
@@ -47,20 +48,20 @@
             <!-- Right Section: Navigation Links -->
             <div class="nav-links hidden md:flex">
                 <div class="nav-items">
-                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
-                    <span class="nav-icon">📰</span> News
-                </a>
-                <a class="nav-link px-2 py-1 rounded" href="find-tutors.html"
-                    onclick="handleNavLinkClick(event, 'find-tutors')">
-                    <span class="nav-icon">👨‍🏫</span> Find Tutors
-                </a>
-                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
-                    <span class="nav-icon">📚</span> Bookstore
-                </a>
-                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
-                    <span class="nav-icon">💼</span> Find a Job
-                </a>
-            </div>
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
+                        <span class="nav-icon">📰</span> News
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="find-tutors.html"
+                        onclick="handleNavLinkClick(event, 'find-tutors')">
+                        <span class="nav-icon">👨‍🏫</span> Find Tutors
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
+                        <span class="nav-icon">📚</span> Bookstore
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                        <span class="nav-icon">💼</span> Find a Job
+                    </a>
+                </div>
                 <!-- Profile container in navigation -->
                 <div id="profile-container" class="profile-dropdown-container hidden">
                     <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
@@ -209,36 +210,37 @@
         </div>
     </nav>
 
-    <!-- Enhanced Reels Section -->
-    <section class="py-8 sm:py-12 md:py-16 mt-14 sm:mt-16">
-        <div class="container mx-auto px-3 sm:px-4">
-
-
-        <!-- Advertisement Placeholder -->
-        <section class="ad-placeholder-section">
-            <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
-                <div class="ad-animation">
-                    <div class="pulse-ring"></div>
-                    <div class="pulse-ring"></div>
-                </div>
-                <div class="ad-content">
-                    <span class="ad-label">Advertisement</span>
-                    <h3 class="ad-title">Boost Your Reach Today</h3>
-                    <p class="ad-text">Premium placement available</p>
-                    <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
-                </div>
-                <div class="ad-visual">
-                    <div class="ad-circles">
-                        <div class="circle circle-1"></div>
-                        <div class="circle circle-2"></div>
-                        <div class="circle circle-3"></div>
-                    </div>
-                </div>
+    <!-- Add style attribute to the ad section -->
+<!-- Remove the duplicate section wrapper and fix the grid margin -->
+<section class="ad-placeholder-section" style="margin-top: 100px; padding: 1rem 0; margin-bottom: 2rem;">
+    <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+        <div class="ad-animation">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+        </div>
+        <div class="ad-content">
+            <span class="ad-label">Advertisement</span>
+            <h3 class="ad-title">Boost Your Reach Today</h3>
+            <p class="ad-text">Premium placement available</p>
+            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+        </div>
+        <div class="ad-visual">
+            <div class="ad-circles">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+                <div class="circle circle-3"></div>
             </div>
-        </section>
+        </div>
+    </div>
+</section>
 
+
+
+<!-- Update the main section -->
+<section class="py-8 sm:py-12 md:py-16" style="margin-top: 0;">
+    <div class="container mx-auto px-3 sm:px-4">
             <!-- Enhanced Filter Buttons -->
-            <div class="filter-container mb-8">
+        <div class="filter-container mb-8" style="margin-bottom: 2rem;">
                 <button class="filter-btn active" onclick="filterReels('all')" data-filter="all">
                     <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -284,9 +286,8 @@
             </div>
 
             <!-- Reels Grid -->
-            <div id="reels-grid"
-                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6"></div>
 
+        <div id="reels-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6" style="margin-top: 16rem;"></div>
             <!-- Loading Skeleton -->
             <div id="loading-skeleton" class="hidden">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -703,30 +704,31 @@
         <div class="fullscreen-transition" id="fullscreenTransition"></div>
     </div>
     <!-- Coming Soon Modal -->
-<div id="coming-soon-modal" class="modal">
-    <div class="modal-content enhanced coming-soon-content">
-        <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                </path>
-            </svg>
-        </button>
-        
-        <div class="coming-soon-header">
-            <div class="coming-soon-icon">
-                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+    <div id="coming-soon-modal" class="modal">
+        <div class="modal-content enhanced coming-soon-content">
+            <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
+            </button>
+
+            <div class="coming-soon-header">
+                <div class="coming-soon-icon">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="modal-title">Coming Soon!</h3>
+                <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay
+                    tuned!</p>
             </div>
-            <h3 class="modal-title">Coming Soon!</h3>
-            <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay tuned!</p>
         </div>
     </div>
-</div>
 
-<!-- Ad Analytics Modal -->
+    <!-- Ad Analytics Modal -->
     <div class="modal" id="adAnalyticsModal">
         <div class="modal-overlay" onclick="closeAdAnalyticsModal()"></div>
         <div class="modal-content ad-analytics-modal">
@@ -1237,6 +1239,8 @@
                 }
             }
 
+            
+
             // Get user data
             const user = auth.getUser();
             const userRole = auth.getUserRole();
@@ -1345,12 +1349,190 @@
         });
     </script>
     <script src="../js/profile-system.js"></script> <!-- Profile system JS -->
-    
-    <script src="../js/reels.js"></script>
+
+    <script>
+        // ============================================
+        // AD PACKAGE MANAGER - DYNAMIC PACKAGE SYSTEM
+        // ============================================
+        const AdPackageManager = {
+            // Package configuration
+            packages: [
+                {
+                    id: 'three-days',
+                    title: 'Up to Three days',
+                    pricePerDay: 2000,
+                    currency: 'ETB',
+                    duration: 3,
+                    featured: false,
+                    features: [
+                        'Unlimited impressions',
+                        'Custom targeting',
+                        'Full analytics suite'
+                    ]
+                },
+                {
+                    id: 'seven-days',
+                    title: 'Up to Seven days',
+                    pricePerDay: 1800,
+                    currency: 'ETB',
+                    duration: 7,
+                    featured: true,
+                    features: [
+                        'Unlimited impressions',
+                        'Custom targeting',
+                        'Full analytics suite',
+                    ]
+                },
+                {
+                    id: 'fifteen-days',
+                    title: 'Up to fifteen days',
+                    pricePerDay: 1500,
+                    currency: 'ETB',
+                    duration: 15,
+                    featured: true,
+                    features: [
+                        'Unlimited impressions',
+                        'Custom targeting',
+                        'Full analytics suite',
+                    ]
+                },
+                {
+                    id: 'one-month',
+                    title: 'Up to one month',
+                    pricePerDay: 1200,
+                    currency: 'ETB',
+                    duration: 30,
+                    featured: true,
+                    features: [
+                        'Unlimited impressions',
+                        'Custom targeting',
+                        'Full analytics suite'
+                    ]
+                },
+                {
+                    id: 'three-months',
+                    title: 'Up to three months',
+                    pricePerDay: 1000,
+                    currency: 'ETB',
+                    duration: 90,
+                    featured: true,
+                    badge: 'Most Popular',
+                    features: [
+                        'Unlimited impressions',
+                        'Custom targeting',
+                        'Priority placement',
+                        'Full analytics suite'
+                    ]
+                },
+                {
+                    id: 'six-months',
+                    title: 'Up to six months',
+                    pricePerDay: 800,
+                    currency: 'ETB',
+                    duration: 180,
+                    featured: true,
+                    badge: 'Most Popular',
+                    features: [
+                        'Unlimited impressions',
+                        'Custom targeting',
+                        'Priority placement',
+                        'Full analytics suite',
+                    ]
+                },
+                {
+                    id: 'nine-months',
+                    title: 'Up to nine months',
+                    pricePerDay: 600,
+                    currency: 'ETB',
+                    duration: 270,
+                    featured: true,
+                    features: [
+                        'Unlimited impressions',
+                        'Custom targeting',
+                        'Priority placement',
+                        'Full analytics suite',
+                    ]
+                },
+                {
+                    id: 'yearly',
+                    title: 'Up to a year',
+                    pricePerDay: 500,
+                    currency: 'ETB',
+                    duration: 365,
+                    featured: true,
+                    badge: 'Most Popular',
+                    features: [
+                        'Unlimited impressions',
+                        'Custom targeting',
+                        'Priority placement',
+                        'Full analytics suite',
+                    ]
+                },
+                // ... rest of the packages array from my previous response ...
+            ],
+
+            renderPackages() {
+                const packagesSection = document.querySelector('#adAnalyticsModal .ad-packages');
+                if (!packagesSection) return;
+
+                packagesSection.innerHTML = `
+            <h3>Advertising Packages</h3>
+            <div class="packages-grid">
+                ${this.packages.map(pkg => this.createPackageCard(pkg)).join('')}
+            </div>
+        `;
+            },
+
+            createPackageCard(pkg) {
+                const totalPrice = pkg.pricePerDay * pkg.duration;
+                const savings = this.calculateSavings(pkg);
+
+                return `
+            <div class="package-card ${pkg.featured ? 'featured' : ''}" data-package-id="${pkg.id}">
+                ${pkg.badge ? `<div class="featured-badge">${pkg.badge}</div>` : ''}
+                <h4>${pkg.title}</h4>
+                <div class="package-price">${pkg.pricePerDay.toLocaleString()} ${pkg.currency}/day</div>
+                <div class="package-total">Total: ${totalPrice.toLocaleString()} ${pkg.currency}</div>
+                ${savings > 0 ? `<div class="package-savings">Save ${savings.toLocaleString()} ${pkg.currency}</div>` : ''}
+                <ul>
+                    ${pkg.features.map(feature => `<li>${feature}</li>`).join('')}
+                </ul>
+                <button class="btn-primary" onclick="selectPackage('${pkg.id}')">
+                    Select Package
+                </button>
+            </div>
+        `;
+            },
+
+            calculateSavings(pkg) {
+                const basePrice = 2000;
+                const actualTotal = pkg.pricePerDay * pkg.duration;
+                const expectedTotal = basePrice * pkg.duration;
+                return Math.max(0, expectedTotal - actualTotal);
+            }
+        };
+
+        // Global function for package selection
+        window.selectPackage = function (packageId) {
+            const pkg = AdPackageManager.packages.find(p => p.id === packageId);
+            if (!pkg) return;
+
+            Utils.showToast(`✅ Selected: ${pkg.title} - ${pkg.pricePerDay} ${pkg.currency}/day`, "success");
+
+            // You can add checkout redirection here
+            setTimeout(() => {
+                // window.location.href = `/checkout?package=${packageId}`;
+                console.log('Proceed to checkout with:', pkg);
+            }, 1500);
+        };
+
+    </script>
+    <script src="../js/reels_dynamic.js"></script>
     <script src="../js/videoplayer.js"></script>
     <script src="../js/player-bridge.js"></script>
-    <script src="../js/video-player-integration.js"></script>   
-<script src="../js/coming-soon-modal.js"></script>
+    <script src="../js/video-player-integration.js"></script>
+    <script src="../js/coming-soon-modal.js"></script>
+    <script src="../js/ad-modal.js"></script>
 </body>
 
 </html>

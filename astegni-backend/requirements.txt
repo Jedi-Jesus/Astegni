@@ -1,0 +1,19 @@
+# Install core packages first
+pip install fastapi==0.104.1
+pip install uvicorn[standard]==0.24.0
+pip install sqlalchemy==2.0.23
+
+# Install psycopg3 with binary
+pip install "psycopg[binary]>=3.2.3"
+
+# Install authentication packages
+pip install PyJWT==2.8.0
+pip install bcrypt==4.1.2
+
+# Install other dependencies
+pip install python-multipart==0.0.6
+pip install email-validator==2.1.0.post1
+pip install python-dotenv==1.0.0
+
+# Install pydantic
+pip install pydantic==2.4.2

@@ -1041,137 +1041,179 @@ const animationStyles = `
     }
 `;
 // ============================================
-// AD ANALYTICS MODAL ENHANCEMENT
+// AD PACKAGE MANAGER - DYNAMIC PACKAGE SYSTEM
 // ============================================
-function enhanceAdAnalyticsModal() {
-    // Update the modal content to show yearly packages
-    const modal = document.getElementById("adAnalyticsModal");
-    if (modal) {
-        const packagesSection = modal.querySelector(".ad-packages");
-        if (packagesSection) {
-            packagesSection.innerHTML = `
-                <h3>Advertising Packages</h3>
-                <div class="package-tabs">
-                    <button class="package-tab active" onclick="showPackageType('monthly')">Monthly</button>
-                    <button class="package-tab" onclick="showPackageType('yearly')">Yearly (Best Value)</button>
-                    <button class="package-tab" onclick="showPackageType('custom')">Custom</button>
-                </div>
-                <div class="packages-grid" id="packagesGrid">
-                    ${getPackagesHTML('monthly')}
-                </div>
-            `;
-        }
+const AdPackageManager = {
+    // Package configuration
+    packages: [
+        {
+            id: 'three-days',
+            title: 'Up to Three days',
+            pricePerDay: 2000,
+            currency: 'ETB',
+            duration: 3,
+            featured: false,
+            features: [
+                'Unlimited impressions',
+                'Custom targeting',
+                'Full analytics suite'
+            ]
+        },
+        {
+            id: 'seven-days',
+            title: 'Up to Seven days',
+            pricePerDay: 1800,
+            currency: 'ETB',
+            duration: 7,
+            featured: true,
+            features: [
+                'Unlimited impressions',
+                'Custom targeting',
+                'Full analytics suite',
+            ]
+        },
+                {
+            id: 'fifteen-days',
+            title: 'Up to fifteen days',
+            pricePerDay: 1500,
+            currency: 'ETB',
+            duration: 15,
+            featured: true,
+            features: [
+                'Unlimited impressions',
+                'Custom targeting',
+                'Full analytics suite',
+            ]
+        },
+                {
+            id: 'one-month',
+            title: 'Up to one month',
+            pricePerDay: 1200,
+            currency: 'ETB',
+            duration: 30,
+            featured: true,
+            features: [
+                'Unlimited impressions',
+                'Custom targeting',
+                'Full analytics suite'
+            ]
+        },
+                {
+            id: 'three-months',
+            title: 'Up to three months',
+            pricePerDay: 1000,
+            currency: 'ETB',
+            duration: 90,
+            featured: true,
+            badge: 'Most Popular',
+            features: [
+                'Unlimited impressions',
+                'Custom targeting',
+                'Priority placement',
+                'Full analytics suite'
+            ]
+        },
+                {
+            id: 'six-months',
+            title: 'Up to six months',
+            pricePerDay: 800,
+            currency: 'ETB',
+            duration: 180,
+            featured: true,
+            badge: 'Most Popular',
+            features: [
+                'Unlimited impressions',
+                'Custom targeting',
+                'Priority placement',
+                'Full analytics suite',
+            ]
+        },
+                        {
+            id: 'nine-months',
+            title: 'Up to nine months',
+            pricePerDay: 600,
+            currency: 'ETB',
+            duration: 270,
+            featured: true,
+            features: [
+                'Unlimited impressions',
+                'Custom targeting',
+                'Priority placement',
+                'Full analytics suite',
+            ]
+        },
+                        {
+            id: 'yearly',
+            title: 'Up to a year',
+            pricePerDay: 500,
+            currency: 'ETB',
+            duration: 365,
+            featured: true,
+            badge: 'Most Popular',
+            features: [
+                'Unlimited impressions',
+                'Custom targeting',
+                'Priority placement',
+                'Full analytics suite',
+            ]
+        },
+        // ... rest of the packages array from my previous response ...
+    ],
+
+    renderPackages() {
+        const packagesSection = document.querySelector('#adAnalyticsModal .ad-packages');
+        if (!packagesSection) return;
+
+        packagesSection.innerHTML = `
+            <h3>Advertising Packages</h3>
+            <div class="packages-grid">
+                ${this.packages.map(pkg => this.createPackageCard(pkg)).join('')}
+            </div>
+        `;
+    },
+
+    createPackageCard(pkg) {
+        const totalPrice = pkg.pricePerDay * pkg.duration;
+        const savings = this.calculateSavings(pkg);
+        
+        return `
+            <div class="package-card ${pkg.featured ? 'featured' : ''}" data-package-id="${pkg.id}">
+                ${pkg.badge ? `<div class="featured-badge">${pkg.badge}</div>` : ''}
+                <h4>${pkg.title}</h4>
+                <div class="package-price">${pkg.pricePerDay.toLocaleString()} ${pkg.currency}/day</div>
+                <div class="package-total">Total: ${totalPrice.toLocaleString()} ${pkg.currency}</div>
+                ${savings > 0 ? `<div class="package-savings">Save ${savings.toLocaleString()} ${pkg.currency}</div>` : ''}
+                <ul>
+                    ${pkg.features.map(feature => `<li>${feature}</li>`).join('')}
+                </ul>
+                <button class="btn-primary" onclick="selectPackage('${pkg.id}')">
+                    Select Package
+                </button>
+            </div>
+        `;
+    },
+
+    calculateSavings(pkg) {
+        const basePrice = 2000;
+        const actualTotal = pkg.pricePerDay * pkg.duration;
+        const expectedTotal = basePrice * pkg.duration;
+        return Math.max(0, expectedTotal - actualTotal);
     }
-}
+};
 
-function getPackagesHTML(type) {
-    const packages = {
-        monthly: `
-            <div class="package-card">
-                <h4>Starter</h4>
-                <div class="package-price">$299/mo</div>
-                <ul>
-                    <li>50,000 impressions</li>
-                    <li>Basic targeting</li>
-                    <li>Performance reports</li>
-                </ul>
-                <button class="btn-primary" onclick="selectPackage('starter-monthly')">Select</button>
-            </div>
-            <div class="package-card">
-                <h4>Professional</h4>
-                <div class="package-price">$999/mo</div>
-                <ul>
-                    <li>250,000 impressions</li>
-                    <li>Advanced targeting</li>
-                    <li>A/B testing</li>
-                    <li>Dedicated manager</li>
-                </ul>
-                <button class="btn-primary" onclick="selectPackage('pro-monthly')">Select</button>
-            </div>
-            <div class="package-card">
-                <h4>Enterprise</h4>
-                <div class="package-price">$2,999/mo</div>
-                <ul>
-                    <li>Unlimited impressions</li>
-                    <li>Custom targeting</li>
-                    <li>Priority placement</li>
-                    <li>Full analytics suite</li>
-                </ul>
-                <button class="btn-primary" onclick="selectPackage('enterprise-monthly')">Select</button>
-            </div>
-        `,
-        yearly: `
-            <div class="package-card">
-                <h4>Starter</h4>
-                <div class="package-price">$2,990/yr</div>
-                <div class="package-savings">Save $598!</div>
-                <ul>
-                    <li>600,000 impressions/year</li>
-                    <li>Basic targeting</li>
-                    <li>Performance reports</li>
-                    <li>2 months FREE</li>
-                </ul>
-                <button class="btn-primary" onclick="selectPackage('starter-yearly')">Select</button>
-            </div>
-            <div class="package-card featured">
-                <div class="featured-badge">Most Popular</div>
-                <h4>Professional</h4>
-                <div class="package-price">$9,990/yr</div>
-                <div class="package-savings">Save $1,998!</div>
-                <ul>
-                    <li>3,000,000 impressions/year</li>
-                    <li>Advanced targeting</li>
-                    <li>A/B testing</li>
-                    <li>Dedicated manager</li>
-                    <li>2 months FREE</li>
-                </ul>
-                <button class="btn-primary" onclick="selectPackage('pro-yearly')">Best Value</button>
-            </div>
-            <div class="package-card">
-                <h4>Enterprise</h4>
-                <div class="package-price">$29,990/yr</div>
-                <div class="package-savings">Save $5,998!</div>
-                <ul>
-                    <li>Unlimited impressions</li>
-                    <li>Custom targeting</li>
-                    <li>Priority placement</li>
-                    <li>Full analytics suite</li>
-                    <li>2 months FREE</li>
-                </ul>
-                <button class="btn-primary" onclick="selectPackage('enterprise-yearly')">Select</button>
-            </div>
-        `,
-        custom: `
-            <div class="custom-package-form">
-                <h3>Custom Advertising Package</h3>
-                <p>Tell us about your advertising needs and we'll create a custom package for you.</p>
-                <form id="customPackageForm">
-                    <div class="form-group">
-                        <label>Budget Range</label>
-                        <select class="form-select">
-                            <option>$5,000 - $10,000</option>
-                            <option>$10,000 - $25,000</option>
-                            <option>$25,000 - $50,000</option>
-                            <option>$50,000+</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Campaign Duration</label>
-                        <input type="text" class="form-input" placeholder="e.g., 6 months">
-                    </div>
-                    <div class="form-group">
-                        <label>Target Audience</label>
-                        <textarea class="form-textarea" placeholder="Describe your target audience..."></textarea>
-                    </div>
-                    <button type="button" class="btn-primary" onclick="submitCustomPackage()">Get Custom Quote</button>
-                </form>
-            </div>
-        `
-    };
+// Global function for package selection
+window.selectPackage = function(packageId) {
+    const pkg = AdPackageManager.packages.find(p => p.id === packageId);
+    if (!pkg) return;
     
-    return packages[type] || packages.monthly;
-}
-
+    Utils.showToast(`✅ Selected: ${pkg.title} - ${pkg.pricePerDay} ${pkg.currency}/day`, "success");
+    
+    // You can add checkout redirection here
+    setTimeout(() => {
+        // window.location.href = `/checkout?package=${packageId}`;
+        console.log('Proceed to checkout with:', pkg);
+    }, 1500);
+};
 // ============================================
 // GLOBAL FUNCTION HANDLERS
 // ============================================
@@ -1243,7 +1285,7 @@ document.addEventListener("DOMContentLoaded", () => {
     AIInsights.init();
 
     // Enhance ad analytics modal
-    enhanceAdAnalyticsModal();
+AdPackageManager.renderPackages();
 
     // Ensure all modal close buttons work
     document.querySelectorAll('.modal').forEach(modal => {
