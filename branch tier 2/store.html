@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Astegni Store - Premium Book Marketplace</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="../css-tier-1/main.css" rel="stylesheet">
+  <link href="../css/store.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <style>
+    .deals-widget-special {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 16px;
+      margin-bottom: 1.5rem;
+    }
+
+    .deals-widget-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .deals-badge-live {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .deals-countdown-mini {
+      display: flex;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .countdown-unit {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+    }
+
+    .deal-item-mini {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      margin-bottom: 0.75rem;
+    }
+
+    .deal-book-thumb {
+      width: 60px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+
+    .deal-info {
+      flex: 1;
+    }
+
+    .deal-discount {
+      display: inline-block;
+      background: #EF4444;
+      padding: 0.125rem 0.375rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .deal-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .deal-price {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .price-old {
+      text-decoration: line-through;
+      opacity: 0.7;
+      font-size: 0.75rem;
+    }
+
+    .price-new {
+      font-weight: 700;
+    }
+
+    .deals-widget-cta {
+      width: 100%;
+      padding: 0.75rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 10px;
+      color: white;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .deals-widget-cta:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    /* Sticky Category Navigation */
+    .category-nav-sticky {
+      position: sticky;
+      top: 73px;
+      /* Adjust based on your main nav height */
+      z-index: 40;
+      background: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    [data-theme="dark"] .category-nav-sticky {
+      background: rgba(31, 41, 55, 0.98);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* When scrolled */
+    .category-nav-sticky.scrolled {
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Ensure proper spacing */
+    .category-scroll {
+      padding: 1rem 0;
+    }
+  </style>
+</head>
+
+<body class="font-sans bg-gray-100 relative overflow-x-hidden">
+  <!-- Enhanced Animated Background with All Effects -->
+  <div class="animated-bg-enhanced">
+    <div class="bubble-container" id="bubbleContainer"></div>
+    <div class="gradient-orb orb-1"></div>
+    <div class="gradient-orb orb-2"></div>
+    <div class="gradient-orb orb-3"></div>
+    <canvas id="particleCanvas" class="particle-canvas"></canvas>
+    <div class="mesh-gradient"></div>
+    <div class="particles" id="particles"></div>
+  </div>
+
+  <!-- Enhanced Navigation with All Features -->
+  <nav class="nav-container fixed top-0 left-0 w-full z-50" id="mainNav">
+    <div class="nav-blur"></div>
+    <div class="nav-inner flex items-center justify-between p-4">
+      <div class="flex items-center space-x-4">
+        <button onclick="sidebarToggle()" class="menu-trigger" aria-label="Toggle sidebar">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <a href="../index.html" class="logo-container text-2xl font-bold">
+          <div class="logo-main">
+            <span class="logo-text">Astegni</span>
+            <span class="logo-sub">Bookstore</span>
+          </div>
+          <span class="logo-badge">Beta</span>
+        </a>
+      </div>
+
+      <div class="nav-center flex-1 mx-8">
+        <div class="search-container-enhanced">
+          <div class="search-glow"></div>
+          <input type="text" id="search-input" class="search-input-enhanced"
+            placeholder="Search books, authors, genres..." aria-label="Search" oninput="performLiveSearch(this.value)">
+          <div class="search-suggestions" id="searchSuggestions"></div>
+          <button class="search-btn" onclick="executeSearch()" aria-label="Search">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Nav Links -->
+      <div class="nav-links-container">
+        <a href="news.html" class="nav-link-item">
+          <svg class="nav-link-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z">
+            </path>
+          </svg>
+          <span>News</span>
+        </a>
+        <a href="find-tutors.html" class="nav-link-item">
+          <svg class="nav-link-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253">
+            </path>
+          </svg>
+          <span>Find Tutors</span>
+        </a>
+        <a href="reels.html" class="nav-link-item">
+          <svg class="nav-link-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 4v16M17 4v16M3 8h4m10 0h4M5 12h14M5 16h14"></path>
+          </svg>
+          <span>Reels</span>
+        </a>
+        <a href="find-jobs.html" class="nav-link-item">
+          <svg class="nav-link-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+            </path>
+          </svg>
+          <span>Find Jobs</span>
+        </a>
+      </div>
+
+      <div class="nav-right flex items-center space-x-4">
+
+
+
+        <div class="profile-menu-container">
+          <button onclick="toggleProfileMenu()" class="profile-btn" aria-label="Profile">
+            <div class="profile-avatar">
+              <img src="https://picsum.photos/seed/profile/40/40" alt="Profile">
+              <span class="status-indicator"></span>
+            </div>
+            <span class="profile-name">Profile</span>
+            <svg class="w-4 h-4 chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          <div class="profile-dropdown" id="profileDropdown">
+            <div class="dropdown-header">
+              <img src="https://picsum.photos/seed/profile/60/60" alt="Profile">
+              <div>
+                <div class="dropdown-name">John Doe</div>
+                <div class="dropdown-email">john@example.com</div>
+              </div>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              My Account
+            </a>
+            <a href="#" class="dropdown-item">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
+                </path>
+              </svg>
+              My Orders
+            </a>
+            <button onclick="openCartDrawer()" class="nav-icon-btn cart-btn" aria-label="Cart">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+                </path>
+              </svg>
+              <span class="cart-count" id="cartCount">0</span>
+            </button>
+
+            <button onclick="openWishlistDrawer()" class="nav-icon-btn" aria-label="Wishlist">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                </path>
+              </svg>
+              <span class="wishlist-count" id="wishlistCount">0</span>
+            </button>
+            <div class="dropdown-divider"></div>
+
+            <a href="#" class="dropdown-item text-red-500">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+              </svg>
+              Sign Out
+            </a>
+          </div>
+        </div>
+
+        <button onclick="openNotificationPanel()" class="nav-icon-btn notification-btn" aria-label="Notifications">
+
+          <span class="notification-icon">🔔</span>
+          <span class="notification-pulse"></span>
+        </button>
+        <!-- Theme Toggle -->
+        <button onclick="toggleTheme()" class="nav-icon-btn theme-toggle" aria-label="Toggle theme">
+          <svg class="sun-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+            </path>
+          </svg>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Enhanced Sidebar -->
+  <aside class="sidebar-enhanced" id="sidebar">
+    <div class="sidebar-header">
+      <h3>Browse Categories</h3>
+      <button onclick="sidebarToggle()" class="sidebar-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" placeholder="Search categories..." class="category-search"
+        oninput="searchCategories(this.value)">
+    </div>
+
+    <div class="sidebar-content" id="sidebarContent">
+      <!-- Categories will be dynamically loaded -->
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-promo">
+        <div class="promo-icon">🎁</div>
+        <div class="promo-text">
+          <div class="promo-title">Get 20% OFF</div>
+          <div class="promo-subtitle">On your first order</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="sidebarToggle()"></div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Spectacular Hero Section -->
+    <section class="hero-section-enhanced" id="heroSection">
+      <div class="hero-container">
+        <div class="hero-content">
+          <div class="hero-badge animated-badge">
+            <span class="badge-icon">📚</span>
+            Ethiopia's #1 Book Marketplace
+          </div>
+          <h1 class="hero-title">
+            <span class="title-line">Discover Your Next</span>
+            <span class="title-line">
+              <span class="amazing-text animated-gradient">Amazing</span>
+              <span class="read-text">Read</span>
+            </span>
+          </h1>
+          <p class="hero-description">
+            Explore thousands of books from local and international authors.
+            Find your perfect match with AI-powered recommendations.
+          </p>
+          <div class="hero-actions">
+            <button onclick="scrollToBooks()" class="btn-primary-large glowing-btn">
+              <span>Explore Books</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3">
+                </path>
+              </svg>
+            </button>
+            <button onclick="openAIModal()" class="btn-secondary-large">
+              <span>Get AI Recommendations</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                </path>
+              </svg>
+            </button>
+          </div>
+          <div class="hero-stats-modern">
+            <div class="stat-item-modern">
+              <span class="stat-number-modern" data-count="10000">0</span>
+              <span class="stat-label-modern">Books</span>
+            </div>
+            <div class="stat-item-modern">
+              <span class="stat-number-modern" data-count="500">0</span>
+              <span class="stat-label-modern">Authors</span>
+            </div>
+            <div class="stat-item-modern">
+              <span class="stat-number-modern" data-count="98">0</span>
+              <span class="stat-label-modern">% Happy Readers</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual-enhanced">
+          <div class="book-showcase">
+            <div class="showcase-book book-1"></div>
+            <div class="showcase-book book-2"></div>
+            <div class="showcase-book book-3"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Category Carousel (Not Sticky) -->
+    <div class="category-carousel-wrapper">
+      <div class="container mx-auto px-4">
+        <div class="category-carousel" id="categoryCarousel">
+          <!-- Carousel content will be added by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Sticky Category Navigation (Only This is Sticky) -->
+    <div class="category-nav-sticky" id="categoryNav">
+      <div class="container mx-auto px-4">
+        <div class="category-scroll">
+          <button class="category-btn active" data-category="all" onclick="filterByGenre('all')">All Books</button>
+          <button class="category-btn" data-category="trending" onclick="filterByGenre('trending')">
+            <span class="category-icon">🔥</span>
+            Trending
+          </button>
+          <!-- rest of buttons... -->
+          <button class="category-btn" data-category="new" onclick="filterByGenre('new')">
+            <span class="category-icon">✨</span>
+            New Arrivals
+          </button>
+          <button class="category-btn" data-category="bestseller" onclick="filterByGenre('bestseller')">
+            <span class="category-icon">🏆</span>
+            Bestsellers
+          </button>
+          <button class="category-btn" data-category="deals" onclick="filterByGenre('deals')">
+            <span class="category-icon">🎯</span>
+            Special Deals
+          </button>
+          <button class="category-btn" data-category="local" onclick="filterByGenre('local')">
+            <span class="category-icon">🇪🇹</span>
+            Local Authors
+          </button>
+          <button class="category-btn" data-category="fiction" onclick="filterByGenre('fiction')">Fiction</button>
+          <button class="category-btn" data-category="nonfiction"
+            onclick="filterByGenre('nonfiction')">Non-Fiction</button>
+          <button class="category-btn" data-category="academics" onclick="filterByGenre('academics')">Academics</button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Author Modal -->
+    <div class="modal-overlay" id="authorModal">
+      <div class="modal-container author-modal">
+        <button onclick="closeAuthorModal()" class="modal-close">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+        <div class="author-modal-content">
+          <div class="author-header">
+            <div class="author-cover" id="authorCover"></div>
+            <div class="author-profile-section">
+              <img src="https://picsum.photos/seed/author/120/120" alt="Author" id="authorProfilePic"
+                class="author-profile-pic">
+              <h2 id="authorName">Author Name</h2>
+              <button class="follow-btn" onclick="followAuthor()">Follow</button>
+            </div>
+          </div>
+
+          <div class="author-info">
+            <div class="author-about">
+              <h3>About the Author</h3>
+              <p id="authorBio">Author biography will appear here...</p>
+            </div>
+
+            <div class="author-quotes">
+              <h3>Quotes</h3>
+              <div id="authorQuotes">
+                <blockquote>"The power of imagination makes us infinite."</blockquote>
+                <blockquote>"Books are a uniquely portable magic."</blockquote>
+              </div>
+            </div>
+
+            <div class="author-socials">
+              <h3>Connect</h3>
+              <div id="authorSocials" class="author-socials">
+                <a href="#" class="social-link-author">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                </a>
+                <a href="#" class="social-link-author">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                  </svg>
+                </a>
+                <a href="#" class="social-link-author">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="author-rating-section">
+              <h3>Rating</h3>
+              <div class="rating-display">
+                <div class="rating-stars" id="authorRatingStars">
+                  ⭐⭐⭐⭐⭐
+                </div>
+                <span id="authorRatingText">4.8 out of 5</span>
+              </div>
+              <button onclick="rateAuthor()" class="rate-btn">Rate this Author</button>
+            </div>
+
+            <div class="author-tabs">
+              <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchAuthorTab('books')">Books</button>
+                <button class="tab-btn" onclick="switchAuthorTab('videos')">Videos</button>
+              </div>
+
+              <div class="tab-content" id="authorBooksTab">
+                <div class="author-books-grid" id="authorBooks">
+                  <div class="book-card-mini">
+                    <img src="https://picsum.photos/seed/authorbook1/150/200" alt="Book">
+                  </div>
+                  <div class="book-card-mini">
+                    <img src="https://picsum.photos/seed/authorbook2/150/200" alt="Book">
+                  </div>
+                  <div class="book-card-mini">
+                    <img src="https://picsum.photos/seed/authorbook3/150/200" alt="Book">
+                  </div>
+                  <div class="book-card-mini">
+                    <img src="https://picsum.photos/seed/authorbook4/150/200" alt="Book">
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" id="authorVideosTab" style="display: none;">
+                <div class="video-tabs">
+                  <button class="video-tab-btn active" onclick="switchVideoTab('videos')">Videos</button>
+                  <button class="video-tab-btn" onclick="switchVideoTab('shorts')">Shorts</button>
+                  <button class="video-tab-btn" onclick="switchVideoTab('playlists')">Playlists</button>
+                </div>
+                <div class="videos-grid" id="authorVideos">
+                  <div class="video-card">
+                    <div class="video-thumbnail">▶️</div>
+                    <div class="video-info">
+                      <div class="video-title">Writing Tips #1</div>
+                      <div class="video-meta">10K views • 2 days ago</div>
+                    </div>
+                  </div>
+                  <div class="video-card">
+                    <div class="video-thumbnail">▶️</div>
+                    <div class="video-info">
+                      <div class="video-title">Book Reading Session</div>
+                      <div class="video-meta">5K views • 1 week ago</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="bookstore-comments">
+              <h3>Comments & Reviews</h3>
+              <div class="comment-input-section">
+                <textarea placeholder="Write a comment..." id="bookstoreCommentInput"></textarea>
+                <button onclick="postBookstoreComment()">Post Comment</button>
+              </div>
+              <div class="comments-list modern-comments" id="bookstoreComments">
+                <div class="comment-item pinned">
+                  <img src="https://picsum.photos/seed/owner/40/40" alt="Owner" class="comment-avatar">
+                  <div class="comment-content">
+                    <div class="comment-header">
+                      <span class="comment-author">Store Owner</span>
+                      <span class="comment-badge">Owner</span>
+                      <span class="comment-time">Pinned</span>
+                    </div>
+                    <p class="comment-text">Welcome to our store! We're here to help you find your next great read.</p>
+                  </div>
+                </div>
+                <div class="comment-item">
+                  <img src="https://picsum.photos/seed/customer1/40/40" alt="Customer" class="comment-avatar">
+                  <div class="comment-content">
+                    <div class="comment-header">
+                      <span class="comment-author">Happy Customer</span>
+                      <span class="comment-time">1 day ago</span>
+                    </div>
+                    <p class="comment-text">Great selection and excellent service!</p>
+                    <div class="comment-actions">
+                      <button class="comment-action">👍 5</button>
+                      <button class="comment-action">💬 Reply</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="author-comments">
+              <h3>Reviews & Comments</h3>
+              <div class="comments-list" id="authorComments">
+                <div class="comment-item">
+                  <img src="https://picsum.photos/seed/user1/40/40" alt="User" class="comment-avatar">
+                  <div class="comment-content">
+                    <div class="comment-header">
+                      <span class="comment-author">Reader One</span>
+                      <span class="comment-time">2 hours ago</span>
+                    </div>
+                    <p class="comment-text">Love this author's work! Can't wait for the next book.</p>
+                    <div class="comment-actions">
+                      <button class="comment-action">👍 Like</button>
+                      <button class="comment-action">💬 Reply</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bookstore Modal -->
+    <div class="modal-overlay" id="bookstoreModal">
+      <div class="modal-container bookstore-modal">
+        <button onclick="closeBookstoreModal()" class="modal-close">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+        <div class="bookstore-modal-content">
+          <div class="bookstore-header">
+            <div class="bookstore-cover" id="bookstoreCover"></div>
+            <div class="bookstore-profile-section">
+              <img src="https://picsum.photos/seed/bookstore/150/150" alt="Bookstore" id="bookstoreProfilePic"
+                class="bookstore-profile-pic">
+              <h2 id="bookstoreName">Bookstore Name</h2>
+              <button class="follow-btn" onclick="followBookstore()">Follow</button>
+              <div class="bookstore-rating">
+                <div id="bookstoreRatingStars">⭐⭐⭐⭐⭐</div>
+                <span id="bookstoreRatingText">4.9 (500+ reviews)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bookstore-info">
+            <div class="bookstore-contact">
+              <h3>Contact Information</h3>
+              <div class="contact-list">
+                <div class="contact-item">
+                  <span class="contact-icon">📞</span>
+                  <span>+251 911 234 567</span>
+                </div>
+                <div class="contact-item">
+                  <span class="contact-icon">✉️</span>
+                  <span>info@bookstore.com</span>
+                </div>
+                <div class="contact-item">
+                  <span class="contact-icon">📍</span>
+                  <span>Bole Road, Addis Ababa</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bookstore-bio">
+              <h3>About</h3>
+              <p id="bookstoreBio">Your trusted source for quality books since 2010. We offer a wide selection of local
+                and international titles.</p>
+              <blockquote id="bookstoreQuote">"Reading is dreaming with open eyes"</blockquote>
+            </div>
+
+            <div class="bookstore-socials">
+              <h3>Follow Us</h3>
+              <div id="bookstoreSocials" class="bookstore-socials">
+                <a href="#" class="social-link-author">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                  </svg>
+                </a>
+                <a href="#" class="social-link-author">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                  </svg>
+                </a>
+                <a href="#" class="social-link-author">
+                  <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path
+                      d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="bookstore-tabs">
+              <div class="tab-buttons">
+                <button class="tab-btn active" onclick="switchBookstoreTab('books')">Books</button>
+                <button class="tab-btn" onclick="switchBookstoreTab('videos')">Videos</button>
+              </div>
+
+              <div class="tab-content" id="bookstoreBooksTab">
+                <div class="bookstore-books-grid" id="bookstoreBooks">
+                  <div class="book-card-mini">
+                    <img src="https://picsum.photos/seed/storebook1/150/200" alt="Book">
+                  </div>
+                  <div class="book-card-mini">
+                    <img src="https://picsum.photos/seed/storebook2/150/200" alt="Book">
+                  </div>
+                  <div class="book-card-mini">
+                    <img src="https://picsum.photos/seed/storebook3/150/200" alt="Book">
+                  </div>
+                  <div class="book-card-mini">
+                    <img src="https://picsum.photos/seed/storebook4/150/200" alt="Book">
+                  </div>
+                </div>
+              </div>
+
+              <div class="tab-content" id="bookstoreVideosTab" style="display: none;">
+                <div class="video-tabs">
+                  <button class="video-tab-btn active" onclick="switchBookstoreVideoTab('videos')">Videos</button>
+                  <button class="video-tab-btn" onclick="switchBookstoreVideoTab('shorts')">Shorts</button>
+                  <button class="video-tab-btn" onclick="switchBookstoreVideoTab('playlists')">Playlists</button>
+                </div>
+                <div class="videos-grid" id="bookstoreVideos">
+                  <div class="video-card">
+                    <div class="video-thumbnail">▶️</div>
+                    <div class="video-info">
+                      <div class="video-title">Store Tour</div>
+                      <div class="video-meta">15K views • 3 days ago</div>
+                    </div>
+                  </div>
+                  <div class="video-card">
+                    <div class="video-thumbnail">▶️</div>
+                    <div class="video-info">
+                      <div class="video-title">New Arrivals</div>
+                      <div class="video-meta">8K views • 1 week ago</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bookstore-actions">
+              <button class="view-store-btn" onclick="viewFullBookstore()">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
+                  </path>
+                </svg>
+                View Full Store
+              </button>
+              <button class="rate-btn" onclick="rateBookstore()">Rate Bookstore</button>
+            </div>
+
+            <div class="bookstore-comments">
+              <h3>Comments & Reviews</h3>
+              <div class="comment-input-section">
+                <textarea placeholder="Write a comment..." id="bookstoreCommentInput"></textarea>
+                <button onclick="postBookstoreComment()">Post Comment</button>
+              </div>
+              <div class="comments-list modern-comments" id="bookstoreComments">
+                <div class="comment-item pinned">
+                  <img src="https://picsum.photos/seed/owner/40/40" alt="Owner" class="comment-avatar">
+                  <div class="comment-content">
+                    <div class="comment-header">
+                      <span class="comment-author">Store Owner</span>
+                      <span class="comment-badge">Owner</span>
+                      <span class="comment-time">Pinned</span>
+                    </div>
+                    <p class="comment-text">Welcome to our store! We're here to help you find your next great read.</p>
+                  </div>
+                </div>
+                <div class="comment-item">
+                  <img src="https://picsum.photos/seed/customer1/40/40" alt="Customer" class="comment-avatar">
+                  <div class="comment-content">
+                    <div class="comment-header">
+                      <span class="comment-author">Happy Customer</span>
+                      <span class="comment-time">1 day ago</span>
+                    </div>
+                    <p class="comment-text">Great selection and excellent service!</p>
+                    <div class="comment-actions">
+                      <button class="comment-action">👍 5</button>
+                      <button class="comment-action">💬 Reply</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Main Content Grid -->
+    <section class="content-section">
+      <div class="container mx-auto px-4">
+        <div class="content-grid-modern">
+          <!-- Main Feed -->
+          <div class="main-feed">
+            <!-- Featured Carousel -->
+            <div class="featured-section-modern">
+              <div class="section-header-modern">
+                <h2 class="section-title-modern">
+                  <span class="title-icon">⭐</span>
+                  Featured This Week
+                </h2>
+                <div class="carousel-controls">
+                  <button onclick="carouselPrev()" class="carousel-btn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                  </button>
+                  <button onclick="carouselNext()" class="carousel-btn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <div class="featured-carousel-modern" id="featuredCarousel">
+                <!-- Carousel items will be dynamically inserted -->
+              </div>
+            </div>
+            <div class="special-deals-ad">
+              <div class="deals-ad-content">
+                <div class="deals-ad-left">
+                  <h2>🎯 Special Weekend Deals!</h2>
+                  <p>Get up to 70% OFF on selected titles</p>
+                  <button onclick="filterByGenre('deals')" class="deals-cta-btn">Shop Deals</button>
+                </div>
+                <div class="deals-ad-right">
+                  <div class="deal-timer" id="dealTimer">
+                    <div class="timer-block">
+                      <span class="timer-value" id="dealHours">00</span>
+                      <span class="timer-label">Hours</span>
+                    </div>
+                    <div class="timer-block">
+                      <span class="timer-value" id="dealMinutes">00</span>
+                      <span class="timer-label">Minutes</span>
+                    </div>
+                    <div class="timer-block">
+                      <span class="timer-value" id="dealSeconds">00</span>
+                      <span class="timer-label">Seconds</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Books Grid with integrated sections -->
+            <div class="books-section-modern" id="booksSection">
+              <div class="section-header-modern">
+                <h2 class="section-title-modern">Latest Books</h2>
+                <div class="view-options">
+                  <button class="view-btn active" data-view="grid" onclick="changeView('grid')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z">
+                      </path>
+                    </svg>
+                  </button>
+                  <button class="view-btn" data-view="list" onclick="changeView('list')">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16">
+                      </path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="books-grid-modern" id="booksGrid">
+                <!-- Book cards will be dynamically inserted -->
+              </div>
+
+              <!-- Trending Books Section (inserted in middle) -->
+              <div class="special-section trending-books-section" id="trendingSection">
+                <h2 class="special-section-title">
+                  <span class="live-indicator"></span>
+                  Trending Now
+                </h2>
+                <div class="trending-books-grid" id="trendingBooksGrid">
+                  <!-- Trending books will be loaded here -->
+                </div>
+              </div>
+
+              <!-- More books -->
+              <div class="books-grid-modern" id="booksGrid2">
+                <!-- More book cards -->
+              </div>
+              <div class="special-deals-ad">
+                <div class="deals-ad-content">
+                  <div class="deals-ad-left">
+                    <h2>🎯 Special Weekend Deals!</h2>
+                    <p>Get up to 70% OFF on selected titles</p>
+                    <button onclick="filterByGenre('deals')" class="deals-cta-btn">Shop Deals</button>
+                  </div>
+                  <div class="deals-ad-right">
+                    <div class="deal-timer" id="dealTimer">
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealHours">00</span>
+                        <span class="timer-label">Hours</span>
+                      </div>
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealMinutes">00</span>
+                        <span class="timer-label">Minutes</span>
+                      </div>
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealSeconds">00</span>
+                        <span class="timer-label">Seconds</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- New Arrivals Section -->
+              <div class="special-section new-arrivals-section">
+                <h2 class="special-section-title">
+                  <span class="title-icon">✨</span>
+                  New Arrivals
+                </h2>
+                <div class="new-arrivals-grid" id="newArrivalsGrid">
+                  <!-- New arrivals will be loaded here -->
+                </div>
+              </div>
+
+              <!-- More books -->
+              <div class="books-grid-modern" id="booksGrid3">
+                <!-- More book cards -->
+              </div>
+
+              <!-- Best Sellers Section -->
+              <div class="special-section bestsellers-section">
+                <h2 class="special-section-title">
+                  <span class="title-icon">🏆</span>
+                  Best Sellers
+                </h2>
+                <div class="bestsellers-grid" id="bestsellersGrid">
+                  <!-- Bestsellers will be loaded here -->
+                </div>
+              </div>
+
+              <!-- More books -->
+              <div class="books-grid-modern" id="booksGrid4">
+                <!-- More book cards -->
+              </div>
+
+              <!-- Special Deals Ad -->
+              <div class="special-deals-ad">
+                <div class="deals-ad-content">
+                  <div class="deals-ad-left">
+                    <h2>🎯 Special Weekend Deals!</h2>
+                    <p>Get up to 70% OFF on selected titles</p>
+                    <button onclick="filterByGenre('deals')" class="deals-cta-btn">Shop Deals</button>
+                  </div>
+                  <div class="deals-ad-right">
+                    <div class="deal-timer" id="dealTimer">
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealHours">00</span>
+                        <span class="timer-label">Hours</span>
+                      </div>
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealMinutes">00</span>
+                        <span class="timer-label">Minutes</span>
+                      </div>
+                      <div class="timer-block">
+                        <span class="timer-value" id="dealSeconds">00</span>
+                        <span class="timer-label">Seconds</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="load-more-container">
+                <button onclick="loadMoreBooks()" class="load-more-btn-modern">
+                  <span class="btn-text">Load More Books</span>
+                  <span class="btn-loader hidden">
+                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                      </path>
+                    </svg>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <aside class="sidebar-modern">
+
+            <!-- Special Deals Widget - Add this above Popular Authors -->
+            <div class="widget-modern deals-widget-special">
+              <div class="deals-widget-header">
+                <div class="deals-badge-live">
+                  <span class="live-dot"></span>
+                  <span>LIVE DEALS</span>
+                </div>
+                <div class="deals-countdown-mini">
+                  <span class="countdown-unit">
+                    <span id="sidebarHours">24</span>h
+                  </span>
+                  <span class="countdown-unit">
+                    <span id="sidebarMinutes">00</span>m
+                  </span>
+                  <span class="countdown-unit">
+                    <span id="sidebarSeconds">00</span>s
+                  </span>
+                </div>
+              </div>
+
+              <div class="deals-widget-body">
+                <div class="deal-item-mini">
+                  <img src="https://picsum.photos/seed/deal1/60/80" alt="Deal Book" class="deal-book-thumb">
+                  <div class="deal-info">
+                    <div class="deal-discount">-70%</div>
+                    <div class="deal-title">Extreme Math Bundle</div>
+                    <div class="deal-price">
+                      <span class="price-old">ETB 1,350</span>
+                      <span class="price-new">ETB 405</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="deal-item-mini">
+                  <img src="https://picsum.photos/seed/deal2/60/80" alt="Deal Book" class="deal-book-thumb">
+                  <div class="deal-info">
+                    <div class="deal-discount">-50%</div>
+                    <div class="deal-title">Grade 12 Complete Set</div>
+                    <div class="deal-price">
+                      <span class="price-old">ETB 2,200</span>
+                      <span class="price-new">ETB 1,100</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <button onclick="filterByGenre('deals')" class="deals-widget-cta">
+                <span>View All Deals</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6">
+                  </path>
+                </svg>
+              </button>
+            </div>
+            <!-- Popular Authors Widget -->
+            <div class="widget-modern authors-widget">
+              <div class="widget-header-modern">
+                <h3 class="widget-title-modern">Popular Authors</h3>
+                <button class="see-all-btn" onclick="openAllAuthorsModal()">See All</button>
+              </div>
+              <div class="widget-content-modern">
+                <div class="authors-list-modern" id="popularAuthors">
+                  <!-- Authors will be dynamically loaded -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Popular Bookstores Widget -->
+            <div class="widget-modern bookstores-widget">
+              <div class="widget-header-modern">
+                <h3 class="widget-title-modern">Popular Bookstores</h3>
+                <button class="see-all-btn" onclick="openAllBookstoresModal()">See All</button>
+              </div>
+              <div class="widget-content-modern">
+                <div class="bookstores-list-modern" id="popularBookstores">
+                  <!-- Bookstores will be dynamically loaded -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Reading Lists Widget -->
+            <div class="widget-modern lists-widget">
+              <div class="widget-header-modern">
+                <h3 class="widget-title-modern">Reading Lists</h3>
+              </div>
+              <div class="widget-content-modern">
+                <div class="reading-lists">
+                  <a href="#" class="list-item" onclick="openReadingList('summer')">
+                    <span class="list-icon">☀️</span>
+                    <span>Summer Reading</span>
+                    <span class="list-count">24</span>
+                  </a>
+                  <a href="#" class="list-item" onclick="openReadingList('classics')">
+                    <span class="list-icon">📖</span>
+                    <span>Must-Read Classics</span>
+                    <span class="list-count">50</span>
+                  </a>
+                  <a href="#" class="list-item" onclick="openReadingList('2024')">
+                    <span class="list-icon">🆕</span>
+                    <span>Best of 2024</span>
+                    <span class="list-count">30</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Cart Drawer -->
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="drawer-header">
+      <h3>Shopping Cart</h3>
+      <button onclick="closeCartDrawer()" class="drawer-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="drawer-content" id="cartContent">
+      <div class="cart-empty">
+        <svg class="w-24 h-24 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+        </svg>
+        <p class="text-center mt-4 text-gray-500">Your cart is empty</p>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <div class="cart-summary">
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span id="cartSubtotal">$0.00</span>
+        </div>
+        <div class="summary-row">
+          <span>Shipping</span>
+          <span id="cartShipping">$5.00</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span id="cartTotal">$5.00</span>
+        </div>
+      </div>
+      <button class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout</button>
+    </div>
+  </div>
+
+  <!-- Wishlist Drawer -->
+  <div class="wishlist-drawer" id="wishlistDrawer">
+    <div class="drawer-header">
+      <h3>My Wishlist</h3>
+      <button onclick="closeWishlistDrawer()" class="drawer-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="drawer-content" id="wishlistContent">
+      <div class="wishlist-empty">
+        <svg class="w-24 h-24 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+          </path>
+        </svg>
+        <p class="text-center mt-4 text-gray-500">Your wishlist is empty</p>
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="wishlist-action-btn" onclick="moveAllToCart()">Move All to Cart</button>
+    </div>
+  </div>
+
+  <!-- Enhanced Book Quick View Modal -->
+  <div class="modal-overlay" id="quickViewModal">
+    <div class="modal-container book-modal">
+      <button onclick="closeQuickView()" class="modal-close">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+      <div class="modal-content">
+        <div class="book-preview">
+          <div class="book-cover-3d">
+            <img id="quickViewCover" src="" alt="Book cover">
+          </div>
+          <div class="preview-gallery">
+            <img src="https://picsum.photos/seed/preview1/80/100" alt="Preview" onclick="changePreviewImage(this.src)">
+            <img src="https://picsum.photos/seed/preview2/80/100" alt="Preview" onclick="changePreviewImage(this.src)">
+            <img src="https://picsum.photos/seed/preview3/80/100" alt="Preview" onclick="changePreviewImage(this.src)">
+          </div>
+        </div>
+        <div class="book-details">
+          <div class="book-badge" id="quickViewBadge">BESTSELLER</div>
+          <h2 class="book-title" id="quickViewTitle">Book Title</h2>
+          <div class="book-author">
+            <span>by</span>
+            <a href="#" id="quickViewAuthor" class="author-link" onclick="openAuthorModal(event)">Author Name</a>
+          </div>
+          <div class="bookstore-info">
+            <span>Posted by</span>
+            <a href="#" id="quickViewBookstore" class="bookstore-link" onclick="openBookstoreModal(event)">Bookstore
+              Name</a>
+          </div>
+          <div class="book-rating">
+            <div class="stars" id="quickViewStars">
+              <span class="star-filled">⭐</span>
+              <span class="star-filled">⭐</span>
+              <span class="star-filled">⭐</span>
+              <span class="star-filled">⭐</span>
+              <span class="star-empty">⭐</span>
+            </div>
+            <span class="rating-text" id="quickViewRating">4.5 (234 reviews)</span>
+          </div>
+          <div class="book-price">
+            <span class="price-current" id="quickViewPrice">$24.99</span>
+            <span class="price-original" id="quickViewOriginalPrice">$34.99</span>
+            <span class="price-discount">-29%</span>
+          </div>
+          <p class="book-description" id="quickViewDescription">
+            Book description will appear here...
+          </p>
+
+          <!-- Reviews Section -->
+          <div class="reviews-section">
+            <h3>Customer Reviews</h3>
+            <div class="reviews-list" id="quickViewReviews">
+              <!-- Reviews will be loaded dynamically -->
+            </div>
+          </div>
+
+          <!-- You May Also Like Section -->
+          <div class="similar-books-section">
+            <h3>You May Also Like</h3>
+            <div class="similar-books-grid" id="similarBooksGrid">
+              <!-- Similar books will be loaded dynamically -->
+            </div>
+            <button class="see-all-similar" onclick="openSimilarBooksModal()">See All Similar Books</button>
+          </div>
+
+          <div class="book-actions">
+            <button onclick="addToCartFromQuickView()" class="btn-add-cart">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z">
+                </path>
+              </svg>
+              Add to Cart
+            </button>
+            <button onclick="addToWishlistFromQuickView()" class="btn-wishlist">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                </path>
+              </svg>
+            </button>
+            <button onclick="shareBook()" class="btn-share">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m9.032 4.026a3 3 0 10-4.732-2.684m4.732 2.684a3 3 0 01-4.732-2.684M9 12a3 3 0 012.684-2.982m0 0a3 3 0 104.732 2.684M12 3v1.5m0 13.5v1.5m7.5-7.5H21m-16.5 0H3">
+                </path>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All other modals remain the same but with improved functionality -->
+  <!-- Author Modal, Bookstore Modal, Similar Books Modal, AI Modal, Notification Panel -->
+  <!-- (These will have their event handlers properly connected in the JS file) -->
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Floating Action Button -->
+  <div class="fab-container">
+    <button class="fab-main" onclick="toggleFAB()">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+      </svg>
+    </button>
+    <div class="fab-menu" id="fabMenu">
+      <button class="fab-item" onclick="openAIChat()" title="AI Assistant">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+          </path>
+        </svg>
+      </button>
+      <button class="fab-item" onclick="scrollToTop()" title="Back to Top">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+      <!-- Enhanced Footer -->
+   <footer class="footer-section" id="footer" role="contentinfo">
+        <div class="footer-wave" aria-hidden="true">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:var(--footer-accent);stop-opacity:0" />
+                        <stop offset="25%" style="stop-color:var(--footer-accent);stop-opacity:1" />
+                        <stop offset="75%" style="stop-color:var(--footer-hover);stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:var(--footer-hover);stop-opacity:0" />
+                    </linearGradient>
+                </defs>
+                <!-- Main wave fill with explicit class -->
+                <path class="wave-fill" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z"></path>
+                <!-- Animated line following the wave curve -->
+                <path class="wave-line" d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32"></path>
+            </svg>
+        </div>
+
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with expert tutors and quality learning resources.</p>
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Active Users</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Courses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook" class="social-link">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Twitter" class="social-link">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="LinkedIn" class="social-link">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"></path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="social-link">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="YouTube" class="social-link">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"></path>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form" id="newsletterForm">
+                            <input 
+                                type="email" 
+                                placeholder="Your email address" 
+                                class="newsletter-input" 
+                                id="emailInput"
+                                aria-label="Email address"
+                                required
+                            >
+                            <button type="submit" class="newsletter-btn" id="submitBtn">Subscribe</button>
+                            <div class="newsletter-feedback" id="feedback"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom-content">
+                <div class="footer-badges">
+                    <div class="company-brand">
+                        <span>From</span>
+                        <span class="trademark-symbol">™</span>
+                        <span class="company-text">Eshtaol technologies</span>
+                    </div>
+                    <a href="tel:+251935244245" class="phone-link">
+                        <span class="phone-icon">📞</span>
+                        <span>+251-935-24-42-45</span>
+                    </a>
+                </div>
+                <div class="footer-badges">
+                    <p class="copyright">© 2025 Astegni. All rights reserved.</p>
+                </div>
+                <div class="footer-badges">
+                    <span class="badge glow" tabindex="0">🔒 SSL Secured</span>
+                    <span class="badge" tabindex="0">✓ Verified Platform</span>
+                    <span class="badge" tabindex="0">🏆 Award Winner 2024</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+    <!-- Updated Frontend Code for Profile Picture Integration -->
+<script>
+        // Newsletter form validation and submission
+        const form = document.getElementById('newsletterForm');
+        const emailInput = document.getElementById('emailInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const feedback = document.getElementById('feedback');
+
+        // Email validation regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        // Real-time validation
+        emailInput.addEventListener('input', function() {
+            if (this.value && !emailRegex.test(this.value)) {
+                this.classList.add('error');
+                this.classList.remove('success');
+            } else if (this.value && emailRegex.test(this.value)) {
+                this.classList.remove('error');
+                this.classList.add('success');
+            } else {
+                this.classList.remove('error', 'success');
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = emailInput.value.trim();
+            
+            // Reset feedback
+            feedback.classList.remove('show', 'error', 'success');
+            
+            // Validate email
+            if (!email) {
+                showFeedback('Please enter your email address', 'error');
+                emailInput.classList.add('error');
+                return;
+            }
+            
+            if (!emailRegex.test(email)) {
+                showFeedback('Please enter a valid email address', 'error');
+                emailInput.classList.add('error');
+                return;
+            }
+            
+            // Show loading state
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Subscribing...';
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Success response
+                showFeedback('Successfully subscribed! Check your email.', 'success');
+                emailInput.value = '';
+                emailInput.classList.remove('error', 'success');
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = 'Subscribe';
+            }, 1500);
+        });
+
+        function showFeedback(message, type) {
+            feedback.textContent = message;
+            feedback.classList.add('show', type);
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 5000);
+        }
+
+        // Add smooth scroll behavior for accessibility
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Intersection Observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        // Observe footer elements
+        document.querySelectorAll('.footer-section-item').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            observer.observe(el);
+        });
+    </script>
+    <script>
+        // Add ripple effect on badge click
+        document.querySelectorAll('.badge').forEach(badge => {
+            badge.addEventListener('click', function (e) {
+                const ripple = document.createElement('span');
+                ripple.style.position = 'absolute';
+                ripple.style.width = '20px';
+                ripple.style.height = '20px';
+                ripple.style.background = 'rgba(255, 255, 255, 0.5)';
+                ripple.style.borderRadius = '50%';
+                ripple.style.transform = 'translate(-50%, -50%)';
+                ripple.style.pointerEvents = 'none';
+                ripple.style.animation = 'rippleEffect 0.6s ease-out';
+
+                const rect = this.getBoundingClientRect();
+                ripple.style.left = (e.clientX - rect.left) + 'px';
+                ripple.style.top = (e.clientY - rect.top) + 'px';
+
+                this.appendChild(ripple);
+
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+
+        // Add ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes rippleEffect {
+                to {
+                    width: 100px;
+                    height: 100px;
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    <!-- In student-profile.html or any protected page -->
+  <script src="../js-tier-1/auth.js"></script>
+  <script src="../js/store.js"></script>
+</body>
+
+</html>

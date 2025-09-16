@@ -6,12 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ASTEGNI - Admin Dashboard</title>
     <link href="../css/output.css" rel="stylesheet">
-    <link href="../css/admin.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/main.css">
+    <link href="../css-tier-1/admin.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css-tier-1/main.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script defer src="../js/xlsx.full.min.js"></script>
-    <script src="../js/app.js" defer></script>
-    <script defer src="../js/chart.min.js"></script>
+    <script src="../js-tier-1/app.js" defer></script>
 </head>
 
 <body class="font-sans">
@@ -25,8 +24,8 @@
                     <span></span>
                     <span></span>
                 </span>
-            </div> 
-                        <a href="../index.html" class="logo-container">
+            </div>
+            <a href="../index.html" class="logo-container">
                 <div class="logo-text">
                     <span class="logo-main">Astegni</span>
                     <span class="logo-sub">Home</span>
@@ -1040,40 +1039,9 @@
         </div>
     </footer>
 
-<!-- In student-profile.html or any protected page -->
-<script src="../js/auth.js"></script>
-<script>
-    // Check authentication on page load
-    (async function() {
-        const auth = window.AuthManager;
-        
-        if (!auth.isAuthenticated()) {
-            // Try to restore session
-            const restored = await auth.restoreSession();
-            
-            if (!restored) {
-                alert('Please login to access this page');
-                window.location.href = '../index.html';
-                return;
-            }
-        }
-        
-        // Check if user has the right role
-        const userRole = auth.getUserRole();
-        if (userRole !== 'student') {
-            alert('This page is for students only');
-            window.location.href = '../index.html';
-            return;
-        }
-        
-        // Page is accessible, load user data
-        const user = auth.getUser();
-        console.log('Current user:', user);
-        // ... rest of your page-specific code
-    })();
-</script>
-
-    <script src="../js/admin-profile.js"></script>
+    <!-- In student-profile.html or any protected page -->
+    <script src="../js-tier-1/auth.js"></script>
+    <script src="../js-tier-1/admin-profile.js"></script>
 </body>
 
 </html>

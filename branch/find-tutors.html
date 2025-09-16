@@ -7,12 +7,12 @@
     <title>Find Tutors - Astegni</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="../css/main.css">
-    <link rel="stylesheet" href="../css/find-tutors.css">
-    <link rel="stylesheet" href="../css/auth-modal.css">
-    <link rel="stylesheet" href="../css/profile-system.css"> <!-- Profile system CSS -->
-    <link rel="stylesheet" href="../css/coming-soon-modal.css">
-    <link rel="stylesheet" href="../css/ad-modal.css">
+    <link rel="stylesheet" href="../css-tier-1/main.css">
+    <link rel="stylesheet" href="../css-tier-1/find-tutors.css">
+    <link rel="stylesheet" href="../css-tier-1/auth-modal.css">
+    <link rel="stylesheet" href="../css-tier-1/profile-system.css"> <!-- Profile system CSS -->
+    <link rel="stylesheet" href="../css-tier-1/coming-soon-modal.css">
+    <link rel="stylesheet" href="../css-tier-1/ad-modal.css">
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
@@ -1113,128 +1113,7 @@
     </script>
     <!-- Authentication Scripts -->
     <script src="../js/auth.js"></script>
-    <script>
-        // Check authentication on page load
-        (async function () {
-            const auth = window.AuthManager;
 
-            // Check if user is authenticated
-            if (!auth.isAuthenticated()) {
-                const restored = await auth.restoreSession();
-                if (!restored) {
-                    // Show enhanced modal instead of alert
-                    showAuthModal();
-                    return;
-                }
-            }
-
-            // Get user data
-            const user = auth.getUser();
-            const userRole = auth.getUserRole();
-
-            // Reels is accessible to all authenticated users
-            // No role-specific check needed
-            console.log('User authenticated:', user.email);
-            console.log('User role:', userRole);
-
-            // Update UI with user info
-            if (user) {
-                // Update profile elements if they exist
-                const profilePic = document.getElementById('profile-pic');
-                const profileName = document.getElementById('profile-name');
-                const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
-                const dropdownUserName = document.getElementById('dropdown-user-name');
-                const dropdownUserEmail = document.getElementById('dropdown-user-email');
-                const dropdownUserRole = document.getElementById('dropdown-user-role');
-
-                if (profilePic && user.profile_picture) {
-                    profilePic.src = user.profile_picture;
-                }
-                if (profileName) {
-                    profileName.textContent = user.first_name;
-                }
-                if (dropdownProfilePic && user.profile_picture) {
-                    dropdownProfilePic.src = user.profile_picture;
-                }
-                if (dropdownUserName) {
-                    dropdownUserName.textContent = user.name || `${user.first_name} ${user.last_name}`;
-                }
-                if (dropdownUserEmail) {
-                    dropdownUserEmail.textContent = user.email;
-                }
-                if (dropdownUserRole) {
-                    dropdownUserRole.textContent = userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : 'User';
-                }
-
-                // Show profile container
-                const profileContainer = document.getElementById('profile-container');
-                if (profileContainer) {
-                    profileContainer.classList.remove('hidden');
-                }
-            }
-
-            console.log('Access granted to Reels page');
-        })();
-
-        // Logout function
-        function logout() {
-            const auth = window.AuthManager;
-            auth.logout();
-        }
-
-        // Profile dropdown toggle
-        function toggleProfileDropdown() {
-            const dropdownMenu = document.getElementById('profile-dropdown-menu');
-            if (dropdownMenu) {
-                dropdownMenu.classList.toggle('hidden');
-            }
-        }
-
-        // Show authentication modal
-        function showAuthModal() {
-            const modal = document.getElementById('authRequiredModal');
-            const message = document.getElementById('authModalMessage');
-
-            // Customize message based on page
-            const pageMessages = {
-                'reels': 'Login to access Reels and watch amazing educational videos.',
-                'find-tutors': 'Login to find the perfect tutors for your learning journey.',
-                'advertiser-profile': 'Login to access advertiser features and campaigns.',
-                'view-parent': 'Login to view parent profiles and engagement details.'
-            };
-
-            // Get current page type from URL or page identifier
-            const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
-
-            if (pageMessages[currentPage]) {
-                message.textContent = pageMessages[currentPage];
-            }
-
-            modal.classList.add('active');
-        }
-
-        // Redirect to login
-        function redirectToLogin() {
-            // Store the intended destination
-            localStorage.setItem('redirectAfterLogin', window.location.href);
-            window.location.href = '../index.html';
-        }
-
-        // Go back to previous page
-        function goBack() {
-            window.history.back();
-        }
-
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function (event) {
-            const profileContainer = document.getElementById('profile-container');
-            const dropdownMenu = document.getElementById('profile-dropdown-menu');
-
-            if (profileContainer && !profileContainer.contains(event.target) && dropdownMenu) {
-                dropdownMenu.classList.add('hidden');
-            }
-        });
-    </script>
 
     <script>
         // ============================================
@@ -1413,10 +1292,10 @@
         };
 
     </script>
-    <script src="../js/profile-system.js"></script> <!-- Profile system JS -->
-    <script src="../js/find-tutors.js"></script>
-    <script src="../js/coming-soon-modal.js"></script>
-    <script src="../js/ad-modal.js"></script>
+    <script src="../js-tier-1/profile-system.js"></script> <!-- Profile system JS -->
+    <script src="../js-tier-1/find-tutors.js"></script>
+    <script src="../js-tier-1/coming-soon-modal.js"></script>
+    <script src="../js-tier-1/ad-modal.js"></script>
 </body>
 
 </html>

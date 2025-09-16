@@ -7,13 +7,13 @@
     <title>ASTEGNI - Tutor Reels</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <link href="../css/reels.css" rel="stylesheet">
-    <link href="../css/main.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/auth-modal.css">
-    <link href="../css/videoplayer.css" rel="stylesheet">
-    <link rel="stylesheet" href="../css/profile-system.css"> <!-- Profile system CSS -->
-    <link rel="stylesheet" href="../css/coming-soon-modal.css">
-    <link rel="stylesheet" href="../css/ad-modal.css">
+    <link href="../css-tier-1/reels.css" rel="stylesheet">
+    <link href="../css-tier-1/main.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css-tier-1/auth-modal.css">
+    <link href="../css-tier-1/videoplayer.css" rel="stylesheet">
+    <link rel="stylesheet" href="../css-tier-1/profile-system.css"> <!-- Profile system CSS -->
+    <link rel="stylesheet" href="../css-tier-1/coming-soon-modal.css">
+    <link rel="stylesheet" href="../css-tier-1/ad-modal.css">
 </head>
 
 <body class="font-sans">
@@ -211,36 +211,36 @@
     </nav>
 
     <!-- Add style attribute to the ad section -->
-<!-- Remove the duplicate section wrapper and fix the grid margin -->
-<section class="ad-placeholder-section" style="margin-top: 100px; padding: 1rem 0; margin-bottom: 2rem;">
-    <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
-        <div class="ad-animation">
-            <div class="pulse-ring"></div>
-            <div class="pulse-ring"></div>
-        </div>
-        <div class="ad-content">
-            <span class="ad-label">Advertisement</span>
-            <h3 class="ad-title">Boost Your Reach Today</h3>
-            <p class="ad-text">Premium placement available</p>
-            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
-        </div>
-        <div class="ad-visual">
-            <div class="ad-circles">
-                <div class="circle circle-1"></div>
-                <div class="circle circle-2"></div>
-                <div class="circle circle-3"></div>
+    <!-- Remove the duplicate section wrapper and fix the grid margin -->
+    <section class="ad-placeholder-section" style="margin-top: 80px; padding: 0.5rem 0; margin-bottom: 0;">
+        <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
+            <div class="ad-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring"></div>
+            </div>
+            <div class="ad-content">
+                <span class="ad-label">Advertisement</span>
+                <h3 class="ad-title">Boost Your Reach Today</h3>
+                <p class="ad-text">Premium placement available</p>
+                <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+            </div>
+            <div class="ad-visual">
+                <div class="ad-circles">
+                    <div class="circle circle-1"></div>
+                    <div class="circle circle-2"></div>
+                    <div class="circle circle-3"></div>
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
 
 
 
-<!-- Update the main section -->
-<section class="py-8 sm:py-12 md:py-16" style="margin-top: 0;">
-    <div class="container mx-auto px-3 sm:px-4">
+    <!-- Update the main section -->
+    <section class="py-2 sm:py-3 md:py-4" style="margin-top: -1rem;">
+        <div class="container mx-auto px-3 sm:px-4">
             <!-- Enhanced Filter Buttons -->
-        <div class="filter-container mb-8" style="margin-bottom: 2rem;">
+<div class="filter-container" style="margin-bottom: 0.5rem; padding: 0.75rem;">
                 <button class="filter-btn active" onclick="filterReels('all')" data-filter="all">
                     <svg class="filter-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -287,8 +287,7 @@
 
             <!-- Reels Grid -->
 
-        <div id="reels-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6" style="margin-top: 16rem;"></div>
-            <!-- Loading Skeleton -->
+            <div id="reels-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6"></div>            <!-- Loading Skeleton -->
             <div id="loading-skeleton" class="hidden">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     <div class="skeleton-card"></div>
@@ -424,20 +423,16 @@
 
             <!-- Main Video Section -->
             <div class="video-main-section">
-                <!-- Theme Toggle Button -->
-                <button class="theme-toggle-btn btn glass-effect" id="themeToggle" title="Toggle Theme">
-                    <div class="theme-icon">
-                        <svg viewBox="0 0 24 24" id="themeIcon">
-                            <path
-                                d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z" />
-                        </svg>
-                    </div>
-                </button>
 
-                <!-- Video Counter Display -->
-                <div class="video-counter glass-effect">
-                    <span id="videoCountText">Video 1 of 1</span>
-                    <div class="video-counter-dots" id="videoDots"></div>
+                <!-- Add this new header overlay -->
+                <div class="video-header-overlay">
+                    <h2 class="video-title-overlay" id="video-title-top">Loading...</h2>
+                    <button class="modal-close-btn-enhanced" onclick="closeUltimateModal()">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                        </svg>
+                    </button>
                 </div>
 
                 <div class="video-wrapper-advanced">
@@ -456,13 +451,15 @@
 
                     <!-- Advanced Controls -->
                     <div class="video-controls-advanced glass-effect" id="videoControls">
+
                         <!-- Progress Bar -->
                         <div class="progress-container-advanced" id="progressContainer">
                             <div class="progress-buffer" id="progressBuffer"></div>
                             <div class="progress-played" id="progressPlayed"></div>
-                            <div class="progress-scrubber" id="progressScrubber"></div>
                             <div class="progress-hover-preview" id="progressPreview">0:00</div>
+                            <div class="progress-scrubber" id="progressScrubber"></div>
                         </div>
+
 
                         <!-- Control Buttons Row -->
                         <div class="controls-row">
@@ -666,6 +663,12 @@
 
                     <!-- Video Navigation Section -->
                     <div class="video-navigation-section">
+                        <!-- Video Counter Display -->
+                        <div class="video-counter glass-effect">
+                            <span id="videoCountText">Video 1 of 1</span>
+                            <div class="video-counter-dots" id="videoDots"></div>
+                        </div>
+
                         <div class="video-nav-buttons">
                             <button class="video-nav-btn btn btn-secondary hover-lift" id="prevVideoBtn">
                                 <svg viewBox="0 0 24 24" width="24" height="24">
@@ -690,14 +693,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Close Button -->
-            <button class="modal-close-btn-enhanced btn glass-effect" onclick="closeUltimateModal()">
-                <svg viewBox="0 0 24 24">
-                    <path
-                        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
-                </svg>
-            </button>
         </div>
 
         <!-- Fullscreen Transition -->
@@ -1223,71 +1218,52 @@
     </script>
 
     <!-- JavaScript for Interactivity -->
-    <script src="../js/auth.js"></script>
     <script>
         // Check authentication on page load
-        (async function () {
-            const auth = window.AuthManager;
+        // Check authentication on page load
+(async function () {
+    const auth = window.AuthManager;
 
-            // Check if user is authenticated
-            if (!auth.isAuthenticated()) {
-                const restored = await auth.restoreSession();
-                if (!restored) {
-                    // Show enhanced modal instead of alert
-                    showAuthModal();
-                    return;
-                }
-            }
+    // Check if user is authenticated
+    if (!auth.isAuthenticated()) {
+        const restored = await auth.restoreSession();
+        if (!restored) {
+            // Show enhanced modal instead of alert
+            showAuthModal();
+            return;
+        }
+    }
 
-            
+    // Get user data
+    const user = auth.getUser();
+    const userRole = auth.getUserRole();
 
-            // Get user data
-            const user = auth.getUser();
-            const userRole = auth.getUserRole();
+    console.log('User authenticated:', user?.email);
+    console.log('User role:', userRole);
 
-            // Reels is accessible to all authenticated users
-            // No role-specific check needed
-            console.log('User authenticated:', user.email);
-            console.log('User role:', userRole);
+    // Update UI with user info
+    if (user) {
+        // Update profile elements
+        const profilePic = document.getElementById('profile-pic');
+        const profileName = document.getElementById('profile-name');
+        
+        if (profilePic && user.profile_picture) {
+            profilePic.src = user.profile_picture;
+        }
+        if (profileName) {
+            profileName.textContent = user.first_name || user.name?.split(' ')[0] || "User";
+        }
 
-            // Update UI with user info
-            if (user) {
-                // Update profile elements if they exist
-                const profilePic = document.getElementById('profile-pic');
-                const profileName = document.getElementById('profile-name');
-                const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
-                const dropdownUserName = document.getElementById('dropdown-user-name');
-                const dropdownUserEmail = document.getElementById('dropdown-user-email');
-                const dropdownUserRole = document.getElementById('dropdown-user-role');
-
-                if (profilePic && user.profile_picture) {
-                    profilePic.src = user.profile_picture;
-                }
-                if (profileName) {
-                    profileName.textContent = user.first_name;
-                }
-                if (dropdownProfilePic && user.profile_picture) {
-                    dropdownProfilePic.src = user.profile_picture;
-                }
-                if (dropdownUserName) {
-                    dropdownUserName.textContent = user.name || `${user.first_name} ${user.last_name}`;
-                }
-                if (dropdownUserEmail) {
-                    dropdownUserEmail.textContent = user.email;
-                }
-                if (dropdownUserRole) {
-                    dropdownUserRole.textContent = userRole ? userRole.charAt(0).toUpperCase() + userRole.slice(1) : 'User';
-                }
-
-                // Show profile container
-                const profileContainer = document.getElementById('profile-container');
-                if (profileContainer) {
-                    profileContainer.classList.remove('hidden');
-                }
-            }
-
-            console.log('Access granted to Reels page');
-        })();
+        // Show profile container
+        const profileContainer = document.getElementById('profile-container');
+        if (profileContainer) {
+            profileContainer.classList.remove('hidden');
+        }
+        
+        // Set global user for video player
+        window.currentUser = user;
+    }
+})();
 
         // Logout function
         function logout() {
@@ -1348,7 +1324,6 @@
             }
         });
     </script>
-    <script src="../js/profile-system.js"></script> <!-- Profile system JS -->
 
     <script>
         // ============================================
@@ -1527,12 +1502,14 @@
         };
 
     </script>
-    <script src="../js/reels_dynamic.js"></script>
-    <script src="../js/videoplayer.js"></script>
-    <script src="../js/player-bridge.js"></script>
-    <script src="../js/video-player-integration.js"></script>
-    <script src="../js/coming-soon-modal.js"></script>
-    <script src="../js/ad-modal.js"></script>
+    <script src="../js-tier-1/auth.js"></script>
+    <script src="../js-tier-1/profile-system.js"></script> <!-- Profile system JS -->    
+    <script src="../js-tier-1/reels_dynamic.js"></script>
+    <script src="../js-tier-1/videoplayer.js"></script>
+    <script src="../js-tier-1/player-bridge.js"></script>
+    <script src="../js-tier-1/video-player-integration.js"></script>
+    <script src="../js-tier-1/coming-soon-modal.js"></script>
+    <script src="../js-tier-1/ad-modal.js"></script>
 </body>
 
 </html>

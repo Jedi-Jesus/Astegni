@@ -1,112 +1,184 @@
-# cache.py
-from functools import wraps, lru_cache
-import hashlib
+"""
+cache.py - Caching utilities for Astegni Platform
+"""
+
 import json
-from typing import Any, Dict
-from datetime import datetime, timedelta
+import hashlib
+from typing import Optional, Any, Callable
+from functools import wraps
+import redis
+from datetime import timedelta
+import os
+from dotenv import load_dotenv
 
-# Try to import redis, but don't fail if it's not available
+load_dotenv()
+
+# Redis configuration
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+CACHE_TTL = int(os.getenv("CACHE_TTL", 300))  # Default 5 minutes
+
+# Initialize Redis client
 try:
-    import redis
-    REDIS_AVAILABLE = True
-    redis_client = redis.Redis(host='localhost', port=6379, decode_responses=True)
-except ImportError:
-    REDIS_AVAILABLE = False
+    redis_client = redis.from_url(REDIS_URL, decode_responses=True)
+    redis_client.ping()
+    CACHE_ENABLED = True
+    print("✅ Redis cache connected")
+except:
     redis_client = None
+    CACHE_ENABLED = False
+    print("⚠️  Redis cache not available, running without cache")
 
-class InMemoryCache:
-    """Simple in-memory cache with TTL support"""
-    def __init__(self):
-        self.cache: Dict[str, Dict[str, Any]] = {}
+def generate_cache_key(prefix: str, **kwargs) -> str:
+    """Generate a unique cache key based on prefix and parameters"""
+    # Sort kwargs to ensure consistent key generation
+    sorted_kwargs = sorted(kwargs.items())
+    key_data = f"{prefix}:{json.dumps(sorted_kwargs)}"
     
-    def get(self, key: str) -> Any:
-        """Get value from cache if not expired"""
-        if key in self.cache:
-            entry = self.cache[key]
-            if datetime.now() < entry['expires_at']:
-                return entry['value']
-            else:
-                # Remove expired entry
-                del self.cache[key]
+    # Hash long keys to avoid Redis key length limits
+    if len(key_data) > 200:
+        key_hash = hashlib.md5(key_data.encode()).hexdigest()
+        return f"{prefix}:{key_hash}"
+    
+    return key_data
+
+def get_cache(key: str) -> Optional[Any]:
+    """Get value from cache"""
+    if not CACHE_ENABLED or not redis_client:
         return None
     
-    def set(self, key: str, value: Any, ttl_seconds: int = 300):
-        """Set value in cache with TTL"""
-        self.cache[key] = {
-            'value': value,
-            'expires_at': datetime.now() + timedelta(seconds=ttl_seconds)
-        }
+    try:
+        value = redis_client.get(key)
+        if value:
+            return json.loads(value)
+    except Exception as e:
+        print(f"Cache get error: {e}")
     
-    def clear(self):
-        """Clear all cache entries"""
-        self.cache.clear()
+    return None
 
-# Global cache instance
-cache = InMemoryCache()
+def set_cache(key: str, value: Any, ttl: int = CACHE_TTL) -> bool:
+    """Set value in cache with TTL"""
+    if not CACHE_ENABLED or not redis_client:
+        return False
+    
+    try:
+        redis_client.setex(
+            key,
+            timedelta(seconds=ttl),
+            json.dumps(value, default=str)
+        )
+        return True
+    except Exception as e:
+        print(f"Cache set error: {e}")
+        return False
 
-def cache_key_wrapper(prefix: str, ttl: int = 300):
-    """
-    Decorator for caching function results
-    Args:
-        prefix: Cache key prefix
-        ttl: Time to live in seconds (default 5 minutes)
-    """
-    def decorator(func):
+def delete_cache(key: str) -> bool:
+    """Delete key from cache"""
+    if not CACHE_ENABLED or not redis_client:
+        return False
+    
+    try:
+        redis_client.delete(key)
+        return True
+    except Exception as e:
+        print(f"Cache delete error: {e}")
+        return False
+
+def clear_cache_pattern(pattern: str) -> int:
+    """Clear all cache keys matching a pattern"""
+    if not CACHE_ENABLED or not redis_client:
+        return 0
+    
+    try:
+        keys = redis_client.keys(f"{pattern}*")
+        if keys:
+            return redis_client.delete(*keys)
+    except Exception as e:
+        print(f"Cache clear error: {e}")
+    
+    return 0
+
+def cache_key_wrapper(prefix: str, ttl: int = CACHE_TTL):
+    """Decorator for caching function results"""
+    def decorator(func: Callable):
         @wraps(func)
-        def wrapper(*args, **kwargs):
-            # Skip caching for database session objects
-            cache_key_parts = []
-            for arg in args:
-                if not hasattr(arg, '_sa_instance_state'):  # Skip SQLAlchemy objects
-                    cache_key_parts.append(str(arg))
-            for k, v in kwargs.items():
-                if k != 'db' and not hasattr(v, '_sa_instance_state'):
-                    cache_key_parts.append(f"{k}={v}")
+        async def async_wrapper(*args, **kwargs):
+            # Generate cache key from function arguments
+            cache_key = generate_cache_key(prefix, **kwargs)
             
-            # Generate cache key
-            cache_key = f"{prefix}:{':'.join(cache_key_parts)}"
+            # Try to get from cache
+            cached_value = get_cache(cache_key)
+            if cached_value is not None:
+                return cached_value
             
-            # Try Redis first if available
-            if REDIS_AVAILABLE and redis_client:
-                try:
-                    cached = redis_client.get(cache_key)
-                    if cached:
-                        return json.loads(cached)
-                except:
-                    pass  # Fall back to in-memory cache
-            
-            # Try in-memory cache
-            cached_result = cache.get(cache_key)
-            if cached_result is not None:
-                return cached_result
-            
-            # Execute function and cache result
-            result = func(*args, **kwargs)
-            
-            # Cache in both Redis (if available) and in-memory
-            try:
-                # Test if result can be converted to JSON
-                json_result = json.dumps(result, default=str)
-                
-                # Cache in Redis if available
-                if REDIS_AVAILABLE and redis_client:
-                    try:
-                        redis_client.setex(cache_key, ttl, json_result)
-                    except:
-                        pass  # Continue with in-memory cache
-                
-                # Always cache in memory
-                cache.set(cache_key, result, ttl)
-            except (TypeError, ValueError):
-                # If not serializable, just return without caching
-                pass
-            
+            # Call function and cache result
+            result = await func(*args, **kwargs)
+            set_cache(cache_key, result, ttl)
             return result
-        return wrapper
+        
+        @wraps(func)
+        def sync_wrapper(*args, **kwargs):
+            # Generate cache key from function arguments
+            cache_key = generate_cache_key(prefix, **kwargs)
+            
+            # Try to get from cache
+            cached_value = get_cache(cache_key)
+            if cached_value is not None:
+                return cached_value
+            
+            # Call function and cache result
+            result = func(*args, **kwargs)
+            set_cache(cache_key, result, ttl)
+            return result
+        
+        # Return appropriate wrapper based on function type
+        import asyncio
+        if asyncio.iscoroutinefunction(func):
+            return async_wrapper
+        else:
+            return sync_wrapper
+    
     return decorator
 
-# Simple LRU cache for database query results
-@lru_cache(maxsize=128)
-def get_cached_query_hash(query_params: str):
-    """Generate hash for query parameters"""
-    return hashlib.md5(query_params.encode()).hexdigest()
+# Cache invalidation helpers
+
+def invalidate_user_cache(user_id: int):
+    """Invalidate all cache entries for a user"""
+    patterns = [
+        f"user:{user_id}:*",
+        f"profile:{user_id}:*",
+        f"sessions:{user_id}:*"
+    ]
+    
+    total_cleared = 0
+    for pattern in patterns:
+        total_cleared += clear_cache_pattern(pattern)
+    
+    return total_cleared
+
+def invalidate_tutor_cache(tutor_id: int):
+    """Invalidate all cache entries for a tutor"""
+    patterns = [
+        f"tutor:{tutor_id}:*",
+        f"tutor_profile:{tutor_id}:*",
+        f"tutor_videos:{tutor_id}:*"
+    ]
+    
+    total_cleared = 0
+    for pattern in patterns:
+        total_cleared += clear_cache_pattern(pattern)
+    
+    return total_cleared
+
+def invalidate_video_cache(video_id: int):
+    """Invalidate all cache entries for a video"""
+    patterns = [
+        f"video:{video_id}:*",
+        f"video_comments:{video_id}:*",
+        f"video_reels:*"  # Clear video list caches
+    ]
+    
+    total_cleared = 0
+    for pattern in patterns:
+        total_cleared += clear_cache_pattern(pattern)
+    
+    return total_cleared
