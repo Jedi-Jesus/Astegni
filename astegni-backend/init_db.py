@@ -15,6 +15,69 @@ import bcrypt
 # Load environment variables
 load_dotenv()
 
+# Ethiopian schools and universities
+ETHIOPIAN_HIGH_SCHOOLS = [
+    "St. Joseph School, Addis Ababa",
+    "Lycée Guebre-Mariam, Addis Ababa", 
+    "Sandford International School",
+    "School of Tomorrow, Addis Ababa",
+    "Nazareth School, Addis Ababa",
+    "Meskaye Hizunan Medhanealem School",
+    "Hillside School, Addis Ababa",
+    "Cambridge Academy, Addis Ababa",
+    "SOS Hermann Gmeiner School",
+    "Bethel Teaching Hospital School",
+    "Lideta Catholic Cathedral School",
+    "Kokebe Tsibah Secondary School",
+    "Yekatit 12 Secondary School",
+    "Menelik II Secondary School",
+    "Ayer Tena Secondary School"
+]
+
+ETHIOPIAN_UNIVERSITIES = [
+    "Addis Ababa University",
+    "Addis Ababa Science and Technology University",
+    "Ethiopian Civil Service University",
+    "St. Mary's University",
+    "Unity University",
+    "Rift Valley University",
+    "Admas University",
+    "Alpha University College",
+    "Hawassa University",
+    "Jimma University",
+    "Bahir Dar University",
+    "Mekelle University",
+    "Gondar University",
+    "Haramaya University",
+    "Arba Minch University"
+]
+
+def get_price_by_rating_and_subject(rating, subjects):
+    """Calculate price based on rating and subject type"""
+    # Check if it's a certification course
+    certification_subjects = ['Computer Programming', 'Video Editing', 'Web Development', 
+                            'Graphic Design', 'Digital Marketing', 'Data Science', 'Computer Science']
+    
+    is_certification = any(subj in subjects for subj in certification_subjects)
+    
+    if rating <= 2.5:  # Beginners
+        return random.choice([50, 75, 100])
+    elif rating <= 3.5:  # Intermediate
+        if is_certification:
+            return random.choice([200, 250, 300])
+        else:
+            return random.choice([100, 150, 200])
+    elif rating <= 4.5:  # Advanced
+        if is_certification:
+            return random.choice([350, 400])
+        else:
+            return random.choice([200, 250, 300, 350])
+    else:  # Expert (4.5+)
+        if is_certification:
+            return random.choice([400, 450, 500])
+        else:
+            return random.choice([300, 350, 400])
+
 def test_connection():
     """Test database connection"""
     try:
@@ -101,44 +164,64 @@ def seed_initial_data():
         
         print("\n🌱 Seeding initial data...")
         
-        # Seed admin user
-        cursor.execute("SELECT COUNT(*) FROM users WHERE email = 'admin@astegni.com'")
-        admin_exists = cursor.fetchone()[0]
-        
-        if not admin_exists:
-            print("  Creating admin user...")
+        # Create admin user
+        cursor.execute("SELECT id FROM users WHERE email = %s", ("admin@astegni.com",))
+        if not cursor.fetchone():
             admin_password = bcrypt.hashpw("Admin@2025".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            
             cursor.execute("""
                 INSERT INTO users (first_name, last_name, email, phone, password_hash, roles, active_role, is_active, email_verified, created_at)
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
             """, (
-                "Admin", "User", "admin@astegni.com", "+251911111111",
-                admin_password, json.dumps(["admin", "tutor", "student"]), "admin",
+                "Admin", "User", "admin@astegni.com", "+251900000000",
+                admin_password, json.dumps(["admin"]), "admin",
                 True, True, datetime.now(timezone.utc)
             ))
-            admin_id = cursor.fetchone()[0]
-            print(f"  ✅ Admin user created (ID: {admin_id})")
+            print("  ✅ Created admin user")
         else:
             print("  ℹ️  Admin user already exists")
         
-        # Seed sample tutors - Fixed query for JSON column
+        # Create sample tutors with Ethiopian context
         cursor.execute("SELECT COUNT(*) FROM users WHERE roles::jsonb ? 'tutor'")
         tutor_count = cursor.fetchone()[0]
         
-        if tutor_count < 5:
-            print("  Creating sample tutors...")
+        if tutor_count < 25:  # Create 25 tutors to see ad effect
+            print("  Creating 25 sample tutors with Ethiopian schools...")
             
-            tutor_data = [
-                ("Abebe", "Kebede", "abebe@example.com", "+251922222222", ["Mathematics", "Physics"], ["Grade 11", "Grade 12"]),
-                ("Sara", "Tadesse", "sara@example.com", "+251933333333", ["English", "Biology"], ["Grade 9", "Grade 10"]),
-                ("Daniel", "Bekele", "daniel@example.com", "+251944444444", ["Chemistry", "Mathematics"], ["Grade 10", "Grade 11"]),
-                ("Marta", "Alemu", "marta@example.com", "+251955555555", ["History", "Geography"], ["Grade 7", "Grade 8"]),
-                ("Yohannes", "Haile", "yohannes@example.com", "+251966666666", ["Computer Science", "Mathematics"], ["Grade 11", "Grade 12"])
+            # Ethiopian names for authenticity
+            ethiopian_first_names = [
+                "Abebe", "Bekele", "Chaltu", "Dawit", "Eden", "Fikre", "Genet", "Haile",
+                "Iskinder", "Jerusalem", "Kebede", "Lidya", "Meron", "Naod", "Oliyad",
+                "Paulos", "Ruth", "Samuel", "Tewodros", "Yohannes", "Zelalem",
+                "Alem", "Birtukan", "Daniel", "Elias", "Feven", "Girma", "Helen", "Isaac"
             ]
             
-            for first_name, last_name, email, phone, courses, grades in tutor_data:
+            ethiopian_last_names = [
+                "Tadesse", "Bekele", "Alemu", "Kebede", "Tesfaye", "Abebe", "Mulugeta",
+                "Gebremedhin", "Tsegaye", "Wolde", "Hailu", "Tekle", "Mekonnen", "Assefa",
+                "Negash", "Asfaw", "Berhe", "Gebru", "Kidane", "Yohannes"
+            ]
+            
+            subjects = [
+                "Mathematics", "Physics", "Chemistry", "Biology", "English",
+                "Amharic", "History", "Geography", "Computer Science", "Computer Programming",
+                "Economics", "Accounting", "Business", "Art", "Music",
+                "Video Editing", "Web Development", "Graphic Design"
+            ]
+            
+            grades = ["Grade 9", "Grade 10", "Grade 11", "Grade 12", "University Level"]
+            
+            teaching_methods = [
+                "Online Classes", "In-Person", "Hybrid", "Group Sessions",
+                "One-on-One", "Weekend Classes", "Evening Classes"
+            ]
+            
+            created_tutors = 0
+            
+            for i in range(25):
+                first_name = random.choice(ethiopian_first_names)
+                last_name = random.choice(ethiopian_last_names)
+                email = f"{first_name.lower()}.{last_name.lower()}{i}@astegni.com"
+                
                 # Check if tutor exists
                 cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
                 existing = cursor.fetchone()
@@ -152,179 +235,230 @@ def seed_initial_data():
                         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
                     """, (
-                        first_name, last_name, email, phone,
+                        first_name, last_name, email, f"+2519{random.randint(10000000, 99999999)}",
                         password_hash, json.dumps(["tutor"]), "tutor",
                         True, True, datetime.now(timezone.utc)
                     ))
                     user_id = cursor.fetchone()[0]
+                    
+                    # Determine rating - weighted distribution
+                    rating_weights = [
+                        (2.0, 2.5, 0.15),  # 15% beginners (2-2.5 stars)
+                        (2.5, 3.5, 0.25),  # 25% intermediate (2.5-3.5 stars)
+                        (3.5, 4.5, 0.40),  # 40% advanced (3.5-4.5 stars)
+                        (4.5, 5.0, 0.20),  # 20% expert (4.5-5 stars)
+                    ]
+                    
+                    rand = random.random()
+                    cumulative = 0
+                    rating = 3.5  # default
+                    
+                    for min_r, max_r, weight in rating_weights:
+                        cumulative += weight
+                        if rand <= cumulative:
+                            rating = round(random.uniform(min_r, max_r), 1)
+                            break
+                    
+                    # Select subjects
+                    tutor_subjects = random.sample(subjects, k=random.randint(2, 5))
+                    tutor_grades = random.sample(grades, k=random.randint(2, 4))
+                    
+                    # Determine teaches_at based on subjects
+                    is_university_level = "University Level" in tutor_grades
+                    is_certification = any(s in ["Computer Programming", "Web Development", "Video Editing", "Computer Science"] for s in tutor_subjects)
+                    
+                    if is_university_level or is_certification:
+                        teaches_at = random.choice(ETHIOPIAN_UNIVERSITIES)
+                    else:
+                        teaches_at = random.choice(ETHIOPIAN_HIGH_SCHOOLS)
+                    
+                    # Calculate price based on rating and subjects
+                    price = get_price_by_rating_and_subject(rating, tutor_subjects)
+                    
+                    # Create rating breakdown
+                    rating_breakdown = {
+                        "discipline": round(random.uniform(max(2.0, rating - 0.5), min(5.0, rating + 0.5)), 1),
+                        "punctuality": round(random.uniform(max(2.0, rating - 0.5), min(5.0, rating + 0.5)), 1),
+                        "communication_skills": round(random.uniform(max(2.0, rating - 0.5), min(5.0, rating + 0.5)), 1),
+                        "knowledge_level": round(random.uniform(max(2.0, rating - 0.5), min(5.0, rating + 0.5)), 1),
+                        "retention": round(random.uniform(max(2.0, rating - 0.5), min(5.0, rating + 0.5)), 1)
+                    }
                     
                     # Create tutor profile
                     cursor.execute("""
                         INSERT INTO tutor_profiles (
                             user_id, bio, courses, grades, location, experience, 
                             price, rating, rating_count, is_verified, is_active, 
-                            profile_complete, created_at
+                            profile_complete, created_at, teaches_at, teaching_methods,
+                            rating_breakdown, students_taught, response_time, completion_rate
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """, (
                         user_id,
-                        f"Experienced {courses[0]} tutor with {random.randint(3, 10)} years of teaching experience.",
-                        json.dumps(courses),
-                        json.dumps(grades),
-                        "Addis Ababa",
-                        random.randint(3, 10),
-                        random.randint(200, 500),
-                        round(random.uniform(4.0, 5.0), 1),
-                        random.randint(10, 100),
+                        f"Experienced {random.choice(['educator', 'tutor', 'teacher', 'instructor'])} "
+                        f"with {random.randint(2, 15) if rating > 2.5 else random.randint(0, 2)} years of experience. "
+                        f"Specialized in {', '.join(tutor_subjects[:2])}. Currently teaching at {teaches_at}.",
+                        json.dumps(tutor_subjects),
+                        json.dumps(tutor_grades),
+                        random.choice([
+                            "Addis Ababa, Bole", "Addis Ababa, Kirkos", "Addis Ababa, Yeka",
+                            "Addis Ababa, Kolfe Keranio", "Addis Ababa, Gulele", "Addis Ababa, Lideta",
+                            "Addis Ababa, Arada", "Addis Ababa, Addis Ketema", "Addis Ababa, Akaky Kaliti",
+                            "Addis Ababa, Nifas Silk-Lafto", "Bahir Dar", "Gondar", "Hawassa", "Mekelle"
+                        ]),
+                        random.randint(1, 15) if rating > 2.5 else random.randint(0, 2),
+                        price,
+                        rating,
+                        random.randint(5, 200) if rating > 2.5 else random.randint(1, 10),
+                        rating >= 4.0 or random.choice([True, False]),
                         True,
                         True,
-                        True,
-                        datetime.now(timezone.utc)
+                        datetime.now(timezone.utc),
+                        teaches_at,
+                        json.dumps(random.sample(teaching_methods, k=random.randint(2, 4))),
+                        json.dumps(rating_breakdown),
+                        random.randint(10, 500) if rating > 3 else random.randint(5, 50),
+                        random.choice(["Within 1 hour", "Within 2 hours", "Within 6 hours", "Within 24 hours"]),
+                        random.randint(85, 100) if rating > 3.5 else random.randint(70, 85)
                     ))
                     
-                    print(f"    ✅ Created tutor: {first_name} {last_name}")
-                else:
-                    print(f"  ℹ️  Found {tutor_count} tutors (skipping creation)")
-        
-                # Seed sample students - Fixed query for JSON column
-                
-                cursor.execute("SELECT COUNT(*) FROM users WHERE roles::jsonb ? 'student'")
-                student_count = cursor.fetchone()[0]
-        
-            if student_count < 5:
-                print("  Creating sample students...")
+                    created_tutors += 1
+                    print(f"    ✅ Created tutor: {first_name} {last_name} - {teaches_at} - {price} ETB")
             
-                student_data = [
-                    ("Tigist", "Mengistu", "tigist@example.com", "+251977777777", "Grade 10"),
-                    ("Dawit", "Solomon", "dawit@example.com", "+251988888888", "Grade 11"),
-                    ("Helen", "Tesfaye", "helen@example.com", "+251999999999", "Grade 9"),
-                    ("Michael", "Girma", "michael@example.com", "+251900000000", "Grade 12"),
-                    ("Ruth", "Assefa", "ruth@example.com", "+251911111222", "Grade 8")
-                ]
-            
-                for first_name, last_name, email, phone, grade_level in student_data:
-                    
-                    # Check if student exists
-                    cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
-                    existing = cursor.fetchone()
-                
-                    if not existing:
+            print(f"  ✅ Created {created_tutors} new tutors")
+        else:
+            print(f"  ℹ️  Found {tutor_count} tutors (skipping creation)")
         
-                        # Create user
-                        password_hash = bcrypt.hashpw("Student@2025".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        # Create sample students
+        cursor.execute("SELECT COUNT(*) FROM users WHERE roles::jsonb ? 'student'")
+        student_count = cursor.fetchone()[0]
+        
+        if student_count < 5:
+            print("  Creating sample students...")
+            
+            student_data = [
+                ("Tigist", "Mengistu", "tigist@example.com", "+251977777777", "Grade 10"),
+                ("Dawit", "Solomon", "dawit@example.com", "+251988888888", "Grade 11"),
+                ("Helen", "Tesfaye", "helen@example.com", "+251999999999", "Grade 9"),
+                ("Michael", "Girma", "michael@example.com", "+251900000000", "Grade 12"),
+                ("Ruth", "Assefa", "ruth@example.com", "+251911111222", "Grade 8")
+            ]
+            
+            for first_name, last_name, email, phone, grade_level in student_data:
+                # Check if student exists
+                cursor.execute("SELECT id FROM users WHERE email = %s", (email,))
+                existing = cursor.fetchone()
+                
+                if not existing:
+                    # Create user
+                    password_hash = bcrypt.hashpw("Student@2025".encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
                     
-                        cursor.execute("""
-                            INSERT INTO users (first_name, last_name, email, phone, password_hash, roles, active_role, is_active, email_verified, created_at)
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                            RETURNING id
-                        """, (
-                            first_name, last_name, email, phone,
-                            password_hash, json.dumps(["student"]), "student",
-                            True, True, datetime.now(timezone.utc)
-                        ))
-                   
-                        user_id = cursor.fetchone()[0]
+                    cursor.execute("""
+                        INSERT INTO users (first_name, last_name, email, phone, password_hash, roles, active_role, is_active, email_verified, created_at)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                    """, (
+                        first_name, last_name, email, phone,
+                        password_hash, json.dumps(["student"]), "student",
+                        True, True, datetime.now(timezone.utc)
+                    ))
                     
-                        # Create student profile
-                        cursor.execute("""
-                           INSERT INTO student_profiles (
+                    user_id = cursor.fetchone()[0]
+                    
+                    # Create student profile
+                    cursor.execute("""
+                        INSERT INTO student_profiles (
                             user_id, grade_level, school_name, subjects, 
                             learning_style, is_active, created_at
                         )
                         VALUES (%s, %s, %s, %s, %s, %s, %s)
-                        """, (
-                            user_id,
-                            grade_level,
-                            "Addis Ababa Academy",
-                            json.dumps(["Mathematics", "Physics", "Chemistry", "Biology", "English"]),
-                            "visual",
-                            True,
-                            datetime.now(timezone.utc)
-                        ))
+                    """, (
+                        user_id,
+                        grade_level,
+                        random.choice(ETHIOPIAN_HIGH_SCHOOLS),
+                        json.dumps(["Mathematics", "Physics", "Chemistry", "Biology", "English"]),
+                        "visual",
+                        True,
+                        datetime.now(timezone.utc)
+                    ))
                     
-                        print(f"    ✅ Created student: {first_name} {last_name}")
-                    
-            else:
-                print(f"  ℹ️  Found {student_count} students (skipping creation)")
+                    print(f"    ✅ Created student: {first_name} {last_name}")
+        else:
+            print(f"  ℹ️  Found {student_count} students (skipping creation)")
         
-            
-            # Seed sample video reels
-            cursor.execute("SELECT COUNT(*) FROM video_reels")
-            video_count = cursor.fetchone()[0]
+        # Find this section in your init_db.py (around line 380-430) and replace it with:
 
-            if video_count < 18:  # Changed from 10 to 18
-                print("  Creating sample video reels...")
-    
-        # Get tutor IDs
-            
-            cursor.execute("SELECT id FROM tutor_profiles LIMIT 5")
-            
-            tutor_ids = [row[0] for row in cursor.fetchall()]
-    
-        if tutor_ids:
-            # Complete list for all 18 videos
-            video_data = [
-            ("Introduction to Calculus", "Mathematics", "Grade 12", "test-video-1.mp4"),
-            ("Physics: Newton's Laws", "Physics", "Grade 11", "test-video-2.mp4"),
-            ("Chemistry: Periodic Table", "Chemistry", "Grade 10", "test-video-3.mp4"),
-            ("English Grammar Basics", "English", "Grade 9", "test-video-4.mp4"),
-            ("Biology: Cell Structure", "Biology", "Grade 11", "test-video-5.mp4"),
-            ("Algebra Fundamentals", "Mathematics", "Grade 10", "test-video-6.mp4"),
-            ("Ethiopian History", "History", "Grade 12", "test-video-7.mp4"),
-            ("Geography: Map Reading", "Geography", "Grade 9", "test-video-8.mp4"),
-            ("Computer Programming Basics", "Computer Science", "Grade 11", "test-video-9.mp4"),
-            ("Study Tips for Success", "General", "Grade 10", "test-video-10.mp4"),
-            ("Trigonometry Explained", "Mathematics", "Grade 11", "test-video-11.mp4"),
-            ("Chemical Reactions", "Chemistry", "Grade 11", "test-video-12.mp4"),
-            ("Literature Analysis", "English", "Grade 12", "test-video-13.mp4"),
-            ("World War II History", "History", "Grade 11", "test-video-14.mp4"),
-            ("Python Programming", "Computer Science", "Grade 12", "test-video-15.mp4"),
-            ("Organic Chemistry", "Chemistry", "Grade 12", "test-video-16.mp4"),
-            ("Shakespeare's Works", "English", "Grade 12", "test-video-17.mp4"),
-            ("Advanced Mathematics", "Mathematics", "Grade 12", "test-video.mp4"),
-            ]
+        # Seed sample videos
+        cursor.execute("SELECT COUNT(*) FROM video_reels")
+        video_count = cursor.fetchone()[0]
         
-            created_count = 0
-        
-            for title, subject, grade_level, video_file in video_data:
-                tutor_id = random.choice(tutor_ids)
+        if video_count < 10:
+            print("  Creating sample videos...")
             
-            # Check if video exists
-            cursor.execute("SELECT id FROM video_reels WHERE title = %s", (title,))
-            if not cursor.fetchone():
-                cursor.execute("""
-                    INSERT INTO video_reels (
-                        tutor_id, title, description, video_url, thumbnail_url,
-                        duration, category, subject, grade_level, views, likes,
-                        is_active, created_at
-                    )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                """, (
-                    tutor_id,
-                    title,
-                    f"Learn {subject} with this comprehensive tutorial covering essential concepts and practical examples.",
-                    f"/videos/{video_file}",  # Use actual file name
-                    f"/thumbnails/{video_file.replace('.mp4', '.jpg')}",
-                    f"{random.randint(5, 30)}:00",
-                    "Tutorial",
-                    subject,
-                    grade_level,
-                    random.randint(100, 10000),
-                    random.randint(10, 1000),
-                    True,
-                    datetime.now(timezone.utc) - timedelta(days=random.randint(1, 30))
-                ))
-                created_count += 1
-        
+            # Get ACTUAL tutor IDs from the database (not user IDs)
+            cursor.execute("""
+                SELECT tp.id 
+                FROM tutor_profiles tp
+                JOIN users u ON tp.user_id = u.id
+                WHERE u.roles::jsonb ? 'tutor'
+                LIMIT 10
+            """)
+            tutor_profile_ids = [row[0] for row in cursor.fetchall()]
+            
+            if tutor_profile_ids:
+                video_data = [
+                    ("Algebra Basics", "Mathematics", "Grade 9", "test-video-1.mp4"),
+                    ("Physics Motion Laws", "Physics", "Grade 10", "test-video-2.mp4"),
+                    ("Chemical Reactions", "Chemistry", "Grade 11", "test-video-3.mp4"),
+                    ("Cell Biology", "Biology", "Grade 10", "test-video-4.mp4"),
+                    ("English Grammar", "English", "Grade 9", "test-video-5.mp4"),
+                    ("Ethiopian History", "History", "Grade 11", "test-video-6.mp4"),
+                    ("World Geography", "Geography", "Grade 10", "test-video-7.mp4"),
+                    ("Calculus Introduction", "Mathematics", "Grade 12", "test-video-8.mp4"),
+                    ("Quantum Physics", "Physics", "Grade 12", "test-video-9.mp4"),
+                    ("Organic Chemistry", "Chemistry", "Grade 12", "test-video-10.mp4"),
+                ]
+                
+                created_count = 0
+                
+                for title, subject, grade_level, video_file in video_data:
+                    # Use actual tutor_profile id, not user id
+                    tutor_profile_id = random.choice(tutor_profile_ids)
+                    
+                    # Check if video exists
+                    cursor.execute("SELECT id FROM video_reels WHERE title = %s", (title,))
+                    if not cursor.fetchone():
+                        cursor.execute("""
+                            INSERT INTO video_reels (
+                                tutor_id, title, description, video_url, thumbnail_url,
+                                duration, category, subject, grade_level, views, likes,
+                                is_active, created_at
+                            )
+                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        """, (
+                            tutor_profile_id,  # Use the actual tutor_profile.id
+                            title,
+                            f"Learn {subject} with this comprehensive tutorial covering essential concepts and practical examples.",
+                            f"/videos/{video_file}",
+                            f"/thumbnails/{video_file.replace('.mp4', '.jpg')}",
+                            f"{random.randint(5, 30)}:00",
+                            "Tutorial",
+                            subject,
+                            grade_level,
+                            random.randint(100, 10000),
+                            random.randint(10, 1000),
+                            True,
+                            datetime.now(timezone.utc) - timedelta(days=random.randint(1, 30))
+                        ))
+                        created_count += 1
+                
                 if created_count > 0:
                     print(f"    ✅ Created {created_count} sample videos")
-                else:
-                    print(f"    ℹ️  Videos already exist")
             else:
                 print("    ⚠️  No tutors found to create videos")
         else:
             print(f"  ℹ️  Found {video_count} videos (skipping creation)")
-        
+            
         conn.commit()
         print("\n✅ Data seeding complete!")
         
@@ -347,9 +481,9 @@ def seed_initial_data():
         print(f"  - Total Students: {total_students}")
         print(f"  - Total Videos: {total_videos}")
         
-        print("\n🔐 Default Credentials:")
+        print("\n🔑 Default Credentials:")
         print("  Admin: admin@astegni.com / Admin@2025")
-        print("  Sample Tutor: abebe@example.com / Tutor@2025")
+        print("  Sample Tutor: abebe.tadesse0@astegni.com / Tutor@2025")
         print("  Sample Student: tigist@example.com / Student@2025")
         
         cursor.close()

@@ -223,7 +223,7 @@ class TutorProfile(Base):
     user = relationship("User", back_populates="tutor_profile")
     sessions = relationship("TutoringSession", back_populates="tutor")
     videos = relationship("VideoReel", back_populates="tutor")
-    followers = relationship("TutorFollow", back_populates="tutor")
+    connections = relationship("TutorConnection", back_populates="tutor")
 
 class StudentProfile(Base):
     __tablename__ = "student_profiles"
@@ -365,6 +365,9 @@ class TutoringSession(Base):
     tutor = relationship("TutorProfile", back_populates="sessions")
     student = relationship("StudentProfile", back_populates="sessions")
 
+
+
+
 class VideoReel(Base):
     __tablename__ = "video_reels"
     
@@ -403,6 +406,7 @@ class VideoReel(Base):
     tutor = relationship("TutorProfile", back_populates="videos")
     engagements = relationship("VideoEngagement", back_populates="video")
     comments = relationship("VideoComment", back_populates="video")
+    chapters = relationship("VideoChapter", back_populates="video") 
 
 class VideoEngagement(Base):
     __tablename__ = "video_engagements"
@@ -434,16 +438,45 @@ class VideoComment(Base):
     video = relationship("VideoReel", back_populates="comments")
     replies = relationship("VideoComment")
 
-class TutorFollow(Base):
-    __tablename__ = "tutor_follows"
+# First, add a VideoChapter model to your database models section
+class VideoChapter(Base):
+    __tablename__ = "video_chapters"
     
     id = Column(Integer, primary_key=True, index=True)
-    follower_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    tutor_id = Column(Integer, ForeignKey("tutor_profiles.id"), nullable=False)
-    
+    video_id = Column(Integer, ForeignKey("video_reels.id"), nullable=False)
+    title = Column(String, nullable=False)
+    timestamp = Column(Integer, nullable=False)  # Timestamp in seconds
+    description = Column(Text)
+    order = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.utcnow)
     
-    tutor = relationship("TutorProfile", back_populates="followers")
+    video = relationship("VideoReel", back_populates="chapters")
+
+class TutorConnection(Base):
+    __tablename__ = "tutor_connections"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    tutor_id = Column(Integer, ForeignKey("tutor_profiles.id"), nullable=False)
+    
+    # Connection status: pending, accepted, rejected, blocked
+    status = Column(String, default="pending")
+    
+    # Who initiated the connection
+    initiated_by = Column(Integer, ForeignKey("users.id"))
+    
+    # Messages
+    connection_message = Column(Text)
+    
+    # Timestamps
+    created_at = Column(DateTime, default=datetime.utcnow)
+    accepted_at = Column(DateTime)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    student = relationship("User", foreign_keys=[student_id])
+    tutor = relationship("TutorProfile", back_populates="connections")
+    initiator = relationship("User", foreign_keys=[initiated_by])
 
 class FavoriteTutor(Base):
     __tablename__ = "favorite_tutors"
@@ -866,109 +899,234 @@ def logout(current_user: User = Depends(get_current_user), db: Session = Depends
 # TUTOR ENDPOINTS - For find-tutors.html & tutor-profile.html
 # ============================================
 
+
+# In your app.py, find the /api/tutors endpoint and update it to properly format the response:
+
+@app.get("/api/tutors")
+# In your app.py, replace the /api/tutors endpoint with this fixed version:
+
+@app.get("/api/tutors")
+# Update your /api/tutors endpoint to handle filters properly:
+
 @app.get("/api/tutors")
 def get_tutors(
     page: int = Query(1, ge=1),
-    limit: int = Query(20, ge=1, le=100),
-    verified_only: bool = Query(True),  # ADD THIS PARAMETER
-    search: Optional[str] = None,
-    subject: Optional[str] = None,
-    grade: Optional[str] = None,
-    location: Optional[str] = None,
-    learning_method: Optional[str] = None,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
-    min_rating: Optional[float] = None,
-    sort_by: str = Query("rating", regex="^(rating|price|experience|name)$"),
-    order: str = Query("desc", regex="^(asc|desc)$"),
+    limit: int = Query(15, ge=1, le=100),  # Default to 15
+    search: Optional[str] = Query(None),
+    course_type: Optional[str] = Query(None),
+    grade: Optional[str] = Query(None),
+    gender: Optional[str] = Query(None),  # ADD THIS LINE
+    learning_method: Optional[str] = Query(None),
+    min_price: Optional[float] = Query(None),
+    max_price: Optional[float] = Query(None),
+    min_rating: Optional[float] = Query(None),
+    max_rating: Optional[float] = Query(None),
     db: Session = Depends(get_db)
 ):
-    """Get list of tutors with filters - For find-tutors.html"""
-    query = db.query(TutorProfile).join(User).filter(
-        TutorProfile.is_active == True,
-        User.is_active == True
-    )
-
-     # Apply verified filter based on parameter
-    if verified_only:
-        query = query.filter(TutorProfile.is_verified == True)
-    
-    # Apply filters
-    if search:
-        search_term = f"%{search}%"
-        query = query.filter(
-            or_(
-                User.first_name.ilike(search_term),
-                User.last_name.ilike(search_term),
-                TutorProfile.bio.ilike(search_term),
-                TutorProfile.courses.cast(String).ilike(search_term)
-            )
+    """Get all tutors with filters"""
+    try:
+        from sqlalchemy import text, and_, or_, func
+        
+        # Calculate offset
+        offset = (page - 1) * limit
+        
+        # Base query
+        query = db.query(User, TutorProfile).join(
+            TutorProfile, User.id == TutorProfile.user_id
+        ).filter(
+            text("users.roles::jsonb @> '[\"tutor\"]'::jsonb"),
+            User.is_active == True
         )
-    
-    if subject:
-        query = query.filter(TutorProfile.courses.cast(String).contains(subject))
-    
-    if grade:
-        query = query.filter(TutorProfile.grades.cast(String).contains(grade))
-    
-    if location:
-        query = query.filter(TutorProfile.location == location)
-    
-    if learning_method:
-        query = query.filter(TutorProfile.learning_method == learning_method)
-    
-    if min_price is not None:
-        query = query.filter(TutorProfile.price >= min_price)
-    
-    if max_price is not None:
-        query = query.filter(TutorProfile.price <= max_price)
-    
-    if min_rating is not None:
-        query = query.filter(TutorProfile.rating >= min_rating)
-    
-    # Sorting
-    if sort_by == "rating":
-        query = query.order_by(desc(TutorProfile.rating) if order == "desc" else TutorProfile.rating)
-    elif sort_by == "price":
-        query = query.order_by(desc(TutorProfile.price) if order == "desc" else TutorProfile.price)
-    elif sort_by == "experience":
-        query = query.order_by(desc(TutorProfile.experience) if order == "desc" else TutorProfile.experience)
-    elif sort_by == "name":
-        query = query.order_by(desc(User.first_name) if order == "desc" else User.first_name)
-    
-    # Pagination
-    total = query.count()
-    tutors = query.offset((page - 1) * limit).limit(limit).all()
-    
-    # Format response
-    results = []
-    for tutor in tutors:
-        results.append({
-            "id": tutor.id,
-            "user_id": tutor.user_id,
-            "name": f"{tutor.user.first_name} {tutor.user.last_name}",
-            "profile_picture": tutor.user.profile_picture,
-            "bio": tutor.bio,
-            "courses": tutor.courses or [],
-            "grades": tutor.grades or [],
-            "location": tutor.location,
-            "learning_method": tutor.learning_method,
-            "price": tutor.price,
-            "currency": tutor.currency,
-            "rating": tutor.rating,
-            "rating_count": tutor.rating_count,
-            "experience": tutor.experience,
-            "is_verified": tutor.is_verified,
-            "total_students": tutor.total_students,
-            "total_sessions": tutor.total_sessions
-        })
-    
-    return {
-        "tutors": results,
-        "total": total,
-        "page": page,
-        "pages": (total + limit - 1) // limit
-    }
+        
+        # Apply search filter (search in name, bio, courses, location)
+        if search:
+            search_term = f"%{search}%"
+            query = query.filter(
+                or_(
+                    func.concat(User.first_name, ' ', User.last_name).ilike(search_term),
+                    TutorProfile.bio.ilike(search_term),
+                    TutorProfile.location.ilike(search_term),
+                    func.cast(TutorProfile.courses, String).ilike(search_term),
+                    TutorProfile.teaches_at.ilike(search_term)
+                )
+            )
+
+        # In the /api/tutors endpoint, add gender filtering:
+        if gender:
+            # Handle multiple genders (if sent as comma-separated)
+            if ',' in gender:
+                gender_list = gender.split(',')
+                query = query.filter(TutorProfile.gender.in_(gender_list))
+            else:
+                query = query.filter(TutorProfile.gender == gender)
+        
+        # Apply course type filter
+        if course_type:
+            query = query.filter(TutorProfile.course_type == course_type)
+        
+        # Apply grade filter
+        if grade:
+            query = query.filter(func.cast(TutorProfile.grades, String).ilike(f"%{grade}%"))
+        
+        # Apply learning method filter
+        # In your backend /api/tutors endpoint, the learning_method filter should handle all values:
+        # Apply learning method filter - CASE INSENSITIVE
+        if learning_method:
+            # Make it case-insensitive
+            query = query.filter(func.lower(TutorProfile.learning_method) == learning_method.lower())
+        
+        # Apply price filters
+        if min_price is not None:
+            query = query.filter(TutorProfile.price >= min_price)
+        if max_price is not None:
+            query = query.filter(TutorProfile.price <= max_price)
+        
+        # Apply rating filters
+        if min_rating is not None:
+            query = query.filter(TutorProfile.rating >= min_rating)
+        if max_rating is not None:
+            query = query.filter(TutorProfile.rating <= max_rating)
+        
+        # Get total count before pagination
+        total = query.count()
+        
+        # Apply pagination
+        results = query.offset(offset).limit(limit).all()
+        
+        tutors = []
+        for user, profile in results:
+            # Process each tutor (keep the existing processing code)
+            learning_method = profile.learning_method
+            if not learning_method or learning_method == 'null':
+                learning_method = "Online"
+            
+            teaches_at = profile.teaches_at if profile.teaches_at else "Independent"
+            
+            bio = profile.bio or ""
+            if "Currently teaching at" in bio:
+                bio = bio.split("Currently teaching at")[0].strip()
+            
+            # Process courses
+            courses = profile.courses if profile.courses else []
+            if isinstance(courses, str):
+                try:
+                    import json
+                    courses = json.loads(courses)
+                except:
+                    courses = [courses]
+            
+            # Process grades
+            grades = profile.grades if profile.grades else []
+            if isinstance(grades, str):
+                try:
+                    import json
+                    grades = json.loads(grades)
+                except:
+                    grades = [grades]
+            
+            # Process rating breakdown
+            rating_breakdown = None
+            if hasattr(profile, 'rating_breakdown') and profile.rating_breakdown:
+                if isinstance(profile.rating_breakdown, str):
+                    try:
+                        import json
+                        rating_breakdown = json.loads(profile.rating_breakdown)
+                    except:
+                        rating_breakdown = None
+                else:
+                    rating_breakdown = profile.rating_breakdown
+            
+            if not rating_breakdown:
+                # In your app.py, when processing tutors
+                rating = profile.rating if profile.rating else 2.0  # New tutors get 2.0
+                rating_breakdown = {
+                    "discipline": rating,
+                    "punctuality": rating,
+                    "communication_skills": rating,
+                    "knowledge_level": rating,
+                    "retention": rating
+                }
+            
+            tutor_data = {
+                "id": profile.id,
+                "user_id": user.id,
+                "name": f"{user.first_name} {user.last_name}",
+                "email": user.email,
+                "profile_picture": user.profile_picture,
+                "bio": bio,
+                "quote": profile.quote,
+                "gender": profile.gender or "Not specified",
+                "courses": courses,
+                "grades": grades,
+                "course_type": profile.course_type or "academic",
+                "location": profile.location,
+                "teaches_at": teaches_at,
+                "learning_method": learning_method,
+                "teaching_methods": [learning_method],
+                "experience": profile.experience or 0,
+                "experience_years": profile.experience or 0,
+                "education_level": profile.education_level,
+                "price": profile.price or 100,
+                "currency": profile.currency or "ETB",
+                "availability": profile.availability,
+                "rating": profile.rating or 4.0,
+                "rating_count": profile.rating_count or 0,
+                "rating_breakdown": rating_breakdown,
+                "total_students": profile.total_students or 0,
+                "students_taught": getattr(profile, 'students_taught', profile.total_students or 0),
+                "total_sessions": profile.total_sessions or 0,
+                "is_verified": profile.is_verified,
+                "is_active": profile.is_active,
+                "is_favorite": False,
+                "response_time": getattr(profile, 'response_time', "Within 24 hours"),
+                "completion_rate": getattr(profile, 'completion_rate', 85)
+            }
+            tutors.append(tutor_data)
+        
+        # Calculate pagination info
+        total_pages = (total + limit - 1) // limit
+        
+        return {
+            "tutors": tutors,
+            "total": total,
+            "page": page,
+            "limit": limit,
+            "total_pages": total_pages
+        }
+        
+    except Exception as e:
+        print(f"Error fetching tutors: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Also add this helper endpoint to update learning_method for existing tutors
+@app.post("/api/tutors/fix-methods")
+def fix_tutor_methods(db: Session = Depends(get_db)):
+    """Fix null learning methods in existing tutors"""
+    try:
+        # Get all tutor profiles with null learning_method
+        profiles = db.query(TutorProfile).filter(
+            or_(
+                TutorProfile.learning_method == None,
+                TutorProfile.learning_method == "null"
+            )
+        ).all()
+        
+        count = 0
+        for profile in profiles:
+            # Set a random learning method
+            profile.learning_method = random.choice(["In-Person", "Online", "Hybrid"])
+            count += 1
+        
+        db.commit()
+        return {"message": f"Fixed {count} tutor learning methods"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 @app.get("/api/tutor/profile")
 def get_my_tutor_profile(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -1210,46 +1368,91 @@ def get_student_public_profile(student_id: int, db: Session = Depends(get_db)):
 # VIDEO/REELS ENDPOINTS - For reels.html
 # ============================================
 
+# Find this section in your app.py (around line 1352) and replace the entire endpoint with this:
+
 @app.get("/api/videos/reels")
 def get_video_reels(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    filter: str = Query("all", regex="^(all|trending|recent|following|saved)$"),
+    filter: str = Query("all"),
     subject: Optional[str] = None,
     grade: Optional[str] = None,
     search: Optional[str] = None,
-    current_user: Optional[User] = Depends(get_current_user),
+    request: Request = None,
     db: Session = Depends(get_db)
 ):
-    """Get video reels - For reels.html"""
+    """Get video reels with filtering support"""
+    
+    # Get current user if authenticated
+    current_user = None
+    auth_header = request.headers.get("authorization", "") if request else ""
+    
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.replace("Bearer ", "")
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id = payload.get("sub")
+            if user_id:
+                current_user = db.query(User).filter(User.id == user_id).first()
+        except:
+            pass
+    
+    # Base query
     query = db.query(VideoReel).join(TutorProfile).filter(VideoReel.is_active == True)
     
-    # Apply filters
-    if filter == "trending":
-        # Get videos with most engagement in last 7 days
-        query = query.order_by(desc(VideoReel.views + VideoReel.likes))
-    elif filter == "recent":
-        query = query.order_by(desc(VideoReel.created_at))
-    elif filter == "following" and current_user:
-        # Get videos from followed tutors
-        followed_tutors = db.query(TutorFollow.tutor_id).filter(
-            TutorFollow.follower_id == current_user.id
+    # Apply filter based on type
+    if filter == "all":
+        # For "all", optionally show featured/ad videos first
+        query = query.order_by(desc(VideoReel.is_featured), desc(VideoReel.created_at))
+    elif filter == "favorites" and current_user:
+        # Get videos marked as favorite
+        favorited = db.query(VideoEngagement.video_id).filter(
+            VideoEngagement.user_id == current_user.id,
+            VideoEngagement.engagement_type == "favorite"
         ).subquery()
-        query = query.filter(VideoReel.tutor_id.in_(followed_tutors))
+        query = query.filter(VideoReel.id.in_(favorited))
     elif filter == "saved" and current_user:
         # Get saved videos
-        saved_videos = db.query(VideoEngagement.video_id).filter(
+        saved = db.query(VideoEngagement.video_id).filter(
             VideoEngagement.user_id == current_user.id,
             VideoEngagement.engagement_type == "save"
         ).subquery()
-        query = query.filter(VideoReel.id.in_(saved_videos))
+        query = query.filter(VideoReel.id.in_(saved))
+    elif filter == "liked" and current_user:
+        # Get liked videos
+        liked = db.query(VideoEngagement.video_id).filter(
+            VideoEngagement.user_id == current_user.id,
+            VideoEngagement.engagement_type == "like"
+        ).subquery()
+        query = query.filter(VideoReel.id.in_(liked))  # ← FIXED: Now using 'liked'
+    elif filter == "history" and current_user:
+        # Get viewed videos (history) - sort by most recent view
+        viewed = db.query(
+            VideoEngagement.video_id,
+            VideoEngagement.created_at
+        ).filter(
+            VideoEngagement.user_id == current_user.id,
+            VideoEngagement.engagement_type == "view"
+        ).subquery()
+        
+        # Join with the viewed subquery and order by view time
+        query = query.join(viewed, VideoReel.id == viewed.c.video_id)
+        query = query.order_by(desc(viewed.c.created_at))
+    elif filter and not current_user:
+        # User not authenticated for user-specific filters
+        return {
+            "videos": [], 
+            "total": 0, 
+            "page": page, 
+            "pages": 0, 
+            "error": "Authentication required for this filter"
+        }
     
+    # Apply other filters
     if subject:
         query = query.filter(VideoReel.subject == subject)
-    
     if grade:
         query = query.filter(VideoReel.grade_level == grade)
-    
     if search:
         search_term = f"%{search}%"
         query = query.filter(
@@ -1260,14 +1463,20 @@ def get_video_reels(
             )
         )
     
-    # Pagination
+    # Get total before pagination
     total = query.count()
+    
+    # Apply pagination
     videos = query.offset((page - 1) * limit).limit(limit).all()
     
     # Format response
     results = []
     for video in videos:
-        # Check if user has engaged with this video
+        # For history filter, video might be a tuple due to join
+        if isinstance(video, tuple):
+            video = video[0]
+            
+        # Get user engagement status for this video
         user_engagement = {}
         if current_user:
             engagements = db.query(VideoEngagement).filter(
@@ -1276,6 +1485,12 @@ def get_video_reels(
             ).all()
             for eng in engagements:
                 user_engagement[eng.engagement_type] = True
+        
+        # Count favorites (for display)
+        favorites_count = db.query(VideoEngagement).filter(
+            VideoEngagement.video_id == video.id,
+            VideoEngagement.engagement_type == "favorite"
+        ).count()
         
         results.append({
             "id": video.id,
@@ -1292,21 +1507,189 @@ def get_video_reels(
             "subject": video.subject,
             "grade_level": video.grade_level,
             "tags": video.tags or [],
-            "views": video.views,
-            "likes": video.likes,
-            "dislikes": video.dislikes,
-            "shares": video.shares,
-            "saves": video.saves,
+            "views": video.views or 0,
+            "likes": video.likes or 0,
+            "dislikes": video.dislikes or 0,
+            "favorites": favorites_count,
+            "shares": video.shares or 0,
+            "saves": video.saves or 0,
             "user_engagement": user_engagement,
             "created_at": video.created_at.isoformat(),
-            "is_featured": video.is_featured
+            "is_featured": video.is_featured,
+            "upload_date": video.created_at.isoformat()
         })
     
     return {
         "videos": results,
         "total": total,
         "page": page,
-        "pages": (total + limit - 1) // limit
+        "pages": (total + limit - 1) // limit,
+        "filter_applied": filter
+    }
+
+@app.post("/api/videos/{video_id}/view")
+def record_video_view(
+    video_id: int, 
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Record a video view and add to history if user is logged in"""
+    
+    # Try to get current user from token
+    current_user = None
+    auth_header = request.headers.get("authorization", "")
+    
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.replace("Bearer ", "")
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id = payload.get("sub")
+            if user_id:
+                current_user = db.query(User).filter(User.id == user_id).first()
+        except:
+            pass  # User not authenticated, which is fine
+    
+    # Get the video
+    video = db.query(VideoReel).filter(VideoReel.id == video_id).first()
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    # Increment view count
+    video.views = (video.views or 0) + 1
+    
+    # Add to user's history if logged in
+    if current_user:
+        # Check if already viewed
+        existing = db.query(VideoEngagement).filter(
+            VideoEngagement.video_id == video_id,
+            VideoEngagement.user_id == current_user.id,
+            VideoEngagement.engagement_type == "view"
+        ).first()
+        
+        if existing:
+            # Update timestamp to track most recent view
+            existing.created_at = datetime.utcnow()
+        else:
+            # Add new view record
+            view_record = VideoEngagement(
+                video_id=video_id,
+                user_id=current_user.id,
+                engagement_type="view"
+            )
+            db.add(view_record)
+    
+    db.commit()
+    
+    return {"views": video.views, "tracked": bool(current_user)}
+
+
+
+# Add endpoint to tag videos as ads (for tutors)
+@app.post("/api/videos/{video_id}/tag-as-ad")
+def tag_video_as_ad(
+    video_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Tag a video as an Ad (tutor only)"""
+    
+    if "tutor" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="Only tutors can tag videos")
+    
+    tutor = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+    
+    # Get video and verify ownership
+    video = db.query(VideoReel).filter(
+        VideoReel.id == video_id,
+        VideoReel.tutor_id == tutor.id if tutor else None
+    ).first()
+    
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found or not authorized")
+    
+    # Add 'Ad' tag to the video
+    current_tags = video.tags or []
+    if "Ad" not in current_tags:
+        current_tags.append("Ad")
+        video.tags = current_tags
+    
+    # Also mark as featured
+    video.is_featured = True
+    
+    db.commit()
+    
+    return {
+        "message": "Video tagged as Ad successfully",
+        "tags": video.tags,
+        "is_featured": video.is_featured
+    }
+
+# Add endpoint to remove Ad tag
+@app.post("/api/videos/{video_id}/remove-ad-tag")
+def remove_ad_tag(
+    video_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Remove Ad tag from a video (tutor only)"""
+    
+    if "tutor" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="Only tutors can manage tags")
+    
+    tutor = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+    
+    # Get video and verify ownership
+    video = db.query(VideoReel).filter(
+        VideoReel.id == video_id,
+        VideoReel.tutor_id == tutor.id if tutor else None
+    ).first()
+    
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found or not authorized")
+    
+    # Remove 'Ad' tag from the video
+    current_tags = video.tags or []
+    video.tags = [tag for tag in current_tags if tag.lower() != 'ad']
+    
+    # Remove featured status
+    video.is_featured = False
+    
+    db.commit()
+    
+    return {
+        "message": "Ad tag removed successfully",
+        "tags": video.tags,
+        "is_featured": video.is_featured
+    }
+
+# Get count of Ad videos vs regular videos
+@app.get("/api/videos/ad-stats")
+def get_ad_video_stats(db: Session = Depends(get_db)):
+    """Get statistics about Ad-tagged videos"""
+    
+    # Count Ad videos
+    ad_videos_count = db.query(VideoReel).filter(
+        VideoReel.is_active == True,
+        or_(
+            VideoReel.tags.cast(String).ilike('%"Ad"%'),
+            VideoReel.tags.cast(String).ilike('%"AD"%'),
+            VideoReel.tags.cast(String).ilike('%"ad"%'),
+            VideoReel.category == 'Ad',
+            VideoReel.is_featured == True
+        )
+    ).count()
+    
+    # Count all active videos
+    total_videos = db.query(VideoReel).filter(VideoReel.is_active == True).count()
+    
+    # Count non-ad videos
+    non_ad_videos = total_videos - ad_videos_count
+    
+    return {
+        "ad_videos": ad_videos_count,
+        "non_ad_videos": non_ad_videos,
+        "total_videos": total_videos,
+        "ad_percentage": round((ad_videos_count / total_videos * 100), 2) if total_videos > 0 else 0
     }
 
 @app.post("/api/videos/{video_id}/engage")
@@ -1384,8 +1767,7 @@ def engage_with_video(
         db.commit()
         return {"message": f"Added {engagement.engagement_type}"}
 
-@app.post("/api/videos/{video_id}/view")
-def record_video_view(video_id: int, db: Session = Depends(get_db)):
+
     """Record a video view"""
     video = db.query(VideoReel).filter(VideoReel.id == video_id).first()
     if not video:
@@ -1395,6 +1777,540 @@ def record_video_view(video_id: int, db: Session = Depends(get_db)):
     db.commit()
     
     return {"views": video.views}
+
+
+
+# Comments endpoints with enhanced functionality
+# Add this seeder function to app.py
+@app.post("/api/seed-comments")
+def seed_comments(db: Session = Depends(get_db)):
+    """Seed sample comments for testing"""
+    
+    # Get some videos and users
+    videos = db.query(VideoReel).limit(3).all()
+    users = db.query(User).limit(5).all()
+    
+    if not videos or not users:
+        return {"message": "No videos or users to seed comments for"}
+    
+    comments_added = 0
+    
+    for video in videos:
+        # Add main comments
+        for i in range(3):
+            user = users[i % len(users)]
+            comment = VideoComment(
+                video_id=video.id,
+                user_id=user.id,
+                text=f"This is comment {i+1} on {video.title}. Great content!",
+                created_at=datetime.utcnow() - timedelta(hours=i*2)
+            )
+            db.add(comment)
+            db.flush()  # Get the comment ID
+            
+            # Add replies to first comment
+            if i == 0:
+                for j in range(2):
+                    reply_user = users[(j+1) % len(users)]
+                    reply = VideoComment(
+                        video_id=video.id,
+                        user_id=reply_user.id,
+                        parent_comment_id=comment.id,
+                        text=f"Reply {j+1} to your comment. I agree!",
+                        created_at=datetime.utcnow() - timedelta(hours=j)
+                    )
+                    db.add(reply)
+            comments_added += 1
+    
+    db.commit()
+    return {"message": f"Added {comments_added} comments with replies"}
+
+# Update the get comments endpoint to properly structure replies
+@app.get("/api/videos/reels/{video_id}/comments")
+def get_video_comments(
+    video_id: int,
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Get comments for a video with proper reply structure"""
+    
+    # Get parent comments only
+    parent_comments = db.query(VideoComment).filter(
+        VideoComment.video_id == video_id,
+        VideoComment.parent_comment_id == None,
+        VideoComment.is_deleted == False
+    ).order_by(desc(VideoComment.created_at)).offset((page - 1) * limit).limit(limit).all()
+    
+    comments_data = []
+    for comment in parent_comments:
+        user = db.query(User).filter(User.id == comment.user_id).first()
+        
+        # Get all replies for this comment
+        replies = db.query(VideoComment).filter(
+            VideoComment.parent_comment_id == comment.id,
+            VideoComment.is_deleted == False
+        ).order_by(VideoComment.created_at).all()
+        
+        replies_data = []
+        for reply in replies:
+            reply_user = db.query(User).filter(User.id == reply.user_id).first()
+            replies_data.append({
+                "id": reply.id,
+                "user_id": reply.user_id,
+                "user_name": f"{reply_user.first_name} {reply_user.last_name}" if reply_user else "Unknown",
+                "user_picture": reply_user.profile_picture if reply_user else None,
+                "text": reply.text,
+                "created_at": reply.created_at.isoformat(),
+                "is_edited": reply.is_edited,
+                "can_edit": False  # Will be set on frontend based on current user
+            })
+        
+        comments_data.append({
+            "id": comment.id,
+            "user_id": comment.user_id,
+            "user_name": f"{user.first_name} {user.last_name}" if user else "Unknown",
+            "user_picture": user.profile_picture if user else None,
+            "text": comment.text,
+            "created_at": comment.created_at.isoformat(),
+            "is_edited": comment.is_edited,
+            "replies": replies_data,
+            "can_edit": False  # Will be set on frontend based on current user
+        })
+    
+    # Get total count
+    total = db.query(VideoComment).filter(
+        VideoComment.video_id == video_id,
+        VideoComment.parent_comment_id == None,
+        VideoComment.is_deleted == False
+    ).count()
+    
+    return {
+        "comments": comments_data,
+        "total": total,
+        "page": page,
+        "has_more": total > (page * limit)
+    }
+
+# Add endpoint to add a reply
+@app.post("/api/videos/reels/{video_id}/comments/{comment_id}/reply")
+def reply_to_comment(
+    video_id: int,
+    comment_id: int,
+    text: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Reply to a comment"""
+    
+    # Verify parent comment exists
+    parent = db.query(VideoComment).filter(
+        VideoComment.id == comment_id,
+        VideoComment.video_id == video_id,
+        VideoComment.is_deleted == False
+    ).first()
+    
+    if not parent:
+        raise HTTPException(status_code=404, detail="Comment not found")
+    
+    reply = VideoComment(
+        video_id=video_id,
+        user_id=current_user.id,
+        parent_comment_id=comment_id,
+        text=text
+    )
+    
+    db.add(reply)
+    db.commit()
+    db.refresh(reply)
+    
+    return {
+        "id": reply.id,
+        "user_id": reply.user_id,
+        "user_name": f"{current_user.first_name} {current_user.last_name}",
+        "user_picture": current_user.profile_picture,
+        "text": reply.text,
+        "created_at": reply.created_at.isoformat(),
+        "is_edited": False
+    }
+
+# Update edit comment endpoint
+@app.put("/api/comments/{comment_id}")
+def edit_comment(
+    comment_id: int,
+    text: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Edit a comment"""
+    
+    comment = db.query(VideoComment).filter(
+        VideoComment.id == comment_id,
+        VideoComment.user_id == current_user.id,
+        VideoComment.is_deleted == False
+    ).first()
+    
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found or not authorized")
+    
+    comment.text = text
+    comment.is_edited = True
+    comment.updated_at = datetime.utcnow()
+    
+    db.commit()
+    
+    return {
+        "message": "Comment updated successfully",
+        "text": comment.text,
+        "is_edited": True
+    }
+
+@app.post("/api/videos/reels/{video_id}/comments")
+def add_video_comment(
+    video_id: int,
+    comment_data: CommentCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Add a comment to a video"""
+    
+    # Check if video exists
+    video = db.query(VideoReel).filter(VideoReel.id == video_id).first()
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    # Create comment
+    new_comment = VideoComment(
+        video_id=video_id,
+        user_id=current_user.id,
+        parent_comment_id=comment_data.parent_comment_id,
+        text=comment_data.text
+    )
+    
+    db.add(new_comment)
+    db.commit()
+    db.refresh(new_comment)
+    
+    # Return comment with user info
+    return {
+        "id": new_comment.id,
+        "user_id": new_comment.user_id,
+        "user_name": f"{current_user.first_name} {current_user.last_name}",
+        "user_picture": current_user.profile_picture,
+        "text": new_comment.text,
+        "created_at": new_comment.created_at.isoformat(),
+        "is_edited": False,
+        "replies": []
+    }
+
+@app.put("/api/comments/{comment_id}")
+def edit_comment(
+    comment_id: int,
+    text: str = Body(..., embed=True),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Edit a comment"""
+    
+    comment = db.query(VideoComment).filter(
+        VideoComment.id == comment_id,
+        VideoComment.user_id == current_user.id,
+        VideoComment.is_deleted == False
+    ).first()
+    
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found or not authorized")
+    
+    comment.text = text
+    comment.is_edited = True
+    comment.updated_at = datetime.utcnow()
+    
+    db.commit()
+    
+    return {"message": "Comment updated successfully"}
+
+@app.delete("/api/comments/{comment_id}")
+def delete_comment(
+    comment_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a comment (soft delete)"""
+    
+    comment = db.query(VideoComment).filter(
+        VideoComment.id == comment_id,
+        VideoComment.user_id == current_user.id,
+        VideoComment.is_deleted == False
+    ).first()
+    
+    if not comment:
+        raise HTTPException(status_code=404, detail="Comment not found or not authorized")
+    
+    # Soft delete
+    comment.is_deleted = True
+    comment.updated_at = datetime.utcnow()
+    
+    db.commit()
+    
+    return {"message": "Comment deleted successfully"}
+
+# Chapters endpoints
+@app.get("/api/videos/reels/{video_id}/chapters")
+def get_video_chapters(
+    video_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get chapters for a video"""
+    
+    chapters = db.query(VideoChapter).filter(
+        VideoChapter.video_id == video_id
+    ).order_by(VideoChapter.order, VideoChapter.timestamp).all()
+    
+    return [
+        {
+            "id": chapter.id,
+            "title": chapter.title,
+            "timestamp": chapter.timestamp,
+            "description": chapter.description,
+            "order": chapter.order
+        }
+        for chapter in chapters
+    ]
+
+@app.post("/api/videos/reels/{video_id}/chapters")
+def add_video_chapter(
+    video_id: int,
+    title: str = Body(...),
+    timestamp: int = Body(...),
+    description: Optional[str] = Body(None),
+    order: int = Body(0),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Add a chapter to a video (tutor only)"""
+    
+    # Check if user is a tutor and owns the video
+    if "tutor" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="Only tutors can add chapters")
+    
+    tutor = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+    video = db.query(VideoReel).filter(
+        VideoReel.id == video_id,
+        VideoReel.tutor_id == tutor.id if tutor else None
+    ).first()
+    
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found or not authorized")
+    
+    # Create chapter
+    new_chapter = VideoChapter(
+        video_id=video_id,
+        title=title,
+        timestamp=timestamp,
+        description=description,
+        order=order
+    )
+    
+    db.add(new_chapter)
+    db.commit()
+    db.refresh(new_chapter)
+    
+    return {
+        "id": new_chapter.id,
+        "title": new_chapter.title,
+        "timestamp": new_chapter.timestamp,
+        "description": new_chapter.description,
+        "order": new_chapter.order
+    }
+
+@app.delete("/api/chapters/{chapter_id}")
+def delete_chapter(
+    chapter_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Delete a chapter (tutor only)"""
+    
+    if "tutor" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="Only tutors can delete chapters")
+    
+    tutor = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+    
+    # Get chapter and verify ownership
+    chapter = db.query(VideoChapter).join(VideoReel).filter(
+        VideoChapter.id == chapter_id,
+        VideoReel.tutor_id == tutor.id if tutor else None
+    ).first()
+    
+    if not chapter:
+        raise HTTPException(status_code=404, detail="Chapter not found or not authorized")
+    
+    db.delete(chapter)
+    db.commit()
+    
+    return {"message": "Chapter deleted successfully"}
+
+# Enhanced video details endpoint with all related data
+# Find this section in your app.py (around line 1970) and replace with this:
+
+@app.get("/api/videos/reels/{video_id}")
+def get_video_details(
+    video_id: int,
+    db: Session = Depends(get_db)
+):
+    """Get complete video details including engagement stats"""
+    
+    # Try to get current user from token if available
+    current_user = None
+    try:
+        import inspect
+        frame = inspect.currentframe()
+        auth_header = None
+        if frame and frame.f_back and frame.f_back.f_locals:
+            for key, value in frame.f_back.f_locals.items():
+                if hasattr(value, 'headers'):
+                    auth_header = value.headers.get("authorization", "")
+                    break
+        
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.replace("Bearer ", "")
+            current_user = get_current_user(token, db)
+    except:
+        pass  # User is not authenticated, which is fine
+    
+    video = db.query(VideoReel).filter(
+        VideoReel.id == video_id,
+        VideoReel.is_active == True
+    ).first()
+    
+    if not video:
+        raise HTTPException(status_code=404, detail="Video not found")
+    
+    # Get user engagement if authenticated
+    user_engagement = {}
+    if current_user:
+        engagements = db.query(VideoEngagement).filter(
+            VideoEngagement.video_id == video_id,
+            VideoEngagement.user_id == current_user.id
+        ).all()
+        
+        for eng in engagements:
+            user_engagement[eng.engagement_type] = True
+    
+    # Get creator info
+    tutor = video.tutor
+    
+    # Count engagements
+    favorites_count = db.query(VideoEngagement).filter(
+        VideoEngagement.video_id == video_id,
+        VideoEngagement.engagement_type == "favorite"
+    ).count()
+    
+    # Get chapters count
+    chapters_count = db.query(VideoChapter).filter(
+        VideoChapter.video_id == video_id
+    ).count()
+    
+    # Get comments count
+    comments_count = db.query(VideoComment).filter(
+        VideoComment.video_id == video_id,
+        VideoComment.is_deleted == False
+    ).count()
+    
+    return {
+        "id": video.id,
+        "tutor_id": video.tutor_id,
+        "tutor_name": f"{tutor.user.first_name} {tutor.user.last_name}",
+        "tutor_picture": tutor.user.profile_picture,
+        "tutor_verified": tutor.is_verified,
+        "title": video.title,
+        "description": video.description,
+        "video_url": video.video_url,
+        "thumbnail_url": video.thumbnail_url,
+        "duration": video.duration,
+        "category": video.category,
+        "subject": video.subject,
+        "grade_level": video.grade_level,
+        "tags": video.tags or [],
+        "views": video.views,
+        "likes": video.likes,
+        "dislikes": video.dislikes,
+        "favorites": favorites_count,
+        "saves": video.saves,
+        "shares": video.shares,
+        "comments_count": comments_count,
+        "chapters_count": chapters_count,
+        "user_engagement": user_engagement,
+        "created_at": video.created_at.isoformat(),
+        "updated_at": video.updated_at.isoformat() if video.updated_at else None,
+        "is_featured": video.is_featured
+    }
+
+@app.get("/api/videos/filter-counts")
+def get_filter_counts(
+    request: Request,
+    db: Session = Depends(get_db)
+):
+    """Get counts for each filter type"""
+    
+    # Get current user
+    current_user = None
+    auth_header = request.headers.get("authorization", "")
+    
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.replace("Bearer ", "")
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            user_id = payload.get("sub")
+            if user_id:
+                current_user = db.query(User).filter(User.id == user_id).first()
+        except:
+            pass
+    
+    if not current_user:
+        return {
+            "all": db.query(VideoReel).filter(VideoReel.is_active == True).count(),
+            "favorites": 0,
+            "saved": 0,
+            "liked": 0,
+            "history": 0
+        }
+    
+    # Get all active videos count
+    all_count = db.query(VideoReel).filter(VideoReel.is_active == True).count()
+    
+    # Get user-specific counts
+    favorites = db.query(VideoEngagement).filter(
+        VideoEngagement.user_id == current_user.id,
+        VideoEngagement.engagement_type == "favorite"
+    ).count()
+    
+    saved = db.query(VideoEngagement).filter(
+        VideoEngagement.user_id == current_user.id,
+        VideoEngagement.engagement_type == "save"
+    ).count()
+    
+    liked = db.query(VideoEngagement).filter(
+        VideoEngagement.user_id == current_user.id,
+        VideoEngagement.engagement_type == "like"
+    ).count()
+    
+    history = db.query(VideoEngagement).filter(
+        VideoEngagement.user_id == current_user.id,
+        VideoEngagement.engagement_type == "view"
+    ).count()
+    
+    return {
+        "all": all_count,
+        "favorites": favorites,
+        "saved": saved,
+        "liked": liked,
+        "history": history
+    }
+
+
+
+
 
 # ============================================
 # SESSION/ENROLLMENT ENDPOINTS
@@ -1595,34 +2511,175 @@ def get_tutor_sessions(
 # FAVORITE/FOLLOW ENDPOINTS
 # ============================================
 
-@app.post("/api/tutor/{tutor_id}/follow")
-def follow_tutor(
+# 3. Replace the follow endpoint with connection endpoints
+@app.post("/api/tutor/{tutor_id}/connect")
+def send_connection_request(
     tutor_id: int,
+    message: Optional[str] = Body(None),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Follow/unfollow a tutor"""
+    """Send connection request to tutor"""
     tutor = db.query(TutorProfile).filter(TutorProfile.id == tutor_id).first()
     if not tutor:
         raise HTTPException(status_code=404, detail="Tutor not found")
     
-    existing = db.query(TutorFollow).filter(
-        TutorFollow.follower_id == current_user.id,
-        TutorFollow.tutor_id == tutor_id
+    # Check if connection already exists
+    existing = db.query(TutorConnection).filter(
+        TutorConnection.student_id == current_user.id,
+        TutorConnection.tutor_id == tutor_id
     ).first()
     
     if existing:
-        db.delete(existing)
-        db.commit()
-        return {"message": "Unfollowed tutor", "following": False}
-    else:
-        follow = TutorFollow(
-            follower_id=current_user.id,
-            tutor_id=tutor_id
-        )
-        db.add(follow)
-        db.commit()
-        return {"message": "Following tutor", "following": True}
+        if existing.status == "pending":
+            return {"message": "Connection request already sent", "status": "pending"}
+        elif existing.status == "accepted":
+            return {"message": "Already connected", "status": "connected"}
+        elif existing.status == "rejected":
+            # Allow re-sending after rejection
+            existing.status = "pending"
+            existing.created_at = datetime.utcnow()
+            existing.connection_message = message
+            db.commit()
+            return {"message": "Connection request resent", "status": "pending"}
+    
+    # Create new connection request
+    connection = TutorConnection(
+        student_id=current_user.id,
+        tutor_id=tutor_id,
+        initiated_by=current_user.id,
+        connection_message=message,
+        status="pending"
+    )
+    
+    db.add(connection)
+    db.commit()
+    
+    return {"message": "Connection request sent", "status": "pending"}
+
+@app.post("/api/tutor/{tutor_id}/disconnect")
+def disconnect_from_tutor(
+    tutor_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Disconnect from tutor"""
+    connection = db.query(TutorConnection).filter(
+        TutorConnection.student_id == current_user.id,
+        TutorConnection.tutor_id == tutor_id
+    ).first()
+    
+    if not connection:
+        raise HTTPException(status_code=404, detail="No connection found")
+    
+    db.delete(connection)
+    db.commit()
+    
+    return {"message": "Disconnected successfully"}
+
+@app.get("/api/tutor/{tutor_id}/connection-status")
+def get_connection_status(
+    tutor_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get connection status with tutor"""
+    connection = db.query(TutorConnection).filter(
+        TutorConnection.student_id == current_user.id,
+        TutorConnection.tutor_id == tutor_id
+    ).first()
+    
+    if not connection:
+        return {"status": "not_connected"}
+    
+    return {
+        "status": connection.status,
+        "created_at": connection.created_at.isoformat(),
+        "accepted_at": connection.accepted_at.isoformat() if connection.accepted_at else None
+    }
+
+# 4. Endpoints for tutors to manage connection requests
+@app.get("/api/tutor/connection-requests")
+def get_connection_requests(
+    status: Optional[str] = Query("pending"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get connection requests for current tutor"""
+    if "tutor" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="Only tutors can view connection requests")
+    
+    tutor = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+    if not tutor:
+        raise HTTPException(status_code=404, detail="Tutor profile not found")
+    
+    query = db.query(TutorConnection).filter(TutorConnection.tutor_id == tutor.id)
+    
+    if status:
+        query = query.filter(TutorConnection.status == status)
+    
+    requests = query.order_by(desc(TutorConnection.created_at)).all()
+    
+    return [{
+        "id": req.id,
+        "student_id": req.student_id,
+        "student_name": f"{req.student.first_name} {req.student.last_name}",
+        "student_picture": req.student.profile_picture,
+        "message": req.connection_message,
+        "status": req.status,
+        "created_at": req.created_at.isoformat()
+    } for req in requests]
+
+@app.post("/api/tutor/connection-request/{request_id}/accept")
+def accept_connection_request(
+    request_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Accept connection request"""
+    if "tutor" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="Only tutors can accept connection requests")
+    
+    tutor = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+    
+    connection = db.query(TutorConnection).filter(
+        TutorConnection.id == request_id,
+        TutorConnection.tutor_id == tutor.id
+    ).first()
+    
+    if not connection:
+        raise HTTPException(status_code=404, detail="Connection request not found")
+    
+    connection.status = "accepted"
+    connection.accepted_at = datetime.utcnow()
+    db.commit()
+    
+    return {"message": "Connection request accepted"}
+
+@app.post("/api/tutor/connection-request/{request_id}/reject")
+def reject_connection_request(
+    request_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Reject connection request"""
+    if "tutor" not in current_user.roles:
+        raise HTTPException(status_code=403, detail="Only tutors can reject connection requests")
+    
+    tutor = db.query(TutorProfile).filter(TutorProfile.user_id == current_user.id).first()
+    
+    connection = db.query(TutorConnection).filter(
+        TutorConnection.id == request_id,
+        TutorConnection.tutor_id == tutor.id
+    ).first()
+    
+    if not connection:
+        raise HTTPException(status_code=404, detail="Connection request not found")
+    
+    connection.status = "rejected"
+    db.commit()
+    
+    return {"message": "Connection request rejected"}
 
 @app.post("/api/tutor/{tutor_id}/favorite")
 def favorite_tutor(

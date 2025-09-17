@@ -1874,42 +1874,42 @@ function initializeTestimonials() {
             author: "Sara Tadesse",
             role: "Grade 12 Student",
             avatar: "https://picsum.photos/60",
-            dataType: "Mock"
+            dataType: "Test data"
         },
         {
             text: "As a tutor, Astegni gave me the platform to reach students nationwide. I now teach over 50 students online!",
             author: "Daniel Bekele",
             role: "Physics Tutor",
             avatar: "https://picsum.photos/61",
-            dataType: "Mock"            
+            dataType: "Test data"            
         },
         {
             text: "The variety of courses and quality of instructors on Astegni is unmatched. Best investment in my child's education!",
             author: "Marta Alemu",
             role: "Parent",
             avatar: "https://picsum.photos/62",
-            dataType: "Mock"
+            dataType: "Test data"
         },
         {
             text: "I found my dream job through Astegni's job portal. The platform is truly life-changing!",
             author: "Yohannes Girma",
             role: "Software Developer",
             avatar: "https://picsum.photos/63",
-            dataType: "Mock"
+            dataType: "Test data"
         },
         {
             text: "Our training center reached 10x more students after joining Astegni. Highly recommended!",
             author: "Tigist Haile",
             role: "Training Center Director",
             avatar: "https://picsum.photos/64",
-            dataType: "Mock"
+            dataType: "Test data"
         },
         {
             text: "The online learning tools and resources are amazing. I can learn at my own pace!",
             author: "Abebe Mengistu",
             role: "University Student",
             avatar: "https://picsum.photos/65",
-            dataType: "Mock"
+            dataType: "Test data"
         },
     ];
 

@@ -329,6 +329,580 @@ body {
     flex: 1;
 }
 
+
+/* ============================================
+   ADD THESE STYLES TO YOUR EXISTING find-tutors.css
+   ============================================ */
+
+/* Mock Badge - Using theme colors */
+.mock-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, var(--button-bg, #F59E0B) 0%, var(--button-hover, #D97706) 100%);
+    color: var(--button-text, white);
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mock-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(245, 158, 11, 0.5);
+}
+
+/* Enhanced tutor teaches at styling */
+.tutor-teaches-at {
+    background: rgba(245, 158, 11, 0.05);
+    padding: 6px 0;
+    border-left: 3px solid var(--button-bg, #F59E0B);
+    margin: 8px 0;
+}
+
+.tutor-teaches-at em {
+    color: var(--text-primary, #374151);
+    font-weight: 500;
+}
+
+/* Enhanced price display */
+.tutor-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.price-amount {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--button-bg, #F59E0B) 0%, var(--button-hover, #D97706) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.price-period {
+    font-size: 14px;
+    color: var(--text-muted, #6b7280);
+}
+
+/* Rating Tooltip Styles */
+.rating-stars-container {
+    position: relative;
+}
+
+.rating-tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    width: 280px;
+    display: none;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+}
+
+.rating-tooltip.show {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.rating-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+}
+
+.rating-summary {
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 12px;
+}
+
+.rating-summary-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.rating-summary-stars {
+    color: #F59E0B;
+    margin-top: 4px;
+    font-size: 18px;
+}
+
+.rating-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rating-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.rating-label {
+    font-size: 13px;
+    color: #6b7280;
+    width: 100px;
+}
+
+.rating-bar-container {
+    flex: 1;
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.rating-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.rating-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 30px;
+    text-align: right;
+}
+
+/* Ad Placeholder Styles */
+.ad-placeholder-section {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    border-radius: 20px;
+    padding: 60px 40px;
+    margin: 30px 0;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.3);
+}
+
+.ad-placeholder-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: shimmer 3s infinite linear;
+}
+
+.ad-placeholder-section::after {
+    content: '';
+    position: absolute;
+    bottom: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    animation: shimmer 4s infinite linear reverse;
+}
+
+@keyframes shimmer {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.ad-content {
+    position: relative;
+    z-index: 1;
+}
+
+.ad-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.ad-title {
+    font-size: 36px;
+    font-weight: 800;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.ad-subtitle {
+    font-size: 18px;
+    opacity: 0.95;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.ad-cta {
+    display: inline-block;
+    background: white;
+    color: #F59E0B;
+    padding: 14px 36px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.ad-cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    background: linear-gradient(135deg, white 0%, #f9f9f9 100%);
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .rating-tooltip {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .rating-tooltip::before {
+    border-bottom-color: #1f2937;
+}
+
+[data-theme="dark"] .rating-summary-value {
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .rating-summary-stars {
+    color: #FFD54F;
+}
+
+[data-theme="dark"] .rating-label {
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .rating-value {
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .rating-bar-container {
+    background: #374151;
+}
+
+[data-theme="dark"] .rating-bar-fill {
+    background: linear-gradient(90deg, #FFD54F, #e6bf45);
+}
+
+[data-theme="dark"] .ad-placeholder-section {
+    background: linear-gradient(135deg, #FFD54F 0%, #e6bf45 100%);
+}
+
+[data-theme="dark"] .ad-cta {
+    background: #1f2937;
+    color: #FFD54F;
+}
+
+[data-theme="dark"] .ad-cta:hover {
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .ad-placeholder-section {
+        padding: 40px 20px;
+        margin: 20px 0;
+    }
+    
+    .ad-title {
+        font-size: 28px;
+    }
+    
+    .ad-subtitle {
+        font-size: 16px;
+    }
+    
+    .rating-tooltip {
+        width: 240px;
+        left: 0;
+        transform: translateX(0);
+    }
+    
+    .rating-tooltip::before {
+        left: 30px;
+    }
+    
+    .tutor-teaches-at {
+        font-size: 12px;
+    }
+    
+    .price-amount {
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ad-placeholder-section {
+        padding: 30px 15px;
+    }
+    
+    .ad-title {
+        font-size: 24px;
+    }
+    
+    .ad-subtitle {
+        font-size: 14px;
+    }
+    
+    .ad-cta {
+        padding: 12px 28px;
+        font-size: 14px;
+    }
+    
+    .rating-tooltip {
+        width: 220px;
+    }
+}
+
+/* Beginner tutor indicator (optional) */
+.tutor-card[data-rating-low="true"] {
+    border: 2px solid rgba(245, 158, 11, 0.2);
+}
+
+.tutor-card[data-rating-low="true"] .tutor-header {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%);
+}
+
+/* Animation for ad placeholders entrance */
+.ad-placeholder-section {
+    animation: slideInUp 0.6s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Add these styles to your find-tutors.css */
+
+/* Rating Tooltip Styles */
+.rating-stars-container {
+    position: relative;
+}
+
+.rating-tooltip {
+    position: absolute;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    width: 280px;
+    display: none;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 8px;
+}
+
+.rating-tooltip.show {
+    display: block;
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.rating-tooltip::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 8px solid white;
+}
+
+.rating-summary {
+    text-align: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 12px;
+}
+
+.rating-summary-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.rating-summary-stars {
+    color: #F59E0B;
+    margin-top: 4px;
+    font-size: 18px;
+}
+
+.rating-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rating-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.rating-label {
+    font-size: 13px;
+    color: #6b7280;
+    width: 100px;
+}
+
+.rating-bar-container {
+    flex: 1;
+    height: 6px;
+    background: #f3f4f6;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.rating-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #F59E0B, #D97706);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.rating-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1f2937;
+    min-width: 30px;
+    text-align: right;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .rating-tooltip {
+    background: #1f2937;
+    border-color: #374151;
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] .rating-tooltip::before {
+    border-bottom-color: #1f2937;
+}
+
+[data-theme="dark"] .rating-summary-value {
+    color: #f9fafb;
+}
+
+[data-theme="dark"] .rating-bar-container {
+    background: #374151;
+}
+
+
+
+/* Update or add these styles in find-tutors.css */
+
+#tutorCards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Responsive grid */
+@media (max-width: 1200px) {
+    #tutorCards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    #tutorCards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+    }
+}
+
+/* Ensure tutor cards fill their grid cells */
+.tutor-card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.tutor-details {
+    flex-grow: 1;
+}
+
+.view-tutor-btn {
+    margin-top: auto;
+}
+
+
 /* Main Content with rotating backgrounds */
 .main-content-container {
     min-height: calc(100vh - 64px);
@@ -1355,3 +1929,6 @@ button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
 }
+
+
+

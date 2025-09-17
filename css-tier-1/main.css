@@ -405,6 +405,29 @@ p { font-size: 1rem; line-height: 1.75; }
     animation: contentFadeIn 0.8s ease-out;
 }
 
+/* Mock Data Badge - Using main theme colors */
+.mock-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
+    color: var(--button-text);
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(var(--button-bg-rgb), 0.4);
+    transition: var(--transition-fast);
+}
+
+/* Optional: Add hover effect */
+.mock-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(var(--button-bg-rgb), 0.5);
+    background: linear-gradient(135deg, var(--button-hover) 0%, var(--button-active) 100%);
+}
+
 /* ============================================
    BUTTONS & FORM ELEMENTS
    ============================================ */

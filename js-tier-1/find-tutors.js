@@ -9,7 +9,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let totalPages = 1;
     let totalTutors = 0;
 
-
     // Initialize sidebar state - CLOSED by default
     const sidebar = document.getElementById('sidebar');
     const mainContent = document.getElementById('mainContent');
@@ -24,6 +23,66 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     initializeSidebar();
+
+    // ============================================
+// PREFERENCES MANAGEMENT
+// ============================================
+
+const PreferencesManager = {
+    // Get saved preferences from localStorage
+    getFavorites() {
+        return JSON.parse(localStorage.getItem('favoriteTutors') || '[]');
+    },
+    
+    getSaved() {
+        return JSON.parse(localStorage.getItem('savedTutors') || '[]');
+    },
+    
+    getSearchHistory() {
+        return JSON.parse(localStorage.getItem('searchHistory') || '[]');
+    },
+    
+    // Add/remove favorites
+    toggleFavorite(tutorId) {
+        let favorites = this.getFavorites();
+        const index = favorites.indexOf(tutorId);
+        if (index > -1) {
+            favorites.splice(index, 1);
+        } else {
+            favorites.push(tutorId);
+        }
+        localStorage.setItem('favoriteTutors', JSON.stringify(favorites));
+        return favorites.includes(tutorId);
+    },
+    
+    // Add/remove saved
+    toggleSaved(tutorId) {
+        let saved = this.getSaved();
+        const index = saved.indexOf(tutorId);
+        if (index > -1) {
+            saved.splice(index, 1);
+        } else {
+            saved.push(tutorId);
+        }
+        localStorage.setItem('savedTutors', JSON.stringify(saved));
+        return saved.includes(tutorId);
+    },
+    
+    // Add to search history
+    addToSearchHistory(searchTerm) {
+        if (!searchTerm || searchTerm.trim() === '') return;
+        
+        let history = this.getSearchHistory();
+        // Remove if exists (to move to front)
+        history = history.filter(item => item !== searchTerm);
+        // Add to beginning
+        history.unshift(searchTerm);
+        // Keep only last 10 searches
+        history = history.slice(0, 10);
+        
+        localStorage.setItem('searchHistory', JSON.stringify(history));
+    }
+};
 
     // Hamburger menu toggle
     hamburger.addEventListener('click', () => {
@@ -151,380 +210,397 @@ document.addEventListener('DOMContentLoaded', () => {
     type();
 
     // ============================================
-// FIX FOR find-tutors.js
-// Replace the existing fetchTutors function with this complete version
-// ============================================
+    // RATING TOOLTIP FUNCTIONS
+    // ============================================
 
-// Add this at the top of your find-tutors.js file if not already present
+    window.showRatingTooltip = function (element, breakdown, overallRating) {
+        // Remove any existing tooltip
+        hideAllTooltips();
 
+        const tooltip = document.createElement('div');
+        tooltip.className = 'rating-tooltip show';
 
-// Replace your existing fetchTutors function with this:
-async function fetchTutors(page = 1) {
-    try {
-        console.log('Fetching tutors from:', `${API_BASE_URL}/tutors?page=${page}&limit=20`);
-        showLoadingState();
-        
-        const response = await fetch(`${API_BASE_URL}/tutors?page=${page}&limit=20`);
-        console.log('Response status:', response.status);
+        // Use breakdown data or create default
+        const ratingData = breakdown || {
+            discipline: overallRating,
+            punctuality: overallRating,
+            communication_skills: overallRating,
+            knowledge_level: overallRating,
+            retention: overallRating
+        };
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('Server error:', errorText);
-            throw new Error(`Failed to fetch tutors: ${response.status}`);
+        tooltip.innerHTML = `
+            <div class="rating-summary">
+                <div class="rating-summary-value">${overallRating}</div>
+                <div class="rating-summary-stars">${'★'.repeat(Math.floor(overallRating))}${'☆'.repeat(5 - Math.floor(overallRating))}</div>
+            </div>
+            <div class="rating-breakdown">
+                ${createRatingBar('Discipline', ratingData.discipline || overallRating)}
+                ${createRatingBar('Punctuality', ratingData.punctuality || overallRating)}
+                ${createRatingBar('Communication', ratingData.communication_skills || overallRating)}
+                ${createRatingBar('Knowledge', ratingData.knowledge_level || overallRating)}
+                ${createRatingBar('Retention', ratingData.retention || overallRating)}
+            </div>
+        `;
+
+        element.parentElement.appendChild(tooltip);
+    };
+
+    window.hideRatingTooltip = function (element) {
+        const tooltip = element.parentElement.querySelector('.rating-tooltip');
+        if (tooltip) {
+            tooltip.remove();
         }
+    };
 
-        const data = await response.json();
-        console.log('Data received:', data);
+    function hideAllTooltips() {
+        document.querySelectorAll('.rating-tooltip').forEach(tooltip => {
+            tooltip.remove();
+        });
+    }
 
-        // Handle paginated response structure
-        if (data.tutors) {
-            // Paginated response from backend
-            tutorsData = data.tutors;
-            currentPage = data.page;
-            totalPages = data.total_pages;
-            totalTutors = data.total;
-        } else if (Array.isArray(data)) {
-            // Non-paginated response (fallback)
-            tutorsData = data;
-            currentPage = 1;
-            totalPages = 1;
-            totalTutors = data.length;
-        } else {
-            // No data
-            tutorsData = [];
-            currentPage = 1;
-            totalPages = 1;
-            totalTutors = 0;
-        }
+    function createRatingBar(label, value) {
+        const percentage = (value / 5) * 100;
+        return `
+            <div class="rating-item">
+                <span class="rating-label">${label}</span>
+                <div class="rating-bar-container">
+                    <div class="rating-bar-fill" style="width: ${percentage}%"></div>
+                </div>
+                <span class="rating-value">${value}</span>
+            </div>
+        `;
+    }
 
-        filteredTutors = tutorsData;
-        
-        // THIS IS THE KEY LINE THAT WAS MISSING:
-        renderTutorCards(filteredTutors);
-        renderPagination();
-        
-        // Hide no results message if we have tutors
-        if (tutorsData.length > 0) {
+    // ============================================
+    // AD PLACEHOLDER FUNCTIONS
+    // ============================================
+
+    function createAdPlaceholder(adIndex) {
+        const adVariations = [
+            {
+                title: "Become a Top Tutor",
+                subtitle: "Join 500+ certified tutors earning 400-500 ETB per session",
+                cta: "Start Teaching",
+                badge: "Featured"
+            },
+            {
+                title: "Get Certified",
+                subtitle: "Learn programming, video editing, and more from experts",
+                cta: "Browse Courses",
+                badge: "Popular"
+            },
+            {
+                title: "Special Offer",
+                subtitle: "Get 30% off on all certification courses this month",
+                cta: "Claim Offer",
+                badge: "Limited Time"
+            },
+            {
+                title: "Find Your Perfect Tutor",
+                subtitle: "From Grade 9 to University level - We have you covered",
+                cta: "Get Started",
+                badge: "Recommended"
+            }
+        ];
+
+        const ad = adVariations[adIndex % adVariations.length];
+
+        const adSection = document.createElement('div');
+        adSection.className = 'ad-placeholder-section';
+        adSection.innerHTML = `
+            <div class="ad-content">
+                <span class="ad-badge">${ad.badge}</span>
+                <h2 class="ad-title">${ad.title}</h2>
+                <p class="ad-subtitle">${ad.subtitle}</p>
+                <a href="#" class="ad-cta" onclick="handleAdClick(event, '${ad.title}')">${ad.cta}</a>
+            </div>
+        `;
+
+        return adSection;
+    }
+
+    window.handleAdClick = function (event, adTitle) {
+        event.preventDefault();
+        showNotification(`Opening ${adTitle}...`, 'info');
+        // Add your ad click handling logic here
+    };
+
+    // ============================================
+    // FETCH TUTORS WITH ERROR HANDLING
+    // ============================================
+
+    async function fetchTutors(page = 1) {
+        try {
+            console.log('Fetching tutors from:', `${API_BASE_URL}/tutors?page=${page}&limit=15`);
+            showLoadingState();
+
+            const response = await fetch(`${API_BASE_URL}/tutors?page=${page}&limit=15`);
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Server error:', errorText);
+                throw new Error(`Failed to fetch tutors: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log('Data received:', data);
+
+            // Handle paginated response structure
+            if (data.tutors) {
+                tutorsData = data.tutors;
+                currentPage = data.page;
+                totalPages = data.total_pages;
+                totalTutors = data.total;
+            } else if (Array.isArray(data)) {
+                tutorsData = data;
+                currentPage = 1;
+                totalPages = Math.ceil(data.length / 15);
+                totalTutors = data.length;
+            } else {
+                tutorsData = [];
+                currentPage = 1;
+                totalPages = 1;
+                totalTutors = 0;
+            }
+
+            filteredTutors = tutorsData;
+            renderTutorCards(filteredTutors);
+            renderPagination();
+
+            if (tutorsData.length > 0) {
+                const noResultsElement = document.getElementById('noResults');
+                if (noResultsElement) {
+                    noResultsElement.classList.add('hidden');
+                }
+            }
+
+        } catch (error) {
+            console.error('Error fetching tutors:', error);
+
+            if (error.message.includes('Failed to fetch')) {
+                showNotification('Cannot connect to server. Please ensure the backend is running on port 8000.', 'error');
+            } else {
+                showNotification('Failed to load tutors. Please try again later.', 'error');
+            }
+
             const noResultsElement = document.getElementById('noResults');
             if (noResultsElement) {
-                noResultsElement.classList.add('hidden');
+                noResultsElement.classList.remove('hidden');
             }
-        }
-        
-    } catch (error) {
-        console.error('Error fetching tutors:', error);
-        
-        // Show user-friendly error messages
-        if (error.message.includes('Failed to fetch')) {
-            showNotification('Cannot connect to server. Please ensure the backend is running on port 8000.', 'error');
-        } else {
-            showNotification('Failed to load tutors. Please try again later.', 'error');
-        }
-        
-        // Show no results message on error
-        const noResultsElement = document.getElementById('noResults');
-        if (noResultsElement) {
-            noResultsElement.classList.remove('hidden');
-            noResultsElement.innerHTML = `
-                <div class="text-center py-8">
-                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                    <h3 class="mt-2 text-lg font-medium text-gray-900">Connection Error</h3>
-                    <p class="mt-1 text-sm text-gray-500">Unable to load tutors. Please check your connection.</p>
-                    <button onclick="fetchTutors(1)" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                        Try Again
-                    </button>
-                </div>
-            `;
-        }
-        
-    } finally {
-        hideLoadingState();
-    }
-}
 
-// Helper functions for loading states
-function showLoadingState() {
-    const tutorCardsContainer = document.getElementById('tutorCards');
-    if (tutorCardsContainer) {
-        tutorCardsContainer.innerHTML = `
+        } finally {
+            hideLoadingState();
+        }
+    }
+
+    // Helper functions for loading states
+    function showLoadingState() {
+        const tutorCardsContainer = document.getElementById('tutorCards');
+        if (tutorCardsContainer) {
+            tutorCardsContainer.innerHTML = `
             <div class="col-span-full text-center py-8">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                 <p class="mt-2 text-gray-600">Loading tutors...</p>
             </div>
         `;
-    }
-}
-
-function hideLoadingState() {
-    // Loading state is replaced by actual content in renderTutorCards
-}
-
-// Render pagination controls
-function renderPagination() {
-    // Remove existing pagination if any
-    const existingPagination = document.getElementById('paginationContainer');
-    if (existingPagination) {
-        existingPagination.remove();
-    }
-
-    if (totalPages <= 1) return;
-
-    const paginationContainer = document.createElement('div');
-    paginationContainer.id = 'paginationContainer';
-    paginationContainer.className = 'flex justify-center items-center gap-2 mt-8 pb-8';
-
-    let paginationHTML = '';
-
-    // Previous button
-    paginationHTML += `
-        <button 
-            onclick="fetchTutors(${currentPage - 1})" 
-            class="px-3 py-1 bg-gray-200 rounded ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-300'}"
-            ${currentPage === 1 ? 'disabled' : ''}>
-            Previous
-        </button>
-    `;
-
-    // Page numbers
-    const maxVisiblePages = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-
-    if (startPage > 1) {
-        paginationHTML += `
-            <button onclick="fetchTutors(1)" class="px-3 py-1 border rounded hover:bg-gray-100">1</button>
-            ${startPage > 2 ? '<span class="px-2">...</span>' : ''}
-        `;
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-        paginationHTML += `
-            <button 
-                onclick="fetchTutors(${i})" 
-                class="px-3 py-1 border rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}">
-                ${i}
-            </button>
-        `;
-    }
-
-    if (endPage < totalPages) {
-        paginationHTML += `
-            ${endPage < totalPages - 1 ? '<span class="px-2">...</span>' : ''}
-            <button onclick="fetchTutors(${totalPages})" class="px-3 py-1 border rounded hover:bg-gray-100">${totalPages}</button>
-        `;
-    }
-
-    // Next button
-    paginationHTML += `
-        <button 
-            onclick="fetchTutors(${currentPage + 1})" 
-            class="px-3 py-1 bg-blue-500 text-white rounded ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}"
-            ${currentPage === totalPages ? 'disabled' : ''}>
-            Next
-        </button>
-    `;
-
-    // Info text
-    paginationHTML += `
-        <span class="ml-4 text-gray-600">
-            Page ${currentPage} of ${totalPages} (${totalTutors} tutors)
-        </span>
-    `;
-
-    paginationContainer.innerHTML = paginationHTML;
-    
-    const tutorCardsElement = document.getElementById('tutorCards');
-    if (tutorCardsElement && tutorCardsElement.parentNode) {
-        tutorCardsElement.parentNode.insertBefore(paginationContainer, tutorCardsElement.nextSibling);
-    }
-}
-
-// Ensure the renderTutorCards function exists and works properly
-function renderTutorCards(tutors) {
-    const tutorCardsContainer = document.getElementById('tutorCards');
-    if (!tutorCardsContainer) {
-        console.error('Tutor cards container not found');
-        return;
-    }
-
-    tutorCardsContainer.innerHTML = '';
-
-    if (!tutors || tutors.length === 0) {
-        const noResultsElement = document.getElementById('noResults');
-        if (noResultsElement) {
-            noResultsElement.classList.remove('hidden');
-        }
-        tutorCardsContainer.innerHTML = `
-            <div class="col-span-full text-center py-8">
-                <p class="text-gray-500">No tutors found matching your criteria.</p>
-            </div>
-        `;
-    } else {
-        const noResultsElement = document.getElementById('noResults');
-        if (noResultsElement) {
-            noResultsElement.classList.add('hidden');
-        }
-        
-        tutors.forEach((tutor, index) => {
-            const card = generateTutorCard(tutor, index);
-            if (card) {
-                tutorCardsContainer.appendChild(card);
-            }
-        });
-    }
-
-    attachCardEventListeners();
-}
-
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if backend is running
-    fetch(`${API_BASE_URL}/`)
-        .then(response => {
-            if (response.ok) {
-                console.log('Backend connected successfully');
-                // Fetch tutors on page load
-                fetchTutors(1);
-            } else {
-                throw new Error('Backend not responding');
-            }
-        })
-        .catch(error => {
-            console.error('Backend connection error:', error);
-            showNotification('Backend server is not running. Please start the server with: uvicorn app:app --reload', 'error');
-        });
-});
-
-// Helper function for notifications
-function showNotification(message, type = 'info') {
-    // Create or update notification element
-    let notification = document.getElementById('notification');
-    if (!notification) {
-        notification = document.createElement('div');
-        notification.id = 'notification';
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            padding: 15px 20px;
-            border-radius: 8px;
-            max-width: 400px;
-            animation: slideIn 0.3s ease;
-        `;
-        document.body.appendChild(notification);
-    }
-
-    // Set styles based on type
-    const styles = {
-        error: 'background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;',
-        success: 'background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7;',
-        warning: 'background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;',
-        info: 'background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD;'
-    };
-
-    notification.style.cssText += styles[type] || styles.info;
-    notification.textContent = message;
-
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-        if (notification) {
-            notification.remove();
-        }
-    }, 5000);
-}
-
-// Add CSS animation for notifications
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideIn {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
         }
     }
-`;
-document.head.appendChild(style);
 
-    // Generate Tutor Card
-    const tutorCardsContainer = document.getElementById('tutorCards');
+    function hideLoadingState() {
+        // Loading state is replaced by actual content in renderTutorCards
+    }
+
+    // ============================================
+    // ENHANCED TUTOR CARD GENERATION
+    // ============================================
 
 function generateTutorCard(tutor, index) {
     const card = document.createElement('div');
     card.className = 'tutor-card animate__animated animate__fadeInUp';
     card.style.animationDelay = `${index * 0.05}s`;
 
+    // Ensure proper data handling
     const courseTypeLabel = tutor.course_type === 'certifications' ? 'Certification' : 'Academic';
     const gradeInfo = tutor.grades && tutor.grades.length > 0 ? tutor.grades.join(', ') : 'All Levels';
+    const teachingMethod = tutor.learning_method || tutor.teaching_methods?.[0] || 'Online';
+    const teachesAt = tutor.teaches_at || 'Independent';
 
-    // Rating breakdown (from API or calculated)
-    const ratingBreakdown = tutor.rating_breakdown || {
-        engagement: tutor.rating,
-        discipline: tutor.rating,
-        punctuality: tutor.rating,
-        communication: tutor.rating,
-        subject_matter: tutor.rating
+    // Default quotes for tutors without quotes
+    const defaultQuotes = [
+        "Education is the key to unlocking potential.",
+        "Every student can succeed with the right guidance.",
+        "Learning is a journey, not a destination.",
+        "I believe in making complex concepts simple.",
+        "Patience and persistence lead to excellence.",
+        "Together we can achieve your academic goals.",
+        "Knowledge is power, let's empower you.",
+        "Your success is my mission."
+    ];
+
+    const quote = tutor.quote || defaultQuotes[index % defaultQuotes.length];
+
+    // RATING SYSTEM: Default 2.0 for new tutors, minimum 1.0 for bad tutors
+    const rating = tutor.rating || 2.0;
+    const ratingDisplay = rating.toFixed(1);
+    const starCount = Math.round(rating);
+
+    // Clean bio if it contains school name
+    let bio = tutor.bio || '';
+    if (bio.includes('Currently teaching at')) {
+        bio = bio.split('Currently teaching at')[0].trim();
+    }
+
+    // FIX: Ensure each rating breakdown property has a safe default
+    const defaultRating = tutor.rating || 2.0;
+    const ratingBreakdown = {
+        discipline: tutor.rating_breakdown?.discipline ?? defaultRating,
+        punctuality: tutor.rating_breakdown?.punctuality ?? defaultRating,
+        communication_skills: tutor.rating_breakdown?.communication_skills ?? defaultRating,
+        knowledge_level: tutor.rating_breakdown?.knowledge_level ?? defaultRating,
+        retention: tutor.rating_breakdown?.retention ?? defaultRating
     };
+
+    // Safe profile picture with fallback
+    const profilePicture = tutor.profile_picture ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(tutor.name || 'User')}&size=60&background=random`;
+
+    // Add a "New Tutor" badge if rating is exactly 2.0
+    const isNewTutor = rating === 2.0;
+
+    // Check if this tutor is favorited or saved (MOVED OUTSIDE HTML STRING)
+    const isFavorited = PreferencesManager.getFavorites().includes(tutor.id);
+    const isSaved = PreferencesManager.getSaved().includes(tutor.id);
 
     card.innerHTML = `
         <div class="tutor-header">
-            <img src="${tutor.profile_picture || 'https://via.placeholder.com/60'}" alt="${tutor.name}" class="tutor-avatar">
+            <img src="${profilePicture}" alt="${tutor.name}" class="tutor-avatar" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'60\' height=\'60\' viewBox=\'0 0 60 60\'%3E%3Crect width=\'60\' height=\'60\' fill=\'%23ddd\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' text-anchor=\'middle\' dy=\'.3em\' fill=\'%23999\' font-family=\'Arial\' font-size=\'20\'%3E${(tutor.name || 'U')[0]}%3C/text%3E%3C/svg%3E'">
             <div class="tutor-info">
                 <div class="tutor-name-wrapper">
-                    <a href="view-tutor.html?id=${tutor.id}" class="tutor-name">${tutor.name}</a>
-                    <span style="
-                        display: inline-block;
-                        margin-left: 8px;
-                        padding: 2px 8px;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white;
-                        font-size: 10px;
-                        font-weight: 600;
-                        border-radius: 12px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.4);
-                    ">Mock</span>
+                    <a href="../view-profile-tier-1/view-tutor.html?id=${tutor.id}" class="tutor-name">${tutor.name || 'Unknown Tutor'}</a>
+                    ${isNewTutor ? '<span class="new-tutor-badge" style="background: #10b981; color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; margin-left: 8px;">NEW</span>' : ''}
+                    <span class="mock-badge">Test data</span>
                 </div>
                 <div class="rating-stars-container">
                     <div class="rating-stars">
-                        ${'★'.repeat(Math.round(tutor.rating))}${'☆'.repeat(5 - Math.round(tutor.rating))}
-                        <span style="font-size: 0.875rem; color: #6b7280; margin-left: 0.25rem;">(${tutor.rating.toFixed(1)})</span>
+                        ${'★'.repeat(starCount)}${'☆'.repeat(Math.max(0, 5 - starCount))}
+                        <span style="font-size: 0.875rem; color: #6b7280; margin-left: 0.25rem;">(${ratingDisplay})</span>
+                    </div>
+                    <div class="rating-breakdown-tooltip">
+                        <div class="tooltip-arrow"></div>
+                        <div class="tooltip-content">
+                            <div class="rating-item">
+                                <span class="rating-label">Discipline</span>
+                                <div class="rating-bar">
+                                    <div class="rating-fill" style="width: ${Math.min(100, (ratingBreakdown.discipline / 5) * 100)}%"></div>
+                                </div>
+                                <span class="rating-value">${ratingBreakdown.discipline.toFixed(1)}</span>
+                            </div>
+                            <div class="rating-item">
+                                <span class="rating-label">Punctuality</span>
+                                <div class="rating-bar">
+                                    <div class="rating-fill" style="width: ${Math.min(100, (ratingBreakdown.punctuality / 5) * 100)}%"></div>
+                                </div>
+                                <span class="rating-value">${ratingBreakdown.punctuality.toFixed(1)}</span>
+                            </div>
+                            <div class="rating-item">
+                                <span class="rating-label">Communication</span>
+                                <div class="rating-bar">
+                                    <div class="rating-fill" style="width: ${Math.min(100, (ratingBreakdown.communication_skills / 5) * 100)}%"></div>
+                                </div>
+                                <span class="rating-value">${ratingBreakdown.communication_skills.toFixed(1)}</span>
+                            </div>
+                            <div class="rating-item">
+                                <span class="rating-label">Knowledge</span>
+                                <div class="rating-bar">
+                                    <div class="rating-fill" style="width: ${Math.min(100, (ratingBreakdown.knowledge_level / 5) * 100)}%"></div>
+                                </div>
+                                <span class="rating-value">${ratingBreakdown.knowledge_level.toFixed(1)}</span>
+                            </div>
+                            <div class="rating-item">
+                                <span class="rating-label">Retention</span>
+                                <div class="rating-bar">
+                                    <div class="rating-fill" style="width: ${Math.min(100, (ratingBreakdown.retention / 5) * 100)}%"></div>
+                                </div>
+                                <span class="rating-value">${ratingBreakdown.retention.toFixed(1)}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="tutor-actions">                 
-                <button class="action-btn favorite-btn ${tutor.is_favorite ? 'active' : ''}" data-id="${tutor.id}" aria-label="Favorite">
-                    <svg class="w-5 h-5" fill="${tutor.is_favorite ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
+            
+            <!-- ACTION BUTTONS -->
+            <div class="tutor-actions" style="display: flex; gap: 8px; margin-left: auto;">
+                <button class="favorite-btn action-btn ${isFavorited ? 'active' : ''}" 
+                    data-id="${tutor.id}" 
+                    title="Add to favorites" 
+                    style="
+                        background: transparent;
+                        border: none;
+                        cursor: pointer;
+                        padding: 8px;
+                        color: ${isFavorited ? '#F59E0B' : '#6b7280'};
+                        transition: all 0.3s ease;
+                    ">
+                    <svg width="20" height="20" fill="${isFavorited ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z">
+                        </path>
                     </svg>
                 </button>
-                                    <button class="action-btn save-btn" data-id="${tutor.id}" aria-label="Save">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                        </svg>
-                    </button>
+                <button class="save-btn action-btn ${isSaved ? 'active' : ''}" 
+                    data-id="${tutor.id}" 
+                    title="Save for later" 
+                    style="
+                        background: transparent;
+                        border: none;
+                        cursor: pointer;
+                        padding: 8px;
+                        color: ${isSaved ? '#F59E0B' : '#6b7280'};
+                        transition: all 0.3s ease;
+                    ">
+                    <svg width="20" height="20" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z">
+                        </path>
+                    </svg>
+                </button>
             </div>
         </div>
+        
+        <!-- QUOTE SECTION -->
+        <div class="tutor-quote" style="
+            margin: 12px 0;
+            padding: 12px;
+            background: var(--quote-bg, linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.08) 100%));
+            border-left: 4px solid var(--button-bg, #F59E0B);
+            border-radius: 0 8px 8px 0;
+            position: relative;
+        ">
+            <span style="
+                position: absolute;
+                top: -5px;
+                left: 10px;
+                font-size: 28px;
+                color: var(--button-bg, #F59E0B);
+                opacity: 0.3;
+                font-family: Georgia, serif;
+            ">"</span>
+            <em style="
+                font-size: 0.9rem;
+                color: var(--text, #374151);
+                display: block;
+                line-height: 1.5;
+                font-style: italic;
+                padding-left: 10px;
+                opacity: 0.9;
+            ">
+                ${quote}
+            </em>
+        </div>
+        
         <div class="tutor-details">
-        ${tutor.quote ? `
-            <div class="detail-item" style="margin-top: 10px; padding: 10px; background: #f3f4f6; border-left: 3px solid #667eea; border-radius: 4px;">
-                <em style="font-size: 0.875rem; color: #374151; display: block;">
-                    "${tutor.quote}"
-                </em>
-            </div>
-            ` : ''}
             <div class="detail-item">
                 <span class="detail-label">Type:</span> ${courseTypeLabel}
             </div>
@@ -532,31 +608,33 @@ function generateTutorCard(tutor, index) {
                 <span class="detail-label">Gender:</span> ${tutor.gender || 'Not specified'}
             </div>
             <div class="detail-item">
-                <span class="detail-label">Courses:</span> ${tutor.courses.join(', ')}
+                <span class="detail-label">Specialized in:</span> ${Array.isArray(tutor.courses) ? tutor.courses.join(', ') : 'Various subjects'}
             </div>
             <div class="detail-item">
                 <span class="detail-label">Grades:</span> ${gradeInfo}
             </div>
             <div class="detail-item">
-                <span class="detail-label">Experience:</span> ${tutor.experience} years
+                <span class="detail-label">Experience:</span> ${tutor.experience || tutor.experience_years || 0} years
             </div>
             <div class="detail-item">
-                <span class="detail-label">Location:</span> ${tutor.location}
+                <span class="detail-label">Location:</span> ${tutor.location || 'Not specified'}
+            </div>
+            <div class="detail-item tutor-teaches-at">
+                <span class="detail-label">Teaches at:</span> <em>${teachesAt}</em>
             </div>
             <div class="detail-item">
-                <span class="detail-label">Teaches at:</span> ${tutor.teaches_at || 'Independent'}
+                <span class="detail-label">Method:</span> ${teachingMethod}
             </div>
-            <div class="detail-item">
-                <span class="detail-label">Method:</span> ${tutor.learning_method}
+            <div class="detail-item tutor-price">
+                <span class="detail-label">Price:</span> 
+                <span class="price-amount">${tutor.price || 100} ETB</span>
+                <span class="price-period">/session</span>
             </div>
-            <div class="detail-item">
-                <span class="detail-label">Price:</span> <strong>${tutor.price} ETB/hr</strong>
-            </div>
-            ${tutor.bio ? `
+            ${bio ? `
             <div class="detail-item" style="margin-top: 10px;">
                 <span class="detail-label">Bio:</span>
                 <p style="margin-top: 4px; font-size: 0.875rem; line-height: 1.4; color: #4b5563;">
-                    ${tutor.bio}
+                    ${bio}
                 </p>
             </div>
             ` : ''}
@@ -567,16 +645,33 @@ function generateTutorCard(tutor, index) {
     return card;
 }
 
-    // Render tutor cards
+    // ============================================
+    // RENDER TUTOR CARDS
+    // ============================================
+
     function renderTutorCards(tutors) {
+        const tutorCardsContainer = document.getElementById('tutorCards');
+        if (!tutorCardsContainer) {
+            console.error('Tutor cards container not found');
+            return;
+        }
+
         tutorCardsContainer.innerHTML = '';
 
-        if (tutors.length === 0) {
+        if (!tutors || tutors.length === 0) {
             document.getElementById('noResults').classList.remove('hidden');
+            tutorCardsContainer.innerHTML = `
+            <div class="col-span-full text-center py-8">
+                <p class="text-gray-500">No tutors found matching your criteria.</p>
+            </div>
+        `;
         } else {
             document.getElementById('noResults').classList.add('hidden');
+
+            // Simply render tutor cards without ad placeholders
             tutors.forEach((tutor, index) => {
-                tutorCardsContainer.appendChild(generateTutorCard(tutor, index));
+                const card = generateTutorCard(tutor, index);
+                tutorCardsContainer.appendChild(card);
             });
         }
 
@@ -585,172 +680,277 @@ function generateTutorCard(tutor, index) {
 
     // Attach event listeners to card buttons
     function attachCardEventListeners() {
-        // Favorite buttons
-        document.querySelectorAll('.favorite-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const tutorId = btn.dataset.id;
-                // Add API call to toggle favorite
-                btn.classList.toggle('active');
-                const svg = btn.querySelector('svg');
-                svg.setAttribute('fill', btn.classList.contains('active') ? 'currentColor' : 'none');
-            });
+    // Favorite buttons
+    document.querySelectorAll('.favorite-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const tutorId = parseInt(btn.dataset.id);
+            const isFavorited = PreferencesManager.toggleFavorite(tutorId);
+            
+            // Update button appearance
+            btn.classList.toggle('active', isFavorited);
+            btn.style.color = isFavorited ? '#F59E0B' : '#6b7280';
+            const svg = btn.querySelector('svg');
+            svg.setAttribute('fill', isFavorited ? 'currentColor' : 'none');
+            
+            showNotification(
+                isFavorited ? 'Added to favorites' : 'Removed from favorites',
+                'success'
+            );
         });
+    });
 
-        // Save buttons
-        document.querySelectorAll('.save-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                const tutorId = btn.dataset.id;
-                // Add API call to toggle save
-                btn.classList.toggle('active');
-                const svg = btn.querySelector('svg');
-                svg.setAttribute('fill', btn.classList.contains('active') ? 'currentColor' : 'none');
-            });
+    // Save buttons
+    document.querySelectorAll('.save-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const tutorId = parseInt(btn.dataset.id);
+            const isSaved = PreferencesManager.toggleSaved(tutorId);
+            
+            // Update button appearance
+            btn.classList.toggle('active', isSaved);
+            btn.style.color = isSaved ? '#F59E0B' : '#6b7280';
+            const svg = btn.querySelector('svg');
+            svg.setAttribute('fill', isSaved ? 'currentColor' : 'none');
+            
+            showNotification(
+                isSaved ? 'Saved for later' : 'Removed from saved',
+                'success'
+            );
         });
-    }
+    });
+}
 
-    // Filter Functionality
-    const searchBar = document.getElementById('searchBar');
-    const courseTypeSelect = document.getElementById('courseTypeSelect');
-    const gradeSelect = document.getElementById('gradeSelect');
-    const genderCheckboxes = document.querySelectorAll('input[name="gender"]');
-    const learningMethodSelect = document.querySelector('select[name="learningMethod"]');
-    const minRatingInput = document.querySelector('input[name="minRating"]');
-    const maxRatingInput = document.querySelector('input[name="maxRating"]');
-    const minPriceInput = document.querySelector('input[name="minPrice"]');
-    const maxPriceInput = document.querySelector('input[name="maxPrice"]');
-    const clearFiltersBtn = document.getElementById('clearFilters');
+    // ============================================
+    // PAGINATION
+    // ============================================
 
-
-    // Add pagination rendering
     function renderPagination() {
-        // Remove existing pagination if any
-        const existingPagination = document.querySelector('.pagination-container');
+        const existingPagination = document.getElementById('paginationContainer');
         if (existingPagination) {
             existingPagination.remove();
         }
 
-        if (totalPages <= 1) return; // Don't show pagination for single page
+        if (totalPages <= 1) return;
 
         const paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container flex justify-center items-center space-x-2 mt-8 mb-4';
+        paginationContainer.id = 'paginationContainer';
+        paginationContainer.className = 'flex justify-center items-center gap-2 mt-8 pb-8';
 
-        // Build pagination HTML
-        let paginationHTML = '';
-
-        // Previous button
-        paginationHTML += `
-            <button 
-                onclick="window.fetchTutorsPage(${currentPage - 1})" 
-                class="px-3 py-1 bg-blue-500 text-white rounded ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}"
-                ${currentPage === 1 ? 'disabled' : ''}>
-                Previous
-            </button>
-        `;
+        // Previous button - theme aware
+        const prevButton = document.createElement('button');
+        prevButton.textContent = 'Previous';
+        prevButton.style.cssText = `
+        padding: 8px 16px;
+        background: ${currentPage === 1 ? '#e5e7eb' : 'var(--button-bg, #F59E0B)'};
+        color: ${currentPage === 1 ? '#9ca3af' : 'white'};
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        opacity: ${currentPage === 1 ? '0.5' : '1'};
+        cursor: ${currentPage === 1 ? 'not-allowed' : 'pointer'};
+    `;
+        prevButton.disabled = currentPage === 1;
+        if (currentPage > 1) {
+            prevButton.onmouseover = () => {
+                prevButton.style.transform = 'translateY(-2px)';
+                prevButton.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.3)';
+            };
+            prevButton.onmouseout = () => {
+                prevButton.style.transform = 'translateY(0)';
+                prevButton.style.boxShadow = 'none';
+            };
+        }
+        prevButton.addEventListener('click', () => {
+            if (currentPage > 1) fetchTutors(currentPage - 1);
+        });
+        paginationContainer.appendChild(prevButton);
 
         // Page numbers
         const maxVisiblePages = 5;
-        let startPage = Math.max(1, currentPage - 2);
+        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-        if (endPage - startPage < maxVisiblePages - 1) {
+        if (endPage - startPage + 1 < maxVisiblePages) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
 
-        if (startPage > 1) {
-            paginationHTML += `
-                <button onclick="window.fetchTutorsPage(1)" class="px-3 py-1 border rounded hover:bg-gray-100">1</button>
-                ${startPage > 2 ? '<span class="px-2">...</span>' : ''}
-            `;
-        }
-
+        // Page buttons with theme styling
         for (let i = startPage; i <= endPage; i++) {
-            paginationHTML += `
-                <button 
-                    onclick="window.fetchTutorsPage(${i})" 
-                    class="px-3 py-1 border rounded ${i === currentPage ? 'bg-blue-500 text-white' : 'hover:bg-gray-100'}">
-                    ${i}
-                </button>
-            `;
-        }
-
-        if (endPage < totalPages) {
-            paginationHTML += `
-                ${endPage < totalPages - 1 ? '<span class="px-2">...</span>' : ''}
-                <button onclick="window.fetchTutorsPage(${totalPages})" class="px-3 py-1 border rounded hover:bg-gray-100">${totalPages}</button>
-            `;
-        }
-
-        // Next button
-        paginationHTML += `
-            <button 
-                onclick="window.fetchTutorsPage(${currentPage + 1})" 
-                class="px-3 py-1 bg-blue-500 text-white rounded ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'}"
-                ${currentPage === totalPages ? 'disabled' : ''}>
-                Next
-            </button>
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            const isActive = i === currentPage;
+            pageButton.style.cssText = `
+            padding: 8px 12px;
+            background: ${isActive ? 'var(--button-bg, #F59E0B)' : 'transparent'};
+            color: ${isActive ? 'white' : 'var(--text, #374151)'};
+            border: 2px solid ${isActive ? 'var(--button-bg, #F59E0B)' : 'var(--border-color, #e5e7eb)'};
+            border-radius: 8px;
+            font-weight: ${isActive ? '600' : '500'};
+            transition: all 0.3s ease;
+            cursor: pointer;
         `;
+            if (!isActive) {
+                pageButton.onmouseover = () => {
+                    pageButton.style.background = 'var(--button-bg, #F59E0B)';
+                    pageButton.style.color = 'white';
+                    pageButton.style.transform = 'translateY(-2px)';
+                };
+                pageButton.onmouseout = () => {
+                    pageButton.style.background = 'transparent';
+                    pageButton.style.color = 'var(--text, #374151)';
+                    pageButton.style.transform = 'translateY(0)';
+                };
+            }
+            pageButton.addEventListener('click', () => fetchTutors(i));
+            paginationContainer.appendChild(pageButton);
+        }
+
+        // Next button - theme aware
+        const nextButton = document.createElement('button');
+        nextButton.textContent = 'Next';
+        nextButton.style.cssText = `
+        padding: 8px 16px;
+        background: ${currentPage === totalPages ? '#e5e7eb' : 'var(--button-bg, #F59E0B)'};
+        color: ${currentPage === totalPages ? '#9ca3af' : 'white'};
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        opacity: ${currentPage === totalPages ? '0.5' : '1'};
+        cursor: ${currentPage === totalPages ? 'not-allowed' : 'pointer'};
+    `;
+        nextButton.disabled = currentPage === totalPages;
+        if (currentPage < totalPages) {
+            nextButton.onmouseover = () => {
+                nextButton.style.transform = 'translateY(-2px)';
+                nextButton.style.boxShadow = '0 4px 12px rgba(245, 158, 11, 0.3)';
+            };
+            nextButton.onmouseout = () => {
+                nextButton.style.transform = 'translateY(0)';
+                nextButton.style.boxShadow = 'none';
+            };
+        }
+        nextButton.addEventListener('click', () => {
+            if (currentPage < totalPages) fetchTutors(currentPage + 1);
+        });
+        paginationContainer.appendChild(nextButton);
 
         // Info text
-        paginationHTML += `
-            <span class="ml-4 text-gray-600">
-                Page ${currentPage} of ${totalPages} (${totalTutors} tutors)
-            </span>
-        `;
+        const infoSpan = document.createElement('span');
+        infoSpan.className = 'ml-4';
+        infoSpan.style.color = 'var(--text, #6b7280)';
+        infoSpan.textContent = `Page ${currentPage} of ${totalPages} (${totalTutors} tutors)`;
+        paginationContainer.appendChild(infoSpan);
 
-        paginationContainer.innerHTML = paginationHTML;
-        document.getElementById('tutorCards').after(paginationContainer);
+        const tutorCardsElement = document.getElementById('tutorCards');
+        if (tutorCardsElement && tutorCardsElement.parentNode) {
+            tutorCardsElement.parentNode.insertBefore(paginationContainer, tutorCardsElement.nextSibling);
+        }
     }
+    // ============================================
+    // FILTERS
+    // ============================================
 
-    // Make fetchTutors available globally for pagination
-    window.fetchTutorsPage = fetchTutors;
-
-
-
-    // Update applyFilters to work with API
+    // Replace your current applyFilters function with this fixed version:
     async function applyFilters() {
-        const filters = {
-            search: searchBar?.value || undefined,
-            course_type: courseTypeSelect?.value || undefined,
-            learning_method: learningMethodSelect?.value || undefined,
-            min_price: minPriceInput?.value || undefined,
-            max_price: maxPriceInput?.value || undefined,
-            min_rating: minRatingInput?.value || undefined,
-            page: 1,  // Reset to first page when filtering
-            limit: 20
-        };
+        const searchBar = document.getElementById('searchBar');
+        const courseTypeSelect = document.getElementById('courseTypeSelect');
+        const gradeSelect = document.getElementById('gradeSelect');
+        const learningMethodSelect = document.querySelector('select[name="learningMethod"]');
+        const minRatingInput = document.querySelector('input[name="minRating"]');
+        const maxRatingInput = document.querySelector('input[name="maxRating"]');
+        const minPriceInput = document.querySelector('input[name="minPrice"]');
+        const maxPriceInput = document.querySelector('input[name="maxPrice"]');
+        const genderCheckboxes = document.querySelectorAll('input[name="gender"]:checked');
 
-        // Remove undefined values
-        Object.keys(filters).forEach(key =>
-            filters[key] === undefined && delete filters[key]
-        );
+        // Build filter parameters
+        const params = new URLSearchParams();
+        params.append('page', '1');
+        params.append('limit', '15');
+
+        // Add filters
+        if (searchBar?.value) {
+            params.append('search', searchBar.value);
+        }
+
+        if (courseTypeSelect?.value) {
+            params.append('course_type', courseTypeSelect.value);
+        }
+
+        if (gradeSelect?.value) {
+            params.append('grade', gradeSelect.value);
+        }
+
+        if (learningMethodSelect?.value) {
+            params.append('learning_method', learningMethodSelect.value);
+        }
+
+        // In applyFilters function, update the gender handling:
+        if (genderCheckboxes.length > 0) {
+            const genders = Array.from(genderCheckboxes).map(cb => cb.value);
+            // Send as comma-separated string
+            params.append('gender', genders.join(','));
+        }
+
+        if (minPriceInput?.value) {
+            params.append('min_price', minPriceInput.value);
+        }
+        if (maxPriceInput?.value) {
+            params.append('max_price', maxPriceInput.value);
+        }
+
+        if (minRatingInput?.value) {
+            params.append('min_rating', minRatingInput.value);
+        }
+        if (maxRatingInput?.value) {
+            params.append('max_rating', maxRatingInput.value);
+        }
 
         try {
             showLoadingState();
-            const queryParams = new URLSearchParams(filters).toString();
-            const response = await fetch(`${API_BASE_URL}/tutors?${queryParams}`);
+            const url = `${API_BASE_URL}/tutors?${params.toString()}`;
+            console.log('Applying filters with URL:', url);
 
-            if (!response.ok) throw new Error('Failed to fetch filtered tutors');
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch filtered tutors');
+            }
 
             const data = await response.json();
+            console.log('Filtered data received:', data);
 
-            // Handle paginated response
+            // Update data
             if (data.tutors) {
                 tutorsData = data.tutors;
-                currentPage = data.page;
-                totalPages = data.total_pages;
-                totalTutors = data.total;
+                currentPage = data.page || 1;
+                totalPages = data.total_pages || 1;
+                totalTutors = data.total || 0;
             } else if (Array.isArray(data)) {
                 tutorsData = data;
                 currentPage = 1;
-                totalPages = 1;
+                totalPages = Math.ceil(data.length / 15);
                 totalTutors = data.length;
             }
 
             filteredTutors = tutorsData;
+
+            // Reset to page 1 when filtering
+            currentPage = 1;
+
             renderTutorCards(filteredTutors);
             renderPagination();
+            updateHeroStats(); // Update stats after filtering
+
+            // Show result count
+            if (totalTutors === 0) {
+                document.getElementById('noResults').classList.remove('hidden');
+                showNotification('No tutors found matching your filters', 'info');
+            } else {
+                document.getElementById('noResults').classList.add('hidden');
+                showNotification(`Found ${totalTutors} tutor${totalTutors !== 1 ? 's' : ''}`, 'success');
+            }
+
         } catch (error) {
             console.error('Filter error:', error);
             showNotification('Failed to apply filters', 'error');
@@ -760,19 +960,41 @@ function generateTutorCard(tutor, index) {
     }
 
 
-    // Update showLoadingState
-    function showLoadingState() {
-        tutorCardsContainer.innerHTML = `
-            <div class="col-span-full text-center py-12">
-                <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-                <p class="mt-4 text-gray-600">Loading tutors...</p>
-            </div>
-        `;
+    function updateHeroStats() {
+        // Calculate stats from current filtered data
+        const totalTutorsCount = totalTutors || tutorsData.length || 0;
+        const averageRating = tutorsData.length > 0
+            ? (tutorsData.reduce((sum, t) => sum + (t.rating || 2.0), 0) / tutorsData.length).toFixed(1)
+            : '4.5';
+
+        // Count unique training centers
+        const trainingCenters = new Set(tutorsData
+            .filter(t => t.teaches_at && t.teaches_at !== 'Independent')
+            .map(t => t.teaches_at)
+        ).size || 50;
+
+        // Update hero stats in DOM
+        const statsHTML = `
+        <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+            <span class="stat-number">${totalTutorsCount}+</span>
+            <span class="stat-label">Expert Tutors</span>
+        </div>
+        <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+            <span class="stat-number">${trainingCenters}+</span>
+            <span class="stat-label">Training Centers</span>
+        </div>
+        <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+            <span class="stat-number">${averageRating}★</span>
+            <span class="stat-label">Average Rating</span>
+        </div>
+    `;
+
+        const heroStats = document.querySelector('.hero-stats');
+        if (heroStats) {
+            heroStats.innerHTML = statsHTML;
+        }
     }
 
-    function hideLoadingState() {
-        // This is now empty as rendering is handled elsewhere
-    }
     // Debounce function
     function debounce(func, wait) {
         let timeout;
@@ -788,74 +1010,205 @@ function generateTutorCard(tutor, index) {
 
     const debouncedSearch = debounce(applyFilters, 300);
 
-    // Add event listeners for filters
+    // Get filter elements
+    const searchBar = document.getElementById('searchBar');
+    const courseTypeSelect = document.getElementById('courseTypeSelect');
+    const gradeSelect = document.getElementById('gradeSelect');
+    const learningMethodSelect = document.querySelector('select[name="learningMethod"]');
+    const minRatingInput = document.querySelector('input[name="minRating"]');
+    const maxRatingInput = document.querySelector('input[name="maxRating"]');
+    const minPriceInput = document.querySelector('input[name="minPrice"]');
+    const maxPriceInput = document.querySelector('input[name="maxPrice"]');
+
+    // Add event listeners with null checks
     searchBar?.addEventListener('input', debouncedSearch);
     courseTypeSelect?.addEventListener('change', applyFilters);
     gradeSelect?.addEventListener('change', applyFilters);
-    genderCheckboxes.forEach(cb => cb.addEventListener('change', applyFilters));
     learningMethodSelect?.addEventListener('change', applyFilters);
     minRatingInput?.addEventListener('input', debouncedSearch);
     maxRatingInput?.addEventListener('input', debouncedSearch);
     minPriceInput?.addEventListener('input', debouncedSearch);
     maxPriceInput?.addEventListener('input', debouncedSearch);
 
-    // Update the clear filters function
-    clearFiltersBtn?.addEventListener('click', () => {
-        searchBar.value = '';
-        courseTypeSelect.value = '';
-        gradeSelect.value = '';
-        genderCheckboxes.forEach(cb => cb.checked = false);
-        learningMethodSelect.value = '';
-        minRatingInput.value = '';
-        maxRatingInput.value = '';
-        minPriceInput.value = '';
-        maxPriceInput.value = '';
+    // Gender checkboxes
+    document.querySelectorAll('input[name="gender"]').forEach(cb => {
+        cb.addEventListener('change', applyFilters);
+    });
 
-        // Fetch fresh data from API instead of using local data
-        fetchTutors(1); // Reset to page 1 with no filters
+    // Simple location filter (requires user to be logged in and have location set)
+    const nearMeCheckbox = document.querySelector('input[name="nearMe"]');
+    nearMeCheckbox?.addEventListener('change', async (e) => {
+        if (e.target.checked) {
+            // Get user's location from profile (if logged in)
+            const userLocation = localStorage.getItem('user_location') || 'Addis Ababa'; // Default
+
+            // Add location to search
+            const searchBar = document.getElementById('searchBar');
+            if (searchBar) {
+                searchBar.value = userLocation;
+                applyFilters(); // Trigger filter
+            }
+        } else {
+            // Clear location search
+            const searchBar = document.getElementById('searchBar');
+            if (searchBar && searchBar.value.includes('Addis Ababa')) {
+                searchBar.value = '';
+                applyFilters();
+            }
+        }
+    });
+
+    // Preference filters
+const favoriteCheckbox = document.querySelector('input[name="favorite"]');
+const savedCheckbox = document.querySelector('input[name="saved"]');
+const searchHistoryCheckbox = document.querySelector('input[name="searchHistory"]');
+
+favoriteCheckbox?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        // Show only favorited tutors
+        const favorites = PreferencesManager.getFavorites();
+        filteredTutors = tutorsData.filter(tutor => favorites.includes(tutor.id));
+        renderTutorCards(filteredTutors);
+        
+        if (filteredTutors.length === 0) {
+            showNotification('No favorite tutors yet. Click the heart icon to add favorites!', 'info');
+        }
+    } else {
+        // Show all tutors
+        filteredTutors = tutorsData;
+        renderTutorCards(filteredTutors);
+    }
+});
+
+savedCheckbox?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        // Show only saved tutors
+        const saved = PreferencesManager.getSaved();
+        filteredTutors = tutorsData.filter(tutor => saved.includes(tutor.id));
+        renderTutorCards(filteredTutors);
+        
+        if (filteredTutors.length === 0) {
+            showNotification('No saved tutors yet. Click the bookmark icon to save tutors!', 'info');
+        }
+    } else {
+        // Show all tutors
+        filteredTutors = tutorsData;
+        renderTutorCards(filteredTutors);
+    }
+});
+
+searchHistoryCheckbox?.addEventListener('change', (e) => {
+    if (e.target.checked) {
+        // Show search history
+        const history = PreferencesManager.getSearchHistory();
+        if (history.length > 0) {
+            showNotification(`Recent searches: ${history.slice(0, 3).join(', ')}`, 'info');
+            // Apply the most recent search
+            const searchBar = document.getElementById('searchBar');
+            if (searchBar && history[0]) {
+                searchBar.value = history[0];
+                applyFilters();
+            }
+        } else {
+            showNotification('No search history yet', 'info');
+        }
+        e.target.checked = false; // Uncheck after showing
+    }
+});
+
+
+    // Clear filters button
+    const clearFiltersBtn = document.getElementById('clearFilters');
+    clearFiltersBtn?.addEventListener('click', () => {
+        // Clear all inputs
+        if (searchBar) searchBar.value = '';
+        if (courseTypeSelect) courseTypeSelect.value = '';
+        if (gradeSelect) gradeSelect.value = '';
+        if (learningMethodSelect) learningMethodSelect.value = '';
+        if (minRatingInput) minRatingInput.value = '';
+        if (maxRatingInput) maxRatingInput.value = '';
+        if (minPriceInput) minPriceInput.value = '';
+        if (maxPriceInput) maxPriceInput.value = '';
+
+        // Clear checkboxes
+        document.querySelectorAll('input[name="gender"]').forEach(cb => cb.checked = false);
+
+        // Reset to first page
+        currentPage = 1;
+
+        // Fetch unfiltered data
+        fetchTutors(1);
     });
 
 
-    async function fetchTutors(page = 1) {
-        try {
-            console.log('Fetching tutors from:', `${API_BASE_URL}/tutors?page=${page}&limit=20`);
-            showLoadingState();
-            const response = await fetch(`${API_BASE_URL}/tutors?page=${page}&limit=20`);
-            console.log('Response status:', response.status);
+    
 
-            if (!response.ok) throw new Error('Failed to fetch tutors');
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
 
-            const data = await response.json();
-            console.log('Data received:', data);
-
-            // Handle paginated response structure
-            if (data.tutors) {
-                // Paginated response
-                tutorsData = data.tutors;
-                currentPage = data.page;
-                totalPages = data.total_pages;
-                totalTutors = data.total;
-            } else if (Array.isArray(data)) {
-                // Non-paginated response (fallback)
-                tutorsData = data;
-                currentPage = 1;
-                totalPages = 1;
-                totalTutors = data.length;
-            }
-
-            filteredTutors = tutorsData;
-            renderTutorCards(filteredTutors);  // THIS LINE IS PROBABLY MISSING
-            renderPagination();
-        } catch (error) {
-            console.error('Error fetching tutors:', error);
-            showNotification('Failed to load tutors. Please try again later.', 'error');
-        } finally {
-            hideLoadingState();
+    function showNotification(message, type = 'info') {
+        // Create or update notification element
+        let notification = document.getElementById('notification');
+        if (!notification) {
+            notification = document.createElement('div');
+            notification.id = 'notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                padding: 15px 20px;
+                border-radius: 8px;
+                max-width: 400px;
+                animation: slideIn 0.3s ease;
+            `;
+            document.body.appendChild(notification);
         }
+
+        // Set styles based on type
+        const styles = {
+            error: 'background: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5;',
+            success: 'background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7;',
+            warning: 'background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D;',
+            info: 'background: #DBEAFE; color: #1E40AF; border: 1px solid #93C5FD;'
+        };
+
+        notification.style.cssText += styles[type] || styles.info;
+        notification.textContent = message;
+
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+            if (notification) {
+                notification.remove();
+            }
+        }, 5000);
     }
 
+    // Add CSS animation for notifications
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 
-    // Add connection retry logic
+    // Make fetchTutors available globally for pagination
+    window.fetchTutors = fetchTutors;
+    window.fetchTutorsPage = fetchTutors;
+
+    // ============================================
+    // RETRY LOGIC
+    // ============================================
+
     let retryCount = 0;
     const maxRetries = 3;
 
@@ -874,29 +1227,16 @@ function generateTutorCard(tutor, index) {
         }
     }
 
-    // Notification function
-    function showNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `fixed top-20 right-4 px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 z-50`;
+    // ============================================
+    // WEBSOCKET (OPTIONAL)
+    // ============================================
 
-        if (type === 'success') {
-            notification.className += ' bg-green-500 text-white';
-        } else if (type === 'error') {
-            notification.className += ' bg-red-500 text-white';
-        } else {
-            notification.className += ' bg-blue-500 text-white';
+    function initWebSocket() {
+        if (!window.WebSocket) {
+            console.log('WebSocket not supported');
+            return;
         }
 
-        notification.textContent = message;
-        document.body.appendChild(notification);
-
-        setTimeout(() => {
-            notification.remove();
-        }, 3000);
-    }
-
-    // Add WebSocket support (optional but recommended)
-    function initWebSocket() {
         try {
             const ws = new WebSocket('ws://localhost:8000/ws/tutors/client_' + Date.now());
 
@@ -905,29 +1245,63 @@ function generateTutorCard(tutor, index) {
             };
 
             ws.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                if (data.type === 'tutor_update') {
-                    showNotification('New tutors available! Refreshing...', 'info');
-                    fetchTutors(currentPage); // Refresh current page
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'tutor_update') {
+                        showNotification('New tutors available! Refreshing...', 'info');
+                        fetchTutors(currentPage);
+                    }
+                } catch (e) {
+                    console.error('WebSocket message parse error:', e);
                 }
             };
 
             ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
+                console.log('WebSocket connection failed - continuing without real-time updates');
             };
 
             ws.onclose = () => {
                 console.log('WebSocket disconnected');
-                // Reconnect after 5 seconds
-                setTimeout(initWebSocket, 5000);
+                // Only reconnect after 30 seconds to avoid spamming
+                setTimeout(initWebSocket, 30000);
             };
         } catch (error) {
-            console.error('WebSocket initialization failed:', error);
+            console.log('WebSocket initialization skipped:', error.message);
         }
     }
 
-    // Initialize page
-    fetchTutors();
-    initWebSocket(); // Add WebSocket connection
-    console.log('✨ Astegni Find Tutors - Initialized');
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+
+    // Initialize on page load - SINGLE INITIALIZATION
+    // Initialize on page load - SINGLE INITIALIZATION
+    (function initializePage() {
+        // Check if backend is running at the root endpoint
+        fetch('http://localhost:8000/')
+            .then(response => {
+                if (response.ok) {
+                    console.log('Backend connected successfully');
+                    // Fetch tutors on page load ONCE
+                    fetchTutors(1);
+                } else {
+                    throw new Error('Backend not responding');
+                }
+            })
+            .catch(error => {
+                console.error('Backend connection error:', error);
+                showNotification('Backend server is not running. Please start the server with: uvicorn app:app --reload', 'error');
+            });
+    })();
+
+    // ============================================
+// PREFERENCES MANAGEMENT
+// ============================================
+
+
+
+    // Initialize WebSocket (optional)
+    initWebSocket();
+
+    console.log('✨ Astegni Find Tutors - Initialized with Ad Placeholders and Rating Tooltips');
 });
