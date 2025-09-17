@@ -414,25 +414,68 @@ class VideoPlayerBridge {
     }
 
     // In VideoPlayerBridge class, add:
-loadRelatedVideos(currentVideoId) {
+
+    loadRelatedVideos(currentVideoId) {
     const container = document.getElementById('related-videos-container');
     if (!container) return;
     
     const currentVideo = this.dataAdapter.getVideoData(currentVideoId);
-    const relatedVideos = window.currentReels.filter(reel => {
-        return reel.id !== parseInt(currentVideoId) && 
-               (reel.tutor_id === currentVideo.tutor_id || 
-                reel.subject === currentVideo.subject);
-    }).slice(0, 9);
+    if (!currentVideo) return;
     
-    container.innerHTML = relatedVideos.map(video => `
-        <div class="related-video-card" onclick="videoPlayerBridge.openVideo(${video.id})">
+    // Get videos from same uploader
+    const uploaderVideos = window.currentReels.filter(reel => 
+        reel.id !== parseInt(currentVideoId) && 
+        reel.tutor_id === currentVideo.tutor_id
+    ).slice(0, 10);
+    
+    // Get related videos (different uploader, same subject/grade)
+    const relatedVideos = window.currentReels.filter(reel => 
+        reel.id !== parseInt(currentVideoId) && 
+        reel.tutor_id !== currentVideo.tutor_id &&
+        (reel.subject === currentVideo.subject || 
+         reel.grade_level === currentVideo.grade_level)
+    ).slice(0, 10);
+    
+    // Build HTML with two horizontal sections
+    container.innerHTML = `
+        ${uploaderVideos.length > 0 ? `
+            <div class="related-section">
+                <h4 class="related-section-title">More from ${currentVideo.creator}</h4>
+                <div class="related-videos-horizontal">
+                    <div class="related-videos-track">
+                        ${uploaderVideos.map(video => this.createRelatedVideoCard(video)).join('')}
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+        
+        ${relatedVideos.length > 0 ? `
+            <div class="related-section">
+                <h4 class="related-section-title">Related Videos</h4>
+                <div class="related-videos-horizontal">
+                    <div class="related-videos-track">
+                        ${relatedVideos.map(video => this.createRelatedVideoCard(video)).join('')}
+                    </div>
+                </div>
+            </div>
+        ` : ''}
+        
+        ${uploaderVideos.length === 0 && relatedVideos.length === 0 ? `
+            <div class="no-related-videos">
+                <p>No related videos available</p>
+            </div>
+        ` : ''}
+    `;
+}
+
+createRelatedVideoCard(video) {
+    return `
+        <div class="related-video-card-horizontal" onclick="videoPlayerBridge.openVideo(${video.id})">
             <img class="related-video-thumbnail" 
                  src="${video.thumbnail_url || '/default-thumbnail.jpg'}" 
                  alt="${video.title}">
             <div class="related-video-info">
                 <div class="related-video-title">${video.title}</div>
-                <div class="related-video-description">${video.description || 'No description available'}</div>
                 <div class="related-video-meta">
                     <a href="../view-profile-tier-1/view-tutor.html?tutorId=${video.tutor_id}" 
                        class="related-video-creator-link"
@@ -445,12 +488,13 @@ loadRelatedVideos(currentVideoId) {
                         }
                         <span class="related-video-creator">${video.tutor_name}</span>
                     </a>
-                    <span class="meta-separator">•</span>
+                </div>
+                <div class="related-video-stats">
                     <span>${this.formatCount(video.views)} views</span>
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
 }
 
 
