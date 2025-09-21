@@ -6,6 +6,9 @@
 // ============================================
 // MODALS MANAGER - ENHANCED
 // ============================================
+// ============================================
+// MODALS MANAGER - ENHANCED
+// ============================================
 class ModalsManager {
     constructor() {
         this.activeModals = new Set();
@@ -29,39 +32,52 @@ class ModalsManager {
                 this.closeTopModal();
             }
         });
+        
+        console.log("ModalsManager initialized");
     }
 
     open(modalId) {
+        console.log(`Opening modal: ${modalId}`);
         const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.style.display = "flex";
-            modal.classList.add("show");
-            this.activeModals.add(modalId);
-
-            // Ensure modal is properly styled
-            this.ensureModalStyle(modal);
-
-            const content = modal.querySelector(".modal-content");
-            if (content) {
-                content.style.animation = "modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
-            }
-
-            // Auto-attach close button handler
-            const closeBtn = modal.querySelector(".modal-close");
-            if (closeBtn && !closeBtn.hasAttribute("data-handler-attached")) {
-                closeBtn.setAttribute("data-handler-attached", "true");
-                closeBtn.addEventListener("click", () => this.close(modalId));
-            }
+        
+        if (!modal) {
+            console.error(`Modal not found: ${modalId}`);
+            return;
         }
+        
+        // Remove all hiding classes
+        modal.classList.remove("hidden");
+        modal.classList.add("show");
+        
+        // Force display
+        modal.style.display = "flex";
+        modal.style.visibility = "visible";
+        modal.style.opacity = "1";
+        
+        this.activeModals.add(modalId);
+
+        const content = modal.querySelector(".modal-content");
+        if (content) {
+            content.style.animation = "modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+        }
+
+        // Auto-attach close button handler
+        const closeBtn = modal.querySelector(".modal-close");
+        if (closeBtn && !closeBtn.hasAttribute("data-handler-attached")) {
+            closeBtn.setAttribute("data-handler-attached", "true");
+            closeBtn.addEventListener("click", () => this.close(modalId));
+        }
+        
+        console.log(`Modal ${modalId} opened successfully`);
     }
 
     close(modalId) {
+        console.log(`Closing modal: ${modalId}`);
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.remove("show");
-            setTimeout(() => {
-                modal.style.display = "none";
-            }, 300);
+            modal.classList.add("hidden");
+            modal.style.display = "none";
             this.activeModals.delete(modalId);
         }
     }
@@ -76,21 +92,16 @@ class ModalsManager {
     closeAll() {
         document.querySelectorAll(".modal.show").forEach((modal) => {
             modal.classList.remove("show");
+            modal.classList.add("hidden");
             modal.style.display = "none";
         });
         this.activeModals.clear();
     }
+}
 
-    ensureModalStyle(modal) {
-        modal.style.position = "fixed";
-        modal.style.top = "0";
-        modal.style.left = "0";
-        modal.style.width = "100%";
-        modal.style.height = "100%";
-        modal.style.zIndex = "10000";
-        modal.style.alignItems = "center";
-        modal.style.justifyContent = "center";
-    }
+// Initialize immediately, don't wait for DOMContentLoaded
+if (!window.modalsManager) {
+    window.modalsManager = new ModalsManager();
 }
 
 // ============================================
@@ -1324,96 +1335,23 @@ AdPackageManager.renderPackages();
 // ============================================
 // ATTACH ALL BUTTON HANDLERS
 // ============================================
+// Update the button handler attachments (around line 1340)
 function attachAllButtonHandlers() {
-    // Profile action buttons
+    // Fix edit profile button
     const editProfileBtn = document.querySelector('.edit-profile');
     if (editProfileBtn && !editProfileBtn.hasAttribute('data-handler')) {
         editProfileBtn.setAttribute('data-handler', 'true');
         editProfileBtn.addEventListener('click', () => {
-            window.modalsManager.open('editProfileModal');
+            window.modalsManager.open('edit-profile-modal'); // Correct ID
         });
     }
 
+    // Fix schedule button  
     const scheduleBtn = document.querySelector('.set-schedule');
     if (scheduleBtn && !scheduleBtn.hasAttribute('data-handler')) {
         scheduleBtn.setAttribute('data-handler', 'true');
         scheduleBtn.addEventListener('click', () => {
-            window.modalsManager.open('scheduleModal');
-        });
-    }
-
-    // Follow cards
-    document.querySelectorAll('.follow-card').forEach(card => {
-        if (!card.hasAttribute('data-handler')) {
-            card.setAttribute('data-handler', 'true');
-            card.style.cursor = 'pointer';
-        }
-    });
-
-    // Video upload button
-    const uploadVideoBtn = document.querySelector('[onclick="openUploadVideoModal()"]');
-    if (uploadVideoBtn && !uploadVideoBtn.hasAttribute('data-handler')) {
-        uploadVideoBtn.setAttribute('data-handler', 'true');
-        uploadVideoBtn.addEventListener('click', () => {
-            window.modalsManager.open('uploadVideoModal');
-        });
-    }
-
-    // Blog create button
-    const createBlogBtn = document.querySelector('[onclick="openCreateBlogModal()"]');
-    if (createBlogBtn && !createBlogBtn.hasAttribute('data-handler')) {
-        createBlogBtn.setAttribute('data-handler', 'true');
-        createBlogBtn.addEventListener('click', () => {
-            window.modalsManager.open('createBlogModal');
-        });
-    }
-
-    // All modal open buttons
-    document.querySelectorAll('[onclick*="Modal"]').forEach(btn => {
-        const onclickAttr = btn.getAttribute('onclick');
-        if (onclickAttr && onclickAttr.includes('open')) {
-            const modalName = onclickAttr.match(/open(\w+Modal)/);
-            if (modalName && modalName[1]) {
-                const modalId = modalName[1].charAt(0).toLowerCase() + modalName[1].slice(1);
-                btn.removeAttribute('onclick');
-                btn.addEventListener('click', () => {
-                    window.modalsManager.open(modalId);
-                });
-            }
-        }
-    });
-
-    // Fix notification button
-    const notificationBtn = document.querySelector('.notification-btn');
-    if (notificationBtn && !notificationBtn.hasAttribute('data-handler')) {
-        notificationBtn.setAttribute('data-handler', 'true');
-        notificationBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (window.notificationsManager) {
-                window.notificationsManager.open();
-            }
-        });
-    }
-
-    // Fix theme toggle
-    const themeToggle = document.querySelector('.theme-toggle');
-    if (themeToggle && !themeToggle.hasAttribute('data-handler')) {
-        themeToggle.setAttribute('data-handler', 'true');
-        themeToggle.addEventListener('click', () => {
-            if (window.trainingCenterProfile && window.trainingCenterProfile.theme) {
-                window.trainingCenterProfile.theme.toggle();
-            }
-        });
-    }
-
-    // Fix sidebar toggle
-    const sidebarToggle = document.querySelector('.sidebar-toggle');
-    if (sidebarToggle && !sidebarToggle.hasAttribute('data-handler')) {
-        sidebarToggle.setAttribute('data-handler', 'true');
-        sidebarToggle.addEventListener('click', () => {
-            if (window.trainingCenterProfile && window.trainingCenterProfile.sidebar) {
-                window.trainingCenterProfile.sidebar.toggle();
-            }
+            window.modalsManager.open('create-session-modal'); // Correct ID
         });
     }
 }

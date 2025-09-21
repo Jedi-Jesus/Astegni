@@ -11,37 +11,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="../css-tier-1/auth-modal.css">
-    <link rel="stylesheet" href="../css-tier-1/profile-system.css"> <!-- Profile system CSS -->
+    <link rel="stylesheet" href="../css-tier-1/profile-system.css">
     <link rel="stylesheet" href="../css-tier-1/coming-soon-modal.css">
-
     <link rel="stylesheet" href="../css-tier-1/ad-modal.css">
 </head>
 
 <body>
-    <!-- Navigation (Same as journalist-profile.html) -->
+    <!-- Navigation (Same as original) -->
     <nav class="navbar glass">
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-                <a href="../index.html" class="logo-container">
+                <a href="tutor-profile.html" class="logo-container">
                     <div class="logo-text">
                         <span class="logo-main">Astegni</span>
                         <span class="logo-sub">Tutor</span>
                     </div>
                     <span class="logo-badge">Beta</span>
                 </a>
-
             </div>
             <div class="nav-menu">
+                <a class="nav-link px-2 py-1 rounded" href="../index.html">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
                     <span class="nav-icon">📰</span> News
                 </a>
-                <a class="nav-link px-2 py-1 rounded" href="../branch/find-tutors.html"
-                    onclick="handleNavLinkClick(event, 'find-tutors')">
+                <a class="nav-link px-2 py-1 rounded" href="../branch/find-tutors.html">
                     <span class="nav-icon">👨‍🏫</span> Find Tutors
                 </a>
-                <a class="nav-link px-2 py-1 rounded" href="../branch/reels.html"
-                    onclick="handleNavLinkClick(event, 'reels')">
+                <a class="nav-link px-2 py-1 rounded" href="../branch/reels.html">
                     <span class="nav-icon">🎬</span> Reels
                 </a>
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
@@ -50,6 +49,7 @@
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
                     <span class="nav-icon">💼</span> Find a Job
                 </a>
+
                 <!-- Profile container in navigation -->
                 <div id="profile-container" class="profile-dropdown-container hidden">
                     <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
@@ -64,7 +64,6 @@
                     </button>
 
                     <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
-                        <!-- User info header -->
                         <div class="dropdown-header">
                             <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
                             <div class="dropdown-user-info">
@@ -76,7 +75,6 @@
 
                         <div class="dropdown-divider"></div>
 
-                        <!-- Role switcher section -->
                         <div id="role-switcher-section" class="role-switcher-section hidden">
                             <div class="dropdown-divider"></div>
                             <div class="dropdown-item-header">Switch Role</div>
@@ -107,53 +105,35 @@
         </div>
     </nav>
 
-    <!-- Left Sidebar -->
+    <!-- Left Sidebar (ALL SECTIONS PRESERVED) -->
     <aside class="left-sidebar" id="leftSidebar">
         <div class="sidebar-content">
             <div class="sidebar-section">
-
                 <div class="sidebar-section" data-content="main-features">
                     <!-- Dashboard (Default Active) -->
                     <button class="sidebar-btn active" data-content="dashboard">
                         <span class="sidebar-btn-icon">📊</span>
                         <span>Dashboard</span>
                     </button>
-
-                    <!-- Manage Certifications -->
-                    <button class="sidebar-btn" data-content="manage-certifications">
-                        <span class="sidebar-btn-icon">🎓</span>
-                        <span>Manage Certifications</span>
-                    </button>
-
-                    <!-- Manage Experience -->
-                    <button class="sidebar-btn" data-content="manage-experience">
-                        <span class="sidebar-btn-icon">📝</span>
-                        <span>Manage Experience</span>
-                    </button>
-
-                    <!-- Manage Achievements -->
-                    <button class="sidebar-btn" data-content="manage-achievements">
-                        <span class="sidebar-btn-icon">🏆</span>
-                        <span>Manage Achievements</span>
-                    </button>
                 </div>
 
-                <div class= "sidebar-section" data-content="tutor-features">
+                <div class="sidebar-section" data-content="tutor-features">
+
+                    <button class="sidebar-btn" data-content="requested-sessions">
+                        <span class="sidebar-btn-icon">📮</span>
+                        <span>Requested Sessions</span>
+                        <span class="sidebar-badge" id="requests-count">0</span>
+                    </button>
+
                     <button class="sidebar-btn" data-content="my-students">
                         <span class="sidebar-btn-icon">👥</span>
                         <span>My Students</span>
-                        <span class="sidebar-badge">45</span>
+                        <span class="sidebar-badge" id="students-count">0</span>
                     </button>
 
                     <button class="sidebar-btn" data-content="tutor-schedule">
                         <span class="sidebar-btn-icon">🗓️</span>
                         <span>My Schedule</span>
-                    </button>
-
-                    <button class="sidebar-btn" data-content="requested-sessions">
-                        <span class="sidebar-btn-icon">📮</span>
-                        <span>Requested Sessions</span>
-                        <span class="sidebar-badge">8</span>
                     </button>
 
                     <button class="sidebar-btn" data-content="tutor-tools">
@@ -169,24 +149,20 @@
                     <button class="sidebar-btn" data-content="comments">
                         <span class="sidebar-btn-icon">⭐</span>
                         <span>Ratings & Reviews</span>
-                        <span class="sidebar-badge">15</span>
+                        <span class="sidebar-badge" id="reviews-count">0</span>
                     </button>
                 </div>
 
                 <!-- Permanent Section (UNCHANGED) -->
                 <div class="sidebar-section" data-content="my-actions">
-                    <button class="sidebar-btn" data-content="my-community">
-                        <span class="sidebar-btn-icon">👥</span>
-                        <span>Community</span>
+                    <button class="sidebar-btn" data-content="blog">
+                        <span class="sidebar-btn-icon">📝</span>
+                        <span>Blog</span>
+                        <span class="sidebar-badge">7</span>
                     </button>
-                    <button class="sidebar-btn" data-content="events">
-                        <span class="sidebar-btn-icon">📅</span>
-                        <span>Events</span>
-                    </button>
-                    <button class="sidebar-btn" data-content="clubs">
-                        <span class="sidebar-btn-icon">🎭</span>
-                        <span>Clubs</span>
-                        <span class="sidebar-badge active">Active</span>
+                    <button class="sidebar-btn" data-content="image-library">
+                        <span class="sidebar-btn-icon">🖼️</span>
+                        <span>Image Library</span>
                     </button>
                     <button class="sidebar-btn" data-content="podcasts">
                         <span class="sidebar-btn-icon">🎙️</span>
@@ -196,18 +172,9 @@
                     <button class="sidebar-btn" data-content="videos">
                         <span class="sidebar-btn-icon">🎬</span>
                         <span>Videos</span>
-                        <span class="sidebar-badge">12</span>
+                        <span class="sidebar-badge" id="videos-count">0</span>
                     </button>
 
-                    <button class="sidebar-btn" data-content="image-library">
-                        <span class="sidebar-btn-icon">🖼️</span>
-                        <span>Image Library</span>
-                    </button>
-                    <button class="sidebar-btn" data-content="blog">
-                        <span class="sidebar-btn-icon">📝</span>
-                        <span>Blog</span>
-                        <span class="sidebar-badge">7</span>
-                    </button>
                 </div>
 
                 <!-- My settings Section -->
@@ -224,7 +191,7 @@
                     </a>
                     <!-- Get Certified Button -->
                     <button class="sidebar-btn" data-content="get-certified">
-                        <span class="sidebar-btn-icon">🏅</span>
+                        <span class="sidebar-btn-icon">🅐</span>
                         <span>Get Certified</span>
                         <span class="sidebar-badge new">New</span>
                     </button>
@@ -232,7 +199,7 @@
                     <!-- Tutor Features -->
                     <button class="sidebar-btn" data-content="tutor-earnings">
                         <span class="sidebar-btn-icon">💰</span>
-                        <span>Earnings tbremoved</span>
+                        <span>Earnings</span>
                     </button>
 
                     <button class="sidebar-btn" data-content="settings">
@@ -246,40 +213,29 @@
                     <h4>Quick Stats</h4>
                     <div class="quick-stat-item">
                         <span class="stat-label">Total Students</span>
-                        <span class="stat-value">45</span>
+                        <span class="stat-value" id="sidebar-total-students">0</span>
                     </div>
                     <div class="quick-stat-item">
                         <span class="stat-label">Sessions This Week</span>
-                        <span class="stat-value">12</span>
+                        <span class="stat-value" id="sidebar-week-sessions">0</span>
                     </div>
                     <div class="quick-stat-item">
                         <span class="stat-label">Rating</span>
-                        <span class="stat-value">4.8/5.0</span>
+                        <span class="stat-value" id="sidebar-rating">0.0/5.0</span>
                     </div>
                 </div>
 
                 <!-- Recent Activity Feed -->
                 <div class="sidebar-activity">
                     <h4>Recent Activity</h4>
-                    <div class="activity-item">
-                        <span class="activity-icon">📅</span>
-                        <div class="activity-text">
-                            <p>New session request</p>
-                            <span class="activity-time">2 hours ago</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <span class="activity-icon">⭐</span>
-                        <div class="activity-text">
-                            <p>New review received</p>
-                            <span class="activity-time">5 hours ago</span>
-                        </div>
-                    </div>
-                    <div class="activity-item">
-                        <span class="activity-icon">📹</span>
-                        <div class="activity-text">
-                            <p>Video uploaded</p>
-                            <span class="activity-time">1 day ago</span>
+                    <div id="activity-feed">
+                        <!-- Activities will be loaded dynamically -->
+                        <div class="activity-item">
+                            <span class="activity-icon">📅</span>
+                            <div class="activity-text">
+                                <p>Loading activities...</p>
+                                <span class="activity-time">-</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -295,29 +251,30 @@
 
     <!-- Main Container -->
     <div class="main-container with-sidebar">
-        <!-- Profile Header Section (Same as journalist-profile.html structure) -->
+        <!-- Profile Header Section -->
         <section class="profile-header-section">
             <div class="cover-image-container">
-                <img src="../pictures/tutor cover.jpg" alt="Cover" class="cover-img">
+                <img src="../pictures/tutor cover.jpg" alt="Cover" class="cover-img" id="cover-img">
                 <span class="edit-icon cover-edit" onclick="openCoverUploadModal()">✏️</span>
             </div>
 
             <div class="profile-main-info">
                 <div class="profile-info-wrapper">
                     <div class="profile-avatar-container">
-                        <img src="../pictures/tutor-man.jpg" alt="Tutor Profile" class="profile-avatar">
+                        <img src="../pictures/tutor-man.jpg" alt="Tutor Profile" class="profile-avatar"
+                            id="profile-avatar">
                         <span class="edit-icon profile-edit" onclick="openProfileUploadModal()">✏️</span>
                     </div>
 
                     <div class="profile-details-section">
                         <div class="profile-name-row">
-                            <h1 class="center-name" id="centerName">Tutor profile</h1>
+                            <h1 class="center-name" id="centerName">Loading...</h1>
                             <div class="badges-row">
                                 <span class="verified-badge" id="verification-status">✗ Unverified</span>
                                 <span class="center-score">Rating: <span id="tutor-rating">N/A</span></span>
                             </div>
                             <div class="gender-info">
-                                <span id="tutor-gender">Female</span>
+                                <span id="tutor-gender">-</span>
                             </div>
                         </div>
 
@@ -330,49 +287,37 @@
                         <div class="location-info">
                             <span class="location-icon">📍</span>
                             <span id="locationText"><span id="tutor-address">Address: Not set</span> | <span
-                                    id="tutor-school">Teaches at: Under verification</span></span>
+                                    id="tutor-school">Teaches at: Not set</span></span>
                         </div>
 
-                        <div class="subject-tags">
-                            <span class="subject-tag">Mathematics</span>
-                            <span class="subject-tag">Physics</span>
-                            <span class="subject-tag">Chemistry</span>
-                            <span class="subject-tag">Advanced Calculus</span>
+                        <div class="subject-tags" id="subject-tags">
+                            <!-- Will be populated dynamically -->
                         </div>
 
-                        <div class="teaching-methods-tags">
-                            <span class="teaching-method-tag">Online</span>
-                            <span class="teaching-method-tag">In-person</span>
-                            <span class="teaching-method-tag">Self paced</span>
+                        <div class="teaching-methods-tags" id="teaching-methods-tags">
+                            <!-- Will be populated dynamically -->
                         </div>
 
                         <div class="profile-quote" id="profileQuote">
-                            <span id="quote">"Education is the key to success."</span>
+                            <span id="quote">"-"</span>
                         </div>
 
                         <div class="follow-stats-cards">
-
-                            <div class="follow-card" onclick="openCommunitysModal('followers')">
+                            <div class="follow-card" onclick="openCommunityModal()">
                                 <div class="follow-icon">👥</div>
                                 <div class="follow-info">
-                                    <span class="stat-value">45.2K</span>
-                                    <span class="stat-label">Followers</span>
-                                </div>
-                            </div>
-                            <div class="follow-card" onclick="openCommunityModal('following')">
-                                <div class="follow-icon">➕</div>
-                                <div class="follow-info">
-                                    <span class="stat-value">234</span>
-                                    <span class="stat-label">Following</span>
+                                    <span class="stat-value" id="followers-count">0</span>
+                                    <span class="stat-label">Community</span>
                                 </div>
                             </div>
                         </div>
+
                         <div class="profile-next-session" id="profileNextSession">
                             <div class="session-alert">
                                 <span class="alert-icon gradient-text">⏰</span>
-                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> Today at
-                                    2:00 PM - Math with Abebe</span>
-                                <button class="btn-join-inline">Start Session</button>
+                                <span id="nextSessionText"><strong class="gradient-text">Next Session:</strong> No
+                                    upcoming sessions</span>
+                                <button class="btn-join-inline" id="start-session-btn">Start Session</button>
                             </div>
                         </div>
 
@@ -390,7 +335,7 @@
             </div>
         </section>
 
-        <!-- Advertisement Placeholder (Same as journalist-profile.html) -->
+        <!-- Advertisement Placeholder -->
         <section class="ad-placeholder-section">
             <div class="ad-container premium-ad" onclick="openAdAnalyticsModal()">
                 <div class="ad-animation">
@@ -422,102 +367,41 @@
                     <!-- About Section -->
                     <section class="profile-about-section">
                         <h3>About Me</h3>
-                        <p id="tutor-bio">Experienced tutor with a passion for teaching Math and Physics. I have been
-                            helping students achieve their academic goals for over 7 years.</p>
+                        <p id="tutor-bio">Loading bio...</p>
                     </section>
 
                     <!-- Social Links -->
                     <section class="profile-socials-section">
                         <h3>Connect With Me</h3>
                         <div class="social-links" id="socialLinksContainer">
-                            <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
-                            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                            <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-                            <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                            <!-- Social links will be loaded dynamically -->
                         </div>
                     </section>
 
                     <!-- Certifications Display Card -->
                     <div class="dashboard-card">
                         <h3>My Certifications</h3>
-                        <div class="card-grid">
-                            <div class="info-card">
-                                <h4>🎓 BSc in Physics</h4>
-                                <p>Addis Ababa University</p>
-                                <p>2020</p>
-                                <button class="btn-view" onclick="viewCertificate('cert1')">View Certificate</button>
-                            </div>
-                            <div class="info-card">
-                                <h4>🏆 Teaching Excellence Award</h4>
-                                <p>Education Ministry</p>
-                                <p>2022</p>
-                                <button class="btn-view" onclick="viewCertificate('cert2')">View Certificate</button>
-                            </div>
-                            <div class="info-card">
-                                <h4>📜 Advanced Mathematics</h4>
-                                <p>Online University</p>
-                                <p>2023</p>
-                                <button class="btn-view" onclick="viewCertificate('cert3')">View Certificate</button>
-                            </div>
+                        <button class="btn-primary" onclick="addCertification()">+ Add Certification</button>
+                        <div class="card-grid" id="certifications-grid">
+                            <!-- Certifications will be loaded dynamically -->
                         </div>
                     </div>
 
                     <!-- Experience Display Card -->
                     <div class="dashboard-card">
                         <h3>Professional Experience</h3>
-                        <div class="card-grid">
-                            <div class="info-card">
-                                <h4>🏫 Senior Math Teacher</h4>
-                                <p>Unity High School</p>
-                                <p>2020 - Present</p>
-                                <p>Teaching advanced mathematics to grade 11 and 12 students.</p>
-                                <button class="btn-view" onclick="viewExperience('exp1')">View Details</button>
-                            </div>
-                            <div class="info-card">
-                                <h4>👨‍🏫 Private Tutor</h4>
-                                <p>Self-Employed</p>
-                                <p>2018 - 2020</p>
-                                <p>Personalized tutoring sessions for high school students.</p>
-                                <button class="btn-view" onclick="viewExperience('exp2')">View Details</button>
-                            </div>
-                            <div class="info-card">
-                                <h4>🎓 Teaching Assistant</h4>
-                                <p>Addis Ababa University</p>
-                                <p>2016 - 2018</p>
-                                <p>Assisted professors in undergraduate physics courses.</p>
-                                <button class="btn-view" onclick="viewExperience('exp3')">View Details</button>
-                            </div>
+                        <button class="btn-primary" onclick="addExperience()">+ Add Experience</button>
+                        <div class="card-grid" id="experience-grid">
+                            <!-- Experience will be loaded dynamically -->
                         </div>
                     </div>
 
                     <!-- Achievements Display Card -->
                     <div class="dashboard-card">
                         <h3>Achievements & Awards</h3>
-                        <div class="card-grid">
-                            <div class="info-card">
-                                <h4>🥇 Best Tutor Award 2023</h4>
-                                <p>Astegni Platform</p>
-                                <p>For exceptional teaching performance</p>
-                                <button class="btn-view" onclick="viewAchievement('ach1')">View Details</button>
-                            </div>
-                            <div class="info-card">
-                                <h4>🌟 100+ Students Mentored</h4>
-                                <p>Milestone Achievement</p>
-                                <p>Successfully guided over 100 students</p>
-                                <button class="btn-view" onclick="viewAchievement('ach2')">View Details</button>
-                            </div>
-                            <div class="info-card">
-                                <h4>📈 95% Pass Rate</h4>
-                                <p>Academic Excellence</p>
-                                <p>Maintained high student success rate</p>
-                                <button class="btn-view" onclick="viewAchievement('ach3')">View Details</button>
-                            </div>
-                            <div class="info-card">
-                                <h4>💡 Innovation in Teaching</h4>
-                                <p>Education Ministry Recognition</p>
-                                <p>For developing new teaching methods</p>
-                                <button class="btn-view" onclick="viewAchievement('ach4')">View Details</button>
-                            </div>
+                        <button class="btn-primary" onclick="addAchievement()">+ Add Achievement</button>
+                        <div class="card-grid" id="achievements-grid">
+                            <!-- Achievements will be loaded dynamically -->
                         </div>
                     </div>
 
@@ -528,14 +412,14 @@
                             <div class="stat-card hover-lift">
                                 <div class="stat-icon">👥</div>
                                 <div class="stat-info">
-                                    <div class="stat-number">45</div>
+                                    <div class="stat-number" id="stat-total-students">0</div>
                                     <div class="stat-desc">Total Students</div>
                                 </div>
                             </div>
                             <div class="follow-card" onclick="openStudentsModal('followers')">
                                 <div class="follow-icon">👥</div>
                                 <div class="follow-info">
-                                    <span class="stat-value">25</span>
+                                    <span class="stat-value" id="stat-current-students">0</span>
                                     <span class="stat-label">Current Students</span>
                                     <div class="stat-detail">Active</div>
                                 </div>
@@ -543,22 +427,22 @@
                             <div class="follow-card">
                                 <div class="follow-icon">🎯</div>
                                 <div class="follow-info">
-                                    <span class="stat-value">95%</span>
+                                    <span class="stat-value" id="stat-success-rate">0%</span>
                                     <span class="stat-label">Success Rate</span>
                                 </div>
                             </div>
                             <div class="stat-card hover-lift">
                                 <div class="stat-icon">📚</div>
                                 <div class="stat-info">
-                                    <div class="stat-number">5</div>
+                                    <div class="stat-number" id="stat-courses">0</div>
                                     <div class="stat-desc">Courses Taught</div>
-                                    <div class="stat-detail">Math, Physics, Chemistry</div>
+                                    <div class="stat-detail" id="stat-courses-list">-</div>
                                 </div>
                             </div>
                             <div class="stat-card hover-lift">
                                 <div class="stat-icon">📅</div>
                                 <div class="stat-info">
-                                    <div class="stat-number">156</div>
+                                    <div class="stat-number" id="stat-sessions">0</div>
                                     <div class="stat-desc">Sessions Completed</div>
                                     <div class="stat-detail">This Year</div>
                                 </div>
@@ -566,15 +450,15 @@
                             <div class="stat-card hover-lift">
                                 <div class="stat-icon">⭐</div>
                                 <div class="stat-info">
-                                    <div class="stat-number">4.8</div>
+                                    <div class="stat-number" id="stat-avg-rating">0.0</div>
                                     <div class="stat-desc">Average Rating</div>
-                                    <div class="stat-detail">From 234 reviews</div>
+                                    <div class="stat-detail">From <span id="stat-review-count">0</span> reviews</div>
                                 </div>
                             </div>
                             <div class="stat-card hover-lift">
                                 <div class="stat-icon">💰</div>
                                 <div class="stat-info">
-                                    <div class="stat-number">ETB 45K</div>
+                                    <div class="stat-number">ETB <span id="stat-monthly-earning">0</span></div>
                                     <div class="stat-desc">Monthly Earnings</div>
                                     <div class="stat-detail">Average</div>
                                 </div>
@@ -582,7 +466,7 @@
                             <div class="stat-card hover-lift">
                                 <div class="stat-icon">🏆</div>
                                 <div class="stat-info">
-                                    <div class="stat-number">7+</div>
+                                    <div class="stat-number"><span id="stat-experience">0</span>+</div>
                                     <div class="stat-desc">Years Experience</div>
                                     <div class="stat-detail">Professional</div>
                                 </div>
@@ -591,122 +475,17 @@
                     </section>
                 </div>
 
-
-                <!-- Manage Certifications Content -->
-                <div class="sidebar-content-panel" id="manage-certifications-content">
+                <!-- Requested Sessions Content -->
+                <div class="sidebar-content-panel" id="requested-sessions-content">
                     <div class="section-header">
-                        <h2 class="section-title">Manage Certifications</h2>
-                        <button class="btn-primary" onclick="addCertification()">+ Add Certification</button>
+                        <h2 class="section-title">Requested Sessions</h2>
+                        <button class="btn-secondary" onclick="refreshRequests()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
                     </div>
 
-                    <div class="certifications-list">
-                        <div class="certification-item">
-                            <div class="cert-info">
-                                <h4>BSc in Physics</h4>
-                                <p>Addis Ababa University • 2020</p>
-                            </div>
-                            <div class="cert-actions">
-                                <button class="btn-sm btn-primary" onclick="editCertification('cert1')">Edit</button>
-                                <button class="btn-sm btn-danger" onclick="deleteCertification('cert1')">Delete</button>
-                            </div>
-                        </div>
-                        <div class="certification-item">
-                            <div class="cert-info">
-                                <h4>Teaching Excellence Award</h4>
-                                <p>Education Ministry • 2022</p>
-                            </div>
-                            <div class="cert-actions">
-                                <button class="btn-sm btn-primary" onclick="editCertification('cert2')">Edit</button>
-                                <button class="btn-sm btn-danger" onclick="deleteCertification('cert2')">Delete</button>
-                            </div>
-                        </div>
-                        <div class="certification-item">
-                            <div class="cert-info">
-                                <h4>Advanced Mathematics Certificate</h4>
-                                <p>Online University • 2023</p>
-                            </div>
-                            <div class="cert-actions">
-                                <button class="btn-sm btn-primary" onclick="editCertification('cert3')">Edit</button>
-                                <button class="btn-sm btn-danger" onclick="deleteCertification('cert3')">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Manage Experience Content -->
-                <div class="sidebar-content-panel" id="manage-experience-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Manage Experience</h2>
-                        <button class="btn-primary" onclick="addExperience()">+ Add Experience</button>
-                    </div>
-
-                    <div class="experience-list">
-                        <div class="experience-item">
-                            <div class="exp-info">
-                                <h4>Senior Math Teacher</h4>
-                                <p>Unity High School • 2020 - Present</p>
-                                <p>Teaching advanced mathematics to grade 11 and 12 students.</p>
-                            </div>
-                            <div class="exp-actions">
-                                <button class="btn-sm btn-primary" onclick="editExperience('exp1')">Edit</button>
-                                <button class="btn-sm btn-danger" onclick="deleteExperience('exp1')">Delete</button>
-                            </div>
-                        </div>
-                        <div class="experience-item">
-                            <div class="exp-info">
-                                <h4>Private Tutor</h4>
-                                <p>Self-Employed • 2018 - 2020</p>
-                                <p>Provided personalized tutoring sessions to high school students.</p>
-                            </div>
-                            <div class="exp-actions">
-                                <button class="btn-sm btn-primary" onclick="editExperience('exp2')">Edit</button>
-                                <button class="btn-sm btn-danger" onclick="deleteExperience('exp2')">Delete</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Manage Achievements Content -->
-                <div class="sidebar-content-panel" id="manage-achievements-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Manage Achievements</h2>
-                        <button class="btn-primary" onclick="addAchievement()">+ Add Achievement</button>
-                    </div>
-
-                    <div class="achievements-list">
-                        <div class="achievement-item">
-                            <div class="ach-info">
-                                <h4>🥇 Best Tutor Award 2023</h4>
-                                <p>Astegni Platform</p>
-                                <p>For exceptional teaching performance and student satisfaction</p>
-                            </div>
-                            <div class="ach-actions">
-                                <button class="btn-sm btn-primary" onclick="editAchievement('ach1')">Edit</button>
-                                <button class="btn-sm btn-danger" onclick="deleteAchievement('ach1')">Delete</button>
-                            </div>
-                        </div>
-                        <div class="achievement-item">
-                            <div class="ach-info">
-                                <h4>🌟 100+ Students Mentored</h4>
-                                <p>Milestone Achievement</p>
-                                <p>Successfully guided over 100 students to academic success</p>
-                            </div>
-                            <div class="ach-actions">
-                                <button class="btn-sm btn-primary" onclick="editAchievement('ach2')">Edit</button>
-                                <button class="btn-sm btn-danger" onclick="deleteAchievement('ach2')">Delete</button>
-                            </div>
-                        </div>
-                        <div class="achievement-item">
-                            <div class="ach-info">
-                                <h4>📈 95% Pass Rate</h4>
-                                <p>Academic Excellence</p>
-                                <p>Maintained high student success rate in national examinations</p>
-                            </div>
-                            <div class="ach-actions">
-                                <button class="btn-sm btn-primary" onclick="editAchievement('ach3')">Edit</button>
-                                <button class="btn-sm btn-danger" onclick="deleteAchievement('ach3')">Delete</button>
-                            </div>
-                        </div>
+                    <div class="session-requests-list" id="session-requests-list">
+                        <!-- Session requests will be loaded dynamically -->
                     </div>
                 </div>
 
@@ -720,116 +499,8 @@
                         </div>
                     </div>
 
-                    <div class="students-grid">
-                        <!-- Student Card 1 -->
-                        <div class="student-card">
-                            <div class="student-header">
-                                <div class="student-avatar">👨‍🎓</div>
-                                <div class="student-info">
-                                    <a href="../view-profile-tier-1/view-student.html">
-                                        <h3>Abebe Kebede</h3>
-                                    </a>
-                                    <p>Grade 12 • Science Stream</p>
-                                </div>
-                            </div>
-
-                            <div class="student-stats">
-                                <div class="stat-item">
-                                    <span class="stat-label">Sessions</span>
-                                    <span class="stat-value">24</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Attendance</span>
-                                    <span class="stat-value">92%</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Avg Grade</span>
-                                    <span class="stat-value">A-</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Next Session</span>
-                                    <span class="stat-value">Today</span>
-                                </div>
-                            </div>
-
-                            <div class="student-progress">
-                                <div class="progress-label">
-                                    <span>Overall Progress</span>
-                                    <span>78%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 78%"></div>
-                                </div>
-                            </div>
-
-                            <div class="student-badges">
-                                <span class="badge">🎯 Math</span>
-                                <span class="badge">🔬 Physics</span>
-                                <span class="badge">⭐ Top Performer</span>
-                            </div>
-
-                            <div class="student-actions">
-                                <button class="btn-view-details" onclick="openStudentDetailsModal('student1')">View
-                                    Details</button>
-                                <button class="btn-quick-action" onclick="contact('student1')">Contact</button>
-                            </div>
-                        </div>
-
-                        <!-- Student Card 2 -->
-                        <div class="student-card">
-                            <div class="student-header">
-                                <div class="student-avatar">👩‍🎓</div>
-                                <div class="student-info">
-                                    <a href="../view-profile-tier-1/view-student.html">
-                                        <h3>Selam Tesfaye</h3>
-                                    </a>
-                                    <p>Grade 11 • Science Stream</p>
-                                </div>
-                            </div>
-
-                            <div class="student-stats">
-                                <div class="stat-item">
-                                    <span class="stat-label">Sessions</span>
-                                    <span class="stat-value">18</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Attendance</span>
-                                    <span class="stat-value">88%</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Avg Grade</span>
-                                    <span class="stat-value">B+</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">Next Session</span>
-                                    <span class="stat-value">Tomorrow</span>
-                                </div>
-                            </div>
-
-                            <div class="student-progress">
-                                <div class="progress-label">
-                                    <span>Overall Progress</span>
-                                    <span>65%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 65%"></div>
-                                </div>
-                            </div>
-
-                            <div class="student-badges">
-                                <span class="badge">🧮 Algebra</span>
-                                <span class="badge">⚡ Physics</span>
-                                <span class="badge">📈 Improving</span>
-                            </div>
-
-                            <div class="student-actions">
-                                <button class="btn-view-details" onclick="openStudentDetailsModal('student2')">View
-                                    Details</button>
-                                <button class="btn-quick-action" onclick="quickMessage('student2')">Contact</button>
-                            </div>
-                        </div>
-
-                        <!-- Add more student cards as needed -->
+                    <div class="students-grid" id="my-students-grid">
+                        <!-- Students will be loaded dynamically -->
                     </div>
                 </div>
 
@@ -851,76 +522,11 @@
 
                     <div class="upcoming-sessions">
                         <h3>Upcoming Sessions</h3>
-                        <div class="session-list">
-                            <div class="session-item">
-                                <span class="session-time">Today, 2:00 PM</span>
-                                <span class="session-student">Abebe Kebede</span>
-                                <span class="session-subject">Math</span>
-                            </div>
-                            <div class="session-item">
-                                <span class="session-time">Tomorrow, 10:00 AM</span>
-                                <span class="session-student">Selam Tesfaye</span>
-                                <span class="session-subject">Physics</span>
-                            </div>
-                        </div>
-                        <button id="session-1-confirm" onclick="confirmAttendance('1', 'Tutor')"
-                            class="btn-sm btn-primary">Confirm</button>
-                        <button id="session-1-wait" onclick="confirmWaiting('1', 'Tutor')"
-                            class="btn-sm btn-warning hidden">Waiting</button>
-                        <button id="session-1-makeup" onclick="proposeMakeup('1')"
-                            class="btn-sm btn-info hidden">Makeup</button>
-                        <button onclick="openSubjectsModal('1')" class="btn-sm btn-success">Subjects</button>
-
-                    </div>
-                </div>
-
-                <!-- Requested Sessions Content -->
-                <div class="sidebar-content-panel" id="requested-sessions-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Requested Sessions</h2>
-                        <button class="btn-secondary" onclick="refreshRequests()">
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
-                    </div>
-
-                    <div class="session-requests-list">
-                        <div class="session-request-card">
-                            <div class="request-header">
-                                <h4>Parent: <a href="../view-profile-tier-1/view-parent.html">Abebe Kebede</a></h4>
-                                <span class="request-badge new">New</span>
-                            </div>
-                            <div class="request-details">
-                                <p>Student: <a href="../view-profile-tier-1/view-student.html">Yohannes Abebe</a></p>
-                                <p>Course: Algebra</p>
-                                <p>Date: 2025-07-20</p>
-                                <p>Time: 2:00 PM</p>
-                            </div>
-                            <div class="request-actions">
-                                <button onclick="openChatModal('abebe')" class="btn-secondary">Connect</button>
-                                <button onclick="confirmSession('abebe')" class="btn-success">Confirm</button>
-                                <button onclick="rejectSession('abebe')" class="btn-danger">Reject</button>
-                            </div>
-                        </div>
-
-                        <div class="session-request-card">
-                            <div class="request-header">
-                                <h4>Student: <a href="../view-profile-tier-1/view-student.html">Selam Tesfaye</a></h4>
-                                <span class="request-badge pending">Pending</span>
-                            </div>
-                            <div class="request-details">
-                                <p>Course: Physics</p>
-                                <p>Date: 2025-07-22</p>
-                                <p>Time: 4:00 PM</p>
-                            </div>
-                            <div class="request-actions">
-                                <button onclick="openChatModal('selam')" class="btn-secondary">Connect</button>
-                                <button onclick="confirmSession('selam')" class="btn-success">Confirm</button>
-                                <button onclick="rejectSession('selam')" class="btn-danger">Reject</button>
-                            </div>
+                        <div class="session-list" id="upcoming-sessions-list">
+                            <!-- Sessions will be loaded dynamically -->
                         </div>
                     </div>
                 </div>
-
 
                 <!-- Teaching Tools Content -->
                 <div class="sidebar-content-panel" id="tutor-tools-content">
@@ -929,9 +535,14 @@
                     </div>
 
                     <div class="tools-grid">
+                        <div class="tool-card" onclick="openDigitalLab()">
+                            <div class="tool-icon">🔬</div>
+                            <h4>Digital Lab</h4>
+                            <p>Virtual experiments</p>
+                        </div>
                         <div class="tool-card" onclick="openWhiteboardTool()">
                             <div class="tool-icon">📝</div>
-                            <h4>Digital Whiteboard/ with paint</h4>
+                            <h4>Digital Whiteboard</h4>
                             <p>Interactive teaching board</p>
                         </div>
                         <div class="tool-card" onclick="openQuizMaker()">
@@ -947,107 +558,94 @@
                     </div>
                 </div>
 
-                <!-- Education Section Content Panels (UNCHANGED) -->
-                <div class="sidebar-content-panel" id="jobs-content">
+                <!-- Job Applications Content -->
+                <div class="sidebar-content-panel" id="my-applications-content">
                     <div class="section-header">
-                        <h2 class="section-title">Job Posts</h2>
-                        <button class="btn-primary" onclick="openCreateJobModal()">+ Create Job Post</button>
+                        <h2 class="section-title">Job Applications</h2>
                     </div>
-                    <div class="jobs-grid" id="jobsGrid">
-                        <!-- Jobs will be loaded dynamically -->
+                    <div class="applications-list" id="applications-list">
+                        <!-- Applications will be loaded dynamically -->
                     </div>
                 </div>
 
                 <!-- Tutor Ratings Content -->
-                <div class="sidebar-content-panel" id="tutor-ratings-content">
+                <div class="sidebar-content-panel" id="comments-content">
                     <div class="section-header">
                         <h2 class="section-title">Ratings & Reviews</h2>
                         <div class="rating-summary">
-                            <span class="rating-value">4.8</span>
-                            <span class="rating-stars">⭐⭐⭐⭐⭐</span>
-                            <span class="rating-count">(234 reviews)</span>
+                            <span class="rating-value" id="rating-value">0.0</span>
+                            <span class="rating-stars" id="rating-stars-summary">⭐⭐⭐⭐⭐</span>
+                            <span class="rating-count">(<span id="rating-count">0</span> reviews)</span>
                         </div>
                     </div>
 
-                    <div class="rating-breakdown">
-                        <div class="rating-bar">
-                            <span>5 stars</span>
-                            <div class="bar">
-                                <div class="fill" style="width: 75%"></div>
-                            </div>
-                            <span>175</span>
-                        </div>
-                        <div class="rating-bar">
-                            <span>4 stars</span>
-                            <div class="bar">
-                                <div class="fill" style="width: 15%"></div>
-                            </div>
-                            <span>35</span>
-                        </div>
-                        <div class="rating-bar">
-                            <span>3 stars</span>
-                            <div class="bar">
-                                <div class="fill" style="width: 7%"></div>
-                            </div>
-                            <span>16</span>
-                        </div>
-                        <div class="rating-bar">
-                            <span>2 stars</span>
-                            <div class="bar">
-                                <div class="fill" style="width: 2%"></div>
-                            </div>
-                            <span>5</span>
-                        </div>
-                        <div class="rating-bar">
-                            <span>1 star</span>
-                            <div class="bar">
-                                <div class="fill" style="width: 1%"></div>
-                            </div>
-                            <span>3</span>
-                        </div>
+                    <div class="rating-breakdown" id="rating-breakdown">
+                        <!-- Rating breakdown will be loaded dynamically -->
                     </div>
 
-                    <div class="reviews-list">
+                    <div class="reviews-list" id="reviews-list">
                         <h3>Recent Reviews</h3>
-                        <div class="review-item">
-                            <div class="review-header">
-                                <span class="reviewer-name">Abebe Kebede</span>
-                                <span class="review-date">2 days ago</span>
-                            </div>
-                            <p class="review-text">Excellent tutor! Very patient and explains concepts clearly.</p>
-                            <button onclick="respondToReview('review1')" class="btn-sm btn-secondary">Respond</button>
-                        </div>
+                        <!-- Reviews will be loaded dynamically -->
                     </div>
                 </div>
 
-
-
-                <div class="sidebar-content-panel" id="books-content">
+                <!-- Image Library Content -->
+                <div class="sidebar-content-panel" id="image-library-content">
                     <div class="section-header">
-                        <h2 class="section-title">My Books</h2>
-                        <button class="btn-primary" onclick="createBook()">
-                            <span>🤖</span> AI Book Writer
-                        </button>
+                        <h2 class="section-title">Image Library</h2>
+                        <button class="btn-primary" onclick="uploadImage()">Upload Image</button>
                     </div>
-                    <div class="books-grid" id="booksGrid">
-                        <!-- Books will be loaded dynamically -->
+                    <div class="images-grid" id="images-grid">
+                        <!-- Images will be loaded dynamically -->
                     </div>
                 </div>
 
-                <div class="sidebar-content-panel" id="community-content">
-                    <!-- Community content -->
-                </div>
+                <!-- Videos Content -->
+<div class="sidebar-content-panel" id="videos-content">
+    <div class="section-header">
+        <h2 class="section-title">Video Gallery</h2>
+        <div class="video-header-actions">
+            <button class="btn-primary upload-btn" onclick="openUploadVideoModal('intro')">
+                <span>📹</span> Upload Video
+            </button>
+            <button class="btn-secondary" onclick="goLive()">
+                <span>🔴</span> Go Live
+            </button>
+        </div>
+    </div>
+    
+    <!-- Video Filters -->
+    <div class="video-filters">
+        <button class="filter-chip active" onclick="filterVideos('all')">All Videos</button>
+        <button class="filter-chip" onclick="filterVideos('published')">Published</button>
+        <button class="filter-chip" onclick="filterVideos('draft')">Drafts</button>
+        <button class="filter-chip" onclick="filterVideos('favorites')">Favorites</button>
+        <button class="filter-chip" onclick="filterVideos('saved')">Saved</button>
+        <button class="filter-chip" onclick="filterVideos('playlists')">Playlists</button>
+    </div>
+    
+    <!-- Playlist Panel (shown when playlists filter is active) -->
+    <div id="playlist-panel" class="playlist-panel hidden">
+        <div class="playlist-header">
+            <h3>My Playlists</h3>
+            <button class="btn-primary" onclick="createPlaylist()">
+                <span>➕</span> Create Playlist
+            </button>
+        </div>
+        <div id="playlists-grid" class="playlists-grid">
+            <!-- Playlists will be loaded here -->
+        </div>
+    </div>
+    
+    <!-- Videos Grid -->
+    <div class="videos-grid" id="videos-grid">
+        <!-- Videos will be loaded dynamically -->
+    </div>
+</div>
 
-                <div class="sidebar-content-panel" id="clubs-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Clubs</h2>
-                        <button class="btn-primary" onclick="openCreateClubModal()">+ Create Club</button>
-                    </div>
-                    <div class="clubs-grid" id="clubsGrid">
-                        <!-- Clubs will be loaded dynamically -->
-                    </div>
-                </div>
 
+
+                <!-- Podcasts Content -->
                 <div class="sidebar-content-panel" id="podcasts-content">
                     <div class="section-header">
                         <h2 class="section-title">Podcast Library</h2>
@@ -1055,42 +653,16 @@
                             <span>🎙️</span> Create Podcast
                         </button>
                     </div>
-                    <div class="podcast-grid">
+                    <div class="podcast-grid" id="podcast-grid">
                         <!-- Podcasts will be loaded dynamically -->
                     </div>
                 </div>
 
-                <div class="sidebar-content-panel" id="videos-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Video Gallery</h2>
-                        <a href="../Plug-ins/go-live-modal.html">
-                            <button class="btn-primary live-btn">
-                                <span> Go Live</span>
-                            </button>
-                        </a>
-                        <button class="btn-primary upload-btn" onclick="openUploadVideoModal('intro')">
-                            <span>📹</span> Upload Video
-                        </button>
-                    </div>
-                    <div class="videos-grid">
-                        <!-- Videos will be loaded dynamically -->
-                    </div>
-                </div>
-
-                <div class="sidebar-content-panel" id="blog-content">
-                    <div class="section-header">
-                        <h2 class="section-title">Blog & Op-Eds</h2>
-                        <button class="btn-primary" onclick="openCreateBlogModal()">
-                            <span>📝 Create Blog Post</span>
-                        </button>
-                    </div>
-                    <div class="blog-grid">
-                        <!-- Blog posts will be loaded dynamically -->
-                    </div>
-                </div>
 
 
-                <div class="sidebar-content-panel" id="my-products-content">
+
+                <!-- My Purchases Content -->
+                <div class="sidebar-content-panel" id="my-purchases-content">
                     <div class="section-header">
                         <h2 class="section-title">My Purchased Products</h2>
                         <button class="btn-primary" onclick="navigateToStore()">
@@ -1102,6 +674,7 @@
                     </div>
                 </div>
 
+                <!-- Notes Content -->
                 <div class="sidebar-content-panel" id="notes-content">
                     <h2 class="section-title">My Notes</h2>
                     <div class="notes-section">
@@ -1109,8 +682,7 @@
                     </div>
                 </div>
 
-
-                <!-- NEW GET CERTIFIED CONTENT PANEL -->
+                <!-- GET CERTIFIED CONTENT PANEL -->
                 <div class="sidebar-content-panel" id="get-certified-content">
                     <div class="section-header">
                         <h2 class="section-title">Get Certified</h2>
@@ -1120,68 +692,8 @@
                     <div class="certification-programs">
                         <h3>Available Certification Programs</h3>
 
-                        <div class="cert-program-grid">
-                            <div class="cert-program-card">
-                                <div class="cert-badge">🏅</div>
-                                <h4>Advanced Mathematics Teaching</h4>
-                                <p class="cert-provider">Astegni Academy</p>
-                                <p class="cert-duration">Duration: 3 months</p>
-                                <p class="cert-price">ETB 5,000</p>
-                                <ul class="cert-benefits">
-                                    <li>✓ Recognized by Education Ministry</li>
-                                    <li>✓ Online & Self-paced</li>
-                                    <li>✓ Lifetime access to materials</li>
-                                </ul>
-                                <button class="btn-primary" onclick="enrollCertification('math-advanced')">Enroll
-                                    Now</button>
-                            </div>
-
-                            <div class="cert-program-card">
-                                <div class="cert-badge">🌟</div>
-                                <h4>Digital Teaching Methods</h4>
-                                <p class="cert-provider">Tech Education Institute</p>
-                                <p class="cert-duration">Duration: 2 months</p>
-                                <p class="cert-price">ETB 3,500</p>
-                                <ul class="cert-benefits">
-                                    <li>✓ Learn modern teaching tools</li>
-                                    <li>✓ Interactive online classes</li>
-                                    <li>✓ Certificate of completion</li>
-                                </ul>
-                                <button class="btn-primary" onclick="enrollCertification('digital-teaching')">Enroll
-                                    Now</button>
-                            </div>
-
-                            <div class="cert-program-card">
-                                <div class="cert-badge">📊</div>
-                                <h4>Student Assessment & Evaluation</h4>
-                                <p class="cert-provider">Educational Excellence Center</p>
-                                <p class="cert-duration">Duration: 1 month</p>
-                                <p class="cert-price">ETB 2,500</p>
-                                <ul class="cert-benefits">
-                                    <li>✓ Modern assessment techniques</li>
-                                    <li>✓ Data-driven evaluation</li>
-                                    <li>✓ Practical workshops</li>
-                                </ul>
-                                <button class="btn-primary" onclick="enrollCertification('assessment')">Enroll
-                                    Now</button>
-                            </div>
-
-                            <div class="cert-program-card popular">
-                                <span class="popular-badge">Most Popular</span>
-                                <div class="cert-badge">🎯</div>
-                                <h4>Complete Teaching Mastery</h4>
-                                <p class="cert-provider">Astegni Professional Institute</p>
-                                <p class="cert-duration">Duration: 6 months</p>
-                                <p class="cert-price"><s>ETB 15,000</s> ETB 12,000</p>
-                                <ul class="cert-benefits">
-                                    <li>✓ Comprehensive curriculum</li>
-                                    <li>✓ 1-on-1 mentorship</li>
-                                    <li>✓ Job placement assistance</li>
-                                    <li>✓ International recognition</li>
-                                </ul>
-                                <button class="btn-success" onclick="enrollCertification('mastery')">Get 20%
-                                    Off</button>
-                            </div>
+                        <div class="cert-program-grid" id="cert-programs-grid">
+                            <!-- Certification programs will be loaded dynamically -->
                         </div>
 
                         <div class="cert-partners">
@@ -1197,10 +709,9 @@
                         <div class="cert-testimonials">
                             <h3>Success Stories</h3>
                             <div class="testimonial-card">
-                                <p>"The certification program helped me increase my hourly rate by 40% and attract more
-                                    students!"</p>
+                                <p id="cert-testimonial-text">"Loading testimonials..."</p>
                                 <div class="testimonial-author">
-                                    <span>- Abebe T., Certified Math Tutor</span>
+                                    <span id="cert-testimonial-author">-</span>
                                     <span class="rating">⭐⭐⭐⭐⭐</span>
                                 </div>
                             </div>
@@ -1218,22 +729,22 @@
                     <div class="earnings-summary">
                         <div class="earnings-card">
                             <h4>This Month</h4>
-                            <p class="earnings-amount">ETB 45,000</p>
-                            <span class="earnings-change up">+12% from last month</span>
+                            <p class="earnings-amount" id="earnings-month">ETB 0</p>
+                            <span class="earnings-change up" id="earnings-month-change">+0% from last month</span>
                         </div>
                         <div class="earnings-card">
                             <h4>This Week</h4>
-                            <p class="earnings-amount">ETB 12,500</p>
-                            <span class="earnings-change up">+5% from last week</span>
+                            <p class="earnings-amount" id="earnings-week">ETB 0</p>
+                            <span class="earnings-change up" id="earnings-week-change">+0% from last week</span>
                         </div>
                         <div class="earnings-card">
                             <h4>Pending</h4>
-                            <p class="earnings-amount">ETB 3,500</p>
-                            <span class="earnings-sessions">7 sessions</span>
+                            <p class="earnings-amount" id="earnings-pending">ETB 0</p>
+                            <span class="earnings-sessions" id="earnings-pending-sessions">0 sessions</span>
                         </div>
                         <div class="earnings-card">
                             <h4>Available Balance</h4>
-                            <p class="earnings-amount">ETB 8,750</p>
+                            <p class="earnings-amount" id="earnings-available">ETB 0</p>
                             <button class="btn-sm btn-success" onclick="requestPayout()">Withdraw</button>
                         </div>
                     </div>
@@ -1243,16 +754,16 @@
                     </div>
                 </div>
 
-
+                <!-- Settings Content -->
                 <div class="sidebar-content-panel" id="settings-content">
                     <h2 class="section-title">Settings</h2>
                     <div class="settings-section">
-                        <!-- Settings content -->
+                        <!-- Settings content will be loaded -->
                     </div>
                 </div>
             </div>
 
-            <!-- Right Sidebar (Same as journalist-profile.html) -->
+            <!-- Right Sidebar (Same as original) -->
             <div class="right-sidebar">
                 <!-- News Widget -->
                 <div class="sidebar-widget news-widget" onclick="navigateToNews('all')" style="cursor: pointer;">
@@ -1272,12 +783,12 @@
                                         alt="Education News">
                                 </div>
                                 <div class="news-card-content">
-                                    <h4>New Education Policy Transforms Learning Methods</h4>
-                                    <p>Latest educational reforms introduce innovative teaching approaches...</p>
+                                    <h4 id="news-title">Loading...</h4>
+                                    <p id="news-description">Loading news...</p>
                                     <div class="news-stats">
                                         <span class="news-stat">🔥 Trending</span>
-                                        <span class="news-stat">👁️ 1.2k views</span>
-                                        <span class="news-stat">💬 45 comments</span>
+                                        <span class="news-stat">👁️ <span id="news-views">0</span> views</span>
+                                        <span class="news-stat">💬 <span id="news-comments">0</span> comments</span>
                                     </div>
                                 </div>
                             </div>
@@ -1286,25 +797,26 @@
                 </div>
 
                 <!-- Market Trends Widget -->
-                <div class="sidebar-widget market-widget" onclick="handleNavLinkClick(event, 'market')"">
-                    <div class=" widget-header">
-                    <h3>💹 Market Trends</h3>
-                    <a href="#" onclick="handleNavLinkClick(event, 'market')" class="widget-action">Details</a>
-                </div>
-                <div class="market-sections">
-                    <!-- Store Market Trend -->
-                    <div class="market-section">
-                        <h4>Astegni Store</h4>
-                        <div class="store-trend">
-                            <div class="trend-stat">
-                                <span>Daily Sales</span>
-                                <span class="trend-value">$24.5K</span>
-                                <span class="change up">↑ 12%</span>
-                            </div>
-                            <div class="trend-stat">
-                                <span>Active Listings</span>
-                                <span class="trend-value">1,234</span>
-                                <span class="change up">↑ 8%</span>
+                <div class="sidebar-widget market-widget" onclick="handleNavLinkClick(event, 'market')">
+                    <div class="widget-header">
+                        <h3>💹 Market Trends</h3>
+                        <a href="#" onclick="handleNavLinkClick(event, 'market')" class="widget-action">Details</a>
+                    </div>
+                    <div class="market-sections">
+                        <!-- Store Market Trend -->
+                        <div class="market-section">
+                            <h4>Astegni Store</h4>
+                            <div class="store-trend">
+                                <div class="trend-stat">
+                                    <span>Daily Sales</span>
+                                    <span class="trend-value" id="market-daily-sales">$0</span>
+                                    <span class="change up">↑ <span id="market-daily-change">0%</span></span>
+                                </div>
+                                <div class="trend-stat">
+                                    <span>Active Listings</span>
+                                    <span class="trend-value" id="market-listings">0</span>
+                                    <span class="change up">↑ <span id="market-listings-change">0%</span></span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1348,51 +860,47 @@
                 </div>
             </div>
 
-            <!-- Analytics Widget (Modified for Tutor Analytics) -->
-            <div class="bottom-widget analytics-widget compact">
-                <div class="bottom-widget analytics-widget compact" id="realTimeAnalytics">
-                    <div class="widget-header">
-                        <h3>📊 Real-Time Analytics</h3>
-                        <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
-                    </div>
-                    <div class="real-time-stats compact" id="analyticsStats">
-                        <div class="rt-stat active" data-metric="students" onclick="switchMetric('students')">
-                            <span class="rt-icon">👥</span>
-                            <div class="rt-info">
-                                <span class="rt-value" data-value="45">45</span>
-                                <span class="rt-label">Active Students</span>
-                            </div>
-                        </div>
-                        <div class="rt-stat" data-metric="sessions" onclick="switchMetric('sessions')">
-                            <span class="rt-icon">📅</span>
-                            <div class="rt-info">
-                                <span class="rt-value" data-value="12">12</span>
-                                <span class="rt-label">Sessions Today</span>
-                            </div>
-                        </div>
-                        <div class="rt-stat" data-metric="rating" onclick="switchMetric('rating')">
-                            <span class="rt-icon">⭐</span>
-                            <div class="rt-info">
-                                <span class="rt-value" data-value="4.8">4.8</span>
-                                <span class="rt-label">Average Rating</span>
-                            </div>
-                        </div>
-                        <div class="rt-stat" data-metric="earnings" onclick="switchMetric('earnings')">
-                            <span class="rt-icon">💰</span>
-                            <div class="rt-info">
-                                <span class="rt-value" data-value="45000">45K</span>
-                                <span class="rt-label">Monthly Earnings</span>
-                            </div>
+            <!-- Analytics Widget -->
+            <div class="bottom-widget analytics-widget compact" id="realTimeAnalytics">
+                <div class="widget-header">
+                    <h3>📊 Real-Time Analytics</h3>
+                    <button class="widget-action" onclick="openAnalyticsModal()">View Details</button>
+                </div>
+                <div class="real-time-stats compact" id="analyticsStats">
+                    <div class="rt-stat active" data-metric="students" onclick="switchMetric('students')">
+                        <span class="rt-icon">👥</span>
+                        <div class="rt-info">
+                            <span class="rt-value" data-value="0" id="analytics-students">0</span>
+                            <span class="rt-label">Active Students</span>
                         </div>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="analyticsChart"></canvas>
-                        <div class="chart-label">Teaching Performance - Last 24 Hours</div>
+                    <div class="rt-stat" data-metric="sessions" onclick="switchMetric('sessions')">
+                        <span class="rt-icon">📅</span>
+                        <div class="rt-info">
+                            <span class="rt-value" data-value="0" id="analytics-sessions">0</span>
+                            <span class="rt-label">Sessions Today</span>
+                        </div>
+                    </div>
+                    <div class="rt-stat" data-metric="rating" onclick="switchMetric('rating')">
+                        <span class="rt-icon">⭐</span>
+                        <div class="rt-info">
+                            <span class="rt-value" data-value="0" id="analytics-rating">0.0</span>
+                            <span class="rt-label">Average Rating</span>
+                        </div>
+                    </div>
+                    <div class="rt-stat" data-metric="earnings" onclick="switchMetric('earnings')">
+                        <span class="rt-icon">💰</span>
+                        <div class="rt-info">
+                            <span class="rt-value" data-value="0" id="analytics-earnings">0</span>
+                            <span class="rt-label">Monthly Earnings</span>
+                        </div>
                     </div>
                 </div>
+                <div class="chart-container">
+                    <canvas id="analyticsChart"></canvas>
+                    <div class="chart-label">Teaching Performance - Last 24 Hours</div>
+                </div>
             </div>
-
-
 
             <!-- Events Widget -->
             <div class="bottom-widget events-widget">
@@ -1400,280 +908,326 @@
                     <h3>📅 Upcoming Schedule</h3>
                     <button class="widget-action" onclick="openAllEventsModal()">View All</button>
                 </div>
-                <div class="events-list">
-                    <div class="event-item">
-                        <div class="event-time">
-                            <span class="time">2:00 PM</span>
-                            <span class="date">Today</span>
-                        </div>
-                        <div class="event-info">
-                            <h4>Math Session</h4>
-                            <p>Abebe Kebede - Algebra</p>
-                        </div>
-                    </div>
-                    <div class="event-item">
-                        <div class="event-time">
-                            <span class="time">4:00 PM</span>
-                            <span class="date">Today</span>
-                        </div>
-                        <div class="event-info">
-                            <h4>Physics Session</h4>
-                            <p>Selam Tesfaye - Mechanics</p>
-                        </div>
-                    </div>
-                    <div class="event-item">
-                        <div class="event-time">
-                            <span class="time">10:00 AM</span>
-                            <span class="date">Tomorrow</span>
-                        </div>
-                        <div class="event-info">
-                            <h4>Chemistry Session</h4>
-                            <p>Group Class - Online</p>
-                        </div>
-                    </div>
+                <div class="events-list" id="upcoming-events-list">
+                    <!-- Events will be loaded dynamically -->
                 </div>
             </div>
         </div>
     </section>
-    </div>
 
-    <!-- ALL MODALS FROM TUTOR.HTML -->
-    <!-- Include all the modals from the original tutor.html file here -->
-    <!-- These should remain unchanged to preserve all functionality -->
+    <!-- ALL MODALS (PRESERVED FROM ORIGINAL) -->
+<!-- Community Modal -->
+                <div id="communityModal" class="modal hidden">
+                    <div class="modal-overlay" onclick="closeCommunityModal()"></div>
+                    <div class="modal-content community-modal-content">
+                        <div class="modal-wrapper">
+                            <!-- Sidebar -->
+                            <div class="community-sidebar">
+                                <h3>Community</h3>
+                                <div class="community-menu">
+                                    <div class="menu-item active" onclick="switchCommunitySection('connections')">
+                                        <span class="menu-icon">🔗</span>
+                                        <span>Connections</span>
+                                    </div>
+                                    <div class="menu-item" onclick="switchCommunitySection('events')">
+                                        <span class="menu-icon">📅</span>
+                                        <span>Events</span>
+                                    </div>
+                                    <div class="menu-item" onclick="switchCommunitySection('clubs')">
+                                        <span class="menu-icon">🎭</span>
+                                        <span>Clubs</span>
+                                    </div>
+                                </div>
+                            </div>
 
-    <!-- Notes Modal -->
-    <div id="notes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-        <!-- Modal content from tutor.html -->
-    </div>
+                            <!-- Main Content -->
+                            <div class="community-main">
+                                <div class="modal-header">
+                                    <h2>My Community</h2>
+                                    <button class="modal-close" onclick="closeCommunityModal()">×</button>
+                                </div>
 
-    <!-- Edit Profile Modal -->
-    <div id="edit-profile-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-        <!-- Modal content from tutor.html -->
+                                <!-- Connections Section -->
+                                <div class="community-section active" id="connections-section">
+                                    <div class="section-filters">
+                                        <button class="filter-btn active"
+                                            onclick="filterConnections('all')">All</button>
+                                        <button class="filter-btn" onclick="filterConnections('live')">Live</button>
+                                    </div>
+                                    <div class="connections-grid" id="connectionsGrid">
+                                        <!-- Connections will be loaded here -->
+                                    </div>
+                                </div>
 
+                                <!-- Events Section -->
+                                <div class="community-section hidden" id="events-section">
+                                    <div class="coming-soon-container">
+                                        <span class="coming-soon-icon">🚀</span>
+                                        <h3>Events Coming Soon!</h3>
+                                        <p>We're building an amazing events feature. Stay tuned!</p>
+                                    </div>
+                                </div>
 
-        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
-        <div class="modal-content edit-profile-modal">
-            <div class="modal-header">
-                <h2>Edit Tutor Profile</h2>
-                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <form id="editProfileForm">
-                    <div class="form-section">
-                        <label class="form-label">Tutor Name</label>
-                        <input type="text" class="form-input" id="tutorName" placeholder="tutor name">
-                    </div>
-
-                    <div class="form-section">
-                        <label class="form-label">Locations</label>
-
-                        <button id="use-my-location" onclick="getLocation()" class="cta-button px-4 py-2 rounded-lg">Use
-                            My Location</button>
-                        <div id="locationsContainer">
-                            <div class="location-item">
-                                <input type="text" class="form-input" placeholder="Location 1">
-                                <button type="button" class="btn-remove" onclick="removeLocation(this)">×</button>
+                                <!-- Clubs Section -->
+                                <div class="community-section hidden" id="clubs-section">
+                                    <div class="coming-soon-container">
+                                        <span class="coming-soon-icon">🎭</span>
+                                        <h3>Clubs Coming Soon!</h3>
+                                        <p>Join exciting clubs and communities. Feature launching soon!</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <button type="button" class="btn-add" onclick="addLocation()">+ Add Location</button>
                     </div>
+                </div>
 
-                    <div class="form-section">
-                        <label class="form-label">Currently teachs at</label>
-                        <input type="text" class="form-input" id="TeachesAt" placeholder="Teaches @">
-
-                        <div class="relative mb-4">
-                            <input type="text" id="profile-school" class="w-full p-2 border rounded-lg"
-                                placeholder="Search for a school...">
-                            <div id="school-suggestions" class="absolute"></div>
-                            <button id="request-school" class="cta-button px-4 py-2 rounded-lg mt-2 hidden"
-                                onclick="requestSchoolListing()">Request School Listing</button>
+                <!-- Enhanced Edit Profile Modal -->
+                <div id="edit-profile-modal" class="modal hidden">
+                    <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+                    <div class="modal-content enhanced-modal">
+                        <div class="modal-header">
+                            <h2>Edit Profile</h2>
+                            <button class="modal-close" onclick="closeEditProfileModal()">×</button>
                         </div>
-                        <p id="school-error" class="text-red-500 text-sm mb-2 hidden">Please select a valid school from
-                            the list or
-                            request a new one.</p>
+                        <div class="modal-body">
+                            <form id="editProfileForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Tutor Name *</label>
+                                        <input type="text" id="tutorName" class="form-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Username *</label>
+                                        <input type="text" id="username" class="form-input" required>
+                                    </div>
+                                </div>
 
-                        <button type="button" class="btn-add" onclick="addSchool()">+ Add School</button>
+                                <div class="form-group">
+                                    <label>Gender</label>
+                                    <select id="gender" class="form-select">
+                                        <option value="">Select Gender</option>
+                                        <option value="male">Male</option>
+                                        <option value="female">Female</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Locations</label>
+                                    <div id="locationsContainer"></div>
+                                    <button type="button" class="btn-add" onclick="addLocation()">+ Add
+                                        Location</button>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Teaches At</label>
+                                    <div id="teachesAtContainer"></div>
+                                    <button type="button" class="btn-add" onclick="addTeachesAt()">+ Add School</button>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Courses</label>
+                                    <div id="coursesContainer"></div>
+                                    <button type="button" class="btn-add" onclick="addCourse()">+ Add Course</button>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Teaching Method *</label>
+                                    <div class="radio-group">
+                                        <label><input type="radio" name="teachingMethod" value="online" required>
+                                            Online</label>
+                                        <label><input type="radio" name="teachingMethod" value="in-person">
+                                            In-Person</label>
+                                        <label><input type="radio" name="teachingMethod" value="self-paced">
+                                            Self-Paced</label>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Quote</label>
+                                    <textarea id="profileQuote" class="form-textarea" rows="2"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>About Us</label>
+                                    <textarea id="aboutUs" class="form-textarea" rows="4"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Connect With Us</label>
+                                    <div id="socialLinksContainer"></div>
+                                    <button type="button" class="btn-add" onclick="addSocialLink()">+ Add Social
+                                        Link</button>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
+                            <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="form-section">
-
-                        <label class="form-label">Teaching methods</label>
-                        <div id="teachingMethodContainer">
-                            <div class="location-item">
-                                <input type="text" class="form-input" placeholder="Teaching Method 1">
-                                <button type="button" class="btn-remove" onclick="removeTeachingMethod(this)">×</button>
+                <!-- Verification Modal -->
+                <div id="verificationModal" class="modal hidden">
+                    <div class="modal-overlay"></div>
+                    <div class="modal-content compact-modal">
+                        <div class="modal-header">
+                            <h2>Under Verification</h2>
+                        </div>
+                        <div class="modal-body text-center">
+                            <div class="verification-icon">⏳</div>
+                            <h3>Your changes are being verified</h3>
+                            <p>We're reviewing your updates. This usually takes 24-48 hours.</p>
+                            <div class="verification-steps">
+                                <div class="step active">
+                                    <span class="step-icon">✓</span>
+                                    <span>Submitted</span>
+                                </div>
+                                <div class="step">
+                                    <span class="step-icon">⏱</span>
+                                    <span>Under Review</span>
+                                </div>
+                                <div class="step">
+                                    <span class="step-icon">📧</span>
+                                    <span>Notification</span>
+                                </div>
                             </div>
                         </div>
-                        <button type="button" class="btn-add" onclick="addTeachingMethod()">+ Add teaching
-                            method</button>
-                    </div>
-                    <div class="form-section">
-                        <label class="form-label">Courses</label>
-                        <div id="locationsContainer">
-                            <div class="location-item">
-                                <input type="text" class="form-input" placeholder="Course 1">
-                                <button type="button" class="btn-remove" onclick="removeCourse(this)">×</button>
-                            </div>
+                        <div class="modal-footer">
+                            <button class="btn-primary" onclick="closeVerificationModal()">Got it</button>
                         </div>
-                        <button type="button" class="btn-add" onclick="addCourse()">+ Add Course</button>
                     </div>
+                </div>
 
-                    <div class="form-section">
-                        <label class="form-label">Quote</label>
-                        <textarea class="form-textarea" id="centerQuote" rows="3"
-                            placeholder="Write your quote here"></textarea>
-                    </div>
-
-                    <div class="form-section">
-                        <label class="form-label">About Us</label>
-                        <textarea class="form-textarea" id="aboutUs" rows="5"
-                            placeholder="Write about your institute"></textarea>
-                    </div>
-
-                    <div class="form-section">
-                        <label class="form-label">Connect With Us</label>
-                        <div id="socialMediaContainer">
-                            <div class="social-item">
-                                <select class="form-select">
-                                    <option value="facebook">Facebook</option>
-                                    <option value="twitter">Twitter/X</option>
-                                    <option value="instagram">Instagram</option>
-                                    <option value="linkedin">LinkedIn</option>
-                                    <option value="youtube">YouTube</option>
-                                    <option value="tiktok">TikTok</option>
-                                    <option value="telegram">Telegram</option>
-                                    <option value="website">Website</option>
-                                </select>
-                                <input type="text" class="form-input" placeholder="URL or username">
-                                <button type="button" class="btn-remove" onclick="removeSocial(this)">×</button>
-                            </div>
+                <!-- Create Schedule Modal -->
+                <div id="create-schedule-modal" class="modal hidden">
+                    <div class="modal-overlay" onclick="closeScheduleModal()"></div>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h2>Create Schedule</h2>
+                            <button class="modal-close" onclick="closeScheduleModal()">×</button>
                         </div>
-                        <button type="button" class="btn-add" onclick="addSocialMedia()">+ Add Social Media</button>
+                        <div class="modal-body">
+                            <form id="scheduleForm">
+                                <div class="form-group">
+                                    <label>Schedule Title *</label>
+                                    <input type="text" id="scheduleTitle" class="form-input" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Description</label>
+                                    <textarea id="scheduleDescription" class="form-textarea" rows="3"></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Thumbnail (Optional)</label>
+                                    <div class="file-upload-container">
+                                        <input type="file" id="scheduleThumbnail" accept="image/*" class="file-input">
+                                        <label for="scheduleThumbnail" class="file-upload-label">
+                                            <span class="file-icon">📷</span>
+                                            <span>Choose thumbnail</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Date *</label>
+                                        <input type="date" id="scheduleDate" class="form-input" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Time *</label>
+                                        <input type="time" id="scheduleTime" class="form-input" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label>Schedule Type *</label>
+                                        <select id="scheduleType" class="form-select" required>
+                                            <option value="online">Online</option>
+                                            <option value="in-person">In-Person</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Duration (minutes) *</label>
+                                        <input type="number" id="scheduleDuration" class="form-input" value="60"
+                                            min="15" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Notes (Optional)</label>
+                                    <textarea id="scheduleNotes" class="form-textarea" rows="2"></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+                            <button class="btn-primary" onclick="saveSchedule()">Create Schedule</button>
+                        </div>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
-                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
-            </div>
-        </div>
-    </div>
+                </div>
 
+                <!-- Create Blog Modal -->
+                <div id="createBlogModal" class="modal hidden">
+                    <div class="modal-overlay" onclick="closeBlogModal()"></div>
+                    <div class="modal-content blog-modal">
+                        <div class="modal-header">
+                            <h2>Create Blog Post</h2>
+                            <button class="modal-close" onclick="closeBlogModal()">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="blogForm">
+                                <div class="form-group">
+                                    <label>Blog Title *</label>
+                                    <input type="text" id="blogTitle" class="form-input" required>
+                                </div>
 
-    <!-- Upload Video Modal -->
-    <div id="upload-video-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    </div>
+                                <div class="form-group">
+                                    <label>Description *</label>
+                                    <textarea id="blogDescription" class="form-textarea" rows="3" required></textarea>
+                                </div>
 
-    <!-- Video Player Modal -->
-    <div id="video-player-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    </div>
+                                <div class="form-group">
+                                    <label>Thumbnail (Optional)</label>
+                                    <div class="file-upload-container">
+                                        <input type="file" id="blogThumbnail" accept="image/*" class="file-input">
+                                        <label for="blogThumbnail" class="file-upload-label">
+                                            <span class="file-icon">🖼️</span>
+                                            <span>Choose thumbnail</span>
+                                        </label>
+                                    </div>
+                                </div>
 
-    <!-- Playlist Modal -->
-    <div id="playlist-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-    </div>
+                                <div class="form-group">
+                                    <label>Category *</label>
+                                    <select id="blogCategory" class="form-select" required>
+                                        <option value="">Select Category</option>
+                                        <option value="personal">Personal Stories</option>
+                                        <option value="student">Student Stories</option>
+                                        <option value="tips">Tips & Tricks</option>
+                                        <option value="news">Industry News</option>
+                                    </select>
+                                </div>
 
-    <div id="create-session-modal" class="modal">
-        <div class="modal-overlay" onclick="closeScheduleModal()"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Create New Session</h2>
-                <button class="modal-close" onclick="closeScheduleModal()">×</button>
-            </div>
-            <div class="modal-body">
-                <form id="createSessionForm">
-                    <div class="form-group">
-                        <label>Student Name</label>
-                        <select class="form-input" id="sessionStudent">
-                            <option value="">Select Student</option>
-                            <option value="abebe">Abebe Kebede</option>
-                            <option value="selam">Selam Tesfaye</option>
-                            <option value="new">+ Add New Student</option>
-                        </select>
+                                <div class="form-group">
+                                    <label>Content *</label>
+                                    <textarea id="blogContent" class="form-textarea" rows="10" required></textarea>
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn-secondary" onclick="saveBlogDraft()">Save Draft</button>
+                            <button class="btn-primary" onclick="publishBlog()">Publish</button>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label>Subject</label>
-                        <select class="form-input" id="sessionSubject">
-                            <option value="">Select Subject</option>
-                            <option value="math">Mathematics</option>
-                            <option value="physics">Physics</option>
-                            <option value="chemistry">Chemistry</option>
-                        </select>
-                    </div>
 
-                    <div class="form-group">
-                        <label>Date</label>
-                        <input type="date" class="form-input" id="sessionDate">
-                    </div>
 
-                    <div class="form-group">
-                        <label>Time</label>
-                        <input type="time" class="form-input" id="sessionTime">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Duration (hours)</label>
-                        <select class="form-input" id="sessionDuration">
-                            <option value="1">1 hour</option>
-                            <option value="1.5">1.5 hours</option>
-                            <option value="2">2 hours</option>
-                            <option value="2.5">2.5 hours</option>
-                            <option value="3">3 hours</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Session Type</label>
-                        <select class="form-input" id="sessionType">
-                            <option value="in-person">In-Person</option>
-                            <option value="online">Online</option>
-                            <option value="hybrid">Hybrid</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Notes (optional)</label>
-                        <textarea class="form-input" id="sessionNotes" rows="3"
-                            placeholder="Add any special notes or topics to cover"></textarea>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeScheduleModal()">Cancel</button>
-                <button class="btn-primary" onclick="saveSession()">Create Session</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Student Details Modal -->
-    <div id="student-details-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-        <!-- Modal content from tutor.html -->
-    </div>
-
-    <!-- Parent Modal -->
-    <div id="parent-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-        <!-- Modal content from tutor.html -->
-    </div>
-
-    <!-- Chat Modal -->
-    <div id="chat-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-        <!-- Modal content from tutor.html -->
-    </div>
-
-    <!-- Session Sheet Modal -->
-    <div id="session-sheet-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
-        <!-- Modal content from tutor.html -->
-    </div>
-
-    <!-- All other modals from tutor.html should be included here -->
-
-    <!-- Student Details Modal -->
+    <!-- Student Details Modal (FULL MODAL FROM ORIGINAL) -->
     <div class="student-details-modal" id="studentDetailsModal">
         <div class="modal-wrapper">
             <div class="modal-sidebar">
@@ -2221,6 +1775,7 @@
         </div>
     </div>
 
+
     <!-- Coming Soon Modal -->
     <div id="coming-soon-modal" class="modal">
         <div class="modal-content enhanced coming-soon-content">
@@ -2235,18 +1790,15 @@
                 <div class="coming-soon-icon">
                     <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
-                        </path>
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
                 <h3 class="modal-title">Coming Soon!</h3>
                 <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay
                     tuned!</p>
             </div>
-
         </div>
     </div>
-
 
     <!-- Ad Analytics Modal -->
     <div class="modal" id="adAnalyticsModal">
@@ -2442,6 +1994,601 @@
         </div>
     </div>
 
+    <div id="certification-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeCertificationModal()"></div>
+        <div class="modal-content enhanced-modal">
+            <div class="modal-header">
+                <h2>Add Certification</h2>
+                <button class="modal-close" onclick="closeCertificationModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="certification-form">
+                    <!-- School Search -->
+                    <div class="form-group">
+                        <label>School/Institution *</label>
+                        <div class="search-input-container">
+                            <input type="text" id="cert-school-search" class="form-input search-input"
+                                placeholder="Search for school..." autocomplete="off" required>
+                            <div id="cert-school-suggestions" class="suggestions-dropdown"></div>
+                        </div>
+                        <button type="button" id="cert-request-school-btn" class="btn-link hidden"
+                            onclick="openSchoolRequestModal('cert')">
+                            Can't find your school? Request listing
+                        </button>
+                    </div>
+
+                    <!-- Certified In -->
+                    <div class="form-group">
+                        <label>Certified In *</label>
+                        <input type="text" id="cert-certified-in" class="form-input"
+                            placeholder="e.g., Mathematics, Teaching Excellence" required>
+                    </div>
+
+                    <!-- Certification Type -->
+                    <div class="form-group">
+                        <label>Certification Type *</label>
+                        <select id="cert-type" class="form-input" required>
+                            <option value="">Select Type</option>
+                            <option value="Professional">Professional</option>
+                            <option value="Academic">Academic</option>
+                            <option value="Technical">Technical</option>
+                            <option value="License">License</option>
+                            <option value="Award">Award</option>
+                            <option value="Training">Training</option>
+                        </select>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="form-group">
+                        <label>Date Received</label>
+                        <input type="date" id="cert-date" class="form-input">
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="form-group">
+                        <label>Certificate File</label>
+                        <div class="file-upload-container">
+                            <input type="file" id="cert-file" class="file-input" accept=".pdf,.jpg,.jpeg,.png"
+                                onchange="handleFileSelect(event, 'cert')">
+                            <label for="cert-file" class="file-upload-label">
+                                <span class="file-icon">📎</span>
+                                <span class="file-text">Choose file or drag here</span>
+                            </label>
+                            <div id="cert-file-preview" class="file-preview hidden">
+                                <span class="file-name"></span>
+                                <button type="button" onclick="removeFile('cert')" class="remove-file">×</button>
+                            </div>
+                        </div>
+                        <small class="form-hint">Upload certificate (PDF, JPG, PNG - Max 5MB)</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeCertificationModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveCertification()">Save Certification</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="achievement-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeAchievementModal()"></div>
+        <div class="modal-content enhanced-modal">
+            <div class="modal-header">
+                <h2>Add Achievement</h2>
+                <button class="modal-close" onclick="closeAchievementModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="achievement-form">
+                    <!-- Achievement Title -->
+                    <div class="form-group">
+                        <label>Achievement Title *</label>
+                        <input type="text" id="ach-title" class="form-input" placeholder="e.g., Best Teacher Award"
+                            required>
+                    </div>
+
+                    <!-- Institution Search -->
+                    <div class="form-group">
+                        <label>Awarding Institution *</label>
+                        <div class="search-input-container">
+                            <input type="text" id="ach-institution-search" class="form-input search-input"
+                                placeholder="Search for institution..." autocomplete="off" required>
+                            <div id="ach-institution-suggestions" class="suggestions-dropdown"></div>
+                        </div>
+                        <button type="button" id="ach-request-school-btn" class="btn-link hidden"
+                            onclick="openSchoolRequestModal('ach')">
+                            Can't find the institution? Request listing
+                        </button>
+                    </div>
+
+                    <!-- Achievement Type -->
+                    <div class="form-group">
+                        <label>Achievement Type</label>
+                        <select id="ach-type" class="form-input">
+                            <option value="">Select Type</option>
+                            <option value="Award">Award</option>
+                            <option value="Recognition">Recognition</option>
+                            <option value="Honor">Honor</option>
+                            <option value="Publication">Publication</option>
+                            <option value="Competition">Competition</option>
+                            <option value="Scholarship">Scholarship</option>
+                            <option value="Grant">Grant</option>
+                        </select>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="form-group">
+                        <label>Date Achieved</label>
+                        <input type="date" id="ach-date" class="form-input">
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="ach-description" class="form-textarea" rows="4"
+                            placeholder="Describe the achievement and its significance..."></textarea>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="form-group">
+                        <label>Certificate/Document</label>
+                        <div class="file-upload-container">
+                            <input type="file" id="ach-file" class="file-input" accept=".pdf,.jpg,.jpeg,.png"
+                                onchange="handleFileSelect(event, 'ach')">
+                            <label for="ach-file" class="file-upload-label">
+                                <span class="file-icon">📎</span>
+                                <span class="file-text">Choose file or drag here</span>
+                            </label>
+                            <div id="ach-file-preview" class="file-preview hidden">
+                                <span class="file-name"></span>
+                                <button type="button" onclick="removeFile('ach')" class="remove-file">×</button>
+                            </div>
+                        </div>
+                        <small class="form-hint">Upload certificate or supporting document (optional)</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeAchievementModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveAchievement()">Save Achievement</button>
+            </div>
+        </div>
+    </div>
+    <!-- Experience Modal -->
+    <div id="experience-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeExperienceModal()"></div>
+        <div class="modal-content enhanced-modal">
+            <div class="modal-header">
+                <h2>Add Experience</h2>
+                <button class="modal-close" onclick="closeExperienceModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="experience-form">
+                    <!-- Position -->
+                    <div class="form-group">
+                        <label>Position/Title *</label>
+                        <input type="text" id="exp-position" class="form-input"
+                            placeholder="e.g., Senior Mathematics Tutor" required>
+                    </div>
+
+                    <!-- Organization Search -->
+                    <div class="form-group">
+                        <label>Organization/School *</label>
+                        <div class="search-input-container">
+                            <input type="text" id="exp-organization-search" class="form-input search-input"
+                                placeholder="Search for organization..." autocomplete="off" required>
+                            <div id="exp-organization-suggestions" class="suggestions-dropdown"></div>
+                        </div>
+                        <button type="button" id="exp-request-school-btn" class="btn-link hidden"
+                            onclick="openSchoolRequestModal('exp')">
+                            Can't find your organization? Request listing
+                        </button>
+                    </div>
+
+                    <!-- Experience Type -->
+                    <div class="form-group">
+                        <label>Experience Type</label>
+                        <select id="exp-type" class="form-input">
+                            <option value="">Select Type</option>
+                            <option value="Teaching">Teaching</option>
+                            <option value="Tutoring">Tutoring</option>
+                            <option value="Research">Research</option>
+                            <option value="Administrative">Administrative</option>
+                            <option value="Consulting">Consulting</option>
+                            <option value="Mentoring">Mentoring</option>
+                        </select>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Start Date *</label>
+                            <input type="date" id="exp-start-date" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label>End Date</label>
+                            <input type="date" id="exp-end-date" class="form-input">
+                            <div class="checkbox-container">
+                                <input type="checkbox" id="exp-current" onchange="toggleEndDate()">
+                                <label for="exp-current">Currently working here</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="exp-description" class="form-textarea" rows="4"
+                            placeholder="Describe your responsibilities and achievements..."></textarea>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="form-group">
+                        <label>Supporting Document</label>
+                        <div class="file-upload-container">
+                            <input type="file" id="exp-file" class="file-input" accept=".pdf,.jpg,.jpeg,.png"
+                                onchange="handleFileSelect(event, 'exp')">
+                            <label for="exp-file" class="file-upload-label">
+                                <span class="file-icon">📎</span>
+                                <span class="file-text">Choose file or drag here</span>
+                            </label>
+                            <div id="exp-file-preview" class="file-preview hidden">
+                                <span class="file-name"></span>
+                                <button type="button" onclick="removeFile('exp')" class="remove-file">×</button>
+                            </div>
+                        </div>
+                        <small class="form-hint">Upload reference letter or contract (optional)</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeExperienceModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveExperience()">Save Experience</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- School Request Modal -->
+    <div id="school-request-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeSchoolRequestModal()"></div>
+        <div class="modal-content compact-modal">
+            <div class="modal-header">
+                <h2>Request School Listing</h2>
+                <button class="modal-close" onclick="closeSchoolRequestModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-description">Can't find your school? Add it to our database!</p>
+                <form id="school-request-form">
+                    <div class="form-group">
+                        <label>School Name *</label>
+                        <input type="text" id="request-school-name" class="form-input" placeholder="Enter school name"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location *</label>
+                        <input type="text" id="request-school-location" class="form-input" placeholder="City, Region"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number *</label>
+                        <input type="tel" id="request-school-phone" class="form-input" placeholder="+251..."
+                            pattern="^\+251[0-9]{9}$" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeSchoolRequestModal()">Cancel</button>
+                <button class="btn-primary" onclick="submitSchoolRequest()">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Video Modal -->
+    <div id="uploadVideoModal" class="modal hidden">
+        <div class="modal-overlay" onclick="window.modalsManager.close('uploadVideoModal')"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload Video</h2>
+                <button class="modal-close" onclick="window.modalsManager.close('uploadVideoModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadVideoForm">
+                    <div class="form-group">
+                        <label class="form-label required">Video Title</label>
+                        <input type="text" class="form-input" id="videoTitle" placeholder="Enter video title" required>
+                        <small class="form-hint">Choose a clear, descriptive title</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label required">Description</label>
+                        <textarea class="form-textarea" id="videoDescription"
+                            placeholder="Describe your video content..." rows="4" required></textarea>
+                        <small class="form-hint">Include key topics and what students will learn</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label required">Category</label>
+                            <select class="form-select" id="videoCategory" required disabled>
+                                <option value="Ad" selected>Ad</option>
+                            </select>
+                            <small class="form-hint">Currently only Ad videos</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label required">Target Audience</label>
+                            <select class="form-select" id="targetAudience" required>
+                                <option value="">Select Grade Level</option>
+                                <option value="Grade 9">Grade 9</option>
+                                <option value="Grade 10">Grade 10</option>
+                                <option value="Grade 11">Grade 11</option>
+                                <option value="Grade 12">Grade 12</option>
+                                <option value="University">University</option>
+                                <option value="Professional">Professional</option>
+                                <option value="All Levels">All Levels</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label required">Video File</label>
+                        <div class="file-upload-area" id="videoUploadArea">
+                            <input type="file" id="videoFile" accept="video/*" class="file-input hidden" required>
+                            <label for="videoFile" class="file-upload-label">
+                                <div class="upload-icon">🎥</div>
+                                <p class="upload-text">Click to upload or drag and drop</p>
+                                <p class="upload-hint">MP4, AVI, MOV (Max 500MB)</p>
+                            </label>
+                            <div id="videoFileInfo" class="file-info hidden">
+                                <span class="file-name"></span>
+                                <button type="button" class="remove-btn" onclick="removeVideoFile()">×</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Thumbnail Image</label>
+                        <div class="file-upload-area" id="thumbnailUploadArea">
+                            <input type="file" id="thumbnailFile" accept="image/*" class="file-input hidden">
+                            <label for="thumbnailFile" class="file-upload-label">
+                                <div class="upload-icon">🖼️</div>
+                                <p class="upload-text">Click to upload thumbnail</p>
+                                <p class="upload-hint">JPG, PNG (Recommended: 1280x720)</p>
+                            </label>
+                            <div id="thumbnailPreview" class="thumbnail-preview hidden">
+                                <img src="" alt="Thumbnail preview">
+                                <button type="button" class="remove-btn" onclick="removeThumbnail()">×</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="window.modalsManager.close('uploadVideoModal')">Cancel</button>
+                <button class="btn-outline" onclick="saveVideoAsDraft()">
+                    <span>💾</span> Save as Draft
+                </button>
+                <button class="btn-primary" onclick="publishVideo()">
+                    <span>📤</span> Publish
+                </button>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Video Review Modal -->
+    <div id="videoReviewModal" class="modal hidden">
+        <div class="modal-overlay" onclick="window.modalsManager.close('videoReviewModal')"></div>
+        <div class="modal-content review-modal-content">
+            <div class="modal-header">
+                <h2>Video Submitted for Review</h2>
+                <button class="modal-close" onclick="window.modalsManager.close('videoReviewModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="review-icon-container">
+                    <div class="review-icon">
+                        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2">
+                            <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="review-message">
+                    <h3>Your video is under review</h3>
+                    <p>Thank you for submitting your video. Our team is currently reviewing it to ensure it meets our
+                        community guidelines and terms of service.</p>
+
+                    <div class="review-timeline">
+                        <div class="timeline-item active">
+                            <span class="timeline-dot"></span>
+                            <div class="timeline-content">
+                                <strong>Submitted</strong>
+                                <span>Just now</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <span class="timeline-dot"></span>
+                            <div class="timeline-content">
+                                <strong>Under Review</strong>
+                                <span>In progress</span>
+                            </div>
+                        </div>
+                        <div class="timeline-item">
+                            <span class="timeline-dot"></span>
+                            <div class="timeline-content">
+                                <strong>Decision</strong>
+                                <span>Within 24-48 hours</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="review-info">
+                        <p><strong>What happens next?</strong></p>
+                        <ul>
+                            <li>✅ If approved, your video will be automatically published and visible to students</li>
+                            <li>📧 You'll receive an email notification with the review outcome</li>
+                            <li>💬 If not approved, we'll provide specific feedback on what needs to be adjusted</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="window.modalsManager.close('videoReviewModal')">Got it</button>
+                <button class="btn-primary" onclick="goToMyVideos()">View My Videos</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Set Package Modal -->
+    <div id="setPackageModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeSetPackageModal()"></div>
+        <div class="modal-content package-modal">
+            <div class="modal-header">
+                <h2>Set Package</h2>
+                        <p class="tab-subtitle">Configure your course packages and pricing</p>
+                <button class="modal-close" onclick="closeSetPackageModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="setPackageForm" class="enhanced-form">
+                    <div id="coursesContainer" class="space-y-4">
+                        <!-- Package Entry Template -->
+                        <div class="course-entry">
+                            <div class="course-header">
+                                <h4 class="course-title"><i class="fas fa-box mr-2"></i>Package</h4>
+                                <button type="button" class="remove-course-btn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="course-grid">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-plus-circle mr-1"></i>Course Names (Add multiple courses)
+                                    </label>
+                                    <div class="courses-list-container">
+                                        <div class="course-name-group">
+                                            <input type="text" class="course-name form-input"
+                                                placeholder="Enter course name" required>
+                                            <button type="button" class="add-course-to-package btn-icon">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                        <div class="added-courses-list"></div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Payment Frequency</label>
+                                    <select class="payment-frequency form-select" required>
+                                        <option value="2-weeks">2 Weeks</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Hourly Rate (ETB)</label>
+                                    <input type="number" class="hourly-rate form-input" placeholder="Enter hourly rate"
+                                        min="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Discounts (%)</label>
+                                    <div class="discount-grid">
+                                        <input type="number" class="discount-3months form-input" placeholder="3 Months"
+                                            min="0" max="100">
+                                        <input type="number" class="discount-6months form-input" placeholder="6 Months"
+                                            min="0" max="100">
+                                        <input type="number" class="discount-yearly form-input" placeholder="Yearly"
+                                            min="0" max="100">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="addCourseBtn" class="btn-add-course">
+                        <i class="fas fa-plus mr-2"></i>Add Package
+                    </button>
+                    <div class="form-group">
+                        <label class="form-label">Bank Name</label>
+                        <select id="updateBankName" class="form-select">
+                            <option value="">Select a bank</option>
+                            <option value="cbe">Commercial Bank of Ethiopia</option>
+                            <option value="awash">Awash International Bank</option>
+                            <option value="dashen">Dashen Bank</option>
+                            <option value="abyssinia">Bank of Abyssinia</option>
+                            <option value="wegagen">Wegagen Bank</option>
+                            <option value="hibret">Hibret Bank</option>
+                            <option value="nib">Nib International Bank</option>
+                            <option value="coop">Cooperative Bank of Oromia</option>
+                            <option value="zemen">Zemen Bank</option>
+                            <option value="telebirr">Tele Birr</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Account Number</label>
+                        <input id="updateAccountNumber" type="text" class="form-input"
+                            placeholder="Enter account number">
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input id="samePaymentDetails" type="checkbox" class="form-checkbox">
+                            <span>Use same payment details for receiving payments</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-sync-alt mr-2"></i>Update Package
+                    </button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- View Package Modal -->
+    <div id="viewPackageModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeViewPackageModal()"></div>
+        <div class="modal-content package-modal">
+            <div class="modal-header">
+                <h2>View Packages</h2>
+                        <p class="tab-subtitle">Review your course packages and calculate fees</p>
+                <button class="modal-close" onclick="closeViewPackageModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="calculation-section">
+                    <div class="calc-grid">
+                        <div class="form-group">
+                            <label class="form-label">Days per Week</label>
+                            <input type="number" id="days-per-week" class="form-input" placeholder="Enter days per week"
+                                min="1" max="7" value="3">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hours per Day</label>
+                            <input type="number" id="hours-per-day" class="form-input" placeholder="Enter hours per day"
+                                min="1" max="24" value="1">
+                        </div>
+                    </div>
+                    <button id="calculate-fees" class="btn-primary">
+                        <i class="fas fa-calculator mr-2"></i>Calculate Fees
+                    </button>
+                </div>
+                <div id="coursesDisplay" class="courses-display">
+                    <p class="no-courses-message">No courses have been set.</p>
+                </div>
+                <div class="payment-details-display">
+                    <h4 class="section-subtitle"><i class="fas fa-university mr-2"></i>Payment Details</h4>
+                    <div class="payment-info">
+                        <div class="info-row">
+                            <span class="info-label">Bank Name:</span>
+                            <span id="displayBankName" class="info-value">Not set</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Account Number:</span>
+                            <span id="displayAccountNumber" class="info-value">Not set</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- FAB Menu -->
     <div class="fab-container">
         <button class="fab" id="main-fab">
@@ -2469,7 +2616,6 @@
             </button>
         </div>
     </div>
-
     <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
         <div class="footer-wave" aria-hidden="true">
@@ -2618,51 +2764,19 @@
         </div>
     </footer>
 
-<script>
-    // Check authentication on page load
-    (async function() {
-        const auth = window.AuthManager;
-        
-        if (!auth.isAuthenticated()) {
-            // Try to restore session
-            const restored = await auth.restoreSession();
-            
-            if (!restored) {
-                alert('Please login to access this page');
-                window.location.href = '../index.html';
-                return;
-            }
-        }
-        
-        // Check if user has the right role
-        const userRole = auth.getUserRole();
-        if (userRole !== 'tutor') {
-            alert('This page is for tutors only');
-            window.location.href = '../index.html';
-            return;
-        }
-        
-        // Page is accessible, load user data
-        const user = auth.getUser();
-        console.log('Current user:', user);
-        // ... rest of your page-specific code
-    })();
-</script>
 
-    <!-- In student-profile.html or any protected page -->
+    <!-- Scripts -->
     <script src="../js-tier-1/auth.js"></script>
-
-    <script src="../js-tier-1/tutor-profile.js"></script> <!-- Tutor profile JS -->
-    <script src="../js-tier-1/tutor-modals.js"></script>
-
     <script src="../js-tier-1/page-structure-1.js"></script>
     <script src="../js-tier-1/page-structure-2.js"></script>
     <script src="../js-tier-1/page-structure-3.js"></script>
     <script src="../js-tier-1/page-structure-4.js"></script>
-
-    <script src="../js-tier-1/profile-system.js"></script> <!-- Profile system JS -->
+    <script src="../js-tier-1/tutor-profile.js"></script>
+    <script src="../js-tier-1/profile-system.js"></script>
     <script src="../js-tier-1/coming-soon-modal.js"></script>
     <script src="../js-tier-1/ad-modal.js"></script>
+
+
 </body>
 
 </html>

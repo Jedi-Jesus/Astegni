@@ -1,5 +1,6 @@
 // ============================================
 // ULTIMATE VIDEO PLAYER CLASS - COMPLETE FIXED VERSION
+// All critical issues resolved
 // ============================================
 
 class UltimateVideoPlayer {
@@ -22,6 +23,10 @@ class UltimateVideoPlayer {
         this.isDragging = false;
         this.isFullscreen = false;
         this.isMinimized = false;
+        this.isTheaterMode = false;
+        this.pipSize = 'small';
+        this.isNavigating = false;
+        this.isHoveringNav = false;
         this.elements = {};
 
         this.callbacks = {
@@ -46,7 +51,138 @@ class UltimateVideoPlayer {
         this.setupEventListeners();
         this.setupCloseButton();
         this.setupVideoCounterVisibility();
+        this.addTheaterModeStyles();
         this.isInitialized = true;
+    }
+
+    addTheaterModeStyles() {
+        const theaterStyles = document.createElement('style');
+        theaterStyles.id = 'theater-mode-styles';
+        theaterStyles.textContent = `
+            /* Theater Mode Styles */
+            .theater-mode .video-info-sidebar-enhanced {
+                display: none !important;
+            }
+            
+            .theater-mode .video-main-section {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 1 1 100% !important;
+            }
+            
+            .theater-mode .video-theater-container {
+                max-width: 100% !important;
+            }
+            
+            .theater-mode .enhanced-video {
+                max-height: 80vh;
+            }
+            
+            /* PiP Mode improvements */
+            .ultimate-video-modal.minimized {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                resize: both;
+                overflow: auto;
+                min-width: 240px;
+                min-height: 135px;
+                max-width: 640px;
+                max-height: 360px;
+            }
+            
+            .pip-controls {
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .ultimate-video-modal.minimized:hover .pip-controls {
+                opacity: 1;
+            }
+            
+            /* Loading spinner */
+            .video-loading-spinner {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 100;
+                display: none;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .spinner-ring {
+                width: 60px;
+                height: 60px;
+                border: 4px solid rgba(255, 255, 255, 0.2);
+                border-top-color: white;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+            }
+            
+            @keyframes spin {
+                to { transform: rotate(360deg); }
+            }
+            
+            /* Theater button tooltip */
+            #theaterBtn:hover::after {
+                content: 'Theater mode';
+                position: absolute;
+                bottom: 120%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                pointer-events: none;
+            }
+            
+            /* Video counter visibility */
+            .video-counter {
+                transition: opacity 0.3s ease;
+                cursor: pointer;
+            }
+            
+            .video-counter:hover {
+                opacity: 1 !important;
+            }
+            
+            /* Navigation buttons */
+            .nav-btn-enhanced {
+                position: relative;
+                overflow: visible;
+            }
+            
+            .nav-btn-enhanced:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            
+            /* Close button positioning */
+            .modal-close-btn-enhanced {
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                padding: 8px;
+                border-radius: 50%;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            
+            .modal-close-btn-enhanced:hover {
+                background: rgba(0, 0, 0, 0.8);
+                transform: scale(1.1);
+            }
+        `;
+        
+        if (!document.getElementById('theater-mode-styles')) {
+            document.head.appendChild(theaterStyles);
+        }
     }
 
     cacheElements() {
@@ -70,6 +206,7 @@ class UltimateVideoPlayer {
             qualityMenu: document.getElementById('qualityMenu'),
             fullscreenBtn: document.getElementById('fullscreenBtn'),
             pipBtn: document.getElementById('pipBtn'),
+            theaterBtn: document.getElementById('theaterBtn'),
             videoControls: document.getElementById('videoControls'),
             gestureIndicator: document.getElementById('gestureIndicator'),
             videoTitle: document.getElementById('ultimate-video-title'),
@@ -88,12 +225,11 @@ class UltimateVideoPlayer {
             loadingSpinner: document.querySelector('.video-loading-spinner'),
             prevVideoBtn: document.getElementById('prevVideoBtn'),
             nextVideoBtn: document.getElementById('nextVideoBtn'),
-            videoCounter: document.querySelector('.video-counter')
+            videoCounter: document.querySelector('.video-counter'),
         };
     }
 
     setupCloseButton() {
-        // Create close button if it doesn't exist
         let closeBtn = document.querySelector('.modal-close-btn-enhanced');
         if (!closeBtn) {
             closeBtn = document.createElement('button');
@@ -105,25 +241,19 @@ class UltimateVideoPlayer {
             `;
             closeBtn.onclick = () => this.close();
 
-            // Position it at the top right of the video section
             const videoSection = document.querySelector('.video-main-section');
             if (videoSection) {
-                closeBtn.style.position = 'absolute';
-                closeBtn.style.top = '20px';
-                closeBtn.style.right = '20px';
-                closeBtn.style.zIndex = '1000';
+                videoSection.style.position = 'relative';
                 videoSection.appendChild(closeBtn);
             }
         }
     }
 
     setupVideoCounterVisibility() {
-        // Initially hide the video counter
         if (this.elements.videoCounter) {
             this.elements.videoCounter.style.opacity = '0';
             this.elements.videoCounter.style.transition = 'opacity 0.3s ease';
 
-            // Show counter on hover over the counter itself
             this.elements.videoCounter.addEventListener('mouseenter', () => {
                 this.elements.videoCounter.style.opacity = '1';
             });
@@ -137,7 +267,6 @@ class UltimateVideoPlayer {
             });
         }
 
-        // Show counter on navigation button hover
         if (this.elements.prevVideoBtn) {
             this.elements.prevVideoBtn.addEventListener('mouseenter', () => {
                 this.isHoveringNav = true;
@@ -145,6 +274,7 @@ class UltimateVideoPlayer {
                     this.elements.videoCounter.style.opacity = '1';
                 }
             });
+            
             this.elements.prevVideoBtn.addEventListener('mouseleave', () => {
                 this.isHoveringNav = false;
                 setTimeout(() => {
@@ -162,6 +292,7 @@ class UltimateVideoPlayer {
                     this.elements.videoCounter.style.opacity = '1';
                 }
             });
+            
             this.elements.nextVideoBtn.addEventListener('mouseleave', () => {
                 this.isHoveringNav = false;
                 setTimeout(() => {
@@ -176,6 +307,18 @@ class UltimateVideoPlayer {
     showLoadingSpinner() {
         if (this.elements.loadingSpinner) {
             this.elements.loadingSpinner.style.display = 'flex';
+        } else {
+            // Create spinner if it doesn't exist
+            const spinner = document.createElement('div');
+            spinner.className = 'video-loading-spinner';
+            spinner.innerHTML = '<div class="spinner-ring"></div>';
+            spinner.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; display: flex;';
+            
+            const videoWrapper = document.querySelector('.video-wrapper-advanced');
+            if (videoWrapper) {
+                videoWrapper.appendChild(spinner);
+                this.elements.loadingSpinner = spinner;
+            }
         }
     }
 
@@ -200,10 +343,16 @@ class UltimateVideoPlayer {
         this.elements.video.addEventListener('pause', () => this.handlePause());
         this.elements.video.addEventListener('ended', () => this.handleVideoEnded());
         this.elements.video.addEventListener('click', () => this.togglePlayPause());
-        this.elements.video.addEventListener('error', () => {
+        this.elements.video.addEventListener('error', (e) => {
             this.hideLoadingSpinner();
             this.showNotification('Error loading video', 'error');
+            console.error('Video error:', e);
         });
+
+        // Theater mode button
+        if (this.elements.theaterBtn) {
+            this.elements.theaterBtn.addEventListener('click', () => this.toggleTheaterMode());
+        }
 
         // Playback controls
         if (this.elements.playPauseBtn) {
@@ -223,6 +372,7 @@ class UltimateVideoPlayer {
         }
         if (this.elements.volumeSlider) {
             this.elements.volumeSlider.addEventListener('click', (e) => this.setVolume(e));
+            this.elements.volumeSlider.addEventListener('mousedown', (e) => this.startVolumeDragging(e));
         }
 
         // Speed
@@ -273,12 +423,124 @@ class UltimateVideoPlayer {
             document.addEventListener('keydown', (e) => this.handleKeyboard(e));
         }
 
+        // Add to videoplayer.js in setupEventListeners:
+
+// Show controls when user interacts
+let controlsTimeout;
+
+const showControlsTemporarily = () => {
+    this.elements.videoControls?.classList.add('visible');
+    const engagementBar = document.querySelector('.engagement-bar-enhanced');
+    if (engagementBar) engagementBar.classList.add('visible');
+    
+    clearTimeout(controlsTimeout);
+    controlsTimeout = setTimeout(() => {
+        if (!this.elements.video?.paused) {
+            this.elements.videoControls?.classList.remove('visible');
+            if (engagementBar) engagementBar.classList.remove('visible');
+        }
+    }, 3000);
+};
+
+// Show on mouse move
+document.addEventListener('mousemove', (e) => {
+    if (this.elements.modal?.contains(e.target)) {
+        showControlsTemporarily();
+    }
+});
+
+// Always show when paused
+this.elements.video?.addEventListener('pause', () => {
+    this.elements.videoControls?.classList.add('visible');
+    const engagementBar = document.querySelector('.engagement-bar-enhanced');
+    if (engagementBar) engagementBar.classList.add('visible');
+});
+
+this.elements.video?.addEventListener('play', () => {
+    showControlsTemporarily();
+});
+
         // Document events
         document.addEventListener('mousemove', (e) => this.handleDragging(e));
         document.addEventListener('mouseup', () => this.stopDragging());
 
         // Fullscreen change event
         document.addEventListener('fullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('webkitfullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('mozfullscreenchange', () => this.handleFullscreenChange());
+        document.addEventListener('MSFullscreenChange', () => this.handleFullscreenChange());
+    }
+
+// In videoplayer.js, update the toggleTheaterMode method:
+toggleTheaterMode() {
+    const modal = this.elements.modal;
+    if (!modal) return;
+
+    this.isTheaterMode = !this.isTheaterMode;
+
+    if (this.isTheaterMode) {
+        modal.classList.add('theater-mode');
+        // Keep controls visible in theater mode
+        if (this.elements.videoControls) {
+            this.elements.videoControls.classList.add('visible');
+        }
+        this.showNotification('Theater mode enabled');
+    } else {
+        modal.classList.remove('theater-mode');
+        this.showNotification('Default view');
+    }
+}
+
+// Enhanced fullscreen with proper control handling
+toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        // Request fullscreen on the video wrapper, not the modal
+        const videoWrapper = this.elements.video?.parentElement || this.elements.modal;
+        if (videoWrapper) {
+            const requestFS = videoWrapper.requestFullscreen || 
+                            videoWrapper.webkitRequestFullscreen || 
+                            videoWrapper.mozRequestFullScreen || 
+                            videoWrapper.msRequestFullscreen;
+            
+            if (requestFS) {
+                requestFS.call(videoWrapper).then(() => {
+                    this.isFullscreen = true;
+                    if (this.elements.modal) {
+                        this.elements.modal.classList.add('fullscreen');
+                    }
+                }).catch(err => {
+                    console.error('Fullscreen error:', err);
+                    this.showNotification('Fullscreen not available', 'error');
+                });
+            }
+        }
+    } else {
+        document.exitFullscreen().then(() => {
+            this.isFullscreen = false;
+            if (this.elements.modal) {
+                this.elements.modal.classList.remove('fullscreen');
+            }
+        });
+    }
+}
+    startVolumeDragging(e) {
+        this.isVolumeDragging = true;
+        this.setVolume(e);
+        
+        const handleVolumeDrag = (e) => {
+            if (this.isVolumeDragging) {
+                this.setVolume(e);
+            }
+        };
+        
+        const stopVolumeDrag = () => {
+            this.isVolumeDragging = false;
+            document.removeEventListener('mousemove', handleVolumeDrag);
+            document.removeEventListener('mouseup', stopVolumeDrag);
+        };
+        
+        document.addEventListener('mousemove', handleVolumeDrag);
+        document.addEventListener('mouseup', stopVolumeDrag);
     }
 
     loadPlaylist(playlist) {
@@ -287,60 +549,84 @@ class UltimateVideoPlayer {
         this.updateVideoDots();
     }
 
-    loadVideo(index) {
-        if (index < 0 || index >= this.playlist.length) return;
+// In videoplayer.js, enhance the loadVideo method:
 
-        this.isNavigating = true;
-        this.currentVideoIndex = index;
-        const videoData = this.playlist[index];
+async loadVideo(index) {
+    if (index < 0 || index >= this.playlist.length) return;
 
-        // Show loading spinner
-        this.showLoadingSpinner();
+    this.isNavigating = true;
+    this.currentVideoIndex = index;
+    const videoData = this.playlist[index];
 
-        if (this.elements.video) {
-            this.elements.video.pause();
-            this.elements.video.src = videoData.src;
-            this.elements.video.load();
-        }
+    this.showLoadingSpinner();
 
-        this.updateVideoUI(videoData);
+    if (this.elements.video) {
+        this.elements.video.pause();
+        this.elements.video.src = videoData.src;
+        this.elements.video.load();
+    }
 
-        // Update PiP navigation buttons if minimized
-        if (this.isMinimized) {
-            this.updatePiPNavigationButtons();
-        }
-
-        if (this.config.autoplay && this.elements.video) {
-            this.elements.video.play().catch(e => {
-                console.log('Autoplay prevented:', e);
-                this.hideLoadingSpinner();
-            });
-        }
-
-        // Show video counter briefly when navigating
-        if (this.elements.videoCounter) {
-            this.elements.videoCounter.style.opacity = '1';
-            setTimeout(() => {
-                this.isNavigating = false;
-                if (this.elements.videoCounter && !this.isHoveringNav) {
-                    this.elements.videoCounter.style.opacity = '0';
-                }
-            }, 3000);
-        }
-
+    // Update all UI elements
+    this.updateVideoUI(videoData);
+    
+    // Update ALL content sections when changing videos
+    if (window.videoPlayerBridge) {
         // Update engagement UI
-        this.updateEngagementUI(videoData);
-
-        if (this.callbacks.onVideoLoad) {
-            this.callbacks.onVideoLoad(videoData);
+        window.videoPlayerBridge.updateEngagementUI(videoData.id);
+        
+        // Update description
+        window.videoPlayerBridge.updateDescriptionTab(videoData);
+        
+        // Load new comments
+        window.videoPlayerBridge.loadComments(videoData.id);
+        
+        // Load new chapters
+        window.videoPlayerBridge.loadChapters(videoData.id);
+        
+        // Update related videos (more from uploader & related by subject)
+        window.videoPlayerBridge.loadRelatedVideos(videoData.id);
+        
+        // Update creator stats
+        if (videoData.tutor_id) {
+            window.videoPlayerBridge.updateCreatorStats(videoData.tutor_id);
         }
     }
 
+    if (this.config.autoplay && this.elements.video) {
+        this.elements.video.play().catch(e => {
+            console.log('Autoplay prevented:', e);
+            this.hideLoadingSpinner();
+        });
+    }
+
+    // Trigger callback
+    if (this.callbacks.onVideoLoad) {
+        this.callbacks.onVideoLoad(videoData);
+    }
+
+    // Reset to description tab
+    this.setActiveTab('description');
+}
+
+// Add this method to the UltimateVideoPlayer class
+setActiveTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+
+    // Update tab content
+    ['description', 'chapters', 'comments'].forEach(tab => {
+        const element = document.getElementById(`${tab}Tab`);
+        if (element) {
+            element.style.display = tab === tabName ? 'block' : 'none';
+        }
+    });
+}
     updateEngagementUI(videoData) {
         const engagementBar = document.getElementById('ultimate-engagement-bar');
         if (!engagementBar || !window.videoPlayerBridge) return;
 
-        // Let the bridge handle the engagement UI update
         if (window.videoPlayerBridge && window.videoPlayerBridge.updateEngagementUI) {
             window.videoPlayerBridge.updateEngagementUI(videoData.id);
         }
@@ -356,12 +642,13 @@ class UltimateVideoPlayer {
         if (nextBtn) {
             nextBtn.disabled = this.currentVideoIndex === this.playlist.length - 1;
         }
+        
+        // Update the video index display
+        const indexDisplay = document.querySelector('.pip-video-index');
+        if (indexDisplay) {
+            indexDisplay.textContent = `${this.currentVideoIndex + 1}/${this.playlist.length}`;
+        }
     }
-
-    // In videoplayer.js, find the updateVideoUI method and modify it:
-
-    // Around line 380-420 in videoplayer.js, find where the creator section is updated
-    // Replace the follow button section with this:
 
     updateVideoUI(videoData) {
         if (this.elements.videoTitle) {
@@ -371,52 +658,25 @@ class UltimateVideoPlayer {
         if (this.elements.creatorName) {
             this.elements.creatorName.textContent = videoData.creator || 'Unknown';
         }
+        
         if (this.elements.viewCount) {
             this.elements.viewCount.textContent = `${videoData.views || 0} views`;
         }
+        
         if (this.elements.uploadDate) {
             const date = videoData.date ? new Date(videoData.date).toLocaleDateString() : 'Today';
             this.elements.uploadDate.textContent = date;
         }
+        
         if (this.elements.videoCountText) {
             this.elements.videoCountText.textContent = `Video ${this.currentVideoIndex + 1} of ${this.playlist.length}`;
         }
+        
         if (this.elements.creatorAvatar && videoData.creator) {
-            const initials = videoData.creator.split(' ').map(n => n[0]).join('').toUpperCase();
+            const initials = videoData.creator.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
             this.elements.creatorAvatar.textContent = initials;
         }
 
-        // CONNECTION BUTTON IN CREATOR SECTION ONLY
-        const creatorSection = document.querySelector('.creator-section');
-        if (creatorSection && videoData.tutor_id) {
-            // Remove any existing connection container
-            const existingContainer = creatorSection.querySelector('.connection-dropdown-container');
-            if (existingContainer) {
-                existingContainer.remove();
-            }
-
-            // Create unique connection container for THIS specific tutor/video combination
-            const uniqueId = `${videoData.id}-${videoData.tutor_id}`;
-            const connectionContainer = document.createElement('div');
-            connectionContainer.className = 'connection-dropdown-container';
-            connectionContainer.style.position = 'relative';
-            connectionContainer.innerHTML = `
-            <div id="connection-btn-${uniqueId}" 
-                 class="connection-status-btn"
-                 data-tutor-id="${videoData.tutor_id}"
-                 data-video-id="${videoData.id}">
-                <!-- Will be populated by updateConnectionButton -->
-            </div>
-        `;
-            creatorSection.appendChild(connectionContainer);
-
-            // Update connection button with unique ID
-            if (window.videoPlayerBridge) {
-                window.videoPlayerBridge.updateConnectionButton(videoData.tutor_id, uniqueId);
-            }
-        }
-
-        // Update description, navigation, etc.
         this.updateNavigationButtons();
         this.updateVideoDots();
     }
@@ -456,7 +716,6 @@ class UltimateVideoPlayer {
     }
 
     handleLoadedMetadata() {
-        // Hide loading spinner
         this.hideLoadingSpinner();
 
         if (this.elements.duration && this.elements.video) {
@@ -531,8 +790,10 @@ class UltimateVideoPlayer {
     }
 
     stopDragging() {
-        this.isDragging = false;
-        this.isSeeking = false;
+        if (this.isDragging) {
+            this.isDragging = false;
+            this.isSeeking = false;
+        }
     }
 
     skip(seconds) {
@@ -552,10 +813,10 @@ class UltimateVideoPlayer {
     setVolume(e) {
         if (!this.elements.volumeSlider || !this.elements.video) return;
         const rect = this.elements.volumeSlider.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        this.elements.video.volume = Math.max(0, Math.min(1, percent));
+        const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+        this.elements.video.volume = percent;
         if (this.elements.volumeLevel) {
-            this.elements.volumeLevel.style.width = (this.elements.video.volume * 100) + '%';
+            this.elements.volumeLevel.style.width = (percent * 100) + '%';
         }
         this.updateVolumeIcon();
     }
@@ -575,90 +836,63 @@ class UltimateVideoPlayer {
 
     toggleSpeedMenu() {
         if (this.elements.speedMenu) {
-            this.elements.speedMenu.classList.toggle('active');
-        }
-        if (this.elements.qualityMenu) {
-            this.elements.qualityMenu.classList.remove('active');
+            this.elements.speedMenu.classList.toggle('visible');
         }
     }
 
     changeSpeed(e) {
-        const speed = parseFloat(e.currentTarget.dataset.speed);
+        const speed = parseFloat(e.target.dataset.speed);
         if (this.elements.video) {
             this.elements.video.playbackRate = speed;
         }
+        
+        document.querySelectorAll('.speed-option').forEach(opt => {
+            opt.classList.remove('active');
+        });
+        e.target.classList.add('active');
+        
         if (this.elements.speedBtn) {
-            this.elements.speedBtn.textContent = speed === 1 ? '1x' : speed + 'x';
+            this.elements.speedBtn.textContent = speed === 1 ? '1x' : `${speed}x`;
         }
-        document.querySelectorAll('.speed-option').forEach(o => o.classList.remove('active'));
-        e.currentTarget.classList.add('active');
+        
         if (this.elements.speedMenu) {
-            this.elements.speedMenu.classList.remove('active');
+            this.elements.speedMenu.classList.remove('visible');
         }
+        
+        this.showNotification(`Speed: ${speed}x`);
     }
 
     toggleQualityMenu() {
         if (this.elements.qualityMenu) {
-            this.elements.qualityMenu.classList.toggle('active');
-        }
-        if (this.elements.speedMenu) {
-            this.elements.speedMenu.classList.remove('active');
+            this.elements.qualityMenu.classList.toggle('visible');
         }
     }
 
     changeQuality(e) {
-        const quality = e.currentTarget.dataset.quality;
-        document.querySelectorAll('.quality-option').forEach(o => o.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-
-        const qualityMap = {
-            '2160': '4K', '1440': 'QHD', '1080': 'HD',
-            '720': '720p', '480': '480p', '360': '360p', 'auto': 'Auto'
-        };
-
+        const quality = e.target.dataset.quality;
+        
+        document.querySelectorAll('.quality-option').forEach(opt => {
+            opt.classList.remove('active');
+        });
+        e.target.classList.add('active');
+        
+        const label = e.target.querySelector('.quality-label')?.textContent || quality;
         if (this.elements.qualityBtn) {
-            this.elements.qualityBtn.textContent = qualityMap[quality];
+            this.elements.qualityBtn.textContent = label;
         }
+        
         if (this.elements.qualityMenu) {
-            this.elements.qualityMenu.classList.remove('active');
+            this.elements.qualityMenu.classList.remove('visible');
         }
+        
+        this.showNotification(`Quality: ${label}`);
     }
 
-    toggleFullscreen() {
-        if (!document.fullscreenElement) {
-            if (this.elements.theaterContainer) {
-                this.elements.theaterContainer.requestFullscreen();
-            }
-        } else {
-            document.exitFullscreen();
-        }
-    }
+
 
     handleFullscreenChange() {
         this.isFullscreen = !!document.fullscreenElement;
-
-        // Hide/show sidebar based on fullscreen state
-        if (this.elements.sidebar) {
-            if (this.isFullscreen) {
-                this.elements.sidebar.style.display = 'none';
-                // Make video section take full width
-                const videoSection = document.querySelector('.video-main-section');
-                if (videoSection) {
-                    videoSection.style.width = '100%';
-                    videoSection.style.maxWidth = '100%';
-                }
-            } else {
-                this.elements.sidebar.style.display = 'block';
-                // Restore video section width
-                const videoSection = document.querySelector('.video-main-section');
-                if (videoSection) {
-                    videoSection.style.width = '';
-                    videoSection.style.maxWidth = '';
-                }
-            }
-        }
-
-        // Update fullscreen button icon
+        
         if (this.elements.fullscreenBtn) {
             if (this.isFullscreen) {
                 this.elements.fullscreenBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>';
@@ -668,204 +902,49 @@ class UltimateVideoPlayer {
         }
     }
 
-    async togglePiP() {
-        const modal = this.elements.modal;
-
+async togglePiP() {
+    if (!this.elements.video) return;
+    
+    try {
         if (!this.isMinimized) {
-            // Minimize the modal
-            modal.classList.add('minimized');
+            // Enter PiP mode
             this.isMinimized = true;
-            this.pipSize = 'small'; // Track PiP size
-
-            // Add PiP specific styles
-            modal.style.cssText = `
-                position: fixed !important;
-                bottom: 20px !important;
-                right: 20px !important;
-                width: 320px !important;
-                height: 180px !important;
-                z-index: 10000 !important;
-                border-radius: 8px !important;
-                overflow: hidden !important;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.4) !important;
-                transition: all 0.3s ease !important;
-            `;
-
-            // Hide everything except video
-            const sidebar = modal.querySelector('.video-info-sidebar-enhanced');
-            const controls = modal.querySelector('.video-controls-advanced');
-            const header = modal.querySelector('.video-header-overlay');
-
-            if (sidebar) sidebar.style.display = 'none';
-            if (controls) controls.style.opacity = '0';
-            if (header) header.style.display = 'none';
-
-            // Adjust video wrapper
-            const videoWrapper = modal.querySelector('.video-wrapper-advanced');
-            if (videoWrapper) {
-                videoWrapper.style.cssText = `
-                    width: 100% !important;
-                    height: 100% !important;
-                    position: relative !important;
-                `;
-
-                // Add comprehensive PiP controls
-                const pipControls = document.createElement('div');
-                pipControls.className = 'pip-controls';
-                pipControls.innerHTML = `
-                    <div class="pip-top-controls">
-                        <button class="pip-btn pip-enlarge-btn" onclick="window.player.togglePiPSize()" title="Resize">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                                <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 15H6v-2h6v2zm7-4H5V8h14v6z"/>
-                            </svg>
-                        </button>
-                        <button class="pip-btn pip-restore-btn" onclick="window.player.togglePiP()" title="Restore">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                                <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
-                            </svg>
-                        </button>
-                        <button class="pip-btn pip-close-btn" onclick="window.player.close()" title="Close">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <div class="pip-nav-controls">
-                        <button class="pip-btn pip-prev-btn" onclick="window.player.previousVideo()" title="Previous" ${this.currentVideoIndex === 0 ? 'disabled' : ''}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
-                            </svg>
-                        </button>
-                        <button class="pip-btn pip-play-pause" onclick="window.player.togglePlayPause()" title="Play/Pause">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                                ${this.isPlaying ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>' : '<path d="M8 5v14l11-7z"/>'}
-                            </svg>
-                        </button>
-                        <button class="pip-btn pip-next-btn" onclick="window.player.nextVideo()" title="Next" ${this.currentVideoIndex === this.playlist.length - 1 ? 'disabled' : ''}>
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-                            </svg>
-                        </button>
-                    </div>
-                `;
-                pipControls.style.cssText = `
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                    justify-content: space-between;
-                    pointer-events: none;
-                    z-index: 1000;
-                `;
-
-                // Style for control groups
-                const topControlsStyle = `
-                    display: flex;
-                    justify-content: flex-end;
-                    gap: 8px;
-                    padding: 10px;
-                    pointer-events: all;
-                    background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, transparent 100%);
-                `;
-
-                const navControlsStyle = `
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    gap: 20px;
-                    padding: 10px;
-                    pointer-events: all;
-                    background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, transparent 100%);
-                    opacity: 0;
-                    transition: opacity 0.3s ease;
-                `;
-
-                const topControls = pipControls.querySelector('.pip-top-controls');
-                const navControls = pipControls.querySelector('.pip-nav-controls');
-                if (topControls) topControls.style.cssText = topControlsStyle;
-                if (navControls) navControls.style.cssText = navControlsStyle;
-
-                videoWrapper.appendChild(pipControls);
-
-                // Show nav controls on hover
-                videoWrapper.addEventListener('mouseenter', () => {
-                    navControls.style.opacity = '1';
-                    if (controls) controls.style.opacity = '0.8';
-                });
-
-                videoWrapper.addEventListener('mouseleave', () => {
-                    navControls.style.opacity = '0';
-                    if (controls) controls.style.opacity = '0';
-                });
-
-                // Update play/pause button on video state change
-                this.pipPlayPauseBtn = pipControls.querySelector('.pip-play-pause');
+            if (this.elements.modal) {
+                this.elements.modal.classList.add('minimized');
+                // Show PiP controls
+                const pipControls = document.getElementById('pipControls');
+                if (pipControls) pipControls.style.display = 'flex';
             }
-
-            // Make player globally accessible for PiP controls
-            window.player = this;
-
-            this.showNotification('Video minimized - Browse while watching!');
+            this.showNotification('Entered Picture-in-Picture');
         } else {
-            // Restore from PiP
-            modal.classList.remove('minimized');
-            this.isMinimized = false;
-            this.pipSize = 'small';
-
-            // Reset styles
-            modal.style.cssText = '';
-
-            // Show all elements again
-            const sidebar = modal.querySelector('.video-info-sidebar-enhanced');
-            const controls = modal.querySelector('.video-controls-advanced');
-            const header = modal.querySelector('.video-header-overlay');
-            const videoWrapper = modal.querySelector('.video-wrapper-advanced');
-
-            if (sidebar) sidebar.style.display = '';
-            if (controls) controls.style.opacity = '';
-            if (header) header.style.display = '';
-            if (videoWrapper) videoWrapper.style.cssText = '';
-
-            // Remove PiP controls
-            const pipControls = modal.querySelector('.pip-controls');
-            if (pipControls) pipControls.remove();
-
-            this.showNotification('Video restored');
+            // Exit PiP mode
+            this.closePiP();
         }
+    } catch (error) {
+        console.error('Failed to toggle PiP:', error);
+        this.showNotification('Picture-in-Picture not available', 'error');
     }
+}
 
-    togglePiPSize() {
-        if (!this.isMinimized) return;
-
-        const modal = this.elements.modal;
-        if (this.pipSize === 'small') {
-            // Enlarge to medium
-            modal.style.width = '480px !important';
-            modal.style.height = '270px !important';
-            this.pipSize = 'medium';
-        } else if (this.pipSize === 'medium') {
-            // Enlarge to large
-            modal.style.width = '640px !important';
-            modal.style.height = '360px !important';
-            this.pipSize = 'large';
-        } else {
-            // Back to small
-            modal.style.width = '320px !important';
-            modal.style.height = '180px !important';
-            this.pipSize = 'small';
-        }
+closePiP() {
+    this.isMinimized = false;
+    if (this.elements.modal) {
+        this.elements.modal.classList.remove('minimized');
+        // Hide PiP controls
+        const pipControls = document.getElementById('pipControls');
+        if (pipControls) pipControls.style.display = 'none';
     }
+    this.showNotification('Exited Picture-in-Picture');
+}
 
     updatePiPPlayPauseButton() {
-        if (this.pipPlayPauseBtn) {
-            this.pipPlayPauseBtn.innerHTML = `
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
-                    ${this.isPlaying ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>' : '<path d="M8 5v14l11-7z"/>'}
-                </svg>
-            `;
+        const pipPlayBtn = document.querySelector('.pip-play-btn');
+        if (!pipPlayBtn) return;
+        
+        if (this.isPlaying) {
+            pipPlayBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>';
+        } else {
+            pipPlayBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
         }
     }
 
@@ -882,89 +961,94 @@ class UltimateVideoPlayer {
     }
 
     updateNavigationButtons() {
-        const prevBtn = this.elements.prevVideoBtn;
-        const nextBtn = this.elements.nextVideoBtn;
-        const hasPrev = this.currentVideoIndex > 0;
-        const hasNext = this.currentVideoIndex < this.playlist.length - 1;
-
-        if (prevBtn) prevBtn.disabled = !hasPrev;
-        if (nextBtn) nextBtn.disabled = !hasNext;
-
-        const prevTitle = document.getElementById('prevVideoTitle');
-        const nextTitle = document.getElementById('nextVideoTitle');
-
-        if (prevTitle) {
-            prevTitle.textContent = hasPrev ? this.playlist[this.currentVideoIndex - 1].title : 'No previous video';
+        if (this.elements.prevVideoBtn) {
+            this.elements.prevVideoBtn.disabled = this.currentVideoIndex === 0;
         }
-        if (nextTitle) {
-            nextTitle.textContent = hasNext ? this.playlist[this.currentVideoIndex + 1].title : 'No more videos';
+        if (this.elements.nextVideoBtn) {
+            this.elements.nextVideoBtn.disabled = this.currentVideoIndex === this.playlist.length - 1;
         }
     }
 
     updateVideoDots() {
-        const dotsContainer = this.elements.videoDots;
-        if (!dotsContainer) return;
-
-        dotsContainer.innerHTML = '';
-        const maxDots = Math.min(this.playlist.length, 10);
-
-        for (let i = 0; i < maxDots; i++) {
-            const dot = document.createElement('div');
+        if (!this.elements.videoDots) return;
+        
+        this.elements.videoDots.innerHTML = '';
+        
+        for (let i = 0; i < Math.min(this.playlist.length, 10); i++) {
+            const dot = document.createElement('span');
             dot.className = 'video-dot';
-            if (i === this.currentVideoIndex) dot.classList.add('active');
+            if (i === this.currentVideoIndex) {
+                dot.classList.add('active');
+            }
             dot.addEventListener('click', () => this.loadVideo(i));
-            dotsContainer.appendChild(dot);
+            this.elements.videoDots.appendChild(dot);
+        }
+        
+        if (this.playlist.length > 10) {
+            const more = document.createElement('span');
+            more.className = 'video-dot more';
+            more.textContent = '...';
+            this.elements.videoDots.appendChild(more);
         }
     }
 
-    // In the switchTab method, update to show description by default:
-    switchTab(e) {
-        const targetTab = e.currentTarget.dataset.tab;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        e.currentTarget.classList.add('active');
-
-        ['description', 'chapters', 'comments'].forEach(tab => {
-            const element = document.getElementById(`${tab}Tab`);
-            if (element) {
-                element.style.display = tab === targetTab ? 'block' : 'none';
-            }
-        });
+// Add this method to the UltimateVideoPlayer class
+switchTab(e) {
+    const tab = e.target.dataset.tab;
+    
+    // Update tab buttons
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    e.target.classList.add('active');
+    
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+    });
+    
+    // Show selected tab
+    const tabContent = document.getElementById(`${tab}Tab`);
+    if (tabContent) {
+        tabContent.style.display = 'block';
     }
+}
 
     handleKeyboard(e) {
-        if (!this.elements.modal || !this.elements.modal.classList.contains('active')) return;
-
-        switch (e.key) {
-            case '?':
-            // Toggle shortcuts overlay
-            e.preventDefault();
-            this.toggleShortcutsOverlay();
-            break;
-            case 'Escape':
-            e.preventDefault();
-            // Close shortcuts overlay if open
-            const shortcutsOverlay = document.getElementById('shortcutsOverlay');
-            if (shortcutsOverlay && shortcutsOverlay.classList.contains('active')) {
-                shortcutsOverlay.classList.remove('active');
-            } else if (this.isFullscreen) {
-                this.toggleFullscreen();
-            } else if (this.isMinimized) {
-                this.togglePiP();
-            } else {
-                this.close();
-            }
-            break;
+            // Don't handle shortcuts when typing in inputs
+    if (e.target.tagName === 'INPUT' || 
+        e.target.tagName === 'TEXTAREA' || 
+        e.target.contentEditable === 'true' ||
+        e.target.closest('.comment-input-wrapper') ||
+        e.target.closest('.comments-container')) {
+        return;
+    }
+        switch(e.key) {
             case ' ':
                 e.preventDefault();
                 this.togglePlayPause();
                 break;
             case 'ArrowLeft':
-                e.preventDefault();
+            case 'j':
                 this.skip(-10);
                 break;
             case 'ArrowRight':
-                e.preventDefault();
+            case 'l':
                 this.skip(10);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                if (this.elements.video) {
+                    this.elements.video.volume = Math.min(1, this.elements.video.volume + 0.1);
+                    this.updateVolumeIcon();
+                }
+                break;
+            case 'ArrowDown':
+                e.preventDefault();
+                if (this.elements.video) {
+                    this.elements.video.volume = Math.max(0, this.elements.video.volume - 0.1);
+                    this.updateVolumeIcon();
+                }
                 break;
             case 'm':
                 this.toggleMute();
@@ -972,277 +1056,158 @@ class UltimateVideoPlayer {
             case 'f':
                 this.toggleFullscreen();
                 break;
+            case 't':
+                this.toggleTheaterMode();
+                break;
             case 'p':
                 this.togglePiP();
                 break;
+            case '?':
+                this.toggleShortcutsOverlay();
+                break;
+            case 'Escape':
+                if (this.isFullscreen) {
+                    this.toggleFullscreen();
+                }
+                break;
+        }
+        
+        if (e.shiftKey) {
+            switch(e.key) {
+                case 'N':
+                    this.nextVideo();
+                    break;
+                case 'P':
+                    this.previousVideo();
+                    break;
+            }
+        }
+        
+        // Number keys for seeking
+        if (e.key >= '0' && e.key <= '9' && this.elements.video) {
+            const percent = parseInt(e.key) * 10;
+            this.elements.video.currentTime = (percent / 100) * this.elements.video.duration;
         }
     }
 
     toggleShortcutsOverlay() {
-    const overlay = document.getElementById('shortcutsOverlay');
-    if (overlay) {
-        overlay.classList.toggle('active');
-        // Auto-hide after 5 seconds
-        if (overlay.classList.contains('active')) {
+        const overlay = document.getElementById('shortcutsOverlay');
+        if (overlay) {
+            overlay.classList.toggle('visible');
             setTimeout(() => {
-                overlay.classList.remove('active');
-            }, 5000);
+                overlay.classList.remove('visible');
+            }, 3000);
         }
     }
-}
 
     open() {
-        console.log('Opening video player modal');
         if (this.elements.modal) {
             this.elements.modal.classList.add('active');
-            this.elements.modal.style.display = 'block';
             document.body.style.overflow = 'hidden';
-
-            // Reset minimized state
-            if (this.isMinimized) {
-                this.togglePiP();
-            }
         }
     }
 
     close() {
+        if (this.elements.modal) {
+            this.elements.modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
         if (this.elements.video) {
             this.elements.video.pause();
         }
-        if (this.elements.modal) {
-            this.elements.modal.classList.remove('active', 'minimized');
-            this.elements.modal.style.display = 'none';
-            this.elements.modal.style.cssText = '';
-            document.body.style.overflow = '';
-        }
-        // Exit fullscreen if active
-        if (this.isFullscreen) {
-            document.exitFullscreen();
-        }
-        // Reset minimized state
-        this.isMinimized = false;
-
-        // Remove any PiP controls
-        const pipControls = document.querySelector('.pip-controls');
-        if (pipControls) pipControls.remove();
-
+        
         if (this.callbacks.onClose) {
             this.callbacks.onClose();
         }
     }
 
-    
-
     showNotification(message, type = 'info') {
         const notification = document.createElement('div');
-        notification.className = 'video-notification';
+        notification.className = `video-notification ${type}`;
         notification.textContent = message;
         notification.style.cssText = `
             position: fixed;
-            top: 50%;
+            bottom: 20px;
             left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 12px 24px;
-            border-radius: 8px;
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
             color: white;
-            z-index: 10001;
-            font-size: 16px;
-            pointer-events: none;
-            animation: fadeInOut 2s ease;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 10000;
+            animation: slideUp 0.3s ease;
         `;
-
-        if (this.isMinimized) {
-            notification.style.cssText = `
-                position: fixed;
-                bottom: 200px;
-                right: 20px;
-                transform: none;
-                padding: 8px 16px;
-                border-radius: 6px;
-                background: rgba(0, 0, 0, 0.9);
-                color: white;
-                z-index: 10002;
-                font-size: 14px;
-                pointer-events: none;
-                animation: slideInOut 2s ease;
-            `;
-        }
-
+        
         document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 2000);
+        
+        setTimeout(() => {
+            notification.style.animation = 'slideDown 0.3s ease';
+            setTimeout(() => notification.remove(), 300);
+        }, 2000);
     }
 
     formatTime(seconds) {
         if (isNaN(seconds)) return '0:00';
+        
         const h = Math.floor(seconds / 3600);
         const m = Math.floor((seconds % 3600) / 60);
         const s = Math.floor(seconds % 60);
-
+        
         if (h > 0) {
             return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-        } else {
-            return `${m}:${s.toString().padStart(2, '0')}`;
         }
+        return `${m}:${s.toString().padStart(2, '0')}`;
     }
 }
 
+// Auto-initialize styles for notifications
+(function() {
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideUp {
+            from {
+                transform: translateX(-50%) translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideDown {
+            from {
+                transform: translateX(-50%) translateY(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(-50%) translateY(100%);
+                opacity: 0;
+            }
+        }
+        
+        .video-notification {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .video-notification.error {
+            background: rgba(239, 68, 68, 0.9) !important;
+        }
+        
+        .video-notification.success {
+            background: rgba(34, 197, 94, 0.9) !important;
+        }
+        
+        .video-notification.warning {
+            background: rgba(245, 158, 11, 0.9) !important;
+        }
+    `;
+    document.head.appendChild(style);
+})();
 
-
-
-// Add required CSS for animations and PiP mode
-const videoPlayerStyles = document.createElement('style');
-videoPlayerStyles.textContent = `
-    @keyframes fadeInOut {
-        0% { opacity: 0; }
-        20% { opacity: 1; }
-        80% { opacity: 1; }
-        100% { opacity: 0; }
-    }
-    
-    @keyframes slideInOut {
-        0% { transform: translateX(100%); opacity: 0; }
-        20% { transform: translateX(0); opacity: 1; }
-        80% { transform: translateX(0); opacity: 1; }
-        100% { transform: translateX(100%); opacity: 0; }
-    }
-    
-    .pip-btn {
-        background: rgba(0, 0, 0, 0.7);
-        border: none;
-        border-radius: 50%;
-        padding: 8px;
-        cursor: pointer;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .pip-btn:hover:not(:disabled) {
-        background: rgba(0, 0, 0, 0.9);
-        transform: scale(1.1);
-    }
-    
-    .pip-btn:disabled {
-        opacity: 0.4;
-        cursor: not-allowed;
-    }
-    
-    .pip-play-pause {
-        width: 48px;
-        height: 48px;
-        background: rgba(0, 0, 0, 0.8);
-    }
-    
-    .pip-prev-btn, .pip-next-btn {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .pip-enlarge-btn, .pip-restore-btn, .pip-close-btn {
-        width: 28px;
-        height: 28px;
-    }
-    
-    .video-loading-spinner {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 100;
-        display: none;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .spinner-ring {
-        width: 60px;
-        height: 60px;
-        border: 4px solid rgba(255, 255, 255, 0.2);
-        border-top-color: white;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-    
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-    
-    .ultimate-video-modal.minimized .video-wrapper-advanced {
-        position: relative !important;
-        width: 100% !important;
-        height: 100% !important;
-    }
-    
-    .ultimate-video-modal.minimized .enhanced-video {
-        width: 100% !important;
-        height: 100% !important;
-        object-fit: contain !important;
-    }
-    
-    /* Engagement Bar Styles */
-    .engagement-btn-enhanced {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 4px;
-        padding: 10px;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        color: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 12px;
-    }
-    
-    .engagement-btn-enhanced:hover {
-        background: rgba(255, 255, 255, 0.1);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-    
-    .engagement-btn-enhanced.active {
-        background: rgba(103, 126, 234, 0.2);
-        border-color: #667eea;
-        color: #667eea;
-    }
-    
-    .engagement-btn-enhanced.favorite-active .favorite-icon {
-        fill: #e74c3c;
-        color: #e74c3c;
-    }
-    
-    .engagement-btn-enhanced.saved-active .save-icon {
-        fill: #f39c12;
-        color: #f39c12;
-    }
-    
-    .engagement-icon-enhanced {
-        width: 20px;
-        height: 20px;
-    }
-    
-    .engagement-count-enhanced {
-        font-size: 11px;
-        opacity: 0.8;
-    }
-    
-    .hover-lift {
-        transition: transform 0.3s ease;
-    }
-    
-    .hover-lift:hover {
-        transform: translateY(-2px);
-    }
-    
-    /* Video counter visibility on self-hover */
-    .video-counter {
-        cursor: pointer;
-    }
-`;
-document.head.appendChild(videoPlayerStyles);
-
-// Make the class globally available
+// Make player globally available
 window.UltimateVideoPlayer = UltimateVideoPlayer;

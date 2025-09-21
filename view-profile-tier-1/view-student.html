@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <link rel="stylesheet" href="../css-tier-1/ad-modal.css">
-<link rel="stylesheet" href="../css-tier-1/coming-soon-modal.css">
+    <link rel="stylesheet" href="../css-tier-1/coming-soon-modal.css">
 
 </head>
 
@@ -20,7 +20,7 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-                <a href="../index.html" class="logo-container">
+                <a href="view-student.html" class="logo-container">
                     <div class="logo-text">
                         <span class="logo-main">Astegni</span>
                         <span class="logo-sub">View Student</span>
@@ -30,6 +30,10 @@
 
             </div>
             <div class="nav-menu">
+                <!-- Add this as the first item in nav-items -->
+                <a class="nav-link px-2 py-1 rounded" href="../index.html">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
                     <span class="nav-icon">📰</span> News
                 </a>
@@ -901,7 +905,8 @@
             <!-- Right Sidebar -->
             <div class="right-sidebar">
                 <!-- News Widget -->
-                <div class="sidebar-widget news-widget" onclick="handleNavLinkClick(event, 'news')" style="cursor: pointer;">
+                <div class="sidebar-widget news-widget" onclick="handleNavLinkClick(event, 'news')"
+                    style="cursor: pointer;">
                     <div class="widget-header">
                         <h3>📰 Latest News</h3>
                         <a href="#" onclick="handleNavLinkClick(event, 'news')" class="widget-action">View All</a>
@@ -1176,7 +1181,7 @@
         <div class="auth-modal-container">
             <div class="auth-modal-content">
                 <div class="auth-modal-icon">
-    <link rel="stylesheet" href="../css/auth-modal.css">
+                    <link rel="stylesheet" href="../css/auth-modal.css">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
@@ -1198,35 +1203,36 @@
             </div>
         </div>
     </div>
-<!-- Coming Soon Modal -->
-<div id="coming-soon-modal" class="modal">
-    <div class="modal-content enhanced coming-soon-content">
-        <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                </path>
-            </svg>
-        </button>
-        
-        <div class="coming-soon-header">
-            <div class="coming-soon-icon">
-                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+    <!-- Coming Soon Modal -->
+    <div id="coming-soon-modal" class="modal">
+        <div class="modal-content enhanced coming-soon-content">
+            <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
+            </button>
+
+            <div class="coming-soon-header">
+                <div class="coming-soon-icon">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="modal-title">Coming Soon!</h3>
+                <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay
+                    tuned!</p>
             </div>
-            <h3 class="modal-title">Coming Soon!</h3>
-            <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay tuned!</p>
+
+
+
         </div>
-
-
-
     </div>
-</div>
 
 
-<!-- Ad Analytics Modal -->
+    <!-- Ad Analytics Modal -->
     <div class="modal" id="adAnalyticsModal">
         <div class="modal-overlay" onclick="closeAdAnalyticsModal()"></div>
         <div class="modal-content ad-analytics-modal">
@@ -1629,7 +1635,7 @@
 
     </script>
 
-<script>
+    <script>
         // Check authentication on page load
         (async function () {
             const auth = window.AuthManager;
@@ -1756,9 +1762,9 @@
     <script src="../js-tier-1/page-structure-1.js"></script>
     <script src="../js-tier-1/page-structure-2.js"></script>
     <script src="../js-tier-1/page-structure-3.js"></script>
-    <script src="../js-tier-1/page-structure-4.js"></script>   
-<script src="../js-tier-1/coming-soon-modal.js"></script>
-<script src="../js-tier-1/ad-modal.js"></script>
+    <script src="../js-tier-1/page-structure-4.js"></script>
+    <script src="../js-tier-1/coming-soon-modal.js"></script>
+    <script src="../js-tier-1/ad-modal.js"></script>
 </body>
 
 </html>

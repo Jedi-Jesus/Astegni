@@ -57,7 +57,7 @@ class TrainingCenterProfile {
     this.animations = new AnimationsManager();
     this.widgets = new WidgetsManager();
     this.weather = new WeatherManager();
-    this.followers = new FollowersManager();
+      this.community = new CommunityManager();
     this.videos = new VideosManager();
     this.playlists = new PlaylistsManager();
     this.blog = new BlogManager();

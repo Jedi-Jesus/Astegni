@@ -1,7 +1,7 @@
 // ============================================
-// UNIVERSAL PLAYER BRIDGE - COMPLETE VERSION
+// UNIVERSAL PLAYER BRIDGE - COMPLETE FIXED VERSION
 // Connects the Ultimate Video Player to any page context
-// Works with Reels, Courses, Tutorials, etc.
+// All critical issues resolved
 // ============================================
 
 class VideoPlayerBridge {
@@ -10,6 +10,7 @@ class VideoPlayerBridge {
         this.player = null;
         this.dataAdapter = null;
         this.currentVideoId = null;
+        this.isTheaterMode = false;
 
         // Initialize based on context
         this.initialize();
@@ -46,6 +47,9 @@ class VideoPlayerBridge {
 
         // Make bridge globally available
         window.videoPlayerBridge = this;
+
+        // Also make player available globally for navigation
+        window.player = this.player;
     }
 
     setupDataAdapter() {
@@ -112,11 +116,13 @@ class VideoPlayerBridge {
             .engagement-btn-enhanced.favorite-active {
                 background: rgba(231, 76, 60, 0.1) !important;
                 border-color: #e74c3c !important;
+                color: #e74c3c !important;
             }
             
             .engagement-btn-enhanced.saved-active {
                 background: rgba(243, 156, 18, 0.1) !important;
                 border-color: #f39c12 !important;
+                color: #f39c12 !important;
             }
             
             .engagement-icon-enhanced {
@@ -137,147 +143,168 @@ class VideoPlayerBridge {
                 transform: translateY(-2px);
             }
 
-            /* ADD THE CONNECTION STYLES HERE */
-/* Connect Button Theme Support */
-        .connect-btn {
-            padding: 8px 16px;
-            background: var(--button-bg, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
-            border: none;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            min-width: 120px;
-        }
-        
-        [data-theme="light"] .connect-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-        }
-        
-        .connect-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-        
-        .connect-btn.connecting {
-            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
-        }
-        
-        .connect-btn.connected {
-            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
-        }
-        
-        .connection-menu {
-            background: var(--card-bg, white);
-            border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        [data-theme="dark"] .connection-menu {
-            background: #2a2a2a;
-            border-color: rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-        }
-        
-        .connection-menu button {
-            color: var(--text, #333);
-        }
-        
-        [data-theme="dark"] .connection-menu button {
-            color: #fff;
-        }
-        
-        .connection-menu button:hover {
-            background: rgba(var(--button-bg-rgb, 102, 126, 234), 0.1);
-        }
-        
-        [data-theme="light"] .related-video-creator:hover {
-            color: #764ba2;
-            text-decoration: underline;
-        }
-        
-        [data-theme="dark"] .related-video-creator {
-            color: #818cf8;
-        }
-        
-        [data-theme="dark"] .related-video-creator:hover {
-            color: #a5b4fc;
-            text-decoration: underline;
-        }
-        
-        .dots-animation {
-            display: inline-block;
-            margin-left: 4px;
-        }
-        
-        .dots-animation span {
-            animation: dot-blink 1.4s infinite both;
-            display: inline-block;
-        }
-        
-        .dots-animation span:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        
-        .dots-animation span:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-        
-        @keyframes dot-blink {
-            0%, 60%, 100% {
-                opacity: 0.3;
+            /* Fixed Connection Button Theme Support */
+            .connect-btn {
+                padding: 8px 16px;
+                background: var(--button-bg, #667eea);
+                border: none;
+                border-radius: 6px;
+                color: var(--button-text, white);
+                cursor: pointer;
+                font-weight: 500;
+                transition: all 0.3s ease;
+                min-width: 120px;
             }
-            30% {
-                opacity: 1;
+            
+            .connect-btn:hover:not(:disabled) {
+                background: var(--button-hover, #764ba2);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
             }
-        }
-        
-        .connection-dropdown {
-            position: relative;
-        }
-        
-        .connection-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 4px;
-            background: white;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            min-width: 150px;
-            z-index: 1000;
-            overflow: hidden;
-        }
-        
-        .connection-menu.hidden {
-            display: none;
-        }
-        
-        .connection-menu button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            width: 100%;
-            padding: 12px 16px;
-            background: none;
-            border: none;
-            text-align: left;
-            cursor: pointer;
-            transition: background 0.2s;
-            color: #333;
-        }
-        
-        .connection-menu button:hover {
-            background: rgba(102, 126, 234, 0.1);
-        }
-        
-        .connection-menu button svg {
-            flex-shrink: 0;
-        }
-    `;
+            
+            .connect-btn.connecting {
+                background: var(--warning-bg, #ffc107);
+                color: var(--warning-text, #000);
+            }
+            
+            .connect-btn.connected {
+                background: var(--success-bg, #4caf50);
+                color: var(--success-text, white);
+            }
+            
+            .connect-btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            
+            .connection-menu {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                margin-top: 5px;
+                background: var(--card-bg, #fff);
+                border: 1px solid var(--border-color, #ddd);
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                min-width: 150px;
+                z-index: 1000;
+            }
+            
+            .connection-menu button {
+                display: block;
+                width: 100%;
+                padding: 8px 12px;
+                text-align: left;
+                background: none;
+                border: none;
+                color: var(--text, #333);
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            
+            .connection-menu button:hover {
+                background: rgba(102, 126, 234, 0.1);
+            }
+            
+            .connection-dropdown {
+                position: relative;
+                display: inline-block;
+            }
+            
+            .dots-animation span {
+                animation: blink 1.4s infinite;
+                animation-fill-mode: both;
+            }
+            
+            .dots-animation span:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+            
+            .dots-animation span:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+            
+            @keyframes blink {
+                0%, 60%, 100% { opacity: 0; }
+                30% { opacity: 1; }
+            }
+            
+            /* Navigation buttons with titles */
+            .nav-btn-with-title {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 8px 12px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                border-radius: 6px;
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            
+            .nav-btn-with-title:hover:not(:disabled) {
+                background: rgba(255, 255, 255, 0.2);
+                transform: translateY(-2px);
+            }
+            
+            .nav-btn-with-title:disabled {
+                opacity: 0.4;
+                cursor: not-allowed;
+            }
+            
+            .nav-btn-text {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 2px;
+            }
+            
+            .nav-btn-label {
+                font-size: 11px;
+                font-weight: 600;
+            }
+            
+            .nav-btn-title {
+                font-size: 9px;
+                opacity: 0.7;
+                max-width: 80px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .video-counter-display {
+                font-size: 13px;
+                opacity: 0.8;
+                padding: 4px 12px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 4px;
+            }
+            
+            .engagement-bar-inner {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 10px 20px;
+                gap: 20px;
+            }
+            
+            .engagement-left,
+            .engagement-right {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            
+            .engagement-center {
+                flex: 0 0 auto;
+            }
+            
+            .connection-btn-wrapper {
+                min-width: 140px;
+            }
+        `;
         document.head.appendChild(engagementStyles);
     }
 
@@ -286,7 +313,7 @@ class VideoPlayerBridge {
     // ============================================
 
     openVideo(videoId, options = {}) {
-        console.log('Bridge openVideo called with:', videoId);
+        console.log('Opening video with full content update:', videoId);
         this.currentVideoId = videoId;
 
         // Get video data from adapter
@@ -323,195 +350,285 @@ class VideoPlayerBridge {
             document.body.style.overflow = 'hidden';
         }
 
-        // Track view
+        // Track view (with error handling for non-authenticated users)
         this.trackView(videoId);
+
+        // Ensure all content is updated
+        Promise.all([
+            this.loadVideoDetails(videoId),
+            this.loadComments(videoId),
+            this.loadChapters(videoId),
+            this.loadRelatedVideos(videoId)
+        ]).then(() => {
+            console.log('All video content loaded successfully');
+        }).catch(error => {
+            console.error('Error loading video content:', error);
+        });
     }
 
     // ============================================
-    // ENGAGEMENT UI
+    // ENGAGEMENT UI - FIXED
     // ============================================
 
-    // Updates for player-bridge.js and reels_dynamic.js
-
-    // 1. Update the engagement bar UI in player-bridge.js
-    // Replace the updateEngagementUI function with this enhanced version:
-
-
+    // 2. Fixed updateEngagementUI with consistent unique IDs
     updateEngagementUI(videoId) {
         const engagementBar = document.getElementById('ultimate-engagement-bar');
         if (!engagementBar) return;
 
         const stats = this.dataAdapter.getEngagementStats(videoId);
+        const videoData = this.dataAdapter.getVideoData(videoId);
+
+        // Null safety for playlist navigation
+        const playlist = window.currentReels || [];
+        const currentIndex = playlist.findIndex(v => v.id === parseInt(videoId));
+        const prevVideo = currentIndex > 0 ? playlist[currentIndex - 1] : null;
+        const nextVideo = currentIndex < playlist.length - 1 ? playlist[currentIndex + 1] : null;
+
+        // Use consistent unique ID format - just videoId
+        const uniqueId = videoId;
 
         engagementBar.innerHTML = `
-        <div style="display: flex; gap: 12px; justify-content: space-between; padding: 12px;">
-            <div style="display: flex; gap: 12px; flex: 1;">
-                <!-- Like Button -->
-                <button class="engagement-btn-enhanced hover-lift ${stats.isLiked ? 'active liked' : ''}" 
-                        onclick="videoPlayerBridge.toggleEngagement('${videoId}', 'like')"
-                        style="flex: 1; padding: 10px;">
-                    <svg class="engagement-icon-enhanced" viewBox="0 0 24 24" 
-                         fill="${stats.isLiked ? 'currentColor' : 'none'}" 
-                         stroke="currentColor" stroke-width="2">
-                        <path d="M7 22V11L12 2L13.09 3.09C13.31 3.31 13.44 3.61 13.47 3.92L13 7H20C20.55 7 21.05 7.22 21.41 7.59C21.77 7.95 22 8.45 22 9V11C22 11.26 21.95 11.52 21.86 11.76L18.84 19.76C18.54 20.54 17.77 21 16.91 21H9C7.9 21 7 20.1 7 19V11Z"/>
-                    </svg>
-                    <span class="engagement-count-enhanced">${this.formatCount(stats.likes)}</span>
-                </button>
+    <div class="engagement-bar-inner">
+        <!-- Left side - Engagement buttons -->
+        <div class="engagement-left">
+            <!-- Like Button -->
+            <button class="engagement-btn-enhanced ${stats.isLiked ? 'liked' : ''}" 
+                    onclick="videoPlayerBridge.toggleEngagement('${videoId}', 'like')">
+                <svg class="engagement-icon-enhanced" viewBox="0 0 24 24" 
+                     fill="${stats.isLiked ? 'currentColor' : 'none'}" 
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M7 22V11L12 2L13.09 3.09C13.31 3.31 13.44 3.61 13.47 3.92L13 7H20C20.55 7 21.05 7.22 21.41 7.59C21.77 7.95 22 8.45 22 9V11C22 11.26 21.95 11.52 21.86 11.76L18.84 19.76C18.54 20.54 17.77 21 16.91 21H9C7.9 21 7 20.1 7 19V11Z"/>
+                </svg>
+                <span class="engagement-count-enhanced">${this.formatCount(stats.likes)}</span>
+            </button>
+            
+            <!-- Dislike Button -->
+            <button class="engagement-btn-enhanced ${stats.isDisliked ? 'disliked' : ''}" 
+                    onclick="videoPlayerBridge.toggleEngagement('${videoId}', 'dislike')">
+                <svg class="engagement-icon-enhanced" viewBox="0 0 24 24" 
+                     fill="${stats.isDisliked ? 'currentColor' : 'none'}" 
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M17 2V13L12 22L10.91 20.91C10.69 20.69 10.56 20.39 10.53 20.08L11 17H4C3.45 17 2.95 16.78 2.59 16.41C2.23 16.05 2 15.55 2 15V13C2 12.74 2.05 12.48 2.14 12.24L5.16 4.24C5.46 3.46 6.23 3 7.09 3H15C16.1 3 17 3.9 17 5V13Z"/>
+                </svg>
+                <span class="engagement-count-enhanced">${this.formatCount(stats.dislikes)}</span>
+            </button>
+            
+            <!-- Share Button -->
+            <button class="engagement-btn-enhanced" 
+                    onclick="videoPlayerBridge.shareVideo('${videoId}')">
+                <svg class="engagement-icon-enhanced" viewBox="0 0 24 24" 
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                <span class="engagement-count-enhanced">Share</span>
+            </button>
+            
+            <!-- Favorite Button - Fixed engagement type -->
+            <button class="engagement-btn-enhanced ${stats.isFavorite ? 'favorite-active' : ''}" 
+                    onclick="videoPlayerBridge.toggleEngagement('${videoId}', 'favorite')">
+                <svg class="engagement-icon-enhanced" viewBox="0 0 24 24" 
+                     fill="${stats.isFavorite ? 'currentColor' : 'none'}" 
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span class="engagement-count-enhanced">${this.formatCount(stats.favorites)}</span>
+            </button>
+            
+            <!-- Save Button -->
+            <button class="engagement-btn-enhanced ${stats.isSaved ? 'saved-active' : ''}" 
+                    onclick="videoPlayerBridge.toggleEngagement('${videoId}', 'save')">
+                <svg class="engagement-icon-enhanced" viewBox="0 0 24 24" 
+                     fill="${stats.isSaved ? 'currentColor' : 'none'}" 
+                     stroke="currentColor" stroke-width="2">
+                    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+                </svg>
+                <span class="engagement-count-enhanced">${this.formatCount(stats.saves)}</span>
+            </button>
+        </div>
+        
+        <!-- Center - Video counter -->
+        <div class="engagement-center">
+            <span class="video-counter-display">
+                Video ${currentIndex + 1} of ${playlist.length}
+            </span>
+        </div>
+        
+        <!-- Right side - Navigation and Connection button -->
+        <div class="engagement-right">
+            <!-- Previous button with title -->
+            <button class="nav-btn-with-title ${!prevVideo ? 'disabled' : ''}" 
+                    onclick="${prevVideo ? 'window.player && window.player.previousVideo()' : 'return false'}" 
+                    ${!prevVideo ? 'disabled' : ''}
+                    title="${prevVideo ? prevVideo.title : 'No previous video'}">
+                <div class="nav-btn-text">
+                    <span class="nav-btn-label">Previous</span>
+                    <span class="nav-btn-title">${prevVideo ? prevVideo.title : 'No video'}</span>
+                </div>
+            </button>
+            
+            <!-- Next button with title -->
+            <button class="nav-btn-with-title ${!nextVideo ? 'disabled' : ''}" 
+                    onclick="${nextVideo ? 'window.player && window.player.nextVideo()' : 'return false'}" 
+                    ${!nextVideo ? 'disabled' : ''}
+                    title="${nextVideo ? nextVideo.title : 'No next video'}">
+                <div class="nav-btn-text">
+                    <span class="nav-btn-label">Next</span>
+                    <span class="nav-btn-title">${nextVideo ? nextVideo.title : 'No video'}</span>
+                </div>
+            </button>
+            
+            <!-- Connection button with simplified ID -->
+            ${videoData && videoData.tutor_id ? `
+                <div id="connection-btn-${uniqueId}" 
+                     class="connection-btn-wrapper"
+                     data-tutor-id="${videoData.tutor_id}"
+                     data-video-id="${videoId}">
+                    <!-- Will be populated by updateConnectionButton -->
+                </div>
+            ` : ''}
+        </div>
+    </div>
+`;
+
+        // Update connection button if tutor_id exists
+        if (videoData && videoData.tutor_id) {
+            this.updateConnectionButton(videoData.tutor_id, uniqueId);
+        }
+    }
+
+    // Fixed loadRelatedVideos with null safety
+    // 5. Fixed loadRelatedVideos with better null safety
+loadRelatedVideos(currentVideoId) {
+    const container = document.getElementById('related-videos-container');
+    if (!container) return;
+
+    const currentVideo = this.dataAdapter.getVideoData(currentVideoId);
+    if (!currentVideo) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const allVideos = window.currentReels || [];
+    
+    // Get videos from same uploader
+    const fromSameUploader = allVideos.filter(reel => 
+        reel && reel.id !== parseInt(currentVideoId) && 
+        reel.tutor_id === currentVideo.tutor_id
+    );
+    
+    // Get videos by subject/grade
+    const relatedByTopic = allVideos.filter(reel => {
+        if (!reel || reel.id === parseInt(currentVideoId)) return false;
+        if (reel.tutor_id === currentVideo.tutor_id) return false; // Already in uploader section
+        
+        const matchesSubject = currentVideo.subject && reel.subject && 
+                               currentVideo.subject === reel.subject;
+        const matchesGrade = currentVideo.grade_level && reel.grade_level && 
+                            currentVideo.grade_level === reel.grade_level;
+        
+        return matchesSubject || matchesGrade;
+    });
+
+    container.innerHTML = `
+        ${fromSameUploader.length > 0 ? `
+            <div class="related-section">
+                <h4 class="related-section-title">More from ${currentVideo.creator || 'this tutor'}</h4>
+                <div class="related-videos-grid">
+                    ${fromSameUploader.slice(0, 6).map((video, index) => 
+                        this.createRelatedVideoCard(video, index)
+                    ).join('')}
+                </div>
+            </div>
+        ` : ''}
+        
+        ${relatedByTopic.length > 0 ? `
+            <div class="related-section">
+                <h4 class="related-section-title">
+                    Related Videos 
+                    ${currentVideo.subject || currentVideo.grade_level ? 
+                      `(${[currentVideo.subject, currentVideo.grade_level].filter(Boolean).join(' - ')})` : ''}
+                </h4>
+                <div class="related-videos-grid">
+                    ${relatedByTopic.slice(0, 9).map((video, index) => 
+                        this.createRelatedVideoCard(video, index)
+                    ).join('')}
+                </div>
+            </div>
+        ` : ''}
+    `;
+}
+
+
+
+    createRelatedVideoCard(video, index) {
+        const uploadDate = new Date(video.upload_date || video.created_at);
+        const videoUrl = typeof UrlHelper !== 'undefined'
+            ? UrlHelper.getAssetUrl(video.video_url)
+            : video.video_url;
+        const thumbnailUrl = video.thumbnail_url && typeof UrlHelper !== 'undefined'
+            ? UrlHelper.getAssetUrl(video.thumbnail_url)
+            : video.thumbnail_url;
+        const tutorPicture = video.tutor_picture && typeof UrlHelper !== 'undefined'
+            ? UrlHelper.getAssetUrl(video.tutor_picture)
+            : video.tutor_picture;
+
+        // Null safety for tutor name
+        const tutorName = video.tutor_name || 'Unknown';
+        const tutorInitial = tutorName.charAt(0).toUpperCase();
+
+        return `
+        <div class="related-video-card" style="animation-delay: ${index * 0.05}s;">
+            <div class="video-thumbnail-wrapper" onclick="videoPlayerBridge.openVideo(${video.id})">
+                ${thumbnailUrl ?
+                `<img src="${thumbnailUrl}" class="related-video-thumbnail" alt="${video.title}">` :
+                `<video class="related-video-thumbnail" muted>
+                        <source src="${videoUrl}" type="video/mp4">
+                    </video>`
+            }
+                ${video.duration ? `<span class="video-duration">${video.duration}</span>` : ''}
+            </div>
+            <div class="related-video-info">
+                <h4 class="related-video-title" title="${video.title || 'Untitled'}" onclick="videoPlayerBridge.openVideo(${video.id})">
+                    ${video.title || 'Untitled'}
+                </h4>
                 
-                <!-- Dislike Button -->
-                <button class="engagement-btn-enhanced hover-lift ${stats.isDisliked ? 'active disliked' : ''}" 
-                        onclick="videoPlayerBridge.toggleEngagement('${videoId}', 'dislike')"
-                        style="flex: 1; padding: 10px;">
-                    <svg class="engagement-icon-enhanced" viewBox="0 0 24 24" 
-                         fill="${stats.isDisliked ? 'currentColor' : 'none'}" 
-                         stroke="currentColor" stroke-width="2">
-                        <path d="M17 2V13L12 22L10.91 20.91C10.69 20.69 10.56 20.39 10.53 20.08L11 17H4C3.45 17 2.95 16.78 2.59 16.41C2.23 16.05 2 15.55 2 15V13C2 12.74 2.05 12.48 2.14 12.24L5.16 4.24C5.46 3.46 6.23 3 7.09 3H15C16.1 3 17 3.9 17 5V13Z"/>
-                    </svg>
-                    <span class="engagement-count-enhanced">${this.formatCount(stats.dislikes)}</span>
-                </button>
+                ${video.description ? `
+                    <p class="related-video-description">
+                        ${video.description}
+                    </p>
+                ` : ''}
                 
-                <!-- Favorite Button -->
-                <button class="engagement-btn-enhanced hover-lift ${stats.isFavorite ? 'active favorite-active' : ''}" 
-                        onclick="videoPlayerBridge.toggleEngagement('${videoId}', 'favorite')"
-                        style="flex: 1; padding: 10px;">
-                    <svg class="engagement-icon-enhanced favorite-icon" viewBox="0 0 24 24" 
-                         fill="${stats.isFavorite ? '#e74c3c' : 'none'}" 
-                         stroke="${stats.isFavorite ? '#e74c3c' : 'currentColor'}" stroke-width="2">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                    </svg>
-                    <span class="engagement-count-enhanced">${this.formatCount(stats.favorites)}</span>
-                </button>
-                
-                <!-- Save Button -->
-                <button class="engagement-btn-enhanced hover-lift ${stats.isSaved ? 'active saved-active' : ''}" 
-                        onclick="videoPlayerBridge.toggleEngagement('${videoId}', 'save')"
-                        style="flex: 1; padding: 10px;">
-                    <svg class="engagement-icon-enhanced save-icon" viewBox="0 0 24 24" 
-                         fill="${stats.isSaved ? '#f39c12' : 'none'}" 
-                         stroke="${stats.isSaved ? '#f39c12' : 'currentColor'}" stroke-width="2">
-                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-                    </svg>
-                    <span class="engagement-count-enhanced">${this.formatCount(stats.saves)}</span>
-                </button>
-                
-                <!-- Share Button -->
-                <button class="engagement-btn-enhanced hover-lift" 
-                        onclick="videoPlayerBridge.shareVideo('${videoId}')"
-                        style="flex: 1; padding: 10px;">
-                    <svg class="engagement-icon-enhanced" viewBox="0 0 24 24" 
-                         fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="18" cy="5" r="3"/>
-                        <circle cx="6" cy="12" r="3"/>
-                        <circle cx="18" cy="19" r="3"/>
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
-                        <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
-                    </svg>
-                    <span class="engagement-count-enhanced">Share</span>
-                </button>
+                <div class="related-video-meta">
+                    <a href="../view-profile-tier-1/view-tutor.html?tutorId=${video.tutor_id}" 
+                       class="tutor-link"
+                       onclick="event.stopPropagation();">
+                        ${tutorPicture ?
+                `<img src="${tutorPicture}" alt="${tutorName}" class="tutor-avatar">` :
+                `<span class="tutor-avatar-placeholder">${tutorInitial}</span>`
+            }
+                        <span class="tutor-name">${tutorName}</span>
+                    </a>
+                </div>
+                <div class="related-video-stats">
+                    <span>${this.formatCount(video.views || 0)} views</span>
+                    <span>•</span>
+                    <span>${this.formatTimeAgo(uploadDate)}</span>
+                </div>
             </div>
         </div>
     `;
     }
 
-    // In VideoPlayerBridge class, add:
-
-    loadRelatedVideos(currentVideoId) {
-    const container = document.getElementById('related-videos-container');
-    if (!container) return;
-    
-    const currentVideo = this.dataAdapter.getVideoData(currentVideoId);
-    if (!currentVideo) return;
-    
-    // Get videos from same uploader
-    const uploaderVideos = window.currentReels.filter(reel => 
-        reel.id !== parseInt(currentVideoId) && 
-        reel.tutor_id === currentVideo.tutor_id
-    ).slice(0, 10);
-    
-    // Get related videos (different uploader, same subject/grade)
-    const relatedVideos = window.currentReels.filter(reel => 
-        reel.id !== parseInt(currentVideoId) && 
-        reel.tutor_id !== currentVideo.tutor_id &&
-        (reel.subject === currentVideo.subject || 
-         reel.grade_level === currentVideo.grade_level)
-    ).slice(0, 10);
-    
-    // Build HTML with two horizontal sections
-    container.innerHTML = `
-        ${uploaderVideos.length > 0 ? `
-            <div class="related-section">
-                <h4 class="related-section-title">More from ${currentVideo.creator}</h4>
-                <div class="related-videos-horizontal">
-                    <div class="related-videos-track">
-                        ${uploaderVideos.map(video => this.createRelatedVideoCard(video)).join('')}
-                    </div>
-                </div>
-            </div>
-        ` : ''}
-        
-        ${relatedVideos.length > 0 ? `
-            <div class="related-section">
-                <h4 class="related-section-title">Related Videos</h4>
-                <div class="related-videos-horizontal">
-                    <div class="related-videos-track">
-                        ${relatedVideos.map(video => this.createRelatedVideoCard(video)).join('')}
-                    </div>
-                </div>
-            </div>
-        ` : ''}
-        
-        ${uploaderVideos.length === 0 && relatedVideos.length === 0 ? `
-            <div class="no-related-videos">
-                <p>No related videos available</p>
-            </div>
-        ` : ''}
-    `;
-}
-
-createRelatedVideoCard(video) {
-    return `
-        <div class="related-video-card-horizontal" onclick="videoPlayerBridge.openVideo(${video.id})">
-            <img class="related-video-thumbnail" 
-                 src="${video.thumbnail_url || '/default-thumbnail.jpg'}" 
-                 alt="${video.title}">
-            <div class="related-video-info">
-                <div class="related-video-title">${video.title}</div>
-                <div class="related-video-meta">
-                    <a href="../view-profile-tier-1/view-tutor.html?tutorId=${video.tutor_id}" 
-                       class="related-video-creator-link"
-                       onclick="event.stopPropagation();">
-                        ${video.tutor_picture ? 
-                            `<img src="${video.tutor_picture}" alt="${video.tutor_name}" class="related-tutor-avatar">` :
-                            `<div class="related-tutor-avatar-default">
-                                ${video.tutor_name ? video.tutor_name.charAt(0).toUpperCase() : 'T'}
-                            </div>`
-                        }
-                        <span class="related-video-creator">${video.tutor_name}</span>
-                    </a>
-                </div>
-                <div class="related-video-stats">
-                    <span>${this.formatCount(video.views)} views</span>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-
-    // 2. Add new connection functions to player-bridge.js
-
-    // In player-bridge.js, update the updateConnectionButton method to handle both engagement bar and sidebar:
-
-    // Update the updateConnectionButton method in player-bridge.js to add cancel functionality:
-
-    // Update the updateConnectionButton method in player-bridge.js with themed styling:
-
+    // Fixed updateConnectionButton with consistent unique IDs
+    // 3. Fixed updateConnectionButton with consistent IDs
     async updateConnectionButton(tutorId, uniqueId) {
-        // Find the specific container for this tutor/video combination
         const container = document.getElementById(`connection-btn-${uniqueId}`);
-
         if (!container) {
-            console.warn('No connection button container found for:', uniqueId);
+            console.debug('Connection button container not found:', uniqueId);
             return;
         }
 
@@ -534,78 +651,6 @@ createRelatedVideoCard(video) {
 
             if (status === 'not_connected') {
                 container.innerHTML = `
-                <button class="connect-btn" onclick="videoPlayerBridge.sendConnectionRequest('${tutorId}', '${uniqueId}')">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="8.5" cy="7" r="4"></circle>
-                        <line x1="20" y1="8" x2="20" y2="14"></line>
-                        <line x1="23" y1="11" x2="17" y2="11"></line>
-                    </svg>
-                    <span>Connect</span>
-                </button>
-            `;
-            } else if (status === 'pending') {
-                container.innerHTML = `
-                <div class="connection-dropdown">
-                    <button class="connect-btn connecting" onclick="videoPlayerBridge.togglePendingMenu('${tutorId}', '${uniqueId}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                        </svg>
-                        <span>Pending</span>
-                        <span class="dots-animation">
-                            <span>.</span><span>.</span><span>.</span>
-                        </span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 4px;">
-                            <path d="M7 10l5 5 5-5z"/>
-                        </svg>
-                    </button>
-                    <div id="pending-menu-${uniqueId}" class="connection-menu hidden">
-                        <button onclick="videoPlayerBridge.cancelConnectionRequest('${tutorId}', '${uniqueId}')" class="cancel-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                            </svg>
-                            Cancel Request
-                        </button>
-                    </div>
-                </div>
-            `;
-            } else if (status === 'accepted') {
-                container.innerHTML = `
-                <div class="connection-dropdown">
-                    <button class="connect-btn connected" onclick="videoPlayerBridge.toggleConnectionMenu('${tutorId}', '${uniqueId}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="8.5" cy="7" r="4"></circle>
-                            <polyline points="17 11 19 13 23 9"></polyline>
-                        </svg>
-                        <span>Connected</span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 4px;">
-                            <path d="M7 10l5 5 5-5z"/>
-                        </svg>
-                    </button>
-                    <div id="connection-menu-${uniqueId}" class="connection-menu hidden">
-                        <button onclick="videoPlayerBridge.contactTutor('${tutorId}')">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-                            </svg>
-                            Contact
-                        </button>
-                        <button onclick="videoPlayerBridge.disconnectFromTutor('${tutorId}', '${uniqueId}')">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-                            </svg>
-                            Disconnect
-                        </button>
-                    </div>
-                </div>
-            `;
-            }
-        } catch (error) {
-            console.error('Error updating connection button:', error);
-
-            // Fallback to connect button
-            container.innerHTML = `
             <button class="connect-btn" onclick="videoPlayerBridge.sendConnectionRequest('${tutorId}', '${uniqueId}')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
                     <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
@@ -616,32 +661,67 @@ createRelatedVideoCard(video) {
                 <span>Connect</span>
             </button>
         `;
-        }
-    }
-
-    // Update toggleConnectionMenu to handle both IDs:
-    toggleConnectionMenu(tutorId, videoId, menuId) {
-        const menu = document.getElementById(menuId);
-        if (menu) {
-            menu.classList.toggle('hidden');
-
-            const closeMenu = (e) => {
-                if (!e.target.closest('.connection-dropdown')) {
-                    menu.classList.add('hidden');
-                    document.removeEventListener('click', closeMenu);
-                }
-            };
-
-            if (!menu.classList.contains('hidden')) {
-                setTimeout(() => {
-                    document.addEventListener('click', closeMenu);
-                }, 100);
+            } else if (status === 'pending') {
+                container.innerHTML = `
+            <div class="connection-dropdown">
+                <button class="connect-btn connecting" onclick="videoPlayerBridge.togglePendingMenu('${tutorId}', '${uniqueId}')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>Pending</span>
+                    <span class="dots-animation">
+                        <span>.</span><span>.</span><span>.</span>
+                    </span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 4px;">
+                        <path d="M7 10l5 5 5-5z"/>
+                    </svg>
+                </button>
+                <div id="pending-menu-${uniqueId}" class="connection-menu hidden">
+                    <button onclick="videoPlayerBridge.cancelConnectionRequest('${tutorId}', '${uniqueId}')" class="cancel-btn">
+                        Cancel Request
+                    </button>
+                </div>
+            </div>
+        `;
+            } else if (status === 'accepted') {
+                container.innerHTML = `
+            <div class="connection-dropdown">
+                <button class="connect-btn connected" onclick="videoPlayerBridge.toggleConnectionMenu('${tutorId}', '${uniqueId}')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="8.5" cy="7" r="4"></circle>
+                        <polyline points="17 11 19 13 23 9"></polyline>
+                    </svg>
+                    <span>Connected</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style="margin-left: 4px;">
+                        <path d="M7 10l5 5 5-5z"/>
+                    </svg>
+                </button>
+                <div id="connection-menu-${uniqueId}" class="connection-menu hidden">
+                    <button onclick="videoPlayerBridge.contactTutor('${tutorId}')">
+                        Contact
+                    </button>
+                    <button onclick="videoPlayerBridge.disconnectFromTutor('${tutorId}', '${uniqueId}')">
+                        Disconnect
+                    </button>
+                </div>
+            </div>
+        `;
             }
+        } catch (error) {
+            console.debug('Error updating connection button:', error);
+
+            // Fallback to connect button
+            container.innerHTML = `
+        <button class="connect-btn" onclick="videoPlayerBridge.sendConnectionRequest('${tutorId}', '${uniqueId}')">
+            <span>Connect</span>
+        </button>
+    `;
         }
     }
 
-    // Update the menu toggle methods to use unique IDs
-    // Update the menu toggle methods to use unique IDs
+    // Fixed menu toggle methods with unique IDs
     togglePendingMenu(tutorId, uniqueId) {
         const menu = document.getElementById(`pending-menu-${uniqueId}`);
         if (menu) {
@@ -662,15 +742,11 @@ createRelatedVideoCard(video) {
         }
     }
 
-
-
-    // Add new method to handle pending menu toggle
-    togglePendingMenu(tutorId, videoId) {
-        const menu = document.getElementById(`pending-menu-${videoId}`);
+    toggleConnectionMenu(tutorId, uniqueId) {
+        const menu = document.getElementById(`connection-menu-${uniqueId}`);
         if (menu) {
             menu.classList.toggle('hidden');
 
-            // Close menu when clicking outside
             const closeMenu = (e) => {
                 if (!e.target.closest('.connection-dropdown')) {
                     menu.classList.add('hidden');
@@ -686,140 +762,14 @@ createRelatedVideoCard(video) {
         }
     }
 
-    // Add new method to cancel connection request
-    async cancelConnectionRequest(tutorId, videoId) {
-        if (!window.currentUser) {
-            this.player.showNotification('Please login first', 'warning');
-            return;
-        }
-
-        // Show cancelling state
-        const containers = [
-            document.getElementById(`connection-btn-${videoId}`),
-            document.getElementById(`connection-btn-sidebar-${videoId}`)
-        ].filter(Boolean);
-
-        containers.forEach(container => {
-            container.innerHTML = `
-        <button class="connect-btn" disabled>
-            <span>Cancelling...</span>
-        </button>
-    `;
-        });
-
-        try {
-            // Call the disconnect endpoint (which removes pending requests too)
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/disconnect`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to cancel connection request');
-            }
-
-            this.player.showNotification('Connection request cancelled');
-
-            // Update button back to "Connect" state
-            setTimeout(() => {
-                this.updateConnectionButton(tutorId, videoId);
-            }, 500);
-
-        } catch (error) {
-            console.error('Error cancelling connection request:', error);
-            this.player.showNotification('Failed to cancel request', 'error');
-            this.updateConnectionButton(tutorId, videoId);
-        }
-    }
-
-    // Also update the sendConnectionRequest method to update both buttons:
-    async sendConnectionRequest(tutorId, videoId) {
+    // Fixed connection request methods with unique IDs
+    async sendConnectionRequest(tutorId, uniqueId) {
         if (!window.currentUser) {
             this.player.showNotification('Please login to connect', 'warning');
             return;
         }
 
-        // Update both button containers if they exist
-        const containers = [
-            document.getElementById(`connection-btn-${videoId}`),
-            document.getElementById(`connection-btn-sidebar-${videoId}`)
-        ].filter(Boolean);
-
-        containers.forEach(container => {
-            container.innerHTML = `
-        <button class="connect-btn connecting" disabled>
-            <span>Connecting</span>
-            <span class="dots-animation">
-                <span>.</span><span>.</span><span>.</span>
-            </span>
-        </button>
-    `;
-        });
-
-        try {
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/connect`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                }
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to send connection request');
-            }
-
-            const result = await response.json();
-            this.player.showNotification('Connection request sent!');
-
-            // Update both buttons to show pending state
-            setTimeout(() => {
-                this.updateConnectionButton(tutorId, videoId);
-            }, 500);
-
-        } catch (error) {
-            console.error('Error sending connection request:', error);
-            this.player.showNotification('Failed to send connection request', 'error');
-            this.updateConnectionButton(tutorId, videoId);
-        }
-    }
-
-    // Update disconnectFromTutor to refresh both buttons:
-    async disconnectFromTutor(tutorId, videoId) {
-        if (confirm('Are you sure you want to disconnect?')) {
-            try {
-                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/disconnect`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to disconnect');
-                }
-
-                this.player.showNotification('Disconnected successfully');
-                this.updateConnectionButton(tutorId, videoId);
-
-            } catch (error) {
-                console.error('Error disconnecting:', error);
-                this.player.showNotification('Failed to disconnect', 'error');
-            }
-        }
-    }
-
-
-
-    async sendConnectionRequest(tutorId, videoId) {
-        if (!window.currentUser) {
-            this.player.showNotification('Please login to connect', 'warning');
-            return;
-        }
-
-        const container = document.getElementById(`connection-btn-${videoId}`);
+        const container = document.getElementById(`connection-btn-${uniqueId}`);
         if (container) {
             container.innerHTML = `
             <button class="connect-btn connecting" disabled>
@@ -847,19 +797,58 @@ createRelatedVideoCard(video) {
             const result = await response.json();
             this.player.showNotification('Connection request sent!');
 
-            // Update button to show pending state
             setTimeout(() => {
-                this.updateConnectionButton(tutorId, videoId);
+                this.updateConnectionButton(tutorId, uniqueId);
             }, 500);
 
         } catch (error) {
             console.error('Error sending connection request:', error);
             this.player.showNotification('Failed to send connection request', 'error');
-            this.updateConnectionButton(tutorId, videoId);
+            this.updateConnectionButton(tutorId, uniqueId);
         }
     }
 
-    async disconnectFromTutor(tutorId, videoId) {
+    async cancelConnectionRequest(tutorId, uniqueId) {
+        if (!window.currentUser) {
+            this.player.showNotification('Please login first', 'warning');
+            return;
+        }
+
+        const container = document.getElementById(`connection-btn-${uniqueId}`);
+        if (container) {
+            container.innerHTML = `
+            <button class="connect-btn" disabled>
+                <span>Cancelling...</span>
+            </button>
+        `;
+        }
+
+        try {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/disconnect`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to cancel connection request');
+            }
+
+            this.player.showNotification('Connection request cancelled');
+
+            setTimeout(() => {
+                this.updateConnectionButton(tutorId, uniqueId);
+            }, 500);
+
+        } catch (error) {
+            console.error('Error cancelling connection request:', error);
+            this.player.showNotification('Failed to cancel request', 'error');
+            this.updateConnectionButton(tutorId, uniqueId);
+        }
+    }
+
+    async disconnectFromTutor(tutorId, uniqueId) {
         if (confirm('Are you sure you want to disconnect?')) {
             try {
                 const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/disconnect`, {
@@ -874,7 +863,7 @@ createRelatedVideoCard(video) {
                 }
 
                 this.player.showNotification('Disconnected successfully');
-                this.updateConnectionButton(tutorId, videoId);
+                this.updateConnectionButton(tutorId, uniqueId);
 
             } catch (error) {
                 console.error('Error disconnecting:', error);
@@ -883,36 +872,30 @@ createRelatedVideoCard(video) {
         }
     }
 
-    toggleConnectionMenu(tutorId, uniqueId) {
-        const menu = document.getElementById(`connection-menu-${uniqueId}`);
-        if (menu) {
-            menu.classList.toggle('hidden');
+    // Fixed contact tutor method
+    // 1. Fixed contactTutor function to handle missing chat feature
+    contactTutor(tutorId) {
+        // Check if chat is available
+        if (typeof window.openChat === 'function') {
+            window.openChat(tutorId);
+        } else if (typeof openModal === 'function' && document.getElementById('coming-soon-modal')) {
+            // Show coming soon modal if available
+            openModal('coming-soon-modal');
 
-            const closeMenu = (e) => {
-                if (!e.target.closest('.connection-dropdown')) {
-                    menu.classList.add('hidden');
-                    document.removeEventListener('click', closeMenu);
-                }
-            };
-
-            if (!menu.classList.contains('hidden')) {
-                setTimeout(() => {
-                    document.addEventListener('click', closeMenu);
-                }, 100);
+            // Update the message in the modal
+            const messageEl = document.getElementById('coming-soon-message');
+            if (messageEl) {
+                messageEl.textContent = 'Chat feature is coming soon! We\'re working hard to bring you real-time messaging with tutors.';
             }
+        } else {
+            // Fallback to simple notification
+            this.player.showNotification('Chat feature is coming soon!', 'info');
         }
     }
 
-    contactTutor(tutorId) {
-        // Open chat/message window
-        window.location.href = `/chat?tutor=${tutorId}`;
-    }
-
     // ============================================
-    // ENGAGEMENT HANDLERS
+    // ENGAGEMENT HANDLERS - FIXED
     // ============================================
-
-    // In player-bridge.js, replace the toggleEngagement method with this fixed version:
 
     async toggleEngagement(videoId, engagementType) {
         console.log(`Toggling ${engagementType} for video ${videoId}`);
@@ -998,7 +981,7 @@ createRelatedVideoCard(video) {
             // Update engagement UI immediately
             this.updateEngagementUI(videoId);
 
-            // IMPORTANT: Force update filter counts with await
+            // Update filter counts
             if (typeof window.updateFilterCounts === 'function') {
                 console.log('Updating filter counts from player...');
                 await window.updateFilterCounts();
@@ -1014,7 +997,6 @@ createRelatedVideoCard(video) {
 
                 if (shouldRefresh) {
                     console.log(`Item removed from ${window.currentFilter}, refreshing list...`);
-                    // Add delay to allow backend to update
                     setTimeout(() => {
                         if (typeof window.filterReels === 'function') {
                             window.filterReels(window.currentFilter);
@@ -1029,55 +1011,14 @@ createRelatedVideoCard(video) {
         }
     }
 
-    // Also add this method to refresh video stats from the API
-    async refreshVideoStats(videoId) {
-        try {
-            const headers = {
-                'Content-Type': 'application/json'
-            };
-
-            const token = localStorage.getItem('access_token');
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}`, {
-                headers
-            });
-
-            if (response.ok) {
-                const videoData = await response.json();
-                console.log('Refreshed video data:', videoData);
-
-                // Update the video in currentReels array
-                if (window.currentReels) {
-                    const index = window.currentReels.findIndex(r => r.id === parseInt(videoId));
-                    if (index !== -1) {
-                        // Preserve existing data but update engagement stats
-                        window.currentReels[index] = {
-                            ...window.currentReels[index],
-                            ...videoData
-                        };
-                    }
-                }
-
-                return videoData;
-            }
-        } catch (error) {
-            console.error('Error refreshing video stats:', error);
-        }
-        return null;
-    }
-
-
     shareVideo(videoId) {
         const videoData = this.dataAdapter.getVideoData(videoId);
         const url = `${window.location.origin}/video/${videoId}`;
 
         if (navigator.share) {
             navigator.share({
-                title: videoData.title,
-                text: videoData.description,
+                title: videoData ? videoData.title : 'Check out this video',
+                text: videoData ? videoData.description : 'Amazing content on Astegni',
                 url: url
             }).catch(() => {
                 this.copyToClipboard(url);
@@ -1095,38 +1036,109 @@ createRelatedVideoCard(video) {
         });
     }
 
+    // Fixed trackView with error handling for non-authenticated users
+    trackView(videoId) {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        // Fire and forget with error suppression
+        fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/${videoId}/view`, {
+            method: 'POST',
+            headers: headers
+        }).catch(err => {
+            // Only log debug message, don't show errors to user
+            console.debug('View tracking (non-critical):', err.message);
+        });
+
+        this.trackEvent('video_view', { videoId });
+    }
+
     // ============================================
     // VIDEO DETAILS FROM DATABASE
     // ============================================
 
     async loadVideoDetails(videoId) {
         try {
+            const headers = {};
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                }
+                headers
             });
 
             if (response.ok) {
                 const videoData = await response.json();
 
-                // Update description tab
+                // Update all tabs with video-specific content
                 this.updateDescriptionTab(videoData);
+                await this.loadComments(videoId);
+                await this.loadChapters(videoId);
 
-                // Load comments
-                this.loadComments(videoId);
+                // Set description tab as active by default
+                this.setActiveTab('description');
 
-                // Load chapters if available
-                this.loadChapters(videoId);
-
-                // Update follow button
-                if (videoData.tutor_id) {
-                    this.updateFollowButton(videoData.tutor_id);
-                }
+                // Update creator stats
+                await this.updateCreatorStats(videoData.tutor_id);
             }
         } catch (error) {
             console.error('Error loading video details:', error);
         }
+    }
+
+    async updateCreatorStats(tutorId) {
+        if (!tutorId) return;
+
+        try {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/connections`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
+                }
+            });
+
+            let connectionCount = 0;
+            let totalVideos = 0;
+
+            if (response.ok) {
+                const data = await response.json();
+                connectionCount = data.total || 0;
+                totalVideos = data.videos || 0;
+            }
+
+            // Update creator stats display
+            const creatorStats = document.getElementById('ultimate-creator-stats');
+            if (creatorStats) {
+                creatorStats.innerHTML = `
+                    <span>${connectionCount} connections</span> • 
+                    <span>${totalVideos} videos</span>
+                `;
+            }
+        } catch (error) {
+            console.error('Error updating creator stats:', error);
+        }
+    }
+
+    setActiveTab(tabName) {
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tab === tabName);
+        });
+
+        // Update tab content
+        ['description', 'chapters', 'comments'].forEach(tab => {
+            const element = document.getElementById(`${tab}Tab`);
+            if (element) {
+                element.style.display = tab === tabName ? 'block' : 'none';
+            }
+        });
     }
 
     updateDescriptionTab(videoData) {
@@ -1139,7 +1151,7 @@ createRelatedVideoCard(video) {
                 <div style="line-height: 1.8; color: var(--text-secondary);">
                     <p style="white-space: pre-wrap; margin-bottom: 16px;">${videoData.description || 'No description available.'}</p>
                     
-                    ${videoData.subject || videoData.category ? `
+                    ${videoData.subject || videoData.grade_level || videoData.category ? `
                         <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; margin-top: 16px;">
                             ${videoData.subject ? `
                                 <p style="margin-bottom: 8px;">
@@ -1151,7 +1163,7 @@ createRelatedVideoCard(video) {
                                     <strong>Grade Level:</strong> ${videoData.grade_level}
                                 </p>
                             ` : ''}
-                            ${videoData.category ? `
+                            ${videoData.category && videoData.category !== 'Ad' ? `
                                 <p style="margin-bottom: 8px;">
                                     <strong>Category:</strong> ${videoData.category}
                                 </p>
@@ -1163,31 +1175,15 @@ createRelatedVideoCard(video) {
                             ` : ''}
                         </div>
                     ` : ''}
-                    
-                    ${videoData.tags && videoData.tags.length > 0 ? `
-                        <div style="margin-top: 16px;">
-                            <strong>Tags:</strong>
-                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
-                                ${videoData.tags.map(tag => `
-                                    <span style="padding: 4px 12px; background: rgba(102, 126, 234, 0.1); 
-                                               border: 1px solid rgba(102, 126, 234, 0.3); 
-                                               border-radius: 16px; font-size: 12px;">
-                                        ${tag}
-                                    </span>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
                 </div>
             </div>
         `;
     }
 
     // ============================================
-    // COMMENTS SYSTEM
+    // COMMENTS SYSTEM - FIXED
     // ============================================
 
-    // Enhanced comment loading with proper structure
     async loadComments(videoId) {
         const commentsTab = document.getElementById('commentsTab');
         if (!commentsTab) return;
@@ -1228,13 +1224,11 @@ createRelatedVideoCard(video) {
                                               style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); 
                                                      border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; 
                                                      color: white; resize: vertical; min-height: 45px; max-height: 120px;
-                                                     font-family: inherit; line-height: 1.4; white-space: pre-wrap;
-                                                     word-wrap: break-word;"
+                                                     font-family: inherit; line-height: 1.4;"
                                               ${!window.currentUser ? 'disabled' : ''}
                                               oninput="videoPlayerBridge.handleCommentInput(event, '${videoId}')"
                                               onkeydown="videoPlayerBridge.handleCommentKeydown(event, '${videoId}')"></textarea>
                                     
-                                    <!-- Emoji picker button -->
                                     ${window.currentUser ? `
                                         <button class="emoji-picker-btn" 
                                                 onclick="videoPlayerBridge.toggleEmojiPicker('${videoId}')"
@@ -1261,7 +1255,7 @@ createRelatedVideoCard(video) {
                                     `).join('')}
                                 </div>
                                 
-                                <!-- Action buttons (hidden until typing) -->
+                                <!-- Action buttons -->
                                 <div id="comment-actions-${videoId}" style="display: none; margin-top: 8px; gap: 8px;">
                                     <button onclick="videoPlayerBridge.cancelComment('${videoId}')" 
                                             style="padding: 8px 16px; background: rgba(255,255,255,0.1); 
@@ -1304,20 +1298,19 @@ createRelatedVideoCard(video) {
         }
     }
 
-    // New method to render comments with replies
-    renderCommentWithReplies(comment, videoId) {
-        const isOwner = window.currentUser && comment.user_id === window.currentUser.id;
-        const commentId = `comment-${comment.id}`;
-
-        return `
-        <div class="comment-item" id="${commentId}" style="margin-bottom: 20px;">
+    // Add this complete method for rendering comments with replies
+renderCommentWithReplies(comment, videoId) {
+    const isOwner = window.currentUser && comment.user_id === window.currentUser.id;
+    
+    return `
+        <div class="comment-item" id="comment-${comment.id}" style="margin-bottom: 20px;">
             <div style="display: flex; gap: 12px;">
                 ${comment.user_picture ? `
                     <img src="${comment.user_picture}" alt="${comment.user_name}" 
                          style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
                 ` : `
                     <div style="width: 40px; height: 40px; border-radius: 50%; 
-                               background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                               background: linear-gradient(135deg, var(--button-bg), var(--button-hover)); 
                                display: flex; align-items: center; justify-content: center; 
                                font-weight: bold; color: white;">
                         ${comment.user_name ? comment.user_name.charAt(0).toUpperCase() : '?'}
@@ -1325,34 +1318,32 @@ createRelatedVideoCard(video) {
                 `}
                 <div style="flex: 1;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <span style="font-weight: 600; color: var(--text-primary);">
-                            ${comment.user_name}
+                        <span style="font-weight: 600; color: var(--text);">
+                            ${comment.user_name || 'Unknown'}
                         </span>
                         <span style="font-size: 12px; opacity: 0.6;">
-                            ${this.formatTimeAgo(comment.created_at)}
+                            ${this.formatTimeAgo(new Date(comment.created_at))}
                         </span>
                         ${comment.is_edited ? `
                             <span style="font-size: 11px; opacity: 0.5;">(edited)</span>
                         ` : ''}
                     </div>
                     
-                    <!-- Comment text with edit capability -->
-                    <div id="comment-text-${comment.id}" style="color: var(--text-secondary); line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;">
+                    <div id="comment-text-${comment.id}" style="color: var(--text); line-height: 1.5;">
                         ${comment.text}
                     </div>
                     
-                    <!-- Comment actions -->
                     <div style="display: flex; gap: 16px; margin-top: 8px;">
                         ${window.currentUser ? `
                             <button onclick="videoPlayerBridge.toggleReplyInput('${comment.id}', '${videoId}')" 
-                                    style="background: none; border: none; color: var(--text-secondary); 
+                                    style="background: none; border: none; color: var(--text-muted); 
                                            cursor: pointer; font-size: 13px; opacity: 0.8;">
                                 Reply
                             </button>
                         ` : ''}
                         ${isOwner ? `
                             <button onclick="videoPlayerBridge.editComment('${comment.id}')" 
-                                    style="background: none; border: none; color: var(--text-secondary); 
+                                    style="background: none; border: none; color: var(--text-muted); 
                                            cursor: pointer; font-size: 13px; opacity: 0.8;">
                                 Edit
                             </button>
@@ -1364,90 +1355,139 @@ createRelatedVideoCard(video) {
                         ` : ''}
                     </div>
                     
-                    <!-- Reply input (hidden by default) -->
+                    <!-- Reply input -->
                     <div id="reply-input-${comment.id}" style="display: none; margin-top: 12px;">
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="reply-text-${comment.id}"
                                    placeholder="Write a reply..." 
-                                   style="flex: 1; padding: 8px; background: rgba(255,255,255,0.05); 
-                                          border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; 
-                                          color: white;"
-                                   onkeypress="if(event.key==='Enter') videoPlayerBridge.postReply('${comment.id}', '${videoId}')">
+                                   style="flex: 1; padding: 8px; background: var(--input-bg); 
+                                          border: 1px solid var(--border-color); border-radius: 6px; 
+                                          color: var(--text);">
                             <button onclick="videoPlayerBridge.postReply('${comment.id}', '${videoId}')"
-                                    style="padding: 8px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                           border: none; border-radius: 6px; color: white; cursor: pointer;">
+                                    style="padding: 8px 16px; background: var(--button-bg); 
+                                           border: none; border-radius: 6px; color: var(--button-text); 
+                                           cursor: pointer;">
                                 Reply
-                            </button>
-                            <button onclick="videoPlayerBridge.toggleReplyInput('${comment.id}')"
-                                    style="padding: 8px 16px; background: rgba(255,255,255,0.1); 
-                                           border: none; border-radius: 6px; color: white; cursor: pointer;">
-                                Cancel
                             </button>
                         </div>
                     </div>
                     
-                    <!-- Replies -->
+                    <!-- Render replies -->
                     ${comment.replies && comment.replies.length > 0 ? `
                         <div style="margin-top: 12px; margin-left: 20px;">
-                            ${comment.replies.map(reply => `
-                                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
-                                    ${reply.user_picture ? `
-                                        <img src="${reply.user_picture}" alt="${reply.user_name}" 
-                                             style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                                    ` : `
-                                        <div style="width: 32px; height: 32px; border-radius: 50%; 
-                                                   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                                   display: flex; align-items: center; justify-content: center; 
-                                                   font-size: 12px; color: white;">
-                                            ${reply.user_name ? reply.user_name.charAt(0).toUpperCase() : '?'}
-                                        </div>
-                                    `}
-                                    <div style="flex: 1;">
-                                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                                            <span style="font-weight: 500; font-size: 13px;">
-                                                ${reply.user_name}
-                                            </span>
-                                            <span style="font-size: 11px; opacity: 0.5;">
-                                                ${this.formatTimeAgo(reply.created_at)}
-                                            </span>
-                                        </div>
-                                        <div style="font-size: 13px; color: var(--text-secondary); white-space: pre-wrap;">
-                                            ${reply.text}
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
+                            ${comment.replies.map(reply => this.renderReply(reply, videoId)).join('')}
                         </div>
                     ` : ''}
                 </div>
             </div>
         </div>
     `;
+}
+
+renderReply(reply, videoId) {
+    const isOwner = window.currentUser && reply.user_id === window.currentUser.id;
+    
+    return `
+        <div class="reply-item" style="display: flex; gap: 8px; margin-bottom: 12px;">
+            ${reply.user_picture ? `
+                <img src="${reply.user_picture}" alt="${reply.user_name}" 
+                     style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+            ` : `
+                <div style="width: 32px; height: 32px; border-radius: 50%; 
+                           background: linear-gradient(135deg, var(--button-bg), var(--button-hover)); 
+                           display: flex; align-items: center; justify-content: center; 
+                           font-size: 12px; color: white;">
+                    ${reply.user_name ? reply.user_name.charAt(0).toUpperCase() : '?'}
+                </div>
+            `}
+            <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="font-weight: 500; font-size: 13px; color: var(--text);">
+                        ${reply.user_name || 'Unknown'}
+                    </span>
+                    <span style="font-size: 11px; opacity: 0.5;">
+                        ${this.formatTimeAgo(new Date(reply.created_at))}
+                    </span>
+                </div>
+                <div id="reply-text-${reply.id}" style="font-size: 13px; color: var(--text);">
+                    ${reply.text}
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 4px;">
+                    ${window.currentUser ? `
+                        <button onclick="videoPlayerBridge.toggleReplyInput('reply-${reply.id}', '${videoId}')" 
+                                style="background: none; border: none; color: var(--text-muted); 
+                                       cursor: pointer; font-size: 11px; opacity: 0.7;">
+                            Reply
+                        </button>
+                    ` : ''}
+                    ${isOwner ? `
+                        <button onclick="videoPlayerBridge.editReply('${reply.id}')" 
+                                style="background: none; border: none; color: var(--text-muted); 
+                                       cursor: pointer; font-size: 11px; opacity: 0.7;">
+                            Edit
+                        </button>
+                        <button onclick="videoPlayerBridge.deleteReply('${reply.id}')" 
+                                style="background: none; border: none; color: #ff6b6b; 
+                                       cursor: pointer; font-size: 11px; opacity: 0.7;">
+                            Delete
+                        </button>
+                    ` : ''}
+                </div>
+                
+                <!-- Reply input for nested replies -->
+                <div id="reply-input-reply-${reply.id}" style="display: none; margin-top: 8px;">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="reply-text-reply-${reply.id}"
+                               placeholder="Write a reply..." 
+                               style="flex: 1; padding: 6px; background: var(--input-bg); 
+                                      border: 1px solid var(--border-color); border-radius: 4px; 
+                                      color: var(--text); font-size: 12px;">
+                        <button onclick="videoPlayerBridge.postReply('${reply.parent_comment_id || reply.id}', '${videoId}')"
+                                style="padding: 6px 12px; background: var(--button-bg); 
+                                       border: none; border-radius: 4px; color: var(--button-text); 
+                                       cursor: pointer; font-size: 12px;">
+                            Reply
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+
+// Fixed comment methods
+handleCommentInput(event, videoId) {
+    event.stopPropagation(); // Prevent event bubbling
+    const textarea = event.target;
+    const actionsDiv = document.getElementById(`comment-actions-${videoId}`);
+    const postBtn = document.getElementById(`post-comment-btn-${videoId}`);
+
+    // Auto-resize textarea
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+
+    // Show/hide action buttons
+    if (textarea.value.trim()) {
+        actionsDiv.style.display = 'flex';
+        postBtn.disabled = false;
+        postBtn.style.opacity = '1';
+    } else {
+        postBtn.disabled = true;
+        postBtn.style.opacity = '0.5';
     }
+}
 
-    // Add these new methods for comment functionality
-    handleCommentInput(event, videoId) {
-        const textarea = event.target;
-        const actionsDiv = document.getElementById(`comment-actions-${videoId}`);
-        const postBtn = document.getElementById(`post-comment-btn-${videoId}`);
-
-        // Auto-resize textarea
-        textarea.style.height = 'auto';
-        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
-
-        // Show/hide action buttons
-        if (textarea.value.trim()) {
-            actionsDiv.style.display = 'flex';
-            postBtn.disabled = false;
-            postBtn.style.opacity = '1';
-        } else {
-            postBtn.disabled = true;
-            postBtn.style.opacity = '0.5';
-        }
+handleCommentKeydown(event, videoId) {
+    event.stopPropagation(); // Prevent keyboard shortcuts from affecting video
+    
+    if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        event.preventDefault();
+        this.postComment(videoId);
     }
+}
 
     handleCommentKeydown(event, videoId) {
-        // Allow Enter for new line, Ctrl/Cmd+Enter to submit
         if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
             event.preventDefault();
             this.postComment(videoId);
@@ -1458,7 +1498,10 @@ createRelatedVideoCard(video) {
         const textarea = document.getElementById(`new-comment-input-${videoId}`);
         const actionsDiv = document.getElementById(`comment-actions-${videoId}`);
 
-        if (textarea) textarea.value = '';
+        if (textarea) {
+            textarea.value = '';
+            textarea.style.height = '45px';
+        }
         if (actionsDiv) actionsDiv.style.display = 'none';
     }
 
@@ -1483,13 +1526,54 @@ createRelatedVideoCard(video) {
             textarea.focus();
             textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
 
-            // Trigger input event to show buttons
             const event = new Event('input', { bubbles: true });
             textarea.dispatchEvent(event);
         }
         this.toggleEmojiPicker(videoId);
     }
 
+    async postComment(videoId) {
+        const input = document.getElementById(`new-comment-input-${videoId}`);
+        if (!input || !input.value.trim()) {
+            this.player.showNotification('Please enter a comment', 'error');
+            return;
+        }
+
+        if (!window.currentUser) {
+            this.player.showNotification('Please login to comment', 'error');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}/comments`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify({ text: input.value.trim() })
+            });
+
+            if (response.ok) {
+                this.player.showNotification('Comment posted successfully');
+                input.value = '';
+                input.style.height = '45px';
+
+                const actionsDiv = document.getElementById(`comment-actions-${videoId}`);
+                if (actionsDiv) actionsDiv.style.display = 'none';
+
+                this.loadComments(videoId);
+            } else {
+                throw new Error('Failed to post comment');
+            }
+        } catch (error) {
+            console.error('Error posting comment:', error);
+            this.player.showNotification('Failed to post comment', 'error');
+        }
+    }
+
+    // Fixed postReply with correct body format
+    // 4. Fixed postReply with correct body format
     async postReply(commentId, videoId) {
         const input = document.getElementById(`reply-text-${commentId}`);
         if (!input || !input.value.trim()) return;
@@ -1501,7 +1585,7 @@ createRelatedVideoCard(video) {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 },
-                body: JSON.stringify({ text: input.value.trim() })
+                body: JSON.stringify({ text: input.value.trim() })  // Send as object, not plain text
             });
 
             if (response.ok) {
@@ -1514,10 +1598,16 @@ createRelatedVideoCard(video) {
         }
     }
 
+
+
     toggleReplyInput(commentId) {
         const replyDiv = document.getElementById(`reply-input-${commentId}`);
         if (replyDiv) {
             replyDiv.style.display = replyDiv.style.display === 'none' ? 'block' : 'none';
+            if (replyDiv.style.display === 'block') {
+                const input = document.getElementById(`reply-text-${commentId}`);
+                if (input) input.focus();
+            }
         }
     }
 
@@ -1545,7 +1635,6 @@ createRelatedVideoCard(video) {
         </div>
     `;
 
-        // Focus and select text
         const textarea = document.getElementById(`edit-textarea-${commentId}`);
         if (textarea) {
             textarea.focus();
@@ -1587,50 +1676,6 @@ createRelatedVideoCard(video) {
         }
     }
 
-    async postComment(videoId) {
-        const input = document.getElementById(`new-comment-input-${videoId}`);
-        if (!input || !input.value.trim()) {
-            this.player.showNotification('Please enter a comment', 'error');
-            return;
-        }
-
-        if (!window.currentUser) {
-            this.player.showNotification('Please login to comment', 'error');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}/comments`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                },
-                body: JSON.stringify({ text: input.value.trim() })
-            });
-
-            if (response.ok) {
-                this.player.showNotification('Comment posted successfully');
-                input.value = '';
-
-                // Hide action buttons
-                const actionsDiv = document.getElementById(`comment-actions-${videoId}`);
-                if (actionsDiv) actionsDiv.style.display = 'none';
-
-                // Reset textarea height
-                input.style.height = '45px';
-
-                // Reload comments
-                this.loadComments(videoId);
-            } else {
-                throw new Error('Failed to post comment');
-            }
-        } catch (error) {
-            console.error('Error posting comment:', error);
-            this.player.showNotification('Failed to post comment', 'error');
-        }
-    }
-
     async deleteComment(commentId) {
         if (!confirm('Are you sure you want to delete this comment?')) return;
 
@@ -1644,7 +1689,6 @@ createRelatedVideoCard(video) {
 
             if (response.ok) {
                 this.player.showNotification('Comment deleted');
-                // Reload comments
                 this.loadComments(this.currentVideoId);
             } else {
                 throw new Error('Failed to delete comment');
@@ -1730,59 +1774,13 @@ createRelatedVideoCard(video) {
     }
 
     // ============================================
-    // FOLLOW SYSTEM
-    // ============================================
-
-    updateFollowButton(creatorId) {
-        const followBtn = document.getElementById('followBtn');
-        if (!followBtn) return;
-
-        const stats = this.dataAdapter.getCreatorStats(creatorId);
-
-        followBtn.innerHTML = `
-            ${stats.isFollowing ?
-                '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>' :
-                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v10m0 0l4-4m-4 4l-4-4"/><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/></svg>'
-            }
-            <span>${stats.isFollowing ? 'Following' : 'Follow'}</span>
-        `;
-
-        followBtn.onclick = () => {
-            const result = this.dataAdapter.toggleFollow(creatorId);
-            this.updateFollowButton(creatorId);
-            this.player.showNotification(result.isFollowing ? '🔔 Following!' : 'Unfollowed');
-        };
-
-        // Update creator stats display
-        const creatorStats = document.getElementById('ultimate-creator-stats');
-        if (creatorStats) {
-            creatorStats.textContent = `${this.formatCount(stats.followers)} followers`;
-        }
-    }
-
-    // ============================================
     // TRACKING & ANALYTICS
     // ============================================
 
-    trackView(videoId) {
-        // Record view in database
-        fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/${videoId}/view`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-            }
-        }).catch(error => console.error('Error tracking view:', error));
-
-        this.trackEvent('video_view', { videoId });
-    }
-
     trackEvent(event, data) {
-        // Send to analytics
         if (window.gtag) {
             gtag('event', event, data);
         }
-
-        // Log for debugging
         console.log('📊 Event:', event, data);
     }
 
@@ -1858,8 +1856,7 @@ createRelatedVideoCard(video) {
         return `${m}:${s.toString().padStart(2, '0')}`;
     }
 
-    formatTimeAgo(dateString) {
-        const date = new Date(dateString);
+    formatTimeAgo(date) {
         const now = new Date();
         const seconds = Math.floor((now - date) / 1000);
 
@@ -1876,20 +1873,13 @@ createRelatedVideoCard(video) {
 // DATA ADAPTERS FOR DIFFERENT CONTEXTS
 // ============================================
 
-// ============================================
-// COMPLETE ReelsDataAdapter CLASS
-// Replace the existing ReelsDataAdapter in player-bridge.js with this
-// ============================================
-
 class ReelsDataAdapter {
     constructor() {
         this.currentReels = [];
         console.log('ReelsDataAdapter initialized');
     }
 
-    // Get video data with all necessary fields for player and connection
     getVideoData(videoId) {
-        // Ensure we have the latest reels data
         this.currentReels = window.currentReels || [];
 
         const reel = this.currentReels.find(r => r.id === parseInt(videoId));
@@ -1899,12 +1889,10 @@ class ReelsDataAdapter {
             return null;
         }
 
-        // Process video URL
         const videoUrl = typeof UrlHelper !== 'undefined'
             ? UrlHelper.getAssetUrl(reel.video_url)
             : reel.video_url;
 
-        // Debug log
         console.log('Adapter: Processing reel data:', {
             id: reel.id,
             title: reel.title,
@@ -1917,23 +1905,32 @@ class ReelsDataAdapter {
             title: reel.title || 'Untitled',
             src: videoUrl,
             creator: reel.tutor_name || 'Unknown Tutor',
-            creatorId: reel.tutor_id,      // For compatibility
-            tutor_id: reel.tutor_id,        // Explicit tutor_id for connection
+            creatorId: reel.tutor_id,
+            tutor_id: reel.tutor_id,
             views: reel.views || 0,
             description: reel.description || '',
             date: reel.upload_date || reel.created_at || new Date().toISOString(),
             subject: reel.subject || reel.tutor_subject || '',
             category: reel.category || '',
             grade_level: reel.grade_level || '',
-            tags: reel.tags || [],
             thumbnail_url: reel.thumbnail_url,
             duration: reel.duration || '',
             is_featured: reel.is_featured || false,
-            is_ad: reel.is_ad || false
+            is_ad: reel.category === 'Ad'
         };
     }
 
-    // Get playlist from current reels with proper ordering
+    getCurrentVideoIndex() {
+        if (this.currentReels && window.videoPlayerBridge?.currentVideoId) {
+            return this.currentReels.findIndex(r => r.id === parseInt(window.videoPlayerBridge.currentVideoId));
+        }
+        return 0;
+    }
+
+    getTotalVideos() {
+        return this.currentReels ? this.currentReels.length : 0;
+    }
+
     getPlaylist(videoId, options = {}) {
         this.currentReels = window.currentReels || [];
 
@@ -1942,10 +1939,8 @@ class ReelsDataAdapter {
             return [];
         }
 
-        // Sort by relevance or keep current order
         let playlist = [...this.currentReels];
 
-        // If a specific filter is applied, use that subset
         if (options.filter) {
             playlist = this.filterPlaylist(playlist, options.filter);
         }
@@ -1958,7 +1953,7 @@ class ReelsDataAdapter {
                 : reel.video_url,
             creator: reel.tutor_name || 'Unknown',
             creatorId: reel.tutor_id,
-            tutor_id: reel.tutor_id,  // Include explicitly
+            tutor_id: reel.tutor_id,
             views: reel.views || 0,
             description: reel.description || '',
             date: reel.upload_date || reel.created_at,
@@ -1967,7 +1962,6 @@ class ReelsDataAdapter {
         }));
     }
 
-    // Filter playlist based on criteria
     filterPlaylist(playlist, filter) {
         switch (filter) {
             case 'same-tutor':
@@ -1986,7 +1980,6 @@ class ReelsDataAdapter {
         return playlist;
     }
 
-    // Get engagement statistics for a video
     getEngagementStats(videoId) {
         this.currentReels = window.currentReels || [];
         const reel = this.currentReels.find(r => r.id === parseInt(videoId));
@@ -1996,7 +1989,6 @@ class ReelsDataAdapter {
             return this.getDefaultEngagementStats();
         }
 
-        // Get user engagement from the API response
         const userEngagement = reel.user_engagement || {};
 
         return {
@@ -2006,7 +1998,6 @@ class ReelsDataAdapter {
             saves: parseInt(reel.saves) || 0,
             shares: parseInt(reel.shares) || 0,
             comments: parseInt(reel.comments_count) || 0,
-            // User-specific engagement states
             isLiked: userEngagement.like === true,
             isDisliked: userEngagement.dislike === true,
             isFavorite: userEngagement.favorite === true,
@@ -2015,7 +2006,6 @@ class ReelsDataAdapter {
         };
     }
 
-    // Default engagement stats
     getDefaultEngagementStats() {
         return {
             likes: 0,
@@ -2032,14 +2022,12 @@ class ReelsDataAdapter {
         };
     }
 
-    // Get creator/tutor ID from video
     getCreatorId(videoId) {
         this.currentReels = window.currentReels || [];
         const reel = this.currentReels.find(r => r.id === parseInt(videoId));
         return reel ? reel.tutor_id : null;
     }
 
-    // Get creator statistics
     getCreatorStats(creatorId) {
         if (!creatorId) {
             return {
@@ -2053,10 +2041,7 @@ class ReelsDataAdapter {
         this.currentReels = window.currentReels || [];
         const creatorVideos = this.currentReels.filter(r => r.tutor_id === creatorId);
 
-        // Calculate total views for this creator
         const totalViews = creatorVideos.reduce((sum, video) => sum + (video.views || 0), 0);
-
-        // Check if following (would come from first video with this creator)
         const isFollowing = creatorVideos.length > 0 && creatorVideos[0].is_following === true;
 
         return {
@@ -2067,7 +2052,6 @@ class ReelsDataAdapter {
         };
     }
 
-    // Toggle follow status
     async toggleFollow(creatorId) {
         if (!window.currentUser) {
             console.warn('User not authenticated');
@@ -2087,8 +2071,6 @@ class ReelsDataAdapter {
 
             if (response.ok) {
                 const result = await response.json();
-
-                // Update local data
                 this.updateFollowStatus(creatorId, result.is_following);
 
                 return {
@@ -2107,7 +2089,6 @@ class ReelsDataAdapter {
         };
     }
 
-    // Update follow status in local data
     updateFollowStatus(creatorId, isFollowing) {
         this.currentReels = window.currentReels || [];
         this.currentReels.forEach(reel => {
@@ -2118,17 +2099,13 @@ class ReelsDataAdapter {
         window.currentReels = this.currentReels;
     }
 
-    // Update page UI after actions
     updatePageUI(videoId) {
-        // Reload reels to get fresh data
         if (typeof window.loadReels === 'function') {
             console.log('Refreshing reels after update');
-            // Don't reload immediately to avoid UI flicker
             setTimeout(() => window.loadReels(), 500);
         }
     }
 
-    // Get video by index in playlist
     getVideoByIndex(index) {
         this.currentReels = window.currentReels || [];
         if (index >= 0 && index < this.currentReels.length) {
@@ -2137,20 +2114,12 @@ class ReelsDataAdapter {
         return null;
     }
 
-    // Check if video is ad
     isAdVideo(videoId) {
         const reel = this.currentReels.find(r => r.id === parseInt(videoId));
         if (!reel) return false;
-
-        // Check various ad indicators
-        return reel.is_ad === true ||
-            reel.is_featured === true ||
-            (reel.tags && reel.tags.includes('Ad'));
+        return reel.category === 'Ad' || reel.is_featured === true;
     }
 }
-
-
-
 
 // Placeholder adapters for other contexts
 class CourseDataAdapter extends ReelsDataAdapter { }

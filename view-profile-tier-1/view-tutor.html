@@ -337,16 +337,20 @@
         <div class="container nav-container">
             <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
             <div class="nav-brand">
-            <a href="../index.html" class="logo-container">
-                <div class="logo-text">
-                    <span class="logo-main">Astegni</span>
-                    <span class="logo-sub">View Tutor</span>
-                </div>
-                <span class="logo-badge">Beta</span>
-            </a>
+                <a href="view-tutor.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">View Tutor</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
 
             </div>
             <div class="nav-menu">
+                <!-- Add this as the first item in nav-items -->
+                <a class="nav-link px-2 py-1 rounded" href="../index.html">
+                    <span class="nav-icon">🏠</span> Home
+                </a>
                 <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
                     <span class="nav-icon">📰</span> News
                 </a>
@@ -365,52 +369,52 @@
                     <span class="nav-icon">💼</span> Find a Job
                 </a>
                 <!-- Profile container -->
-                    <div id="profile-container" class="profile-dropdown-container hidden">
-                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
-                            onclick="toggleProfileDropdown()">
-                            <img id="profile-pic" class="profile-pic" alt="Profile">
-                            <span id="profile-name" class="profile-name"></span>
-                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
-                        </button>
+                <div id="profile-container" class="profile-dropdown-container hidden">
+                    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                        onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic" alt="Profile">
+                        <span id="profile-name" class="profile-name"></span>
+                        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
 
-                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
-                            <!-- User info header -->
-                            <div class="dropdown-header">
-                                <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
-                                <div class="dropdown-user-info">
-                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
-                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
-                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
-                                </div>
+                    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                        <!-- User info header -->
+                        <div class="dropdown-header">
+                            <img id="dropdown-profile-pic" class="dropdown-profile-pic" alt="Profile">
+                            <div class="dropdown-user-info">
+                                <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                <span id="dropdown-user-role" class="dropdown-user-role"></span>
                             </div>
-
-                            <div class="dropdown-divider"></div>
-
-                            <!-- Role switcher (shown only if user has multiple roles) -->
-                            <div id="role-switcher-section" class="role-switcher-section hidden">
-                                <div class="dropdown-divider"></div>
-                                <div class="dropdown-item-header">Switch Role</div>
-                                <div id="role-options" class="role-options">
-                                    <!-- Role options will be dynamically added here -->
-                                </div>
-                            </div>
-
-                            <div class="dropdown-divider"></div>
-
-                            <button class="dropdown-item logout-item" onclick="logout()">
-                                <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
-                                    </path>
-                                </svg>
-                                Logout
-                            </button>
                         </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <!-- Role switcher (shown only if user has multiple roles) -->
+                        <div id="role-switcher-section" class="role-switcher-section hidden">
+                            <div class="dropdown-divider"></div>
+                            <div class="dropdown-item-header">Switch Role</div>
+                            <div id="role-options" class="role-options">
+                                <!-- Role options will be dynamically added here -->
+                            </div>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <button class="dropdown-item logout-item" onclick="logout()">
+                            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
                     </div>
+                </div>
 
                 <button class="notification-btn">
                     <span class="notification-icon">🔔</span>
@@ -1055,7 +1059,8 @@
             <!-- Right Sidebar (Unchanged from journalist-profile) -->
             <div class="right-sidebar">
                 <!-- News Widget -->
-                <div class="sidebar-widget news-widget" onclick="handleNavLinkClick(event, 'news')" style="cursor: pointer;">
+                <div class="sidebar-widget news-widget" onclick="handleNavLinkClick(event, 'news')"
+                    style="cursor: pointer;">
                     <div class="widget-header">
                         <h3>📰 Latest News</h3>
                         <a href="#" onclick="handleNavLinkClick(event, 'news')" class="widget-action">View All</a>
@@ -1190,7 +1195,7 @@
             </div>
         </section>
 
-        
+
 
         <!-- Bottom Widgets Section -->
         <section class="bottom-widgets">
@@ -1350,35 +1355,36 @@
         </div>
     </div>
 
-<!-- Coming Soon Modal -->
-<div id="coming-soon-modal" class="modal">
-    <div class="modal-content enhanced coming-soon-content">
-        <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                </path>
-            </svg>
-        </button>
-        
-        <div class="coming-soon-header">
-            <div class="coming-soon-icon">
-                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+    <!-- Coming Soon Modal -->
+    <div id="coming-soon-modal" class="modal">
+        <div class="modal-content enhanced coming-soon-content">
+            <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
+            </button>
+
+            <div class="coming-soon-header">
+                <div class="coming-soon-icon">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="modal-title">Coming Soon!</h3>
+                <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay
+                    tuned!</p>
             </div>
-            <h3 class="modal-title">Coming Soon!</h3>
-            <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay tuned!</p>
+
+
+
+
         </div>
-
-
-        
-
     </div>
-</div>
 
-<!-- Ad Analytics Modal -->
+    <!-- Ad Analytics Modal -->
     <div class="modal" id="adAnalyticsModal">
         <div class="modal-overlay" onclick="closeAdAnalyticsModal()"></div>
         <div class="modal-content ad-analytics-modal">
@@ -1591,7 +1597,7 @@
         </div>
     </div>
 
-<!-- Enhanced Footer -->
+    <!-- Enhanced Footer -->
     <footer class="footer-section" id="footer" role="contentinfo">
         <div class="footer-wave" aria-hidden="true">
             <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
@@ -1742,8 +1748,8 @@
 
     <!-- Scripts -->
     <script src="../js/view-tutor.js"></script>
-    
-<script>
+
+    <script>
         // Check authentication on page load
         (async function () {
             const auth = window.AuthManager;
@@ -2002,13 +2008,13 @@
         });
     </script>
 
-    <script src="../js-tier-1/auth.js"></script> 
+    <script src="../js-tier-1/auth.js"></script>
     <script src="../js-tier-1/page-structure-1.js"></script>
     <script src="../js-tier-1/page-structure-2.js"></script>
     <script src="../js-tier-1/page-structure-3.js"></script>
-    <script src="../js-tier-1/page-structure-4.js"></script>   
-<script src="../js-tier-1/coming-soon-modal.js"></script>
-<script src="../js-tier-1/ad-modal.js"></script>
+    <script src="../js-tier-1/page-structure-4.js"></script>
+    <script src="../js-tier-1/coming-soon-modal.js"></script>
+    <script src="../js-tier-1/ad-modal.js"></script>
 </body>
 
 </html>

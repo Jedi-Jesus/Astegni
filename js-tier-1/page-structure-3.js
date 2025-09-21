@@ -29,19 +29,21 @@ class EventsManager {
         });
     }
 
-    joinEvent() {
-        Utils.showToast("🎬 Joining the event...", "info");
+joinEvent(event) {  // Add event parameter
+    Utils.showToast("🎬 Joining the event...", "info");
 
-        setTimeout(() => {
-            Utils.showToast("✅ Successfully joined the event!", "success");
+    setTimeout(() => {
+        Utils.showToast("✅ Successfully joined the event!", "success");
 
-            // Update button
-            const btn = event.target;
+        // Update button - fix the event reference
+        const btn = event && event.target ? event.target : document.querySelector('.btn-join-inline');
+        if (btn) {
             btn.textContent = "Joined";
             btn.disabled = true;
             btn.style.background = "#10b981";
-        }, 1000);
-    }
+        }
+    }, 1000);
+}
 
     createEvent(eventData) {
         const event = {
@@ -1487,10 +1489,10 @@ document.addEventListener("DOMContentLoaded", () => {
     window.toggleSidebar = () => app.sidebar.toggle();
 
     // Modal functions
-    window.openScheduleModal = () => app.modals.open("scheduleModal");
-    window.closeScheduleModal = () => app.modals.close("scheduleModal");
-    window.openEditProfileModal = () => app.modals.open("editProfileModal");
-    window.closeEditProfileModal = () => app.modals.close("editProfileModal");
+window.openScheduleModal = () => app.modals.open("create-session-modal");  // FIXED
+window.closeScheduleModal = () => app.modals.close("create-session-modal"); // FIXED
+window.openEditProfileModal = () => app.modals.open("edit-profile-modal");  // FIXED
+window.closeEditProfileModal = () => app.modals.close("edit-profile-modal"); // FIXED
     window.openFollowersModal = (type) => window.communityManager.open(type); // Updated
     window.closeCommunityModal = () => window.communityManager.close(); // Updated
     window.openUploadVideoModal = () => app.modals.open("uploadVideoModal");
@@ -1538,6 +1540,34 @@ document.addEventListener("DOMContentLoaded", () => {
     window.openJobDetailModal = function(jobId) {
         Utils.showToast(`💼 Opening job details #${jobId}...`, 'info');
     };
+
+
+    // Add missing global functions
+window.shareProfile = function() {
+    const profileUrl = window.location.href;
+    if (navigator.share) {
+        navigator.share({
+            title: 'Check out my tutor profile',
+            url: profileUrl
+        }).catch(err => console.log('Share failed:', err));
+    } else {
+        // Fallback - copy to clipboard
+        navigator.clipboard.writeText(profileUrl);
+        Utils.showToast('📋 Profile link copied to clipboard!', 'success');
+    }
+};
+
+window.toggleSidebar = function() {
+    const sidebar = document.getElementById('leftSidebar');
+    const mainContainer = document.querySelector('.main-container');
+    
+    if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+        if (mainContainer) {
+            mainContainer.classList.toggle('sidebar-collapsed');
+        }
+    }
+};
 
     window.openMyClassesModal = function() {
         Utils.showToast('📚 Opening your classes...', 'info');

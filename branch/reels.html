@@ -22,7 +22,7 @@
         style="background-color: rgba(var(--footer-bg-rgb), 0.95);" role="navigation" aria-label="Main navigation">
         <div class="container mx-auto flex justify-between items-center px-3 sm:px-4">
 
-            <a href="../index.html" class="logo-container text-2xl font-bold">
+            <a href="reels.html" class="logo-container text-2xl font-bold">
                 <div class="logo-text">
                     <span class="logo-main">Astegni</span>
                     <span class="logo-sub">Reels</span>
@@ -48,6 +48,10 @@
             <!-- Right Section: Navigation Links -->
             <div class="nav-links hidden md:flex">
                 <div class="nav-items">
+                    <!-- Add this as the first item in nav-items -->
+                    <a class="nav-link px-2 py-1 rounded" href="../index.html">
+                        <span class="nav-icon">🏠</span> Home
+                    </a>
                     <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
                         <span class="nav-icon">📰</span> News
                     </a>
@@ -426,13 +430,7 @@
             <!-- Main Video Section -->
             <div class="video-main-section">
 
-                <!-- Add this new header overlay-->
-                <!--
-                <div class="video-header-overlay">
-                    <h2 class="video-title-overlay" id="video-title-top">Loading...</h2>
 
-                </div>
-                -->
 
                 <div class="sidebar-header-enhanced enhanced-bg-warm">
                     <h2 class="video-title-enhanced" id="ultimate-video-title">Loading...</h2>
@@ -453,6 +451,32 @@
                     <video class="enhanced-video" id="enhancedVideo">
                         <source src="" type="video/mp4">
                     </video>
+
+                    <!-- Add this after the video element in the video-wrapper-advanced -->
+                    <div class="pip-controls" id="pipControls" style="display: none;">
+                        <button class="pip-control-btn" onclick="window.player && window.player.previousVideo()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                            </svg>
+                        </button>
+                        <button class="pip-control-btn pip-play-pause"
+                            onclick="window.player && window.player.togglePlayPause()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M8 5v14l11-7z" />
+                            </svg>
+                        </button>
+                        <button class="pip-control-btn" onclick="window.player && window.player.nextVideo()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                            </svg>
+                        </button>
+                        <button class="pip-control-btn pip-close" onclick="window.player && window.player.closePiP()">
+                            <svg viewBox="0 0 24 24">
+                                <path
+                                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                            </svg>
+                        </button>
+                    </div>
 
                     <!-- Loading Spinner -->
                     <div class="video-loading-spinner">
@@ -533,11 +557,6 @@
 
                             </div>
 
-                            <!-- Center - Video Counter -->
-                            <div class="controls-center">
-                                <span class="video-counter-inline" id="videoCountText">1 / 10</span>
-                            </div>
-
                             <!-- Right Controls -->
                             <div class="controls-right">
                                 <div class="speed-selector">
@@ -591,7 +610,12 @@
                                     </svg>
                                     <span class="pip-indicator"></span>
                                 </button>
-
+                                <button class="control-btn" id="theaterBtn" title="Theater mode">
+                                    <svg viewBox="0 0 24 24">
+                                        <path
+                                            d="M18 3v2h-2V3H8v2H6V3H4v18h2v-2h2v2h8v-2h2v2h2V3h-2zM8 17H6v-2h2v2zm0-4H6v-2h2v2zm0-4H6V7h2v2zm10 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2z" />
+                                    </svg>
+                                </button>
                                 <button class="control-btn" id="fullscreenBtn">
                                     <svg viewBox="0 0 24 24">
                                         <path
@@ -1554,5 +1578,5 @@
     <script src="../js-tier-1/coming-soon-modal.js"></script>
     <script src="../js-tier-1/ad-modal.js"></script>
 </body>
-
+filters, notification, 25 videos, theme toggle, and css for videos modal.
 </html>
