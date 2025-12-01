@@ -2397,7 +2397,7 @@ class StudentReview(Base):
     __tablename__ = "student_reviews"
 
     id = Column(Integer, primary_key=True, index=True)
-    student_id = Column(Integer, ForeignKey('students.id'))
+    student_id = Column(Integer, ForeignKey('student_profiles.id'))
     reviewer_id = Column(Integer, ForeignKey('users.id'))
     reviewer_role = Column(String(50))
     subject_matter_expertise = Column(Float)
