@@ -720,7 +720,7 @@ class TutorActivity(Base):
 
     # Related Entity (optional)
     related_user_id = Column(Integer, ForeignKey("users.id"))
-    related_session_id = Column(Integer, ForeignKey("tutoring_sessions.id"))
+    related_session_id = Column(Integer, nullable=True)  # Reference to session (no FK constraint - table may not exist)
 
     # Metadata
     amount = Column(Float)  # for payment activities
