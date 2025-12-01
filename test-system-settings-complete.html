@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test System Settings Complete Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">System Settings Integration Test</h1>
+
+        <!-- Test Results Container -->
+        <div id="test-results" class="space-y-4 mb-8"></div>
+
+        <!-- Campaign Packages Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Campaign Packages</h2>
+            <div id="campaign-packages-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"></div>
+        </div>
+
+        <!-- Subscription Pricing Section -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-2xl font-bold mb-4">Subscription Pricing Test</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Basic Base Price (ETB/month)</label>
+                    <input type="number" id="basic-base-price" class="w-full px-3 py-2 border rounded-lg" value="499">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Premium Base Price (ETB/month)</label>
+                    <input type="number" id="premium-base-price" class="w-full px-3 py-2 border rounded-lg" value="999">
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <h3 class="font-bold mb-2">Discount Percentages:</h3>
+                <div class="grid grid-cols-5 gap-2">
+                    <div>
+                        <label class="text-xs">1m Discount %</label>
+                        <input type="number" id="basic-discount-1m" class="w-full px-2 py-1 border rounded text-sm" value="0">
+                        <input type="number" id="premium-discount-1m" class="w-full px-2 py-1 border rounded text-sm mt-1" value="0">
+                    </div>
+                    <div>
+                        <label class="text-xs">3m Discount %</label>
+                        <input type="number" id="basic-discount-3m" class="w-full px-2 py-1 border rounded text-sm" value="5">
+                        <input type="number" id="premium-discount-3m" class="w-full px-2 py-1 border rounded text-sm mt-1" value="5">
+                    </div>
+                    <div>
+                        <label class="text-xs">6m Discount %</label>
+                        <input type="number" id="basic-discount-6m" class="w-full px-2 py-1 border rounded text-sm" value="10">
+                        <input type="number" id="premium-discount-6m" class="w-full px-2 py-1 border rounded text-sm mt-1" value="10">
+                    </div>
+                    <div>
+                        <label class="text-xs">9m Discount %</label>
+                        <input type="number" id="basic-discount-9m" class="w-full px-2 py-1 border rounded text-sm" value="15">
+                        <input type="number" id="premium-discount-9m" class="w-full px-2 py-1 border rounded text-sm mt-1" value="15">
+                    </div>
+                    <div>
+                        <label class="text-xs">12m Discount %</label>
+                        <input type="number" id="basic-discount-12m" class="w-full px-2 py-1 border rounded text-sm" value="20">
+                        <input type="number" id="premium-discount-12m" class="w-full px-2 py-1 border rounded text-sm mt-1" value="20">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <button onclick="testSaveSubscriptionPricing()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Save Subscription Pricing
+                </button>
+                <button onclick="testLoadSubscriptionPricing()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 ml-2">
+                    Load Subscription Pricing
+                </button>
+            </div>
+        </div>
+
+        <!-- Affiliate Performance Section -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-2xl font-bold mb-4">Affiliate Performance</h2>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div id="affiliate-active-count" class="text-2xl font-bold text-purple-600">--</div>
+                    <div class="text-sm text-gray-600">Active Affiliates</div>
+                </div>
+                <div class="text-center">
+                    <div id="affiliate-referrals-count" class="text-2xl font-bold text-blue-600">--</div>
+                    <div class="text-sm text-gray-600">Total Referrals</div>
+                </div>
+                <div class="text-center">
+                    <div id="affiliate-commissions-total" class="text-2xl font-bold text-green-600">-- ETB</div>
+                    <div class="text-sm text-gray-600">Total Commissions</div>
+                </div>
+            </div>
+            <button onclick="testLoadAffiliatePerformance()" class="mt-4 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                Load Affiliate Data
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        // Helper to add test result
+        function addTestResult(test, passed, message) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultEl = document.createElement('div');
+            resultEl.className = `p-4 rounded-lg ${passed ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            resultEl.innerHTML = `
+                <div class="font-bold">${passed ? '✓' : '✗'} ${test}</div>
+                <div class="text-sm">${message}</div>
+            `;
+            resultsDiv.appendChild(resultEl);
+        }
+
+        // Test 1: Load Campaign Packages
+        async function testLoadCampaignPackages() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE_URL}/api/admin/campaign-packages`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                if (data.success && data.packages) {
+                    addTestResult('Load Campaign Packages', true, `Loaded ${data.packages.length} packages from database`);
+                    renderPackages(data.packages);
+                    return data.packages;
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                addTestResult('Load Campaign Packages', false, error.message);
+                return [];
+            }
+        }
+
+        // Render packages
+        function renderPackages(packages) {
+            const grid = document.getElementById('campaign-packages-grid');
+            grid.innerHTML = packages.map(pkg => `
+                <div class="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+                    <h4 class="font-bold text-blue-700">${pkg.name}</h4>
+                    <div class="text-2xl font-bold text-blue-900">${pkg.price} ETB</div>
+                    <div class="text-sm">Up to ${pkg.days} days</div>
+                    ${pkg.label !== 'none' ? `<span class="text-xs bg-orange-500 text-white px-2 py-0.5 rounded">${pkg.label.toUpperCase()}</span>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Test 2: Save Subscription Pricing with Discounts
+        async function testSaveSubscriptionPricing() {
+            try {
+                const token = localStorage.getItem('token');
+                const periods = ['1m', '3m', '6m', '9m', '12m'];
+
+                const basicDiscounts = {};
+                const premiumDiscounts = {};
+                periods.forEach(period => {
+                    basicDiscounts[period] = parseFloat(document.getElementById(`basic-discount-${period}`).value) || 0;
+                    premiumDiscounts[period] = parseFloat(document.getElementById(`premium-discount-${period}`).value) || 0;
+                });
+
+                const basicData = {
+                    tier_name: 'Basic',
+                    monthly_price: parseFloat(document.getElementById('basic-base-price').value),
+                    annual_price: parseFloat(document.getElementById('basic-base-price').value) * 10,
+                    currency: 'ETB',
+                    features: ['Basic features'],
+                    limits: {},
+                    is_popular: false,
+                    period_discounts: basicDiscounts
+                };
+
+                const premiumData = {
+                    tier_name: 'Premium',
+                    monthly_price: parseFloat(document.getElementById('premium-base-price').value),
+                    annual_price: parseFloat(document.getElementById('premium-base-price').value) * 10,
+                    currency: 'ETB',
+                    features: ['Premium features'],
+                    limits: {},
+                    is_popular: true,
+                    period_discounts: premiumDiscounts
+                };
+
+                const promises = [
+                    fetch(`${API_BASE_URL}/api/admin/pricing/subscription-tiers`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(basicData)
+                    }),
+                    fetch(`${API_BASE_URL}/api/admin/pricing/subscription-tiers`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify(premiumData)
+                    })
+                ];
+
+                const results = await Promise.all(promises);
+                const responses = await Promise.all(results.map(r => r.json()));
+
+                if (responses.every(r => r.success)) {
+                    addTestResult('Save Subscription Pricing with Discounts', true, 'Successfully saved both tiers with period_discounts');
+                } else {
+                    throw new Error('Some tiers failed to save');
+                }
+            } catch (error) {
+                addTestResult('Save Subscription Pricing with Discounts', false, error.message);
+            }
+        }
+
+        // Test 3: Load Subscription Pricing and Verify Discounts
+        async function testLoadSubscriptionPricing() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE_URL}/api/admin/pricing/subscription-tiers`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                if (data.success && data.tiers) {
+                    let discountsFound = false;
+                    data.tiers.forEach(tier => {
+                        if (tier.period_discounts && Object.keys(tier.period_discounts).length > 0) {
+                            discountsFound = true;
+                            console.log(`${tier.tier_name} period_discounts:`, tier.period_discounts);
+                        }
+                    });
+
+                    if (discountsFound) {
+                        addTestResult('Load Subscription Pricing with Discounts', true, 'period_discounts successfully loaded from database');
+                    } else {
+                        addTestResult('Load Subscription Pricing with Discounts', false, 'No period_discounts found in database');
+                    }
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                addTestResult('Load Subscription Pricing with Discounts', false, error.message);
+            }
+        }
+
+        // Test 4: Load Affiliate Performance
+        async function testLoadAffiliatePerformance() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE_URL}/api/admin/affiliate-performance`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('affiliate-active-count').textContent = data.active_affiliates || '0';
+                    document.getElementById('affiliate-referrals-count').textContent = data.total_referrals || '0';
+                    document.getElementById('affiliate-commissions-total').textContent = `${data.total_commissions || '0'} ETB`;
+
+                    addTestResult('Load Affiliate Performance', true, `Active: ${data.active_affiliates}, Referrals: ${data.total_referrals}, Commissions: ${data.total_commissions} ETB`);
+                } else {
+                    throw new Error('Invalid response format');
+                }
+            } catch (error) {
+                addTestResult('Load Affiliate Performance', false, error.message);
+            }
+        }
+
+        // Run all tests on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('Running integration tests...');
+            await testLoadCampaignPackages();
+            await testLoadAffiliatePerformance();
+            console.log('All tests complete. Check results above.');
+        });
+    </script>
+</body>
+</html>

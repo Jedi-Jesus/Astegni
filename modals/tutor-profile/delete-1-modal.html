@@ -1,0 +1,212 @@
+<!--
+    Modal: deleteModal1
+    Purpose: Account deletion reason collection modal
+    Extracted from: tutor-profile.html
+-->
+
+<div id="deleteModal1" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeDeleteModal1()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Why did you come to this decision? 😔</h2>
+                <button class="modal-close" onclick="closeDeleteModal1()">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Warning Card -->
+                <div class="warning-card"
+                    style="background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%); border: 2px solid #FCA5A5; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                        <div class="warning-icon"
+                            style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); flex-shrink: 0;">
+                            <span style="font-size: 28px;">⚠️</span>
+                        </div>
+                        <div>
+                            <h3 class="warning-text"
+                                style="color: #991B1B; font-size: 16px; font-weight: 700; margin: 0;">
+                                We're sorry to see you go!
+                            </h3>
+                            <p style="color: #B91C1C; font-size: 14px; margin: 4px 0 0 0;">
+                                Your feedback helps us improve our service
+                            </p>
+                        </div>
+                    </div>
+                    <p
+                        style="color: #7F1D1D; font-size: 13px; font-weight: 500; margin: 0; padding: 12px; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border-left: 3px solid #EF4444;">
+                        📝 Please select at least one reason below to help us understand your decision
+                    </p>
+                </div>
+
+                <!-- Checkbox Options - 2 per row -->
+                <div class="checkbox-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 14px; background: var(--bg-secondary); border-radius: 10px; transition: all 0.3s; border: 2px solid transparent;"
+                        onmouseover="this.style.borderColor='#EF4444'; this.style.background='#FEF2F2';"
+                        onmouseout="this.style.borderColor='transparent'; this.style.background='var(--bg-secondary)';">
+                        <input type="checkbox" name="deleteReason" value="notUseful" class="form-checkbox"
+                            style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                        <span style="font-weight: 500; color: var(--text-primary); font-size: 14px;">Service not
+                            useful</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 14px; background: var(--bg-secondary); border-radius: 10px; transition: all 0.3s; border: 2px solid transparent;"
+                        onmouseover="this.style.borderColor='#EF4444'; this.style.background='#FEF2F2';"
+                        onmouseout="this.style.borderColor='transparent'; this.style.background='var(--bg-secondary)';">
+                        <input type="checkbox" name="deleteReason" value="tooExpensive" class="form-checkbox"
+                            style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                        <span style="font-weight: 500; color: var(--text-primary); font-size: 14px;">Too
+                            expensive</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 14px; background: var(--bg-secondary); border-radius: 10px; transition: all 0.3s; border: 2px solid transparent;"
+                        onmouseover="this.style.borderColor='#EF4444'; this.style.background='#FEF2F2';"
+                        onmouseout="this.style.borderColor='transparent'; this.style.background='var(--bg-secondary)';">
+                        <input type="checkbox" name="deleteReason" value="foundAlternative" class="form-checkbox"
+                            style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                        <span style="font-weight: 500; color: var(--text-primary); font-size: 14px;">Found an
+                            alternative</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 14px; background: var(--bg-secondary); border-radius: 10px; transition: all 0.3s; border: 2px solid transparent;"
+                        onmouseover="this.style.borderColor='#EF4444'; this.style.background='#FEF2F2';"
+                        onmouseout="this.style.borderColor='transparent'; this.style.background='var(--bg-secondary)';">
+                        <input type="checkbox" name="deleteReason" value="privacyConcerns" class="form-checkbox"
+                            style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                        <span style="font-weight: 500; color: var(--text-primary); font-size: 14px;">Privacy
+                            concerns</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 14px; background: var(--bg-secondary); border-radius: 10px; transition: all 0.3s; border: 2px solid transparent;"
+                        onmouseover="this.style.borderColor='#EF4444'; this.style.background='#FEF2F2';"
+                        onmouseout="this.style.borderColor='transparent'; this.style.background='var(--bg-secondary)';">
+                        <input type="checkbox" name="deleteReason" value="notSatisfied" class="form-checkbox"
+                            style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                        <span style="font-weight: 500; color: var(--text-primary); font-size: 14px;">Not
+                            satisfied</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 14px; background: var(--bg-secondary); border-radius: 10px; transition: all 0.3s; border: 2px solid transparent;"
+                        onmouseover="this.style.borderColor='#EF4444'; this.style.background='#FEF2F2';"
+                        onmouseout="this.style.borderColor='transparent'; this.style.background='var(--bg-secondary)';">
+                        <input type="checkbox" name="deleteReason" value="other" id="deleteOtherCheckbox"
+                            class="form-checkbox" style="width: 20px; height: 20px; cursor: pointer; flex-shrink: 0;">
+                        <span style="font-weight: 500; color: var(--text-primary); font-size: 14px;">Other
+                            (specify)</span>
+                    </label>
+                </div>
+                <textarea id="otherTextDelete" class="form-textarea mt-3"
+                    placeholder="Please tell us more about why you're leaving..."
+                    style="display: none; min-height: 100px; resize: vertical;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeDeleteModal1()">Cancel</button>
+                <button class="btn-danger" onclick="submitDeleteReasons()">
+                    📤 Submit & Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal: Step 3 (Verification & 90-day Warning) -->
+    <div id="deleteVerifyModal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeDeleteVerifyModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Are you sure you want to leave Astegni?</h2>
+                <button class="modal-close" onclick="closeDeleteVerifyModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-card">
+                    <div class="warning-icon">⚠️</div>
+                    <p id="deleteVerifyText" class="modal-text" style="margin-bottom: 16px;">
+                        This decision will deactivate your account. Your account will enter a 90-day deletion period.
+                    </p>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                        <p class="font-semibold text-blue-800">📅 90-Day Deletion Period</p>
+                        <p class="text-sm text-blue-700 mt-2">
+                            Your account will be deactivated immediately, but the data will be kept for 90 days.
+                            If you log in within this period, your account will be fully restored automatically.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeDeleteVerifyModal()">No, Keep My Account</button>
+                <button class="btn-danger" onclick="proceedToSubscriptionCheck()">Yes, Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal: Step 4 (Subscription Check) -->
+    <div id="deleteSubscriptionCheckModal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeDeleteSubscriptionCheckModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">⚠️ Active Subscriptions Detected</h2>
+                <button class="modal-close" onclick="closeDeleteSubscriptionCheckModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-text">Please cancel all active subscriptions before proceeding with account deletion.
+                </p>
+                <p class="text-sm text-gray-600 mt-2">Go to Settings → Subscription to manage your active subscriptions.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="finance-btn-primary" onclick="closeDeleteSubscriptionCheckModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal: Step 5 (Password Confirmation) -->
+    <div id="deletePasswordModal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeDeletePasswordModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">🔐 Final Confirmation</h2>
+                <button class="modal-close" onclick="closeDeletePasswordModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-text">Please enter your password to confirm account deletion. This action cannot be
+                    undone.</p>
+                <div class="form-group mt-4">
+                    <label class="form-label">Enter Password *</label>
+                    <input type="password" id="deletePassword" class="form-input" placeholder="Enter your password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeDeletePasswordModal()">Cancel</button>
+                <button class="btn-danger" onclick="finalConfirmDeleteAccount()">Confirm Deletion</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal: Step 6 (Final Message) -->
+    <div id="deleteFinalModal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Farewell, We very much hope all the success in your next adventure. 🌟</h2>
+            </div>
+            <div class="modal-body">
+                <p class="text-center text-lg mb-4">
+                    Your account has been scheduled for deletion. You have <strong>90 days</strong> to change your mind.
+                </p>
+                <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+                    <p class="font-semibold text-green-800">✨ Easy Reactivation</p>
+                    <p class="text-sm text-green-700 mt-2">
+                        Simply log in within the next 90 days, and your account will be automatically restored with all
+                        your data intact!
+                    </p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="finance-btn-primary" onclick="closeDeleteFinalModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!--

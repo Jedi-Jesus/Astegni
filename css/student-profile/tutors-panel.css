@@ -1,0 +1,250 @@
+/**
+ * Student My Tutors Panel Styles
+ * Styles for the My Tutors panel in student profile
+ * Uses find-tutors card design with enrollment-specific additions
+ */
+
+/* Panel Container */
+#my-tutors-panel {
+    padding: 0;
+}
+
+#my-tutors-panel .panel-header {
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Tutors Grid Container - inherits from tutor-card.css but with adjustments */
+#my-tutors-panel .tutor-cards-grid,
+#my-tutors-panel #myTutorCards {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)) !important;
+    gap: 1.5rem !important;
+    padding: 0;
+    max-width: 100%;
+    width: 100%;
+}
+
+/* Responsive Grid */
+@media (max-width: 768px) {
+    #my-tutors-panel .tutor-cards-grid,
+    #my-tutors-panel #myTutorCards {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1199px) {
+    #my-tutors-panel .tutor-cards-grid,
+    #my-tutors-panel #myTutorCards {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (min-width: 1200px) {
+    #my-tutors-panel .tutor-cards-grid,
+    #my-tutors-panel #myTutorCards {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+/* Enrollment Badge Styling */
+.enrollment-badge {
+    background: rgba(59, 130, 246, 0.05) !important;
+    border-top: 1px solid rgba(59, 130, 246, 0.1);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+    padding: 0.75rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.enrollment-badge:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+}
+
+[data-theme="dark"] .enrollment-badge {
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+/* Empty State */
+#my-tutors-panel .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--card-bg);
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#my-tutors-panel .empty-state .empty-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.6;
+}
+
+#my-tutors-panel .empty-state h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 0.75rem;
+}
+
+#my-tutors-panel .empty-state p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Tutor Card Adjustments for Student Profile */
+#my-tutors-panel .tutor-card {
+    min-height: auto;
+    height: auto;
+}
+
+/* Hide test-data-badge for enrolled tutors (replaced with enrollment-badge) */
+#my-tutors-panel .test-data-badge {
+    display: none;
+}
+
+/* Show enrollment badge instead */
+#my-tutors-panel .enrollment-badge {
+    display: block !important;
+}
+
+/* Loading State */
+#my-tutors-panel .loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    background: var(--card-bg);
+    border-radius: 1rem;
+}
+
+/* Action Buttons in Card */
+#my-tutors-panel .tutor-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem 1.5rem;
+    width: 100%;
+}
+
+#my-tutors-panel .tutor-actions > button {
+    flex: 1;
+    min-width: 0;
+}
+
+#my-tutors-panel .view-profile-btn,
+#my-tutors-panel .connect-btn,
+#my-tutors-panel .connected-btn,
+#my-tutors-panel .message-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#my-tutors-panel .view-profile-btn {
+    background: transparent;
+    color: var(--text);
+    border: 2px solid var(--border-color);
+}
+
+#my-tutors-panel .view-profile-btn:hover {
+    border-color: var(--button-bg);
+    color: var(--button-bg);
+    transform: translateY(-2px);
+}
+
+#my-tutors-panel .message-btn {
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: var(--button-text);
+    border: none;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+#my-tutors-panel .message-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35);
+    filter: brightness(1.05);
+}
+
+#my-tutors-panel .connect-btn {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+#my-tutors-panel .connect-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    filter: brightness(1.05);
+}
+
+#my-tutors-panel .connect-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+#my-tutors-panel .connected-btn {
+    background: linear-gradient(135deg, #6ee7b7, #34d399);
+    color: #065f46;
+    border: none;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+    cursor: default;
+    opacity: 0.9;
+}
+
+/* Dark Mode Support */
+[data-theme="dark"] #my-tutors-panel .panel-header {
+    background: var(--card-bg);
+}
+
+[data-theme="dark"] #my-tutors-panel .empty-state {
+    background: var(--card-bg);
+}
+
+[data-theme="dark"] #my-tutors-panel .empty-state h3 {
+    color: var(--heading);
+}
+
+[data-theme="dark"] #my-tutors-panel .empty-state p {
+    color: var(--text-muted);
+}
+
+/* Smooth card entrance animation */
+#my-tutors-panel .tutor-card {
+    animation: cardSlideIn 0.4s ease-out backwards;
+}
+
+#my-tutors-panel .tutor-card:nth-child(1) { animation-delay: 0.1s; }
+#my-tutors-panel .tutor-card:nth-child(2) { animation-delay: 0.15s; }
+#my-tutors-panel .tutor-card:nth-child(3) { animation-delay: 0.2s; }
+#my-tutors-panel .tutor-card:nth-child(4) { animation-delay: 0.25s; }
+#my-tutors-panel .tutor-card:nth-child(5) { animation-delay: 0.3s; }
+#my-tutors-panel .tutor-card:nth-child(6) { animation-delay: 0.35s; }
+
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

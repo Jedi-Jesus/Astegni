@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Upload Modals</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .diagnostic {
+            background: #f0f9ff;
+            padding: 15px;
+            border-left: 4px solid #3b82f6;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            background: #fee2e2;
+            border-left-color: #dc2626;
+            color: #dc2626;
+        }
+        .success {
+            background: #d1fae5;
+            border-left-color: #059669;
+            color: #059669;
+        }
+    </style>
+</head>
+<body>
+    <h1>Upload Modal Diagnostic Tool</h1>
+
+    <div class="test-section">
+        <h2>1. Check if modals exist in DOM</h2>
+        <button onclick="checkModalsExist()">Check Modals</button>
+        <div id="modal-check-result" class="diagnostic" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Check if functions exist</h2>
+        <button onclick="checkFunctionsExist()">Check Functions</button>
+        <div id="function-check-result" class="diagnostic" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Try opening modals</h2>
+        <button onclick="tryOpenCoverModal()">Open Cover Modal</button>
+        <button onclick="tryOpenProfileModal()">Open Profile Modal</button>
+        <div id="open-result" class="diagnostic" style="display:none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Load Modal Loader</h2>
+        <button onclick="loadModalSystem()">Load Modal System</button>
+        <div id="load-result" class="diagnostic" style="display:none;"></div>
+    </div>
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <!-- Load modal-loader.js -->
+    <script src="modals/tutor-profile/modal-loader.js"></script>
+
+    <script>
+        function checkModalsExist() {
+            const result = document.getElementById('modal-check-result');
+            result.style.display = 'block';
+
+            const coverModal = document.getElementById('coverUploadModal');
+            const profileModal = document.getElementById('profileUploadModal');
+
+            let html = '<strong>Modal Check:</strong><br>';
+            html += `coverUploadModal: ${coverModal ? '✅ EXISTS' : '❌ NOT FOUND'}<br>`;
+            html += `profileUploadModal: ${profileModal ? '✅ EXISTS' : '❌ NOT FOUND'}<br>`;
+
+            if (coverModal) {
+                html += `coverUploadModal display: ${coverModal.style.display || 'not set'}<br>`;
+                html += `coverUploadModal classes: ${coverModal.className}<br>`;
+            }
+            if (profileModal) {
+                html += `profileUploadModal display: ${profileModal.style.display || 'not set'}<br>`;
+                html += `profileUploadModal classes: ${profileModal.className}<br>`;
+            }
+
+            result.innerHTML = html;
+            result.className = 'diagnostic ' + (coverModal && profileModal ? 'success' : 'error');
+        }
+
+        function checkFunctionsExist() {
+            const result = document.getElementById('function-check-result');
+            result.style.display = 'block';
+
+            const functions = [
+                'openModal',
+                'openCoverUploadModal',
+                'openProfileUploadModal',
+                'closeCoverUploadModal',
+                'closeProfileUploadModal',
+                'handleImageSelect',
+                'uploadImage',
+                'resetUpload'
+            ];
+
+            let html = '<strong>Function Check:</strong><br>';
+            functions.forEach(fn => {
+                const exists = typeof window[fn] === 'function';
+                html += `${fn}: ${exists ? '✅ EXISTS' : '❌ NOT FOUND'}<br>`;
+            });
+
+            html += '<br><strong>Modal Loader:</strong><br>';
+            html += `ModalLoader: ${typeof ModalLoader !== 'undefined' ? '✅ EXISTS' : '❌ NOT FOUND'}<br>`;
+            if (typeof ModalLoader !== 'undefined') {
+                html += `ModalLoader.init: ${typeof ModalLoader.init === 'function' ? '✅ EXISTS' : '❌ NOT FOUND'}<br>`;
+                html += `ModalLoader.load: ${typeof ModalLoader.load === 'function' ? '✅ EXISTS' : '❌ NOT FOUND'}<br>`;
+            }
+
+            result.innerHTML = html;
+        }
+
+        function tryOpenCoverModal() {
+            const result = document.getElementById('open-result');
+            result.style.display = 'block';
+            result.className = 'diagnostic';
+
+            try {
+                result.innerHTML = '<strong>Attempting to open cover modal...</strong><br>';
+
+                const modal = document.getElementById('coverUploadModal');
+                if (!modal) {
+                    result.innerHTML += '❌ Modal not found in DOM<br>';
+                    result.className = 'diagnostic error';
+                    return;
+                }
+
+                result.innerHTML += '✅ Modal found in DOM<br>';
+
+                // Try to open it
+                modal.style.display = 'flex';
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+
+                result.innerHTML += '✅ Modal display set to flex<br>';
+                result.innerHTML += '✅ Modal classes updated<br>';
+                result.innerHTML += '<strong>Modal should be visible now!</strong><br>';
+                result.className = 'diagnostic success';
+
+            } catch (error) {
+                result.innerHTML += `❌ ERROR: ${error.message}<br>`;
+                result.className = 'diagnostic error';
+            }
+        }
+
+        function tryOpenProfileModal() {
+            const result = document.getElementById('open-result');
+            result.style.display = 'block';
+            result.className = 'diagnostic';
+
+            try {
+                result.innerHTML = '<strong>Attempting to open profile modal...</strong><br>';
+
+                const modal = document.getElementById('profileUploadModal');
+                if (!modal) {
+                    result.innerHTML += '❌ Modal not found in DOM<br>';
+                    result.className = 'diagnostic error';
+                    return;
+                }
+
+                result.innerHTML += '✅ Modal found in DOM<br>';
+
+                // Try to open it
+                modal.style.display = 'flex';
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+
+                result.innerHTML += '✅ Modal display set to flex<br>';
+                result.innerHTML += '✅ Modal classes updated<br>';
+                result.innerHTML += '<strong>Modal should be visible now!</strong><br>';
+                result.className = 'diagnostic success';
+
+            } catch (error) {
+                result.innerHTML += `❌ ERROR: ${error.message}<br>`;
+                result.className = 'diagnostic error';
+            }
+        }
+
+        function loadModalSystem() {
+            const result = document.getElementById('load-result');
+            result.style.display = 'block';
+
+            let html = '<strong>Loading modal system...</strong><br>';
+
+            if (typeof ModalLoader === 'undefined') {
+                html += '❌ ModalLoader not available<br>';
+                result.innerHTML = html;
+                result.className = 'diagnostic error';
+                return;
+            }
+
+            html += '✅ ModalLoader available<br>';
+
+            // Initialize
+            ModalLoader.init();
+            html += '✅ ModalLoader initialized<br>';
+
+            // Load the upload modals
+            Promise.all([
+                ModalLoader.load('coverUploadModal'),
+                ModalLoader.load('profileUploadModal')
+            ]).then(() => {
+                html += '✅ Modals loaded successfully<br>';
+                html += '<strong>Now try checking if modals exist!</strong><br>';
+                result.innerHTML = html;
+                result.className = 'diagnostic success';
+            }).catch(error => {
+                html += `❌ ERROR loading modals: ${error.message}<br>`;
+                result.innerHTML = html;
+                result.className = 'diagnostic error';
+            });
+
+            result.innerHTML = html;
+        }
+
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('=== Upload Modal Diagnostic ===');
+                console.log('ModalLoader:', typeof ModalLoader);
+                console.log('coverUploadModal:', document.getElementById('coverUploadModal'));
+                console.log('profileUploadModal:', document.getElementById('profileUploadModal'));
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

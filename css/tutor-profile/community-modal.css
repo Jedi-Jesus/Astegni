@@ -1,0 +1,1354 @@
+/* ========================================
+   COMMUNITY MODAL - COMPLETE CSS
+   Modern, clean design from scratch
+   ======================================== */
+
+/* ========================================
+   1. MODAL BASE STRUCTURE
+   ======================================== */
+
+#communityModal.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#communityModal.modal.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#communityModal .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ========================================
+   2. MODAL CONTENT CONTAINER
+   ======================================== */
+
+#communityModal .modal-content.community-modal-content {
+    position: relative;
+    width: 95%;
+    max-width: 1400px;
+    height: 90vh;
+    max-height: 850px;
+    background: var(--background);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ========================================
+   3. MODAL WRAPPER (FLEX LAYOUT)
+   ======================================== */
+
+#communityModal .modal-wrapper {
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* ========================================
+   4. SIDEBAR SECTION
+   ======================================== */
+
+.community-sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: var(--card-bg);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 0;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+}
+
+/* Sidebar should always be visible - removed hiding rules */
+
+.community-sidebar h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--heading);
+    margin: 0 1.5rem 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* ========================================
+   5. SIDEBAR MENU
+   ======================================== */
+
+.community-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0 1rem;
+}
+
+.community-menu .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.95rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.community-menu .menu-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--button-bg);
+    transform: scaleY(0);
+    transition: transform 0.2s ease;
+}
+
+.community-menu .menu-item:hover {
+    background: rgba(var(--button-bg-rgb), 0.08);
+    color: var(--heading);
+}
+
+.community-menu .menu-item:hover::before {
+    transform: scaleY(1);
+}
+
+.community-menu .menu-item.active {
+    background: linear-gradient(
+        135deg,
+        rgba(var(--button-bg-rgb), 0.15),
+        rgba(var(--button-bg-rgb), 0.08)
+    );
+    color: var(--button-bg);
+    font-weight: 600;
+}
+
+.community-menu .menu-item.active::before {
+    transform: scaleY(1);
+}
+
+.community-menu .menu-icon {
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+}
+
+.community-menu .menu-item span:nth-child(2) {
+    flex: 1;
+}
+
+.community-menu .count-badge {
+    background: rgba(var(--button-bg-rgb), 0.15);
+    color: var(--button-bg);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.625rem;
+    border-radius: 12px;
+    min-width: 24px;
+    text-align: center;
+}
+
+.community-menu .menu-item.active .count-badge {
+    background: var(--button-bg);
+    color: white;
+}
+
+.community-menu .menu-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0.5rem 0;
+}
+
+/* ========================================
+   6. MAIN CONTENT AREA
+   ======================================== */
+
+.community-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--background);
+}
+
+/* ========================================
+   7. MODAL HEADER
+   ======================================== */
+
+.community-main .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.75rem 2rem;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.community-main .modal-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--heading);
+    margin: 0;
+    flex: 1;
+}
+
+/* Back button for Events/Clubs sections */
+.modal-header .back-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(var(--button-bg-rgb), 0.08);
+    border: none;
+    color: var(--text);
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.modal-header .back-btn:hover {
+    background: rgba(var(--button-bg-rgb), 0.15);
+    color: var(--button-bg);
+    transform: translateX(-3px);
+}
+
+/* Show back button when sidebar is hidden */
+#communityModal.events-active .modal-header .back-btn,
+#communityModal.clubs-active .modal-header .back-btn {
+    display: flex;
+}
+
+.community-main .modal-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(var(--button-bg-rgb), 0.08);
+    border: none;
+    color: var(--text);
+    font-size: 1.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.community-main .modal-close:hover {
+    background: rgba(var(--button-bg-rgb), 0.15);
+    color: var(--button-bg);
+    transform: rotate(90deg);
+}
+
+/* ========================================
+   8. SECTION HEADER (SEARCH BOX & TITLE)
+   ======================================== */
+
+.section-header {
+    padding: 1.5rem 2rem;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.section-header .search-box {
+    position: relative;
+    max-width: 500px;
+    flex: 1;
+}
+
+.section-header .search-input {
+    width: 100%;
+    padding: 0.875rem 1rem 0.875rem 3rem;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--background);
+    color: var(--text);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.section-header .search-input:focus {
+    outline: none;
+    border-color: var(--button-bg);
+    box-shadow: 0 0 0 3px rgba(var(--button-bg-rgb), 0.1);
+}
+
+.section-header .search-input::placeholder {
+    color: var(--text-muted);
+}
+
+.section-header .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.1rem;
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* ========================================
+   9. SECTION FILTERS
+   ======================================== */
+
+.section-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+    flex-shrink: 0;
+}
+
+.section-filters::-webkit-scrollbar {
+    height: 6px;
+}
+
+.section-filters::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.section-filters::-webkit-scrollbar-thumb {
+    background: rgba(var(--button-bg-rgb), 0.2);
+    border-radius: 3px;
+}
+
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--background);
+    color: var(--text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.filter-btn:hover {
+    border-color: var(--button-bg);
+    background: rgba(var(--button-bg-rgb), 0.05);
+    color: var(--heading);
+}
+
+.filter-btn.active {
+    background: var(--button-bg);
+    border-color: var(--button-bg);
+    color: white;
+}
+
+.filter-btn .filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 20px;
+    padding: 0 0.375rem;
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.filter-btn.active .filter-count {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.filter-btn:not(.active) .filter-count {
+    background: rgba(var(--button-bg-rgb), 0.15);
+    color: var(--button-bg);
+}
+
+.add-filter-btn {
+    border-style: dashed;
+    border-width: 2px;
+    color: var(--button-bg);
+}
+
+.add-filter-btn:hover {
+    background: rgba(var(--button-bg-rgb), 0.08);
+    border-style: solid;
+}
+
+/* ========================================
+   10. COMMUNITY SECTIONS
+   ======================================== */
+
+.community-section {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.community-section.hidden {
+    display: none !important;
+}
+
+.community-section.active {
+    display: flex !important;
+}
+
+/* Add padding only to grids, not section headers */
+.connections-grid,
+.events-grid,
+.clubs-grid {
+    padding: 2rem;
+}
+
+/* Custom scrollbar for sections */
+.community-section::-webkit-scrollbar {
+    width: 10px;
+}
+
+.community-section::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.community-section::-webkit-scrollbar-thumb {
+    background: rgba(var(--button-bg-rgb), 0.2);
+    border-radius: 5px;
+}
+
+.community-section::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--button-bg-rgb), 0.35);
+}
+
+/* ========================================
+   11. CONNECTIONS GRID
+   ======================================== */
+
+.connections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    padding: 0;
+}
+
+/* ========================================
+   12. CONNECTION CARD
+   ======================================== */
+
+.connection-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.connection-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--button-bg), rgba(var(--button-bg-rgb), 0.5));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.connection-card:hover {
+    border-color: var(--button-bg);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 0 0 1px var(--button-bg);
+    transform: translateY(-4px);
+}
+
+.connection-card:hover::before {
+    transform: scaleX(1);
+}
+
+.connection-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.connection-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid var(--border-color);
+    transition: border-color 0.3s ease;
+}
+
+.connection-card:hover .connection-avatar {
+    border-color: var(--button-bg);
+}
+
+.connection-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.connection-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.connection-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--heading);
+    margin: 0 0 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.connection-role {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.connection-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: var(--background);
+    border-radius: 10px;
+    font-size: 0.813rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    color: var(--text-muted);
+}
+
+.meta-item strong {
+    color: var(--heading);
+    font-weight: 600;
+}
+
+.connection-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.action-btn {
+    flex: 1;
+    padding: 0.625rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--background);
+    color: var(--text);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.action-btn:hover {
+    background: rgba(var(--button-bg-rgb), 0.08);
+    border-color: var(--button-bg);
+    color: var(--button-bg);
+}
+
+.action-btn.primary {
+    background: var(--button-bg);
+    border-color: var(--button-bg);
+    color: white;
+}
+
+.action-btn.primary:hover {
+    background: var(--button-bg-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--button-bg-rgb), 0.3);
+}
+
+.action-btn.danger {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.action-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #dc2626;
+    color: #dc2626;
+}
+
+/* ========================================
+   13. COMING SOON SECTION
+   ======================================== */
+
+.coming-soon-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.coming-soon-icon {
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.coming-soon-container h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--heading);
+    margin: 0 0 0.75rem;
+}
+
+.coming-soon-container p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 400px;
+    margin: 0;
+}
+
+/* Events and Clubs Grid Layouts (Full Width) */
+.events-grid,
+.clubs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    padding: 0;
+}
+
+.event-card,
+.club-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.event-card::before,
+.club-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--button-bg), rgba(var(--button-bg-rgb), 0.5));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+}
+
+.event-card:hover,
+.club-card:hover {
+    border-color: var(--button-bg);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 0 0 1px var(--button-bg);
+    transform: translateY(-4px);
+}
+
+.event-card:hover::before,
+.club-card:hover::before {
+    transform: scaleX(1);
+}
+
+/* Event and Club Images */
+.event-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+    margin-bottom: 0.5rem;
+}
+
+.event-header,
+.club-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.event-header h3,
+.club-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--heading);
+    margin: 0;
+    flex: 1;
+}
+
+.event-badge,
+.club-badge,
+.club-category {
+    padding: 0.375rem 0.75rem;
+    background: var(--button-bg);
+    color: white;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Event/Club Badges Container */
+.event-badges {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Creative Badges */
+.creative-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+/* Your Event Badge */
+.creative-badge.your-event,
+.creative-badge.your-club {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* System Event/Club Badge */
+.creative-badge.system-event,
+.creative-badge.system-club {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(245, 87, 108, 0.3);
+}
+
+/* Participating Badge (for events) */
+.creative-badge.participating {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(79, 172, 254, 0.3);
+}
+
+/* Member Badge (for clubs) */
+.creative-badge.member {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(67, 233, 123, 0.3);
+}
+
+.event-details,
+.club-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.event-detail-item,
+.club-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+.event-detail-item span:first-child,
+.club-detail-item span:first-child {
+    font-size: 1rem;
+}
+
+.event-description,
+.club-description {
+    color: var(--text);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.event-actions,
+.club-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+}
+
+.event-actions .action-btn,
+.club-actions .action-btn {
+    flex: 1;
+}
+
+/* Section header for Events/Clubs */
+.events-section-header,
+.clubs-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.events-section-header h2,
+.clubs-section-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--heading);
+    margin: 0;
+    flex: 1;
+}
+
+.create-event-btn,
+.create-club-btn {
+    padding: 0.75rem 1.5rem;
+    background: var(--button-bg);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.create-event-btn:hover,
+.create-club-btn:hover {
+    background: var(--button-bg-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(var(--button-bg-rgb), 0.3);
+}
+
+/* ========================================
+   14. EMPTY STATE
+   ======================================== */
+
+.empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--heading);
+    margin: 0 0 0.5rem;
+}
+
+.empty-state p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    max-width: 350px;
+    margin: 0;
+}
+
+/* ========================================
+   15. RESPONSIVE DESIGN
+   ======================================== */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+    .community-sidebar {
+        width: 240px;
+        min-width: 240px;
+    }
+
+    .connections-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1.25rem;
+    }
+}
+
+/* Mobile (< 768px) */
+@media (max-width: 768px) {
+    #communityModal .modal-content.community-modal-content {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    #communityModal .modal-wrapper {
+        flex-direction: column;
+    }
+
+    .community-sidebar {
+        width: 100%;
+        min-width: unset;
+        max-height: 200px;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding: 1rem 0;
+    }
+
+    .community-sidebar h3 {
+        margin: 0 1rem 1rem;
+        font-size: 1.25rem;
+    }
+
+    .community-menu {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0 1rem;
+    }
+
+    .community-menu .menu-item {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .community-main .modal-header {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .community-main .modal-header h2 {
+        font-size: 1.5rem;
+    }
+
+    .section-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .section-filters {
+        padding: 0.75rem 1.5rem;
+    }
+
+    .community-section {
+        padding: 0;
+    }
+
+    .community-section .connections-grid,
+    .community-section .events-grid,
+    .community-section .clubs-grid {
+        padding: 1.5rem;
+    }
+
+    .connections-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Small mobile (< 480px) */
+@media (max-width: 480px) {
+    .community-main .modal-header {
+        padding: 1rem;
+    }
+
+    .section-header {
+        padding: 1rem;
+    }
+
+    .section-filters {
+        padding: 0.75rem 1rem;
+    }
+
+    .community-section {
+        padding: 0;
+    }
+
+    .community-section .connections-grid,
+    .community-section .events-grid,
+    .community-section .clubs-grid {
+        padding: 1rem;
+    }
+
+    .connection-card {
+        padding: 1rem;
+    }
+
+    .connection-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .connection-avatar {
+        width: 64px;
+        height: 64px;
+    }
+}
+
+/* ========================================
+   16. DARK MODE OPTIMIZATIONS
+   ======================================== */
+
+[data-theme="dark"] #communityModal .modal-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+[data-theme="dark"] .community-sidebar {
+    background: rgba(var(--card-bg-rgb, 30, 30, 30), 1);
+}
+
+[data-theme="dark"] .connection-card {
+    background: rgba(var(--card-bg-rgb, 30, 30, 30), 1);
+}
+
+[data-theme="dark"] .connection-card:hover {
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.4),
+        0 0 0 1px var(--button-bg);
+}
+
+/* ========================================
+   17. LOADING STATE
+   ======================================== */
+
+.loading-spinner {
+    display: inline-block;
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(var(--button-bg-rgb), 0.2);
+    border-top-color: var(--button-bg);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1rem;
+}
+
+.loading-text {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* ========================================
+   ENHANCED FEATURES - CONNECTION STATS
+   ======================================== */
+
+.connection-stats {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0.4rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.stat-item i {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+.stat-separator {
+    opacity: 0.5;
+    margin: 0 0.25rem;
+}
+
+.activity-status {
+    font-size: 0.85rem;
+}
+
+.activity-status.online {
+    color: var(--success-color, #10b981);
+    font-weight: 500;
+}
+
+.activity-status.offline {
+    color: var(--text-muted);
+}
+
+/* ========================================
+   PROFILE PREVIEW CARD (HOVER)
+   ======================================== */
+
+.profile-preview-card {
+    position: fixed;
+    width: 300px;
+    background: var(--card-bg, #fff);
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.profile-preview-card.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.preview-header {
+    position: relative;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--primary-color, #f59e0b) 0%, var(--primary-dark, #d97706) 100%);
+    display: flex;
+    justify-content: center;
+}
+
+.preview-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    object-fit: cover;
+}
+
+.preview-online-badge {
+    position: absolute;
+    top: 1.5rem;
+    right: calc(50% - 30px);
+    width: 16px;
+    height: 16px;
+    background: var(--success-color, #10b981);
+    border: 3px solid var(--card-bg, #fff);
+    border-radius: 50%;
+}
+
+.preview-body {
+    padding: 1rem 1.5rem;
+}
+
+.preview-body h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.preview-role {
+    text-align: center;
+    color: var(--primary-color, #f59e0b);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin: 0 0 1rem 0;
+}
+
+.preview-location,
+.preview-bio,
+.preview-mutual,
+.preview-connected {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.preview-location i,
+.preview-mutual i,
+.preview-connected i {
+    color: var(--primary-color, #f59e0b);
+    opacity: 0.7;
+}
+
+.preview-bio {
+    font-style: italic;
+    line-height: 1.4;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+.preview-footer {
+    padding: 1rem 1.5rem;
+    background: var(--bg-secondary, #f9fafb);
+}
+
+.btn-preview {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--primary-color, #f59e0b);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-preview:hover {
+    background: var(--primary-dark, #d97706);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+/* ========================================
+   NO RESULTS STATE
+   ======================================== */
+
+.no-results {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 2rem;
+    color: var(--text-muted);
+}
+
+.no-results p {
+    margin: 0.5rem 0;
+}
+
+.no-results p:first-of-type {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* ========================================
+   RESPONSIVE ENHANCEMENTS
+   ======================================== */
+
+@media (max-width: 768px) {
+    .profile-preview-card {
+        display: none !important; /* Hide preview on mobile */
+    }
+
+    .connection-stats {
+        font-size: 0.8rem;
+    }
+
+    .stat-item {
+        flex-basis: 100%;
+    }
+}

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Authentication Checker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-6">Admin Authentication Status</h1>
+
+        <div id="auth-status" class="space-y-4">
+            <div class="p-4 bg-gray-50 rounded">
+                <h2 class="font-semibold mb-2">Checking authentication...</h2>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <button onclick="testEndpoint()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Test Admin Endpoint
+            </button>
+            <button onclick="clearAuth()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2">
+                Clear Auth & Reload
+            </button>
+            <a href="test-admin-login.html" class="inline-block bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-2">
+                Go to Admin Login
+            </a>
+        </div>
+
+        <div id="test-result" class="mt-6"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        function displayAuthStatus() {
+            const token = localStorage.getItem('token');
+            const adminAuth = localStorage.getItem('adminAuth');
+            const adminUser = localStorage.getItem('adminUser');
+            const currentUser = localStorage.getItem('currentUser');
+
+            let html = '';
+
+            // Token status
+            if (token) {
+                html += `
+                    <div class="p-4 bg-green-50 rounded border border-green-200">
+                        <h2 class="font-semibold text-green-800 mb-2">✓ Token Found</h2>
+                        <p class="text-sm font-mono text-gray-700 break-all">${token.substring(0, 50)}...</p>
+                        <button onclick="decodeToken()" class="mt-2 text-sm bg-green-600 text-white px-3 py-1 rounded">
+                            Decode Token
+                        </button>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="p-4 bg-red-50 rounded border border-red-200">
+                        <h2 class="font-semibold text-red-800">✗ No Token Found</h2>
+                        <p class="text-sm text-gray-700">You need to log in first</p>
+                    </div>
+                `;
+            }
+
+            // Admin auth status
+            html += `
+                <div class="p-4 ${adminAuth === 'true' ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'} rounded border">
+                    <h2 class="font-semibold ${adminAuth === 'true' ? 'text-green-800' : 'text-yellow-800'}">
+                        ${adminAuth === 'true' ? '✓' : '⚠'} Admin Auth Status: ${adminAuth || 'Not Set'}
+                    </h2>
+                </div>
+            `;
+
+            // Admin user data
+            if (adminUser) {
+                try {
+                    const user = JSON.parse(adminUser);
+                    html += `
+                        <div class="p-4 bg-blue-50 rounded border border-blue-200">
+                            <h2 class="font-semibold text-blue-800 mb-2">Admin User Data</h2>
+                            <pre class="text-sm bg-white p-2 rounded overflow-auto">${JSON.stringify(user, null, 2)}</pre>
+                        </div>
+                    `;
+                } catch (e) {
+                    html += `
+                        <div class="p-4 bg-red-50 rounded border border-red-200">
+                            <h2 class="font-semibold text-red-800">Invalid Admin User Data</h2>
+                        </div>
+                    `;
+                }
+            }
+
+            // Current user data
+            if (currentUser) {
+                try {
+                    const user = JSON.parse(currentUser);
+                    html += `
+                        <div class="p-4 bg-purple-50 rounded border border-purple-200">
+                            <h2 class="font-semibold text-purple-800 mb-2">Current User Data</h2>
+                            <pre class="text-sm bg-white p-2 rounded overflow-auto">${JSON.stringify(user, null, 2)}</pre>
+                        </div>
+                    `;
+                } catch (e) {
+                    html += `
+                        <div class="p-4 bg-red-50 rounded border border-red-200">
+                            <h2 class="font-semibold text-red-800">Invalid Current User Data</h2>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('auth-status').innerHTML = html;
+        }
+
+        function decodeToken() {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            try {
+                // Decode JWT (simple base64 decode of payload)
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    alert('Invalid JWT format');
+                    return;
+                }
+
+                const payload = JSON.parse(atob(parts[1]));
+
+                const result = document.getElementById('test-result');
+                result.innerHTML = `
+                    <div class="p-4 bg-indigo-50 rounded border border-indigo-200">
+                        <h2 class="font-semibold text-indigo-800 mb-2">Decoded Token Payload</h2>
+                        <pre class="text-sm bg-white p-2 rounded overflow-auto">${JSON.stringify(payload, null, 2)}</pre>
+                        ${payload.roles ? `
+                            <div class="mt-2 p-2 ${payload.roles.includes('admin') ? 'bg-green-100' : 'bg-red-100'} rounded">
+                                <strong>Roles:</strong> ${JSON.stringify(payload.roles)}
+                                ${payload.roles.includes('admin') ? '✓ Has admin role' : '✗ Missing admin role'}
+                            </div>
+                        ` : '<div class="mt-2 p-2 bg-red-100 rounded">✗ No roles found in token</div>'}
+                        ${payload.exp ? `
+                            <div class="mt-2 p-2 bg-blue-100 rounded">
+                                <strong>Expires:</strong> ${new Date(payload.exp * 1000).toLocaleString()}
+                                ${Date.now() > payload.exp * 1000 ? '⚠ Token has expired!' : '✓ Token is valid'}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } catch (e) {
+                alert('Error decoding token: ' + e.message);
+            }
+        }
+
+        async function testEndpoint() {
+            const token = localStorage.getItem('token');
+            const resultDiv = document.getElementById('test-result');
+
+            if (!token) {
+                resultDiv.innerHTML = `
+                    <div class="p-4 bg-red-50 rounded border border-red-200">
+                        <h2 class="font-semibold text-red-800">No token available to test</h2>
+                    </div>
+                `;
+                return;
+            }
+
+            resultDiv.innerHTML = `
+                <div class="p-4 bg-gray-50 rounded">
+                    <h2 class="font-semibold">Testing endpoint...</h2>
+                </div>
+            `;
+
+            try {
+                // Test with a simple admin endpoint
+                const response = await fetch(`${API_BASE_URL}/api/admin/tutors/pending?page=1&limit=1`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json().catch(() => null);
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="p-4 bg-green-50 rounded border border-green-200">
+                            <h2 class="font-semibold text-green-800 mb-2">✓ Authentication Successful!</h2>
+                            <p class="text-sm">Status: ${response.status}</p>
+                            <pre class="text-sm bg-white p-2 rounded overflow-auto mt-2">${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="p-4 bg-red-50 rounded border border-red-200">
+                            <h2 class="font-semibold text-red-800 mb-2">✗ Authentication Failed</h2>
+                            <p class="text-sm"><strong>Status:</strong> ${response.status}</p>
+                            <p class="text-sm"><strong>Message:</strong> ${data?.detail || 'Unknown error'}</p>
+                            ${response.status === 401 ? '<p class="mt-2 font-semibold">Your token is invalid or expired. Please log in again.</p>' : ''}
+                            ${response.status === 403 ? '<p class="mt-2 font-semibold">You do not have admin permissions.</p>' : ''}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="p-4 bg-red-50 rounded border border-red-200">
+                        <h2 class="font-semibold text-red-800 mb-2">Error Testing Endpoint</h2>
+                        <p class="text-sm">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function clearAuth() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('adminAuth');
+            localStorage.removeItem('adminUser');
+            localStorage.removeItem('currentUser');
+            location.reload();
+        }
+
+        // Initialize on load
+        displayAuthStatus();
+    </script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+/* ============================================
+   REELS GRID - REFINED
+   ============================================ */
+#reels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+    padding: 0;
+    margin-top: 2rem;
+}
+
+.reel-card {
+    background: var(--reel-card-bg);
+    border-radius: var(--reel-card-radius);
+    overflow: hidden;
+    box-shadow: var(--reel-card-shadow);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    animation: fadeInUp 0.5s ease-out;
+    animation-fill-mode: both;
+    display: flex;
+    flex-direction: column;
+}
+
+.reel-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--reel-card-hover-shadow);
+}
+
+.reel-card-video {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    display: block;
+}
+
+.reel-card:hover .reel-card-video {
+    transform: scale(1.02);
+    transition: transform 0.3s ease;
+}
+
+.reel-card > div {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.reel-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--heading);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.reel-card p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.reel-card p.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Reel Actions Bar */
+.reel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(var(--border-rgb), 0.1);
+    margin-top: auto;
+}
+
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgba(var(--button-bg-rgb), 0.08);
+    border: 1px solid transparent;
+    color: var(--text);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: var(--button-bg);
+    color: white;
+    transform: scale(1.05);
+}
+
+.action-btn.active {
+    background: var(--button-bg);
+    color: white;
+    border-color: var(--button-bg);
+}
+
+.action-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.action-btn.favorite-btn.active {
+    background: #ff4757;
+    border-color: #ff4757;
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.action-btn:disabled:hover {
+    transform: none;
+    background: rgba(var(--button-bg-rgb), 0.08);
+    color: var(--text);
+}

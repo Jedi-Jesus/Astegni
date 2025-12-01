@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug: Rejected Course Button Issue</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { padding: 20px; background: #f3f4f6; }
+        .debug-box {
+            background: white;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .success { border-color: #10b981; background: #f0fdf4; }
+        .error { border-color: #ef4444; background: #fef2f2; }
+        pre { background: #1f2937; color: #f9fafb; padding: 12px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1 class="text-3xl font-bold mb-6">Debug: Rejected Course Reconsider Button</h1>
+
+    <div class="debug-box">
+        <h2 class="text-xl font-bold mb-3">🔍 Test Scenario</h2>
+        <p class="mb-3">This page simulates exactly what happens when viewing a rejected course from manage-courses.html</p>
+
+        <h3 class="font-bold mb-2">Two test cases:</h3>
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="testWithoutStatus()"
+                class="px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                <i class="fas fa-bug"></i> Test WITHOUT status field<br>
+                <span class="text-xs">(Simulates backend bug)</span>
+            </button>
+
+            <button onclick="testWithStatus()"
+                class="px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                <i class="fas fa-check"></i> Test WITH status field<br>
+                <span class="text-xs">(Expected behavior)</span>
+            </button>
+        </div>
+    </div>
+
+    <div id="debug-output" class="debug-box hidden">
+        <h2 class="text-xl font-bold mb-3">📊 Debug Output</h2>
+        <div id="debug-content"></div>
+    </div>
+
+    <div id="result-box" class="debug-box hidden">
+        <h2 class="text-xl font-bold mb-3">✅ Result</h2>
+        <div id="result-content"></div>
+    </div>
+
+    <!-- Modal (simplified version) -->
+    <div id="view-course-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="bg-white p-6 rounded-lg w-full max-w-3xl">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-2xl font-bold" id="view-course-title">Course Title</h3>
+                    <p class="text-gray-500 text-sm" id="view-course-id">ID: REJ-001</p>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-600 mb-1">Status</label>
+                <p id="view-course-status">N/A</p>
+            </div>
+
+            <div id="view-course-reason-section" class="mb-6">
+                <label class="block text-sm font-semibold text-gray-600 mb-2">Rejection Reason</label>
+                <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                    <p class="text-red-700" id="view-course-reason">Quality issues</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t pt-4">
+                <button onclick="closeModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Close</button>
+                <div id="view-course-actions">
+                    <!-- Actions populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        // Simulate backend response WITHOUT status field (the bug)
+        function testWithoutStatus() {
+            showDebug('Testing WITHOUT status field (simulates backend bug)');
+
+            const requestId = 'REJ-12345';
+            const endpoint = '/api/course-management/rejected';
+
+            // Simulate backend response - NO STATUS FIELD
+            const course = {
+                rejected_id: 'REJ-12345',
+                title: 'Advanced Mathematics',
+                category: 'Mathematics',
+                level: 'Grade 11-12',
+                requested_by: 'Dr. Alemayehu',
+                description: 'Test course',
+                rejection_reason: 'Does not meet quality standards'
+                // ❌ NO status field from backend
+            };
+
+            logDebug('Backend Response (courses array):', course);
+            logDebug('Course status before fix:', course.status);
+
+            // APPLY THE FIX: Infer status from endpoint
+            if (course && !course.status) {
+                if (endpoint.includes('/rejected')) {
+                    course.status = 'rejected';
+                    logDebug('✅ FIX APPLIED: Set status to "rejected" based on endpoint', course.status);
+                }
+            }
+
+            logDebug('Course status after fix:', course.status);
+
+            // Now test the button logic
+            viewCourseRequest(requestId, course);
+        }
+
+        // Simulate backend response WITH status field (ideal case)
+        function testWithStatus() {
+            showDebug('Testing WITH status field (expected behavior)');
+
+            const requestId = 'REJ-12345';
+
+            // Simulate backend response - HAS STATUS FIELD
+            const course = {
+                rejected_id: 'REJ-12345',
+                title: 'Advanced Mathematics',
+                category: 'Mathematics',
+                level: 'Grade 11-12',
+                requested_by: 'Dr. Alemayehu',
+                description: 'Test course',
+                rejection_reason: 'Does not meet quality standards',
+                status: 'rejected' // ✅ Status field included
+            };
+
+            logDebug('Backend Response (courses array):', course);
+            logDebug('Course status:', course.status);
+
+            // Now test the button logic
+            viewCourseRequest(requestId, course);
+        }
+
+        // Simulate the viewCourseRequest function
+        function viewCourseRequest(requestId, course) {
+            // Populate modal
+            document.getElementById('view-course-title').textContent = course.title;
+            document.getElementById('view-course-id').textContent = `ID: ${course.rejected_id}`;
+            document.getElementById('view-course-reason').textContent = course.rejection_reason;
+
+            // Status badge
+            const statusElement = document.getElementById('view-course-status');
+            let statusBadge = '';
+            switch(course.status) {
+                case 'rejected':
+                    statusBadge = '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">Rejected</span>';
+                    break;
+                default:
+                    statusBadge = '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">Unknown</span>';
+            }
+            statusElement.innerHTML = statusBadge;
+
+            // ACTION BUTTONS LOGIC
+            const actionsContainer = document.getElementById('view-course-actions');
+
+            logDebug('===== Button Decision Logic =====');
+            logDebug('course.status:', course.status);
+            logDebug('Check: course.status === "rejected":', course.status === 'rejected');
+
+            if (course.status === 'rejected') {
+                actionsContainer.innerHTML = `
+                    <button onclick="alert('Reconsider clicked!')"
+                        class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                        <i class="fas fa-redo"></i> Reconsider
+                    </button>
+                    <button onclick="alert('View Full Details clicked!')"
+                        class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        <i class="fas fa-info-circle"></i> View Full Details
+                    </button>
+                `;
+                logDebug('✅ RESULT: Reconsider button ADDED');
+                showResult('success', '✅ SUCCESS: Reconsider button is present!', actionsContainer.innerHTML);
+            } else {
+                actionsContainer.innerHTML = '';
+                logDebug('❌ RESULT: NO buttons added (status not recognized)');
+                showResult('error', '❌ FAILED: Reconsider button NOT added', 'Status was: ' + course.status);
+            }
+
+            // Open modal
+            document.getElementById('view-course-modal').classList.remove('hidden');
+            document.getElementById('view-course-modal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('view-course-modal').classList.add('hidden');
+            document.getElementById('view-course-modal').classList.remove('flex');
+        }
+
+        // Debug helpers
+        let debugLogs = [];
+
+        function showDebug(title) {
+            debugLogs = [];
+            debugLogs.push(`<h3 class="font-bold text-lg mb-2">${title}</h3>`);
+            updateDebugOutput();
+        }
+
+        function logDebug(label, value) {
+            const valueStr = value !== undefined ? JSON.stringify(value, null, 2) : '';
+            debugLogs.push(`<p class="mb-1"><strong>${label}</strong></p>`);
+            if (valueStr) {
+                debugLogs.push(`<pre class="mb-3">${valueStr}</pre>`);
+            }
+            updateDebugOutput();
+        }
+
+        function updateDebugOutput() {
+            const debugBox = document.getElementById('debug-output');
+            const debugContent = document.getElementById('debug-content');
+            debugBox.classList.remove('hidden');
+            debugContent.innerHTML = debugLogs.join('');
+        }
+
+        function showResult(type, title, details) {
+            const resultBox = document.getElementById('result-box');
+            const resultContent = document.getElementById('result-content');
+
+            resultBox.classList.remove('hidden', 'success', 'error');
+            resultBox.classList.add(type);
+
+            resultContent.innerHTML = `
+                <div class="flex items-start gap-3 mb-3">
+                    <div class="text-3xl">${type === 'success' ? '✅' : '❌'}</div>
+                    <div>
+                        <p class="font-bold text-lg">${title}</p>
+                    </div>
+                </div>
+                <div class="bg-gray-100 p-3 rounded">
+                    <p class="text-sm font-mono">${details}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+MODAL EXTRACTION SUMMARY
+============================================================
+
+Total modals found: 44
+Successfully extracted: 44
+Failed to extract: 0
+
+EXTRACTED MODALS:
+------------------------------------------------------------
+communityModal                           → community-modal.html
+customFilterModal                        → custom-filter-modal.html
+verify-personal-info-modal               → verify-personal-info-modal.html
+payment-method-modal                     → payment-method-modal.html
+subscription-modal                       → subscription-modal.html
+plan-details-modal                       → plan-details-modal.html
+switchSubscriptionModal                  → switch-subscription-modal.html
+unsubscribePasswordModal                 → unsubscribe-password-modal.html
+unsubscribeFinalModal                    → unsubscribe-final-modal.html
+leave-astegni-modal                      → leave-astegni-modal.html
+deleteVerifyModal                        → delete-verify-modal.html
+deleteSubscriptionCheckModal             → delete-subscription-check-modal.html
+deletePasswordModal                      → delete-password-modal.html
+deleteFinalModal                         → delete-final-modal.html
+edit-profile-modal                       → edit-profile-modal.html
+otp-confirmation-modal                   → otp-confirmation-modal.html
+otp-verification-modal                   → otp-verification-modal.html
+scheduleModal                            → schedule-modal.html
+viewScheduleModal                        → view-schedule-modal.html
+viewRequestModal                         → view-request-modal.html
+coming-soon-modal                        → coming-soon-modal.html
+create-event-modal                       → create-event-modal.html
+create-club-modal                        → create-club-modal.html
+uploadDocumentModal                      → upload-document-modal.html
+certificationModal                       → certification-modal.html
+achievementModal                         → achievement-modal.html
+experienceModal                          → experience-modal.html
+verificationFeeModal                     → verification-fee-modal.html
+verificationModal                        → verification-modal.html
+viewAchievementModal                     → view-achievement-modal.html
+viewCertificationModal                   → view-certification-modal.html
+viewExperienceModal                      → view-experience-modal.html
+adAnalyticsModal                         → ad-analytics-modal.html
+coverUploadModal                         → cover-upload-modal.html
+profileUploadModal                       → profile-upload-modal.html
+storyUploadModal                         → story-upload-modal.html
+quizMainModal                            → quiz-main-modal.html
+quizGiveModal                            → quiz-give-modal.html
+quizMyQuizzesModal                       → quiz-my-quizzes-modal.html
+quizViewAnswersModal                     → quiz-view-answers-modal.html
+quizViewDetailsModal                     → quiz-view-details-modal.html
+studentDetailsModal                      → student-details-modal.html
+package-management-modal                 → package-management-modal.html
+storyViewerModal                         → story-viewer-modal.html

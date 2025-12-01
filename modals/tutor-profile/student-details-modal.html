@@ -1,0 +1,1224 @@
+<!--
+  Modal: studentDetailsModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div class="student-details-modal" id="studentDetailsModal" style="display: none;">
+        <div class="modal-wrapper">
+            <!-- Sidebar -->
+            <div class="modal-sidebar" id="studentModalSidebar">
+                <div class="sidebar-menu-item sidebar-toggle-item" onclick="toggleStudentModalSidebar()">
+                    <span class="menu-item-icon">☰</span>
+                    <span class="menu-item-text">Student Menu</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('packages')">
+                    <span class="menu-item-icon">📦</span>
+                    <span class="menu-item-text">Packages</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('schedule-sessions')">
+                    <span class="menu-item-icon">🗓️</span>
+                    <span class="menu-item-text">Schedule & Sessions</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('learning-resources')">
+                    <span class="menu-item-icon">📚</span>
+                    <span class="menu-item-text">Learning Resources</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('digital-whiteboard')">
+                    <span class="menu-item-icon">🎨</span>
+                    <span class="menu-item-text">Digital Whiteboard</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('attendance')">
+                    <span class="menu-item-icon">📅</span>
+                    <span class="menu-item-text">Attendance</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('assignments')">
+                    <span class="menu-item-icon">📝</span>
+                    <span class="menu-item-text">Assignments</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('quiz-tests')">
+                    <span class="menu-item-icon">📝</span>
+                    <span class="menu-item-text">Quiz & Tests</span>
+                </div>
+                <div class="sidebar-menu-item active" onclick="switchSection('progress-analytics')">
+                    <span class="menu-item-icon">📊</span>
+                    <span class="menu-item-text">Progress & Analytics</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('parent')">
+                    <span class="menu-item-icon">👨‍👩‍👧</span>
+                    <span class="menu-item-text">Parent Information</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('tuition-payments')">
+                    <span class="menu-item-icon">💰</span>
+                    <span class="menu-item-text">Tuition & Payments</span>
+                </div>
+                <div class="sidebar-menu-item" onclick="switchSection('rating-and-review')">
+                    <span class="menu-item-icon">⭐</span>
+                    <span class="menu-item-text">Reviews & Ratings</span>
+                </div>
+            </div>
+
+            <!-- Main Content Area (Scrollable) -->
+            <div class="modal-main-content">
+                <!-- Fixed Header -->
+                <div class="modal-header">
+                    <div>
+                        <h2 id="studentName">Abebe Kebede</h2>
+                        <p>Grade 12 • Science Stream</p>
+                    </div>
+                    <button class="modal-close" onclick="closeStudentDetailsModal()">✕</button>
+                </div>
+
+                <!-- Scrollable Sections Container -->
+                <div class="sections-container">
+                    <!-- Progress & Analytics Section (Merged) -->
+                <div class="content-section active" id="progress-analytics">
+                    <h3>Progress & Analytics</h3>
+
+                    <!-- Quick Stats -->
+                    <div class="quick-stats-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                        <div class="stat-card" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color);" id="stat-overall-progress">0%</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Overall Progress</div>
+                        </div>
+                        <div class="stat-card" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #10B981;" id="stat-attendance">0%</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Attendance Rate</div>
+                        </div>
+                        <div class="stat-card" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #F59E0B;" id="stat-improvement">0%</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Improvement</div>
+                        </div>
+                        <div class="stat-card" style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--text-primary);" id="stat-grade">N/A</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Average Grade</div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Charts -->
+                    <div class="analytics-dashboard">
+                        <div class="chart-container" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <h4>Performance Trend</h4>
+                            <canvas id="performanceTrendChart"></canvas>
+                        </div>
+                        <div class="chart-container" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px;">
+                            <h4>Subject Comparison</h4>
+                            <canvas id="subjectComparisonChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Recent Achievements -->
+                    <div class="detailed-progress" style="margin-top: 2rem;">
+                        <h4>Recent Achievements</h4>
+                        <ul id="achievements-list">
+                            <li><i class="fas fa-spinner fa-spin"></i> Loading achievements...</li>
+                        </ul>
+                    </div>
+
+                    <!-- Report Actions -->
+                    <div class="report-actions" style="margin-top: 2rem; display: flex; gap: 0.5rem;">
+                        <button class="btn-primary" onclick="generateReport()">
+                            <i class="fas fa-file-pdf"></i> Generate Full Report
+                        </button>
+                        <button class="btn-secondary" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export Data
+                        </button>
+                        <button class="btn-secondary" onclick="shareWithParent()">
+                            <i class="fas fa-share"></i> Share with Parent
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Packages Section (NEW) -->
+                <div class="content-section" id="packages">
+                    <h3>Student Packages</h3>
+                    <div id="student-packages-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                        <!-- Will be loaded dynamically -->
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                            <p>Loading packages...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attendance Section -->
+                <div class="content-section" id="attendance">
+                    <h3>Attendance Record</h3>
+
+                    <!-- Attendance Stats (like progress stats) -->
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: var(--primary-color);">24</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Total Sessions</div>
+                        </div>
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #10B981;">22</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Present</div>
+                        </div>
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #EF4444;">1</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Absent</div>
+                        </div>
+                        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #F59E0B;">1</div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Late</div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Session Attendance (only session dates) -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h4 style="margin: 0;">Session Attendance</h4>
+                        <select id="attendance-month-selector" onchange="changeAttendanceMonth(this.value)" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.2); background: var(--card-bg); color: var(--text); font-weight: 600; cursor: pointer;">
+                            <option value="2025-01">January 2025</option>
+                            <option value="2025-02">February 2025</option>
+                            <option value="2025-03">March 2025</option>
+                            <option value="2025-04">April 2025</option>
+                            <option value="2025-05" selected>May 2025</option>
+                            <option value="2025-06">June 2025</option>
+                            <option value="2025-07">July 2025</option>
+                            <option value="2025-08">August 2025</option>
+                            <option value="2025-09">September 2025</option>
+                            <option value="2025-10">October 2025</option>
+                            <option value="2025-11">November 2025</option>
+                            <option value="2025-12">December 2025</option>
+                        </select>
+                    </div>
+                    <div id="attendance-sessions-container" style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.75rem;">
+                            <!-- Present Sessions -->
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 1</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 2</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 4</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 5</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 8</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <!-- Late Session -->
+                            <div style="background: #F59E0B; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 9</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Late ⏰</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 11</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 12</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 15</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <!-- Absent Session -->
+                            <div style="background: #EF4444; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 16</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Absent ✗</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 18</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 19</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                            <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <div style="font-weight: 600; font-size: 1.125rem;">May 22</div>
+                                <div style="font-size: 0.75rem; opacity: 0.9;">Present ✓</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignments Section -->
+                <div class="content-section" id="assignments">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h3 style="margin: 0;">Assignments</h3>
+                            <p style="color: var(--text-secondary); margin-top: 0.25rem;">Track student assignments and progress</p>
+                        </div>
+                        <button class="btn-primary" onclick="addNewAssignment()">+ Add Assignment</button>
+                    </div>
+
+                    <!-- Assignment Tabs -->
+                    <div style="margin-bottom: 2rem; border-bottom: 2px solid rgba(var(--border-rgb), 0.1);">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="assignment-tab active" data-filter="all" onclick="filterAssignments('all')" style="padding: 0.75rem 1.5rem; border: none; background: none; font-weight: 600; color: var(--text); cursor: pointer; position: relative; transition: all 0.3s; border-bottom: 3px solid var(--button-bg);">
+                                <i class="fas fa-list"></i> All
+                            </button>
+                            <button class="assignment-tab" data-filter="completed" onclick="filterAssignments('completed')" style="padding: 0.75rem 1.5rem; border: none; background: none; font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative; transition: all 0.3s; border-bottom: 3px solid transparent;">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </button>
+                            <button class="assignment-tab" data-filter="pending" onclick="filterAssignments('pending')" style="padding: 0.75rem 1.5rem; border: none; background: none; font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative; transition: all 0.3s; border-bottom: 3px solid transparent;">
+                                <i class="fas fa-clock"></i> Pending
+                            </button>
+                            <button class="assignment-tab" data-filter="overdue" onclick="filterAssignments('overdue')" style="padding: 0.75rem 1.5rem; border: none; background: none; font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative; transition: all 0.3s; border-bottom: 3px solid transparent;">
+                                <i class="fas fa-exclamation-triangle"></i> Overdue
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Assignments Grid -->
+                    <div id="assignments-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem;">
+                        <!-- Completed Assignment Card -->
+                        <div class="assignment-card card" data-status="completed" style="padding: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <div style="background: #D1FAE5; color: #065F46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                                    Completed
+                                </div>
+                                <div style="font-size: 2rem;">✅</div>
+                            </div>
+                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Calculus Problem Set #5</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                <strong>Due:</strong> May 25, 2025<br>
+                                <strong>Submitted:</strong> May 24, 2025<br>
+                                <strong>Score:</strong> 95/100
+                            </p>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" onclick="viewAssignment(1)">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" onclick="gradeAssignment(1)">
+                                    <i class="fas fa-check"></i> Review
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Pending Assignment Card -->
+                        <div class="assignment-card card" data-status="pending" style="padding: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <div style="background: #FEF3C7; color: #92400E; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                                    Pending
+                                </div>
+                                <div style="font-size: 2rem;">⏳</div>
+                            </div>
+                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Physics Lab Report</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                <strong>Due:</strong> May 28, 2025<br>
+                                <strong>Status:</strong> In Progress<br>
+                                <strong>Time Left:</strong> 3 days
+                            </p>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" onclick="viewAssignment(2)">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn-primary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" onclick="sendReminder(2)">
+                                    <i class="fas fa-bell"></i> Remind
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Overdue Assignment Card -->
+                        <div class="assignment-card card" data-status="overdue" style="padding: 1.5rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                <div style="background: #FEE2E2; color: #991B1B; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                                    Overdue
+                                </div>
+                                <div style="font-size: 2rem;">⚠️</div>
+                            </div>
+                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Geometry Project</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                <strong>Due:</strong> May 20, 2025<br>
+                                <strong>Status:</strong> Not Submitted<br>
+                                <strong>Overdue By:</strong> 2 days
+                            </p>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem;" onclick="viewAssignment(3)">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn-primary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem; background: #EF4444;" onclick="followUp(3)">
+                                    <i class="fas fa-phone"></i> Follow Up
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tuition & Payments Section -->
+                <div class="content-section" id="tuition-payments">
+                    <div style="margin-bottom: 2rem;">
+                        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                            <span style="display: inline-flex; align-items: center; gap: 0.75rem;">
+                                <span>💰</span> Tuition & Payments
+                            </span>
+                        </h2>
+                        <p style="color: var(--text-secondary);">Track student's payment history and manage billing</p>
+                    </div>
+
+                    <!-- Payment Overview Cards -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <!-- Monthly Tuition Card -->
+                        <div style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); border-radius: 16px; padding: 1.5rem; color: white; box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                                <div style="background: rgba(255,255,255,0.2); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                    ✓
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.25rem;">Monthly Tuition</div>
+                                    <div style="font-size: 2rem; font-weight: 700; line-height: 1;">ETB 3,000</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.2);">
+                                <span style="font-size: 0.875rem; opacity: 0.9;">Status: Paid</span>
+                                <div style="background: rgba(255,255,255,0.9); color: #16a34a; font-size: 0.75rem; padding: 4px 12px; border-radius: 12px; font-weight: 600;">Current</div>
+                            </div>
+                        </div>
+
+                        <!-- Outstanding Balance Card -->
+                        <div class="card" style="padding: 1.5rem; border-left: 4px solid #22c55e;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                                <div style="background: rgba(34, 197, 94, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #22c55e;">
+                                    💳
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Outstanding Balance</div>
+                                    <div style="font-size: 2rem; font-weight: 700; line-height: 1; color: var(--heading);">ETB 0</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.1);">
+                                <span style="font-size: 0.875rem; color: var(--text-secondary);">All paid up</span>
+                                <div style="background: #22c55e; color: white; font-size: 0.75rem; padding: 4px 12px; border-radius: 12px; font-weight: 600;">Clear</div>
+                            </div>
+                        </div>
+
+                        <!-- Next Payment Card -->
+                        <div class="card" style="padding: 1.5rem; border-left: 4px solid #3b82f6;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                                <div style="background: rgba(59, 130, 246, 0.1); width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: #3b82f6;">
+                                    📅
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Next Payment Due</div>
+                                    <div style="font-size: 1.25rem; font-weight: 700; line-height: 1; color: var(--heading);">June 1, 2025</div>
+                                </div>
+                            </div>
+                            <button class="btn-secondary" style="width: 100%; justify-content: center; display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem; border-radius: 8px; font-weight: 600;" onclick="sendPaymentReminder()">
+                                <i class="fas fa-paper-plane"></i> Send Reminder
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Payment History -->
+                    <div>
+                        <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--heading);">Payment History</h3>
+
+                        <!-- Styled Table -->
+                        <div style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05); border: 1px solid rgba(var(--border-rgb), 0.1);">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: rgba(var(--button-bg-rgb), 0.05);">
+                                    <tr>
+                                        <th style="padding: 1rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--heading); border-bottom: 2px solid rgba(var(--border-rgb), 0.1);">Date</th>
+                                        <th style="padding: 1rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--heading); border-bottom: 2px solid rgba(var(--border-rgb), 0.1);">Amount</th>
+                                        <th style="padding: 1rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--heading); border-bottom: 2px solid rgba(var(--border-rgb), 0.1);">Method</th>
+                                        <th style="padding: 1rem; text-align: left; font-weight: 600; font-size: 0.875rem; color: var(--heading); border-bottom: 2px solid rgba(var(--border-rgb), 0.1);">Status</th>
+                                        <th style="padding: 1rem; text-align: center; font-weight: 600; font-size: 0.875rem; color: var(--heading); border-bottom: 2px solid rgba(var(--border-rgb), 0.1);">Receipt</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style="border-bottom: 1px solid rgba(var(--border-rgb), 0.1); transition: background 0.2s;" onmouseenter="this.style.background='rgba(var(--button-bg-rgb), 0.03)'" onmouseleave="this.style.background='transparent'">
+                                        <td style="padding: 1rem; color: var(--text);">
+                                            <div style="font-weight: 600;">May 1, 2025</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">2 weeks ago</div>
+                                        </td>
+                                        <td style="padding: 1rem; color: var(--text); font-weight: 600; font-size: 1.125rem;">ETB 3,000</td>
+                                        <td style="padding: 1rem; color: var(--text);">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <span style="font-size: 1.25rem;">🏦</span>
+                                                <span>Bank Transfer</span>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 1rem;">
+                                            <span style="background: #22c55e; color: white; font-size: 0.75rem; padding: 6px 12px; border-radius: 12px; font-weight: 600; display: inline-block;">Paid</span>
+                                        </td>
+                                        <td style="padding: 1rem; text-align: center;">
+                                            <button class="btn-secondary" style="font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="downloadReceipt(1)">
+                                                <i class="fas fa-download"></i> Download
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid rgba(var(--border-rgb), 0.1); transition: background 0.2s;" onmouseenter="this.style.background='rgba(var(--button-bg-rgb), 0.03)'" onmouseleave="this.style.background='transparent'">
+                                        <td style="padding: 1rem; color: var(--text);">
+                                            <div style="font-weight: 600;">April 1, 2025</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">6 weeks ago</div>
+                                        </td>
+                                        <td style="padding: 1rem; color: var(--text); font-weight: 600; font-size: 1.125rem;">ETB 3,000</td>
+                                        <td style="padding: 1rem; color: var(--text);">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <span style="font-size: 1.25rem;">📱</span>
+                                                <span>Mobile Banking</span>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 1rem;">
+                                            <span style="background: #22c55e; color: white; font-size: 0.75rem; padding: 6px 12px; border-radius: 12px; font-weight: 600; display: inline-block;">Paid</span>
+                                        </td>
+                                        <td style="padding: 1rem; text-align: center;">
+                                            <button class="btn-secondary" style="font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="downloadReceipt(2)">
+                                                <i class="fas fa-download"></i> Download
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    <tr style="transition: background 0.2s;" onmouseenter="this.style.background='rgba(var(--button-bg-rgb), 0.03)'" onmouseleave="this.style.background='transparent'">
+                                        <td style="padding: 1rem; color: var(--text);">
+                                            <div style="font-weight: 600;">March 1, 2025</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">10 weeks ago</div>
+                                        </td>
+                                        <td style="padding: 1rem; color: var(--text); font-weight: 600; font-size: 1.125rem;">ETB 3,000</td>
+                                        <td style="padding: 1rem; color: var(--text);">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <span style="font-size: 1.25rem;">💳</span>
+                                                <span>CBE Birr</span>
+                                            </div>
+                                        </td>
+                                        <td style="padding: 1rem;">
+                                            <span style="background: #22c55e; color: white; font-size: 0.75rem; padding: 6px 12px; border-radius: 12px; font-weight: 600; display: inline-block;">Paid</span>
+                                        </td>
+                                        <td style="padding: 1rem; text-align: center;">
+                                            <button class="btn-secondary" style="font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="downloadReceipt(3)">
+                                                <i class="fas fa-download"></i> Download
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parent Information Section -->
+                <div class="content-section" id="parent">
+                    <h3 style="margin-bottom: 2rem;">Parent/Guardian Information</h3>
+
+                    <!-- Parent Contact Cards (2 per row) -->
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+                        <!-- Primary Contact Card -->
+                        <div class="card" style="padding: 1.5rem;">
+                            <div style="margin-bottom: 1rem;">
+                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">PRIMARY CONTACT</div>
+                                <h4 id="primary-parent-name" style="font-size: 1.5rem; font-weight: 700; margin: 0; color: var(--heading); cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--heading)'" onclick="viewParentProfile('primary')">Mr. Kebede Alemu</h4>
+                            </div>
+
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <span>🔗</span>
+                                    <span style="font-size: 0.875rem; color: var(--text);">Father</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <span>📞</span>
+                                    <span style="font-size: 0.875rem; color: var(--text);">+251 911 234 567</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <span>📧</span>
+                                    <span style="font-size: 0.875rem; color: var(--text);">kebede.alemu@email.com</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>📍</span>
+                                    <span style="font-size: 0.875rem; color: var(--text);">Bole, Addis Ababa</span>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="callParent()">
+                                    📞 Call
+                                </button>
+                                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="emailParent()">
+                                    📧 Email
+                                </button>
+                                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="messageParent()">
+                                    💬 Message
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Secondary Contact Card -->
+                        <div class="card" style="padding: 1.5rem;">
+                            <div style="margin-bottom: 1rem;">
+                                <div style="font-size: 0.875rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem;">SECONDARY CONTACT</div>
+                                <h4 id="secondary-parent-name" style="font-size: 1.5rem; font-weight: 700; margin: 0; color: var(--heading); cursor: pointer; transition: color 0.3s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--heading)'" onclick="viewParentProfile('secondary')">Mrs. Sara Kebede</h4>
+                            </div>
+
+                            <div style="margin-bottom: 1.5rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <span>🔗</span>
+                                    <span style="font-size: 0.875rem; color: var(--text);">Mother</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <span>📞</span>
+                                    <span style="font-size: 0.875rem; color: var(--text);">+251 922 345 678</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <span>📧</span>
+                                    <span style="font-size: 0.875rem; color: var(--text);">sara.kebede@email.com</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span>📍</span>
+                                    <span style="font-size: 0.875rem; color: var(--text);">Bole, Addis Ababa</span>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="callParentSecondary()">
+                                    📞 Call
+                                </button>
+                                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="emailParentSecondary()">
+                                    📧 Email
+                                </button>
+                                <button class="btn-secondary" style="padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600;" onclick="messageParentSecondary()">
+                                    💬 Message
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Communication Log -->
+                    <div>
+                        <h4 style="margin-bottom: 1rem;">Communication History</h4>
+                        <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 12px;">
+                            <!-- Log Item 1 -->
+                            <div style="display: flex; align-items: start; gap: 1rem; padding: 1rem; background: var(--card-bg); border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #3B82F6;">
+                                <div style="background: #3B82F6; color: white; padding: 0.75rem; border-radius: 50%; font-size: 1.25rem; flex-shrink: 0;">
+                                    📧
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.25rem;">
+                                        <h5 style="margin: 0; font-weight: 600;">Progress Report Sent</h5>
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);">May 15, 2025</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 0.875rem; color: var(--text-secondary);">
+                                        Sent monthly progress report to primary contact via email. Included performance metrics and upcoming exam schedule.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Log Item 2 -->
+                            <div style="display: flex; align-items: start; gap: 1rem; padding: 1rem; background: var(--card-bg); border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #10B981;">
+                                <div style="background: #10B981; color: white; padding: 0.75rem; border-radius: 50%; font-size: 1.25rem; flex-shrink: 0;">
+                                    📞
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.25rem;">
+                                        <h5 style="margin: 0; font-weight: 600;">Phone Call - Upcoming Exams</h5>
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);">May 10, 2025</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 0.875rem; color: var(--text-secondary);">
+                                        Discussed preparation strategy for final exams. Parent requested additional study materials for Physics.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Log Item 3 -->
+                            <div style="display: flex; align-items: start; gap: 1rem; padding: 1rem; background: var(--card-bg); border-radius: 8px; border-left: 4px solid #F59E0B;">
+                                <div style="background: #F59E0B; color: white; padding: 0.75rem; border-radius: 50%; font-size: 1.25rem; flex-shrink: 0;">
+                                    💬
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.25rem;">
+                                        <h5 style="margin: 0; font-weight: 600;">Message - Schedule Change</h5>
+                                        <span style="font-size: 0.75rem; color: var(--text-muted);">May 5, 2025</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 0.875rem; color: var(--text-secondary);">
+                                        Informed parent about rescheduled session from May 7 to May 8 due to tutor availability.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule & Sessions Section -->
+                <div class="content-section" id="schedule-sessions">
+                    <div style="margin-bottom: 2rem;">
+                        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Schedule & Sessions</h2>
+                        <p style="color: var(--text-secondary);">Manage sessions with this student</p>
+                    </div>
+
+                    <!-- Tab Navigation -->
+                    <div style="margin-bottom: 2rem; border-bottom: 2px solid rgba(var(--border-rgb), 0.1);">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="student-schedule-tab active" data-tab="schedules" onclick="switchStudentScheduleTab('schedules')" style="padding: 0.75rem 1.5rem; border: none; background: none; font-weight: 600; color: var(--text); cursor: pointer; position: relative; transition: all 0.3s; border-bottom: 3px solid var(--button-bg);">
+                                <i class="fas fa-calendar-alt"></i> Schedules
+                            </button>
+                            <button class="student-schedule-tab" data-tab="sessions" onclick="switchStudentScheduleTab('sessions')" style="padding: 0.75rem 1.5rem; border: none; background: none; font-weight: 600; color: var(--text-muted); cursor: pointer; position: relative; transition: all 0.3s; border-bottom: 3px solid transparent;">
+                                <i class="fas fa-users"></i> Sessions
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Schedules Tab Content -->
+                    <div id="student-schedules-tab" class="student-schedule-tab-content">
+                        <!-- Create Schedule Button -->
+                        <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                            <button class="cta-button" onclick="createStudentSchedule()" style="white-space: nowrap;">
+                                <i class="fas fa-plus"></i> Create Schedule
+                            </button>
+                        </div>
+
+                        <!-- Schedules Table -->
+                        <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
+                            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--heading);">Regular Schedules</h3>
+
+                            <!-- Schedule Cards -->
+                            <div style="display: grid; gap: 1rem;">
+                                <div class="card" style="padding: 1.5rem; border-left: 4px solid #3b82f6;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                        <div style="flex: 1;">
+                                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                                                <i class="fas fa-calculator" style="color: #3b82f6;"></i> Mathematics
+                                            </h4>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                                <div><i class="fas fa-calendar"></i> Monday, Wednesday, Friday</div>
+                                                <div><i class="fas fa-clock"></i> 3:00 PM - 5:00 PM</div>
+                                                <div><i class="fas fa-video"></i> Online</div>
+                                            </div>
+                                        </div>
+                                        <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px;" onclick="editSchedule(1)">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="card" style="padding: 1.5rem; border-left: 4px solid #10b981;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                        <div style="flex: 1;">
+                                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                                                <i class="fas fa-atom" style="color: #10b981;"></i> Physics
+                                            </h4>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                                <div><i class="fas fa-calendar"></i> Tuesday, Thursday</div>
+                                                <div><i class="fas fa-clock"></i> 4:00 PM - 6:00 PM</div>
+                                                <div><i class="fas fa-home"></i> In-person</div>
+                                            </div>
+                                        </div>
+                                        <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px;" onclick="editSchedule(2)">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sessions Tab Content -->
+                    <div id="student-sessions-tab" class="student-schedule-tab-content" style="display: none;">
+                        <!-- Session Filters -->
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                            <button style="padding: 0.5rem 1rem; border-radius: 9999px; background: #3b82f6; color: white; border: none; cursor: pointer; font-weight: 600;" onclick="filterStudentSessions('all')">
+                                All Sessions
+                            </button>
+                            <button style="padding: 0.5rem 1rem; border-radius: 9999px; background: #e5e7eb; color: #1f2937; border: none; cursor: pointer;" onclick="filterStudentSessions('scheduled')">
+                                Scheduled
+                            </button>
+                            <button style="padding: 0.5rem 1rem; border-radius: 9999px; background: #e5e7eb; color: #1f2937; border: none; cursor: pointer;" onclick="filterStudentSessions('in-progress')">
+                                In Progress
+                            </button>
+                            <button style="padding: 0.5rem 1rem; border-radius: 9999px; background: #e5e7eb; color: #1f2937; border: none; cursor: pointer;" onclick="filterStudentSessions('completed')">
+                                Completed
+                            </button>
+                            <button style="padding: 0.5rem 1rem; border-radius: 9999px; background: #e5e7eb; color: #1f2937; border: none; cursor: pointer;" onclick="filterStudentSessions('cancelled')">
+                                Cancelled
+                            </button>
+                        </div>
+
+                        <!-- Sessions Table -->
+                        <div class="card" style="padding: 1.5rem;">
+                            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--heading);">Tutoring Sessions</h3>
+
+                            <!-- Session Cards -->
+                            <div style="display: grid; gap: 1rem;">
+                                <!-- Today's Session -->
+                                <div class="session-card card" data-status="scheduled" style="padding: 1.5rem; border-left: 4px solid #10b981;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                <span style="background: #D1FAE5; color: #065F46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Scheduled</span>
+                                                <span style="background: #FEF3C7; color: #92400E; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Today</span>
+                                            </div>
+                                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                                                Mathematics - Calculus
+                                            </h4>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                                <div><i class="fas fa-calendar"></i> Today, May 22, 2025</div>
+                                                <div><i class="fas fa-clock"></i> 3:00 PM - 5:00 PM</div>
+                                                <div><i class="fas fa-video"></i> Online</div>
+                                            </div>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button class="btn-primary" style="padding: 0.5rem 1rem; border-radius: 6px;" onclick="startSession(1)">
+                                                    <i class="fas fa-play"></i> Start Session
+                                                </button>
+                                                <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px;" onclick="rescheduleSession(1)">
+                                                    <i class="fas fa-calendar-alt"></i> Reschedule
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Upcoming Session -->
+                                <div class="session-card card" data-status="scheduled" style="padding: 1.5rem; border-left: 4px solid #3b82f6;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                <span style="background: #DBEAFE; color: #1E40AF; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Scheduled</span>
+                                            </div>
+                                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                                                Physics - Thermodynamics
+                                            </h4>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                                <div><i class="fas fa-calendar"></i> May 24, 2025</div>
+                                                <div><i class="fas fa-clock"></i> 4:00 PM - 6:00 PM</div>
+                                                <div><i class="fas fa-home"></i> In-person</div>
+                                            </div>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px;" onclick="viewSessionDetails(2)">
+                                                    <i class="fas fa-eye"></i> View Details
+                                                </button>
+                                                <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px;" onclick="rescheduleSession(2)">
+                                                    <i class="fas fa-calendar-alt"></i> Reschedule
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Completed Session -->
+                                <div class="session-card card" data-status="completed" style="padding: 1.5rem; border-left: 4px solid #6b7280;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                                        <div style="flex: 1;">
+                                            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                <span style="background: #E5E7EB; color: #374151; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">Completed</span>
+                                            </div>
+                                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                                                Chemistry - Organic Chemistry
+                                            </h4>
+                                            <div style="display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                                <div><i class="fas fa-calendar"></i> May 20, 2025</div>
+                                                <div><i class="fas fa-clock"></i> 3:00 PM - 5:00 PM</div>
+                                                <div><i class="fas fa-video"></i> Online</div>
+                                            </div>
+                                            <div style="display: flex; gap: 0.5rem;">
+                                                <button class="btn-secondary" style="padding: 0.5rem 1rem; border-radius: 6px;" onclick="viewSessionReport(3)">
+                                                    <i class="fas fa-file-alt"></i> View Report
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Learning Resources Section -->
+                <div class="content-section" id="learning-resources">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <div>
+                            <h3 style="margin: 0;">Resource Library</h3>
+                            <p style="color: var(--text-secondary); margin-top: 0.25rem;">Resources shared with this student</p>
+                        </div>
+                        <button class="btn-primary" onclick="openUploadResourceModal()">
+                            <i class="fas fa-upload"></i> Upload Resource
+                        </button>
+                    </div>
+
+                    <!-- Resource Stats (Clickable Filters) -->
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                        <div class="card resource-stat-card" style="padding: 1rem; cursor: pointer; transition: all 0.3s ease;"
+                             data-filter="all" onclick="filterResourcesByStats('all')">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Total Files</p>
+                                    <p style="font-size: 1.5rem; font-weight: 700;">4</p>
+                                </div>
+                                <div style="font-size: 2rem;">📁</div>
+                            </div>
+                        </div>
+                        <div class="card resource-stat-card" style="padding: 1rem; cursor: pointer; transition: all 0.3s ease;"
+                             data-filter="documents" onclick="filterResourcesByStats('documents')">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Documents</p>
+                                    <p style="font-size: 1.5rem; font-weight: 700;">2</p>
+                                </div>
+                                <div style="font-size: 2rem;">📄</div>
+                            </div>
+                        </div>
+                        <div class="card resource-stat-card" style="padding: 1rem; cursor: pointer; transition: all 0.3s ease;"
+                             data-filter="videos" onclick="filterResourcesByStats('videos')">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Videos</p>
+                                    <p style="font-size: 1.5rem; font-weight: 700;">1</p>
+                                </div>
+                                <div style="font-size: 2rem;">🎥</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resources Grid -->
+                    <div class="resources-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                        <div class="card resource-card-hover" style="padding: 1.5rem; cursor: pointer;">
+                            <div style="display: flex; align-items: start; justify-between; margin-bottom: 1rem;">
+                                <div style="font-size: 3rem;">📄</div>
+                            </div>
+                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Mathematics Grade 12 Notes</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">PDF • 2.5 MB</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+                                <span>Modified: 2 days ago</span>
+                                <span>Downloads: 45</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px;" onclick="viewResource(1)">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px;" onclick="downloadResource(1)">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card resource-card-hover" style="padding: 1.5rem; cursor: pointer;">
+                            <div style="display: flex; align-items: start; justify-between; margin-bottom: 1rem;">
+                                <div style="font-size: 3rem;">🎥</div>
+                            </div>
+                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Physics Video Lectures</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">12 Videos • Playlist</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+                                <span>Modified: 1 week ago</span>
+                                <span>Views: 234</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px;" onclick="viewResource(2)">
+                                    <i class="fas fa-play"></i> Play
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card resource-card-hover" style="padding: 1.5rem; cursor: pointer;">
+                            <div style="display: flex; align-items: start; justify-between; margin-bottom: 1rem;">
+                                <div style="font-size: 3rem;">📝</div>
+                            </div>
+                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Practice Problems</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">PDF • 1.8 MB</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+                                <span>Modified: 3 days ago</span>
+                                <span>Downloads: 38</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px;" onclick="viewResource(3)">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px;" onclick="downloadResource(3)">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card resource-card-hover" style="padding: 1.5rem; cursor: pointer;">
+                            <div style="display: flex; align-items: start; justify-between; margin-bottom: 1rem;">
+                                <div style="font-size: 3rem;">🧪</div>
+                            </div>
+                            <h4 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 0.5rem;">Lab Experiments Guide</h4>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">PDF • 10 MB</p>
+                            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">
+                                <span>Modified: 5 days ago</span>
+                                <span>Downloads: 44</span>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px;" onclick="viewResource(4)">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn-secondary" style="flex: 1; font-size: 0.875rem; padding: 0.5rem 1rem; border-radius: 6px;" onclick="downloadResource(4)">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Digital Whiteboard Section -->
+                <div class="content-section" id="digital-whiteboard">
+                    <h3>Digital Whiteboard Sessions</h3>
+                    <p class="text-gray-600 mb-4">View and manage whiteboard sessions with this student</p>
+
+                    <div class="mb-4">
+                        <button class="btn-primary" onclick="StudentWhiteboardManager.createNewSession()">
+                            <i class="fas fa-plus"></i> Create New Session
+                        </button>
+                    </div>
+
+                    <!-- Sessions Grid -->
+                    <div id="student-whiteboard-sessions" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Sessions will be loaded dynamically -->
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                            <p>Loading whiteboard sessions...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz & Tests Section -->
+                <div class="content-section" id="quiz-tests">
+                    <h3>Quiz & Tests</h3>
+                    <p class="text-gray-600 mb-4">Create and manage quizzes for this student</p>
+
+                    <div class="mb-4 flex gap-2">
+                        <button class="btn-primary" onclick="StudentQuizManager.createNewQuiz()">
+                            <i class="fas fa-plus"></i> Create New Quiz
+                        </button>
+                        <button class="btn-secondary" onclick="StudentQuizManager.viewResults()">
+                            <i class="fas fa-chart-bar"></i> View Results
+                        </button>
+                    </div>
+
+                    <!-- Quiz Tabs -->
+                    <div class="mb-4 flex gap-2 border-b">
+                        <button class="quiz-tab-btn active" data-tab="active"
+                            onclick="StudentQuizManager.switchTab('active')">
+                            Active Quizzes
+                        </button>
+                        <button class="quiz-tab-btn" data-tab="completed"
+                            onclick="StudentQuizManager.switchTab('completed')">
+                            Completed
+                        </button>
+                        <button class="quiz-tab-btn" data-tab="draft" onclick="StudentQuizManager.switchTab('draft')">
+                            Drafts
+                        </button>
+                    </div>
+
+                    <!-- Quizzes Grid -->
+                    <div id="student-quizzes" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Quizzes will be loaded dynamically -->
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                            <p>Loading quizzes...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews & Ratings Section -->
+                <div class="content-section" id="rating-and-review">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                                <span style="display: inline-flex; align-items: center; gap: 0.75rem;">
+                                    <span>⭐</span> Student Reviews
+                                </span>
+                            </h2>
+                            <p style="color: var(--text-secondary);">Rate and review this student's performance</p>
+                        </div>
+                        <button class="btn-cta" style="background: var(--button-bg); color: var(--button-text); padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s;" onclick="openReviewStudentModal()">
+                            <i class="fas fa-star"></i> Review Student
+                        </button>
+                    </div>
+
+                    <!-- Rating Overview Card -->
+                    <section style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 16px rgba(245,158,11,0.3); color: white;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                            <div style="flex: 1; min-width: 200px;">
+                                <div style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; opacity: 0.95;">Student's Rating</div>
+                                <div style="display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                    <div id="student-overall-rating" style="font-size: 3.5rem; font-weight: 700; line-height: 1;">0.0</div>
+                                    <div style="font-size: 1.25rem; opacity: 0.9;">/ 5.0</div>
+                                </div>
+                                <div id="student-rating-stars" style="color: rgba(255,255,255,0.95); font-size: 1rem; margin-bottom: 1rem;">
+                                    ☆☆☆☆☆
+                                </div>
+                                <div id="student-review-count" style="font-size: 0.95rem; opacity: 0.9;">Based on 0 reviews</div>
+                            </div>
+
+                            <div style="flex: 2; min-width: 300px;">
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <!-- Subject Understanding -->
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <span style="font-size: 0.875rem; width: 180px;">Subject Understanding</span>
+                                        <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                                            <div id="bar-subject-understanding" style="height: 100%; width: 0%; background: white; border-radius: 4px; transition: width 0.3s;"></div>
+                                        </div>
+                                        <span id="val-subject-understanding" style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">0.0</span>
+                                    </div>
+                                    <!-- Participation -->
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <span style="font-size: 0.875rem; width: 180px;">Participation</span>
+                                        <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                                            <div id="bar-participation" style="height: 100%; width: 0%; background: white; border-radius: 4px; transition: width 0.3s;"></div>
+                                        </div>
+                                        <span id="val-participation" style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">0.0</span>
+                                    </div>
+                                    <!-- Discipline -->
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <span style="font-size: 0.875rem; width: 180px;">Discipline</span>
+                                        <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                                            <div id="bar-discipline" style="height: 100%; width: 0%; background: white; border-radius: 4px; transition: width 0.3s;"></div>
+                                        </div>
+                                        <span id="val-discipline" style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">0.0</span>
+                                    </div>
+                                    <!-- Punctuality -->
+                                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                        <span style="font-size: 0.875rem; width: 180px;">Punctuality</span>
+                                        <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                                            <div id="bar-punctuality" style="height: 100%; width: 0%; background: white; border-radius: 4px; transition: width 0.3s;"></div>
+                                        </div>
+                                        <span id="val-punctuality" style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">0.0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Review Cards Container -->
+                    <div id="student-reviews-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                        <!-- Reviews will be loaded dynamically -->
+                        <div style="text-align: center; padding: 3rem; background: var(--bg-secondary); border-radius: 12px;">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                            <p style="color: var(--text-secondary);">Loading reviews...</p>
+                        </div>
+                    </div>
+                </div>
+
+                </div> <!-- /.sections-container -->
+            </div> <!-- /.modal-main-content -->
+        </div> <!-- /.modal-wrapper -->
+    </div> <!-- /.student-details-modal -->
+
+    <!-- Review Student Modal -->
+    <div class="modal fade" id="reviewStudentModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+        <div class="modal-dialog" style="max-width: 700px; width: 90%; margin: auto; background: var(--card-bg); border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+
+            <!-- Modal Header with Student Info -->
+            <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 2rem; border-radius: 20px 20px 0 0;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div style="flex: 1;">
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.75rem; font-weight: 700;">Review Student</h3>
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-top: 1rem;">
+                            <img id="review-modal-student-avatar" src="/system_images/default-avatar.png" alt="Student" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); object-fit: cover;">
+                            <div>
+                                <h4 id="review-modal-student-name" style="margin: 0; font-size: 1.25rem; font-weight: 600;">Student Name</h4>
+                                <p id="review-modal-student-info" style="margin: 0.25rem 0 0 0; font-size: 0.875rem; opacity: 0.9;">Grade Level • Subject</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="closeReviewStudentModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                        ×
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Body -->
+            <div style="padding: 2rem; overflow-y: auto;">
+                <!-- Rating Sliders -->
+                <div style="margin-bottom: 2rem;">
+                    <h5 style="margin: 0 0 1.5rem 0; font-size: 1.125rem; font-weight: 600; color: var(--heading);">Rate Student Performance</h5>
+
+                    <!-- Subject Understanding Slider -->
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <label style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Subject Understanding</label>
+                            <span id="subject-understanding-value" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; min-width: 45px; text-align: center;">3.0</span>
+                        </div>
+                        <input type="range" id="subject-understanding-slider" min="1" max="5" step="0.5" value="3" style="width: 100%; height: 8px; border-radius: 5px; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 25%, #fbbf24 50%, #a3e635 75%, #22c55e 100%); outline: none; -webkit-appearance: none; cursor: pointer;" oninput="updateSliderValue('subject-understanding', this.value)">
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                            <span>1 - Poor</span>
+                            <span>2</span>
+                            <span>3</span>
+                            <span>4</span>
+                            <span>5 - Excellent</span>
+                        </div>
+                    </div>
+
+                    <!-- Participation Slider -->
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <label style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Participation & Engagement</label>
+                            <span id="participation-value" style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; min-width: 45px; text-align: center;">3.0</span>
+                        </div>
+                        <input type="range" id="participation-slider" min="1" max="5" step="0.5" value="3" style="width: 100%; height: 8px; border-radius: 5px; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 25%, #fbbf24 50%, #a3e635 75%, #22c55e 100%); outline: none; -webkit-appearance: none; cursor: pointer;" oninput="updateSliderValue('participation', this.value)">
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                            <span>1 - Poor</span>
+                            <span>2</span>
+                            <span>3</span>
+                            <span>4</span>
+                            <span>5 - Excellent</span>
+                        </div>
+                    </div>
+
+                    <!-- Discipline Slider -->
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <label style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Discipline & Behavior</label>
+                            <span id="discipline-value" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; min-width: 45px; text-align: center;">3.0</span>
+                        </div>
+                        <input type="range" id="discipline-slider" min="1" max="5" step="0.5" value="3" style="width: 100%; height: 8px; border-radius: 5px; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 25%, #fbbf24 50%, #a3e635 75%, #22c55e 100%); outline: none; -webkit-appearance: none; cursor: pointer;" oninput="updateSliderValue('discipline', this.value)">
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                            <span>1 - Poor</span>
+                            <span>2</span>
+                            <span>3</span>
+                            <span>4</span>
+                            <span>5 - Excellent</span>
+                        </div>
+                    </div>
+
+                    <!-- Punctuality Slider -->
+                    <div style="margin-bottom: 2rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <label style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Punctuality & Attendance</label>
+                            <span id="punctuality-value" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; min-width: 45px; text-align: center;">3.0</span>
+                        </div>
+                        <input type="range" id="punctuality-slider" min="1" max="5" step="0.5" value="3" style="width: 100%; height: 8px; border-radius: 5px; background: linear-gradient(90deg, #ef4444 0%, #f59e0b 25%, #fbbf24 50%, #a3e635 75%, #22c55e 100%); outline: none; -webkit-appearance: none; cursor: pointer;" oninput="updateSliderValue('punctuality', this.value)">
+                        <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                            <span>1 - Poor</span>
+                            <span>2</span>
+                            <span>3</span>
+                            <span>4</span>
+                            <span>5 - Excellent</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Title -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading); font-size: 0.95rem;">Review Title</label>
+                    <input type="text" id="review-title-input" placeholder="Summarize your review in one sentence" style="width: 100%; padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text); font-size: 0.95rem; transition: all 0.3s;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='rgba(var(--border-rgb), 0.2)'">
+                </div>
+
+                <!-- Review Text -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading); font-size: 0.95rem;">Your Review</label>
+                    <textarea id="review-text-input" rows="5" placeholder="Share your experience with this student..." style="width: 100%; padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text); font-size: 0.95rem; resize: vertical; transition: all 0.3s;" onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='rgba(var(--border-rgb), 0.2)'"></textarea>
+                </div>
+
+                <!-- Review Type -->
+                <div style="margin-bottom: 2rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.75rem; color: var(--heading); font-size: 0.95rem;">Review Type</label>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                        <button type="button" class="review-type-btn" data-type="positive" onclick="selectReviewType('positive')" style="padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text); font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span>👍</span> Positive
+                        </button>
+                        <button type="button" class="review-type-btn" data-type="neutral" onclick="selectReviewType('neutral')" style="padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text); font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span>😐</span> Neutral
+                        </button>
+                        <button type="button" class="review-type-btn" data-type="improvement" onclick="selectReviewType('improvement')" style="padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text); font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span>💡</span> Needs Improvement
+                        </button>
+                        <button type="button" class="review-type-btn active" data-type="concern" onclick="selectReviewType('concern')" style="padding: 0.75rem; border: 2px solid rgba(var(--border-rgb), 0.2); border-radius: 8px; background: var(--card-bg); color: var(--text); font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                            <span>⚠️</span> Concern
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button onclick="submitStudentReview()" style="width: 100%; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 1rem; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(59,130,246,0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <i class="fas fa-paper-plane"></i> Submit Review
+                </button>
+            </div>
+        </div>
+    </div>

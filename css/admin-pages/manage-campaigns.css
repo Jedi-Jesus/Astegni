@@ -1,0 +1,557 @@
+/* manage-campaigns.css - Campaign Management Specific Styles */
+
+/* Import profile header styles from manage-schools.css */
+@import url('manage-schools.css');
+
+/* Campaign-specific badge style override */
+.profile-badge.campaign {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+
+[data-theme="dark"] .profile-badge.campaign {
+    background: rgba(168, 85, 247, 0.2);
+    color: #c084fc;
+}
+
+/* Profile Header Visibility Control */
+.panel-content:not(#dashboard-panel) .profile-header-section {
+    display: none !important;
+}
+
+/* Only show profile header in dashboard panel */
+#dashboard-panel .profile-header-section {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Panel Content Display */
+.panel-content {
+    display: none;
+}
+
+.panel-content.active {
+    display: block;
+}
+
+/* Panel Content Adjustments */
+.panel-content:not(#dashboard-panel) {
+    margin-top: 0;
+}
+
+/* Campaign Card Styles */
+.campaign-card {
+    background: var(--card-background);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+}
+
+.campaign-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+/* Campaign Status Badges */
+.campaign-status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.campaign-status-badge.active {
+    background-color: var(--success-light);
+    color: var(--success);
+}
+
+.campaign-status-badge.pending {
+    background-color: var(--warning-light);
+    color: var(--warning);
+}
+
+.campaign-status-badge.rejected {
+    background-color: var(--danger-light);
+    color: var(--danger);
+}
+
+.campaign-status-badge.suspended {
+    background-color: var(--orange-light);
+    color: var(--orange);
+}
+
+.campaign-status-badge.completed {
+    background-color: var(--gray-light);
+    color: var(--gray);
+}
+
+/* Campaign Type Tags */
+.campaign-type-tag {
+    background: var(--primary-light);
+    color: var(--primary);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    display: inline-block;
+    margin-right: 0.5rem;
+}
+
+/* Campaign Search and Filter Section */
+.campaign-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.campaign-filter-input {
+    flex: 1;
+    min-width: 250px;
+}
+
+/* Campaign Table Enhancements */
+.campaigns-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.campaigns-table thead {
+    background: var(--background-secondary);
+}
+
+.campaigns-table thead th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.campaigns-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.campaigns-table tbody tr:hover {
+    background: var(--background-hover);
+}
+
+.campaigns-table tbody td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+/* Campaign Quick Actions */
+.campaign-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.campaign-action-btn {
+    padding: 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.campaign-action-btn:hover {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* Campaign Statistics Grid */
+.campaign-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.campaign-stat-card {
+    background: var(--card-background);
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.campaign-stat-value {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: var(--text-primary);
+    margin: 0.5rem 0;
+}
+
+.campaign-stat-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+/* Campaign Progress Bars */
+.campaign-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--background-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0.5rem 0;
+}
+
+.campaign-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+    transition: width 0.3s ease;
+}
+
+/* Campaign Modal Styles */
+.campaign-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 1.5rem;
+}
+
+.campaign-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.campaign-form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.campaign-form-input,
+.campaign-form-select,
+.campaign-form-textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--background);
+    color: var(--text-primary);
+}
+
+.campaign-form-input:focus,
+.campaign-form-select:focus,
+.campaign-form-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+/* Campaign Budget Display */
+.campaign-budget {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--success);
+}
+
+.campaign-spent {
+    color: var(--warning);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .campaign-stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+
+    .campaign-filters {
+        flex-direction: column;
+    }
+
+    .campaign-filter-input {
+        min-width: 100%;
+    }
+
+    .campaigns-table {
+        font-size: 0.875rem;
+    }
+
+    .campaigns-table thead th,
+    .campaigns-table tbody td {
+        padding: 0.5rem;
+    }
+
+    /* Hide profile header on mobile for all panels */
+    .profile-header-section {
+        display: none !important;
+    }
+}
+
+/* Animation Classes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+/* Dark Theme Overrides */
+[data-theme="dark"] .campaign-card {
+    background: var(--dark-card-background);
+    border: 1px solid var(--dark-border-color);
+}
+
+[data-theme="dark"] .campaign-stat-card {
+    background: var(--dark-card-background);
+    border-color: var(--dark-border-color);
+}
+
+[data-theme="dark"] .campaign-form-input,
+[data-theme="dark"] .campaign-form-select,
+[data-theme="dark"] .campaign-form-textarea {
+    background: var(--dark-background);
+    border-color: var(--dark-border-color);
+    color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .campaigns-table thead {
+    background: var(--dark-background-secondary);
+}
+
+[data-theme="dark"] .campaigns-table tbody tr:hover {
+    background: var(--dark-background-hover);
+}
+
+/* Campaign Requests Widget - Movie Credits Style */
+.campaign-requests-widget {
+    position: relative;
+    overflow: hidden;
+}
+
+.campaign-requests-container {
+    height: 400px;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(180deg,
+        var(--card-bg) 0%,
+        rgba(var(--background-rgb), 0.95) 50%,
+        var(--card-bg) 100%
+    );
+    border-radius: 8px;
+}
+
+.campaign-requests-scroll {
+    animation: scrollCredits 60s linear infinite;
+    padding: 20px 0;
+    /* Start position - visible immediately */
+    position: relative;
+    top: 0;
+}
+
+@keyframes scrollCredits {
+    0% {
+        transform: translateY(0);
+    }
+    100% {
+        /* Move up by exactly 50% to create seamless loop with duplicated content */
+        transform: translateY(-50%);
+    }
+}
+
+.campaign-request-item {
+    padding: 12px;
+    margin-bottom: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.campaign-request-item:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-md);
+    animation-play-state: paused;
+}
+
+.campaign-requests-scroll:hover {
+    animation-play-state: paused;
+}
+
+.request-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.request-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.request-header i {
+    font-size: 16px;
+}
+
+.request-header .campaign-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    flex: 1;
+}
+
+.request-header .status-tag {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-tag.new {
+    background: linear-gradient(135deg, #3B82F6, #60A5FA);
+    color: white;
+    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+
+.status-tag.pending {
+    background: linear-gradient(135deg, #F59E0B, #FCD34D);
+    color: white;
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+}
+
+.status-tag.approved {
+    background: linear-gradient(135deg, #10B981, #34D399);
+    color: white;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.status-tag.rejected {
+    background: linear-gradient(135deg, #EF4444, #F87171);
+    color: white;
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+.request-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+}
+
+.request-info .campaign-type {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.request-info .budget {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: var(--hover-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.request-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border-color);
+}
+
+.request-footer .timestamp {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.request-footer .action-btn {
+    padding: 4px 12px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.request-footer .action-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(var(--primary-rgb), 0.3);
+}
+
+/* Fade effects for top and bottom */
+.campaign-requests-fade-top,
+.campaign-requests-fade-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 60px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+.campaign-requests-fade-top {
+    top: 0;
+    background: linear-gradient(180deg,
+        var(--card-bg) 0%,
+        transparent 100%
+    );
+}
+
+.campaign-requests-fade-bottom {
+    bottom: 0;
+    background: linear-gradient(0deg,
+        var(--card-bg) 0%,
+        transparent 100%
+    );
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] .campaign-requests-container {
+    background: linear-gradient(180deg,
+        #1a1a1a 0%,
+        rgba(26, 26, 26, 0.95) 50%,
+        #1a1a1a 100%
+    );
+}
+
+[data-theme="dark"] .campaign-request-item {
+    background: #2a2a2a;
+    border-color: #3a3a3a;
+}
+
+[data-theme="dark"] .campaign-request-item:hover {
+    background: #323232;
+}
+
+/* Pause animation on widget hover for better UX */
+.campaign-requests-widget:hover .campaign-requests-scroll {
+    animation-play-state: paused;
+}

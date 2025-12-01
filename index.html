@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html data-theme="light" lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Astegni - Ethiopia's Premier Learning Platform</title>
+    <meta name="description"
+        content="Connect with expert tutors, explore courses, and advance your education with Astegni - Ethiopia's leading educational platform">
+    <meta name="keywords" content="tutors, education, Ethiopia, online learning, courses, training">
+
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+    <link rel="preconnect" href="https://cdn.sheetjs.com">
+
+    <!-- Scripts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/xlsx.full.min.js"></script>
+
+    <!-- Styles -->
+    <link href="css/root.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
+
+    <!-- Common Modals and Components -->
+    <link href="css/index/auth-modals.css" rel="stylesheet" />
+    <link href="css/common-modals/ad-modal.css" rel="stylesheet" />
+    <link href="css/common-modals/coming-soon-modal.css" rel="stylesheet" />
+
+
+    <!-- Favicon -->
+    <!-- <link rel="icon" type="image/png" href="/favicon.png"> -->
+</head>
+
+<body class="font-sans">
+    <!-- <Loading Screen> -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader">
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+            <div class="loader-circle"></div>
+        </div>
+        <h2 class="loading-text">ASTEGNI</h2>
+    </div>
+    <!-- Scroll Progress Bar -->
+    <div class="scroll-progress" id="scroll-progress"></div>
+
+    <!-- Enhanced Navigation -->
+
+    <!-- Enhanced Navigation with Better Responsiveness -->
+    <nav class="navbar py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Home</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <div class="nav-menu">
+                <div class="nav-items">
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
+                        <span class="nav-icon">📰</span> News
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="branch/find-tutors.html"
+                        onclick="handleNavLinkClick(event, 'find-tutors')">
+                        <span class="nav-icon">👨‍🏫</span> Find Tutors
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
+                        onclick="handleNavLinkClick(event, 'reels')">
+                        <span class="nav-icon">🎬</span> Reels
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
+                        <span class="nav-icon">📚</span> Bookstore
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                        <span class="nav-icon">💼</span> Find a Job
+                    </a>
+                </div>
+
+                <div class="nav-actions">
+                    <button id="login-btn" class="nav-btn primary" onclick="openModal('login-modal')">Login</button>
+                    <button id="register-btn" class="nav-btn secondary"
+                        onclick="openModal('register-modal')">Register</button>
+
+                    <!-- Profile container -->
+                    <div id="profile-container" class="profile-dropdown-container hidden">
+                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                            onclick="toggleProfileDropdown()">
+                            <img id="profile-pic" class="profile-pic" alt="Profile">
+                            <span id="profile-name" class="profile-name"></span>
+                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+
+                        <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+                            <!-- User info header - CLICKABLE to go to profile page -->
+                            <a href="#" id="dropdown-profile-link" class="dropdown-header-link">
+                                <div class="dropdown-header">
+                                    <img id="dropdown-profile-pic" class="profile-pic" alt="Profile">
+                                    <div class="dropdown-user-info">
+                                        <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                        <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                        <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                    </div>
+                                    <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </a>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Role switcher (shown only if user has multiple roles) -->
+                            <div id="role-switcher-section" class="role-switcher-section hidden">
+                                <div class="dropdown-item-header">Switch Role</div>
+                                <div id="role-options" class="role-options">
+                                    <!-- Role options will be dynamically added here -->
+                                </div>
+                                <div class="dropdown-divider"></div>
+                            </div>
+
+                            <div class="dropdown-divider"></div>
+
+                            <button class="dropdown-item logout-item" onclick="showLogoutModal()">
+                                <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                    </path>
+                                </svg>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <button id="notification-bell" class="icon-btn relative hidden"
+                        onclick="openModal('notification-modal')">
+                        <span class="notification-icon">🔔</span>
+                        <span id="notification-count" class="notification-badge pulse">3</span>
+                    </button>
+
+                    <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
+                        <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="lg:hidden focus:outline-none hamburger" id="menu-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu hidden" id="mobile-menu">
+            <div class="mobile-menu-content">
+                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'news')">
+                    <span class="nav-icon">📰</span> News
+                </a>
+                <a class="nav-link px-2 py-1 rounded" href="branch/find-tutors.html"
+                    onclick="handleNavLinkClick(event, 'find-tutors')">
+                    <span class="nav-icon">👨‍🏫</span> Find Tutors
+                </a>
+                <a class="nav-link px-2 py-1 rounded" href="branch/reels.html"
+                    onclick="handleNavLinkClick(event, 'reels')">
+                    <span class="nav-icon">🎬</span> Reels
+                </a>
+                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'store')">
+                    <span class="nav-icon">🛒</span> Store
+                </a>
+                <a class="nav-link px-2 py-1 rounded" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                    <span class="nav-icon">💼</span> Find a Job
+                </a>
+                <div class="mobile-menu-divider"></div>
+                <button id="mobile-login-btn" class="mobile-menu-item" onclick="openModal('login-modal')">Login</button>
+                <button id="mobile-register-btn" class="mobile-menu-item"
+                    onclick="openModal('register-modal')">Register</button>
+                <button id="mobile-theme-toggle-btn" class="mobile-menu-item">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                    Toggle Theme
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Enhanced Hero Section -->
+    <section class="hero-section text-center">
+        <div class="hero-slideshow"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-particles" id="hero-particles"></div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="hero-content">
+                <h1 id="hero-text" class="hero-text mb-4 font-bold mt-24 md:mt-32">
+                    <span id="hero-text-content"></span>
+                    <span class="typing-cursor">|</span>
+                </h1>
+
+                <!-- Animated Counter Cards (3 cards in single row) -->
+                <div class="counter-grid-wrapper">
+                    <div class="counter-grid-top">
+                        <div class="counter-card-enhanced hover-lift">
+                            <div class="counter-icon">👨‍👩‍👧‍👦</div>
+                            <h3 id="counter-parents" class="counter-number">0</h3>
+                            <p class="counter-label">Registered Parents</p>
+                        </div>
+                        <div class="counter-card-enhanced hover-lift">
+                            <div class="counter-icon">🎓</div>
+                            <h3 id="counter-students" class="counter-number">0</h3>
+                            <p class="counter-label">Students</p>
+                        </div>
+                        <div class="counter-card-enhanced hover-lift">
+                            <div class="counter-icon">👨‍🏫</div>
+                            <h3 id="counter-tutors" class="counter-number">0</h3>
+                            <p class="counter-label">Expert Tutors</p>
+                        </div>
+                        <!-- Hidden: Training Centers, Books Available, Job Opportunities -->
+                    </div>
+                </div>
+
+                <!-- CTA Buttons -->
+                <div class="hero-buttons flex justify-center items-center gap-4 mb-6 mt-6 max-w-4xl mx-auto">
+                    <button id="hero-login-btn" class="cta-button primary pulse-animation">
+                        <span>Get Started</span>
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                        </svg>
+                    </button>
+                    <button id="hero-register-btn" class="cta-button secondary">
+                        <span>Join as Tutor</span>
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4">
+                            </path>
+                        </svg>
+                    </button>
+                    <button class="cta-button ghost" onclick="scrollToSection('features')">
+                        <span>Learn More</span>
+                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
+            <div class="arrow-container">
+                <svg class="arrows">
+                    <path class="arrow-1" d="M0 0 L30 32 L60 0"></path>
+                    <path class="arrow-2" d="M0 20 L30 52 L60 20"></path>
+                    <path class="arrow-3" d="M0 40 L30 72 L60 40"></path>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section (New) -->
+    <section id="features" class="features-section py-16">
+        <div class="container mx-auto px-4">
+            <h2 class="section-title">Why Choose Astegni?</h2>
+            <p class="section-subtitle">Discover what makes us Ethiopia's preferred learning platform</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">🎯</div>
+                    </div>
+                    <h3>Personalized Matching</h3>
+                    <p>Our AI-powered algorithm connects you with the perfect tutor based on your learning style and
+                        goals.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">💡</div>
+                    </div>
+                    <h3>Interactive Learning</h3>
+                    <p>Engage with dynamic content, live sessions, and interactive exercises designed for maximum
+                        retention.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">📊</div>
+                    </div>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your learning journey with detailed analytics and personalized progress reports.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">🏆</div>
+                    </div>
+                    <h3>Certified Tutors</h3>
+                    <p>Learn from verified, experienced educators with proven track records of student success.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- Professional Reviews Section with Dynamic Data -->
+    <section id="reviews" class="reviews-section">
+        <div class="container mx-auto px-4">
+            <h2 class="section-title">Expert Reviews & Recognition</h2>
+            <p class="section-subtitle">What industry professionals and educators say about the Astegni platform</p>
+
+            <div class="professional-reviews-grid" id="professionalReviewsContainer">
+                <!-- Reviews will be dynamically populated here -->
+            </div>
+
+            <!-- Professional Recognition Stats - Hidden -->
+            <div class="review-stats" id="reviewStats" style="display: none;">
+                <!-- Stats will be dynamically populated -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Premium Advertisement -->
+    <section class="ad-section premium">
+        <div class="container mx-auto px-4">
+            <div class="premium-ad-container">
+                <div class="ad-backdrop"></div>
+                <div class="ad-content-wrapper">
+                    <div class="ad-text-content">
+                        <span class="ad-tag">Place your Ad. here</span>
+                        <h3 class="ad-headline">Transform Your Ad. Experience</h3>
+                        <p class="ad-description">Advertise to the most targated audience.</p>
+                        <div class="ad-buttons">
+
+                            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn more</button>
+                        </div>
+                    </div>
+                    <div class="ad-visual-content">
+                        <div class="floating-card card-1"></div>
+                        <div class="floating-card card-2"></div>
+                        <div class="floating-card card-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Enhanced News Section with Larger Text -->
+    <section class="news-section py-16">
+        <div class="container mx-auto px-4">
+            <div class="section-header">
+                <h2 class="section-title">Latest Updates</h2>
+                <p class="section-subtitle">Stay informed with Astegni news and announcements</p>
+            </div>
+
+            <div class="news-container">
+                <div class="news-main-card-enhanced">
+                    <div class="news-badge">BREAKING</div>
+                    <div class="news-content-wrapper">
+                        <h3 id="news-title" class="news-title-enhanced">
+                            <span id="news-title-content"></span>
+                            <span class="news-cursor">|</span>
+                        </h3>
+                        <p id="news-content" class="news-text-enhanced">
+                            <span id="news-content-text"></span>
+                        </p>
+                        <div class="news-meta">
+                            <span class="news-date">Today</span>
+                            <span class="news-category">Education</span>
+                            <span>Test data</span>
+                        </div>
+                    </div>
+                    <a href="#" onclick="handleNavLinkClick(event, 'news')" class="news-cta">
+                        Read All News
+                        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </a>
+                </div>
+
+                <!-- Quick News Items -->
+                <div class="quick-news-grid">
+                    <div class="quick-news-item">
+                        <span class="quick-news-icon">📢</span>
+                        <p>New partnership with international universities announced</p>
+                    </div>
+                    <div class="quick-news-item">
+                        <span class="quick-news-icon">🎉</span>
+                        <p>500+ new courses added this month</p>
+                    </div>
+                    <div class="quick-news-item">
+                        <span class="quick-news-icon">🏅</span>
+                        <p>Student success rate reaches 95%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Video Section -->
+    <section class="video-showcase py-16">
+        <div class="container mx-auto px-4">
+            <div class="section-header">
+                <h2 class="section-title">Featured Content</h2>
+                <p class="section-subtitle">Explore our video library and learning resources</p>
+            </div>
+
+            <div class="video-section-enhanced">
+                <div class="video-carousel-wrapper">
+                    <button class="carousel-control prev" onclick="navigateCarousel('left')">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7">
+                            </path>
+                        </svg>
+                    </button>
+                    <button class="carousel-control next" onclick="navigateCarousel('right')">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                            </path>
+                        </svg>
+                    </button>
+
+                    <div class="video-carousel-track" id="video-carousel">
+                        <!-- Video cards will be dynamically generated -->
+                    </div>
+                </div>
+
+                <!-- Video Categories -->
+                <div class="video-categories">
+                    <button class="category-btn active" data-category="all">All Videos</button>
+                    <button class="category-btn" data-category="tutorials">Tutorials</button>
+                    <button class="category-btn" data-category="courses">Courses</button>
+                    <button class="category-btn" data-category="success">Success Stories</button>
+                    <button class="category-btn" data-category="tips">Tips & Tricks</button>
+                    <button class="category-btn" data-category="entertainment">Entertainment</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enhanced Courses Section -->
+    <section class="courses-section py-16">
+        <div class="container mx-auto px-4">
+            <div class="section-header">
+                <h2 class="section-title">Trending Courses</h2>
+                <p class="section-subtitle">Discover our most popular learning paths</p>
+
+                <div class="course-filters">
+                    <button class="filter-chip active" data-filter="all">All</button>
+                    <button class="filter-chip" data-filter="tech">Technology</button>
+                    <button class="filter-chip" data-filter="language">Languages</button>
+                    <button class="filter-chip" data-filter="arts">Arts</button>
+                    <button class="filter-chip" data-filter="business">Business</button>
+                </div>
+            </div>
+
+            <div class="courses-grid-enhanced" id="courses-container">
+                <!-- Course cards will be dynamically generated -->
+            </div>
+
+            <div class="text-center mt-8">
+                <button class="view-more-btn" onclick="handleViewMoreCourses()">
+                    <span>Explore All Courses</span>
+                    <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Premium Advertisement -->
+    <section class="ad-section premium">
+        <div class="container mx-auto px-4">
+            <div class="premium-ad-container">
+                <div class="ad-backdrop"></div>
+                <div class="ad-content-wrapper">
+                    <div class="ad-text-content">
+                        <span class="ad-tag">Place your Ad. here</span>
+                        <h3 class="ad-headline">Transform Your Ad. Experience</h3>
+                        <p class="ad-description">Advertise to the most targated audience.</p>
+                        <div class="ad-buttons">
+                            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn more</button>
+                        </div>
+                    </div>
+                    <div class="ad-visual-content">
+                        <div class="floating-card card-1"></div>
+                        <div class="floating-card card-2"></div>
+                        <div class="floating-card card-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section (New) - Hidden until we have real testimonials -->
+    <section class="testimonials-section py-16" style="display: none;">
+        <div class="container mx-auto px-4">
+            <div class="section-header">
+                <h2 class="section-title">Success Stories</h2>
+                <p class="section-subtitle">Hear from our community members</p>
+            </div>
+
+            <div class="testimonials-slider" id="testimonials-slider">
+                <div class="testimonial-card active">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="testimonial-text">Astegni helped me find the perfect math tutor. My grades improved
+                            from C to A in just 3 months!</p>
+                        <div class="testimonial-author">
+                            <img src="https://picsum.photos/60" alt="Student" class="author-avatar">
+                            <div class="author-info">
+                                <h4>Sara Tadesse</h4>
+                                <p>Grade 12 Student</p>
+                                <div class="rating">⭐⭐⭐⭐⭐</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card active">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="testimonial-text">As a tutor, Astegni gave me the platform to reach students
+                            nationwide. I now teach over 50 students online!</p>
+                        <div class="testimonial-author">
+                            <img src="https://picsum.photos/61" alt="Tutor" class="author-avatar">
+                            <div class="author-info">
+                                <h4>Daniel Bekele</h4>
+                                <p>Physics Tutor</p>
+                                <div class="rating">⭐⭐⭐⭐⭐</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card active">
+                    <div class="testimonial-content">
+                        <div class="quote-icon">"</div>
+                        <p class="testimonial-text">The variety of courses and quality of instructors on Astegni is
+                            unmatched. Best investment in my child's education!</p>
+                        <div class="testimonial-author">
+                            <img src="https://picsum.photos/62" alt="Parent" class="author-avatar">
+                            <div class="author-info">
+                                <h4>Marta Alemu</h4>
+                                <p>Parent</p>
+                                <div class="rating">⭐⭐⭐⭐⭐</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners Section Enhanced -->
+    <section class="partners-section py-16">
+        <div class="container mx-auto px-4">
+            <div class="section-header" style="display: none;">
+                <h2 class="section-title">Trusted Partners</h2>
+                <p class="section-subtitle">Collaborating with industry leaders</p>
+            </div>
+
+            <div class="partners-wrapper" style="display: none;">
+                <div class="partners-track" id="partners-track">
+                    <!-- Partner logos will be dynamically generated -->
+                </div>
+            </div>
+
+            <div class="become-partner-cta">
+                <p>Want to partner with us?</p>
+                <button class="partner-btn" onclick="openModal('partner-modal')">Become a Partner</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal Container - Modals loaded dynamically via IndexModalLoader -->
+    <div id="modal-container"></div>
+    <!-- Modals loaded from: modals/index/ and modals/common-modals/ -->
+
+
+    <!--
+        All inline modals have been moved to separate files for better maintainability:
+
+        Index-specific modals (modals/index/):
+        - login-modal.html
+        - register-modal.html
+        - contact-confirmation-modal.html
+        - forgot-password-modal.html
+        - reset-password-modal.html
+        - notification-modal.html
+        - partner-modal.html
+        - partner-success-modal.html
+
+        Common modals (modals/common-modals/):
+        - add-role-modal.html
+        - otp-verification-modal.html
+        - coming-soon-modal.html
+        - ad-analytics-modal.html
+
+        These are loaded dynamically via IndexModalLoader (modals/index/modal-loader.js)
+    -->
+
+
+    <!-- Enhanced Footer -->
+    <footer class="footer-section" id="footer" role="contentinfo">
+        <div class="footer-wave" aria-hidden="true">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:var(--footer-accent);stop-opacity:0" />
+                        <stop offset="25%" style="stop-color:var(--footer-accent);stop-opacity:1" />
+                        <stop offset="75%" style="stop-color:var(--footer-hover);stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:var(--footer-hover);stop-opacity:0" />
+                    </linearGradient>
+                </defs>
+                <!-- Main wave fill with explicit class -->
+                <path class="wave-fill"
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
+                <!-- Animated line following the wave curve -->
+                <path class="wave-line"
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32">
+                </path>
+            </svg>
+        </div>
+
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Active Users</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Courses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="" class="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="X" class="social-link" target="x.com/astegniethipia" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="LinkedIn" class="social-link" target="https://www.linkedin.com/public-profile/settings?lipi=urn%3Ali%3Apage%3Ad_flagship3_profile_self_edit_contact-info%3Bt7XVAzZ3RoajF3DkUg94tQ%3D%3D" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="social-link" target="https://www.instagram.com/astegniethiopia"
+                            rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                        <a href="https://www.youtube.com/@Astegni" aria-label="YouTube" class="social-link"
+                            target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form" id="newsletterForm">
+                            <input type="email" placeholder="Your email address" class="newsletter-input"
+                                id="emailInput" aria-label="Email address" required>
+                            <button type="submit" class="newsletter-btn" id="submitBtn">Subscribe</button>
+                            <div class="newsletter-feedback" id="feedback"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom-content">
+                <div class="footer-badges">
+                    <div class="company-brand">
+                        <span>From the deep of</span>
+                        <span class="trademark-symbol">™</span>
+                        <span class="company-text">Eshtaol</span>
+                    </div>
+                    <a href="tel:+251935244245" class="phone-link">
+                        <span class="phone-icon">📞</span>
+                        <span>+251-935-24-42-45</span>
+                        <span>+251-997-40-98-66</span>
+                    </a>
+                </div>
+                <div class="footer-badges">
+                    <p class="copyright">© </p>
+                    <p>2025 Astegni. All rights reserved.</p>
+                </div>
+                <div class="footer-badges">
+                    <span class="badge glow" tabindex="0">🔒 SSL Secured</span>
+                    <span class="badge" tabindex="0">✓ Verified Platform</span>
+                    <span class="badge" tabindex="0">🏆 Future Awards Winner</span>
+                </div>
+            </div>
+            <!-- TODO: counting cards should count from users where role = 'parent', 'student', 'tutor', etc... register-modal, reviews section professional-reviews-card should be enhanced. -->
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="back-to-top" class="back-to-top">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+        </svg>
+    </button>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+    <!-- Updated Frontend Code for Profile Picture Integration -->
+
+
+    <!-- Core Application Scripts -->
+    <script src="js/root/default-avatar.js"></script>
+    <script src="js/root/app.js"></script>
+    <script src="js/root/auth.js?v=20251123"></script>
+    <script src="js/root/profile-system.js?v=20251123"></script>
+    <script src="js/root/theme-toggle.js"></script>
+    <script src="js/root/nav.js"></script>
+
+    <!-- Modal Loader - loads modals dynamically from separate files -->
+    <script src="modals/index/modal-loader.js"></script>
+
+    <!-- Index Page Scripts -->
+    <script src="js/index.js"></script>
+    <script src="js/index/profile-and-authentication.js"></script>
+    <script src="js/index/init-index.js"></script>
+    <script src="js/index/hero-section.js"></script>
+    <script src="js/index/professional-review.js"></script>
+    <script src="js/index/video-carousel.js"></script>
+    <script src="js/index/course-flip.js"></script>
+    <script src="js/index/testimonials.js"></script>
+    <script src="js/index/partner.js"></script>
+    <script src="js/index/news-section.js"></script>
+    <script src="js/index/counter-anime.js"></script>
+    <script src="js/index/review-stats-counter.js"></script>
+    <script src="js/index/scroll-effect.js"></script>
+    <script src="js/index/ripple-effect.js"></script>
+    <script src="js/index/init-modals.js"></script>
+    <script src="js/index/data-loading.js"></script>
+    <script src="js/index/newsletter-subscription-footer.js"></script>
+
+    <!-- Modal Scripts -->
+    <script src="js/common-modals/ad-modal.js"></script>
+    <script src="js/common-modals/coming-soon-modal.js"></script>
+    <script src="js/common-modals/logout-modal.js"></script>
+
+    <!-- Add Role Modal functionality is in js/root/profile-system.js -->
+</body>
+</html>

@@ -1,0 +1,109 @@
+<!--
+  Modal: payment-method-modal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="payment-method-modal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closePaymentMethodModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">💳 Payment Method</h2>
+                <button class="modal-close" onclick="closePaymentMethodModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-text">Set up how you want to receive your earnings from students.</p>
+                <form id="paymentMethodForm" class="enhanced-form">
+                    <div class="form-group">
+                        <label class="form-label">Payment Method *</label>
+                        <select id="paymentMethod" class="form-select" onchange="togglePaymentFields()" required>
+                            <option value="">Select payment method...</option>
+                            <option value="bank">Bank Transfer</option>
+                            <option value="mobile">Mobile Money</option>
+                            <option value="telebirr">TeleBirr</option>
+                            <option value="cbebirr">CBE Birr</option>
+                        </select>
+                    </div>
+
+                    <!-- Bank Transfer Fields -->
+                    <div id="bankFields" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">Bank Name *</label>
+                            <select class="form-select" id="bankName">
+                                <option value="">Select bank...</option>
+                                <option value="cbe">Commercial Bank of Ethiopia</option>
+                                <option value="dashen">Dashen Bank</option>
+                                <option value="awash">Awash Bank</option>
+                                <option value="boa">Bank of Abyssinia</option>
+                                <option value="wegagen">Wegagen Bank</option>
+                                <option value="united">United Bank</option>
+                                <option value="nib">Nib International Bank</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Number *</label>
+                            <input type="text" id="accountNumber" class="form-input" placeholder="1234567890">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Holder Name *</label>
+                            <input type="text" id="accountHolderName" class="form-input"
+                                placeholder="Full name as per bank">
+                        </div>
+                    </div>
+
+                    <!-- Mobile Money Fields -->
+                    <div id="mobileFields" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">Mobile Money Provider *</label>
+                            <select class="form-select" id="mobileProvider">
+                                <option value="">Select provider...</option>
+                                <option value="m-pesa">M-Pesa</option>
+                                <option value="m-birr">M-Birr</option>
+                                <option value="hello-cash">HelloCash</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mobile Number *</label>
+                            <input type="tel" id="mobileNumber" class="form-input" placeholder="+251 912 345 678">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Name *</label>
+                            <input type="text" id="mobileAccountName" class="form-input" placeholder="Registered name">
+                        </div>
+                    </div>
+
+                    <!-- TeleBirr Fields -->
+                    <div id="telebirrFields" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">TeleBirr Phone Number *</label>
+                            <input type="tel" id="telebirrNumber" class="form-input" placeholder="+251 912 345 678">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Name *</label>
+                            <input type="text" id="telebirrName" class="form-input" placeholder="Registered name">
+                        </div>
+                    </div>
+
+                    <!-- CBE Birr Fields -->
+                    <div id="cbebirrFields" class="hidden">
+                        <div class="form-group">
+                            <label class="form-label">CBE Birr Phone Number *</label>
+                            <input type="tel" id="cbebirrNumber" class="form-input" placeholder="+251 912 345 678">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Name *</label>
+                            <input type="text" id="cbebirrName" class="form-input" placeholder="Registered name">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closePaymentMethodModal()">Cancel</button>
+                <button class="finance-btn-primary" onclick="savePaymentMethod()">
+                    💾 Save Payment Method
+                </button>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Role Switch Diagnostic Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .section {
+            background: #2a2a2a;
+            border: 1px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px;
+            background: #1a1a1a;
+        }
+        .label {
+            color: #ffff00;
+        }
+        .value {
+            color: #00ffff;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .error {
+            color: #ff0000;
+        }
+        .success {
+            color: #00ff00;
+        }
+        pre {
+            background: #000;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-3xl mb-6">🔍 Role Switch Diagnostic Tool</h1>
+
+    <div class="section">
+        <h2 class="text-xl mb-4">📊 Current State</h2>
+        <div class="info-row">
+            <span class="label">Access Token:</span>
+            <span class="value" id="current-token">-</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Refresh Token:</span>
+            <span class="value" id="current-refresh-token">-</span>
+        </div>
+        <div class="info-row">
+            <span class="label">User Role (localStorage):</span>
+            <span class="value" id="current-role">-</span>
+        </div>
+        <div class="info-row">
+            <span class="label">Current User:</span>
+            <span class="value" id="current-user">-</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2 class="text-xl mb-4">🔑 Decoded JWT Token</h2>
+        <pre id="decoded-token">-</pre>
+    </div>
+
+    <div class="section">
+        <h2 class="text-xl mb-4">🔄 Test Role Switch</h2>
+        <p class="mb-4">Switch to a different role and see if the token updates correctly:</p>
+        <button onclick="testSwitchRole('student')">Switch to Student</button>
+        <button onclick="testSwitchRole('tutor')">Switch to Tutor</button>
+        <button onclick="testSwitchRole('parent')">Switch to Parent</button>
+        <div id="switch-result" class="mt-4"></div>
+    </div>
+
+    <div class="section">
+        <h2 class="text-xl mb-4">📋 API Tests</h2>
+        <button onclick="testGetUserRoles()">Test /api/my-roles</button>
+        <button onclick="testGetMe()">Test /api/me</button>
+        <button onclick="testGetStudentProfile()">Test /api/student/profile</button>
+        <div id="api-result" class="mt-4"></div>
+    </div>
+
+    <div class="section">
+        <h2 class="text-xl mb-4">🔧 Actions</h2>
+        <button onclick="refreshDisplay()">Refresh Display</button>
+        <button onclick="clearAllStorage()">Clear All Storage</button>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        function decodeJWT(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return { error: 'Failed to decode token: ' + e.message };
+            }
+        }
+
+        function refreshDisplay() {
+            const token = localStorage.getItem('token') || 'None';
+            const refreshToken = localStorage.getItem('refresh_token') || 'None';
+            const userRole = localStorage.getItem('userRole') || 'None';
+            const currentUser = localStorage.getItem('currentUser') || 'None';
+
+            document.getElementById('current-token').textContent = token.substring(0, 50) + '...';
+            document.getElementById('current-refresh-token').textContent = refreshToken.substring(0, 50) + '...';
+            document.getElementById('current-role').textContent = userRole;
+
+            try {
+                const userData = JSON.parse(currentUser);
+                document.getElementById('current-user').textContent = `${userData.first_name} ${userData.father_name} (ID: ${userData.id}, Role: ${userData.role})`;
+            } catch (e) {
+                document.getElementById('current-user').textContent = 'Error parsing user data';
+            }
+
+            if (token !== 'None') {
+                const decoded = decodeJWT(token);
+                document.getElementById('decoded-token').textContent = JSON.stringify(decoded, null, 2);
+            } else {
+                document.getElementById('decoded-token').textContent = 'No token found';
+            }
+        }
+
+        async function testSwitchRole(newRole) {
+            const resultDiv = document.getElementById('switch-result');
+            resultDiv.innerHTML = `<p>Switching to ${newRole} role...</p>`;
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">❌ No token found. Please login first.</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/switch-role`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role: newRole })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update localStorage like profile-system.js does
+                    if (data.access_token) {
+                        localStorage.setItem('token', data.access_token);
+                        localStorage.setItem('access_token', data.access_token);
+                    }
+                    if (data.refresh_token) {
+                        localStorage.setItem('refresh_token', data.refresh_token);
+                    }
+                    localStorage.setItem('userRole', data.active_role);
+
+                    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                    currentUser.role = data.active_role;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+                    resultDiv.innerHTML = `<p class="success">✅ Successfully switched to ${newRole} role!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+
+                    // Refresh display
+                    setTimeout(refreshDisplay, 100);
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ Failed to switch role: ${data.detail}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testGetUserRoles() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing /api/my-roles...</p>';
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">❌ No token found</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/my-roles`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p class="success">✅ /api/my-roles successful!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ /api/my-roles failed: ${data.detail}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testGetMe() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing /api/me...</p>';
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">❌ No token found</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p class="success">✅ /api/me successful!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ /api/me failed: ${data.detail}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testGetStudentProfile() {
+            const resultDiv = document.getElementById('api-result');
+            resultDiv.innerHTML = '<p>Testing /api/student/profile...</p>';
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                resultDiv.innerHTML = '<p class="error">❌ No token found</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/student/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `<p class="success">✅ /api/student/profile successful!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ /api/student/profile failed (Status: ${response.status})</p>
+                        <p class="error">Detail: ${data.detail}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        function clearAllStorage() {
+            if (confirm('This will clear all localStorage data. Are you sure?')) {
+                localStorage.clear();
+                refreshDisplay();
+                alert('All storage cleared!');
+            }
+        }
+
+        // Initialize on load
+        refreshDisplay();
+    </script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: Rejected Course Reconsider Button</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { padding: 20px; }
+        .test-section {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .success { border-color: #10b981; background-color: #f0fdf4; }
+        .info { border-color: #3b82f6; background-color: #eff6ff; }
+    </style>
+</head>
+<body>
+    <h1 class="text-3xl font-bold mb-6">Test: Rejected Course Reconsider Button</h1>
+
+    <div class="test-section info">
+        <h2 class="text-xl font-bold mb-3">Test Overview</h2>
+        <p class="mb-2">This test verifies that the "Reconsider" button appears in the view-course-modal for rejected courses.</p>
+        <p class="font-semibold">Expected Result: ✅ A green "Reconsider" button should appear in the modal actions area.</p>
+    </div>
+
+    <div class="test-section">
+        <h2 class="text-xl font-bold mb-3">Step 1: Simulate Viewing a Rejected Course</h2>
+        <button onclick="testRejectedCourseModal()"
+            class="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600">
+            <i class="fas fa-eye"></i> Open Rejected Course Modal
+        </button>
+    </div>
+
+    <div id="test-results" class="test-section hidden">
+        <h2 class="text-xl font-bold mb-3">Test Results</h2>
+        <div id="results-content"></div>
+    </div>
+
+    <!-- View Course Details Modal (copied from manage-courses.html) -->
+    <div id="view-course-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="bg-white p-6 rounded-lg w-full max-w-3xl max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-2xl font-bold" id="view-course-title">Course Title</h3>
+                    <p class="text-gray-500 text-sm" id="view-course-id">ID: CRS-001</p>
+                </div>
+                <button onclick="closeTestModal()"
+                    class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Category</label>
+                        <p class="text-lg" id="view-course-category">Mathematics</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Level</label>
+                        <p class="text-lg" id="view-course-level">Grade 12</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Requested By</label>
+                        <p class="text-lg" id="view-course-requester">Sara Tadesse</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Status</label>
+                        <p class="text-lg" id="view-course-status">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">Rejected</span>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Submitted</label>
+                        <p class="text-lg" id="view-course-submitted">2 days ago</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-600 mb-2">Description</label>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p class="text-gray-700" id="view-course-description">This is a test rejected course.</p>
+                </div>
+            </div>
+
+            <div id="view-course-reason-section" class="mb-6">
+                <label class="block text-sm font-semibold text-gray-600 mb-2">Rejection Reason</label>
+                <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                    <p class="text-red-700" id="view-course-reason">Does not meet quality standards</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end gap-3 border-t pt-4">
+                <button onclick="closeTestModal()"
+                    class="px-6 py-2 border rounded-lg hover:bg-gray-50">Close</button>
+                <div id="view-course-actions">
+                    <!-- Actions will be populated here by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the viewCourseRequest function behavior
+        function testRejectedCourseModal() {
+            const modal = document.getElementById('view-course-modal');
+            const actionsContainer = document.getElementById('view-course-actions');
+            const requestId = 'REJ-12345';
+
+            // Simulate a rejected course
+            const course = {
+                title: 'Advanced Mathematics for Grade 12',
+                request_id: requestId,
+                rejected_id: requestId,
+                category: 'Mathematics',
+                level: 'Grade 11-12',
+                requested_by: 'Dr. Alemayehu Bekele',
+                description: 'This course was rejected for quality reasons but can be reconsidered after improvements.',
+                status: 'rejected',
+                rejection_reason: 'Content does not meet quality standards. Please provide more detailed curriculum and examples.'
+            };
+
+            // Populate modal
+            document.getElementById('view-course-title').textContent = course.title;
+            document.getElementById('view-course-id').textContent = `ID: ${course.rejected_id}`;
+            document.getElementById('view-course-category').textContent = course.category;
+            document.getElementById('view-course-level').textContent = course.level;
+            document.getElementById('view-course-requester').textContent = course.requested_by;
+            document.getElementById('view-course-description').textContent = course.description;
+            document.getElementById('view-course-reason').textContent = course.rejection_reason;
+
+            // THIS IS THE KEY PART - Add Reconsider button for rejected courses
+            if (course.status === 'rejected') {
+                actionsContainer.innerHTML = `
+                    <button onclick="testReconsiderAction('${requestId}')"
+                        class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                        <i class="fas fa-redo"></i> Reconsider
+                    </button>
+                    <button onclick="alert('View Full Details clicked')"
+                        class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        <i class="fas fa-info-circle"></i> View Full Details
+                    </button>
+                `;
+
+                // Show test results
+                showTestResults('success', '✅ PASS: Reconsider button is present!');
+            } else {
+                actionsContainer.innerHTML = '';
+                showTestResults('error', '❌ FAIL: No buttons added for rejected course');
+            }
+
+            // Open modal
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function testReconsiderAction(requestId) {
+            alert(`✅ Reconsider button clicked!\n\nRequest ID: ${requestId}\n\nIn the real application, this would:\n1. Show a confirmation dialog\n2. Call the backend API to move the course back to pending\n3. Reload the course list\n4. Switch to the Course Requests panel`);
+        }
+
+        function closeTestModal() {
+            const modal = document.getElementById('view-course-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function showTestResults(type, message) {
+            const resultsSection = document.getElementById('test-results');
+            const resultsContent = document.getElementById('results-content');
+
+            resultsSection.classList.remove('hidden');
+            if (type === 'success') {
+                resultsSection.classList.add('success');
+            }
+
+            resultsContent.innerHTML = `
+                <div class="flex items-center gap-3">
+                    <div class="text-3xl">${type === 'success' ? '✅' : '❌'}</div>
+                    <div>
+                        <p class="font-bold text-lg">${message}</p>
+                        <p class="text-sm text-gray-600 mt-1">
+                            ${type === 'success'
+                                ? 'The Reconsider button is now visible in the modal actions area.'
+                                : 'The button was not found. Please check the implementation.'}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+/**
+ * Parent Portal Panel Styles
+ * Student Profile - Parent Portal Feature
+ */
+
+/* ============================================
+   PARENT PORTAL PANEL
+   ============================================ */
+
+#parent-portal-panel .panel-header {
+    border-bottom: none;
+    padding-bottom: 1rem;
+}
+
+/* ============================================
+   TAB NAVIGATION
+   ============================================ */
+
+.parent-portal-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border-color, #e5e7eb);
+}
+
+.parent-portal-tab {
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    outline: none;
+}
+
+.parent-portal-tab:hover {
+    color: var(--button-bg);
+    background: rgba(var(--button-bg-rgb), 0.05);
+}
+
+.parent-portal-tab.active {
+    color: var(--button-bg);
+    border-bottom-color: var(--button-bg);
+}
+
+.parent-portal-tab-content {
+    animation: fadeIn 0.3s ease;
+}
+
+/* ============================================
+   LINKED PARENTS GRID
+   ============================================ */
+
+#linked-parents-grid {
+    min-height: 100px;
+}
+
+.parent-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.parent-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   INVITE PARENT MODAL
+   ============================================ */
+
+#inviteParentModal .modal-content {
+    max-width: 600px;
+    background: var(--modal-bg, white);
+}
+
+#inviteParentModal .invite-step {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+#inviteParentModal .invite-step.hidden {
+    display: none;
+}
+
+/* Search Input */
+#inviteParentModal #parent-search-input {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+#inviteParentModal #parent-search-input:focus {
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+}
+
+/* Search Results */
+#parent-search-results {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(168, 85, 247, 0.3) transparent;
+}
+
+#parent-search-results::-webkit-scrollbar {
+    width: 6px;
+}
+
+#parent-search-results::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#parent-search-results::-webkit-scrollbar-thumb {
+    background: rgba(168, 85, 247, 0.3);
+    border-radius: 3px;
+}
+
+#parent-search-results::-webkit-scrollbar-thumb:hover {
+    background: rgba(168, 85, 247, 0.5);
+}
+
+/* User Search Cards */
+.user-search-card {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-search-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.1);
+}
+
+/* Selected User Card */
+#selected-user-card {
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Security Verification Box */
+.security-verification-box {
+    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    border: 1px solid #f59e0b;
+}
+
+[data-theme="dark"] .security-verification-box {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.1) 100%);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+/* ============================================
+   INVITE BUTTON ANIMATIONS
+   ============================================ */
+
+#parent-portal-panel .btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+#parent-portal-panel .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+#parent-portal-panel .btn-primary:hover::before {
+    left: 100%;
+}
+
+/* ============================================
+   PENDING INVITATIONS
+   ============================================ */
+
+#pending-invitations-list > div {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pending badge pulse */
+#pending-invitations-count {
+    animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* ============================================
+   INFORMATION CARDS
+   ============================================ */
+
+#parent-portal-panel .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#parent-portal-panel .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   DARK MODE ADJUSTMENTS
+   ============================================ */
+
+[data-theme="dark"] #inviteParentModal .modal-content {
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .user-search-card {
+    background: rgba(55, 65, 81, 0.5);
+}
+
+[data-theme="dark"] .user-search-card:hover {
+    background: rgba(55, 65, 81, 0.8);
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+[data-theme="dark"] .parent-card {
+    background: rgba(31, 41, 55, 0.8);
+}
+
+/* ============================================
+   RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 768px) {
+    #inviteParentModal .modal-content {
+        max-width: 95vw;
+        margin: 10px;
+    }
+
+    #inviteParentModal .grid.grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    #linked-parents-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #parent-portal-panel .panel-header .flex {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    #parent-portal-panel .btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.parent-portal-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.parent-portal-loading::after {
+    content: '';
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(168, 85, 247, 0.2);
+    border-top-color: #a855f7;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+
+.parent-portal-toast {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+    animation: toastIn 0.3s ease;
+}
+
+.parent-portal-toast.success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.parent-portal-toast.error {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.parent-portal-toast.info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

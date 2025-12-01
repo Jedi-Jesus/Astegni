@@ -1,0 +1,41 @@
+<!--
+  Modal: courseworkMainModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="courseworkMainModal" class="coursework-modal">
+        <div class="coursework-modal-overlay" onclick="courseworkManager.closeAllModals()"></div>
+        <div class="coursework-modal-content coursework-modal-medium">
+            <button class="coursework-modal-close" onclick="courseworkManager.closeAllModals()" aria-label="Close">×</button>
+
+            <div class="coursework-modal-body">
+                <h2 class="coursework-content-title">
+                    <span>📝</span> Coursework Management System
+                </h2>
+
+                <!-- Action Buttons -->
+                <div class="coursework-action-buttons">
+                    <button class="coursework-action-btn coursework-btn-primary" onclick="courseworkManager.openGiveCourseworkModal()">
+                        <span class="coursework-btn-icon">📝</span>
+                        <span>Give a Coursework</span>
+                        <span class="coursework-notification-badge" id="courseworkGiveBadge"></span>
+                    </button>
+                    <button class="coursework-action-btn coursework-btn-success" onclick="courseworkManager.openMyCourseworkzesModal()">
+                        <span class="coursework-btn-icon">📚</span>
+                        <span>My Courseworkzes</span>
+                        <span class="coursework-notification-badge" id="courseworkMyBadge"></span>
+                    </button>
+                    <button class="coursework-action-btn coursework-btn-purple" onclick="courseworkManager.openViewAnswersModal()">
+                        <span class="coursework-btn-icon">✅</span>
+                        <span>View Answers</span>
+                        <span class="coursework-notification-badge" id="courseworkAnswersBadge"></span>
+                    </button>
+                </div>
+
+                <div class="text-center text-gray-600 mt-4">
+                    <p>Select an option above to get started</p>
+                </div>
+            </div>
+        </div>
+    </div>

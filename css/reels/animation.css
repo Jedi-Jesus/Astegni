@@ -1,0 +1,43 @@
+/* Reels Specific Animations */
+/* NOTE: Basic animations (fadeIn, fadeInUp, shimmer, etc.) are in css/root/root-theme.css */
+
+@keyframes videoThumbnailHover {
+    0% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+    100% {
+        transform: scale(1.02);
+        filter: brightness(1.1);
+    }
+}
+
+@keyframes playButtonPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.9;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+@keyframes reelCardFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    25% { transform: translateY(-5px) rotate(0.5deg); }
+    75% { transform: translateY(2px) rotate(-0.5deg); }
+}
+
+/* Custom animation classes for reels */
+.video-thumbnail:hover {
+    animation: videoThumbnailHover 0.3s ease-out forwards;
+}
+
+.play-button {
+    animation: playButtonPulse 2s infinite;
+}
+
+.reel-card:hover {
+    animation: reelCardFloat 3s ease-in-out infinite;
+}

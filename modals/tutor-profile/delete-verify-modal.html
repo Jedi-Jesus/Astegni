@@ -1,0 +1,35 @@
+<!--
+  Modal: deleteVerifyModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="deleteVerifyModal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeDeleteVerifyModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Are you sure you want to leave Astegni?</h2>
+                <button class="modal-close" onclick="closeDeleteVerifyModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="warning-card">
+                    <div class="warning-icon">⚠️</div>
+                    <p id="deleteVerifyText" class="modal-text" style="margin-bottom: 16px;">
+                        This decision will deactivate your account. Your account will enter a 90-day deletion period.
+                    </p>
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                        <p class="font-semibold text-blue-800">📅 90-Day Deletion Period</p>
+                        <p class="text-sm text-blue-700 mt-2">
+                            Your account will be deactivated immediately, but the data will be kept for 90 days.
+                            If you log in within this period, your account will be fully restored automatically.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeDeleteVerifyModal()">No, Keep My Account</button>
+                <button class="btn-danger" onclick="proceedToSubscriptionCheck()">Yes, Continue</button>
+            </div>
+        </div>
+    </div>

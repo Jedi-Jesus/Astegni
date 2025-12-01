@@ -1,0 +1,466 @@
+/* ============================================
+   PROFILE DROPDOWN FIX
+   Fixes font-size override issues from other CSS files
+   ============================================ */
+
+/* Fix navigation dropdown profile name size - must have high specificity */
+.nav-actions .profile-name,
+#profile-container .profile-name,
+.profile-dropdown-toggle .profile-name {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--text) !important;
+    max-width: 150px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin-bottom: 0 !important;
+}
+
+/* Ensure dropdown menu items have correct sizes */
+.profile-dropdown-menu .dropdown-user-name {
+    font-size: 0.95rem !important;
+}
+
+.profile-dropdown-menu .dropdown-user-email {
+    font-size: 0.75rem !important;
+}
+
+.profile-dropdown-menu .dropdown-user-role {
+    font-size: 0.75rem !important;
+}
+
+.profile-dropdown-menu .dropdown-item {
+    font-size: 0.875rem !important;
+}
+
+/* ============================================
+   STUDENT PAGE THEME COLORS (Orange/Yellow)
+   Override purple/blue with warm student colors
+   ============================================ */
+
+/* Orange/Yellow gradient for student theme */
+:root {
+    --primary-gradient: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
+    --student-orange: #f59e0b;
+    --student-dark-orange: #f97316;
+}
+
+/* Ad Container - Theme-aware (uses CSS variable) */
+.ad-container {
+    background: var(--primary-gradient) !important;
+    box-shadow: 0 15px 40px rgba(var(--button-bg-rgb, 245, 158, 11), 0.25) !important;
+}
+
+/* Overall Rating Section in Behavioral Notes - Theme-aware */
+.overall-rating-section {
+    background: var(--primary-gradient) !important;
+    box-shadow: 0 4px 16px rgba(var(--button-bg-rgb, 245, 158, 11), 0.3) !important;
+}
+
+/* ============================================
+   LEFT SIDEBAR THEME (Orange/Yellow)
+   ============================================ */
+
+/* Sidebar active state with orange theme */
+.sidebar-link.active {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
+    color: white !important;
+}
+
+/* Sidebar hover states */
+.sidebar-link:hover:not(.active) {
+    background: rgba(245, 158, 11, 0.1) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Sidebar badges with orange theme */
+.badge-count {
+    background: rgba(245, 158, 11, 0.2) !important;
+    color: #f59e0b !important;
+}
+
+.sidebar-link.active .badge-count {
+    background: rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+/* ============================================
+   INTERESTED IN WIDGET (Single Item Display)
+   ============================================ */
+
+/* Interested single display container */
+.interested-single-display {
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Interested current item with smooth transitions */
+.interested-current-item {
+    transition: opacity 0.5s ease, transform 0.5s ease !important;
+}
+
+/* Navigation dots styling */
+.interested-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.interested-dot {
+    transition: all 0.3s ease !important;
+}
+
+.interested-dot:hover {
+    transform: scale(1.2);
+    opacity: 0.8;
+}
+
+.interested-dot.active {
+    width: 24px !important;
+}
+
+/* ============================================
+   ENHANCED CURVED WIDGET CARDS
+   ============================================ */
+
+/* Widget card base styling */
+.widget-card {
+    background: var(--card-bg) !important;
+    border-radius: 20px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.widget-card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Academic Statistics Widget - Enhanced */
+.widget-card .stats-container > div {
+    border-radius: 12px !important;
+    transition: all 0.3s ease !important;
+}
+
+.widget-card .stats-container > div:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Academic Timeline Widget - Enhanced with gradient card and theme-aware text colors */
+.widget-card[style*="linear-gradient(135deg, #667eea"] {
+    /* Keep original gradient background */
+    border: none !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+/* Theme-aware text colors (orange/yellow for student theme) */
+.widget-card[style*="linear-gradient(135deg, #667eea"] h3 {
+    color: #f59e0b !important; /* Student theme orange */
+}
+
+.widget-card[style*="linear-gradient(135deg, #667eea"] .timeline-content p {
+    color: #f97316 !important; /* Student theme dark orange */
+}
+
+/* Timeline dots - theme-aware orange */
+.widget-card[style*="linear-gradient(135deg, #667eea"] .timeline-dot {
+    background: #f59e0b !important;
+}
+
+.widget-card[style*="linear-gradient(135deg, #667eea"] .timeline-item {
+    border-color: rgba(249, 115, 22, 0.3) !important; /* Orange border */
+}
+
+/* Add decorative circles to timeline widget */
+.widget-card[style*="linear-gradient(135deg, #667eea"]::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -50px !important;
+    right: -50px !important;
+    width: 150px !important;
+    height: 150px !important;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%) !important;
+    border-radius: 50% !important;
+}
+
+.widget-card[style*="linear-gradient(135deg, #667eea"]::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -40px !important;
+    left: -40px !important;
+    width: 120px !important;
+    height: 120px !important;
+    background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%) !important;
+    border-radius: 50% !important;
+}
+
+/* ============================================
+   SEAMLESS PROFILE HEADER ENHANCEMENTS
+   ============================================ */
+
+/* Enhanced Profile Header Section */
+.profile-header-section {
+    background: var(--card-bg) !important;
+    border-radius: 24px !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
+    overflow: hidden !important;
+    position: relative !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.profile-header-section:hover {
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Enhanced Cover Image Container */
+.cover-image-container {
+    position: relative !important;
+    height: 320px !important;
+    overflow: hidden !important;
+    border-radius: 24px 24px 0 0 !important;
+}
+
+.cover-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    filter: brightness(0.95) !important;
+}
+
+.cover-image-container:hover .cover-img {
+    transform: scale(1.08) !important;
+    filter: brightness(1) !important;
+}
+
+/* Enhanced Cover Overlay */
+.cover-overlay {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: linear-gradient(180deg,
+        rgba(0, 0, 0, 0.05) 0%,
+        rgba(0, 0, 0, 0.15) 50%,
+        rgba(0, 0, 0, 0.4) 100%) !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s ease !important;
+}
+
+.cover-image-container:hover .cover-overlay {
+    opacity: 0.8 !important;
+}
+
+/* Enhanced View Mode Badge */
+.view-mode-badge {
+    position: absolute !important;
+    top: 1.5rem !important;
+    right: 1.5rem !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    color: var(--primary-gradient) !important;
+    padding: 0.75rem 1.5rem !important;
+    border-radius: 30px !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+    z-index: 10 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.5rem !important;
+    transition: all 0.3s ease !important;
+    border: 2px solid rgba(245, 158, 11, 0.2) !important;
+}
+
+.view-mode-badge:hover {
+    transform: scale(1.05) translateY(-2px) !important;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+    background: rgba(255, 255, 255, 1) !important;
+}
+
+/* Seamless Profile Avatar Integration */
+.profile-avatar-container {
+    position: relative !important;
+    flex-shrink: 0 !important;
+    margin-top: -80px !important;
+    z-index: 20 !important;
+}
+
+.profile-avatar {
+    width: 160px !important;
+    height: 160px !important;
+    border-radius: 50% !important;
+    border: 6px solid var(--card-bg) !important;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2),
+                0 0 0 2px rgba(245, 158, 11, 0.3) !important;
+    object-fit: cover !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    background: var(--card-bg) !important;
+}
+
+.profile-avatar-container:hover .profile-avatar {
+    transform: scale(1.08) rotate(2deg) !important;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25),
+                0 0 0 4px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* Enhanced Online Indicator */
+.online-indicator {
+    position: absolute !important;
+    bottom: 15px !important;
+    right: 15px !important;
+    width: 32px !important;
+    height: 32px !important;
+    background: #22c55e !important;
+    border: 5px solid var(--card-bg) !important;
+    border-radius: 50% !important;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.5),
+                0 0 20px rgba(34, 197, 94, 0.3) !important;
+    animation: pulseOnline 2s ease-in-out infinite !important;
+    z-index: 21 !important;
+}
+
+@keyframes pulseOnline {
+    0%, 100% {
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.5),
+                    0 0 20px rgba(34, 197, 94, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.8),
+                    0 0 30px rgba(34, 197, 94, 0.6);
+    }
+}
+
+/* Profile Main Info Enhancement */
+.profile-main-info {
+    padding: 0 2.5rem 2.5rem 2.5rem !important;
+    position: relative !important;
+    z-index: 5 !important;
+}
+
+.profile-info-wrapper {
+    display: flex !important;
+    gap: 2.5rem !important;
+    align-items: flex-start !important;
+}
+
+/* Profile Name Enhancement */
+.profile-name {
+    font-size: 2.5rem !important;
+    font-weight: 800 !important;
+    color: var(--text-primary) !important;
+    margin-bottom: 0.75rem !important;
+    line-height: 1.2 !important;
+    background: linear-gradient(135deg, var(--text-primary) 0%, #f59e0b 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    transition: all 0.3s ease !important;
+}
+
+.profile-name:hover {
+    transform: translateX(5px) !important;
+}
+
+/* Enhanced Profile Badges */
+.badges-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 0.75rem !important;
+}
+
+.profile-badge {
+    padding: 0.6rem 1.2rem !important;
+    border-radius: 25px !important;
+    font-size: 0.875rem !important;
+    font-weight: 600 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    cursor: default !important;
+    border: 2px solid transparent !important;
+}
+
+.profile-badge:hover {
+    transform: translateY(-3px) scale(1.05) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.profile-badge.verified {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3) !important;
+}
+
+.profile-badge.school {
+    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3) !important;
+}
+
+.profile-badge.expert {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* ============================================
+   PANEL VISIBILITY FIX FOR VIEW-STUDENT
+   Ensures clubs, events, and other panels display correctly
+   ============================================ */
+
+/* Active panels should always display */
+.panel-content.active {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Make sure content inside active panels is visible */
+.panel-content.active .clubs-content,
+.panel-content.active .events-content,
+.panel-content.active .sidebar-content-panel {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Make sure grids inside active panels are visible */
+.panel-content.active .clubs-grid,
+.panel-content.active .events-grid {
+    display: grid !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .cover-image-container {
+        height: 220px !important;
+    }
+
+    .profile-avatar {
+        width: 120px !important;
+        height: 120px !important;
+    }
+
+    .profile-avatar-container {
+        margin-top: -60px !important;
+    }
+
+    .profile-name {
+        font-size: 1.75rem !important;
+    }
+
+    .profile-main-info {
+        padding: 0 1.5rem 2rem 1.5rem !important;
+    }
+}

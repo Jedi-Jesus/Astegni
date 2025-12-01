@@ -1,0 +1,53 @@
+<!--
+  Modal: coming-soon-modal
+  Source: index.html
+  Purpose: Coming soon feature announcement with email notification signup
+-->
+
+<div id="coming-soon-modal" class="modal hidden">
+    <div class="modal-content enhanced coming-soon-content">
+        <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                </path>
+            </svg>
+        </button>
+
+        <div class="coming-soon-header">
+            <div class="coming-soon-icon">
+                <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                    </path>
+                </svg>
+            </div>
+            <h3 class="modal-title">Coming Soon!</h3>
+            <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay
+                tuned!</p>
+        </div>
+
+        <div class="coming-soon-features">
+            <div class="feature-item">
+                <span class="feature-icon">🚀</span>
+                <span>Launching Soon</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">🔔</span>
+                <span>Get Notified</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">⚡</span>
+                <span>Be First to Try</span>
+            </div>
+        </div>
+
+        <form id="coming-soon-form" class="auth-form">
+            <div class="form-group">
+                <label>Get notified when this feature launches</label>
+                <input type="email" id="notify-email" placeholder="Enter your email" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Notify Me</button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,92 @@
+/* ============================================
+   INDEX PAGE RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 1200px) {
+    .testimonials-slider {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    /* Hero Section */
+    .hero-text { font-size: 2rem; }
+    .hero-buttons {
+        flex-direction: column;
+        width: 100%;
+        padding: 0 1rem;
+    }
+    .cta-button { width: 100%; }
+
+    /* Counter Grid - 3 cards now */
+    .counter-grid-top {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .counter-card-enhanced { height: 200px; }
+
+    /* News Section */
+    .news-title-enhanced { font-size: 1.75rem; }
+    .news-text-enhanced { font-size: 1.125rem; }
+
+    /* Grid Layouts */
+    .features-grid,
+    .courses-grid-enhanced {
+        grid-template-columns: 1fr;
+    }
+
+    /* Ad Content */
+    .ad-content-wrapper {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .ad-visual-content { display: none; }
+
+    /* Video Carousel */
+    .video-carousel-wrapper { padding: 0 20px; }
+
+    /* Testimonials */
+    .testimonials-slider {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+    }
+
+    .testimonials-section { padding: 3rem 1rem; }
+
+    /* Forms */
+    .form-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+    .counter-grid-top {
+        grid-template-columns: 1fr;
+    }
+    .quick-news-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Dark theme adjustments for index page */
+[data-theme="dark"] .profile-dropdown-toggle {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .profile-dropdown-toggle:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] .mobile-profile-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+/* Footer Link External Indicator */
+.footer-link[target="_blank"]::after {
+    content: '↗';
+    margin-left: 4px;
+    font-size: 0.8em;
+    opacity: 0.7;
+}

@@ -1,0 +1,57 @@
+<!--
+  Modal: profileUploadModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div class="upload-profile-modal" id="profileUploadModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upload Profile Picture</h2>
+                    <button class="modal-close" onclick="closeProfileUploadModal()">&times;</button>
+                </div>
+
+                <div class="upload-area" id="profileUploadArea"
+                    onclick="document.getElementById('profileInput').click()">
+                    <span class="upload-icon">👤</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint">Recommended: 500x500px (JPG, PNG, GIF)</p>
+                    <input type="file" id="profileInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'profile')">
+                </div>
+
+                <div class="preview-container" id="profilePreview">
+                    <img src="" alt="Profile preview" class="preview-image" id="profilePreviewImage">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="profileFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="profileFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Dimensions:</span>
+                            <span id="profileDimensions">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-progress" id="profileProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="profileProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-spinner" id="profileSpinner"></div>
+
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('profile')">Change Image</button>
+                    <button class="btn-upload primary" onclick="uploadImage('profile')">Upload Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>

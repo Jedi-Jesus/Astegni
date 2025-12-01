@@ -1,0 +1,370 @@
+/* ============================================
+   REVIEWS PANEL STYLES
+   Styles for the enhanced reviews panel
+   ============================================ */
+
+/* Ensure reviews panel and parent containers allow tooltip visibility */
+#reviews-panel,
+#reviews-list {
+    overflow: visible !important;
+}
+
+/* Review Filter Tabs */
+.review-filter-tab {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.review-filter-tab:hover {
+    background: var(--hover-bg);
+    border-color: var(--blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.review-filter-tab.active {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border-color: #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Review Card (Matching view-tutor.html style) */
+.review-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 10px 0;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    overflow: visible !important; /* Ensure tooltips are not clipped */
+    position: relative;
+}
+
+.review-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Review Header */
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+/* Reviewer Avatar */
+.reviewer-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 12px;
+    transition: all 0.3s ease;
+}
+
+.reviewer-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Reviewer Info */
+.reviewer-info {
+    flex: 1;
+}
+
+.reviewer-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--heading);
+    margin-bottom: 4px;
+    transition: color 0.3s ease;
+}
+
+.reviewer-name:hover {
+    color: #3b82f6;
+}
+
+.review-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* Review Title */
+.review-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--heading);
+    margin-bottom: 8px;
+    margin-top: 12px;
+}
+
+/* Review Text */
+.review-text {
+    font-size: 0.9rem;
+    color: var(--text);
+    line-height: 1.6;
+    margin-top: 8px;
+}
+
+/* Verified Badge */
+.verified-badge {
+    display: inline-block;
+    background: #22c55e;
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-top: 8px;
+    font-weight: 600;
+}
+
+/* Review Rating */
+.review-rating {
+    color: #FFD700;
+    font-size: 1.25rem;
+    letter-spacing: 2px;
+}
+
+/* Review Stars (Hover for tooltip) */
+.review-stars {
+    position: relative;
+    display: inline-block;
+    color: #f59e0b;
+    letter-spacing: 2px;
+}
+
+/* Review Tooltip */
+.review-tooltip {
+    position: fixed;
+    background: linear-gradient(135deg, #1e293b, #334155);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    font-size: 0.875rem;
+    pointer-events: none;
+    animation: tooltipFadeIn 0.2s ease-in-out;
+    min-width: 220px;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stats Cards */
+.reviews-stats-card {
+    transition: all 0.3s ease;
+}
+
+.reviews-stats-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .review-filter-tab {
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .review-card {
+        padding: 1rem;
+    }
+
+    .review-stars {
+        font-size: 1.5rem;
+    }
+
+    .review-tooltip {
+        min-width: 180px;
+        font-size: 0.8rem;
+    }
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .review-filter-tab {
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .review-card {
+    border-left-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .review-card:hover {
+    border-left-color: #3b82f6;
+}
+
+/* ===== RATING TOOLTIP STYLES (FROM VIEW-PARENT) ===== */
+.rating-tooltip-container {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.rating-tooltip {
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card-bg);
+    border: 1px solid rgba(var(--border-rgb), 0.2);
+    border-radius: 16px;
+    padding: 1.25rem;
+    min-width: 320px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 10000;
+    pointer-events: none;
+}
+
+.rating-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: var(--card-bg);
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+}
+
+.rating-tooltip-container:hover .rating-tooltip {
+    opacity: 1;
+    visibility: visible;
+    bottom: calc(100% + 10px);
+    pointer-events: auto;
+}
+
+.tooltip-header {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tooltip-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.tooltip-rating-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    min-width: 120px;
+    font-weight: 500;
+}
+
+.tooltip-progress-bar {
+    flex: 1;
+    height: 6px;
+    background: rgba(var(--border-rgb), 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.tooltip-progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.tooltip-progress-fill.subject-matter {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.tooltip-progress-fill.communication {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.tooltip-progress-fill.discipline {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.tooltip-progress-fill.punctuality {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+}
+
+.tooltip-progress-fill.engagement-tutor {
+    background: linear-gradient(90deg, #3b82f6, #2563eb);
+}
+
+.tooltip-progress-fill.engagement-child {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.tooltip-progress-fill.responsiveness {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.tooltip-progress-fill.payment {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+}
+
+.tooltip-progress-value {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 30px;
+    text-align: right;
+}
+
+.tooltip-overall {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(var(--border-rgb), 0.3);
+}
+
+.tooltip-overall-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--heading);
+}
+
+.tooltip-overall-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--blue);
+}
+
+/* Dark mode tooltip adjustments */
+[data-theme="dark"] .rating-tooltip {
+    background: rgb(26, 26, 26);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .rating-tooltip::before {
+    border-top-color: rgb(26, 26, 26);
+}
+
+/* Ensure reviews list container doesn't clip tooltips */
+#reviews-list {
+    overflow: visible !important;
+}
+
+/* Ensure panel content doesn't clip tooltips */
+#reviews-panel {
+    overflow: visible !important;
+}

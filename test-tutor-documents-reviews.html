@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tutor Documents Reviews Integration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Test Reviews Integration</h1>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Setup</h2>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Admin ID:</label>
+                    <input type="number" id="test-admin-id" class="border rounded px-3 py-2 w-full" placeholder="Enter admin ID">
+                    <button onclick="setAdminId()" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                        Set Admin ID
+                    </button>
+                </div>
+                <div class="text-sm text-gray-600">
+                    Current Admin ID: <span id="current-admin-id" class="font-mono">Not set</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Test Endpoints</h2>
+            <div class="space-y-3">
+                <button onclick="testRecentReviews()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 w-full">
+                    Test Recent Reviews (Dashboard)
+                </button>
+                <button onclick="testAllReviews()" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 w-full">
+                    Test All Reviews
+                </button>
+                <button onclick="testStats()" class="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 w-full">
+                    Test Stats
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Results</h2>
+            <pre id="results" class="bg-gray-50 p-4 rounded overflow-auto max-h-96 text-sm">No tests run yet</pre>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        function setAdminId() {
+            const adminId = document.getElementById('test-admin-id').value;
+            if (!adminId) {
+                alert('Please enter an admin ID');
+                return;
+            }
+            localStorage.setItem('adminId', adminId);
+            document.getElementById('current-admin-id').textContent = adminId;
+            alert(`Admin ID set to: ${adminId}`);
+        }
+
+        function getAdminId() {
+            return localStorage.getItem('adminId');
+        }
+
+        function getAuthToken() {
+            return localStorage.getItem('token') || localStorage.getItem('access_token');
+        }
+
+        async function testRecentReviews() {
+            const adminId = getAdminId();
+            if (!adminId) {
+                alert('Please set admin ID first');
+                return;
+            }
+
+            try {
+                const token = getAuthToken();
+                const url = `${API_BASE_URL}/api/admin-reviews/recent?limit=3&admin_id=${adminId}`;
+
+                document.getElementById('results').textContent = `Fetching: ${url}\n\nLoading...`;
+
+                const response = await fetch(url, {
+                    headers: token ? {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    } : {}
+                });
+
+                const data = await response.json();
+
+                document.getElementById('results').textContent =
+                    `Status: ${response.status}\n\n` +
+                    `URL: ${url}\n\n` +
+                    `Response:\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                document.getElementById('results').textContent = `Error: ${error.message}\n\n${error.stack}`;
+            }
+        }
+
+        async function testAllReviews() {
+            const adminId = getAdminId();
+            if (!adminId) {
+                alert('Please set admin ID first');
+                return;
+            }
+
+            try {
+                const token = getAuthToken();
+                const url = `${API_BASE_URL}/api/admin-reviews/?limit=100&admin_id=${adminId}`;
+
+                document.getElementById('results').textContent = `Fetching: ${url}\n\nLoading...`;
+
+                const response = await fetch(url, {
+                    headers: token ? {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    } : {}
+                });
+
+                const data = await response.json();
+
+                document.getElementById('results').textContent =
+                    `Status: ${response.status}\n\n` +
+                    `URL: ${url}\n\n` +
+                    `Total Reviews: ${data.total_count || 0}\n\n` +
+                    `Response:\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                document.getElementById('results').textContent = `Error: ${error.message}\n\n${error.stack}`;
+            }
+        }
+
+        async function testStats() {
+            const adminId = getAdminId();
+            if (!adminId) {
+                alert('Please set admin ID first');
+                return;
+            }
+
+            try {
+                const token = getAuthToken();
+                const url = `${API_BASE_URL}/api/admin-reviews/stats?admin_id=${adminId}`;
+
+                document.getElementById('results').textContent = `Fetching: ${url}\n\nLoading...`;
+
+                const response = await fetch(url, {
+                    headers: token ? {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    } : {}
+                });
+
+                const data = await response.json();
+
+                document.getElementById('results').textContent =
+                    `Status: ${response.status}\n\n` +
+                    `URL: ${url}\n\n` +
+                    `Response:\n${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                document.getElementById('results').textContent = `Error: ${error.message}\n\n${error.stack}`;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const adminId = getAdminId();
+            if (adminId) {
+                document.getElementById('current-admin-id').textContent = adminId;
+                document.getElementById('test-admin-id').value = adminId;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2448 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - View Advertiser Profile</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/admin-profile/admin.css">
+    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css">
+    <link rel="stylesheet" href="../css/find-tutors/hero-section.css">
+    <!-- Shared Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Minimal inline styles -->
+    <style>
+        /* Compensate for fixed navbar */
+        body {
+            padding-top: 72px;
+        }
+
+        /* Profile header fixes */
+        .profile-header-section {
+            overflow: visible !important;
+        }
+
+        .profile-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            word-wrap: break-word;
+        }
+
+        .profile-main-info {
+            overflow: visible !important;
+        }
+
+        .profile-details-section {
+            overflow: visible !important;
+        }
+
+        /* Panel system */
+        .panel-content {
+            display: none;
+        }
+
+        .panel-content.active {
+            display: block;
+        }
+
+        /* Sidebar link styles */
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(var(--button-bg-rgb), 0.1);
+            transform: translateX(5px);
+        }
+
+        .sidebar-link.active {
+            background: linear-gradient(135deg, var(--button-bg) 0%, rgba(var(--button-bg-rgb), 0.8) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(var(--button-bg-rgb), 0.3);
+        }
+
+        .sidebar-icon {
+            font-size: 1.25rem;
+        }
+
+        .badge-count {
+            margin-left: auto;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .sidebar-link.active .badge-count {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Enhanced Profile Header Section */
+        .profile-header-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: visible !important;
+        }
+
+        .cover-image-container {
+            position: relative;
+            height: 280px;
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+        }
+
+        .cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .cover-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%);
+        }
+
+        .view-mode-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .profile-main-info {
+            padding: 0 2rem 2rem 2rem;
+            margin-top: -60px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .profile-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 5px solid var(--card-bg);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            object-fit: cover;
+        }
+
+        .online-indicator {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            background: #22c55e;
+            border: 4px solid var(--card-bg);
+            border-radius: 50%;
+        }
+
+        /* Campaign card styles */
+        .campaign-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .campaign-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .campaign-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .campaign-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .campaign-status.active {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .campaign-status.paused {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .campaign-status.completed {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        /* Video grid styles */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .video-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+
+        .video-thumbnail {
+            position: relative;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .video-play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .video-card:hover .video-play-button {
+            background: white;
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .campaign-metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(var(--button-bg-rgb), 0.05);
+            border-radius: 8px;
+        }
+
+        .metric-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--heading);
+        }
+
+        .metric-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+    </style>
+    <!-- Profile Dropdown Fix - MUST load last -->
+    <link rel="stylesheet" href="../css/view-advertiser/profile-specific-fix.css">
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-container" style="max-width: 100%; padding: 0 1rem;">
+            <div class="nav-brand">
+                <button class="sidebar-toggle" id="hamburger" aria-label="Toggle sidebar" onclick="toggleSidebar()">
+                    <span class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+                <a href="../index.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">View Advertiser</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <!-- Center: Navigation Menu -->
+            <div class="nav-menu">
+                <div class="nav-items">
+                    <a class="nav-link" href="../index.html">
+                        <span class="nav-icon">🏠</span> Home
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'news')">
+                        <span class="nav-icon">📰</span> News
+                    </a>
+                    <a class="nav-link" href="../branch/find-tutors.html">
+                        <span class="nav-icon">👨‍🏫</span> Find Tutors
+                    </a>
+                    <a class="nav-link" href="../branch/reels.html">
+                        <span class="nav-icon">🎬</span> Reels
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'store')">
+                        <span class="nav-icon">📚</span> Bookstore
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                        <span class="nav-icon">💼</span> Find a Job
+                    </a>
+                </div>
+            </div>
+
+            <div class="nav-actions">
+                <!-- Profile container -->
+                <div id="profile-container" class="profile-dropdown-container">
+                    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                        onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic" alt="Profile">
+                        <span id="profile-name" class="profile-name"></span>
+                        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                        <!-- User info header - CLICKABLE to go to profile page -->
+                        <a href="#" id="dropdown-profile-link" class="dropdown-header-link">
+                            <div class="dropdown-header">
+                                <img id="dropdown-profile-pic" class="profile-pic" alt="Profile">
+                                <div class="dropdown-user-info">
+                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                </div>
+                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <!-- Role switcher (shown only if user has multiple roles) -->
+                        <div id="role-switcher-section" class="role-switcher-section hidden">
+                            <div class="dropdown-item-header">Switch Role</div>
+                            <div id="role-options" class="role-options">
+                                <!-- Role options will be dynamically added here -->
+                            </div>
+                            <div class="dropdown-divider"></div>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <button class="dropdown-item logout-item" onclick="logout()">
+                            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notification Icon -->
+                <button class="icon-btn" aria-label="Notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span class="notification-badge">5</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Top Advertisement Placeholder -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
+        <div class="ad-animation">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+        </div>
+        <div class="ad-content">
+            <span class="ad-label">Sponsored</span>
+            <h3 class="ad-title">Premium Advertising Services</h3>
+            <p class="ad-text">Reach your target audience effectively</p>
+            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+        </div>
+        <div class="ad-visual">
+            <div class="ad-circles">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+                <div class="circle circle-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container" style="position: fixed; left: -280px; top: 72px; width: 280px; height: calc(100vh - 72px); background: var(--card-bg); box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: left 0.3s ease; z-index: 1000; overflow-y: auto;">
+        <div class="sidebar-content" style="padding: 1.5rem;">
+            <div class="sidebar-nav">
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 700; color: var(--heading);">Advertiser Profile</h3>
+
+                <a href="#" onclick="switchPanel(event, 'dashboard'); return false;" class="sidebar-link active" data-panel="dashboard">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'campaigns'); return false;" class="sidebar-link" data-panel="campaigns">
+                    <span class="sidebar-icon">🎯</span>
+                    <span>Campaigns</span>
+                    <span class="badge-count">5</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'ad-videos'); return false;" class="sidebar-link" data-panel="ad-videos">
+                    <span class="sidebar-icon">🎬</span>
+                    <span>Ad Videos</span>
+                    <span class="badge-count">12</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'courses'); return false;" class="sidebar-link" data-panel="courses">
+                    <span class="sidebar-icon">🎓</span>
+                    <span>Marketing Courses</span>
+                    <span class="badge-count">8</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'events'); return false;" class="sidebar-link" data-panel="events">
+                    <span class="sidebar-icon">📅</span>
+                    <span>Events</span>
+                    <span class="badge-count">6</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'clubs'); return false;" class="sidebar-link" data-panel="clubs">
+                    <span class="sidebar-icon">🎭</span>
+                    <span>Marketing Clubs</span>
+                    <span class="badge-count">3</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'podcasts'); return false;" class="sidebar-link" data-panel="podcasts">
+                    <span class="sidebar-icon">🎙️</span>
+                    <span>Podcasts</span>
+                    <span class="badge-count">24</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'blog'); return false;" class="sidebar-link" data-panel="blog">
+                    <span class="sidebar-icon">📝</span>
+                    <span>Blog</span>
+                    <span class="badge-count">45</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'gallery'); return false;" class="sidebar-link" data-panel="gallery">
+                    <span class="sidebar-icon">🖼️</span>
+                    <span>Gallery</span>
+                    <span class="badge-count">150+</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'resources'); return false;" class="sidebar-link" data-panel="resources">
+                    <span class="sidebar-icon">📚</span>
+                    <span>Resources</span>
+                    <span class="badge-count">32</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'products'); return false;" class="sidebar-link" data-panel="products">
+                    <span class="sidebar-icon">📦</span>
+                    <span>Products</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'company-info'); return false;" class="sidebar-link" data-panel="company-info">
+                    <span class="sidebar-icon">🏢</span>
+                    <span>Company Info</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'testimonials'); return false;" class="sidebar-link" data-panel="testimonials">
+                    <span class="sidebar-icon">💬</span>
+                    <span>Testimonials</span>
+                </a>
+                <hr style="margin: 1.5rem 0; border: none; border-top: 1px solid var(--border);">
+                <a href="#" onclick="switchPanel(event, 'contact'); return false;" class="sidebar-link" data-panel="contact">
+                    <span class="sidebar-icon">📞</span>
+                    <span>Contact</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999;" onclick="toggleSidebar()"></div>
+
+
+
+    <!-- Main Content -->
+    <section class="py-8" style="padding-top: 1rem;">
+        <div class="container mx-auto px-4">
+            <!-- Hero Section -->
+            <section class="hero-section animate__animated animate__fadeIn">
+                <h2 class="hero-title">
+                    <span id="typedText">Innovative Marketing • Strategic Campaigns</span>
+                    <span id="cursor" class="cursor-blink">|</span>
+                </h2>
+                <p id="hero-subtitle" class="hero-subtitle">Empowering brands through creative advertising solutions</p>
+                <div class="hero-stats">
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                        <span class="stat-number" data-target="5" data-suffix="">0</span>
+                        <span class="stat-label">Active Campaigns</span>
+                    </div>
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+                        <span class="stat-number" data-target="2500000" data-suffix="">0</span>
+                        <span class="stat-label">Total Reach</span>
+                    </div>
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                        <span class="stat-number" data-target="4.8" data-suffix="">0</span>
+                        <span class="stat-label">Client Rating</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1" style="min-width: 0;">
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+
+                            <!-- Profile Header Section -->
+                            <section class="profile-header-section mb-8">
+                                <div class="cover-image-container relative">
+                                    <img id="cover-img" src="../uploads/system_images/system_cover_pictures/ad cover.jpeg"
+                                        alt="Cover" class="cover-img">
+                                    <div class="cover-overlay"></div>
+                                    <!-- View Mode Badge -->
+                                    <div class="view-mode-badge">
+                                        <span>👁️</span>
+                                        <span>Public View</span>
+                                    </div>
+                                </div>
+
+                                <div class="profile-main-info">
+                                    <div class="profile-info-wrapper" style="display: flex; gap: 2rem; align-items: flex-start;">
+                                        <div class="profile-avatar-container" style="position: relative; flex-shrink: 0;">
+                                            <img id="profile-avatar" src="../uploads/system_images/system_profile_pictures/ad-profile-1.jpeg"
+                                                alt="Advertiser Profile" class="profile-avatar">
+                                            <span class="online-indicator"></span>
+                                        </div>
+
+                                        <div class="profile-details-section" style="flex: 1; padding-top: 0.5rem;">
+                                            <div class="profile-name-row" style="margin-bottom: 1rem;">
+                                                <h1 class="profile-name" id="advertiserName">TechVision Marketing</h1>
+                                                <div class="badges-row" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+                                                    <span class="profile-badge verified" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white;">✔ Verified Advertiser</span>
+                                                    <span class="profile-badge premium" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">⭐ Premium Member</span>
+                                                    <span class="profile-badge top-rated" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white;">🏆 Top Rated</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-section" style="margin-bottom: 1rem;">
+                                                <div class="rating-wrapper" style="display: flex; align-items: center; gap: 0.75rem;">
+                                                    <div class="rating-stars" style="color: #f59e0b; font-size: 1.5rem;">★★★★★</div>
+                                                    <span class="rating-value" style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4.8</span>
+                                                    <span class="rating-count" style="color: var(--text-secondary); font-size: 0.95rem;">(125 client reviews)</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-location" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; margin-bottom: 0.75rem;">
+                                                <span class="location-icon" style="font-size: 1.25rem;">📍</span>
+                                                <span style="color: var(--text); font-size: 0.95rem;">Addis Ababa, Ethiopia | Digital Marketing Agency</span>
+                                            </div>
+
+                                            <!-- Contact Information -->
+                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">📧</span>
+                                                    <div style="flex: 1; overflow: hidden;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Email</div>
+                                                        <div style="color: var(--text); font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">info@techvision.com</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">🌐</span>
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Website</div>
+                                                        <div style="color: var(--text); font-size: 0.875rem; font-weight: 500;">www.techvision.com</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">🏭</span>
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Industry</div>
+                                                        <div style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Digital Marketing</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-quote" style="background: linear-gradient(135deg, rgba(79,70,229,0.1) 0%, rgba(124,58,237,0.05) 100%); border-left: 4px solid #4f46e5; border-radius: 12px; padding: 1.25rem 1.5rem; margin-top: 1.5rem; font-style: italic; color: var(--text);">
+                                                <span>"Transforming brands through innovative digital campaigns"</span>
+                                            </div>
+
+                                            <!-- Stats Grid -->
+                                            <div class="stats-grid" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-top: 1.5rem;">
+                                                <div style="text-align: center; padding: 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <div style="font-size: 1.75rem; font-weight: 700; color: var(--heading);">150+</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-muted);">Clients</div>
+                                                </div>
+                                                <div style="text-align: center; padding: 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <div style="font-size: 1.75rem; font-weight: 700; color: var(--heading);">500+</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-muted);">Campaigns</div>
+                                                </div>
+                                                <div style="text-align: center; padding: 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <div style="font-size: 1.75rem; font-weight: 700; color: var(--heading);">2.5M</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-muted);">Reach</div>
+                                                </div>
+                                                <div style="text-align: center; padding: 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <div style="font-size: 1.75rem; font-weight: 700; color: var(--heading);">8+</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-muted);">Years</div>
+                                                </div>
+                                                <div style="text-align: center; padding: 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <div style="font-size: 1.75rem; font-weight: 700; color: var(--heading);">25</div>
+                                                    <div style="font-size: 0.875rem; color: var(--text-muted);">Team</div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Action Buttons -->
+                                            <div class="profile-actions" style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                                                <button onclick="viewPortfolio()" class="btn-primary" style="flex: 1; min-width: 160px; padding: 0.875rem 1.5rem; font-weight: 600; border-radius: 12px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; border: none; cursor: pointer;">
+                                                    📂 View Portfolio
+                                                </button>
+                                                <button onclick="contactAdvertiser()" class="btn-secondary" style="flex: 1; min-width: 160px; padding: 0.875rem 1.5rem; font-weight: 600; border-radius: 12px; background: transparent; color: var(--text); border: 2px solid rgba(var(--border-rgb), 0.3); cursor: pointer;">
+                                                    💬 Contact Us
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- About Section -->
+                            <section style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--heading);">About Our Company</h3>
+                                <p style="color: var(--text); line-height: 1.7;">TechVision Marketing is a leading digital marketing agency in Ethiopia, specializing in creative advertising campaigns that drive results. With over 8 years of experience, we've helped 150+ brands achieve their marketing goals through innovative strategies, compelling content, and data-driven approaches. Our team of 25 creative professionals is dedicated to delivering excellence in every campaign.</p>
+                            </section>
+
+                            <!-- Featured Campaigns Section -->
+                            <section style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--heading);">Featured Campaigns</h2>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(37,99,235,0.05)); border-radius: 12px; border: 2px solid rgba(59,130,246,0.2);">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">Summer Education Drive</h3>
+                                            <span class="campaign-status active">● Active</span>
+                                        </div>
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Promoting online learning platforms for students</p>
+                                        <div class="campaign-metrics">
+                                            <div class="metric-item">
+                                                <span class="metric-value">500K</span>
+                                                <span class="metric-label">Reach</span>
+                                            </div>
+                                            <div class="metric-item">
+                                                <span class="metric-value">12K</span>
+                                                <span class="metric-label">Clicks</span>
+                                            </div>
+                                            <div class="metric-item">
+                                                <span class="metric-value">2.4%</span>
+                                                <span class="metric-label">CTR</span>
+                                            </div>
+                                            <div class="metric-item">
+                                                <span class="metric-value">85%</span>
+                                                <span class="metric-label">Complete</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.05)); border-radius: 12px; border: 2px solid rgba(16,185,129,0.2);">
+                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">Back to School 2024</h3>
+                                            <span class="campaign-status active">● Active</span>
+                                        </div>
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">School supplies and educational resources</p>
+                                        <div class="campaign-metrics">
+                                            <div class="metric-item">
+                                                <span class="metric-value">750K</span>
+                                                <span class="metric-label">Reach</span>
+                                            </div>
+                                            <div class="metric-item">
+                                                <span class="metric-value">25K</span>
+                                                <span class="metric-label">Clicks</span>
+                                            </div>
+                                            <div class="metric-item">
+                                                <span class="metric-value">3.3%</span>
+                                                <span class="metric-label">CTR</span>
+                                            </div>
+                                            <div class="metric-item">
+                                                <span class="metric-value">60%</span>
+                                                <span class="metric-label">Complete</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Recent Ad Videos Section -->
+                            <section style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                    <h2 style="font-size: 1.75rem; font-weight: 700; margin: 0; color: var(--heading);">Recent Advertisement Videos</h2>
+                                    <button onclick="viewAllVideos()" style="background: var(--button-bg); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                                        View All
+                                    </button>
+                                </div>
+                                <div class="video-grid">
+                                    <!-- Video Card 1 -->
+                                    <div class="video-card" onclick="playVideo(1)">
+                                        <div class="video-thumbnail">
+                                            <div class="video-play-button">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                                </svg>
+                                            </div>
+                                            <span class="video-duration">2:45</span>
+                                        </div>
+                                        <div style="padding: 1rem;">
+                                            <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Transform Your Education Journey</h4>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Educational platform showcase</p>
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-size: 0.875rem; color: var(--text-muted);">125K views</span>
+                                                <span style="font-size: 0.875rem; color: var(--text-muted);">2 days ago</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Video Card 2 -->
+                                    <div class="video-card" onclick="playVideo(2)">
+                                        <div class="video-thumbnail">
+                                            <div class="video-play-button">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                                </svg>
+                                            </div>
+                                            <span class="video-duration">1:30</span>
+                                        </div>
+                                        <div style="padding: 1rem;">
+                                            <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Summer Learning Special</h4>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Online courses promotion</p>
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-size: 0.875rem; color: var(--text-muted);">89K views</span>
+                                                <span style="font-size: 0.875rem; color: var(--text-muted);">1 week ago</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Video Card 3 -->
+                                    <div class="video-card" onclick="playVideo(3)">
+                                        <div class="video-thumbnail">
+                                            <div class="video-play-button">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                                </svg>
+                                            </div>
+                                            <span class="video-duration">3:15</span>
+                                        </div>
+                                        <div style="padding: 1rem;">
+                                            <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Future Ready Students</h4>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Technology in education</p>
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-size: 0.875rem; color: var(--text-muted);">156K views</span>
+                                                <span style="font-size: 0.875rem; color: var(--text-muted);">2 weeks ago</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <!-- Campaigns Panel -->
+                        <div id="campaigns-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">All Campaigns</h2>
+                                <p style="color: var(--text-secondary);">Browse through all our advertising campaigns</p>
+                            </div>
+
+                            <div class="campaign-cards-grid">
+                                <!-- Campaign Card 1 -->
+                                <div class="campaign-card">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">Digital Literacy Program</h3>
+                                        <span class="campaign-status active">● Active</span>
+                                    </div>
+                                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400" alt="Campaign" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+                                    <p style="color: var(--text); margin-bottom: 1.5rem;">Empowering students with essential digital skills for the modern world.</p>
+                                    <div class="campaign-metrics">
+                                        <div class="metric-item">
+                                            <span class="metric-value">1.2M</span>
+                                            <span class="metric-label">Impressions</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">45K</span>
+                                            <span class="metric-label">Engagements</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">3.75%</span>
+                                            <span class="metric-label">Engagement Rate</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">92%</span>
+                                            <span class="metric-label">Completion</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="viewCampaignDetails(1)" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        View Campaign Details
+                                    </button>
+                                </div>
+
+                                <!-- Campaign Card 2 -->
+                                <div class="campaign-card">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">STEM Excellence Initiative</h3>
+                                        <span class="campaign-status active">● Active</span>
+                                    </div>
+                                    <img src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400" alt="Campaign" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+                                    <p style="color: var(--text); margin-bottom: 1.5rem;">Promoting science, technology, engineering, and mathematics education.</p>
+                                    <div class="campaign-metrics">
+                                        <div class="metric-item">
+                                            <span class="metric-value">850K</span>
+                                            <span class="metric-label">Impressions</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">32K</span>
+                                            <span class="metric-label">Engagements</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">3.76%</span>
+                                            <span class="metric-label">Engagement Rate</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">78%</span>
+                                            <span class="metric-label">Completion</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="viewCampaignDetails(2)" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        View Campaign Details
+                                    </button>
+                                </div>
+
+                                <!-- Campaign Card 3 -->
+                                <div class="campaign-card">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">Language Learning Festival</h3>
+                                        <span class="campaign-status paused">● Paused</span>
+                                    </div>
+                                    <img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=400" alt="Campaign" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 1rem;">
+                                    <p style="color: var(--text); margin-bottom: 1.5rem;">Celebrating multilingual education and cultural diversity.</p>
+                                    <div class="campaign-metrics">
+                                        <div class="metric-item">
+                                            <span class="metric-value">650K</span>
+                                            <span class="metric-label">Impressions</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">28K</span>
+                                            <span class="metric-label">Engagements</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">4.3%</span>
+                                            <span class="metric-label">Engagement Rate</span>
+                                        </div>
+                                        <div class="metric-item">
+                                            <span class="metric-value">100%</span>
+                                            <span class="metric-label">Completion</span>
+                                        </div>
+                                    </div>
+                                    <button onclick="viewCampaignDetails(3)" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        View Campaign Details
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ad Videos Panel -->
+                        <div id="ad-videos-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Advertisement Videos</h2>
+                                <p style="color: var(--text-secondary);">Watch our creative advertising content</p>
+                            </div>
+
+                            <div class="video-grid">
+                                <!-- Video Cards -->
+                                <div class="video-card" onclick="playVideo(4)">
+                                    <div class="video-thumbnail">
+                                        <div class="video-play-button">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                            </svg>
+                                        </div>
+                                        <span class="video-duration">1:45</span>
+                                    </div>
+                                    <div style="padding: 1rem;">
+                                        <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Unlock Your Potential</h4>
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Career development program</p>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 0.875rem; color: var(--text-muted);">200K views</span>
+                                            <span style="font-size: 0.875rem; color: var(--text-muted);">3 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="video-card" onclick="playVideo(5)">
+                                    <div class="video-thumbnail">
+                                        <div class="video-play-button">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                            </svg>
+                                        </div>
+                                        <span class="video-duration">2:30</span>
+                                    </div>
+                                    <div style="padding: 1rem;">
+                                        <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Innovation Hub Launch</h4>
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Tech startup ecosystem</p>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 0.875rem; color: var(--text-muted);">175K views</span>
+                                            <span style="font-size: 0.875rem; color: var(--text-muted);">5 days ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="video-card" onclick="playVideo(6)">
+                                    <div class="video-thumbnail">
+                                        <div class="video-play-button">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                            </svg>
+                                        </div>
+                                        <span class="video-duration">0:45</span>
+                                    </div>
+                                    <div style="padding: 1rem;">
+                                        <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Quick Tips: Study Smart</h4>
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Educational tips series</p>
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <span style="font-size: 0.875rem; color: var(--text-muted);">95K views</span>
+                                            <span style="font-size: 0.875rem; color: var(--text-muted);">1 week ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Marketing Courses Panel -->
+                        <div id="courses-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Marketing Courses & Training</h2>
+                                <p style="color: var(--text-secondary);">Learn from industry experts with our comprehensive marketing education programs</p>
+                            </div>
+
+                            <!-- Course Categories Tabs -->
+                            <div style="display: flex; gap: 1rem; margin-bottom: 2rem; border-bottom: 2px solid var(--border); padding-bottom: 1rem;">
+                                <button onclick="filterCourses('all')" class="course-filter-btn" style="padding: 0.5rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    All Courses (8)
+                                </button>
+                                <button onclick="filterCourses('digital')" class="course-filter-btn" style="padding: 0.5rem 1rem; background: transparent; color: var(--text); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Digital Marketing (5)
+                                </button>
+                                <button onclick="filterCourses('traditional')" class="course-filter-btn" style="padding: 0.5rem 1rem; background: transparent; color: var(--text); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Traditional Marketing (3)
+                                </button>
+                            </div>
+
+                            <!-- Featured Course Banner -->
+                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 2rem; color: white; margin-bottom: 2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">🔥 Most Popular</span>
+                                        <h3 style="font-size: 1.75rem; font-weight: 700; margin: 1rem 0;">Digital Marketing Masterclass 2024</h3>
+                                        <p style="opacity: 0.9; margin-bottom: 1rem;">Complete guide to modern digital marketing strategies, SEO, social media, and analytics</p>
+                                        <div style="display: flex; gap: 2rem; margin-bottom: 1rem;">
+                                            <span>⏱️ 12 weeks</span>
+                                            <span>📚 48 lessons</span>
+                                            <span>👥 250+ students</span>
+                                            <span>⭐ 4.9 rating</span>
+                                        </div>
+                                        <button onclick="enrollInCourse(1)" style="background: white; color: #667eea; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; border: none; cursor: pointer;">
+                                            Enroll Now - 5,999 ETB
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Course Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+
+                                <!-- Course Card 1: SEO & SEM -->
+                                <div class="course-card" style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); color: #3b82f6; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Digital</span>
+                                        <div style="text-align: center; color: white;">
+                                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔍</div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700;">SEO & SEM Fundamentals</h3>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Master search engine optimization and marketing to boost your online visibility and drive organic traffic.</p>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">⏱️ Duration: 8 weeks</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">📚 Lessons: 32</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">🎯 Level: Beginner</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">👥 Students: 120+</div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                            <div style="color: #f59e0b; font-size: 1rem;">★★★★★ 4.8</div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">3,999 ETB</div>
+                                        </div>
+                                        <button onclick="viewCourseDetails(2)" style="width: 100%; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Course Card 2: Social Media Marketing -->
+                                <div class="course-card" style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #ec4899 0%, #db2777 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); color: #ec4899; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Digital</span>
+                                        <div style="text-align: center; color: white;">
+                                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">📱</div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700;">Social Media Marketing</h3>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Build engaging social media strategies across Facebook, Instagram, LinkedIn, and TikTok platforms.</p>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">⏱️ Duration: 6 weeks</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">📚 Lessons: 24</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">🎯 Level: Intermediate</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">👥 Students: 180+</div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                            <div style="color: #f59e0b; font-size: 1rem;">★★★★★ 4.9</div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">4,499 ETB</div>
+                                        </div>
+                                        <button onclick="viewCourseDetails(3)" style="width: 100%; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Course Card 3: Content Marketing -->
+                                <div class="course-card" style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); color: #10b981; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Digital</span>
+                                        <div style="text-align: center; color: white;">
+                                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">✍️</div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700;">Content Marketing Strategy</h3>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Create compelling content that drives engagement, builds brand authority, and converts audiences.</p>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">⏱️ Duration: 8 weeks</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">📚 Lessons: 30</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">🎯 Level: Intermediate</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">👥 Students: 95+</div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                            <div style="color: #f59e0b; font-size: 1rem;">★★★★☆ 4.7</div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">3,799 ETB</div>
+                                        </div>
+                                        <button onclick="viewCourseDetails(4)" style="width: 100%; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Course Card 4: Email Marketing -->
+                                <div class="course-card" style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); color: #f59e0b; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Digital</span>
+                                        <div style="text-align: center; color: white;">
+                                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">📧</div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700;">Email Marketing Mastery</h3>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Build effective email campaigns that nurture leads, increase conversions, and retain customers.</p>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">⏱️ Duration: 4 weeks</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">📚 Lessons: 16</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">🎯 Level: Beginner</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">👥 Students: 75+</div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                            <div style="color: #f59e0b; font-size: 1rem;">★★★★★ 4.8</div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">2,999 ETB</div>
+                                        </div>
+                                        <button onclick="viewCourseDetails(5)" style="width: 100%; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Course Card 5: Traditional Marketing -->
+                                <div class="course-card" style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); color: #6b7280; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Traditional</span>
+                                        <div style="text-align: center; color: white;">
+                                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">📺</div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700;">Traditional Marketing Basics</h3>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Learn TV, radio, print advertising, and outdoor marketing strategies that still drive results.</p>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">⏱️ Duration: 6 weeks</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">📚 Lessons: 24</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">🎯 Level: Beginner</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">👥 Students: 60+</div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                            <div style="color: #f59e0b; font-size: 1rem;">★★★★☆ 4.6</div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">3,499 ETB</div>
+                                        </div>
+                                        <button onclick="viewCourseDetails(6)" style="width: 100%; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Course Card 6: Brand Marketing -->
+                                <div class="course-card" style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); color: #8b5cf6; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Traditional</span>
+                                        <div style="text-align: center; color: white;">
+                                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎨</div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700;">Brand Development</h3>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Build strong brands through positioning, visual identity, and consistent messaging strategies.</p>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">⏱️ Duration: 10 weeks</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">📚 Lessons: 40</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">🎯 Level: Advanced</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">👥 Students: 45+</div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                            <div style="color: #f59e0b; font-size: 1rem;">★★★★★ 4.9</div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">5,499 ETB</div>
+                                        </div>
+                                        <button onclick="viewCourseDetails(7)" style="width: 100%; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Course Card 7: Event Marketing -->
+                                <div class="course-card" style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); color: #ef4444; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Traditional</span>
+                                        <div style="text-align: center; color: white;">
+                                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎪</div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700;">Event & Expo Marketing</h3>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Plan and execute successful marketing events, trade shows, and experiential campaigns.</p>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">⏱️ Duration: 5 weeks</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">📚 Lessons: 20</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">🎯 Level: Intermediate</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">👥 Students: 55+</div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                            <div style="color: #f59e0b; font-size: 1rem;">★★★★☆ 4.5</div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">3,299 ETB</div>
+                                        </div>
+                                        <button onclick="viewCourseDetails(8)" style="width: 100%; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Course Card 8: Analytics -->
+                                <div class="course-card" style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); display: flex; align-items: center; justify-content: center; position: relative;">
+                                        <span style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); color: #14b8a6; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Digital</span>
+                                        <div style="text-align: center; color: white;">
+                                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">📊</div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700;">Marketing Analytics & Data</h3>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Master Google Analytics, data visualization, and KPI tracking to measure marketing success.</p>
+                                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">⏱️ Duration: 8 weeks</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">📚 Lessons: 35</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">🎯 Level: Advanced</div>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">👥 Students: 110+</div>
+                                        </div>
+                                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                            <div style="color: #f59e0b; font-size: 1rem;">★★★★★ 5.0</div>
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);">4,999 ETB</div>
+                                        </div>
+                                        <button onclick="viewCourseDetails(9)" style="width: 100%; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Course Benefits Section -->
+                            <section style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-top: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <h3 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--heading);">Why Learn Marketing With Us?</h3>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 3rem; margin-bottom: 1rem;">🏆</div>
+                                        <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Industry Experts</h4>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">Learn from professionals with 10+ years of real-world marketing experience</p>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                                        <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Practical Projects</h4>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">Work on real campaigns and build a portfolio while you learn</p>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 3rem; margin-bottom: 1rem;">📜</div>
+                                        <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Certification</h4>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">Earn industry-recognized certificates upon course completion</p>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div style="font-size: 3rem; margin-bottom: 1rem;">🤝</div>
+                                        <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Lifetime Support</h4>
+                                        <p style="color: var(--text-secondary); font-size: 0.875rem;">Get ongoing support and access to course updates forever</p>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <!-- Events Panel -->
+                        <div id="events-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Marketing Events & Workshops</h2>
+                                <p style="color: var(--text-secondary);">Join our exclusive marketing events, workshops, and networking sessions</p>
+                            </div>
+
+                            <!-- Upcoming Events -->
+                            <div style="margin-bottom: 2rem;">
+                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">🎯 Upcoming Events</h3>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+
+                                    <!-- Event Card 1 -->
+                                    <div style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                        <div style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                                            <div style="text-align: center;">
+                                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">🚀</div>
+                                                <h3 style="font-size: 1.25rem; font-weight: 700;">Digital Marketing Summit 2024</h3>
+                                                <p style="opacity: 0.9;">February 15-16, 2024</p>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 1.5rem;">
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                                <span style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+                                                    📍 Sheraton Addis, Ethiopia
+                                                </span>
+                                                <span style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">
+                                                    Open
+                                                </span>
+                                            </div>
+                                            <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Two-day intensive summit covering AI in marketing, social media trends, and data analytics.</p>
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-weight: 600; color: var(--heading);">2,500 ETB</span>
+                                                <button onclick="registerForEvent(1)" style="padding: 0.5rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                                    Register Now
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Event Card 2 -->
+                                    <div style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                        <div style="height: 200px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); display: flex; align-items: center; justify-content: center; color: white;">
+                                            <div style="text-align: center;">
+                                                <div style="font-size: 2rem; margin-bottom: 0.5rem;">💡</div>
+                                                <h3 style="font-size: 1.25rem; font-weight: 700;">SEO Workshop</h3>
+                                                <p style="opacity: 0.9;">January 28, 2024</p>
+                                            </div>
+                                        </div>
+                                        <div style="padding: 1.5rem;">
+                                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                                <span style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+                                                    📍 Online Workshop
+                                                </span>
+                                                <span style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">
+                                                    Limited Seats
+                                                </span>
+                                            </div>
+                                            <p style="color: var(--text); margin-bottom: 1rem; line-height: 1.6;">Hands-on workshop on advanced SEO techniques and Google algorithm updates.</p>
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <span style="font-weight: 600; color: var(--heading);">Free</span>
+                                                <button onclick="registerForEvent(2)" style="padding: 0.5rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                                    Register Now
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Past Events -->
+                            <div>
+                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">📅 Past Events</h3>
+                                <div style="display: grid; gap: 1rem;">
+                                    <div style="background: var(--card-bg); padding: 1.5rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Content Marketing Masterclass</h4>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">December 10, 2023 • 150 Attendees</p>
+                                        </div>
+                                        <button onclick="viewEventRecording(1)" style="padding: 0.5rem 1rem; background: transparent; color: var(--button-bg); border: 2px solid var(--button-bg); border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                            View Recording
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clubs Panel -->
+                        <div id="clubs-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Marketing Clubs & Communities</h2>
+                                <p style="color: var(--text-secondary);">Join our exclusive marketing communities and networking groups</p>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+
+                                <!-- Club Card 1 -->
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 2rem; color: white;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                        <div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Digital Innovators Club</h3>
+                                            <p style="opacity: 0.9; margin-bottom: 1rem;">For digital marketing professionals and enthusiasts</p>
+                                        </div>
+                                        <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">
+                                            250+ Members
+                                        </span>
+                                    </div>
+                                    <div style="margin-bottom: 1.5rem;">
+                                        <p style="opacity: 0.95; line-height: 1.6;">Weekly meetups, exclusive resources, industry insights, and networking opportunities with top marketers.</p>
+                                    </div>
+                                    <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                                        <span>📅 Weekly Meetups</span>
+                                        <span>🎯 Expert Sessions</span>
+                                        <span>🤝 Networking</span>
+                                    </div>
+                                    <button onclick="joinClub(1)" style="background: white; color: #667eea; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; width: 100%;">
+                                        Join Club - 500 ETB/month
+                                    </button>
+                                </div>
+
+                                <!-- Club Card 2 -->
+                                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; padding: 2rem; color: white;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                        <div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Content Creators Hub</h3>
+                                            <p style="opacity: 0.9; margin-bottom: 1rem;">For content marketers and creators</p>
+                                        </div>
+                                        <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">
+                                            180+ Members
+                                        </span>
+                                    </div>
+                                    <div style="margin-bottom: 1.5rem;">
+                                        <p style="opacity: 0.95; line-height: 1.6;">Share content strategies, collaborate on projects, and access premium content creation tools.</p>
+                                    </div>
+                                    <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                                        <span>✍️ Writing Workshops</span>
+                                        <span>🎨 Design Resources</span>
+                                        <span>📹 Video Tips</span>
+                                    </div>
+                                    <button onclick="joinClub(2)" style="background: white; color: #10b981; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; width: 100%;">
+                                        Join Club - 400 ETB/month
+                                    </button>
+                                </div>
+
+                                <!-- Club Card 3 -->
+                                <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 16px; padding: 2rem; color: white;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                        <div>
+                                            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">StartUp Marketing Circle</h3>
+                                            <p style="opacity: 0.9; margin-bottom: 1rem;">For startup founders and growth marketers</p>
+                                        </div>
+                                        <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">
+                                            120+ Members
+                                        </span>
+                                    </div>
+                                    <div style="margin-bottom: 1.5rem;">
+                                        <p style="opacity: 0.95; line-height: 1.6;">Growth hacking strategies, bootstrapping marketing, and connecting with investors and mentors.</p>
+                                    </div>
+                                    <div style="display: flex; gap: 2rem; margin-bottom: 1.5rem;">
+                                        <span>🚀 Growth Hacks</span>
+                                        <span>💰 Funding Tips</span>
+                                        <span>🎓 Mentorship</span>
+                                    </div>
+                                    <button onclick="joinClub(3)" style="background: white; color: #f59e0b; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; border: none; cursor: pointer; width: 100%;">
+                                        Join Club - 600 ETB/month
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Podcasts Panel -->
+                        <div id="podcasts-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Marketing Podcasts</h2>
+                                <p style="color: var(--text-secondary);">Listen to industry insights, expert interviews, and marketing tips</p>
+                            </div>
+
+                            <!-- Featured Podcast -->
+                            <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); border-radius: 16px; padding: 2rem; color: white; margin-bottom: 2rem;">
+                                <div style="display: flex; gap: 2rem; align-items: center;">
+                                    <div style="width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <span style="font-size: 4rem;">🎙️</span>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <span style="background: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">Latest Episode</span>
+                                        <h3 style="font-size: 1.75rem; font-weight: 700; margin: 1rem 0;">The Future of AI in Marketing</h3>
+                                        <p style="opacity: 0.9; margin-bottom: 1rem;">Episode 24 • 45 minutes • With Dr. Sarah Chen</p>
+                                        <button onclick="playPodcast(24)" style="background: white; color: #8b5cf6; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; border: none; cursor: pointer;">
+                                            ▶️ Play Episode
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Podcast Episodes Grid -->
+                            <div style="display: grid; gap: 1rem;">
+                                <!-- Episode 1 -->
+                                <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; display: flex; gap: 1.5rem; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <span style="font-size: 2rem;">🎧</span>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Social Media Marketing in 2024</h4>
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Episode 23 • 38 minutes • January 10, 2024</p>
+                                        <p style="font-size: 0.875rem; color: var(--text);">Exploring the latest social media trends and platform updates...</p>
+                                    </div>
+                                    <button onclick="playPodcast(23)" style="padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 50%; cursor: pointer;">
+                                        ▶️
+                                    </button>
+                                </div>
+
+                                <!-- Episode 2 -->
+                                <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; display: flex; gap: 1.5rem; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                    <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                        <span style="font-size: 2rem;">🎧</span>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <h4 style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Content Marketing Strategy Deep Dive</h4>
+                                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Episode 22 • 52 minutes • January 3, 2024</p>
+                                        <p style="font-size: 0.875rem; color: var(--text);">Building a content strategy that drives engagement and conversions...</p>
+                                    </div>
+                                    <button onclick="playPodcast(22)" style="padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 50%; cursor: pointer;">
+                                        ▶️
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Blog Panel -->
+                        <div id="blog-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Marketing Blog</h2>
+                                <p style="color: var(--text-secondary);">Expert insights, case studies, and marketing strategies</p>
+                            </div>
+
+                            <!-- Blog Categories -->
+                            <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                                <button onclick="filterBlog('all')" style="padding: 0.5rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">All Posts</button>
+                                <button onclick="filterBlog('digital')" style="padding: 0.5rem 1rem; background: transparent; color: var(--text); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">Digital Marketing</button>
+                                <button onclick="filterBlog('seo')" style="padding: 0.5rem 1rem; background: transparent; color: var(--text); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">SEO</button>
+                                <button onclick="filterBlog('social')" style="padding: 0.5rem 1rem; background: transparent; color: var(--text); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">Social Media</button>
+                            </div>
+
+                            <!-- Blog Posts Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
+                                <!-- Blog Post 1 -->
+                                <article style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                        <h3 style="color: white; font-size: 1.5rem; font-weight: 700; text-align: center; padding: 1rem;">10 AI Tools Every Marketer Needs</h3>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                            <span style="background: rgba(102,126,234,0.1); color: #667eea; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">AI Marketing</span>
+                                            <span style="font-size: 0.875rem; color: var(--text-secondary);">Jan 15, 2024</span>
+                                        </div>
+                                        <p style="color: var(--text); line-height: 1.6; margin-bottom: 1rem;">Discover the latest AI tools that are revolutionizing marketing workflows and improving campaign performance...</p>
+                                        <a href="#" onclick="readBlogPost(1)" style="color: var(--button-bg); font-weight: 600; text-decoration: none;">Read More →</a>
+                                    </div>
+                                </article>
+
+                                <!-- Blog Post 2 -->
+                                <article style="background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                    <div style="height: 200px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); display: flex; align-items: center; justify-content: center;">
+                                        <h3 style="color: white; font-size: 1.5rem; font-weight: 700; text-align: center; padding: 1rem;">SEO Best Practices for 2024</h3>
+                                    </div>
+                                    <div style="padding: 1.5rem;">
+                                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                            <span style="background: rgba(59,130,246,0.1); color: #3b82f6; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">SEO</span>
+                                            <span style="font-size: 0.875rem; color: var(--text-secondary);">Jan 12, 2024</span>
+                                        </div>
+                                        <p style="color: var(--text); line-height: 1.6; margin-bottom: 1rem;">Stay ahead of Google's algorithm changes with these essential SEO strategies and technical optimizations...</p>
+                                        <a href="#" onclick="readBlogPost(2)" style="color: var(--button-bg); font-weight: 600; text-decoration: none;">Read More →</a>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+
+                        <!-- Gallery Panel -->
+                        <div id="gallery-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Campaign Gallery</h2>
+                                <p style="color: var(--text-secondary);">Visual showcase of our marketing campaigns and creative work</p>
+                            </div>
+
+                            <!-- Gallery Categories -->
+                            <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                                <button onclick="filterGallery('all')" style="padding: 0.5rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">All</button>
+                                <button onclick="filterGallery('campaigns')" style="padding: 0.5rem 1rem; background: transparent; color: var(--text); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">Campaigns</button>
+                                <button onclick="filterGallery('designs')" style="padding: 0.5rem 1rem; background: transparent; color: var(--text); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">Designs</button>
+                                <button onclick="filterGallery('events')" style="padding: 0.5rem 1rem; background: transparent; color: var(--text); border: 2px solid var(--border); border-radius: 8px; font-weight: 600; cursor: pointer;">Events</button>
+                            </div>
+
+                            <!-- Gallery Grid -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem;">
+                                <!-- Gallery Item 1 -->
+                                <div onclick="viewImage(1)" style="position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="padding-top: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7)); color: white; padding: 1rem;">
+                                        <h4 style="font-weight: 600; margin-bottom: 0.25rem;">Summer Campaign 2023</h4>
+                                        <p style="font-size: 0.875rem; opacity: 0.9;">Digital Campaign</p>
+                                    </div>
+                                </div>
+
+                                <!-- Gallery Item 2 -->
+                                <div onclick="viewImage(2)" style="position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="padding-top: 100%; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);"></div>
+                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7)); color: white; padding: 1rem;">
+                                        <h4 style="font-weight: 600; margin-bottom: 0.25rem;">Brand Redesign</h4>
+                                        <p style="font-size: 0.875rem; opacity: 0.9;">Visual Identity</p>
+                                    </div>
+                                </div>
+
+                                <!-- Gallery Item 3 -->
+                                <div onclick="viewImage(3)" style="position: relative; border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.08); transition: all 0.3s ease;">
+                                    <div style="padding-top: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%);"></div>
+                                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.7)); color: white; padding: 1rem;">
+                                        <h4 style="font-weight: 600; margin-bottom: 0.25rem;">Product Launch</h4>
+                                        <p style="font-size: 0.875rem; opacity: 0.9;">Campaign Photos</p>
+                                    </div>
+                                </div>
+
+                                <!-- More gallery items... -->
+                            </div>
+                        </div>
+
+                        <!-- Resources Panel -->
+                        <div id="resources-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Marketing Resources</h2>
+                                <p style="color: var(--text-secondary);">Free templates, guides, and tools to boost your marketing</p>
+                            </div>
+
+                            <!-- Resource Categories -->
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+
+                                <!-- Templates Section -->
+                                <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
+                                        <span>📄</span> Templates
+                                    </h3>
+                                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <div onclick="downloadResource(1)" style="padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <h4 style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">Social Media Calendar</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Excel template • 2.3 MB</p>
+                                                </div>
+                                                <span style="color: var(--button-bg);">📥</span>
+                                            </div>
+                                        </div>
+                                        <div onclick="downloadResource(2)" style="padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <h4 style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">Email Templates Pack</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">HTML templates • 1.5 MB</p>
+                                                </div>
+                                                <span style="color: var(--button-bg);">📥</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Guides Section -->
+                                <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
+                                        <span>📖</span> Guides & E-books
+                                    </h3>
+                                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <div onclick="downloadResource(3)" style="padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <h4 style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">Digital Marketing Guide 2024</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">PDF • 8.5 MB</p>
+                                                </div>
+                                                <span style="color: var(--button-bg);">📥</span>
+                                            </div>
+                                        </div>
+                                        <div onclick="downloadResource(4)" style="padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <h4 style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">SEO Checklist</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">PDF • 850 KB</p>
+                                                </div>
+                                                <span style="color: var(--button-bg);">📥</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Tools Section -->
+                                <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading); display: flex; align-items: center; gap: 0.5rem;">
+                                        <span>🛠️</span> Marketing Tools
+                                    </h3>
+                                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                        <div onclick="openTool(1)" style="padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <h4 style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">Hashtag Generator</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Online Tool</p>
+                                                </div>
+                                                <span style="color: var(--button-bg);">🔗</span>
+                                            </div>
+                                        </div>
+                                        <div onclick="openTool(2)" style="padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div>
+                                                    <h4 style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">ROI Calculator</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-secondary);">Online Tool</p>
+                                                </div>
+                                                <span style="color: var(--button-bg);">🔗</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Other panels placeholders -->
+                        <div id="products-panel" class="panel-content">
+                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Products & Services</h2>
+                            <p style="color: var(--text-secondary);">Our advertising products and service offerings - Coming Soon</p>
+                        </div>
+
+                        <div id="company-info-panel" class="panel-content">
+                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Company Information</h2>
+                            <p style="color: var(--text-secondary);">Detailed company profile and history - Coming Soon</p>
+                        </div>
+
+                        <div id="testimonials-panel" class="panel-content">
+                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Client Testimonials</h2>
+                            <p style="color: var(--text-secondary);">What our clients say about us - Coming Soon</p>
+                        </div>
+
+                        <div id="contact-panel" class="panel-content">
+                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Contact Information</h2>
+                            <p style="color: var(--text-secondary);">Get in touch with our team - Coming Soon</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Widgets (Persistent across all panels) -->
+                <div class="admin-right-widgets"
+                    style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
+
+                    <!-- Campaign Performance Widget -->
+                    <div class="admin-widget-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
+                        <h3 class="text-lg font-semibold mb-4" style="color: white;">📊 Campaign Performance</h3>
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="width: 120px; height: 120px; margin: 0 auto; position: relative;">
+                                <svg viewBox="0 0 36 36" style="transform: rotate(-90deg);">
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"></circle>
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="white" stroke-width="3" stroke-dasharray="100.48" stroke-dashoffset="25.12" stroke-linecap="round"></circle>
+                                </svg>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                    <div style="font-size: 2rem; font-weight: 700;">75%</div>
+                                    <div style="font-size: 0.75rem; opacity: 0.9;">Success Rate</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span style="font-size: 0.875rem; opacity: 0.9;">Active Campaigns</span>
+                                <span style="font-weight: 600; font-size: 1rem;">5/10</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span style="font-size: 0.875rem; opacity: 0.9;">Avg. CTR</span>
+                                <span style="font-weight: 600; font-size: 1rem;">3.2%</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; text-align: center;">
+                            <div style="background: rgba(34, 197, 94, 0.2); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <span>🎯</span> High Performance
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Company Overview Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">🏢 Company Overview</h3>
+                        <div class="stats-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                            <!-- Years Active -->
+                            <div style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(37,99,235,0.05)); border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">8+</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Years</div>
+                            </div>
+                            <!-- Team Size -->
+                            <div style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(22,163,74,0.05)); border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #22c55e;">25</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Team</div>
+                            </div>
+                            <!-- Client Rating -->
+                            <div style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(217,119,6,0.05)); border-radius: 8px; grid-column: span 2;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4.8</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Client Rating</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Widget -->
+                    <div class="admin-widget-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <h3 class="text-lg font-semibold mb-4" style="color: white;">🎬 Recent Activity</h3>
+                        <div class="timeline-content" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div class="timeline-item" style="display: flex; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                                <div class="timeline-dot" style="width: 12px; height: 12px; background: white; border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0; box-shadow: 0 0 10px rgba(255,255,255,0.5);"></div>
+                                <div style="flex: 1;">
+                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">New Campaign Launched</p>
+                                    <p style="font-size: 0.875rem; opacity: 0.9;">Summer Education Drive • 2 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" style="display: flex; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <div class="timeline-dot" style="width: 12px; height: 12px; background: rgba(255,255,255,0.7); border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0;"></div>
+                                <div style="flex: 1;">
+                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Video Published</p>
+                                    <p style="font-size: 0.875rem; opacity: 0.9;">Transform Your Education • 1 day ago</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" style="display: flex; gap: 0.75rem;">
+                                <div class="timeline-dot" style="width: 12px; height: 12px; background: rgba(255,255,255,0.5); border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0;"></div>
+                                <div style="flex: 1;">
+                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Campaign Completed</p>
+                                    <p style="font-size: 0.875rem; opacity: 0.9;">Language Learning Festival • 3 days ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Widgets Section -->
+    <section class="bottom-widgets" style="margin-top: 3rem; margin-bottom: 3rem;">
+        <div class="container mx-auto px-4">
+            <div class="bottom-widgets-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+
+                <!-- Industry News Widget -->
+                <div class="bottom-widget industry-news-widget"
+                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 16px; padding: 1.5rem; color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">📈 Industry Insights</h3>
+                    </div>
+
+                    <div class="industry-content">
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="font-size: 3rem; margin-bottom: 0.5rem;">📊</div>
+                            <div style="font-size: 2rem; font-weight: bold;">Digital Marketing Trends 2024</div>
+                            <div style="font-size: 1rem; opacity: 0.9; margin-top: 0.5rem;">AI-Powered Campaigns Lead the Way</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem;">
+                            <p style="line-height: 1.6; opacity: 0.95;">The advertising industry is experiencing a paradigm shift with AI and machine learning driving personalized campaign strategies. Video content continues to dominate with 85% higher engagement rates.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success Stories Widget -->
+                <div style="padding: 1.5rem; background: var(--card-bg); border-radius: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">🏆 Success Stories</h3>
+                        <a href="#" style="color: var(--button-bg); text-decoration: none; font-size: 0.875rem;">View All</a>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <span style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Case Study</span>
+                            <span style="color: var(--text-muted); font-size: 0.875rem;">This week</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <img src="https://images.unsplash.com/photo-1552664730-d307ca884978?w=400" alt="Success Story" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                        </div>
+                        <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">EdTech Startup Achieves 300% Growth</h4>
+                        <p style="color: var(--text); opacity: 0.8; font-size: 0.875rem; line-height: 1.6; margin-bottom: 1rem;">How our targeted campaign helped an educational platform triple their user base in just 6 months...</p>
+                        <div style="display: flex; gap: 1rem;">
+                            <span style="font-size: 0.875rem; color: var(--text-muted);">📈 300% Growth</span>
+                            <span style="font-size: 0.875rem; color: var(--text-muted);">👥 50K+ Users</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Awards & Recognition Widget -->
+                <div style="padding: 1.5rem; background: var(--card-bg); border-radius: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">🏅 Awards & Recognition</h3>
+                        <a href="#" style="color: var(--button-bg); text-decoration: none; font-size: 0.875rem;">See All</a>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--heading);">Recent Achievements</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span style="font-size: 1.5rem;">🥇</span>
+                                    <div>
+                                        <span style="font-weight: 500; display: block;">Best Digital Campaign 2024</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">Ethiopian Marketing Awards</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span style="font-size: 1.5rem;">🥈</span>
+                                    <div>
+                                        <span style="font-weight: 500; display: block;">Innovation in Advertising</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">African Ad Awards</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
+                                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span style="font-size: 1.5rem;">🥉</span>
+                                    <div>
+                                        <span style="font-weight: 500; display: block;">Top Agency of the Year</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">Digital Excellence Awards</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="../js/root/app.js"></script>
+    <script src="../js/root/auth.js"></script>
+    <script src="../js/root/profile-system.js"></script>
+    <script src="../js/root/theme.js"></script>
+    <script src="../js/common-modals/coming-soon-modal.js"></script>
+    <script src="../js/common-modals/ad-modal.js"></script>
+
+    <script>
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize core app
+            initializeApp();
+
+            // Initialize authentication
+            const authManager = new AuthenticationManager();
+            await authManager.initialize();
+
+            // Load advertiser data
+            loadAdvertiserData();
+
+            // Initialize animations
+            animateStats();
+
+            // Initialize sidebar
+            initializeSidebar();
+        });
+
+        // Load advertiser data from database
+        async function loadAdvertiserData() {
+            const advertiserId = new URLSearchParams(window.location.search).get('id');
+
+            if (!advertiserId) {
+                console.warn('No advertiser ID provided in URL');
+                return;
+            }
+
+            // Show loading indicator
+            showLoadingState(true);
+
+            try {
+                console.log('Loading data for advertiser ID:', advertiserId);
+
+                // Fetch advertiser data from API
+                const response = await fetch(`https://api.astegni.com/api/advertiser/${advertiserId}`);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Advertiser profile not found');
+                    }
+                    throw new Error(`Failed to fetch advertiser data: ${response.status}`);
+                }
+
+                const advertiserData = await response.json();
+                console.log('Advertiser data loaded:', advertiserData);
+
+                // Update profile header with database data
+                updateProfileHeader(advertiserData);
+
+            } catch (error) {
+                console.error('Error loading advertiser data:', error);
+                // Show error message to user
+                showErrorMessage(error.message || 'Unable to load advertiser profile. Please try again later.');
+            } finally {
+                // Hide loading indicator
+                showLoadingState(false);
+            }
+        }
+
+        // Show/hide loading state
+        function showLoadingState(show) {
+            const profileHeader = document.querySelector('.profile-header-section');
+            if (!profileHeader) return;
+
+            if (show) {
+                // Add loading overlay
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'loading-overlay';
+                loadingOverlay.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 100; border-radius: 20px;';
+                loadingOverlay.innerHTML = '<div style="text-align: center;"><div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 1rem; font-weight: 600; color: #4f46e5;">Loading advertiser profile...</p></div>';
+                profileHeader.style.position = 'relative';
+                profileHeader.appendChild(loadingOverlay);
+
+                // Add spin animation if not exists
+                if (!document.getElementById('spin-animation')) {
+                    const style = document.createElement('style');
+                    style.id = 'spin-animation';
+                    style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+                    document.head.appendChild(style);
+                }
+            } else {
+                // Remove loading overlay
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.remove();
+                }
+            }
+        }
+
+        // Update profile header with database data
+        function updateProfileHeader(data) {
+            // Helper function to display value or "None"
+            const displayValue = (value, fallback = 'None') => {
+                return (value !== null && value !== undefined && value !== '') ? value : fallback;
+            };
+
+            // Update profile name
+            const nameElement = document.getElementById('advertiserName');
+            if (nameElement) {
+                nameElement.textContent = displayValue(data.company_name || data.name);
+            }
+
+            // Update profile avatar
+            const avatarElement = document.getElementById('profile-avatar');
+            if (avatarElement && data.profile_picture) {
+                avatarElement.src = data.profile_picture;
+            }
+
+            // Update cover image
+            const coverElement = document.getElementById('cover-img');
+            if (coverElement && data.cover_image) {
+                coverElement.src = data.cover_image;
+            }
+
+            // Update location and industry
+            const locationElements = document.querySelectorAll('.profile-location span:last-child');
+            if (locationElements.length > 0) {
+                const location = displayValue(data.location, 'Location not specified');
+                const industry = displayValue(data.industry, 'Digital Marketing');
+                locationElements[0].textContent = `${location} | ${industry}`;
+            }
+
+            // Update rating
+            const ratingValueElement = document.querySelector('.rating-value');
+            if (ratingValueElement) {
+                const rating = data.rating ? parseFloat(data.rating).toFixed(1) : 'N/A';
+                ratingValueElement.textContent = rating;
+            }
+
+            const ratingCountElement = document.querySelector('.rating-count');
+            if (ratingCountElement) {
+                const ratingCount = displayValue(data.rating_count, 0);
+                ratingCountElement.textContent = `(${ratingCount} client reviews)`;
+            }
+
+            // Update rating stars
+            const ratingStarsElement = document.querySelector('.rating-stars');
+            if (ratingStarsElement && data.rating) {
+                ratingStarsElement.innerHTML = generateStars(parseFloat(data.rating));
+            }
+
+            // Update contact information
+            const emailElements = document.querySelectorAll('.profile-contact-info > div');
+
+            // Email
+            if (emailElements.length > 0) {
+                const emailValueElement = emailElements[0].querySelector('div:last-child > div:last-child');
+                if (emailValueElement) {
+                    emailValueElement.textContent = displayValue(data.email, 'Not provided');
+                }
+            }
+
+            // Website
+            if (emailElements.length > 1) {
+                const websiteValueElement = emailElements[1].querySelector('div:last-child > div:last-child');
+                if (websiteValueElement) {
+                    websiteValueElement.textContent = displayValue(data.website, 'Not provided');
+                }
+            }
+
+            // Industry
+            if (emailElements.length > 2) {
+                const industryValueElement = emailElements[2].querySelector('div:last-child > div:last-child');
+                if (industryValueElement) {
+                    industryValueElement.textContent = displayValue(data.industry, 'Not specified');
+                }
+            }
+
+            // Update quote
+            const quoteElement = document.querySelector('.profile-quote span');
+            if (quoteElement) {
+                quoteElement.textContent = `"${displayValue(data.tagline || data.quote, 'No tagline available')}"`;
+            }
+
+            // Update bio/about section
+            const aboutSections = document.querySelectorAll('section');
+            aboutSections.forEach(section => {
+                const heading = section.querySelector('h3');
+                if (heading && heading.textContent.includes('About Our Company')) {
+                    const bioElement = section.querySelector('p');
+                    if (bioElement) {
+                        bioElement.textContent = displayValue(data.bio || data.description, 'No company description available.');
+                    }
+                }
+            });
+
+            // Update stats if available
+            if (data.stats) {
+                // Update clients count
+                if (data.stats.clients) {
+                    const clientElements = document.querySelectorAll('.stats-grid > div:nth-child(1) > div:first-child');
+                    clientElements.forEach(el => {
+                        if (el.textContent.includes('+')) {
+                            el.textContent = `${data.stats.clients}+`;
+                        }
+                    });
+                }
+
+                // Update campaigns count
+                if (data.stats.campaigns) {
+                    const campaignElements = document.querySelectorAll('.stats-grid > div:nth-child(2) > div:first-child');
+                    campaignElements.forEach(el => {
+                        if (el.textContent.includes('+')) {
+                            el.textContent = `${data.stats.campaigns}+`;
+                        }
+                    });
+                }
+            }
+
+            // Update verified badge based on is_verified
+            const verifiedBadge = document.querySelector('.profile-badge.verified');
+            if (verifiedBadge && !data.is_verified) {
+                verifiedBadge.style.display = 'none';
+            }
+        }
+
+        // Generate star rating HTML
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+            let starsHTML = '';
+            for (let i = 0; i < fullStars; i++) {
+                starsHTML += '★';
+            }
+            if (hasHalfStar) {
+                starsHTML += '⯨';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                starsHTML += '☆';
+            }
+            return starsHTML;
+        }
+
+        // Show error message to user
+        function showErrorMessage(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 1rem 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(239,68,68,0.3); z-index: 9999; font-weight: 600;';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // Panel switching
+        function switchPanel(event, panelName) {
+            if (event) event.preventDefault();
+            console.log('Switching to panel:', panelName);
+
+            // Hide all panels
+            const allPanels = document.querySelectorAll('.panel-content');
+            allPanels.forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Show selected panel
+            const selectedPanel = document.getElementById(panelName + '-panel');
+            if (selectedPanel) {
+                selectedPanel.classList.add('active');
+            }
+
+            // Update sidebar active link
+            const allLinks = document.querySelectorAll('.sidebar-link');
+            allLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            const clickedLink = event ? event.currentTarget : document.querySelector(`.sidebar-link[data-panel="${panelName}"]`);
+            if (clickedLink) {
+                clickedLink.classList.add('active');
+            }
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const hamburger = document.querySelector('.hamburger');
+
+            if (sidebar && overlay) {
+                const isOpen = sidebar.style.left === '0px';
+
+                if (isOpen) {
+                    sidebar.style.left = '-280px';
+                    overlay.style.display = 'none';
+                    if (hamburger) hamburger.classList.remove('active');
+                } else {
+                    sidebar.style.left = '0px';
+                    overlay.style.display = 'block';
+                    if (hamburger) hamburger.classList.add('active');
+                }
+            }
+        }
+
+        // Sidebar initialization
+        function initializeSidebar() {
+            console.log('Sidebar initialized');
+
+            // Close sidebar with ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar && sidebar.style.left === '0px') {
+                        toggleSidebar();
+                    }
+                }
+            });
+        }
+
+        // Handle nav clicks
+        function handleNavLinkClick(event, section) {
+            event.preventDefault();
+            console.log('Navigation to:', section);
+        }
+
+        // Modal and action functions
+        function viewPortfolio() {
+            console.log('Viewing portfolio');
+            alert('Portfolio viewer - Feature coming soon!');
+        }
+
+        function contactAdvertiser() {
+            console.log('Contacting advertiser');
+            alert('Contact form - Feature coming soon!');
+        }
+
+        function openAdAnalyticsModal() {
+            console.log('Opening ad analytics');
+        }
+
+        function viewCampaignDetails(campaignId) {
+            console.log('Viewing campaign details:', campaignId);
+            alert(`Campaign ${campaignId} details - Feature coming soon!`);
+        }
+
+        function viewAllVideos() {
+            console.log('Viewing all videos');
+            switchPanel(null, 'ad-videos');
+        }
+
+        function playVideo(videoId) {
+            console.log('Playing video:', videoId);
+            alert(`Video player for video ${videoId} - Feature coming soon!`);
+        }
+
+        // Course-related functions
+        function filterCourses(category) {
+            console.log('Filtering courses by:', category);
+
+            // Update filter button states
+            const filterButtons = document.querySelectorAll('.course-filter-btn');
+            filterButtons.forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text)';
+                btn.style.border = '2px solid var(--border)';
+            });
+
+            // Highlight selected filter
+            event.target.style.background = 'var(--button-bg)';
+            event.target.style.color = 'white';
+            event.target.style.border = 'none';
+
+            // Filter course cards (in real implementation, this would filter the displayed courses)
+            const courseCards = document.querySelectorAll('.course-card');
+            courseCards.forEach(card => {
+                const courseCategory = card.querySelector('span').textContent.toLowerCase();
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else if (category === 'digital' && courseCategory === 'digital') {
+                    card.style.display = 'block';
+                } else if (category === 'traditional' && courseCategory === 'traditional') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function enrollInCourse(courseId) {
+            console.log('Enrolling in course:', courseId);
+            // In real implementation, this would handle course enrollment
+            alert(`Enrollment process for course ${courseId} - This would redirect to the enrollment page with payment options.`);
+        }
+
+        function viewCourseDetails(courseId) {
+            console.log('Viewing course details:', courseId);
+            // In real implementation, this would show detailed course information
+            alert(`Course ${courseId} details:\n\n• Full curriculum\n• Instructor bio\n• Student reviews\n• Prerequisites\n• Certification details\n\nFeature coming soon!`);
+        }
+
+        // Events-related functions
+        function registerForEvent(eventId) {
+            console.log('Registering for event:', eventId);
+            alert(`Registration for event ${eventId} - This would open a registration form with payment options.`);
+        }
+
+        function viewEventRecording(eventId) {
+            console.log('Viewing event recording:', eventId);
+            alert(`Event ${eventId} recording - This would play the recorded session.`);
+        }
+
+        // Clubs-related functions
+        function joinClub(clubId) {
+            console.log('Joining club:', clubId);
+            const clubNames = {
+                1: 'Digital Innovators Club',
+                2: 'Content Creators Hub',
+                3: 'StartUp Marketing Circle'
+            };
+            alert(`Joining ${clubNames[clubId] || 'Club'} - This would open membership registration with payment processing.`);
+        }
+
+        // Podcast-related functions
+        function playPodcast(episodeId) {
+            console.log('Playing podcast episode:', episodeId);
+            alert(`Playing podcast episode ${episodeId} - This would open the audio player.`);
+        }
+
+        // Blog-related functions
+        function filterBlog(category) {
+            console.log('Filtering blog by:', category);
+            // Similar filter logic as courses
+            const filterButtons = event.target.parentElement.querySelectorAll('button');
+            filterButtons.forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text)';
+                btn.style.border = '2px solid var(--border)';
+            });
+            event.target.style.background = 'var(--button-bg)';
+            event.target.style.color = 'white';
+            event.target.style.border = 'none';
+        }
+
+        function readBlogPost(postId) {
+            console.log('Reading blog post:', postId);
+            alert(`Blog post ${postId} - This would open the full article view.`);
+        }
+
+        // Gallery-related functions
+        function filterGallery(category) {
+            console.log('Filtering gallery by:', category);
+            // Similar filter logic
+            const filterButtons = event.target.parentElement.querySelectorAll('button');
+            filterButtons.forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text)';
+                btn.style.border = '2px solid var(--border)';
+            });
+            event.target.style.background = 'var(--button-bg)';
+            event.target.style.color = 'white';
+            event.target.style.border = 'none';
+        }
+
+        function viewImage(imageId) {
+            console.log('Viewing image:', imageId);
+            alert(`Image ${imageId} - This would open a lightbox gallery with full-size image.`);
+        }
+
+        // Resources-related functions
+        function downloadResource(resourceId) {
+            console.log('Downloading resource:', resourceId);
+            const resourceNames = {
+                1: 'Social Media Calendar',
+                2: 'Email Templates Pack',
+                3: 'Digital Marketing Guide 2024',
+                4: 'SEO Checklist'
+            };
+            alert(`Downloading ${resourceNames[resourceId] || 'Resource'} - This would initiate the download.`);
+        }
+
+        function openTool(toolId) {
+            console.log('Opening tool:', toolId);
+            const toolNames = {
+                1: 'Hashtag Generator',
+                2: 'ROI Calculator'
+            };
+            alert(`Opening ${toolNames[toolId] || 'Tool'} - This would open the tool in a new window or modal.`);
+        }
+
+        // Animate statistics
+        function animateStats() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+
+            statNumbers.forEach(stat => {
+                const target = parseFloat(stat.getAttribute('data-target'));
+                const suffix = stat.getAttribute('data-suffix') || '';
+
+                let current = 0;
+                const increment = target / 50;
+
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+
+                    // Format large numbers
+                    if (target >= 1000000) {
+                        stat.textContent = (Math.floor(current / 100000) / 10).toFixed(1) + 'M' + suffix;
+                    } else if (target >= 1000) {
+                        stat.textContent = Math.floor(current).toLocaleString() + suffix;
+                    } else if (target < 10) {
+                        stat.textContent = current.toFixed(1) + suffix;
+                    } else {
+                        stat.textContent = Math.floor(current) + suffix;
+                    }
+                }, 30);
+            });
+        }
+
+        // Theme toggle
+        document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+</body>
+
+</html>

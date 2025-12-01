@@ -1,0 +1,43 @@
+<!--
+  Modal: contact-confirmation-modal
+  Extracted from: tutor-profile.html
+  Purpose: Contact confirmation modal (before sending OTP)
+-->
+
+<div id="contact-confirmation-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeContactConfirmationModal()"></div>
+        <div class="modal-content enhanced-modal">
+            <div class="modal-header">
+                <h2>Confirm Contact Information</h2>
+                <button class="modal-close" onclick="closeContactConfirmationModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div
+                    style="background: rgba(245, 158, 11, 0.1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <svg style="width: 32px; height: 32px; color: #F59E0B;" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                </div>
+                <p style="text-align: center; margin-bottom: 24px; color: var(--text-muted);">
+                    Please confirm your new contact information. An OTP will be sent to verify.
+                </p>
+                <div
+                    style="background: var(--surface-secondary); padding: 16px; border-radius: 8px; margin-bottom: 24px;">
+                    <p style="margin: 0; font-size: 14px; color: var(--text-secondary); line-height: 1.8;">
+                        <strong style="color: var(--heading);">Email:</strong> <span id="confirm-new-email"></span><br>
+                        <strong style="color: var(--heading);">Phone:</strong> <span id="confirm-new-phone"></span>
+                    </p>
+                </div>
+                <p style="font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 20px;">
+                    Is this information correct?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="editContactInfo()">Edit Info</button>
+                <button class="btn-primary" onclick="sendOTPForContactChange()">Send OTP</button>
+            </div>
+        </div>
+    </div>

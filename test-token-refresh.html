@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auto Token Refresh</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-top: 0; }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.danger {
+            background: #f44336;
+        }
+        button.danger:hover {
+            background: #da190b;
+        }
+        .info {
+            background: #e7f3fe;
+            border-left: 4px solid #2196F3;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .error {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .log-entry {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Auto Token Refresh Test</h1>
+
+        <div class="info">
+            <strong>Purpose:</strong> Test that access tokens automatically refresh on 401 errors without requiring manual login.
+        </div>
+
+        <div class="test-section">
+            <h2>Step 1: Check Login Status</h2>
+            <button onclick="checkLoginStatus()">Check Login Status</button>
+            <div id="loginStatus"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Step 2: Test Normal API Call</h2>
+            <button onclick="testNormalCall()">Test API Call (Should Work)</button>
+            <div id="normalCallResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Step 3: Simulate Token Expiration</h2>
+            <p>This will corrupt your access token to simulate expiration, then make an API call. The system should automatically refresh the token and retry.</p>
+            <button onclick="simulateTokenExpiration()" class="danger">Simulate Expired Token</button>
+            <div id="simulationResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Step 4: Test After Simulation</h2>
+            <button onclick="testAfterSimulation()">Make API Call After Simulation</button>
+            <div id="afterSimulationResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h2>Step 5: View Tokens</h2>
+            <button onclick="viewTokens()">View Current Tokens</button>
+            <div id="tokensResult"></div>
+        </div>
+
+        <h2>Console Log</h2>
+        <div class="log" id="consoleLog"></div>
+
+        <div class="info">
+            <strong>Expected Results:</strong>
+            <ul>
+                <li>Step 1: Shows you're logged in with valid token</li>
+                <li>Step 2: API call succeeds normally</li>
+                <li>Step 3: Token is corrupted (simulates expiration)</li>
+                <li>Step 4: API call gets 401, auto-refreshes token, retries, and succeeds! ✅</li>
+                <li>Step 5: Shows new token (different from original)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script src="js/root/auth.js"></script>
+    <script>
+        const log = [];
+
+        // Override console.log to capture logs
+        const originalLog = console.log;
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.map(arg =>
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ');
+            log.push(message);
+            updateLogDisplay();
+        };
+
+        function updateLogDisplay() {
+            const logDiv = document.getElementById('consoleLog');
+            logDiv.innerHTML = log.map(entry =>
+                `<div class="log-entry">${entry}</div>`
+            ).join('');
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function checkLoginStatus() {
+            const resultDiv = document.getElementById('loginStatus');
+
+            try {
+                const isAuthenticated = window.AuthManager.isAuthenticated();
+                const user = window.AuthManager.getUser();
+                const token = window.AuthManager.getToken();
+
+                if (isAuthenticated && user) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ <strong>Logged In</strong><br>
+                            User: ${user.first_name} ${user.father_name}<br>
+                            Role: ${user.active_role}<br>
+                            Token: ${token ? token.substring(0, 20) + '...' : 'None'}
+                        </div>
+                    `;
+                    console.log('[Test] User is logged in:', user);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ <strong>Not Logged In</strong><br>
+                            Please log in first at <a href="index.html">index.html</a>
+                        </div>
+                    `;
+                    console.log('[Test] User is NOT logged in');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                console.error('[Test] Error checking login status:', error);
+            }
+        }
+
+        async function testNormalCall() {
+            const resultDiv = document.getElementById('normalCallResult');
+            resultDiv.innerHTML = '<div class="info">Making API call...</div>';
+
+            try {
+                console.log('[Test] Making normal API call to /api/me');
+
+                const response = await window.AuthManager.authenticatedFetch(
+                    'https://api.astegni.com/api/me',
+                    { method: 'GET' }
+                );
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ <strong>API Call Successful</strong><br>
+                            Status: ${response.status}<br>
+                            User ID: ${data.id}<br>
+                            Name: ${data.first_name} ${data.father_name}
+                        </div>
+                    `;
+                    console.log('[Test] API call succeeded:', data);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ <strong>API Call Failed</strong><br>
+                            Status: ${response.status}
+                        </div>
+                    `;
+                    console.error('[Test] API call failed:', response.status);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                console.error('[Test] Error during API call:', error);
+            }
+        }
+
+        let originalToken = null;
+
+        async function simulateTokenExpiration() {
+            const resultDiv = document.getElementById('simulationResult');
+
+            try {
+                // Save original token
+                originalToken = localStorage.getItem('token');
+                console.log('[Test] Original token saved:', originalToken?.substring(0, 20) + '...');
+
+                // Corrupt the token to simulate expiration
+                localStorage.setItem('token', 'invalid_expired_token_12345');
+                window.AuthManager.token = 'invalid_expired_token_12345';
+
+                console.log('[Test] Token corrupted to simulate expiration');
+
+                resultDiv.innerHTML = `
+                    <div class="info">
+                        ⚠️ <strong>Token Corrupted</strong><br>
+                        Access token has been set to an invalid value to simulate expiration.<br>
+                        Now proceed to Step 4 to test auto-refresh.
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                console.error('[Test] Error simulating expiration:', error);
+            }
+        }
+
+        async function testAfterSimulation() {
+            const resultDiv = document.getElementById('afterSimulationResult');
+            resultDiv.innerHTML = '<div class="info">Making API call with expired token...</div>';
+
+            try {
+                console.log('[Test] Making API call with corrupted token');
+                console.log('[Test] This should trigger auto-refresh!');
+
+                const response = await window.AuthManager.authenticatedFetch(
+                    'https://api.astegni.com/api/me',
+                    { method: 'GET' }
+                );
+
+                const newToken = localStorage.getItem('token');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ <strong>AUTO-REFRESH WORKED!</strong><br>
+                            The system detected the expired token, automatically refreshed it, and retried the request!<br><br>
+                            Status: ${response.status}<br>
+                            User: ${data.first_name} ${data.father_name}<br>
+                            Token Changed: ${newToken !== originalToken ? '✅ Yes' : '❌ No'}<br>
+                            New Token: ${newToken?.substring(0, 20) + '...'}
+                        </div>
+                    `;
+                    console.log('[Test] ✅ AUTO-REFRESH SUCCESS! API call succeeded after token refresh');
+                    console.log('[Test] New token:', newToken?.substring(0, 20) + '...');
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            ❌ <strong>Auto-Refresh Failed</strong><br>
+                            Status: ${response.status}<br>
+                            The token refresh did not work as expected.
+                        </div>
+                    `;
+                    console.error('[Test] ❌ Auto-refresh failed, status:', response.status);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        ❌ <strong>Error:</strong> ${error.message}<br>
+                        Check console for details.
+                    </div>
+                `;
+                console.error('[Test] Error during test after simulation:', error);
+            }
+        }
+
+        function viewTokens() {
+            const resultDiv = document.getElementById('tokensResult');
+
+            const accessToken = localStorage.getItem('token');
+            const refreshToken = localStorage.getItem('refresh_token');
+
+            resultDiv.innerHTML = `
+                <div class="info">
+                    <strong>Access Token:</strong><br>
+                    <code>${accessToken ? accessToken.substring(0, 50) + '...' : 'None'}</code><br><br>
+                    <strong>Refresh Token:</strong><br>
+                    <code>${refreshToken ? refreshToken.substring(0, 50) + '...' : 'None'}</code><br><br>
+                    <strong>Token Changed:</strong> ${accessToken !== originalToken ? '✅ Yes (refreshed!)' : 'No'}
+                </div>
+            `;
+
+            console.log('[Test] Access token:', accessToken?.substring(0, 50) + '...');
+            console.log('[Test] Refresh token:', refreshToken?.substring(0, 50) + '...');
+        }
+
+        // Auto-check login status on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('[Test] Page loaded, checking login status...');
+            checkLoginStatus();
+        });
+    </script>
+</body>
+</html>

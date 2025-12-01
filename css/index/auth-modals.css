@@ -1,0 +1,1235 @@
+/* ============================================
+   ASTEGNI AUTH MODALS - CLEAN IMPLEMENTATION
+   Single source of truth for all auth modals
+   ============================================
+
+   MODALS COVERED:
+   1. Login Modal (#login-modal)
+   2. Register Modal (#register-modal)
+   3. Partner Modal (#partner-modal)
+   4. Forgot Password Modal (#forgot-password-modal)
+   5. Add Role Modal (#add-role-modal)
+
+   STRUCTURE:
+   - Sections 1-14: Shared styles for all modals
+   - Section 15: Utility classes
+   - Section 16: Add Role Modal specific overrides
+
+   IMPORTANT:
+   - All modals use .modal-content.enhanced class
+   - All modals use .auth-form class for forms
+   - Supports both .active and .show classes for visibility
+   - Dark mode fully supported via [data-theme="dark"]
+   - Fully responsive with mobile breakpoints
+
+   ============================================ */
+
+/* ============================================
+   1. MODAL BACKDROP & CONTAINER (SHARED)
+   ============================================ */
+
+#login-modal,
+#register-modal,
+#partner-modal,
+#forgot-password-modal,
+#add-role-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+#login-modal.active,
+#login-modal.show,
+#register-modal.active,
+#register-modal.show,
+#partner-modal.active,
+#partner-modal.show,
+#forgot-password-modal.active,
+#forgot-password-modal.show,
+#add-role-modal.active,
+#add-role-modal.show {
+    display: flex;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   2. MODAL CONTENT BOX (SHARED)
+   ============================================ */
+
+#login-modal .modal-content.enhanced,
+#register-modal .modal-content.enhanced,
+#partner-modal .modal-content.enhanced,
+#forgot-password-modal .modal-content.enhanced,
+#add-role-modal .modal-content.enhanced {
+    position: relative;
+    width: 100%;
+    max-width: 450px;
+    max-height: 90vh;
+    background: var(--modal-bg, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#login-modal.active .modal-content.enhanced,
+#login-modal.show .modal-content.enhanced,
+#register-modal.active .modal-content.enhanced,
+#register-modal.show .modal-content.enhanced,
+#partner-modal.active .modal-content.enhanced,
+#partner-modal.show .modal-content.enhanced,
+#forgot-password-modal.active .modal-content.enhanced,
+#forgot-password-modal.show .modal-content.enhanced,
+#add-role-modal.active .modal-content.enhanced,
+#add-role-modal.show .modal-content.enhanced {
+    transform: scale(1);
+    opacity: 1;
+}
+
+[data-theme="dark"] #login-modal .modal-content.enhanced,
+[data-theme="dark"] #register-modal .modal-content.enhanced,
+[data-theme="dark"] #partner-modal .modal-content.enhanced,
+[data-theme="dark"] #forgot-password-modal .modal-content.enhanced,
+[data-theme="dark"] #add-role-modal .modal-content.enhanced {
+    background: #1f2937;
+}
+
+/* ============================================
+   3. CLOSE BUTTON
+   ============================================ */
+
+.modal-close-enhanced {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+.modal-close-enhanced:hover {
+    background: rgba(239, 68, 68, 0.1);
+    transform: rotate(90deg);
+}
+
+.modal-close-enhanced svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--text-primary, #333);
+}
+
+/* ============================================
+   4. MODAL HEADER
+   ============================================ */
+
+.modal-header {
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+}
+
+.modal-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color, #f59e0b);
+    margin: 0 0 0.5rem 0;
+}
+
+.modal-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    margin: 0;
+}
+
+/* Icon container at top of modals */
+.modal-icon,
+.forgot-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.modal-icon svg,
+.forgot-icon svg {
+    width: 32px;
+    height: 32px;
+    color: var(--primary-color, #f59e0b);
+}
+
+.modal-icon.large svg,
+.forgot-icon.large svg {
+    width: 40px;
+    height: 40px;
+}
+
+/* Info card styling */
+.info-card {
+    background: rgba(245, 158, 11, 0.05);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.info-card-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: rgba(245, 158, 11, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.info-card-icon svg {
+    width: 14px;
+    height: 14px;
+    color: var(--primary-color, #f59e0b);
+}
+
+.info-card-content {
+    flex: 1;
+}
+
+.info-card-content p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    line-height: 1.6;
+}
+
+.info-card-content strong {
+    color: var(--text-primary, #1f2937);
+    font-weight: 600;
+}
+
+/* Button group for multiple actions */
+.button-group {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.button-group .submit-btn {
+    flex: 1;
+}
+
+.btn-outline {
+    background: white !important;
+    color: var(--primary-color, #f59e0b) !important;
+    border: 2px solid var(--primary-color, #f59e0b) !important;
+}
+
+.btn-outline:hover {
+    background: rgba(245, 158, 11, 0.05) !important;
+}
+
+[data-theme="dark"] .info-card {
+    background: rgba(255, 213, 79, 0.08);
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+[data-theme="dark"] .info-card-content strong {
+    color: #e5e7eb;
+}
+
+[data-theme="dark"] .btn-outline {
+    background: rgba(0, 0, 0, 0.3) !important;
+    color: var(--primary-color, #ffd54f) !important;
+    border-color: var(--primary-color, #ffd54f) !important;
+}
+
+[data-theme="dark"] .btn-outline:hover {
+    background: rgba(255, 213, 79, 0.12) !important;
+}
+
+/* ============================================
+   5. SOCIAL LOGIN
+   ============================================ */
+
+.social-login-section {
+    padding: 0 2rem 1rem;
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.social-btn {
+    flex: 1;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border: 2px solid #e5e7eb;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.social-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.social-btn.google {
+    color: #333;
+}
+
+.social-btn.socials {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    border-color: var(--primary-color);
+    color: var(--button-text);
+}
+
+.social-btn.socials:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--primary-active));
+    border-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(var(--primary-rgb), 0.4);
+}
+
+/* Dark theme adjustments for social button */
+[data-theme="dark"] .social-btn.socials {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: var(--button-text);
+}
+
+[data-theme="dark"] .social-btn.socials:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--primary-active));
+}
+
+/* ============================================
+   6. DIVIDER
+   ============================================ */
+
+.divider {
+    position: relative;
+    text-align: center;
+    padding: 0 2rem;
+    margin: 1rem 0;
+    flex-shrink: 0;
+    z-index: 1;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 2rem;
+    right: 2rem;
+    height: 1px;
+    background: #e5e7eb;
+    z-index: 1;
+}
+
+.divider span {
+    position: relative;
+    background: var(--modal-bg, #ffffff);
+    padding: 0 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted, #6b7280);
+    text-transform: uppercase;
+    z-index: 2;
+}
+
+[data-theme="dark"] .divider span {
+    background: #1f2937;
+}
+
+/* ============================================
+   7. FORM CONTAINER
+   ============================================ */
+
+.auth-form {
+    padding: 0 2rem 1.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+}
+
+.auth-form::-webkit-scrollbar {
+    width: 4px;
+}
+
+.auth-form::-webkit-scrollbar-thumb {
+    background: rgba(245, 158, 11, 0.3);
+    border-radius: 2px;
+}
+
+/* ============================================
+   8. FORM GROUPS & INPUTS
+   ============================================ */
+
+.form-group {
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 10;
+}
+
+.form-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 10;
+}
+
+.form-group.half-width {
+    flex: 1;
+}
+
+/* Standard Inputs */
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="tel"],
+.form-group input[type="password"] {
+    width: 100%;
+    height: 48px;
+    padding: 0 1rem;
+    font-size: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: var(--text-primary, #333);
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+[data-theme="dark"] .form-group input {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color, #f59e0b);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+/* Floating Labels */
+.form-group label:not(.checkbox-label) {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    pointer-events: none;
+    transition: all 0.2s ease;
+    background: var(--modal-bg, #ffffff);
+    padding: 0 0.25rem;
+    z-index: 5;
+}
+
+[data-theme="dark"] .form-group label:not(.checkbox-label) {
+    background: #1f2937;
+}
+
+.form-group input:focus ~ label:not(.checkbox-label),
+.form-group input:not(:placeholder-shown) ~ label:not(.checkbox-label) {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--primary-color, #f59e0b);
+    font-weight: 600;
+    z-index: 5;
+}
+
+/* Select Dropdowns */
+.form-group select {
+    width: 100%;
+    height: 48px;
+    padding: 0 2.5rem 0 1rem;
+    font-size: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: var(--text-primary, #333);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f59e0b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+}
+
+[data-theme="dark"] .form-group select {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
+.form-group select:focus {
+    border-color: var(--primary-color, #f59e0b);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+/* Select label positioning */
+.form-group:has(select) label:not(.checkbox-label) {
+    top: 50%;
+    z-index: 5;
+}
+
+.form-group select:focus ~ label:not(.checkbox-label),
+.form-group select.has-value ~ label:not(.checkbox-label) {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--primary-color, #f59e0b);
+    font-weight: 600;
+    z-index: 5;
+}
+
+/* Textarea */
+.form-group textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: var(--text-primary, #333);
+    resize: vertical;
+    transition: all 0.2s ease;
+    outline: none;
+    font-family: inherit;
+}
+
+[data-theme="dark"] .form-group textarea {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
+.form-group textarea:focus {
+    border-color: var(--primary-color, #f59e0b);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.form-group textarea:focus ~ label:not(.checkbox-label),
+.form-group textarea:not(:placeholder-shown) ~ label:not(.checkbox-label) {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--primary-color, #f59e0b);
+    font-weight: 600;
+    z-index: 5;
+}
+
+/* ============================================
+   9. PHONE INPUT GROUP
+   ============================================ */
+
+.phone-group {
+    margin-bottom: 1.25rem;
+}
+
+.phone-input-wrapper {
+    display: flex;
+    gap: 0.75rem;
+    position: relative;
+}
+
+.phone-input-wrapper .country-code {
+    width: 100px;
+    height: 48px;
+    padding: 0 2rem 0 0.75rem;
+    font-size: 0.875rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: var(--text-primary, #333);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f59e0b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1rem;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .phone-input-wrapper .country-code {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
+.phone-input-wrapper input[type="tel"] {
+    flex: 1;
+}
+
+.phone-input-wrapper label:not(.checkbox-label) {
+    left: 108px;
+    z-index: 5;
+}
+
+.phone-input-wrapper input:focus ~ label:not(.checkbox-label),
+.phone-input-wrapper input:not(:placeholder-shown) ~ label:not(.checkbox-label) {
+    left: 108px;
+    z-index: 5;
+}
+
+/* ============================================
+   10. PASSWORD INPUT WITH TOGGLE
+   ============================================ */
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-input-wrapper input {
+    padding-right: 3rem !important;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--text-muted, #6b7280);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.password-toggle:hover {
+    color: var(--primary-color, #f59e0b);
+}
+
+.password-strength {
+    height: 4px;
+    background: #e5e7eb;
+    border-radius: 2px;
+    margin-top: 0.5rem;
+    overflow: hidden;
+}
+
+.password-strength::before {
+    content: '';
+    display: block;
+    height: 100%;
+    width: var(--strength, 0%);
+    background: linear-gradient(90deg, #ef4444 0%, #f59e0b 50%, #10b981 100%);
+    transition: width 0.3s ease;
+}
+
+.password-match-indicator {
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    font-weight: 600;
+}
+
+.password-match-indicator.match {
+    color: #10b981;
+}
+
+.password-match-indicator.no-match {
+    color: #ef4444;
+}
+
+/* ============================================
+   11. CHECKBOX & OPTIONS
+   ============================================ */
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-primary, #333);
+    user-select: none;
+    position: relative;
+    z-index: 30;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    margin-top: 0.125rem;
+    cursor: pointer;
+    accent-color: var(--primary-color, #f59e0b);
+    flex-shrink: 0;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 40;
+}
+
+.checkbox-label input[type="checkbox"]:hover {
+    border-color: var(--primary-color, #f59e0b);
+}
+
+.checkbox-label input[type="checkbox"]:checked {
+    background-color: var(--primary-color, #f59e0b);
+    border-color: var(--primary-color, #f59e0b);
+}
+
+.checkbox-label input[type="checkbox"]:focus {
+    outline: 2px solid rgba(245, 158, 11, 0.3);
+    outline-offset: 2px;
+}
+
+/* Terms checkbox styling */
+.form-group:has(.checkbox-label) {
+    margin-bottom: 1.25rem;
+    margin-top: 0.5rem;
+    position: relative;
+    z-index: 25;
+}
+
+.form-group:has(.checkbox-label) .checkbox-label {
+    padding: 1rem;
+    background: rgba(245, 158, 11, 0.05);
+    border: 2px solid rgba(245, 158, 11, 0.15);
+    border-radius: 8px;
+    width: 100%;
+    justify-content: flex-start;
+    transition: all 0.2s ease;
+}
+
+.form-group:has(.checkbox-label) .checkbox-label:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: rgba(245, 158, 11, 0.25);
+}
+
+.checkbox-label a {
+    color: var(--primary-color, #f59e0b);
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+    z-index: 50;
+    pointer-events: auto;
+}
+
+.checkbox-label a:hover {
+    text-decoration: underline;
+}
+
+.forgot-link {
+    color: var(--primary-color, #f59e0b);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* Dark mode for checkbox */
+[data-theme="dark"] .checkbox-label {
+    color: var(--text-primary, #e5e7eb);
+}
+
+[data-theme="dark"] .checkbox-label input[type="checkbox"] {
+    border-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .checkbox-label input[type="checkbox"]:hover {
+    border-color: var(--primary-color, #ffd54f);
+}
+
+[data-theme="dark"] .checkbox-label input[type="checkbox"]:checked {
+    background-color: var(--primary-color, #ffd54f);
+    border-color: var(--primary-color, #ffd54f);
+}
+
+[data-theme="dark"] .form-group:has(.checkbox-label) .checkbox-label {
+    background: rgba(255, 213, 79, 0.08);
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+[data-theme="dark"] .form-group:has(.checkbox-label) .checkbox-label:hover {
+    background: rgba(255, 213, 79, 0.12);
+    border-color: rgba(255, 213, 79, 0.3);
+}
+
+/* ============================================
+   12. SUBMIT BUTTON
+   ============================================ */
+
+.submit-btn {
+    width: 100%;
+    height: 48px;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 10;
+    margin-top: 0.5rem;
+}
+
+.submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+}
+
+.submit-btn:active {
+    transform: translateY(0);
+}
+
+/* ============================================
+   13. FOOTER
+   ============================================ */
+
+.auth-footer {
+    text-align: center;
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e5e7eb;
+    font-size: 0.875rem;
+    color: var(--text-primary, #333);
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .auth-footer {
+    border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.auth-footer a {
+    color: var(--primary-color, #f59e0b);
+    text-decoration: none;
+    font-weight: 700;
+    margin-left: 0.25rem;
+}
+
+.auth-footer a:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   14. RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 640px) {
+    #login-modal .modal-content.enhanced,
+    #register-modal .modal-content.enhanced,
+    #partner-modal .modal-content.enhanced,
+    #forgot-password-modal .modal-content.enhanced,
+    #add-role-modal .modal-content.enhanced {
+        max-width: calc(100% - 2rem);
+    }
+
+    .modal-header {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+    }
+
+    .social-login-section {
+        padding: 0 1.5rem 0.75rem;
+        flex-direction: column;
+    }
+
+    .divider {
+        padding: 0 1.5rem;
+    }
+
+    .auth-form {
+        padding: 0 1.5rem 1.25rem;
+    }
+
+    .auth-footer {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-group.half-width {
+        width: 100%;
+    }
+
+    .form-options {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+}
+
+/* ============================================
+   15. UTILITY CLASSES
+   ============================================ */
+
+.hidden {
+    display: none !important;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.text-link {
+    color: var(--primary-color, #f59e0b);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.text-link:hover {
+    text-decoration: underline;
+    color: var(--primary-hover, #d97706);
+}
+
+.text-muted {
+    color: var(--text-muted, #6b7280);
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.ml-2 {
+    margin-left: 0.5rem;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
+}
+
+/* ============================================
+   16. ADD ROLE MODAL - SPECIFIC STYLES
+   ============================================ */
+
+/* Override max-width for add-role-modal to make it slightly wider */
+#add-role-modal .modal-content.enhanced {
+    max-width: 480px;
+}
+
+/* Select dropdown specific styling for add-role-modal */
+#add-role-modal .form-group select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f59e0b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+}
+
+/* Input icons for add-role-modal */
+#add-role-modal .input-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted, #6b7280);
+    pointer-events: none;
+    z-index: 5;
+}
+
+#add-role-modal .input-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+#add-role-modal input:focus ~ .input-icon,
+#add-role-modal select:focus ~ .input-icon {
+    color: var(--primary-color, #f59e0b);
+}
+
+/* OTP Input special styling */
+#add-role-modal input[type="text"][name="otp"],
+#add-role-modal input[type="text"]#add-role-otp {
+    letter-spacing: 0.5rem;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding-right: 1rem;
+}
+
+/* Submit button specific for add-role-modal */
+#add-role-modal .btn-submit {
+    width: 100%;
+    height: 48px;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 10;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#add-role-modal .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+}
+
+#add-role-modal .btn-submit:active {
+    transform: translateY(0);
+}
+
+#add-role-modal .btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+#add-role-modal .btn-text,
+#add-role-modal .btn-loader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#add-role-modal .btn-loader {
+    display: none;
+}
+
+#add-role-modal .btn-submit.loading .btn-text {
+    display: none;
+}
+
+#add-role-modal .btn-submit.loading .btn-loader {
+    display: flex;
+}
+
+#add-role-modal .btn-loader svg {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Alert/Message styling for add-role-modal */
+#add-role-modal .alert {
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideInUp 0.3s ease;
+}
+
+#add-role-modal .alert-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+#add-role-modal .alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+#add-role-modal .alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+#add-role-modal .alert svg {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Resend timer styling */
+#add-role-modal #resend-timer {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    font-weight: 500;
+}
+
+/* Dark mode for add-role-modal alerts */
+[data-theme="dark"] #add-role-modal .alert-info {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+}
+
+[data-theme="dark"] #add-role-modal .alert-success {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+
+[data-theme="dark"] #add-role-modal .alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+}
+
+/* ============================================
+   17. ADD ROLE MODAL - PASSWORD & SELECT FIXES
+   ============================================ */
+
+/* Password toggle button - proper positioning */
+#add-role-modal .password-input-wrapper {
+    position: relative;
+}
+
+#add-role-modal .password-input-wrapper input {
+    padding-right: 3rem !important;
+}
+
+#add-role-modal .password-input-wrapper .password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--text-muted, #6b7280);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: color 0.2s ease;
+}
+
+#add-role-modal .password-input-wrapper .password-toggle:hover {
+    color: var(--primary-color, #f59e0b);
+}
+
+#add-role-modal .password-input-wrapper .password-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Select dropdown - no extra icons needed, has built-in arrow */
+#add-role-modal .form-group:has(select) {
+    position: relative;
+}
+
+#add-role-modal .form-group select {
+    padding-right: 2.5rem;
+}
+
+/* Hide any input-icon inside select form-groups */
+#add-role-modal .form-group:has(select) .input-icon {
+    display: none;
+}
+
+/* User info section styling */
+#add-role-modal .add-role-user-info {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark mode for user info section */
+[data-theme="dark"] #add-role-modal .add-role-user-info {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.12)) !important;
+    border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+[data-theme="dark"] #add-role-modal .add-role-user-info h4 {
+    color: #f3f4f6 !important;
+}
+
+[data-theme="dark"] #add-role-modal .add-role-user-info p {
+    color: #9ca3af !important;
+}

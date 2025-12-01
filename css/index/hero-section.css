@@ -1,0 +1,282 @@
+
+/* ============================================
+   HERO SECTION
+   ============================================ */
+.hero-section {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: var(--background);
+    z-index: 1;
+}
+
+.hero-slideshow {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: opacity 1s ease-in-out;
+    opacity: 1;
+    z-index: 0;
+}
+
+.hero-slideshow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+    z-index: 1;
+}
+
+.hero-overlay {
+    display: none;
+}
+
+.hero-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 0.3;
+    border-radius: 50%;
+    animation: float-particle 20s infinite linear;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-text {
+    font-size: clamp(1.25rem, 5vw, 4rem);
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+    color: white;
+}
+
+.hero-description {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    opacity: 0;
+    animation: fadeInUp 1s ease 0.5s forwards;
+    color: white;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Counter Cards */
+.counter-grid-wrapper {
+    margin: 3rem auto;
+    max-width: 1400px;
+}
+
+.counter-grid-top {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(280px, 320px));
+    gap: 2rem;
+    justify-content: center;
+}
+
+.counter-grid-bottom {
+    display: none; /* Hidden - no longer needed */
+}
+
+.counter-card-enhanced {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(245, 158, 11, 0.15);
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: visible;
+    padding: 2rem;
+    border-radius: 18px;
+    height: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.counter-card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(var(--button-bg-rgb), 0.1), transparent);
+    transform: rotate(45deg);
+    transition: all 0.5s;
+    opacity: 0;
+}
+
+.counter-card-enhanced:hover::before {
+    animation: shine 0.5s ease-in-out;
+}
+
+.counter-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+}
+
+.counter-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--button-bg);
+    margin-bottom: 0.5rem;
+}
+
+.counter-label {
+    font-size: 1rem;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* Mock Badge (Test Data) */
+.mock-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: inline-block;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+    transition: all 0.3s ease;
+    animation: pulse-badge 2s infinite;
+}
+
+.mock-badge:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+}
+
+@keyframes pulse-badge {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 1; }
+}
+
+/* CTA Buttons */
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.875rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid transparent;
+}
+
+.cta-button.primary {
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: white;
+    box-shadow: 0 4px 15px rgba(var(--button-bg-rgb), 0.3);
+}
+
+.cta-button.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(var(--button-bg-rgb), 0.4);
+}
+
+.cta-button.secondary {
+    background: white;
+    color: var(--button-bg);
+    border-color: var(--button-bg);
+}
+
+.cta-button.secondary:hover {
+    background: var(--button-bg);
+    color: white;
+}
+
+.cta-button.ghost {
+    background: transparent;
+    color: white;
+    border-color: white;
+}
+
+.cta-button.ghost:hover {
+    background: white;
+    color: var(--button-bg);
+    border-color: white;
+}
+
+.pulse-animation {
+    animation: pulse 2s infinite;
+}
+
+/* Scroll Indicator */
+.scroll-indicator {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.mouse {
+    width: 26px;
+    height: 40px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
+    position: relative;
+    margin: 0 auto;
+}
+
+.wheel {
+    width: 4px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: scroll-wheel 2s infinite;
+}
+
+.arrows {
+    width: 60px;
+    height: 72px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: -30px;
+}
+
+.arrows path {
+    stroke: rgba(255, 255, 255, 0.8);
+    fill: transparent;
+    stroke-width: 2px;
+    animation: arrow-animation 2s infinite;
+}
+
+.arrows path.arrow-1 { animation-delay: -1s; }
+.arrows path.arrow-2 { animation-delay: -0.5s; }
+.arrows path.arrow-3 { animation-delay: 0s; }

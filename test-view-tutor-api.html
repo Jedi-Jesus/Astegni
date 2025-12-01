@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test View Tutor API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        button { padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #45a049; }
+        pre { background: #f4f4f4; padding: 15px; border-radius: 4px; overflow-x: auto; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test View Tutor API</h1>
+
+        <div>
+            <label>Tutor ID: <input type="number" id="tutorId" value="64" /></label>
+            <button onclick="testAPI()">Test API</button>
+        </div>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        async function testAPI() {
+            const tutorId = document.getElementById('tutorId').value;
+            const resultDiv = document.getElementById('result');
+
+            resultDiv.innerHTML = '<p>Loading...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/view-tutor/${tutorId}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <h2 class="success">✅ Success!</h2>
+                        <h3>Profile Data:</h3>
+                        <pre>${JSON.stringify(data.profile, null, 2)}</pre>
+                        <h3>Stats Data:</h3>
+                        <pre>${JSON.stringify(data.stats, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2 class="error">❌ Error</h2>
+                        <pre class="error">${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h2 class="error">❌ Network Error</h2>
+                    <p class="error">${error.message}</p>
+                    <p>Make sure the backend server is running on port 8000</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

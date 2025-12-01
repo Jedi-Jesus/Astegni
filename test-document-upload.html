@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Document Upload - Debug Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #console {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            border-radius: 8px;
+        }
+        .log-info { color: #4ec9b0; }
+        .log-error { color: #f48771; }
+        .log-success { color: #b5cea8; }
+        .log-warning { color: #dcdcaa; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">📄 Document Upload Test & Debug Console</h1>
+
+        <!-- Login Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">🔐 Step 1: Login</h2>
+            <div class="space-y-3">
+                <div>
+                    <label class="block font-semibold mb-1">Email/Username:</label>
+                    <input type="text" id="login-email" class="w-full p-2 border rounded" placeholder="Enter your email">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Password:</label>
+                    <input type="password" id="login-password" class="w-full p-2 border rounded" placeholder="Enter your password">
+                </div>
+                <button onclick="login()" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                    Login
+                </button>
+                <div id="login-status" class="mt-2"></div>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-bold mb-4">📤 Step 2: Upload Document</h2>
+            <form id="uploadForm" class="space-y-3">
+                <div>
+                    <label class="block font-semibold mb-1">Document Type:</label>
+                    <select name="document_type" required class="w-full p-2 border rounded">
+                        <option value="">Select type...</option>
+                        <option value="academic">🎓 Academic</option>
+                        <option value="achievement">🏆 Achievement</option>
+                        <option value="experience">💼 Experience</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Title:</label>
+                    <input type="text" name="title" required class="w-full p-2 border rounded" placeholder="Document title">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Issued By:</label>
+                    <input type="text" name="issued_by" required class="w-full p-2 border rounded" placeholder="Issuing organization">
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">Description:</label>
+                    <textarea name="description" class="w-full p-2 border rounded" rows="2"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold mb-1">Date of Issue:</label>
+                        <input type="date" name="date_of_issue" required class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <label class="block font-semibold mb-1">Expiry Date (optional):</label>
+                        <input type="date" name="expiry_date" class="w-full p-2 border rounded">
+                    </div>
+                </div>
+                <div>
+                    <label class="block font-semibold mb-1">File:</label>
+                    <input type="file" name="file" required class="w-full p-2 border rounded" accept="image/*,.pdf,.doc,.docx">
+                </div>
+                <button type="submit" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
+                    Upload Document
+                </button>
+            </form>
+        </div>
+
+        <!-- Debug Console -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold mb-4">🖥️ Debug Console</h2>
+            <div id="console"></div>
+            <button onclick="clearConsole()" class="mt-3 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 text-sm">
+                Clear Console
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+        let token = localStorage.getItem('token');
+
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = `log-${type}`;
+            console.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            console.scrollTop = console.scrollHeight;
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            log('🔄 Attempting login...', 'info');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                log(`Response status: ${response.status}`, 'info');
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    log(`❌ Login failed: ${error.detail}`, 'error');
+                    document.getElementById('login-status').innerHTML =
+                        `<span class="text-red-500">❌ ${error.detail}</span>`;
+                    return;
+                }
+
+                const data = await response.json();
+                token = data.access_token;
+                localStorage.setItem('token', token);
+
+                log(`✅ Login successful!`, 'success');
+                log(`Token: ${token.substring(0, 20)}...`, 'info');
+                log(`User ID: ${data.user.id}`, 'info');
+                log(`Roles: ${data.user.roles.join(', ')}`, 'info');
+
+                document.getElementById('login-status').innerHTML =
+                    `<span class="text-green-500">✅ Logged in as ${data.user.first_name}</span>`;
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                document.getElementById('login-status').innerHTML =
+                    `<span class="text-red-500">❌ ${error.message}</span>`;
+            }
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!token) {
+                log('❌ Not logged in! Please login first.', 'error');
+                alert('Please login first!');
+                return;
+            }
+
+            log('📤 Starting document upload...', 'info');
+
+            const formData = new FormData(e.target);
+
+            // Log form data
+            log('Form Data:', 'info');
+            for (let [key, value] of formData.entries()) {
+                if (key === 'file') {
+                    log(`  ${key}: ${value.name} (${value.size} bytes)`, 'info');
+                } else {
+                    log(`  ${key}: ${value}`, 'info');
+                }
+            }
+
+            try {
+                log(`🔄 Sending POST request to ${API_BASE_URL}/api/tutor/documents/upload`, 'info');
+
+                const response = await fetch(`${API_BASE_URL}/api/tutor/documents/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                log(`Response status: ${response.status} ${response.statusText}`, 'info');
+
+                const responseData = await response.json();
+
+                if (!response.ok) {
+                    log(`❌ Upload failed: ${responseData.detail}`, 'error');
+                    log(`Full error: ${JSON.stringify(responseData, null, 2)}`, 'error');
+                    alert(`Upload failed: ${responseData.detail}`);
+                    return;
+                }
+
+                log(`✅ Document uploaded successfully!`, 'success');
+                log(`Document ID: ${responseData.id}`, 'success');
+                log(`Tutor ID: ${responseData.tutor_id}`, 'success');
+                log(`Document Type: ${responseData.document_type}`, 'success');
+                log(`Verification Status: ${responseData.verification_status}`, 'warning');
+                log(`Full response: ${JSON.stringify(responseData, null, 2)}`, 'info');
+
+                alert(`✅ Document uploaded successfully! ID: ${responseData.id}`);
+                e.target.reset();
+
+            } catch (error) {
+                log(`❌ JavaScript Error: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+                alert(`Error: ${error.message}`);
+            }
+        });
+
+        // Check if already logged in
+        if (token) {
+            log('ℹ️ Found existing token in localStorage', 'info');
+        } else {
+            log('ℹ️ No token found. Please login.', 'warning');
+        }
+    </script>
+</body>
+</html>

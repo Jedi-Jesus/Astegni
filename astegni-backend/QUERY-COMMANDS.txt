@@ -1,0 +1,82 @@
+================================================================================
+QUICK COMMAND REFERENCE - Whiteboard Session Recordings
+================================================================================
+
+TABLE NAME (UPDATED): whiteboard_session_recordings
+
+================================================================================
+SAFE QUERY COMMANDS (Use these instead of psql)
+================================================================================
+
+# View all recordings
+python query_recordings.py
+
+# View recordings for specific session
+python query_recordings.py 17
+
+# Check for encoding issues
+python fix_encoding_issue.py
+
+# Verify table exists
+python check_tables_info.py
+
+================================================================================
+PSQL COMMANDS (If you must use psql)
+================================================================================
+
+# Connect to database
+psql -U astegni_user -d astegni_db
+
+# IMPORTANT: Set encoding FIRST to avoid errors
+SET client_encoding = 'WIN1252';
+
+# Then query the table
+SELECT * FROM whiteboard_session_recordings;
+
+# Query specific session
+SELECT * FROM whiteboard_session_recordings WHERE session_id = 17;
+
+# Count recordings
+SELECT COUNT(*) FROM whiteboard_session_recordings;
+
+# Group by type
+SELECT recording_type, COUNT(*) FROM whiteboard_session_recordings GROUP BY recording_type;
+
+================================================================================
+CURRENT DATA SUMMARY (as of 2025-10-30)
+================================================================================
+
+Table: whiteboard_session_recordings
+Rows: 6
+Session ID: 17
+Title: Chemistry - Advanced Topics - 10/22/2025
+Type: screen
+Duration: 0 seconds
+Status: All available (not processing)
+
+================================================================================
+WHY USE PYTHON INSTEAD OF PSQL?
+================================================================================
+
+psql ERROR:
+  "character with byte sequence 0xe1 0x8c 0x8d in encoding UTF8
+   has no equivalent in encoding WIN1252"
+
+REASON:
+  - Database uses UTF-8 (supports Ethiopian characters like ፍ)
+  - Windows CMD uses WIN1252 (only Western European characters)
+  - Python handles UTF-8 natively (no errors)
+
+SOLUTION:
+  Use Python scripts above (recommended)
+
+================================================================================
+FILES CREATED FOR YOU
+================================================================================
+
+query_recordings.py       - Query table safely (no encoding errors)
+fix_encoding_issue.py     - Diagnose encoding problems
+migrate_rename_session_recordings.py - Rename old tables
+check_tables_info.py      - Verify table schema
+
+================================================================================

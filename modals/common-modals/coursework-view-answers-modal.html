@@ -1,0 +1,60 @@
+<!--
+  Modal: courseworkViewAnswersModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="courseworkViewAnswersModal" class="coursework-modal">
+        <div class="coursework-modal-overlay" onclick="courseworkManager.closeAllModals()"></div>
+        <div class="coursework-modal-content coursework-modal-large">
+            <button class="coursework-modal-close" onclick="courseworkManager.closeAllModals()" aria-label="Close">×</button>
+
+            <div class="coursework-modal-body flex flex-col lg:flex-row gap-6">
+                <!-- Sidebar -->
+                <aside class="coursework-sidebar">
+                    <h3 class="coursework-sidebar-title">
+                        <span>👥</span> Students
+                    </h3>
+                    <div class="coursework-search-box">
+                        <input type="text" id="courseworkStudentAnswerSearch" class="coursework-search-input"
+                            placeholder="Search students...">
+                        <span class="coursework-search-icon">🔍</span>
+                    </div>
+                    <div id="courseworkStudentAnswerResults" class="coursework-search-results hidden"></div>
+                    <div id="courseworkStudentAnswerList" class="mt-4">
+                        <p class="text-gray-500 text-center py-4">No students yet</p>
+                    </div>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="coursework-content-area flex-1">
+                    <h2 class="coursework-content-title">
+                        <span>📝</span> Student Answers
+                    </h2>
+                    <div class="coursework-table-wrapper">
+                        <table class="coursework-data-table">
+                            <thead>
+                                <tr>
+                                    <th>Course Name</th>
+                                    <th>Coursework Type</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="courseworkAnswerTableBody">
+                                <tr>
+                                    <td colspan="5" class="text-center text-gray-500 py-8">No answers submitted yet</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="coursework-modal-actions">
+                        <button class="coursework-btn coursework-btn-cancel" onclick="courseworkManager.closeAllModals()">
+                            <span>❌</span> Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

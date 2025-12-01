@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Auth Fix - Astegni</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .token-display {
+            background: #2d3748;
+            color: #48bb78;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .quick-login {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .quick-login-btn {
+            padding: 10px;
+            background: #e0e7ff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 13px;
+        }
+
+        .quick-login-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Schedule Authentication Fix</h1>
+        <p class="subtitle">Fix your authentication token to create schedules</p>
+
+        <div class="info-box">
+            <strong>⚠️ Current Issue:</strong> Your authentication token has expired (tokens last 30 minutes).
+            Login below to get a fresh token and fix the 401 error.
+        </div>
+
+        <!-- Step 1: Login -->
+        <div class="section">
+            <h2>Step 1: Login to Get Fresh Token</h2>
+
+            <div class="quick-login">
+                <button class="quick-login-btn" onclick="quickLogin('jediael.s.abebe@gmail.com')">
+                    Login as User 115<br><small>(jediael.s.abebe@gmail.com)</small>
+                </button>
+                <button class="quick-login-btn" onclick="quickLogin('admin@astegni.com')">
+                    Login as Admin<br><small>(admin@astegni.com)</small>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Email or Phone</label>
+                <input type="text" id="identifier" placeholder="jediael.s.abebe@gmail.com" value="jediael.s.abebe@gmail.com">
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" placeholder="Enter password" value="Astegni2025">
+            </div>
+
+            <button class="btn" onclick="login()">🔑 Login & Get Token</button>
+
+            <div id="loginStatus"></div>
+        </div>
+
+        <!-- Step 2: Current Token Status -->
+        <div class="section">
+            <h2>Step 2: Verify Token in Browser</h2>
+            <button class="btn" onclick="checkToken()">🔍 Check Current Token Status</button>
+            <div id="tokenStatus"></div>
+        </div>
+
+        <!-- Step 3: Go to Tutor Profile -->
+        <div class="section">
+            <h2>Step 3: Open Tutor Profile</h2>
+            <button class="btn" onclick="goToTutorProfile()">📋 Go to Tutor Profile (Schedule Panel)</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.astegni.com';
+
+        async function login() {
+            const identifier = document.getElementById('identifier').value;
+            const password = document.getElementById('password').value;
+            const statusDiv = document.getElementById('loginStatus');
+
+            if (!identifier || !password) {
+                statusDiv.innerHTML = '<div class="status error">Please enter email and password</div>';
+                return;
+            }
+
+            statusDiv.innerHTML = '<div class="status info">Logging in...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        identifier: identifier,
+                        password: password
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const token = data.access_token;
+                    const refreshToken = data.refresh_token;
+
+                    // Store tokens in localStorage (same as the app does)
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('refreshToken', refreshToken);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ <strong>Login Successful!</strong><br>
+                            User: ${data.user.email}<br>
+                            Active Role: ${data.user.active_role}<br>
+                            <strong>Token saved to localStorage</strong>
+                        </div>
+                        <div class="token-display">
+                            Token (first 100 chars): ${token.substring(0, 100)}...
+                        </div>
+                    `;
+
+                    // Automatically check token status
+                    setTimeout(checkToken, 1000);
+                } else {
+                    const error = await response.json();
+                    statusDiv.innerHTML = `<div class="status error">❌ Login failed: ${error.detail || 'Unknown error'}</div>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function checkToken() {
+            const statusDiv = document.getElementById('tokenStatus');
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                statusDiv.innerHTML = '<div class="status error">❌ No token found in localStorage. Please login first.</div>';
+                return;
+            }
+
+            statusDiv.innerHTML = '<div class="status info">Checking token validity...</div>';
+
+            try {
+                // Test token with /api/me endpoint
+                const response = await fetch(`${API_BASE}/api/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ <strong>Token is Valid!</strong><br>
+                            User: ${user.username || user.email} (ID: ${user.id})<br>
+                            Active Role: ${user.active_role}<br>
+                            Roles: ${user.roles.join(', ')}
+                        </div>
+                        <div class="token-display">
+                            Current Token: ${token.substring(0, 100)}...
+                        </div>
+                    `;
+                } else {
+                    const error = await response.json();
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ <strong>Token is Invalid or Expired</strong><br>
+                            Error: ${error.detail}<br>
+                            <strong>Please login again to get a fresh token</strong>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error checking token: ${error.message}</div>`;
+            }
+        }
+
+        function quickLogin(email) {
+            document.getElementById('identifier').value = email;
+            document.getElementById('password').value = 'Astegni2025';
+        }
+
+        function goToTutorProfile() {
+            // Check if token exists first
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('⚠️ Please login first to get a valid token!');
+                return;
+            }
+
+            // Open tutor profile with schedule panel
+            window.location.href = 'profile-pages/tutor-profile.html?panel=schedule';
+        }
+
+        // Check token status on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                document.getElementById('tokenStatus').innerHTML = '<div class="status info">Found token in localStorage. Click "Check Current Token Status" to verify.</div>';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!--
+  Modal: partner-modal
+  Source: index.html
+  Purpose: Partnership application form
+-->
+
+<div id="partner-modal" class="modal hidden">
+    <div class="modal-content enhanced">
+        <button class="modal-close-enhanced" onclick="closeModal('partner-modal')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                </path>
+            </svg>
+        </button>
+        <div class="modal-header">
+            <h3 class="modal-title">Become a Partner</h3>
+            <p class="modal-subtitle">Join our network of trusted educational partners</p>
+        </div>
+
+        <form id="partner-form" class="auth-form">
+            <div class="form-group">
+                <input type="text" id="partner-company" placeholder=" " required>
+                <label>Company/Institution Name</label>
+            </div>
+
+            <div class="form-group">
+                <input type="text" id="partner-contact" placeholder=" " required>
+                <label>Contact Person</label>
+            </div>
+
+            <!-- Multiple Emails Section -->
+            <div class="form-group">
+                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: block;">
+                    Business Email(s)
+                </label>
+                <div id="emails-container" style="margin-bottom: 12px;">
+                    <div class="email-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="email" class="partner-email" placeholder="email@company.com" required style="flex: 1;">
+                    </div>
+                </div>
+                <button type="button" onclick="addEmailField()" class="add-field-btn-with-text" title="Add another email">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span>Add Email</span>
+                </button>
+            </div>
+
+            <!-- Multiple Phones Section -->
+            <div class="form-group">
+                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 12px; display: block;">
+                    Phone Number(s)
+                </label>
+                <div id="phones-container" style="margin-bottom: 12px;">
+                    <div class="phone-field-wrapper" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                        <input type="tel" class="partner-phone" placeholder="+251 912 345 678" required style="flex: 1;">
+                    </div>
+                </div>
+                <button type="button" onclick="addPhoneField()" class="add-field-btn-with-text" title="Add another phone">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    <span>Add Phone</span>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <select id="partner-type" required onchange="toggleOtherPartnerType(this.value)">
+                    <option value="">Select Partnership Type</option>
+                    <option value="educational_institution">Educational Institution</option>
+                    <option value="technology">Technology Partner</option>
+                    <option value="other">Other</option>
+                </select>
+                <label>Partnership Type</label>
+            </div>
+
+            <!-- Other Partnership Type Specification (Hidden by default) -->
+            <div class="form-group" id="other-partner-type-container" style="display: none;">
+                <input type="text" id="other-partner-type" placeholder=" ">
+                <label>Please specify partnership type</label>
+            </div>
+
+            <div class="form-group">
+                <textarea id="partner-description" placeholder=" " rows="4" required></textarea>
+                <label>Briefly describe your company</label>
+            </div>
+
+            <div class="form-group">
+                <label style="position: relative; top: 0; font-size: 14px; color: var(--text-secondary); margin-bottom: 8px;">Upload Proposal (PDF, DOC, DOCX - Max 10MB) *</label>
+                <input type="file" id="partner-proposal" accept=".pdf,.doc,.docx" required style="padding: 12px; border: 2px dashed var(--border-color); border-radius: 8px; background: var(--bg-secondary);">
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Partnership Request</button>
+        </form>
+
+        <p class="auth-footer">
+            Have questions? Contact us at <a href="mailto:partners@astegni.com">partners@astegni.com</a>
+        </p>
+    </div>
+</div>

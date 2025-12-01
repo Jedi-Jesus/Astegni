@@ -1,0 +1,355 @@
+/* ============================================
+   VIEW STUDENT - RIGHT WIDGETS CSS
+   Dedicated styling for view-student.html right sidebar widgets
+   ============================================ */
+
+/* Main layout container */
+.student-main-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 1.5rem;
+    max-width: 100%;
+    position: relative;
+    align-items: flex-start !important;
+}
+
+/* Ensure main content wrapper has enough height to prevent bottom widgets from appearing under sidebar */
+section.py-8 .flex.gap-6 {
+    min-height: 100vh; /* Ensure container is at least full viewport height */
+}
+
+/* Left content area - independently scrollable */
+/* Target the main content area specifically (left side of the layout) */
+section.py-8 .flex.gap-6 > .flex-1 {
+    flex: 1;
+    min-width: 0; /* Prevent flex item from overflowing */
+    overflow-y: auto !important; /* Independent scrolling for main content */
+    max-height: calc(100vh - 8rem) !important; /* Constrain height to enable scrolling */
+    padding-right: 0.5rem; /* Space for scrollbar */
+}
+
+/* Right sidebar widgets - fixed, no scrolling */
+.right-widgets {
+    width: 320px;
+    flex-shrink: 0;
+    position: sticky; /* Sticky positioning to keep it fixed on screen */
+    top: 5rem; /* Offset from top (adjust based on navbar height) */
+    height: fit-content;
+    max-height: calc(100vh - 6rem); /* Limit height */
+    z-index: 10;
+    overflow-y: hidden; /* No scrolling - widgets remain fixed */
+}
+
+/* Ensure proper spacing for widget containers */
+.right-widgets > div {
+    margin-bottom: 1rem;
+}
+
+/* Widget card styling */
+.widget-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1; /* Ensure cards don't overlap bottom widgets */
+}
+
+.widget-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Widget card headers */
+.widget-card h3 {
+    color: var(--heading);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Stats container inside widgets */
+.stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+/* Individual stat items */
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: rgba(var(--button-bg-rgb), 0.05);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.stat-item:hover {
+    background: rgba(var(--button-bg-rgb), 0.1);
+    transform: translateX(3px);
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.stat-value {
+    color: var(--text);
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+/* Quick actions section */
+.quick-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.quick-action-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.quick-action-btn:hover {
+    background: var(--button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quick-action-btn:active {
+    transform: translateY(0);
+}
+
+/* Activity feed items */
+.activity-item {
+    padding: 0.75rem;
+    border-left: 3px solid var(--button-bg);
+    background: rgba(var(--button-bg-rgb), 0.05);
+    border-radius: 4px;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+    background: rgba(var(--button-bg-rgb), 0.1);
+    transform: translateX(3px);
+}
+
+.activity-time {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.activity-desc {
+    color: var(--text);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Progress bars */
+.progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: rgba(var(--button-bg-rgb), 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 0.5rem;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--button-bg) 0%, rgba(var(--button-bg-rgb), 0.7) 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Badges and indicators */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge.success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #16a34a;
+}
+
+.badge.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #d97706;
+}
+
+.badge.info {
+    background: rgba(59, 130, 246, 0.1);
+    color: #2563eb;
+}
+
+.badge.danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626;
+}
+
+/* Responsive behavior */
+@media (max-width: 1280px) {
+    .right-widgets {
+        width: 280px;
+    }
+}
+
+@media (max-width: 1024px) {
+    /* On tablets, move widgets below main content */
+    .student-main-layout {
+        flex-direction: column;
+    }
+
+    .right-widgets {
+        width: 100%;
+        position: static;
+        max-height: none;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .right-widgets {
+        grid-template-columns: 1fr;
+    }
+
+    .widget-card {
+        padding: 1rem;
+    }
+}
+
+/* Bottom widgets section - ensure they appear below the main content and above sticky sidebar */
+.bottom-widgets {
+    position: relative;
+    z-index: 20; /* Higher than sticky sidebar to prevent overlap */
+    background: var(--bg); /* Ensure background covers sticky elements */
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+}
+
+.bottom-widgets-grid {
+    position: relative;
+    z-index: 20;
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+    .widget-card {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .widget-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+}
+
+/* ============================================
+   TICKER ANIMATION - Interested In Widget
+   ============================================ */
+
+/* Ticker container */
+.ticker-container {
+    overflow: hidden;
+    position: relative;
+    background: rgba(var(--button-bg-rgb), 0.05);
+    border-radius: 12px;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(var(--border-rgb), 0.1);
+}
+
+/* Ticker wrapper with animation */
+.ticker-wrapper {
+    display: flex;
+    animation: ticker-scroll 25s linear infinite;
+}
+
+.ticker-wrapper:hover {
+    animation-play-state: paused;
+}
+
+/* Ticker items container */
+.ticker-items {
+    display: flex;
+    gap: 0.75rem;
+    white-space: nowrap;
+    padding-right: 0.75rem;
+}
+
+/* Individual ticker item */
+.ticker-item {
+    background: var(--button-bg);
+    color: var(--button-text);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ticker-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.ticker-item span:first-child {
+    font-size: 1rem;
+}
+
+/* Keyframe animation for smooth scrolling */
+@keyframes ticker-scroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Responsive ticker */
+@media (max-width: 768px) {
+    .ticker-item {
+        font-size: 0.75rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .ticker-item span:first-child {
+        font-size: 0.875rem;
+    }
+
+    .ticker-wrapper {
+        animation-duration: 20s;
+    }
+}

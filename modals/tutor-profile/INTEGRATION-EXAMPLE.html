@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Integration Example</title>
+</head>
+<body>
+    <!-- Your page content here -->
+    <h1>Tutor Profile Page</h1>
+
+    <button onclick="showEditProfileModal()">Edit Profile</button>
+    <button onclick="showSubscriptionModal()">View Subscription</button>
+    <button onclick="showQuizMainModal()">Quiz System</button>
+
+    <!--
+        STEP 1: Add modal container at the end of your body tag
+        This is where all modals will be loaded
+    -->
+    <div id="modal-container"></div>
+
+    <!--
+        STEP 2: Include the modal-loader.js script
+        This must come BEFORE any scripts that try to show modals
+    -->
+    <script src="modals/tutor-profile/modal-loader.js"></script>
+
+    <!--
+        STEP 3: Choose your loading strategy
+
+        OPTION A: Preload all modals (good for small number of modals)
+        Loads all 44 modals immediately when page loads
+    -->
+    <script>
+        // Uncomment this line to preload all modals:
+        // ModalLoader.preloadAll();
+    </script>
+
+    <!--
+        OPTION B: Load on-demand (RECOMMENDED - better performance)
+        Modals load automatically when first accessed
+
+        Wrap your existing modal show functions:
+    -->
+    <script>
+        // Example: Wrap existing show function to ensure modal is loaded
+        const originalShowEditProfileModal = showEditProfileModal;
+
+        function showEditProfileModal() {
+            ModalLoader.loadById('edit-profile-modal').then(() => {
+                // Now call your original show function
+                if (typeof originalShowEditProfileModal === 'function') {
+                    originalShowEditProfileModal();
+                } else {
+                    // Or directly show the modal
+                    const modal = document.getElementById('edit-profile-modal');
+                    if (modal) modal.classList.remove('hidden');
+                }
+            });
+        }
+
+        function showSubscriptionModal() {
+            ModalLoader.loadById('subscription-modal').then(() => {
+                const modal = document.getElementById('subscription-modal');
+                if (modal) modal.classList.remove('hidden');
+            });
+        }
+
+        function showQuizMainModal() {
+            ModalLoader.loadById('quizMainModal').then(() => {
+                const modal = document.getElementById('quizMainModal');
+                if (modal) modal.style.display = 'flex';
+            });
+        }
+    </script>
+
+    <!--
+        OPTION C: Hybrid approach (preload critical, lazy load others)
+
+        Preload only the modals users see most often:
+    -->
+    <script>
+        // Uncomment and customize:
+        // ModalLoader.init();
+        //
+        // // Preload only critical modals
+        // const criticalModals = [
+        //     'edit-profile-modal',
+        //     'subscription-modal',
+        //     'coming-soon-modal'
+        // ];
+        //
+        // criticalModals.forEach(modalId => {
+        //     ModalLoader.loadById(modalId);
+        // });
+        //
+        // // Other modals will load on-demand when accessed
+    </script>
+
+    <!--
+        DEBUGGING TIPS:
+
+        1. Check if a modal is loaded:
+           console.log(ModalLoader.isLoaded('edit-profile-modal'));
+
+        2. Get list of available modals:
+           console.log(ModalLoader.getAvailableModals());
+
+        3. Clear all modals from DOM (useful for debugging):
+           ModalLoader.clearAll();
+
+        4. Clear cache (force reload from files):
+           ModalLoader.clearCache();
+
+        5. Test all modals load:
+           ModalLoader.preloadAll().then(() => {
+               console.log('All modals loaded successfully!');
+           });
+    -->
+</body>
+</html>

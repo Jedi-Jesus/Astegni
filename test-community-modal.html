@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Community Modal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        button {
+            padding: 12px 24px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        .console-output {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin: 5px 0;
+        }
+
+        .error { color: #f44; }
+        .warn { color: #fa0; }
+        .success { color: #0f0; }
+    </style>
+</head>
+<body>
+    <h1>Community Modal Test Page</h1>
+
+    <p>This page tests if the community modal can be opened correctly.</p>
+
+    <div>
+        <button onclick="testOpenCommunityModal()">Open Community Modal (All)</button>
+        <button onclick="testOpenCommunityModal('requests')">Open Community Modal (Requests)</button>
+        <button onclick="testOpenCommunityModal('connections')">Open Community Modal (Connections)</button>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <div class="console-output" id="console"></div>
+
+    <!-- Modal Container -->
+    <div id="modal-container"></div>
+
+    <!-- Community Modal CSS -->
+    <link rel="stylesheet" href="css/tutor-profile/community-modal.css">
+
+    <!-- Modal Loader -->
+    <script src="modals/tutor-profile/modal-loader.js"></script>
+
+    <!-- Community Modal Functions -->
+    <script src="js/tutor-profile/community-modal-functions.js"></script>
+
+    <!-- Modal Open Fix -->
+    <script src="modals/tutor-profile/modal-open-fix-simple.js"></script>
+
+    <script>
+        // Console interceptor
+        const consoleOutput = document.getElementById('console');
+
+        function addLog(message, type = 'log') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleOutput.appendChild(entry);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        // Intercept console methods
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        console.log = function(...args) {
+            addLog(args.join(' '), 'log');
+            originalLog.apply(console, args);
+        };
+
+        console.error = function(...args) {
+            addLog('ERROR: ' + args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+
+        console.warn = function(...args) {
+            addLog('WARN: ' + args.join(' '), 'warn');
+            originalWarn.apply(console, args);
+        };
+
+        // Test function
+        function testOpenCommunityModal(section = 'all') {
+            addLog(`=== Testing openCommunityModal('${section}') ===`, 'success');
+
+            if (typeof openCommunityModal !== 'function') {
+                addLog('ERROR: openCommunityModal is not defined!', 'error');
+                return;
+            }
+
+            try {
+                openCommunityModal(section);
+            } catch (error) {
+                addLog(`ERROR: ${error.message}`, 'error');
+            }
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '';
+        }
+
+        // Initial status check
+        window.addEventListener('load', () => {
+            addLog('=== Page Loaded ===', 'success');
+            addLog('Checking dependencies...', 'log');
+            addLog(`ModalLoader: ${typeof ModalLoader !== 'undefined' ? '✓' : '✗'}`, typeof ModalLoader !== 'undefined' ? 'success' : 'error');
+            addLog(`openCommunityModal: ${typeof openCommunityModal !== 'undefined' ? '✓' : '✗'}`, typeof openCommunityModal !== 'undefined' ? 'success' : 'error');
+            addLog(`communityModal in DOM: ${document.getElementById('communityModal') ? '✓' : '✗'}`, document.getElementById('communityModal') ? 'success' : 'warn');
+        });
+    </script>
+</body>
+</html>

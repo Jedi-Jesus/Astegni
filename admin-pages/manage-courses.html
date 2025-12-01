@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Manage Courses</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/admin-profile/admin.css">
+    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="../css/admin-pages/manage-courses.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Inline styles to ensure right-side widget positioning -->
+    <style>
+        .admin-main-layout {
+            display: flex !important;
+            gap: 1.5rem !important;
+        }
+
+        .admin-content-area {
+            flex: 1 !important;
+        }
+
+        .admin-right-widgets {
+            width: 320px !important;
+            flex-shrink: 0 !important;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <span class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <a href="../admin-pages/manage-courses.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Manage courses</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="flex items-center space-x-6">
+
+                <!-- Notification Icon -->
+                <button class="relative focus:outline-none" aria-label="Notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span
+                        class="absolute top-0 right-0 -mt-1 -mr-1 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">3</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>Course Management</h3>
+                <span class="sidebar-close" id="sidebar-close">&times;</span>
+
+                <a href="../admin-pages/index.html" class="sidebar-link">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Admin Home</span>
+                </a>
+                <hr class="my-2 border-gray-300">
+                <a href="#" onclick="switchPanel('dashboard'); return false;" class="sidebar-link active">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel('requested'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📝</span>
+                    <span>Course Requests</span>
+                </a>
+                <a href="#" onclick="switchPanel('verified'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📚</span>
+                    <span>Active Courses</span>
+                </a>
+                <a href="#" onclick="switchPanel('rejected'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">❌</span>
+                    <span>Rejected Courses</span>
+                </a>
+                <a href="#" onclick="switchPanel('suspended'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚠️</span>
+                    <span>Suspended Courses</span>
+                </a>
+                <button onclick="window.switchPanel ? switchPanel('reviews') : null" class="sidebar-link"
+                    data-panel="reviews">
+                    <i class="fas fa-star"></i>
+                    <span>Reviews & Ratings</span>
+                </button>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="openCourseReports(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Course Analytics</span>
+                </a>
+                <a href="#" onclick="openCurriculumGuidelines(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📋</span>
+                    <span>Curriculum Guidelines</span>
+                </a>
+                <a href="#" onclick="openCourseSettings(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Course Settings</span>
+                </a>
+                <!-- Logout Button at Bottom -->
+                <div class="mt-auto pt-4 border-t border-gray-300">
+                    <a href="#" onclick="logout(); return false;" class="sidebar-link text-red-500 hover:bg-red-50">
+                        <span class="sidebar-icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1">
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+
+                            <!-- Profile Header Section (Only visible in Dashboard) -->
+                            <section class="profile-header-section mb-8">
+                                <div class="cover-image-container relative">
+                                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='20'%3E1200x300%3C/text%3E%3C/svg%3E"
+                                        alt="Cover" class="cover-img">
+                                    <div class="cover-overlay"></div>
+                                    <!-- Cover Upload Button -->
+                                    <button onclick="openUploadCoverModal()" class="cover-upload-btn">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                            </path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="profile-main-info">
+                                    <div class="profile-info-wrapper">
+                                        <div class="profile-avatar-container">
+                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
+                                                alt="Admin Profile" class="profile-avatar">
+                                            <span class="online-indicator"></span>
+                                            <!-- Profile Picture Upload Button -->
+                                            <button onclick="openUploadProfileModal()" class="avatar-upload-btn">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                                    </path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="profile-details-section">
+                                            <div class="profile-name-row">
+                                                <h1 class="profile-name" id="adminUsername">admin_username</h1>
+                                                <div class="badges-row">
+                                                    <!-- Badges loaded from database by manage-courses-dashboard-loader.js -->
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-section">
+                                                <div class="rating-wrapper">
+                                                    <span class="rating-value">...</span>
+                                                    <div class="rating-stars">★★★★★</div>
+                                                    <span class="rating-count">(...)</span>
+                                                    <div class="rating-label">Performance Rating</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-location">
+                                                <span class="location-icon">📍</span>
+                                                <span>Loading...</span>
+                                            </div>
+
+                                            <div class="profile-quote">
+                                                <span>"..."</span>
+                                            </div>
+
+                                            <div class="profile-actions">
+                                                <button onclick="openEditProfileModal()" class="btn-primary">
+                                                    <span class="mr-2">✏️</span>
+                                                    Edit Profile
+                                                </button>
+                                            </div>
+
+                                            <!-- About Me Info -->
+                                            <div class="profile-info-grid">
+                                                <div class="info-item">
+                                                    <span class="info-label">Email:</span>
+                                                    <span class="info-value" id="profile-email">...</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Phone:</span>
+                                                    <span class="info-value" id="profile-phone">...</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Department:</span>
+                                                    <span class="info-value">...</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Employee ID:</span>
+                                                    <span class="info-value">...</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Joined:</span>
+                                                    <span class="info-value">...</span>
+                                                </div>
+                                                <div class="info-description">
+                                                    <p>Loading profile information...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Page Header -->
+                            <div class="mb-8 animate-fadeIn">
+                                <h1 class="text-3xl font-bold mb-2">Course Management Dashboard</h1>
+                                <p class="text-gray-600">Overview of all course management activities and statistics</p>
+                            </div>
+                            <!-- Achievements Section -->
+                            <div class="card p-6 mb-8">
+                                <h3 class="text-xl font-semibold mb-4">Achievements</h3>
+                                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                    <!-- Achievements loaded from database by manage-courses-dashboard-loader.js -->
+                                </div>
+                            </div>
+                            <!-- All Statistics Cards -->
+                            <div class="dashboard-grid mb-8">
+                                <!-- Dashboard stats loaded from database by manage-courses-dashboard-loader.js -->
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Active Courses</h3>
+                                    <p class="text-2xl font-bold">...</p>
+                                    <span class="text-sm text-gray-500">Currently running</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Pending Courses</h3>
+                                    <p class="text-2xl font-bold text-yellow-600">...</p>
+                                    <span class="text-sm text-gray-500">Awaiting review</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Rejected Courses</h3>
+                                    <p class="text-2xl font-bold text-red-600">...</p>
+                                    <span class="text-sm text-gray-500">Last 30 days</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Suspended Courses</h3>
+                                    <p class="text-2xl font-bold text-orange-600">...</p>
+                                    <span class="text-sm text-gray-500">Under investigation</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Approval Rate</h3>
+                                    <p class="text-2xl font-bold text-green-600">...</p>
+                                    <span class="text-sm text-gray-500">This month</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Avg Processing</h3>
+                                    <p class="text-2xl font-bold">...</p>
+                                    <span class="text-sm text-gray-500">Per application</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Client Satisfaction</h3>
+                                    <p class="text-2xl font-bold">...</p>
+                                    <span class="text-sm text-gray-500">Happy clients</span>
+                                </div>
+                            </div>
+
+
+
+                            <!-- Reviews Section -->
+                            <div class="card p-6 mb-8">
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="text-xl font-semibold">Your Recent Performance Reviews</h3>
+                                    <button onclick="window.switchPanel ? switchPanel('reviews') : null"
+                                        class="text-blue-500 hover:text-blue-700 text-sm font-semibold">
+                                        View All Your Reviews →
+                                    </button>
+                                </div>
+                                <div class="space-y-4" id="dashboard-reviews-container">
+                                    <!-- Reviews loaded from database by manage-courses-reviews.js -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verified Courses Panel -->
+                    <div id="verified-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Active Courses</h1>
+                            <p class="text-gray-600">Manage all active and running courses</p>
+                        </div>
+
+                        <!-- Statistics Card for this panel only -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Total Active</h3>
+                                <p class="text-2xl font-bold">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Academic Courses</h3>
+                                <p class="text-2xl font-bold">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Professional Courses</h3>
+                                <p class="text-2xl font-bold">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Average Rating</h3>
+                                <p class="text-2xl font-bold">...</p>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search courses by name, category, or instructor...">
+                                </div>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Categories</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="languages">Languages</option>
+                                    <option value="technology">Technology</option>
+                                </select>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Levels</option>
+                                    <option value="elementary">Elementary</option>
+                                    <option value="high-school">High School</option>
+                                    <option value="university">University</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Courses Table -->
+                        <div class="card overflow-hidden">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Course</th>
+                                        <th class="p-4 text-left">Category</th>
+                                        <th class="p-4 text-left">Level</th>
+                                        <th class="p-4 text-left">Students</th>
+                                        <th class="p-4 text-left">Rating</th>
+                                        <th class="p-4 text-left">Notification</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Active courses loaded from database by manage-courses-db-loader.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Course Requests Panel -->
+                    <div id="requested-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Course Requests</h1>
+                            <p class="text-gray-600">Review new course requests from instructors and institutions</p>
+                        </div>
+
+                        <!-- Statistics Card for this panel only -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">New Requests</h3>
+                                <p class="text-2xl font-bold text-yellow-600">...</p>
+                                <span class="text-sm text-gray-500">Not yet reviewed</span>
+                            </div>
+                            <div class="card p-4 cursor-pointer hover:shadow-lg transition-shadow" onclick="switchPanel('verified')">
+                                <h3 class="text-lg font-semibold">Approved Today</h3>
+                                <p class="text-2xl font-bold text-green-600">...</p>
+                                <span class="text-sm text-gray-500">Click to view verified courses</span>
+                            </div>
+                            <div class="card p-4 cursor-pointer hover:shadow-lg transition-shadow" onclick="switchPanel('rejected')">
+                                <h3 class="text-lg font-semibold">Rejected</h3>
+                                <p class="text-2xl font-bold text-red-600">...</p>
+                                <span class="text-sm text-gray-500">Click to view rejected courses</span>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search courses by name, category, or instructor...">
+                                </div>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Categories</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="languages">Languages</option>
+                                    <option value="technology">Technology</option>
+                                </select>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Levels</option>
+                                    <option value="elementary">Elementary</option>
+                                    <option value="high-school">High School</option>
+                                    <option value="university">University</option>
+                                </select>
+                                <button onclick="openAddCourseModal()" class="cta-button">
+                                    <i class="fas fa-plus"></i> Add Course
+                                </button>
+                            </div>
+                        </div>
+
+
+                        <div class="card overflow-hidden">
+                            <div class="p-4 border-b">
+                                <h3 class="text-xl font-semibold">Pending Course Requests</h3>
+                            </div>
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Course Title</th>
+                                        <th class="p-4 text-left">Requested By</th>
+                                        <th class="p-4 text-left">Category</th>
+                                        <th class="p-4 text-left">Level</th>
+                                        <th class="p-4 text-left">Submitted</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Course requests loaded from database by manage-courses-db-loader.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Rejected Courses Panel -->
+                    <div id="rejected-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Rejected Courses</h1>
+                            <p class="text-gray-600">Review rejected course applications and reconsider if needed</p>
+                        </div>
+
+                        <!-- Statistics Card for this panel only -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Total Rejected</h3>
+                                <p class="text-2xl font-bold text-red-600">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">This Month</h3>
+                                <p class="text-2xl font-bold">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Reconsidered</h3>
+                                <p class="text-2xl font-bold text-green-600">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Main Reason</h3>
+                                <p class="text-lg font-bold">...</p>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search courses by name, category, or instructor...">
+                                </div>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Categories</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="languages">Languages</option>
+                                    <option value="technology">Technology</option>
+                                </select>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Levels</option>
+                                    <option value="elementary">Elementary</option>
+                                    <option value="high-school">High School</option>
+                                    <option value="university">University</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="card overflow-hidden">
+                            <div class="p-4 border-b">
+                                <h3 class="text-xl font-semibold">Rejected Course Applications</h3>
+                            </div>
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Course Title</th>
+                                        <th class="p-4 text-left">Category</th>
+                                        <th class="p-4 text-left">Rejected Date</th>
+                                        <th class="p-4 text-left">Reason</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Rejected courses loaded from database by manage-courses-db-loader.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Suspended Courses Panel -->
+                    <div id="suspended-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Suspended Courses</h1>
+                            <p class="text-gray-600">Manage courses under temporary suspension</p>
+                        </div>
+
+                        <!-- Statistics Card for this panel only -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Currently Suspended</h3>
+                                <p class="text-2xl font-bold text-orange-600">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Quality Issues</h3>
+                                <p class="text-2xl font-bold">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Under Investigation</h3>
+                                <p class="text-2xl font-bold">...</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Reinstated This Year</h3>
+                                <p class="text-2xl font-bold text-green-600">...</p>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search courses by name, category, or instructor...">
+                                </div>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Categories</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="science">Science</option>
+                                    <option value="languages">Languages</option>
+                                    <option value="technology">Technology</option>
+                                </select>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Levels</option>
+                                    <option value="elementary">Elementary</option>
+                                    <option value="high-school">High School</option>
+                                    <option value="university">University</option>
+                                </select>
+                                <button onclick="openAddCourseModal()" class="cta-button">
+                                    <i class="fas fa-plus"></i> Add Course
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card overflow-hidden">
+                            <div class="p-4 border-b">
+                                <h3 class="text-xl font-semibold">Suspended Courses</h3>
+                            </div>
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Course Title</th>
+                                        <th class="p-4 text-left">Category</th>
+                                        <th class="p-4 text-left">Suspended Date</th>
+                                        <th class="p-4 text-left">Reason</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Suspended courses loaded from database by manage-courses-db-loader.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Reviews & Ratings Panel -->
+                    <div id="reviews-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Your Performance Reviews</h1>
+                            <p class="text-gray-600">View feedback and ratings from instructors, colleagues, and supervisors about your course management performance</p>
+                        </div>
+
+                        <!-- Performance Summary Cards -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-gray-600 text-sm font-semibold">Your Overall Rating</h3>
+                                <p class="text-3xl font-bold mt-2" id="review-avg-rating">0.0</p>
+                                <div class="mt-2 text-yellow-500 text-xl" id="review-stars">☆☆☆☆☆</div>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-gray-600 text-sm font-semibold">Your Response Time</h3>
+                                <p class="text-3xl font-bold mt-2" id="review-response-time">0.0</p>
+                                <p class="text-sm text-gray-500 mt-1">How fast you respond</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-gray-600 text-sm font-semibold">Your Accuracy Score</h3>
+                                <p class="text-3xl font-bold mt-2" id="review-accuracy">0.0</p>
+                                <p class="text-sm text-gray-500 mt-1">Decision quality</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-gray-600 text-sm font-semibold">Your Total Reviews</h3>
+                                <p class="text-3xl font-bold mt-2" id="review-total">0</p>
+                                <p class="text-sm text-gray-500 mt-1" id="review-trend">Stable</p>
+                            </div>
+                        </div>
+
+                        <!-- Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" id="review-search" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search reviews by reviewer name or comment...">
+                                </div>
+                                <select id="review-filter-type" class="p-3 border-2 rounded-lg">
+                                    <option value="">All Types</option>
+                                    <option value="performance">Performance</option>
+                                    <option value="efficiency">Efficiency</option>
+                                    <option value="instructor_feedback">Instructor Feedback</option>
+                                    <option value="quality">Quality</option>
+                                    <option value="financial">Financial</option>
+                                    <option value="student_impact">Student Impact</option>
+                                </select>
+                                <select id="review-filter-rating" class="p-3 border-2 rounded-lg">
+                                    <option value="">All Ratings</option>
+                                    <option value="5">5 Stars</option>
+                                    <option value="4">4+ Stars</option>
+                                    <option value="3">3+ Stars</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- All Reviews List -->
+                        <div class="card p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-semibold">All Your Performance Reviews</h3>
+                                <button onclick="window.ReviewsManager && window.ReviewsManager.loadAll()"
+                                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                                    🔄 Refresh My Reviews
+                                </button>
+                            </div>
+                            <div class="space-y-4" id="reviews-list-container">
+                                <!-- Reviews loaded from database by manage-courses-reviews.js -->
+                                <div class="text-center text-gray-400 py-8">
+                                    <p>Click "Refresh My Reviews" button above to load your performance reviews</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Widgets (Persistent across all panels) -->
+                <div class="admin-right-widgets"
+                    style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
+                    <!-- Course Requests Widget -->
+                    <div class="admin-widget-card course-requests-widget">
+                        <h3 class="text-lg font-semibold mb-4">
+                            📚 Live Course Requests
+                            <span class="live-indicator ml-2 text-xs text-green-500">
+                                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                Live
+                            </span>
+                        </h3>
+                        <div class="course-requests-container">
+                            <div class="course-requests-scroll">
+                                <!-- Live course requests loaded from database by manage-courses-live-widget.js -->
+                            </div>
+                        </div>
+                        <div class="course-requests-fade-top"></div>
+                        <div class="course-requests-fade-bottom"></div>
+                    </div>
+
+                    <!-- Daily Quota Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">Daily Quota</h3>
+                        <div class="space-y-3">
+                            <!-- Daily quotas loaded from database by manage-courses-dashboard-loader.js -->
+                        </div>
+                    </div>
+
+                    <!-- Fire Streak Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">🔥 Fire Streak</h3>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-orange-500">...</div>
+                            <div class="text-sm text-gray-600">Days</div>
+                            <div class="mt-4 grid grid-cols-7 gap-1">
+                                <!-- Weekly pattern loaded from database by manage-courses-dashboard-loader.js -->
+                            </div>
+                            <div class="text-xs text-gray-500 mt-2">Keep the streak alive!</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of admin-right-widgets -->
+
+            </div>
+            <!-- End of flex gap-6 container -->
+
+        </div>
+        <!-- End of container mx-auto px-4 -->
+    </section>
+
+    <!-- Add Course Modal -->
+    <div id="add-course-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Add New Course</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block mb-2 font-semibold">Course Title *</label>
+                    <input type="text" id="courseTitle" class="w-full p-2 border rounded-lg"
+                        placeholder="e.g., Advanced Mathematics">
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Category *</label>
+                    <select id="courseCategory" class="w-full p-2 border rounded-lg">
+                        <option value="">Select Category</option>
+                        <option>Mathematics</option>
+                        <option>Science</option>
+                        <option>Languages</option>
+                        <option>Technology</option>
+                        <option>Business</option>
+                        <option>Arts</option>
+                        <option>Social Studies</option>
+                        <option>Physical Education</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Level *</label>
+                    <select id="courseLevel" class="w-full p-2 border rounded-lg">
+                        <option value="">Select Level</option>
+                        <option>KG</option>
+                        <option>Grade 1-6</option>
+                        <option>Grade 7-8</option>
+                        <option>Grade 9-10</option>
+                        <option>Grade 11-12</option>
+                        <option>University</option>
+                        <option>Professional</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Requested By</label>
+                    <input type="text" id="requestedBy" class="w-full p-2 border rounded-lg"
+                        placeholder="Student/User name (optional)">
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <label class="block mb-2 font-semibold">Course Description</label>
+                <textarea id="courseDescription" rows="3" class="w-full p-2 border rounded-lg"
+                    placeholder="Brief description of the course..."></textarea>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeAddCourseModal()"
+                    class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button onclick="saveCourse()"
+                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Save Course</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Course Details Modal -->
+    <div id="view-course-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="modal-content p-6 rounded-lg w-full max-w-3xl max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-2xl font-bold" id="view-course-title">Course Title</h3>
+                    <p class="text-gray-500 text-sm" id="view-course-id">ID: CRS-001</p>
+                </div>
+                <button onclick="closeViewCourseModal()"
+                    class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Course Info -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Category</label>
+                        <p class="text-lg" id="view-course-category">Mathematics</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Level</label>
+                        <p class="text-lg" id="view-course-level">Grade 12</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Requested By</label>
+                        <p class="text-lg" id="view-course-requester">Sara Tadesse</p>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Status</label>
+                        <p class="text-lg" id="view-course-status">
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Pending</span>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Submitted</label>
+                        <p class="text-lg" id="view-course-submitted">2 days ago</p>
+                    </div>
+                    <div id="view-course-rating-section" class="hidden">
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Rating</label>
+                        <p class="text-lg" id="view-course-rating">★★★★★ (4.8)</p>
+                    </div>
+                    <div id="view-course-students-section" class="hidden">
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Enrolled Students</label>
+                        <p class="text-lg font-bold text-blue-600" id="view-course-students">1,250</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-600 mb-2">Description</label>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p class="text-gray-700" id="view-course-description">No description available.</p>
+                </div>
+            </div>
+
+            <!-- Rejection/Suspension Reason (if applicable) -->
+            <div id="view-course-reason-section" class="mb-6 hidden">
+                <label class="block text-sm font-semibold text-gray-600 mb-2" id="view-course-reason-label">Rejection
+                    Reason</label>
+                <div class="bg-red-50 p-4 rounded-lg border border-red-200">
+                    <p class="text-red-700" id="view-course-reason">Quality issues detected</p>
+                </div>
+            </div>
+
+            <!-- Notification Status (for verified courses) -->
+            <div id="view-course-notification-section" class="mb-6 hidden">
+                <label class="block text-sm font-semibold text-gray-600 mb-2">Notification Status</label>
+                <p id="view-course-notification">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
+                        <i class="fas fa-times-circle"></i> Not Sent
+                    </span>
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end gap-3 border-t pt-4">
+                <button onclick="closeViewCourseModal()"
+                    class="px-6 py-2 border rounded-lg hover:bg-gray-50">Close</button>
+                <div id="view-course-actions"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Course Request Modal -->
+    <div id="edit-course-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="modal-content p-6 rounded-lg w-full max-w-3xl max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-2xl font-bold">Edit Course Request</h3>
+                    <p class="text-gray-500 text-sm" id="edit-course-id">ID: REQ-CRS-001</p>
+                </div>
+                <button onclick="closeEditCourseModal()"
+                    class="text-gray-400 hover:text-gray-600 text-3xl">&times;</button>
+            </div>
+
+            <form id="editCourseForm" onsubmit="handleCourseUpdate(event)">
+                <input type="hidden" id="editCourseRequestId">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <!-- Course Info -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Course Title *</label>
+                            <input type="text" id="editCourseTitle" class="w-full p-2 border rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Category *</label>
+                            <select id="editCourseCategory" class="w-full p-2 border rounded-lg" required>
+                                <option value="">Select Category</option>
+                                <option value="Mathematics">Mathematics</option>
+                                <option value="Science">Science</option>
+                                <option value="Languages">Languages</option>
+                                <option value="Technology">Technology</option>
+                                <option value="Business">Business</option>
+                                <option value="Arts">Arts</option>
+                                <option value="Social Studies">Social Studies</option>
+                                <option value="Physical Education">Physical Education</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Level *</label>
+                            <select id="editCourseLevel" class="w-full p-2 border rounded-lg" required>
+                                <option value="">Select Level</option>
+                                <option value="KG">KG</option>
+                                <option value="Grade 1-6">Grade 1-6</option>
+                                <option value="Grade 7-8">Grade 7-8</option>
+                                <option value="Grade 9-10">Grade 9-10</option>
+                                <option value="Grade 11-12">Grade 11-12</option>
+                                <option value="University">University</option>
+                                <option value="Professional">Professional</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Requested By *</label>
+                            <input type="text" id="editCourseRequester" class="w-full p-2 border rounded-lg" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1">Status (Read-only)</label>
+                            <input type="text" id="editCourseStatus" class="w-full p-2 border rounded-lg bg-gray-100"
+                                disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-600 mb-2">Description *</label>
+                    <textarea id="editCourseDescription" rows="4" class="w-full p-3 border rounded-lg"
+                        required></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex justify-end gap-3 border-t pt-4">
+                    <button type="button" onclick="closeEditCourseModal()"
+                        class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                    <button type="submit"
+                        class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Send Notification Modal -->
+    <div id="send-notification-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-2">Send Course Notification to Tutors</h3>
+            <p class="text-gray-600 mb-6">Notify relevant tutors about this course opportunity</p>
+
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-500 mr-3 mt-1"></i>
+                    <div class="flex-1">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                            <div>
+                                <p class="text-xs text-blue-600 font-semibold mb-1">Course Title:</p>
+                                <p class="text-sm text-blue-900 font-bold" id="notification-course-title">N/A</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-blue-600 font-semibold mb-1">Course Level:</p>
+                                <p class="text-sm text-blue-900 font-bold" id="notification-course-level">N/A</p>
+                            </div>
+                        </div>
+                        <div class="border-t border-blue-200 pt-2 mt-2">
+                            <p class="text-xs text-blue-600 font-semibold mb-1">Course ID:</p>
+                            <p class="text-sm text-blue-700 font-mono" id="notification-course-id">N/A</p>
+                        </div>
+                        <p class="text-xs text-blue-600 mt-3 italic">
+                            <i class="fas fa-lightbulb"></i>
+                            This notification will alert tutors that there is demand for this course in the market.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block mb-2 font-semibold">Target Audience *</label>
+                    <select id="targetAudience" class="w-full p-3 border rounded-lg">
+                        <option value="">Select Target Audience</option>
+                        <option value="All Tutors">All Tutors</option>
+                        <option value="Mathematics Tutors">Mathematics Tutors</option>
+                        <option value="Science Tutors">Science Tutors</option>
+                        <option value="Language Tutors">Language Tutors</option>
+                        <option value="Technology Tutors">Technology Tutors</option>
+                        <option value="Business Tutors">Business Tutors</option>
+                        <option value="Arts Tutors">Arts Tutors</option>
+                        <option value="High-Rated Tutors (4+ stars)">High-Rated Tutors (4+ stars)</option>
+                        <option value="Verified Tutors Only">Verified Tutors Only</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block mb-2 font-semibold">Notification Message *</label>
+                    <textarea id="notificationMessage" rows="6" class="w-full p-3 border rounded-lg font-mono text-sm">Dear Tutors,
+
+We've identified a market need for this course. Students are actively searching for it. If you have expertise in this area, please consider creating course content to meet this demand.
+
+Best regards,
+Astegni Team</textarea>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-info-circle"></i>
+                        Tip: Use **text** for bold formatting. The course name will be auto-populated.
+                    </p>
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 mr-3 mt-1"></i>
+                        <div class="text-sm text-yellow-700">
+                            <strong>Note:</strong> Notifications will be sent via:
+                            <ul class="list-disc ml-5 mt-2">
+                                <li>In-app notifications</li>
+                                <li>Email (if tutor has email notifications enabled)</li>
+                                <li>SMS (for premium tutors)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeSendNotificationModal()"
+                    class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button onclick="confirmSendNotification()"
+                    class="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 flex items-center gap-2">
+                    <i class="fas fa-paper-plane"></i>
+                    Send Notification
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Course/Request Modal -->
+    <div id="reject-course-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="modal-content p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-2 text-red-600">
+                <i class="fas fa-times-circle"></i> Reject Course
+            </h3>
+            <p class="text-gray-600 mb-6">Please provide a detailed reason for rejecting this course</p>
+
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-3 mt-1"></i>
+                    <div class="text-sm text-red-700">
+                        <strong>Important:</strong> The course creator will be notified of this rejection and the reason you provide.
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block mb-2 font-semibold">Rejection Reason *</label>
+                <textarea id="rejectionReason" rows="5" class="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="e.g., Content does not meet quality standards, Insufficient detail, Duplicate course, etc."></textarea>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="fas fa-info-circle"></i>
+                    Please be specific to help the course creator understand what needs improvement.
+                </p>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="closeRejectModal()"
+                    class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button onclick="confirmReject()"
+                    class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 flex items-center gap-2">
+                    <i class="fas fa-times"></i>
+                    Confirm Rejection
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspend Course Modal -->
+    <div id="suspend-course-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="modal-content p-6 rounded-lg w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-2 text-orange-600">
+                <i class="fas fa-pause-circle"></i> Suspend Course
+            </h3>
+            <p class="text-gray-600 mb-6">Please provide a reason for temporarily suspending this course</p>
+
+            <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mb-6">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-orange-500 mr-3 mt-1"></i>
+                    <div class="text-sm text-orange-700">
+                        <strong>Note:</strong> Suspension is temporary. The course creator will be notified and the course can be reinstated later.
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block mb-2 font-semibold">Suspension Reason *</label>
+                <textarea id="suspensionReason" rows="5" class="w-full p-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    placeholder="e.g., Quality issues reported, Under investigation, Student complaints, etc."></textarea>
+                <p class="text-xs text-gray-500 mt-1">
+                    <i class="fas fa-info-circle"></i>
+                    This reason will be shared with the course creator.
+                </p>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button onclick="closeSuspendModal()"
+                    class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button onclick="confirmSuspend()"
+                    class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 flex items-center gap-2">
+                    <i class="fas fa-pause"></i>
+                    Confirm Suspension
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-section mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <p>&copy; 2025 Astegni. All rights reserved. | Admin Panel</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/root/app.js"></script>
+    <script src="../js/root/auth.js"></script>
+
+    <!-- Standalone Script - All Navigation & Panel Management -->
+    <script src="../js/admin-pages/manage-courses-standalone.js"></script>
+
+    <!-- Data Loading Scripts (keep for database integration) -->
+    <script src="../js/admin-pages/manage-courses-db-loader.js"></script>
+    <script src="../js/admin-pages/manage-courses-search-filter.js"></script>
+    <script src="../js/admin-pages/manage-courses-live-widget.js"></script>
+    <script src="../js/admin-pages/manage-courses-reviews.js"></script>
+    <script src="../js/admin-pages/manage-courses-dashboard-loader.js"></script>
+    <script src="../js/admin-pages/manage-courses-stat-filters.js"></script>
+    <script src="../js/admin-pages/manage-courses-profile-edit.js"></script>
+    <script src="../js/admin-pages/admin-email-otp-verification.js"></script>
+
+    <!-- Fix theme background -->
+    <script>
+        // Logout function for admin pages - redirects to admin index
+        function logout() {
+            // Check if authManager is available
+            if (typeof authManager !== 'undefined' && authManager) {
+                // Use authManager logout which clears tokens and user data
+                authManager.logout();
+                // Redirect to admin pages index
+                window.location.href = 'index.html';
+            } else if (typeof window.logout === 'function') {
+                // Fallback to global logout function from app.js
+                window.logout();
+                window.location.href = 'index.html';
+            } else {
+                // Manual logout as last resort
+                localStorage.removeItem('token');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userRole');
+                alert('Logged out successfully');
+                window.location.href = 'index.html';
+            }
+        }
+
+        // Ensure dark theme background is applied correctly
+        document.addEventListener('DOMContentLoaded', function () {
+            // Force background color application
+            function applyThemeBackground() {
+                const theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.body.style.backgroundColor = '#1E1E1E';
+                    document.documentElement.style.backgroundColor = '#1E1E1E';
+                } else {
+                    document.body.style.backgroundColor = '#ffffff';
+                    document.documentElement.style.backgroundColor = '#ffffff';
+                }
+            }
+
+            // Apply immediately
+            applyThemeBackground();
+
+            // Watch for theme changes
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.attributeName === 'data-theme') {
+                        applyThemeBackground();
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['data-theme']
+            });
+        });
+    </script>
+
+            <!-- Edit Profile Modal -->
+    <!-- This modal ONLY edits admin_profile table fields (personal information) -->
+    <!-- admin_profile_stats fields (employee_id, access_level, etc.) are managed by super admin or system -->
+    <div id="edit-profile-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
+                    <!-- Ethiopian Naming Convention -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">First Name *</label>
+                            <input type="text" id="firstNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Abebe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Father's Name *</label>
+                            <input type="text" id="fatherNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Kebede" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Grandfather's Name *</label>
+                            <input type="text" id="grandfatherNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Tesfa" required>
+                        </div>
+                    </div>
+
+                    <!-- Username (Display Name) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Username (Display Name) *</label>
+                        <input type="text" id="adminUsernameInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., abebe_kebede" required>
+                        <p class="text-xs text-gray-500 mt-1">This will be displayed as your admin username</p>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="mb-4">
+                        <div class="form-group mb-4">
+                            <label class="block text-sm font-medium mb-1">Email</label>
+                            <div class="flex gap-2">
+                                <input type="email" id="emailInput"
+                                    class="flex-1 px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
+                                    placeholder="admin@astegni.et" readonly>
+                                <button type="button" onclick="openChangeEmailModal()"
+                                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 whitespace-nowrap">
+                                    Change Email
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Email changes require OTP verification</p>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Phone Number</label>
+                            <input type="tel" id="phoneNumberInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="+251911234567">
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Bio</label>
+                        <textarea id="bioInput" rows="3"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tell us about yourself..."></textarea>
+                    </div>
+
+                    <!-- Quote -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Quote</label>
+                        <input type="text" id="quoteInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Your personal quote or motto">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                            onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit"
+                            class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update
+                            Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Profile Picture Modal -->
+    <div id="upload-profile-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeUploadProfileModal()"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Upload Profile Picture</h2>
+                <button class="modal-close" onclick="closeUploadProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <input type="file" id="profilePictureInput" accept="image/*" class="hidden"
+                        onchange="previewProfilePicture(event)">
+                    <label for="profilePictureInput" class="cursor-pointer">
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span class="font-medium text-blue-500 hover:text-blue-600">Click to upload</span> or drag
+                            and drop
+                        </p>
+                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                    </label>
+                </div>
+                <div id="profilePreview" class="hidden mb-4">
+                    <img id="profilePreviewImg" class="w-32 h-32 mx-auto rounded-full object-cover" alt="Preview">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                        onclick="closeUploadProfileModal()">Cancel</button>
+                    <button id="uploadProfileBtn"
+                        class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        onclick="handleProfilePictureUpload()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Cover Image Modal -->
+    <div id="upload-cover-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeUploadCoverModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Upload Cover Image</h2>
+                <button class="modal-close" onclick="closeUploadCoverModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <input type="file" id="coverImageInput" accept="image/*" class="hidden"
+                        onchange="previewCoverImage(event)">
+                    <label for="coverImageInput" class="cursor-pointer">
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span class="font-medium text-blue-500 hover:text-blue-600">Click to upload</span> or drag
+                            and drop
+                        </p>
+                        <p class="text-xs text-gray-500">Recommended: 1200x300px (PNG, JPG up to 10MB)</p>
+                    </label>
+                </div>
+                <div id="coverPreview" class="hidden mb-4">
+                    <img id="coverPreviewImg" class="w-full h-32 object-cover rounded-lg" alt="Preview">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                        onclick="closeUploadCoverModal()">Cancel</button>
+                    <button id="uploadCoverBtn"
+                        class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        onclick="handleCoverImageUpload()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Email Verification Modal -->
+    <div id="otp-email-verification-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeOTPEmailModal()"></div>
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Change Email Address</h2>
+                <button class="modal-close" onclick="closeOTPEmailModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: Verify Current Email -->
+                <div id="otp-step-1" class="otp-step">
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                        <p class="text-sm text-blue-700">
+                            <strong>Step 1 of 2:</strong> Verify your current email address for security
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Current Email</label>
+                        <input type="email" id="currentEmailDisplay" class="w-full px-3 py-2 border rounded-lg bg-gray-100" readonly>
+                    </div>
+
+                    <div class="mb-4" id="currentEmailOTPSection" style="display: none;">
+                        <label class="block text-sm font-medium mb-2">Enter OTP sent to current email</label>
+                        <input type="text" id="currentEmailOTP" maxlength="6"
+                            class="w-full px-3 py-2 border-2 rounded-lg text-center text-2xl font-mono tracking-widest"
+                            placeholder="000000">
+                        <p class="text-xs text-gray-500 mt-1" id="currentEmailTimer">OTP expires in 5:00</p>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button id="sendCurrentEmailOTPBtn" onclick="sendCurrentEmailOTP()"
+                            class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            Send OTP to Current Email
+                        </button>
+                        <button id="verifyCurrentEmailOTPBtn" onclick="verifyCurrentEmailOTP()"
+                            class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                            style="display: none;">
+                            Verify OTP
+                        </button>
+                    </div>
+
+                    <div id="currentEmailStatus" class="mt-3"></div>
+                </div>
+
+                <!-- Step 2: Verify New Email -->
+                <div id="otp-step-2" class="otp-step" style="display: none;">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+                        <p class="text-sm text-green-700">
+                            ✓ Current email verified!<br>
+                            <strong>Step 2 of 2:</strong> Verify your new email address
+                        </p>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">New Email Address *</label>
+                        <input type="email" id="newEmailInput"
+                            class="w-full px-3 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="newemail@example.com">
+                        <p class="text-xs text-gray-500 mt-1">Enter the new email address you want to use</p>
+                    </div>
+
+                    <div class="mb-4" id="newEmailOTPSection" style="display: none;">
+                        <label class="block text-sm font-medium mb-2">Enter OTP sent to new email</label>
+                        <input type="text" id="newEmailOTP" maxlength="6"
+                            class="w-full px-3 py-2 border-2 rounded-lg text-center text-2xl font-mono tracking-widest"
+                            placeholder="000000">
+                        <p class="text-xs text-gray-500 mt-1" id="newEmailTimer">OTP expires in 5:00</p>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button id="sendNewEmailOTPBtn" onclick="sendNewEmailOTP()"
+                            class="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                            Send OTP to New Email
+                        </button>
+                        <button id="verifyNewEmailOTPBtn" onclick="verifyNewEmailOTP()"
+                            class="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                            style="display: none;">
+                            Verify & Update Email
+                        </button>
+                    </div>
+
+                    <div id="newEmailStatus" class="mt-3"></div>
+                </div>
+
+                <!-- Success Message -->
+                <div id="otp-success" class="otp-step" style="display: none;">
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+                        <p class="text-sm text-green-700">
+                            <strong>✓ Email Updated Successfully!</strong><br>
+                            Your email address has been changed. Please use the new email for future logins.
+                        </p>
+                    </div>
+                    <button onclick="closeOTPEmailModal()"
+                        class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

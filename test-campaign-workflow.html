@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Campaign Workflow - Visual Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .pending { background: #fef3c7; color: #92400e; }
+        .verified { background: #d1fae5; color: #065f46; }
+        .rejected { background: #fee2e2; color: #991b1b; }
+        .suspended { background: #fed7aa; color: #9a3412; }
+
+        .arrow {
+            font-size: 24px;
+            color: #3b82f6;
+        }
+
+        .panel-box {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            background: white;
+        }
+
+        .action-btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-approve { background: #10b981; color: white; }
+        .btn-approve:hover { background: #059669; }
+
+        .btn-reject { background: #ef4444; color: white; }
+        .btn-reject:hover { background: #dc2626; }
+
+        .btn-suspend { background: #f97316; color: white; }
+        .btn-suspend:hover { background: #ea580c; }
+
+        .btn-reconsider { background: #eab308; color: white; }
+        .btn-reconsider:hover { background: #ca8a04; }
+
+        .btn-reinstate { background: #10b981; color: white; }
+        .btn-reinstate:hover { background: #059669; }
+    </style>
+</head>
+<body class="bg-gray-50 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-2">Campaign Verification Workflow - Visual Test</h1>
+        <p class="text-gray-600 mb-8">This page demonstrates all status transitions and modal buttons</p>
+
+        <!-- Workflow Diagram -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold mb-6">Status Transition Flow</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Requested Panel -->
+                <div class="panel-box">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold">📝 REQUESTED Panel</h3>
+                        <span class="status-badge pending">pending</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-4">
+                        Initial state for new campaigns
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                        <div class="font-semibold mb-2">Modal Buttons:</div>
+                        <div class="flex gap-2">
+                            <button class="action-btn btn-approve">✅ Approve</button>
+                            <button class="action-btn btn-reject">❌ Reject</button>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <strong>Actions:</strong><br>
+                        • Approve → Moves to VERIFIED<br>
+                        • Reject → Moves to REJECTED (requires reason)
+                    </div>
+                </div>
+
+                <!-- Verified Panel -->
+                <div class="panel-box">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold">✅ VERIFIED Panel</h3>
+                        <span class="status-badge verified">verified</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-4">
+                        Approved and active campaigns
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg mb-4">
+                        <div class="font-semibold mb-2">Modal Buttons:</div>
+                        <div class="flex gap-2">
+                            <button class="action-btn btn-reject">❌ Reject</button>
+                            <button class="action-btn btn-suspend">⏸️ Suspend</button>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <strong>Actions:</strong><br>
+                        • Reject → Moves to REJECTED (requires reason)<br>
+                        • Suspend → Moves to SUSPENDED (requires reason)
+                    </div>
+                </div>
+
+                <!-- Rejected Panel -->
+                <div class="panel-box">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold">❌ REJECTED Panel</h3>
+                        <span class="status-badge rejected">rejected</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-4">
+                        Campaigns that didn't meet requirements
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg mb-4">
+                        <div class="font-semibold mb-2">Modal Buttons:</div>
+                        <div class="flex gap-2">
+                            <button class="action-btn btn-reconsider">🔄 Reconsider</button>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <strong>Actions:</strong><br>
+                        • Reconsider → Moves back to REQUESTED<br>
+                        • Clears rejection reason and date
+                    </div>
+                </div>
+
+                <!-- Suspended Panel -->
+                <div class="panel-box">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-bold">⚠️ SUSPENDED Panel</h3>
+                        <span class="status-badge suspended">suspended</span>
+                    </div>
+                    <div class="text-sm text-gray-600 mb-4">
+                        Temporarily suspended campaigns
+                    </div>
+                    <div class="bg-orange-50 p-4 rounded-lg mb-4">
+                        <div class="font-semibold mb-2">Modal Buttons:</div>
+                        <div class="flex gap-2">
+                            <button class="action-btn btn-reject">❌ Reject</button>
+                            <button class="action-btn btn-reinstate">✅ Reinstate</button>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-500">
+                        <strong>Actions:</strong><br>
+                        • Reject → Moves to REJECTED (requires reason)<br>
+                        • Reinstate → Moves back to VERIFIED
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Test Scenarios -->
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h2 class="text-2xl font-bold mb-6">Test Scenarios</h2>
+
+            <div class="space-y-6">
+                <!-- Scenario 1 -->
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="font-bold text-lg mb-2">Scenario 1: Normal Approval Flow</h3>
+                    <div class="flex items-center gap-4 text-sm">
+                        <span class="status-badge pending">REQUESTED</span>
+                        <span class="arrow">→</span>
+                        <span class="font-semibold text-green-600">Click "Approve"</span>
+                        <span class="arrow">→</span>
+                        <span class="status-badge verified">VERIFIED</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-600">
+                        ✓ Campaign immediately appears in Verified panel<br>
+                        ✓ Disappears from Requested panel<br>
+                        ✓ verified_date is set
+                    </div>
+                </div>
+
+                <!-- Scenario 2 -->
+                <div class="border-l-4 border-red-500 pl-4">
+                    <h3 class="font-bold text-lg mb-2">Scenario 2: Rejection Flow</h3>
+                    <div class="flex items-center gap-4 text-sm">
+                        <span class="status-badge pending">REQUESTED</span>
+                        <span class="arrow">→</span>
+                        <span class="font-semibold text-red-600">Click "Reject" + Enter Reason</span>
+                        <span class="arrow">→</span>
+                        <span class="status-badge rejected">REJECTED</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-600">
+                        ✓ Prompt appears for rejection reason<br>
+                        ✓ Campaign moves to Rejected panel<br>
+                        ✓ rejected_date and rejected_reason are set<br>
+                        ✓ Reason appears in table
+                    </div>
+                </div>
+
+                <!-- Scenario 3 -->
+                <div class="border-l-4 border-yellow-500 pl-4">
+                    <h3 class="font-bold text-lg mb-2">Scenario 3: Reconsideration Flow</h3>
+                    <div class="flex items-center gap-4 text-sm">
+                        <span class="status-badge rejected">REJECTED</span>
+                        <span class="arrow">→</span>
+                        <span class="font-semibold text-yellow-600">Click "Reconsider"</span>
+                        <span class="arrow">→</span>
+                        <span class="status-badge pending">REQUESTED</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-600">
+                        ✓ Campaign returns to Requested panel<br>
+                        ✓ rejected_reason is cleared<br>
+                        ✓ submitted_date is reset
+                    </div>
+                </div>
+
+                <!-- Scenario 4 -->
+                <div class="border-l-4 border-orange-500 pl-4">
+                    <h3 class="font-bold text-lg mb-2">Scenario 4: Suspension Flow</h3>
+                    <div class="flex items-center gap-4 text-sm">
+                        <span class="status-badge verified">VERIFIED</span>
+                        <span class="arrow">→</span>
+                        <span class="font-semibold text-orange-600">Click "Suspend" + Enter Reason</span>
+                        <span class="arrow">→</span>
+                        <span class="status-badge suspended">SUSPENDED</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-600">
+                        ✓ Prompt appears for suspension reason<br>
+                        ✓ Campaign moves to Suspended panel<br>
+                        ✓ suspended_date and suspended_reason are set
+                    </div>
+                </div>
+
+                <!-- Scenario 5 -->
+                <div class="border-l-4 border-green-500 pl-4">
+                    <h3 class="font-bold text-lg mb-2">Scenario 5: Reinstatement Flow</h3>
+                    <div class="flex items-center gap-4 text-sm">
+                        <span class="status-badge suspended">SUSPENDED</span>
+                        <span class="arrow">→</span>
+                        <span class="font-semibold text-green-600">Click "Reinstate"</span>
+                        <span class="arrow">→</span>
+                        <span class="status-badge verified">VERIFIED</span>
+                    </div>
+                    <div class="mt-2 text-sm text-gray-600">
+                        ✓ Campaign returns to Verified panel<br>
+                        ✓ suspended_reason is cleared<br>
+                        ✓ verified_date is set
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Test Checklist -->
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-2xl font-bold mb-6">Testing Checklist</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="font-bold mb-4">✅ Panel Loading</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Requested panel loads only pending campaigns</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Verified panel loads only verified campaigns</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Rejected panel loads only rejected campaigns</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Suspended panel loads only suspended campaigns</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Each panel shows correct table columns</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold mb-4">🔘 Modal Buttons</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Pending campaign: Shows Approve & Reject</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Verified campaign: Shows Reject & Suspend</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Rejected campaign: Shows Reconsider</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Suspended campaign: Shows Reject & Reinstate</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Buttons trigger correct actions</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold mb-4">⚡ Real-Time Updates</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Approve: Campaign immediately moves to Verified</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Reject: Campaign immediately moves to Rejected</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Suspend: Campaign immediately moves to Suspended</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Reconsider: Campaign immediately moves to Requested</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Reinstate: Campaign immediately moves to Verified</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>No page reload required</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold mb-4">📝 Reason Handling</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Reject: Prompt appears for reason</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Suspend: Prompt appears for reason</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Empty reason is rejected</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Reason appears in Rejected table</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Reason appears in Suspended table</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Long reasons are truncated with tooltip</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold mb-4">🔍 Search & Filters</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Search filters campaigns in current panel</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Industry filter works correctly</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Ad type filter works correctly</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Search has debounce (300ms)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Filters are independent per panel</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="font-bold mb-4">🎨 UI/UX</h3>
+                    <ul class="space-y-2 text-sm">
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Status badges display correctly</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Dates format properly</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Modal shows campaign details</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Creative media preview works</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Notifications appear on actions</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <input type="checkbox" class="mt-1">
+                            <span>Empty states show "No campaigns found"</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-lg">
+            <h3 class="font-bold text-lg mb-4">Quick Links</h3>
+            <div class="space-y-2">
+                <div>
+                    <a href="/admin-pages/manage-campaigns.html" target="_blank" class="text-blue-600 hover:text-blue-800 font-semibold">
+                        → Open Manage Campaigns Page
+                    </a>
+                </div>
+                <div>
+                    <a href="https://api.astegni.com/docs#/Manage%20Campaigns%20Profile" target="_blank" class="text-blue-600 hover:text-blue-800 font-semibold">
+                        → View API Documentation
+                    </a>
+                </div>
+                <div>
+                    <span class="text-gray-700">Backend: </span>
+                    <code class="bg-gray-100 px-2 py-1 rounded text-sm">https://api.astegni.com</code>
+                </div>
+                <div>
+                    <span class="text-gray-700">Frontend: </span>
+                    <code class="bg-gray-100 px-2 py-1 rounded text-sm">http://localhost:8080</code>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-check items when clicked
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const label = this.nextElementSibling;
+                if (this.checked) {
+                    label.style.textDecoration = 'line-through';
+                    label.style.opacity = '0.6';
+                } else {
+                    label.style.textDecoration = 'none';
+                    label.style.opacity = '1';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

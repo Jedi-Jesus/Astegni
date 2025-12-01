@@ -1,0 +1,243 @@
+<!--
+  Modal: package-management-modal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="package-management-modal" class="hidden">
+        <div class="modal-overlay" onclick="closePackageModal()"></div>
+        <div class="modal-content package-modal-redesigned">
+            <div class="modal-header">
+                <div class="modal-title-container">
+                    <h2 class="modal-title" id="modalTitle">📦 Package Management</h2>
+                    <p class="modal-subtitle" id="modalSubtitle" style="display: none; margin: 0.5rem 0 0 0; font-size: 0.9rem; font-weight: 400; opacity: 0.9;"></p>
+                </div>
+                <button class="modal-close" onclick="closePackageModal()">×</button>
+            </div>
+
+            <div class="package-layout">
+                <!-- LEFT SIDEBAR: VS Code Style with Icon Bar + Content -->
+                <div class="package-sidebar" id="packageSidebar">
+                    <!-- Icon Bar with Toggle -->
+                    <div class="sidebar-icon-bar">
+                        <button class="package-sidebar-toggle" onclick="togglePackageSidebar()"
+                            aria-label="Toggle package sidebar"
+                            title="Toggle Sidebar"
+                            style="width: 40px; height: 40px; border-radius: 8px; background: transparent; border: none; color: rgba(255, 255, 255, 0.6); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin-bottom: 0.5rem;">
+                            <i class="fas fa-bars" style="font-size: 1rem;"></i>
+                        </button>
+                        <div style="width: 100%; height: 1px; background: rgba(255, 255, 255, 0.1); margin-bottom: 0.5rem;"></div>
+                        <button class="sidebar-icon-btn active" data-panel="packages" title="My Packages" onclick="switchPackagePanel('packages')">
+                            <i class="fas fa-box"></i>
+                        </button>
+                        <button class="sidebar-icon-btn" data-panel="market-trend" title="Market Trends" onclick="switchPackagePanel('market-trend')">
+                            <i class="fas fa-chart-line"></i>
+                        </button>
+                    </div>
+
+                    <!-- Collapsible Content Area -->
+                    <div class="sidebar-content" id="sidebarContent">
+                        <!-- Packages Panel -->
+                        <div class="sidebar-panel active" id="packagesPanel">
+                            <div class="sidebar-header">
+                                <h3>My Packages</h3>
+                                <button class="btn-new-package" onclick="createNewPackage()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div id="packagesList" class="packages-list">
+                                <!-- Package items will be inserted here -->
+                            </div>
+                        </div>
+
+                        <!-- Market Trend Panel -->
+                        <div class="sidebar-panel" id="marketTrendPanel">
+                            <div class="sidebar-header">
+                                <h3>Market Trends</h3>
+                            </div>
+                            <div class="market-trend-cards" style="display: flex; flex-direction: column; gap: 0.75rem; padding: 0.5rem;">
+                                <!-- Pricing Trends Card -->
+                                <div class="market-trend-card active" data-view="pricing" onclick="switchMarketTrendView('pricing')">
+                                    <div class="market-trend-card-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div class="market-trend-card-content">
+                                        <h4>Pricing Trends</h4>
+                                        <p>Compare rates over time</p>
+                                    </div>
+                                </div>
+                                <!-- Suggest Price Card -->
+                                <div class="market-trend-card" data-view="price" onclick="switchMarketTrendView('price')">
+                                    <div class="market-trend-card-icon">
+                                        <i class="fas fa-tag"></i>
+                                    </div>
+                                    <div class="market-trend-card-content">
+                                        <h4>Suggest Price</h4>
+                                        <p>Calculate your rate</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MAIN AREA: Package Details & Calculator OR Market Trends -->
+                <div class="package-main">
+                    <!-- Package Editor (default view) -->
+                    <div id="packageEditor" class="package-editor">
+                        <!-- Empty state or selected package details -->
+                        <div class="empty-state">
+                            <i class="fas fa-box-open"></i>
+                            <h3>No Package Selected</h3>
+                            <p>Select a package from the sidebar or create a new one</p>
+                            <button class="btn-create-first" onclick="createNewPackage()">
+                                <i class="fas fa-plus mr-2"></i>Create Your First Package
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Market Trend Visualization (hidden by default) -->
+                    <div id="marketTrendView" class="market-trend-view" style="display: none;">
+                        <!-- Market Insights Section (at top) -->
+                        <div class="market-insights" style="margin-bottom: 1.5rem;">
+                            <h3><i class="fas fa-lightbulb"></i> Market Insights for Tutors</h3>
+                            <p>Building a consistent track record with high ratings is key to commanding higher prices.</p>
+                        </div>
+
+                        <!-- Graph Type Toggle Buttons (for Pricing Trends view) -->
+                        <div class="market-graph-type-buttons" id="marketGraphTypeButtons" style="display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem;">
+                            <button class="graph-type-btn active" data-type="line" onclick="changeGraphType('line')" style="padding: 0.6rem 1.25rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-chart-line"></i> Line Graph
+                            </button>
+                            <button class="graph-type-btn" data-type="bar" onclick="changeGraphType('bar')" style="padding: 0.6rem 1.25rem; background: var(--hover-bg); color: var(--text-primary); border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-chart-bar"></i> Bar Graph
+                            </button>
+                            <button class="graph-type-btn" data-type="table" onclick="changeGraphType('table')" style="padding: 0.6rem 1.25rem; background: var(--hover-bg); color: var(--text-primary); border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-table"></i> Data Table
+                            </button>
+                        </div>
+
+                        <div class="market-trend-content">
+
+                            <!-- Graph View -->
+                            <div id="marketGraphContainer" class="market-view-container">
+                                <div class="market-controls">
+                                    <div class="market-control-group" style="flex: 1; max-width: 100%;">
+                                        <label class="market-control-label">
+                                            Time Period (Months): <span id="graphTimeValue" class="market-time-value">3</span>
+                                        </label>
+                                        <input type="range" id="graphTimePeriod" min="1" max="12" step="1" value="3"
+                                               oninput="updateMarketTimePeriodOnly(this.value)" class="market-time-slider">
+                                    </div>
+                                    <button class="btn-update-graph" onclick="updateMarketGraph()" style="padding: 0.75rem 1.5rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                                        <i class="fas fa-chart-line"></i> Update Graph
+                                    </button>
+                                </div>
+                                <div id="marketSpinner" class="market-spinner"></div>
+                                <canvas id="marketChart" class="market-chart hidden"></canvas>
+                                <div class="market-dataset-toggles">
+                                    <label class="market-dataset-label">
+                                        <input type="checkbox" checked data-dataset="0" onchange="toggleMarketDataset(this)" class="market-checkbox">
+                                        No. of Tutors
+                                    </label>
+                                    <label class="market-dataset-label">
+                                        <input type="checkbox" checked data-dataset="1" onchange="toggleMarketDataset(this)" class="market-checkbox">
+                                        Avg Students
+                                    </label>
+                                    <label class="market-dataset-label">
+                                        <input type="checkbox" checked data-dataset="2" onchange="toggleMarketDataset(this)" class="market-checkbox">
+                                        Avg Achievement
+                                    </label>
+                                    <label class="market-dataset-label">
+                                        <input type="checkbox" checked data-dataset="3" onchange="toggleMarketDataset(this)" class="market-checkbox">
+                                        Avg Price
+                                    </label>
+                                    <label class="market-dataset-label">
+                                        <input type="checkbox" checked data-dataset="4" onchange="toggleMarketDataset(this)" class="market-checkbox">
+                                        Avg Certifications
+                                    </label>
+                                    <label class="market-dataset-label">
+                                        <input type="checkbox" checked data-dataset="5" onchange="toggleMarketDataset(this)" class="market-checkbox">
+                                        Avg Experience
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Table View -->
+                            <div id="marketTableContainer" class="market-view-container hidden">
+                                <div class="market-controls">
+                                    <div class="market-control-group">
+                                        <label class="market-control-label">
+                                            Time Period (Months): <span id="tableTimeValue" class="market-time-value">3</span>
+                                        </label>
+                                        <input type="range" id="tableTimePeriod" min="1" max="12" step="1" value="3"
+                                               oninput="updateMarketTimePeriodOnly(this.value)" class="market-time-slider">
+                                    </div>
+                                    <button class="btn-update-table" onclick="populateMarketTable()" style="padding: 0.75rem 1.5rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                                        <i class="fas fa-table"></i> Update Table
+                                    </button>
+                                </div>
+                                <div class="market-table-wrapper">
+                                    <table class="market-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Rating</th>
+                                                <th>No. of Tutors</th>
+                                                <th>Avg Students</th>
+                                                <th>
+                                                    Avg Achievement (%)
+                                                    <span class="market-tooltip">
+                                                        <i class="fas fa-info-circle"></i>
+                                                        <span class="market-tooltip-text">Average percentage improvement or decline in student exam results for tutors with this rating.</span>
+                                                    </span>
+                                                </th>
+                                                <th>
+                                                    Avg Certifications
+                                                    <span class="market-tooltip">
+                                                        <i class="fas fa-info-circle"></i>
+                                                        <span class="market-tooltip-text">Average number of teaching certifications held by tutors with this rating.</span>
+                                                    </span>
+                                                </th>
+                                                <th>
+                                                    Avg Experience (Years)
+                                                    <span class="market-tooltip">
+                                                        <i class="fas fa-info-circle"></i>
+                                                        <span class="market-tooltip-text">Average years of tutoring experience for tutors with this rating.</span>
+                                                    </span>
+                                                </th>
+                                                <th>Avg Price/Hour (ETB)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="marketTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Price Suggestion View -->
+                            <div id="marketPriceContainer" class="market-view-container hidden market-price-green-bg">
+                                <div class="market-controls">
+                                    <div class="market-control-group">
+                                        <label class="market-control-label">
+                                            Time Period (Months): <span id="priceTimeValue" class="market-time-value">3</span>
+                                        </label>
+                                        <input type="range" id="priceTimePeriod" min="1" max="12" step="1" value="3"
+                                               oninput="updatePriceTimePeriod(this.value)" class="market-time-slider">
+                                    </div>
+                                    <button class="btn-calculate-price" onclick="suggestMarketPrice()" style="padding: 0.75rem 1.5rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+                                        <i class="fas fa-calculator"></i> Calculate Price
+                                    </button>
+                                </div>
+                                <div id="marketPriceResult" class="market-price-result-direct"></div>
+                            </div>
+                        </div>
+                    </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closePackageModal()">Close</button>
+                <button type="button" class="btn-primary" onclick="saveCurrentPackage()" id="savePackageBtn"
+                    style="display: none;">
+                    <i class="fas fa-save mr-2"></i>Save Package
+                </button>
+            </div>
+        </div>
+    </div>

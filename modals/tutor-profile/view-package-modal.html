@@ -1,0 +1,103 @@
+<!--
+  Modal: viewPackageModal
+  Purpose: View package details with Edit Package button
+-->
+
+<div id="viewPackageModal" class="modal hidden">
+    <div class="modal-content max-w-4xl">
+        <div class="modal-header">
+            <h2 class="text-2xl font-bold">📦 Package Details</h2>
+            <button onclick="closeViewPackageModal()" class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <!-- Package Details Content -->
+            <div class="space-y-6">
+                <!-- Package Name & Grade Level -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="text-sm font-semibold text-gray-600 block mb-2">Package Name</label>
+                        <p id="view-pkg-name" class="text-xl font-bold text-gray-800"></p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-semibold text-gray-600 block mb-2">Grade Level</label>
+                        <p id="view-pkg-grade" class="text-lg text-gray-700"></p>
+                    </div>
+                </div>
+
+                <!-- Courses -->
+                <div>
+                    <label class="text-sm font-semibold text-gray-600 block mb-2">Courses</label>
+                    <div id="view-pkg-courses" class="flex flex-wrap gap-2">
+                        <!-- Course tags will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Session Format -->
+                <div>
+                    <label class="text-sm font-semibold text-gray-600 block mb-2">Session Format</label>
+                    <div id="view-pkg-format" class="flex flex-wrap gap-2">
+                        <!-- Format tags will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Schedule Type -->
+                <div>
+                    <label class="text-sm font-semibold text-gray-600 block mb-2">Schedule Type</label>
+                    <p id="view-pkg-schedule-type" class="text-lg text-gray-700"></p>
+                </div>
+
+                <!-- Schedule Details -->
+                <div id="view-pkg-schedule-details" class="bg-gray-50 p-4 rounded-lg">
+                    <!-- Schedule details will be inserted here dynamically -->
+                </div>
+
+                <!-- Pricing Details -->
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-bold mb-3 text-blue-900">💰 Pricing</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-sm font-semibold text-gray-600 block mb-1">Hourly Rate</label>
+                            <p id="view-pkg-hourly-rate" class="text-2xl font-bold text-blue-900"></p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-600 block mb-1">Payment Frequency</label>
+                            <p id="view-pkg-payment-freq" class="text-lg text-gray-700"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Discounts -->
+                <div>
+                    <label class="text-sm font-semibold text-gray-600 block mb-3">Discounts</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-green-50 p-3 rounded-lg text-center">
+                            <p class="text-sm text-gray-600">3 Months</p>
+                            <p id="view-pkg-discount-3" class="text-2xl font-bold text-green-700"></p>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg text-center">
+                            <p class="text-sm text-gray-600">6 Months</p>
+                            <p id="view-pkg-discount-6" class="text-2xl font-bold text-green-700"></p>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-lg text-center">
+                            <p class="text-sm text-gray-600">Yearly</p>
+                            <p id="view-pkg-discount-year" class="text-2xl font-bold text-green-700"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Created Date -->
+                <div class="text-sm text-gray-500">
+                    <p>Created: <span id="view-pkg-created" class="font-semibold"></span></p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex gap-3 mt-6">
+                <button onclick="editPackageFromView()" class="btn-primary flex-1">
+                    <i class="fas fa-edit mr-2"></i>Edit Package
+                </button>
+                <button onclick="closeViewPackageModal()" class="btn-secondary px-6">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

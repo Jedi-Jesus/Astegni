@@ -1,0 +1,150 @@
+<!--
+  Modal: create-event-modal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="create-event-modal" class="modal hidden">
+        <div class="modal-content enhanced large-modal">
+            <button class="modal-close-enhanced" onclick="closeModal('create-event-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <div class="modal-header">
+                <h2>Create New Event</h2>
+                <p class="modal-subtitle">Organize a workshop, seminar, or educational event</p>
+            </div>
+
+            <form id="create-event-form" class="modal-form">
+                <div class="form-section">
+                    <h3 class="section-title">Event Picture</h3>
+                    <div class="form-group">
+                        <div class="image-upload-area" id="event-image-upload">
+                            <input type="file" id="event-picture" accept="image/*" hidden>
+                            <div class="upload-placeholder" onclick="document.getElementById('event-picture').click()">
+                                <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                <p>Click to upload event picture</p>
+                                <span class="upload-hint">PNG, JPG up to 5MB</span>
+                            </div>
+                            <img id="event-picture-preview" class="image-preview hidden" alt="Event preview">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Basic Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-title">Event Title *</label>
+                            <input type="text" id="event-title" class="form-input"
+                                placeholder="e.g., Mathematics Workshop" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="event-type">Event Type *</label>
+                            <select id="event-type" class="form-input" required>
+                                <option value="">Select type</option>
+                                <option value="Workshop">Workshop</option>
+                                <option value="Seminar">Seminar</option>
+                                <option value="Webinar">Webinar</option>
+                                <option value="Study Group">Study Group</option>
+                                <option value="Q&A Session">Q&A Session</option>
+                                <option value="Conference">Conference</option>
+                                <option value="Training">Training</option>
+                                <option value="Lecture">Lecture</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="event-description">Description *</label>
+                        <textarea id="event-description" class="form-textarea" rows="4"
+                            placeholder="Describe what participants will learn..." required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Location & Format</h3>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="event-is-online">
+                            <span>This is an online event</span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-location">Location *</label>
+                        <input type="text" id="event-location" class="form-input"
+                            placeholder="e.g., Addis Ababa University or 'Online'" required>
+                        <span class="input-hint">Enter physical address or 'Online' for virtual events</span>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Schedule</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-start-datetime">Start Date & Time *</label>
+                            <input type="datetime-local" id="event-start-datetime" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="event-end-datetime">End Date & Time *</label>
+                            <input type="datetime-local" id="event-end-datetime" class="form-input" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Capacity & Pricing</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="event-seats">Available Seats *</label>
+                            <input type="number" id="event-seats" class="form-input" min="1" placeholder="e.g., 50"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="event-price">Price (ETB)</label>
+                            <input type="number" id="event-price" class="form-input" min="0" step="0.01"
+                                placeholder="0.00 for free events" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Target Audience</h3>
+                    <div class="form-group">
+                        <label for="event-subjects">Subjects (comma-separated)</label>
+                        <input type="text" id="event-subjects" class="form-input"
+                            placeholder="e.g., Mathematics, Physics, Chemistry">
+                        <span class="input-hint">Separate multiple subjects with commas</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="event-grade-levels">Grade Levels (comma-separated)</label>
+                        <input type="text" id="event-grade-levels" class="form-input"
+                            placeholder="e.g., Grade 9-10, Grade 11-12">
+                        <span class="input-hint">Separate multiple levels with commas</span>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Additional Information</h3>
+                    <div class="form-group">
+                        <label for="event-requirements">Requirements (Optional)</label>
+                        <textarea id="event-requirements" class="form-textarea" rows="3"
+                            placeholder="Any prerequisites, materials needed, or preparation required..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary"
+                        onclick="closeModal('create-event-modal')">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Event</button>
+                </div>
+            </form>
+        </div>
+    </div>

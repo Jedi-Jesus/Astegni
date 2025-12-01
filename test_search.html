@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Search and Filter Functionality</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .result {
+            background: #f5f5f5;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 3px;
+        }
+        .tutor-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 5px;
+            background: white;
+            display: inline-block;
+            width: 300px;
+            vertical-align: top;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Find Tutors - Search and Filter Test</h1>
+
+    <div class="test-section">
+        <h2>Enhanced Search Test</h2>
+        <p>Search supports: <strong>Names, Subjects, Schools/Institutions, Languages, Locations</strong></p>
+        <div style="margin-bottom: 10px;">
+            <strong>Try these examples:</strong>
+            <button onclick="searchExample('Abebe')">Name: "Abebe"</button>
+            <button onclick="searchExample('Mathematics')">Subject: "Mathematics"</button>
+            <button onclick="searchExample('University')">School: "University"</button>
+            <button onclick="searchExample('Addis Ababa')">Location: "Addis Ababa"</button>
+            <button onclick="searchExample('English')">Language: "English"</button>
+            <button onclick="searchExample('Amharic')">Language: "Amharic"</button>
+            <button onclick="searchExample('Oromo')">Language: "Oromo"</button>
+            <button onclick="searchExample('Elementary School')">Institution: "Elementary School"</button>
+        </div>
+        <input type="text" id="searchInput" placeholder="Search by name, subject, school, language, or location">
+        <button onclick="testSearch()">Search</button>
+        <div id="searchResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Filter Tests</h2>
+        <div>
+            <label>Gender:</label>
+            <select id="genderFilter">
+                <option value="">All</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </div>
+        <div>
+            <label>Subject:</label>
+            <select id="subjectFilter">
+                <option value="">All</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="English">English</option>
+                <option value="Physics">Physics</option>
+                <option value="Chemistry">Chemistry</option>
+            </select>
+        </div>
+        <div>
+            <label>Course Type:</label>
+            <select id="courseTypeFilter">
+                <option value="">All</option>
+                <option value="Academic">Academic</option>
+                <option value="Professional">Professional</option>
+                <option value="Both">Both Academic & Professional</option>
+            </select>
+        </div>
+        <div>
+            <label>Grade Level:</label>
+            <select id="gradeFilter">
+                <option value="">All Grades</option>
+                <option value="KG">KG/Kindergarten</option>
+                <option value="Elementary">Elementary (Grade 1-4)</option>
+                <option value="Grade 5-6">Grade 5-6</option>
+                <option value="Grade 7-8">Grade 7-8 (Middle School)</option>
+                <option value="Grade 9-10">Grade 9-10</option>
+                <option value="Grade 11-12">Grade 11-12 (High School)</option>
+                <option value="University">University Level</option>
+            </select>
+        </div>
+        <div>
+            <label>Learning Method:</label>
+            <select id="learningMethodFilter">
+                <option value="">All Methods</option>
+                <option value="Online">Online</option>
+                <option value="In-person">In-person</option>
+                <option value="Hybrid">Hybrid</option>
+                <option value="Self-paced">Self-paced</option>
+            </select>
+        </div>
+        <div>
+            <label>Min Price:</label>
+            <input type="number" id="minPriceFilter" placeholder="Min price (ETB)">
+            <label>Max Price:</label>
+            <input type="number" id="maxPriceFilter" placeholder="Max price (ETB)">
+        </div>
+        <div>
+            <label>Min Rating:</label>
+            <input type="number" id="minRatingFilter" step="0.1" placeholder="Min rating (1-5)">
+        </div>
+        <button onclick="testFilters()">Apply Filters</button>
+        <button onclick="clearFilters()">Clear Filters</button>
+        <div id="filterResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>All Tutors (Sample Data)</h2>
+        <button onclick="showAllTutors()">Show All Tutors</button>
+        <div id="allTutors"></div>
+    </div>
+
+    <!-- Load the JavaScript modules -->
+    <script src="js/find-tutors/api-config-&-util.js"></script>
+
+    <script>
+        function searchExample(term) {
+            document.getElementById('searchInput').value = term;
+            testSearch();
+        }
+
+        function testSearch() {
+            const query = document.getElementById('searchInput').value;
+            const params = { search: query };
+
+            FindTutorsAPI.getTutors(params).then(result => {
+                const resultsDiv = document.getElementById('searchResults');
+                resultsDiv.innerHTML = `
+                    <h3>Search Results for "${query}"</h3>
+                    <p>Found ${result.tutors.length} tutors out of ${result.total} total</p>
+                `;
+
+                result.tutors.forEach(tutor => {
+                    resultsDiv.innerHTML += `
+                        <div class="tutor-card">
+                            <h4>${tutor.first_name} ${tutor.last_name}</h4>
+                            <p><strong>Teaches At:</strong> ${tutor.teachesAt}</p>
+                            <p><strong>Subjects:</strong> ${tutor.subjects ? tutor.subjects.join(', ') : 'N/A'}</p>
+                            <p><strong>Bio:</strong> ${tutor.bio}</p>
+                            <p><strong>Location:</strong> ${tutor.location}</p>
+                            <p><strong>Rating:</strong> ${tutor.rating}⭐</p>
+                            <p><strong>Price:</strong> ${tutor.hourly_rate || tutor.price} ETB/hr</p>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function testFilters() {
+            const params = {
+                gender: document.getElementById('genderFilter').value,
+                subject: document.getElementById('subjectFilter').value,
+                courseType: document.getElementById('courseTypeFilter').value,
+                grade: document.getElementById('gradeFilter').value,
+                learningMethod: document.getElementById('learningMethodFilter').value,
+                minPrice: document.getElementById('minPriceFilter').value,
+                maxPrice: document.getElementById('maxPriceFilter').value,
+                minRating: document.getElementById('minRatingFilter').value
+            };
+
+            // Remove empty parameters
+            Object.keys(params).forEach(key => {
+                if (!params[key]) delete params[key];
+            });
+
+            FindTutorsAPI.getTutors(params).then(result => {
+                const resultsDiv = document.getElementById('filterResults');
+                resultsDiv.innerHTML = `
+                    <h3>Filter Results</h3>
+                    <p>Applied filters: ${JSON.stringify(params, null, 2)}</p>
+                    <p>Found ${result.tutors.length} tutors out of ${result.total} total</p>
+                `;
+
+                result.tutors.forEach(tutor => {
+                    resultsDiv.innerHTML += `
+                        <div class="tutor-card">
+                            <h4>${tutor.first_name} ${tutor.last_name}</h4>
+                            <p><strong>Teaches At:</strong> ${tutor.teachesAt}</p>
+                            <p><strong>Gender:</strong> ${tutor.gender}</p>
+                            <p><strong>Subjects:</strong> ${tutor.subjects ? tutor.subjects.join(', ') : 'N/A'}</p>
+                            <p><strong>Course Type:</strong> ${tutor.courseType}</p>
+                            <p><strong>Learning Method:</strong> ${tutor.learningMethod || 'Not specified'}</p>
+                            <p><strong>Languages:</strong> ${tutor.languages ? tutor.languages.join(', ') : 'N/A'}</p>
+                            <p><strong>Rating:</strong> ${tutor.rating}⭐</p>
+                            <p><strong>Price:</strong> ${tutor.hourly_rate || tutor.price} ETB/hr</p>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('genderFilter').value = '';
+            document.getElementById('subjectFilter').value = '';
+            document.getElementById('courseTypeFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
+            document.getElementById('learningMethodFilter').value = '';
+            document.getElementById('minPriceFilter').value = '';
+            document.getElementById('maxPriceFilter').value = '';
+            document.getElementById('minRatingFilter').value = '';
+            document.getElementById('filterResults').innerHTML = '<p>Filters cleared</p>';
+        }
+
+        function showAllTutors() {
+            FindTutorsAPI.getTutors({}).then(result => {
+                const resultsDiv = document.getElementById('allTutors');
+                resultsDiv.innerHTML = `
+                    <h3>All Available Tutors</h3>
+                    <p>Total: ${result.tutors.length} tutors</p>
+                `;
+
+                result.tutors.forEach(tutor => {
+                    resultsDiv.innerHTML += `
+                        <div class="tutor-card">
+                            <h4>${tutor.first_name} ${tutor.last_name}</h4>
+                            <p><strong>Teaches At:</strong> ${tutor.teachesAt}</p>
+                            <p><strong>Gender:</strong> ${tutor.gender}</p>
+                            <p><strong>Subjects:</strong> ${tutor.subjects ? tutor.subjects.join(', ') : 'N/A'}</p>
+                            <p><strong>Course Type:</strong> ${tutor.courseType}</p>
+                            <p><strong>Location:</strong> ${tutor.location}</p>
+                            <p><strong>Bio:</strong> ${tutor.bio}</p>
+                            <p><strong>Rating:</strong> ${tutor.rating}⭐</p>
+                            <p><strong>Price:</strong> ${tutor.hourly_rate || tutor.price} ETB/hr</p>
+                            <p><strong>Experience:</strong> ${tutor.experience} years</p>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // Auto-load all tutors on page load
+        window.onload = function() {
+            showAllTutors();
+        };
+    </script>
+</body>
+</html>

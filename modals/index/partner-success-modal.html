@@ -1,0 +1,40 @@
+<!--
+  Modal: partner-success-modal
+  Source: index.html
+  Purpose: Partnership application success confirmation
+-->
+
+<div id="partner-success-modal" class="modal hidden">
+    <div class="modal-content enhanced" style="max-width: 500px;">
+        <button class="modal-close-enhanced" onclick="closeModal('partner-success-modal')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <div style="text-align: center; padding: 20px;">
+            <div style="width: 80px; height: 80px; background: var(--button-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 4px 12px rgba(var(--button-bg-rgb), 0.3);">
+                <svg width="40" height="40" fill="none" stroke="white" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+
+            <h3 id="partner-success-title" style="font-size: 24px; font-weight: 700; color: var(--text-primary); margin-bottom: 16px;">
+                Thank You, [Company Name]!
+            </h3>
+
+            <p style="font-size: 16px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.6;">
+                We are glad you decided to partner with us. We will review your request and get back to you in <strong>2-5 business days</strong>.
+            </p>
+
+            <div style="background: var(--bg-secondary); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <p style="font-size: 14px; color: var(--text-secondary); margin-bottom: 12px;">We'll contact you at:</p>
+                <div id="partner-success-contacts" style="text-align: left;">
+                    <!-- Contact info will be inserted here -->
+                </div>
+            </div>
+
+            <button onclick="closePartnerSuccessModal()" class="submit-btn" style="width: 100%;">Got it, thanks!</button>
+        </div>
+    </div>
+</div>

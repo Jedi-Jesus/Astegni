@@ -1,0 +1,61 @@
+<!--
+  Modal: customFilterModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="customFilterModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeCustomFilterModal()"></div>
+        <div class="modal-content small-modal">
+            <div class="modal-header">
+                <h2>Create Custom Filter</h2>
+                <button class="modal-close" onclick="closeCustomFilterModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="customFilterForm">
+                    <div class="form-group">
+                        <label>Filter Name *</label>
+                        <input type="text" id="filterName" class="form-input"
+                            placeholder="e.g., Grade 9 Students, Parents of Top Performers" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Filter Criteria</label>
+                        <div class="filter-criteria-options">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="criteria-grade" name="criteria" value="grade">
+                                <label for="criteria-grade">By Grade Level</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="criteria-subject" name="criteria" value="subject">
+                                <label for="criteria-subject">By Subject</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="criteria-location" name="criteria" value="location">
+                                <label for="criteria-location">By Location</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="criteria-performance" name="criteria" value="performance">
+                                <label for="criteria-performance">By Performance</label>
+                            </div>
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="criteria-activity" name="criteria" value="activity">
+                                <label for="criteria-activity">By Activity Level</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description (Optional)</label>
+                        <textarea id="filterDescription" class="form-textarea" rows="3"
+                            placeholder="Describe who this filter includes..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" onclick="closeCustomFilterModal()" class="btn-secondary">Cancel</button>
+                        <button type="submit" class="btn-primary">Create Filter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>

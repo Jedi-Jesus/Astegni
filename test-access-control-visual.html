@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campaign Management - Access Control Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .test-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s;
+        }
+        .test-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        .test-card h3 {
+            margin-top: 0;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-allowed {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-denied {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .admin-info {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .admin-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        .department-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+        }
+        .department-tag {
+            background: #e7f3ff;
+            color: #004085;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: 1px solid #b8daff;
+        }
+        .department-tag.allowed {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #004085;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .info-box h4 {
+            margin-top: 0;
+            color: #004085;
+        }
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Campaign Management Access Control</h1>
+        <p class="subtitle">Test department-based access restrictions</p>
+
+        <div class="info-box">
+            <h4>Access Requirements:</h4>
+            <p>Only admins with <strong>"Campaign Management"</strong> OR <strong>"System Settings"</strong> in their departments can access this page.</p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="status-badge status-allowed">✓ Access Granted</span>
+                <span>Admin has required department</span>
+            </div>
+            <div class="legend-item">
+                <span class="status-badge status-denied">✗ Access Denied</span>
+                <span>Admin lacks required department</span>
+            </div>
+        </div>
+
+        <div class="test-grid">
+            <!-- Test Card 1: Allowed Admin -->
+            <div class="test-card">
+                <h3>
+                    <span>Test 1</span>
+                    <span class="status-badge status-allowed">✓ Should Pass</span>
+                </h3>
+                <div class="admin-info">
+                    <p><strong>Admin:</strong> Abebe Kebede (ID: 7)</p>
+                    <p><strong>Email:</strong> campaigns@astegni.et</p>
+                    <div class="department-tags">
+                        <span class="department-tag allowed">Campaign Management</span>
+                        <span class="department-tag">Marketing</span>
+                    </div>
+                </div>
+                <button onclick="testAdmin(7, 'test1Result')">
+                    Test Access
+                </button>
+                <div id="test1Result"></div>
+            </div>
+
+            <!-- Test Card 2: Denied Admin -->
+            <div class="test-card">
+                <h3>
+                    <span>Test 2</span>
+                    <span class="status-badge status-denied">✗ Should Fail</span>
+                </h3>
+                <div class="admin-info">
+                    <p><strong>Admin:</strong> Test NoAccess (ID: 8)</p>
+                    <p><strong>Email:</strong> test_no_access@astegni.et</p>
+                    <div class="department-tags">
+                        <span class="department-tag">Content Management</span>
+                        <span class="department-tag">User Support</span>
+                    </div>
+                </div>
+                <button onclick="testAdmin(8, 'test2Result')">
+                    Test Access
+                </button>
+                <div id="test2Result"></div>
+            </div>
+
+            <!-- Test Card 3: System Settings Admin -->
+            <div class="test-card">
+                <h3>
+                    <span>Test 3</span>
+                    <span class="status-badge status-allowed">✓ Should Pass</span>
+                </h3>
+                <div class="admin-info">
+                    <p><strong>Admin:</strong> System Admin (ID: 9)</p>
+                    <p><strong>Email:</strong> system_settings@astegni.et</p>
+                    <div class="department-tags">
+                        <span class="department-tag allowed">System Settings</span>
+                    </div>
+                </div>
+                <button onclick="testAdmin(9, 'test3Result')">
+                    Test Access
+                </button>
+                <div id="test3Result"></div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="runAllTests()" style="max-width: 400px;">
+                🚀 Run All Tests
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        async function testAdmin(adminId, resultId) {
+            const resultDiv = document.getElementById(resultId);
+            resultDiv.innerHTML = '<div class="result"><span class="loading"></span> Testing...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/manage-campaigns/profile/${adminId}`);
+                const data = await response.json();
+
+                if (response.status === 200) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <strong>✓ Access Granted (200 OK)</strong><br>
+                            <small>Admin: ${data.first_name} ${data.father_name}</small><br>
+                            <small>Departments: ${data.departments.join(', ')}</small>
+                        </div>
+                    `;
+                } else if (response.status === 403) {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <strong>✗ Access Denied (403 Forbidden)</strong><br>
+                            <small>${data.detail}</small>
+                        </div>
+                    `;
+                } else if (response.status === 404) {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <strong>⚠ Admin Not Found (404)</strong><br>
+                            <small>This admin may need to be created in the database.</small>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <strong>⚠ Unexpected Response (${response.status})</strong><br>
+                            <small>${JSON.stringify(data)}</small>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <strong>✗ Error</strong><br>
+                        <small>${error.message}</small><br>
+                        <small style="color: #856404;">Make sure backend is running on https://api.astegni.com</small>
+                    </div>
+                `;
+            }
+        }
+
+        async function runAllTests() {
+            await testAdmin(7, 'test1Result');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testAdmin(8, 'test2Result');
+            await new Promise(resolve => setTimeout(resolve, 500));
+            await testAdmin(9, 'test3Result');
+        }
+
+        // Show backend status on load
+        window.addEventListener('load', async function() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    console.log('✓ Backend server is running');
+                }
+            } catch (error) {
+                alert('⚠️ Backend server is not running!\n\nPlease start it with:\ncd astegni-backend\npython app.py');
+            }
+        });
+    </script>
+</body>
+</html>

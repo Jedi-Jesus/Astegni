@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Manage Contents</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/admin-profile/admin.css">
+    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="../css/admin-pages/manage-uploads.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Inline styles to ensure right-side widget positioning -->
+    <style>
+        .admin-main-layout {
+            display: flex !important;
+            gap: 1.5rem !important;
+        }
+
+        .admin-content-area {
+            flex: 1 !important;
+        }
+
+        .admin-right-widgets {
+            width: 320px !important;
+            flex-shrink: 0 !important;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <span class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <a href="../admin-pages/manage-contents.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Content Management</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="flex items-center space-x-6">
+
+                <!-- Notification Icon -->
+                <button class="relative focus:outline-none" aria-label="Notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span
+                        class="absolute top-0 right-0 -mt-1 -mr-1 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">5</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>Content Management</h3>
+                <span class="sidebar-close" id="sidebar-close">&times;</span>
+
+                <a href="#" onclick="switchPanel('dashboard'); return false;" class="sidebar-link active">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel('requested'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📥</span>
+                    <span>Requested Contents</span>
+                </a>
+                <a href="#" onclick="switchPanel('verified'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">✅</span>
+                    <span>Verified Contents</span>
+                </a>
+                <a href="#" onclick="switchPanel('rejected'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">❌</span>
+                    <span>Rejected Contents</span>
+                </a>
+                <a href="#" onclick="switchPanel('flagged'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🚩</span>
+                    <span>Flagged Contents</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="openStorageAnalytics(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Storage Analytics</span>
+                </a>
+                <a href="#" onclick="openContentSettings(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Content Settings</span>
+                </a>
+                <a href="#" onclick="openContentPolicy(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📋</span>
+                    <span>Content Policy</span>
+                </a>
+
+                <!-- Logout Button at Bottom -->
+                <div class="mt-auto pt-4 border-t border-gray-300">
+                    <a href="#" onclick="logout(); return false;" class="sidebar-link text-red-500 hover:bg-red-50">
+                        <span class="sidebar-icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1">
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+
+                            <!-- Profile Header Section (Only visible in Dashboard) -->
+                            <section class="profile-header-section mb-8">
+                                <div class="cover-image-container relative">
+                                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='20'%3E1200x300%3C/text%3E%3C/svg%3E"
+                                        alt="Cover" class="cover-img">
+                                    <div class="cover-overlay"></div>
+                                    <!-- Cover Upload Button -->
+                                    <button onclick="openUploadCoverModal()" class="cover-upload-btn">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                            </path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="profile-main-info">
+                                    <div class="profile-info-wrapper">
+                                        <div class="profile-avatar-container">
+                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
+                                                alt="Admin Profile" class="profile-avatar">
+                                            <span class="online-indicator"></span>
+                                            <!-- Profile Picture Upload Button -->
+                                            <button onclick="openUploadProfileModal()" class="avatar-upload-btn">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                                    </path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="profile-details-section">
+                                            <div class="profile-name-row">
+                                                <h1 class="profile-name" id="adminName">Content Management</h1>
+                                                <div class="badges-row">
+                                                    <span class="profile-badge verified">✔ System Administrator</span>
+                                                    <span class="profile-badge school">📁 Content Management</span>
+                                                    <span class="profile-badge expert">📊 Content Expert</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-section">
+                                                <div class="rating-wrapper">
+                                                    <span class="rating-value">4.9</span>
+                                                    <div class="rating-stars">★★★★★</div>
+                                                    <span class="rating-count">(156 reviews)</span>
+                                                    <div class="rating-label">Performance Rating</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-location">
+                                                <span class="location-icon">📍</span>
+                                                <span>Astegni Admin Panel | Content Management & Moderation</span>
+                                            </div>
+
+                                            <!-- Email and Phone Information -->
+                                            <div class="profile-contact-info mt-3">
+                                                <div class="flex items-center gap-2 mb-2">
+                                                    <span class="contact-icon">📧</span>
+                                                    <span class="contact-label font-medium">Email:</span>
+                                                    <span class="contact-value" id="adminEmail">admin@astegni.et</span>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="contact-icon">📱</span>
+                                                    <span class="contact-label font-medium">Phone:</span>
+                                                    <span class="contact-value" id="adminPhone">+251 911 234567</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-quote">
+                                                <span>"Empowering educational institutions through efficient management
+                                                    and verification."</span>
+                                            </div>
+
+                                            <div class="profile-actions">
+                                                <button onclick="openEditProfileModal()" class="btn-primary">
+                                                    <span class="mr-2">✏️</span>
+                                                    Edit Profile
+                                                </button>
+                                            </div>
+
+                                            <!-- About Me Info -->
+                                            <div class="profile-info-grid">
+                                                <div class="info-item">
+                                                    <span class="info-label">Department:</span>
+                                                    <span class="info-value">Educational Services</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Employee ID:</span>
+                                                    <span class="info-value">ADM-2024-001</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Joined:</span>
+                                                    <span class="info-value">January 2020</span>
+                                                </div>
+                                                <div class="info-description">
+                                                    <p>Senior System Administrator with 5+ years of experience in
+                                                        educational platform management. Specialized in content
+                                                        management, storage optimization, and digital asset control.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Page Header -->
+                            <div class="mb-8 animate-fadeIn">
+                                <h1 class="text-3xl font-bold mb-2">Content Management Dashboard</h1>
+                                <p class="text-gray-600">Monitor and manage all user-uploaded content</p>
+                            </div>
+
+                            <!-- Achievements Section -->
+                            <div class="card p-6 mb-8">
+                                <h3 class="text-xl font-semibold mb-4">Achievements</h3>
+                                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🏆</div>
+                                        <div class="text-sm">Top Performer</div>
+                                        <div class="text-xs text-gray-500">Q4 2024</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🥇</div>
+                                        <div class="text-sm">Excellence</div>
+                                        <div class="text-xs text-gray-500">Annual 2023</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">⭐</div>
+                                        <div class="text-sm">5-Star Admin</div>
+                                        <div class="text-xs text-gray-500">500+ Reviews</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">📚</div>
+                                        <div class="text-sm">Education Pro</div>
+                                        <div class="text-xs text-gray-500">1000+ Schools</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🎯</div>
+                                        <div class="text-sm">Goal Achiever</div>
+                                        <div class="text-xs text-gray-500">100% Success</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">💎</div>
+                                        <div class="text-sm">Premium Admin</div>
+                                        <div class="text-xs text-gray-500">Level 10</div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- All Statistics Cards -->
+                            <div class="dashboard-grid mb-8">
+                                <!-- Content Stats -->
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Verified Contents</h3>
+                                    <p class="text-2xl font-bold text-green-600">0</p>
+                                    <span class="text-sm text-gray-500">Loading...</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Requested Contents</h3>
+                                    <p class="text-2xl font-bold text-yellow-600">0</p>
+                                    <span class="text-sm text-gray-500">Loading...</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Rejected Contents</h3>
+                                    <p class="text-2xl font-bold text-red-600">0</p>
+                                    <span class="text-sm text-gray-500">Loading...</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Flagged Contents</h3>
+                                    <p class="text-2xl font-bold text-orange-600">0</p>
+                                    <span class="text-sm text-gray-500">Loading...</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Total Storage</h3>
+                                    <p class="text-2xl font-bold text-blue-600">0 GB</p>
+                                    <span class="text-sm text-gray-500">Loading...</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Approval Rate</h3>
+                                    <p class="text-2xl font-bold text-green-600">0%</p>
+                                    <span class="text-sm text-gray-500">Loading...</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Avg Processing</h3>
+                                    <p class="text-2xl font-bold">0 hrs</p>
+                                    <span class="text-sm text-gray-500">Loading...</span>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">User Satisfaction</h3>
+                                    <p class="text-2xl font-bold">0%</p>
+                                    <span class="text-sm text-gray-500">Loading...</span>
+                                </div>
+                            </div>
+
+                            <!-- Reviews Section -->
+                            <div class="card p-6 mb-8">
+                                <h3 class="text-xl font-semibold mb-4">Recent Reviews</h3>
+                                <div class="space-y-4">
+                                    <div class="border-l-4 border-blue-500 pl-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 class="font-semibold">Outstanding Campaign Management</h4>
+                                                <p class="text-sm text-gray-600">From: Marketing Director</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="text-yellow-400">★★★★★</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Exceptional handling of advertiser relationships.
+                                            Revenue increased by 25% this quarter."</p>
+                                        <p class="text-xs text-gray-500 mt-2">3 days ago</p>
+                                    </div>
+
+                                    <div class="border-l-4 border-green-500 pl-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 class="font-semibold">Quick Approval Process</h4>
+                                                <p class="text-sm text-gray-600">From: Sales Team</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="text-yellow-400">★★★★★</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Campaign approvals are processed within hours. Great
+                                            communication with clients."</p>
+                                        <p class="text-xs text-gray-500 mt-2">5 days ago</p>
+                                    </div>
+
+                                    <div class="border-l-4 border-purple-500 pl-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 class="font-semibold">Revenue Growth Expert</h4>
+                                                <p class="text-sm text-gray-600">From: Finance Department</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="text-yellow-400">★★★★☆</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Consistently meets revenue targets. Excellent
+                                            advertiser retention rate."</p>
+                                        <p class="text-xs text-gray-500 mt-2">1 week ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Requested Contents Panel -->
+                    <div id="requested-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Requested Contents</h1>
+                            <p class="text-gray-600">Review and approve pending content uploads</p>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" id="requested-search" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search by filename, user, or ID...">
+                                </div>
+                                <select id="requested-type-filter" class="p-3 border-2 rounded-lg">
+                                    <option value="">All Types</option>
+                                    <option value="image">Images</option>
+                                    <option value="video">Videos</option>
+                                    <option value="document">Documents</option>
+                                </select>
+                                <button onclick="exportContent('requested')" class="cta-button">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Pending Review</h3>
+                                <p class="text-2xl font-bold text-yellow-600" id="requested-total-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Images Pending</h3>
+                                <p class="text-2xl font-bold" id="requested-images-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Videos Pending</h3>
+                                <p class="text-2xl font-bold" id="requested-videos-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Documents Pending</h3>
+                                <p class="text-2xl font-bold" id="requested-documents-count">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Content Table -->
+                        <div class="card overflow-hidden">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Content</th>
+                                        <th class="p-4 text-left">Type</th>
+                                        <th class="p-4 text-left">Uploader</th>
+                                        <th class="p-4 text-left">Size</th>
+                                        <th class="p-4 text-left">Date</th>
+                                        <th class="p-4 text-left">Grade/Course</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requested-content-table">
+                                    <tr>
+                                        <td colspan="7" class="p-8 text-center text-gray-500">
+                                            <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                                            <p>Loading content...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Verified Contents Panel -->
+                    <div id="verified-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Verified Contents</h1>
+                            <p class="text-gray-600">All approved and published content</p>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" id="verified-search" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search by filename, user, or ID...">
+                                </div>
+                                <select id="verified-type-filter" class="p-3 border-2 rounded-lg">
+                                    <option value="">All Types</option>
+                                    <option value="image">Images</option>
+                                    <option value="video">Videos</option>
+                                    <option value="document">Documents</option>
+                                </select>
+                                <button onclick="exportContent('verified')" class="cta-button">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Total Verified</h3>
+                                <p class="text-2xl font-bold text-green-600" id="verified-total-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Verified Images</h3>
+                                <p class="text-2xl font-bold" id="verified-images-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Verified Videos</h3>
+                                <p class="text-2xl font-bold" id="verified-videos-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Verified Documents</h3>
+                                <p class="text-2xl font-bold" id="verified-documents-count">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Content Table -->
+                        <div class="card overflow-hidden">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Content</th>
+                                        <th class="p-4 text-left">Type</th>
+                                        <th class="p-4 text-left">Uploader</th>
+                                        <th class="p-4 text-left">Size</th>
+                                        <th class="p-4 text-left">Verified Date</th>
+                                        <th class="p-4 text-left">Grade/Course</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="verified-content-table">
+                                    <tr>
+                                        <td colspan="7" class="p-8 text-center text-gray-500">
+                                            <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                                            <p>Loading content...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Rejected Contents Panel -->
+                    <div id="rejected-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Rejected Contents</h1>
+                            <p class="text-gray-600">Content that did not meet approval criteria</p>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" id="rejected-search" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search by filename, user, or ID...">
+                                </div>
+                                <select id="rejected-type-filter" class="p-3 border-2 rounded-lg">
+                                    <option value="">All Types</option>
+                                    <option value="image">Images</option>
+                                    <option value="video">Videos</option>
+                                    <option value="document">Documents</option>
+                                </select>
+                                <button onclick="exportContent('rejected')" class="cta-button">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Total Rejected</h3>
+                                <p class="text-2xl font-bold text-red-600" id="rejected-total-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Rejected Images</h3>
+                                <p class="text-2xl font-bold" id="rejected-images-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Rejected Videos</h3>
+                                <p class="text-2xl font-bold" id="rejected-videos-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Rejected Documents</h3>
+                                <p class="text-2xl font-bold" id="rejected-documents-count">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Content Table -->
+                        <div class="card overflow-hidden">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Content</th>
+                                        <th class="p-4 text-left">Type</th>
+                                        <th class="p-4 text-left">Uploader</th>
+                                        <th class="p-4 text-left">Size</th>
+                                        <th class="p-4 text-left">Rejected Date</th>
+                                        <th class="p-4 text-left">Grade/Course</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rejected-content-table">
+                                    <tr>
+                                        <td colspan="7" class="p-8 text-center text-gray-500">
+                                            <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                                            <p>Loading content...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Flagged Content Panel -->
+                    <div id="flagged-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Flagged Contents</h1>
+                            <p class="text-gray-600">Review content flagged for policy violations</p>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" id="flagged-search" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search by filename, user, or ID...">
+                                </div>
+                                <select id="flagged-type-filter" class="p-3 border-2 rounded-lg">
+                                    <option value="">All Types</option>
+                                    <option value="image">Images</option>
+                                    <option value="video">Videos</option>
+                                    <option value="document">Documents</option>
+                                </select>
+                                <button onclick="exportContent('flagged')" class="cta-button">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Pending Review</h3>
+                                <p class="text-2xl font-bold text-red-600" id="flagged-total-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Flagged Images</h3>
+                                <p class="text-2xl font-bold" id="flagged-images-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Flagged Videos</h3>
+                                <p class="text-2xl font-bold" id="flagged-videos-count">0</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Flagged Documents</h3>
+                                <p class="text-2xl font-bold" id="flagged-documents-count">0</p>
+                            </div>
+                        </div>
+
+                        <!-- Content Table -->
+                        <div class="card overflow-hidden">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Content</th>
+                                        <th class="p-4 text-left">Type</th>
+                                        <th class="p-4 text-left">Uploader</th>
+                                        <th class="p-4 text-left">Size</th>
+                                        <th class="p-4 text-left">Date</th>
+                                        <th class="p-4 text-left">Grade/Course</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="flagged-content-table">
+                                    <tr>
+                                        <td colspan="7" class="p-8 text-center text-gray-500">
+                                            <i class="fas fa-inbox text-4xl mb-3 block"></i>
+                                            <p>Loading content...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Widgets (Persistent across all panels) -->
+                <div class="admin-right-widgets"
+                    style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
+                    <!-- Upload Activity Widget -->
+                    <div class="admin-widget-card upload-activity-widget">
+                        <h3 class="text-lg font-semibold mb-4">📊 Live Upload Feed</h3>
+                        <div class="upload-activity-container">
+                            <div class="upload-activity-scroll" id="live-upload-feed">
+                                <!-- Upload activities will be loaded from database -->
+                                <div class="text-center p-8 text-gray-500">
+                                    <i class="fas fa-spinner fa-spin text-3xl mb-3 block"></i>
+                                    <p>Loading upload activity...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="upload-activity-fade-top"></div>
+                        <div class="upload-activity-fade-bottom"></div>
+                    </div>
+                    <!-- Daily Quota Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">📊 Daily Quota</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Today's Target</span>
+                                <span class="font-semibold">20</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Completed</span>
+                                <span class="font-semibold text-green-600">18</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 90%"></div>
+                            </div>
+                            <div class="text-center mt-3">
+                                <p class="text-xs text-gray-500">2 more to reach daily goal!</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fire Streak Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">🔥 Fire Streak</h3>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-orange-500">18</div>
+                            <div class="text-sm text-gray-600">Days</div>
+                            <div class="mt-4 grid grid-cols-7 gap-1">
+                                <span class="text-xs">🔥</span>
+                                <span class="text-xs">🔥</span>
+                                <span class="text-xs">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-2">Keep your streak alive!</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of admin-right-widgets -->
+
+            </div>
+            <!-- End of flex gap-6 container -->
+
+        </div>
+        <!-- End of container mx-auto px-4 -->
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-section mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <p>&copy; 2025 Astegni. All rights reserved. | Admin Panel</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/root/app.js"></script>
+    <script src="../js/root/auth.js"></script>
+
+    <!-- Standalone Script - All Navigation & Panel Management -->
+    <script src="../js/admin-pages/manage-contents-standalone.js"></script>
+
+    <!-- Profile Header Loader - Loads from admin_profile and manage_contents_profile -->
+    <script src="../js/admin-pages/manage-contents-profile-loader.js"></script>
+
+    <!-- Page-specific data loading -->
+    <script src="../js/admin-pages/manage-contents.js"></script>
+
+    <!-- Fix theme background -->
+    <script>
+        // Ensure dark theme background is applied correctly
+        document.addEventListener('DOMContentLoaded', function () {
+            // Force background color application
+            function applyThemeBackground() {
+                const theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.body.style.backgroundColor = '#1E1E1E';
+                    document.documentElement.style.backgroundColor = '#1E1E1E';
+                } else {
+                    document.body.style.backgroundColor = '#ffffff';
+                    document.documentElement.style.backgroundColor = '#ffffff';
+                }
+            }
+
+            // Apply immediately
+            applyThemeBackground();
+
+            // Watch for theme changes
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.attributeName === 'data-theme') {
+                        applyThemeBackground();
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['data-theme']
+            });
+        });
+    </script>
+        <!-- Edit Profile Modal -->
+    <!-- This modal ONLY edits admin_profile table fields (personal information) -->
+    <!-- admin_profile_stats fields (employee_id, access_level, etc.) are managed by super admin or system -->
+    <div id="edit-profile-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
+                    <!-- Ethiopian Naming Convention -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">First Name *</label>
+                            <input type="text" id="firstNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Abebe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Father's Name *</label>
+                            <input type="text" id="fatherNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Kebede" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Grandfather's Name *</label>
+                            <input type="text" id="grandfatherNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Tesfa" required>
+                        </div>
+                    </div>
+
+                    <!-- Username (Display Name) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Username (Display Name) *</label>
+                        <input type="text" id="adminUsernameInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., abebe_kebede" required>
+                        <p class="text-xs text-gray-500 mt-1">This will be displayed as your admin username</p>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Email</label>
+                            <input type="email" id="emailInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="admin@astegni.et">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Phone Number</label>
+                            <input type="tel" id="phoneNumberInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="+251911234567">
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Bio</label>
+                        <textarea id="bioInput" rows="3"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tell us about yourself..."></textarea>
+                    </div>
+
+                    <!-- Quote -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Quote</label>
+                        <input type="text" id="quoteInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Your personal quote or motto">
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                            onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit"
+                            class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update
+                            Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- Modals would go here (Edit Profile, Upload Profile Picture, Upload Cover Image) -->
+    <!-- Similar structure to manage-schools.html modals -->
+
+    <!-- Content View Modal -->
+    <div id="content-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeContentModal()"></div>
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Content Details</h2>
+                <button class="modal-close" onclick="closeContentModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Content Display Area -->
+                <div id="content-display" class="mb-6 bg-black rounded-lg overflow-hidden">
+                    <!-- Video or image will be inserted here -->
+                </div>
+
+                <!-- Content Details -->
+                <div id="content-details" class="mb-6">
+                    <!-- Details will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                    onclick="closeContentModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Manage Campaigns DB Integration</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        .data-display {
+            background: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid #4CAF50;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        pre {
+            margin: 0;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Manage Campaigns - Database Integration Test</h1>
+
+    <div class="test-section">
+        <h2>Test Configuration</h2>
+        <p><strong>API Base URL:</strong> <span id="apiUrl">https://api.astegni.com</span></p>
+        <p><strong>Test Admin ID:</strong> <span id="adminId">7</span></p>
+        <p><strong>Department:</strong> <span id="department">Campaign Management</span></p>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Test Profile Endpoint</h2>
+        <button onclick="testProfileEndpoint()">Test GET Profile</button>
+        <div id="profileResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Stats Endpoint</h2>
+        <button onclick="testStatsEndpoint()">Test GET Stats</button>
+        <div id="statsResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Reviews Endpoint</h2>
+        <button onclick="testReviewsEndpoint()">Test GET Reviews</button>
+        <div id="reviewsResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test Profile Update</h2>
+        <button onclick="testProfileUpdate()">Test PUT Profile</button>
+        <div id="updateResult"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test All Endpoints</h2>
+        <button onclick="testAllEndpoints()">Run All Tests</button>
+        <div id="allTestsResult"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+        const ADMIN_ID = 7;
+        const DEPARTMENT = 'Campaign Management';
+
+        async function testProfileEndpoint() {
+            const resultDiv = document.getElementById('profileResult');
+            resultDiv.innerHTML = '<p>Testing... <span class="loading"></span></p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/manage-campaigns/profile/${ADMIN_ID}?department=${encodeURIComponent(DEPARTMENT)}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ Success! Profile loaded</p>
+                        <div class="data-display">
+                            <strong>Admin:</strong> ${data.first_name} ${data.father_name}<br>
+                            <strong>Username:</strong> ${data.username}<br>
+                            <strong>Email:</strong> ${data.email}<br>
+                            <strong>Position:</strong> ${data.position}<br>
+                            <strong>Rating:</strong> ${data.rating} (${data.total_reviews} reviews)<br>
+                            <strong>Campaigns Approved:</strong> ${data.campaigns_approved}<br>
+                            <strong>Campaigns Rejected:</strong> ${data.campaigns_rejected}<br>
+                            <strong>Campaigns Suspended:</strong> ${data.campaigns_suspended}<br>
+                            <strong>Total Budget Managed:</strong> ${data.total_budget_managed.toLocaleString()} ETB
+                        </div>
+                        <details>
+                            <summary>View Full JSON</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">✗ Error: ${response.status} - ${JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testStatsEndpoint() {
+            const resultDiv = document.getElementById('statsResult');
+            resultDiv.innerHTML = '<p>Testing... <span class="loading"></span></p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/manage-campaigns/stats/${ADMIN_ID}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ Success! Stats loaded</p>
+                        <div class="data-display">
+                            <strong>Total Campaigns:</strong> ${data.total_campaigns}<br>
+                            <strong>Verified:</strong> ${data.verified_campaigns}<br>
+                            <strong>Pending:</strong> ${data.pending_campaigns}<br>
+                            <strong>Rejected:</strong> ${data.rejected_campaigns}<br>
+                            <strong>Suspended:</strong> ${data.suspended_campaigns}<br>
+                            <strong>Archived:</strong> ${data.archived_campaigns}<br>
+                            <strong>Approval Rate:</strong> ${data.approval_rate}%<br>
+                            <strong>Avg Processing Time:</strong> ${data.avg_processing_time} hours<br>
+                            <strong>Client Satisfaction:</strong> ${data.client_satisfaction}%
+                        </div>
+                        <details>
+                            <summary>View Full JSON</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">✗ Error: ${response.status} - ${JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testReviewsEndpoint() {
+            const resultDiv = document.getElementById('reviewsResult');
+            resultDiv.innerHTML = '<p>Testing... <span class="loading"></span></p>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin-reviews/recent?limit=3&admin_id=${ADMIN_ID}&department=${encodeURIComponent(DEPARTMENT)}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const reviewsHtml = data.reviews.map(review => `
+                        <div style="margin: 10px 0; padding: 10px; background: #fff; border-left: 3px solid #4CAF50;">
+                            <strong>${review.reviewer_name}</strong> (${review.reviewer_role})<br>
+                            Rating: ${'★'.repeat(Math.floor(review.rating))}☆ (${review.rating})<br>
+                            Comment: "${review.comment}"<br>
+                            <small>${new Date(review.created_at).toLocaleString()}</small>
+                        </div>
+                    `).join('');
+
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ Success! Loaded ${data.count} reviews</p>
+                        <div class="data-display">
+                            ${reviewsHtml}
+                        </div>
+                        <details>
+                            <summary>View Full JSON</summary>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </details>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">✗ Error: ${response.status} - ${JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testProfileUpdate() {
+            const resultDiv = document.getElementById('updateResult');
+            resultDiv.innerHTML = '<p>Testing... <span class="loading"></span></p>';
+
+            try {
+                const updateData = {
+                    bio: "Updated bio: Senior Campaign Management Administrator - Test Update at " + new Date().toLocaleTimeString()
+                };
+
+                const response = await fetch(`${API_BASE_URL}/api/manage-campaigns/profile/${ADMIN_ID}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <p class="success">✓ Success! Profile updated</p>
+                        <div class="data-display">
+                            <strong>Response:</strong> ${data.message}<br>
+                            <strong>Updated Bio:</strong> ${updateData.bio}
+                        </div>
+                        <p><em>Refresh the profile endpoint to see the updated data</em></p>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<p class="error">✗ Error: ${response.status} - ${JSON.stringify(data)}</p>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testAllEndpoints() {
+            const resultDiv = document.getElementById('allTestsResult');
+            resultDiv.innerHTML = '<p>Running all tests... <span class="loading"></span></p>';
+
+            const results = [];
+
+            try {
+                // Test 1: Profile
+                const profileRes = await fetch(`${API_BASE_URL}/api/manage-campaigns/profile/${ADMIN_ID}`);
+                results.push({
+                    name: 'Profile Endpoint',
+                    success: profileRes.ok,
+                    status: profileRes.status
+                });
+
+                // Test 2: Stats
+                const statsRes = await fetch(`${API_BASE_URL}/api/manage-campaigns/stats/${ADMIN_ID}`);
+                results.push({
+                    name: 'Stats Endpoint',
+                    success: statsRes.ok,
+                    status: statsRes.status
+                });
+
+                // Test 3: Reviews
+                const reviewsRes = await fetch(`${API_BASE_URL}/api/admin-reviews/recent?limit=3&admin_id=${ADMIN_ID}&department=${encodeURIComponent(DEPARTMENT)}`);
+                results.push({
+                    name: 'Reviews Endpoint',
+                    success: reviewsRes.ok,
+                    status: reviewsRes.status
+                });
+
+                const successCount = results.filter(r => r.success).length;
+                const totalCount = results.length;
+
+                const resultsHtml = results.map(r =>
+                    `<div style="padding: 5px; ${r.success ? 'color: green;' : 'color: red;'}">
+                        ${r.success ? '✓' : '✗'} ${r.name}: HTTP ${r.status}
+                    </div>`
+                ).join('');
+
+                resultDiv.innerHTML = `
+                    <h3>${successCount}/${totalCount} Tests Passed</h3>
+                    <div class="data-display">
+                        ${resultsHtml}
+                    </div>
+                    ${successCount === totalCount
+                        ? '<p class="success">🎉 All tests passed! Database integration is working correctly.</p>'
+                        : '<p class="error">⚠️ Some tests failed. Check the backend server and database connection.</p>'
+                    }
+                `;
+
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">✗ Error running tests: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-run all tests on page load
+        window.addEventListener('load', function() {
+            console.log('Page loaded. Click "Run All Tests" to verify the integration.');
+        });
+    </script>
+</body>
+</html>

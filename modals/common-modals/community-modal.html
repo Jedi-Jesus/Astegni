@@ -1,0 +1,252 @@
+<!--
+  Modal: communityModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="communityModal" class="modal hidden" style="display: none; z-index: 10001;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content community-modal-content">
+            <div class="modal-wrapper">
+
+                <!-- Sidebar -->
+                <div class="community-sidebar">
+                    <h3>Community</h3>
+                    <div class="community-menu">
+                        <div class="menu-item active" data-section="connections"
+                            onclick="switchCommunityMainSection('connections')">
+                            <span class="menu-icon">🔗</span>
+                            <span>Connections</span>
+                            <span class="count-badge" id="connections-count">0</span>
+                        </div>
+                        <div class="menu-item" data-section="requests" onclick="switchCommunityMainSection('requests')">
+                            <span class="menu-icon">📩</span>
+                            <span>Requests</span>
+                            <span class="count-badge" id="requests-count">0</span>
+                        </div>
+                        <div class="menu-divider"></div>
+                        <div class="menu-item" data-section="events" onclick="switchCommunityMainSection('events')">
+                            <span class="menu-icon">📅</span>
+                            <span>Events</span>
+                            <span class="count-badge" id="events-count">0</span>
+                        </div>
+                        <div class="menu-item" data-section="clubs" onclick="switchCommunityMainSection('clubs')">
+                            <span class="menu-icon">🎯</span>
+                            <span>Clubs</span>
+                            <span class="count-badge" id="clubs-count">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="community-main">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <h2 id="communityModalTitle">Connections</h2>
+                        <button class="modal-close" onclick="closeCommunityModal()">&times;</button>
+                    </div>
+
+                    <!-- CONNECTIONS SECTION -->
+                    <div id="connections-section" class="community-section active">
+
+                        <!-- Section Header with Search -->
+                        <div class="section-header">
+                            <div class="search-box">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" placeholder="Search connections..."
+                                    id="connections-search" oninput="searchConnections(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- Section Filters (Tabs) -->
+                        <div class="section-filters">
+                            <button class="filter-btn active" data-filter="all" onclick="filterConnectionsBy('all')">
+                                All <span class="filter-count" data-role="all">0</span>
+                            </button>
+                            <button class="filter-btn" data-filter="students" onclick="filterConnectionsBy('students')">
+                                👨‍🎓 Students <span class="filter-count" data-role="students">0</span>
+                            </button>
+                            <button class="filter-btn" data-filter="parents" onclick="filterConnectionsBy('parents')">
+                                👪 Parents <span class="filter-count" data-role="parents">0</span>
+                            </button>
+                            <button class="filter-btn" data-filter="tutors" onclick="filterConnectionsBy('tutors')">
+                                👨‍🏫 Tutors <span class="filter-count" data-role="tutors">0</span>
+                            </button>
+                            <button class="filter-btn add-filter-btn" onclick="openAddConnectionModal()">
+                                <i class="fas fa-plus"></i> Add
+                            </button>
+                        </div>
+
+                        <!-- Connections Grid -->
+                        <div class="connections-grid" id="connectionsGrid" style="padding: 2rem;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <p class="loading-text">Loading connections...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- REQUESTS SECTION -->
+                    <div id="requests-section" class="community-section hidden">
+
+                        <!-- Request Type Tabs -->
+                        <div class="request-tabs"
+                            style="display: flex; gap: 0.5rem; padding: 1rem; border-bottom: 1px solid rgba(var(--border-rgb), 0.1);">
+                            <button class="request-tab-btn active" onclick="switchRequestTab('received')"
+                                data-tab="received"
+                                style="flex: 1; padding: 0.75rem 1rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                                <span>📩 Requests Received</span>
+                                <span class="request-tab-count" id="received-requests-count"
+                                    style="display: inline-block; margin-left: 0.5rem; background: rgba(255,255,255,0.2); padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.85rem;">0</span>
+                            </button>
+                            <button class="request-tab-btn" onclick="switchRequestTab('sent')" data-tab="sent"
+                                style="flex: 1; padding: 0.75rem 1rem; background: transparent; color: var(--text); border: 1px solid rgba(var(--border-rgb), 0.3); border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                                <span>📤 Requests Sent</span>
+                                <span class="request-tab-count" id="sent-requests-count"
+                                    style="display: inline-block; margin-left: 0.5rem; background: rgba(var(--border-rgb), 0.1); padding: 0.1rem 0.5rem; border-radius: 12px; font-size: 0.85rem;">0</span>
+                            </button>
+                        </div>
+
+                        <!-- Requests Received Content -->
+                        <div class="request-content" id="received-requests-content">
+                            <div class="section-header">
+                                <div class="search-box">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" class="search-input" placeholder="Search received requests..."
+                                        id="received-requests-search" oninput="searchReceivedRequests(this.value)">
+                                </div>
+                            </div>
+                            <div class="section-filters">
+                                <button class="filter-btn active" data-filter="all"
+                                    onclick="filterReceivedRequestsBy('all')">
+                                    All Requests <span class="filter-count" data-role="all">0</span>
+                                </button>
+                                <button class="filter-btn" data-filter="students"
+                                    onclick="filterReceivedRequestsBy('students')">
+                                    👨‍🎓 Students <span class="filter-count" data-role="students">0</span>
+                                </button>
+                                <button class="filter-btn" data-filter="parents"
+                                    onclick="filterReceivedRequestsBy('parents')">
+                                    👪 Parents <span class="filter-count" data-role="parents">0</span>
+                                </button>
+                                <button class="filter-btn" data-filter="tutors"
+                                    onclick="filterReceivedRequestsBy('tutors')">
+                                    👨‍🏫 Tutors <span class="filter-count" data-role="tutors">0</span>
+                                </button>
+                            </div>
+                            <div class="connections-grid" id="receivedRequestsGrid" style="padding: 2rem;">
+                                <div class="loading-container">
+                                    <div class="loading-spinner"></div>
+                                    <p class="loading-text">Loading received requests...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Requests Sent Content -->
+                        <div class="request-content hidden" id="sent-requests-content">
+                            <div class="section-header">
+                                <div class="search-box">
+                                    <i class="fas fa-search search-icon"></i>
+                                    <input type="text" class="search-input" placeholder="Search sent requests..."
+                                        id="sent-requests-search" oninput="searchSentRequests(this.value)">
+                                </div>
+                            </div>
+                            <div class="section-filters">
+                                <button class="filter-btn active" data-filter="all"
+                                    onclick="filterSentRequestsBy('all')">
+                                    All Requests <span class="filter-count" data-role="all">0</span>
+                                </button>
+                                <button class="filter-btn" data-filter="students"
+                                    onclick="filterSentRequestsBy('students')">
+                                    👨‍🎓 Students <span class="filter-count" data-role="students">0</span>
+                                </button>
+                                <button class="filter-btn" data-filter="parents"
+                                    onclick="filterSentRequestsBy('parents')">
+                                    👪 Parents <span class="filter-count" data-role="parents">0</span>
+                                </button>
+                                <button class="filter-btn" data-filter="tutors"
+                                    onclick="filterSentRequestsBy('tutors')">
+                                    👨‍🏫 Tutors <span class="filter-count" data-role="tutors">0</span>
+                                </button>
+                            </div>
+                            <div class="connections-grid" id="sentRequestsGrid" style="padding: 2rem;">
+                                <div class="loading-container">
+                                    <div class="loading-spinner"></div>
+                                    <p class="loading-text">Loading sent requests...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- EVENTS SECTION -->
+                    <div id="events-section" class="community-section hidden">
+
+                        <!-- Section Header with Search -->
+                        <div class="section-header">
+                            <div class="search-box">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" placeholder="Search events..."
+                                    id="events-search" oninput="searchEvents(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- Section Filters (Tabs) -->
+                        <div class="section-filters">
+                            <button class="filter-btn" data-filter="past" onclick="filterEventsBy('past')">
+                                📜 Past <span class="filter-count">0</span>
+                            </button>
+                            <button class="filter-btn active" data-filter="upcoming"
+                                onclick="filterEventsBy('upcoming')">
+                                📅 Upcoming <span class="filter-count">0</span>
+                            </button>
+                            <button class="filter-btn" data-filter="joined" onclick="filterEventsBy('joined')">
+                                ✅ Joined <span class="filter-count">0</span>
+                            </button>
+                        </div>
+
+                        <!-- Events Grid -->
+                        <div class="events-grid" id="eventsGrid" style="padding: 2rem;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <p class="loading-text">Loading events...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CLUBS SECTION -->
+                    <div id="clubs-section" class="community-section hidden">
+
+                        <!-- Section Header with Search -->
+                        <div class="section-header">
+                            <div class="search-box">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" placeholder="Search clubs..." id="clubs-search"
+                                    oninput="searchClubs(this.value)">
+                            </div>
+                        </div>
+
+                        <!-- Section Filters (Tabs) -->
+                        <div class="section-filters">
+                            <button class="filter-btn active" data-filter="discover"
+                                onclick="filterClubsBy('discover')">
+                                🔍 Discover <span class="filter-count">0</span>
+                            </button>
+                            <button class="filter-btn" data-filter="joined" onclick="filterClubsBy('joined')">
+                                ✅ Joined <span class="filter-count">0</span>
+                            </button>
+                        </div>
+
+                        <!-- Clubs Grid -->
+                        <div class="clubs-grid" id="clubsGrid" style="padding: 2rem;">
+                            <div class="loading-container">
+                                <div class="loading-spinner"></div>
+                                <p class="loading-text">Loading clubs...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>

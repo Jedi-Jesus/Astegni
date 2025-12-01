@@ -1,0 +1,29 @@
+# Core packages
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+sqlalchemy==2.0.23
+
+# Database driver (psycopg3)
+psycopg[binary]>=3.2.3
+
+# Authentication
+PyJWT==2.8.0
+bcrypt==4.1.2
+
+# Form handling and validation
+python-multipart==0.0.6
+email-validator==2.1.0.post1
+python-dotenv==1.0.0
+
+# Pydantic
+pydantic==2.4.2
+
+# Cloud storage (Backblaze B2)
+b2sdk
+
+# Email and SMS services
+aiosmtplib==3.0.1
+twilio==9.0.4
+
+# Rate limiting
+slowapi==0.1.9

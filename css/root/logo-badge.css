@@ -1,0 +1,173 @@
+/* ============================================
+   LOGO AND BADGE STYLES
+   ============================================ */
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--button-bg);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.logo-text:hover {
+    color: var(--button-hover);
+}
+
+.logo-badge {
+    padding: 0.25rem 0.5rem;
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: white;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Badge Styles */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.badge-primary {
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: white;
+}
+
+.badge-secondary {
+    background: var(--card-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+}
+
+.badge-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+}
+
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border-radius: 9999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    border: 2px solid var(--background);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+/* Verified Badge */
+.verified-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+}
+
+/* Role Badge */
+.role-badge {
+    padding: 0.375rem 0.875rem;
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: white;
+    border-radius: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    box-shadow: 0 2px 8px rgba(var(--button-bg-rgb), 0.3);
+}
+
+.role-badge-icon {
+    font-size: 1rem;
+}
+
+/* Status Badges */
+.status-online {
+    position: relative;
+}
+
+.status-online::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 0.75rem;
+    height: 0.75rem;
+    background: #10b981;
+    border: 2px solid var(--background);
+    border-radius: 50%;
+}
+
+.status-offline::after {
+    background: #6b7280;
+}
+
+.status-busy::after {
+    background: #f59e0b;
+}
+
+/* Dark mode adjustments */
+[data-theme="dark"] .logo-text {
+    color: var(--button-bg);
+}
+
+[data-theme="dark"] .badge-secondary {
+    background: var(--card-bg);
+    border-color: rgba(255, 213, 79, 0.2);
+}
+
+[data-theme="dark"] .notification-badge {
+    border-color: var(--background);
+}

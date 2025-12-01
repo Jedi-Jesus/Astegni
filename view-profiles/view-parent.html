@@ -1,0 +1,2829 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - View Parent Profile</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/view-parent.css">
+    <!-- Shared Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Profile Dropdown Fix - MUST load last -->
+    <link rel="stylesheet" href="../css/view-parent/profile-specific-fix.css">
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-container" style="max-width: 100%; padding: 0 1rem;">
+            <div class="nav-brand">
+                <button class="sidebar-toggle" id="hamburger" aria-label="Toggle sidebar" onclick="toggleSidebar()">
+                    <span class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+                <a href="../index.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">View Parent</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <!-- Right Section: Nav Menu + Actions -->
+            <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0;">
+                <div class="nav-items" style="display: flex; gap: 0.25rem;">
+                    <a class="nav-link" href="../index.html">
+                        <span class="nav-icon">🏠</span> Home
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'news')">
+                        <span class="nav-icon">📰</span> News
+                    </a>
+                    <a class="nav-link" href="../branch/find-tutors.html">
+                        <span class="nav-icon">👨‍🏫</span> Find Tutors
+                    </a>
+                    <a class="nav-link" href="../branch/reels.html">
+                        <span class="nav-icon">🎬</span> Reels
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'store')">
+                        <span class="nav-icon">📚</span> Bookstore
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                        <span class="nav-icon">💼</span> Find a Job
+                    </a>
+                </div>
+                <!-- Profile container -->
+                <div id="profile-container" class="profile-dropdown-container">
+                    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                        onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic" alt="Profile">
+                        <span id="profile-name" class="profile-name"></span>
+                        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+                        <!-- User info header - CLICKABLE to go to profile page -->
+                        <a href="#" id="dropdown-profile-link" class="dropdown-header-link">
+                            <div class="dropdown-header">
+                                <img id="dropdown-profile-pic" class="profile-pic" alt="Profile">
+                                <div class="dropdown-user-info">
+                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                </div>
+                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <!-- Role switcher (shown only if user has multiple roles) -->
+                        <div id="role-switcher-section" class="role-switcher-section hidden">
+                            <div class="dropdown-item-header">Switch Role</div>
+                            <div id="role-options" class="role-options">
+                                <!-- Role options will be dynamically added here -->
+                            </div>
+                            <div class="dropdown-divider"></div>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <button class="dropdown-item logout-item" onclick="logout()">
+                            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notification Icon -->
+                <button class="icon-btn" aria-label="Notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span class="notification-badge">5</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
+                    <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Top Advertisement Placeholder -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
+        <div class="ad-animation">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+        </div>
+        <div class="ad-content">
+            <span class="ad-label">Advertisement</span>
+            <h3 class="ad-title">Premium Tutoring Services</h3>
+            <p class="ad-text">Find the best tutors for your children</p>
+            <button class="ad-cta" onclick="openAdAnalyticsModal()">Learn More</button>
+        </div>
+        <div class="ad-visual">
+            <div class="ad-circles">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+                <div class="circle circle-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container" style="position: fixed; left: -280px; top: 72px; width: 280px; height: calc(100vh - 72px); background: var(--card-bg); box-shadow: 2px 0 10px rgba(0,0,0,0.1); transition: left 0.3s ease; z-index: 1000; overflow-y: auto;">
+        <div class="sidebar-content" style="padding: 1.5rem;">
+            <div class="sidebar-nav">
+                <h3 style="margin-bottom: 1.5rem; font-size: 1.25rem; font-weight: 700; color: var(--heading);">Parent Profile</h3>
+
+                <a href="#" onclick="switchPanel(event, 'dashboard'); return false;" class="sidebar-link active" data-panel="dashboard">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'children-profiles'); return false;" class="sidebar-link" data-panel="children-profiles">
+                    <span class="sidebar-icon">👨‍👩‍👧‍👦</span>
+                    <span>Children Profiles</span>
+                    <span class="badge-count">3</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'blog'); return false;" class="sidebar-link" data-panel="blog">
+                    <span class="sidebar-icon">📝</span>
+                    <span>Blog</span>
+                    <span class="badge-count">7</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'clubs'); return false;" class="sidebar-link" data-panel="clubs">
+                    <span class="sidebar-icon">🎭</span>
+                    <span>Clubs</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'events'); return false;" class="sidebar-link" data-panel="events">
+                    <span class="sidebar-icon">📅</span>
+                    <span>Events</span>
+                </a>
+                <a href="#" onclick="switchPanel(event, 'reviews-ratings'); return false;" class="sidebar-link" data-panel="reviews-ratings">
+                    <span class="sidebar-icon">⭐</span>
+                    <span>Reviews & Ratings</span>
+                    <span class="badge-count">45</span>
+                </a>                
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999;" onclick="toggleSidebar()"></div>
+
+
+
+    <!-- Main Content -->
+    <section class="py-8" style="padding-top: 1rem;">
+        <div class="container mx-auto px-4">
+
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1" style="min-width: 0;">
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+
+            <!-- Hero Section -->
+            <section class="hero-section animate__animated animate__fadeIn">
+                <h2 class="hero-title">
+                    <span id="typedText">Dedicated Parent • Supporting Educational Excellence</span>
+                    <span id="cursor" class="cursor-blink">|</span>
+                </h2>
+                <p id="hero-subtitle" class="hero-subtitle">Actively involved in children's academic journey and development</p>
+                <div class="hero-stats">
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                        <span class="stat-number" data-target="3" data-suffix="">0</span>
+                        <span class="stat-label">Children</span>
+                    </div>
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+                        <span class="stat-number" data-target="92" data-suffix="%">0</span>
+                        <span class="stat-label">Engagement Rate</span>
+                    </div>
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                        <span class="stat-number" data-target="96" data-suffix="%">0</span>
+                        <span class="stat-label">Rating</span>
+                    </div>
+                </div>
+            </section>
+                            <!-- Profile Header Section -->
+                            <section class="profile-header-section mb-8">
+                                <div class="cover-image-container relative">
+                                    <img id="cover-img" src="../uploads/system_images/system_cover_pictures/parent-cover.webp"
+                                        alt="Cover" class="cover-img">
+                                    <div class="cover-overlay"></div>
+                                    <!-- View Mode Badge -->
+                                    <div class="view-mode-badge">
+                                        <span>👁️</span>
+                                        <span>View Mode</span>
+                                    </div>
+                                </div>
+
+                                <div class="profile-main-info">
+                                    <div class="profile-info-wrapper" style="display: flex; gap: 2rem; align-items: flex-start;">
+                                        <div class="profile-avatar-container" style="position: relative; flex-shrink: 0;">
+                                            <img id="profile-avatar" src="../uploads/system_images/system_profile_pictures/Dad-profile.jpg"
+                                                alt="Parent Profile" class="profile-avatar">
+                                            <span class="online-indicator"></span>
+                                        </div>
+
+                                        <div class="profile-details-section" style="flex: 1; padding-top: 1.5rem;">
+                                            <div class="profile-name-row" style="margin-bottom: 1.25rem;">
+                                                <h1 class="profile-name" id="parentName" style="margin-bottom: 0.5rem; white-space: nowrap !important; word-break: keep-all !important; max-width: none !important; width: auto !important; display: inline-block !important;">Mulugeta Alemu</h1>
+                                                <!-- Username field under name -->
+                                                <div id="parentUsername"
+                                                    style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1rem;">
+                                                    <!-- Username will be populated dynamically -->
+                                                </div>
+                                            <div class="badges-row" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; margin-top: 1rem;">
+                                                <span class="profile-badge verified" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white;">✔ Verified Parent</span>
+                                                <span class="profile-badge relationship" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white;">👨‍👩‍👧‍👦 Father</span>
+                                                <span class="profile-badge expert" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white;">📈 92% Engagement</span>
+                                            </div>
+                                            </div>
+
+                                            <div class="rating-section" style="margin-bottom: 1rem;">
+                                                <div class="rating-wrapper" style="display: flex; align-items: center; gap: 0.75rem;">
+                                                    <div class="rating-tooltip-container">
+                                                        <div class="rating-stars" style="color: #f59e0b; font-size: 1.5rem;">★★★★★</div>
+                                                        <div class="rating-tooltip">
+                                                            <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600; color: var(--heading);">Rating Breakdown</h4>
+
+                                                            <div class="rating-metric">
+                                                                <div class="metric-header">
+                                                                    <span class="metric-label">Engagement with Tutor</span>
+                                                                    <span class="metric-score">4.6</span>
+                                                                </div>
+                                                                <div class="metric-bar">
+                                                                    <div class="metric-fill" style="width: 92%"></div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="rating-metric">
+                                                                <div class="metric-header">
+                                                                    <span class="metric-label">Engagement with Child</span>
+                                                                    <span class="metric-score">4.8</span>
+                                                                </div>
+                                                                <div class="metric-bar">
+                                                                    <div class="metric-fill" style="width: 96%"></div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="rating-metric">
+                                                                <div class="metric-header">
+                                                                    <span class="metric-label">Responsiveness</span>
+                                                                    <span class="metric-score">4.9</span>
+                                                                </div>
+                                                                <div class="metric-bar">
+                                                                    <div class="metric-fill" style="width: 98%"></div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="rating-metric">
+                                                                <div class="metric-header">
+                                                                    <span class="metric-label">Payment Consistency</span>
+                                                                    <span class="metric-score">5.0</span>
+                                                                </div>
+                                                                <div class="metric-bar">
+                                                                    <div class="metric-fill" style="width: 100%"></div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <span class="rating-value" style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4.8</span>
+                                                    <span class="rating-count" style="color: var(--text-secondary); font-size: 0.95rem;">(45 tutor reviews)</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-location" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px; margin-bottom: 0.75rem;">
+                                                <span class="location-icon" style="font-size: 1.25rem;">📍</span>
+                                                <span style="color: var(--text); font-size: 0.95rem;">Addis Ababa, Ethiopia | Parent of 3 Students</span>
+                                            </div>
+
+                                            <!-- Relationship & Occupation (Contact Info Style) -->
+                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">👤</span>
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Relationship</div>
+                                                        <div style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Father</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">💼</span>
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Occupation</div>
+                                                        <div style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Software Engineer</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Contact Information (Email & Phone) -->
+                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">📧</span>
+                                                    <div style="flex: 1; overflow: hidden;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Email</div>
+                                                        <div style="color: var(--text); font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">mulugeta.alemu@email.com</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">📱</span>
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Phone</div>
+                                                        <div style="color: var(--text); font-size: 0.875rem; font-weight: 500;">+251 911 234567</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-quote" style="background: linear-gradient(135deg, rgba(79,70,229,0.1) 0%, rgba(124,58,237,0.05) 100%); border-left: 4px solid #4f46e5; border-radius: 12px; padding: 1.25rem 1.5rem; margin-top: 1.5rem; font-style: italic; color: var(--text);">
+                                                <span>"Investing in my children's education for a brighter future"</span>
+                                            </div>
+
+                                            <!-- Action Buttons -->
+                                            <div class="profile-actions" style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                                                <button onclick="openConnectModal()" class="btn-primary" style="flex: 1; min-width: 160px; padding: 0.875rem 1.5rem; font-weight: 600; border-radius: 12px; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; border: none; cursor: pointer;">
+                                                    🤝 Connect
+                                                </button>
+                                                <button onclick="openMessageModal()" class="btn-secondary" style="flex: 1; min-width: 160px; padding: 0.875rem 1.5rem; font-weight: 600; border-radius: 12px; background: transparent; color: var(--text); border: 2px solid rgba(var(--border-rgb), 0.3); cursor: pointer;">
+                                                    💬 Message
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- About Section -->
+                            <section style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--heading);">About This Parent</h3>
+                                <p style="color: var(--text); line-height: 1.7;">Mulugeta Alemu is a dedicated parent of three children, actively involved in their educational journey. With a strong commitment to providing quality education, he maintains regular communication with tutors, monitors academic progress closely, and ensures timely payment for all educational services. His engagement level and support have contributed significantly to his children's academic success.</p>
+                            </section>
+
+                            <!-- Parent Statistics Section -->
+                            <section style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--heading);">Parent Statistics</h2>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(102,126,234,0.1), rgba(118,75,162,0.05)); border-radius: 12px; text-align: center;">
+                                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">👨‍👩‍👧‍👦</div>
+                                        <div style="font-size: 2rem; font-weight: 700; color: var(--heading);">3</div>
+                                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">Children Enrolled</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">All Active</div>
+                                    </div>
+                                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(5,150,105,0.05)); border-radius: 12px; text-align: center;">
+                                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📈</div>
+                                        <div style="font-size: 2rem; font-weight: 700; color: var(--heading);">92%</div>
+                                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">Engagement Rate</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Excellent</div>
+                                    </div>
+                                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(124,58,237,0.05)); border-radius: 12px; text-align: center;">
+                                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💳</div>
+                                        <div style="font-size: 2rem; font-weight: 700; color: var(--heading);">100%</div>
+                                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">Payment Punctuality</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Always On Time</div>
+                                    </div>
+                                    <div style="padding: 1.5rem; background: linear-gradient(135deg, rgba(234,179,8,0.1), rgba(202,138,4,0.05)); border-radius: 12px; text-align: center;">
+                                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⭐</div>
+                                        <div style="font-size: 2rem; font-weight: 700; color: var(--heading);">4.8</div>
+                                        <div style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">Parent Rating</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">From Tutors</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Reviews & Ratings Section -->
+                            <section style="background: var(--card-bg); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                                    <h2 style="font-size: 1.75rem; font-weight: 700; margin: 0; color: var(--heading); display: flex; align-items: center; gap: 0.75rem;">
+                                        <span>⭐</span> Reviews & Ratings
+                                    </h2>
+                                    <button onclick="viewAllReviews()" style="background: var(--button-bg); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                                        View All
+                                    </button>
+                                </div>
+
+                                <!-- Reviews Grid -->
+                                <div style="display: grid; gap: 1.5rem;">
+                                    <!-- Review 1 -->
+                                    <div style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid #f59e0b;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                                <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg" alt="Tutor" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                                                <div>
+                                                    <h4 style="font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">Dr. Almaz Tesfaye</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">Mathematics Tutor</p>
+                                                </div>
+                                            </div>
+                                            <div class="rating-tooltip-container">
+                                                <div style="color: #f59e0b; font-size: 1.25rem;">★★★★★</div>
+                                                <div class="rating-tooltip">
+                                                    <div class="tooltip-header">Dr. Almaz's Rating</div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Engagement with Tutor</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-tutor" style="width: 100%;"></div></div>
+                                                        <div class="tooltip-progress-value">5.0</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Engagement with Child</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-child" style="width: 100%;"></div></div>
+                                                        <div class="tooltip-progress-value">5.0</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Responsiveness</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill responsiveness" style="width: 100%;"></div></div>
+                                                        <div class="tooltip-progress-value">5.0</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Payment Consistency</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill payment" style="width: 100%;"></div></div>
+                                                        <div class="tooltip-progress-value">5.0</div>
+                                                    </div>
+                                                    <div class="tooltip-overall">
+                                                        <div class="tooltip-overall-label">Overall</div>
+                                                        <div class="tooltip-overall-value">5.0 / 5.0</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p style="color: var(--text); line-height: 1.6; margin: 0 0 0.75rem 0;">"Excellent parent! Very supportive and actively involved in children's education. Always ensures timely communication and payment. The children are well-prepared and motivated."</p>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">2 weeks ago</span>
+                                    </div>
+
+                                    <!-- Review 2 -->
+                                    <div style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid #3b82f6;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                                <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg" alt="Tutor" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                                                <div>
+                                                    <h4 style="font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">Yohannes Bekele</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">Physics Tutor</p>
+                                                </div>
+                                            </div>
+                                            <div class="rating-tooltip-container">
+                                                <div style="color: #f59e0b; font-size: 1.25rem;">★★★★★</div>
+                                                <div class="rating-tooltip">
+                                                    <div class="tooltip-header">Yohannes's Rating</div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Engagement with Tutor</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-tutor" style="width: 90%;"></div></div>
+                                                        <div class="tooltip-progress-value">4.5</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Engagement with Child</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-child" style="width: 100%;"></div></div>
+                                                        <div class="tooltip-progress-value">5.0</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Responsiveness</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill responsiveness" style="width: 100%;"></div></div>
+                                                        <div class="tooltip-progress-value">5.0</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Payment Consistency</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill payment" style="width: 100%;"></div></div>
+                                                        <div class="tooltip-progress-value">5.0</div>
+                                                    </div>
+                                                    <div class="tooltip-overall">
+                                                        <div class="tooltip-overall-label">Overall</div>
+                                                        <div class="tooltip-overall-value">4.9 / 5.0</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p style="color: var(--text); line-height: 1.6; margin: 0 0 0.75rem 0;">"Great engagement from this parent. Shows genuine interest in the learning process and provides a conducive environment for studies. Highly recommended!"</p>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">1 month ago</span>
+                                    </div>
+
+                                    <!-- Review 3 -->
+                                    <div style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; border-left: 4px solid #10b981;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                                <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg" alt="Tutor" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover;">
+                                                <div>
+                                                    <h4 style="font-size: 1rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">Hanna Solomon</h4>
+                                                    <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">English Tutor</p>
+                                                </div>
+                                            </div>
+                                            <div class="rating-tooltip-container">
+                                                <div style="color: #f59e0b; font-size: 1.25rem;">★★★★☆</div>
+                                                <div class="rating-tooltip">
+                                                    <div class="tooltip-header">Hanna's Rating</div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Engagement with Tutor</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-tutor" style="width: 80%;"></div></div>
+                                                        <div class="tooltip-progress-value">4.0</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Engagement with Child</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-child" style="width: 90%;"></div></div>
+                                                        <div class="tooltip-progress-value">4.5</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Responsiveness</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill responsiveness" style="width: 80%;"></div></div>
+                                                        <div class="tooltip-progress-value">4.0</div>
+                                                    </div>
+                                                    <div class="tooltip-rating-row">
+                                                        <div class="tooltip-rating-label">Payment Consistency</div>
+                                                        <div class="tooltip-progress-bar"><div class="tooltip-progress-fill payment" style="width: 100%;"></div></div>
+                                                        <div class="tooltip-progress-value">5.0</div>
+                                                    </div>
+                                                    <div class="tooltip-overall">
+                                                        <div class="tooltip-overall-label">Overall</div>
+                                                        <div class="tooltip-overall-value">4.4 / 5.0</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p style="color: var(--text); line-height: 1.6; margin: 0 0 0.75rem 0;">"Very responsible parent who values education. Good communication and follows up on children's progress regularly. A pleasure to work with!"</p>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">2 months ago</span>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <!-- Children Profiles Panel -->
+                        <div id="children-profiles-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">Children Profiles</h2>
+                                <p style="color: var(--text-secondary);">View detailed profiles and academic progress of all children</p>
+                            </div>
+
+                            <div class="children-cards-grid">
+                                <!-- Child Card 1 - Abebe -->
+                                <div class="child-card">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                        <img src="../uploads/system_images/system_profile_pictures/student-teenage-boy.jpg" alt="Abebe" class="child-avatar">
+                                        <div style="flex: 1;">
+                                            <a href="view-student.html" style="text-decoration: none;">
+                                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--heading); cursor: pointer; transition: color 0.2s ease;" onmouseover="this.style.color='var(--button-bg)'" onmouseout="this.style.color='var(--heading)'">Abebe Alemu</h3>
+                                            </a>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">Grade 10 • Age 16</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="child-stats">
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">3.8</span>
+                                            <span class="child-stat-label">GPA</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">92%</span>
+                                            <span class="child-stat-label">Attendance</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">5</span>
+                                            <span class="child-stat-label">Subjects</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">A-</span>
+                                            <span class="child-stat-label">Grade</span>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-top: 1.5rem;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                            <span style="font-size: 0.875rem; color: var(--text);">Overall Progress</span>
+                                            <span style="font-size: 0.875rem; font-weight: 600; color: var(--heading);">85%</span>
+                                        </div>
+                                        <div class="child-progress-bar">
+                                            <div class="child-progress-fill" style="width: 85%"></div>
+                                        </div>
+                                    </div>
+
+                                    <button onclick="viewChildProfile(1)" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        View Full Profile
+                                    </button>
+                                </div>
+
+                                <!-- Child Card 2 - Sara -->
+                                <div class="child-card">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                        <img src="../uploads/system_images/system_profile_pictures/student-teenage-girl.jpg" alt="Sara" class="child-avatar">
+                                        <div style="flex: 1;">
+                                            <a href="view-student.html" style="text-decoration: none;">
+                                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--heading); cursor: pointer; transition: color 0.2s ease;" onmouseover="this.style.color='var(--button-bg)'" onmouseout="this.style.color='var(--heading)'">Sara Alemu</h3>
+                                            </a>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">Grade 8 • Age 14</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="child-stats">
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">3.9</span>
+                                            <span class="child-stat-label">GPA</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">96%</span>
+                                            <span class="child-stat-label">Attendance</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">6</span>
+                                            <span class="child-stat-label">Subjects</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">A</span>
+                                            <span class="child-stat-label">Grade</span>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-top: 1.5rem;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                            <span style="font-size: 0.875rem; color: var(--text);">Overall Progress</span>
+                                            <span style="font-size: 0.875rem; font-weight: 600; color: var(--heading);">92%</span>
+                                        </div>
+                                        <div class="child-progress-bar">
+                                            <div class="child-progress-fill" style="width: 92%"></div>
+                                        </div>
+                                    </div>
+
+                                    <button onclick="viewChildProfile(2)" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        View Full Profile
+                                    </button>
+                                </div>
+
+                                <!-- Child Card 3 - Merhawi -->
+                                <div class="child-card">
+                                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                                        <img src="../uploads/system_images/system_profile_pictures/student-kid-boy.jpg" alt="Merhawi" class="child-avatar">
+                                        <div style="flex: 1;">
+                                            <a href="view-student.html" style="text-decoration: none;">
+                                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.25rem; color: var(--heading); cursor: pointer; transition: color 0.2s ease;" onmouseover="this.style.color='var(--button-bg)'" onmouseout="this.style.color='var(--heading)'">Merhawi Alemu</h3>
+                                            </a>
+                                            <p style="font-size: 0.875rem; color: var(--text-secondary);">Grade 5 • Age 11</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="child-stats">
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">3.7</span>
+                                            <span class="child-stat-label">GPA</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">88%</span>
+                                            <span class="child-stat-label">Attendance</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">4</span>
+                                            <span class="child-stat-label">Subjects</span>
+                                        </div>
+                                        <div class="child-stat-item">
+                                            <span class="child-stat-value">B+</span>
+                                            <span class="child-stat-label">Grade</span>
+                                        </div>
+                                    </div>
+
+                                    <div style="margin-top: 1.5rem;">
+                                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                            <span style="font-size: 0.875rem; color: var(--text);">Overall Progress</span>
+                                            <span style="font-size: 0.875rem; font-weight: 600; color: var(--heading);">78%</span>
+                                        </div>
+                                        <div class="child-progress-bar">
+                                            <div class="child-progress-fill" style="width: 78%"></div>
+                                        </div>
+                                    </div>
+
+                                    <button onclick="viewChildProfile(3)" style="width: 100%; margin-top: 1.5rem; padding: 0.75rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        View Full Profile
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Other panels placeholders -->
+                        <div id="blog-panel" class="panel-content">
+                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Blog Posts</h2>
+
+                            <!-- Loading State -->
+                            <div id="blog-loading" style="display: none; text-align: center; padding: 3rem;">
+                                <div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                                <p style="color: var(--text-secondary);">Loading blog posts...</p>
+                            </div>
+
+                            <!-- Blog Posts Grid -->
+                            <div id="blog-posts-grid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                                <!-- Blog cards will be inserted here dynamically -->
+                            </div>
+
+                            <!-- Empty State -->
+                            <div id="blog-empty-state" style="display: none; text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 16px; border: 2px dashed var(--border-color);">
+                                <div style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.5;">📝</div>
+                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">No Blogs Yet</h3>
+                                <p style="color: var(--text-secondary);">This parent hasn't published any blog posts yet.</p>
+                            </div>
+
+                            <!-- Error State -->
+                            <div id="blog-error-state" style="display: none; text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 16px; border: 2px solid #ef4444;">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #ef4444;">Failed to Load Blogs</h3>
+                                <p style="color: var(--text-secondary); margin-bottom: 1rem;" id="blog-error-message">Unable to load blog posts. Please try again later.</p>
+                                <button onclick="loadBlogPosts()" style="padding: 0.75rem 1.5rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Try Again
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="clubs-panel" class="panel-content">
+                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Clubs & Activities</h2>
+                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Clubs created by this parent</p>
+
+                            <!-- Loading State -->
+                            <div id="clubs-loading" style="text-align: center; padding: 3rem;">
+                                <div style="display: inline-block; width: 50px; height: 50px; border: 4px solid rgba(var(--button-bg-rgb), 0.2); border-top-color: var(--button-bg); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                                <p style="margin-top: 1rem; color: var(--text-secondary);">Loading clubs...</p>
+                            </div>
+
+                            <!-- Clubs Grid -->
+                            <div id="clubs-grid" style="display: none;"></div>
+
+                            <!-- Empty State -->
+                            <div id="clubs-empty-state" style="display: none; text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 16px; border: 2px dashed var(--border-color);">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">🎭</div>
+                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">No Clubs Yet</h3>
+                                <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">This parent hasn't created any clubs yet.</p>
+                            </div>
+
+                            <!-- Error State -->
+                            <div id="clubs-error-state" style="display: none; text-align: center; padding: 3rem; background: var(--card-bg); border-radius: 16px; border: 2px solid #ef4444;">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: #ef4444;">Unable to Load Clubs</h3>
+                                <p id="clubs-error-message" style="color: var(--text-secondary); margin-bottom: 1.5rem;"></p>
+                                <button onclick="loadClubsData()" style="padding: 0.75rem 1.5rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                    Try Again
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="events-panel" class="panel-content">
+                            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 1rem;">Events</h2>
+                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">Events and activities organized by this parent</p>
+
+                            <!-- Loading State -->
+                            <div id="events-loading" style="display: none; text-align: center; padding: 4rem 2rem;">
+                                <div style="width: 60px; height: 60px; border: 4px solid var(--border-color); border-top: 4px solid var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1.5rem;"></div>
+                                <p style="color: var(--text-secondary); font-size: 1.125rem;">Loading events...</p>
+                            </div>
+
+                            <!-- Events Grid -->
+                            <div id="events-grid" style="display: none; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
+                                <!-- Events will be populated here -->
+                            </div>
+
+                            <!-- Empty State -->
+                            <div id="events-empty-state" style="display: none; text-align: center; padding: 4rem 2rem;">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
+                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">No Events Yet</h3>
+                                <p style="color: var(--text-secondary);">This parent hasn't created any events yet.</p>
+                            </div>
+
+                            <!-- Error State -->
+                            <div id="events-error-state" style="display: none; text-align: center; padding: 4rem 2rem;">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                                <h3 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Error Loading Events</h3>
+                                <p id="events-error-message" style="color: var(--text-secondary); margin-bottom: 2rem;">Something went wrong. Please try again later.</p>
+                                <button onclick="loadEventsData()" style="padding: 0.75rem 1.5rem; background: var(--button-bg); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                    Try Again
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Reviews & Ratings Panel -->
+                        <div id="reviews-ratings-panel" class="panel-content">
+                            <div style="margin-bottom: 2rem;">
+                                <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--heading);">
+                                    <span style="display: inline-flex; align-items: center; gap: 0.75rem;">
+                                        <span>⭐</span> Reviews & Ratings
+                                    </span>
+                                </h2>
+                                <p style="color: var(--text-secondary);">See what tutors are saying about this parent</p>
+                            </div>
+
+                            <!-- Rating Overview Card -->
+                            <section style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; box-shadow: 0 4px 16px rgba(245,158,11,0.3); color: white;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
+                                    <div style="flex: 1; min-width: 200px;">
+                                        <div style="font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; opacity: 0.95;">Overall Parent Rating</div>
+                                        <div style="display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                            <div style="font-size: 3.5rem; font-weight: 700; line-height: 1;">4.8</div>
+                                            <div style="font-size: 1.25rem; opacity: 0.9;">/ 5.0</div>
+                                        </div>
+                                        <div style="color: rgba(255,255,255,0.95); font-size: 1rem; margin-bottom: 1rem;">
+                                            ★★★★★
+                                        </div>
+                                        <div style="font-size: 0.95rem; opacity: 0.9;">Based on 45 tutor reviews</div>
+                                    </div>
+
+                                    <div style="flex: 2; min-width: 300px;">
+                                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                            <!-- Engagement with Tutor -->
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <span style="font-size: 0.875rem; width: 160px;">Engagement w/ Tutor</span>
+                                                <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                                                    <div style="height: 100%; width: 96%; background: white; border-radius: 4px;"></div>
+                                                </div>
+                                                <span style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">4.8</span>
+                                            </div>
+                                            <!-- Engagement with Student -->
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <span style="font-size: 0.875rem; width: 160px;">Engagement w/ Student</span>
+                                                <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                                                    <div style="height: 100%; width: 94%; background: white; border-radius: 4px;"></div>
+                                                </div>
+                                                <span style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">4.7</span>
+                                            </div>
+                                            <!-- Responsiveness -->
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <span style="font-size: 0.875rem; width: 160px;">Responsiveness</span>
+                                                <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                                                    <div style="height: 100%; width: 98%; background: white; border-radius: 4px;"></div>
+                                                </div>
+                                                <span style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">4.9</span>
+                                            </div>
+                                            <!-- Payment History -->
+                                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                                <span style="font-size: 0.875rem; width: 160px;">Payment History</span>
+                                                <div style="flex: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden;">
+                                                    <div style="height: 100%; width: 100%; background: white; border-radius: 4px;"></div>
+                                                </div>
+                                                <span style="font-size: 0.875rem; width: 40px; text-align: right; font-weight: 600;">5.0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Filter & Sort Controls -->
+                            <div style="background: var(--card-bg); border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                        <button onclick="filterReviews('all')" class="filter-btn active" data-filter="all" style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid var(--button-bg); background: var(--button-bg); color: white; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                                            All (45)
+                                        </button>
+                                        <button onclick="filterReviews('5')" class="filter-btn" data-filter="5" style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                                            5 Stars (37)
+                                        </button>
+                                        <button onclick="filterReviews('4')" class="filter-btn" data-filter="4" style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                                            4 Stars (6)
+                                        </button>
+                                        <button onclick="filterReviews('3')" class="filter-btn" data-filter="3" style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.3s;">
+                                            3 Stars (2)
+                                        </button>
+                                    </div>
+                                    <select onchange="sortReviews(this.value)" style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid rgba(var(--border-rgb), 0.3); background: var(--card-bg); color: var(--text); font-size: 0.875rem; cursor: pointer;">
+                                        <option value="recent">Most Recent</option>
+                                        <option value="helpful">Most Helpful</option>
+                                        <option value="highest">Highest Rating</option>
+                                        <option value="lowest">Lowest Rating</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Reviews List -->
+                            <div id="reviews-list" style="display: grid; gap: 1.5rem;">
+                                <!-- Review 1 - Featured/Helpful -->
+                                <div class="review-card" data-rating="5" style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #f59e0b;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
+                                        <div style="display: flex; gap: 1rem; align-items: center;">
+                                            <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg" alt="Tutor" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover; border: 3px solid #f59e0b;">
+                                            <div>
+                                                <h4 style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">Dr. Almaz Tesfaye</h4>
+                                                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">Mathematics Tutor • 5 years experience</p>
+                                                <div class="rating-tooltip-container" style="display: inline-block;">
+                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★★</div>
+                                                    <div class="rating-tooltip">
+                                                        <div class="tooltip-header">Dr. Almaz's Rating</div>
+                                                        <div class="tooltip-rating-row">
+                                                            <div class="tooltip-rating-label">Engagement with Tutor</div>
+                                                            <div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-tutor" style="width: 100%;"></div></div>
+                                                            <div class="tooltip-progress-value">5.0</div>
+                                                        </div>
+                                                        <div class="tooltip-rating-row">
+                                                            <div class="tooltip-rating-label">Engagement with Child</div>
+                                                            <div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-child" style="width: 100%;"></div></div>
+                                                            <div class="tooltip-progress-value">5.0</div>
+                                                        </div>
+                                                        <div class="tooltip-rating-row">
+                                                            <div class="tooltip-rating-label">Responsiveness</div>
+                                                            <div class="tooltip-progress-bar"><div class="tooltip-progress-fill responsiveness" style="width: 100%;"></div></div>
+                                                            <div class="tooltip-progress-value">5.0</div>
+                                                        </div>
+                                                        <div class="tooltip-rating-row">
+                                                            <div class="tooltip-rating-label">Payment Consistency</div>
+                                                            <div class="tooltip-progress-bar"><div class="tooltip-progress-fill payment" style="width: 100%;"></div></div>
+                                                            <div class="tooltip-progress-value">5.0</div>
+                                                        </div>
+                                                        <div class="tooltip-overall">
+                                                            <div class="tooltip-overall-label">Overall</div>
+                                                            <div class="tooltip-overall-value">5.0 / 5.0</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                                ⭐ Featured Review
+                                            </div>
+                                            <span style="font-size: 0.875rem; color: var(--text-muted);">2 weeks ago</span>
+                                        </div>
+                                    </div>
+                                    <p style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">"Excellent parent! Very supportive and actively involved in children's education. Always ensures timely communication and payment. The children are well-prepared and motivated for each session. Working with this family has been a truly rewarding experience. Highly recommended!"</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
+                                        <div style="display: flex; gap: 1rem;">
+                                            <button onclick="markHelpful(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>👍</span> Helpful (23)
+                                            </button>
+                                            <button onclick="reportReview(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>🚩</span> Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Review 2 -->
+                                <div class="review-card" data-rating="5" style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #3b82f6;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
+                                        <div style="display: flex; gap: 1rem; align-items: center;">
+                                            <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg" alt="Tutor" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
+                                            <div>
+                                                <h4 style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">Yohannes Bekele</h4>
+                                                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">Physics Tutor • 3 years experience</p>
+                                                <div class="rating-tooltip-container" style="display: inline-block;">
+                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★★</div>
+                                                    <div class="rating-tooltip">
+                                                        <div class="tooltip-header">Yohannes's Rating</div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Engagement with Tutor</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-tutor" style="width: 90%;"></div></div><div class="tooltip-progress-value">4.5</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Engagement with Child</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-child" style="width: 100%;"></div></div><div class="tooltip-progress-value">5.0</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Responsiveness</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill responsiveness" style="width: 100%;"></div></div><div class="tooltip-progress-value">5.0</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Payment Consistency</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill payment" style="width: 100%;"></div></div><div class="tooltip-progress-value">5.0</div></div>
+                                                        <div class="tooltip-overall"><div class="tooltip-overall-label">Overall</div><div class="tooltip-overall-value">4.9 / 5.0</div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">1 month ago</span>
+                                    </div>
+                                    <p style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">"Great engagement from this parent. Shows genuine interest in the learning process and provides a conducive environment for studies. The children are disciplined and respectful. Payment is always on time. Highly recommended!"</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
+                                        <div style="display: flex; gap: 1rem;">
+                                            <button onclick="markHelpful(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>👍</span> Helpful (18)
+                                            </button>
+                                            <button onclick="reportReview(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>🚩</span> Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Review 3 -->
+                                <div class="review-card" data-rating="4" style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #10b981;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
+                                        <div style="display: flex; gap: 1rem; align-items: center;">
+                                            <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg" alt="Tutor" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
+                                            <div>
+                                                <h4 style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">Hanna Solomon</h4>
+                                                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">English Tutor • 4 years experience</p>
+                                                <div class="rating-tooltip-container" style="display: inline-block;">
+                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★☆</div>
+                                                    <div class="rating-tooltip">
+                                                        <div class="tooltip-header">Hanna's Rating</div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Engagement with Tutor</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-tutor" style="width: 80%;"></div></div><div class="tooltip-progress-value">4.0</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Engagement with Child</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-child" style="width: 90%;"></div></div><div class="tooltip-progress-value">4.5</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Responsiveness</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill responsiveness" style="width: 80%;"></div></div><div class="tooltip-progress-value">4.0</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Payment Consistency</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill payment" style="width: 100%;"></div></div><div class="tooltip-progress-value">5.0</div></div>
+                                                        <div class="tooltip-overall"><div class="tooltip-overall-label">Overall</div><div class="tooltip-overall-value">4.4 / 5.0</div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">2 months ago</span>
+                                    </div>
+                                    <p style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">"Very responsible parent who values education. Good communication and follows up on children's progress regularly. A pleasure to work with! Would appreciate more advance notice for schedule changes."</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
+                                        <div style="display: flex; gap: 1rem;">
+                                            <button onclick="markHelpful(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>👍</span> Helpful (12)
+                                            </button>
+                                            <button onclick="reportReview(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>🚩</span> Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Review 4 -->
+                                <div class="review-card" data-rating="5" style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #8b5cf6;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
+                                        <div style="display: flex; gap: 1rem; align-items: center;">
+                                            <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg" alt="Tutor" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
+                                            <div>
+                                                <h4 style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">Dawit Hagos</h4>
+                                                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">Chemistry Tutor • 6 years experience</p>
+                                                <div class="rating-tooltip-container" style="display: inline-block;">
+                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★★</div>
+                                                    <div class="rating-tooltip">
+                                                        <div class="tooltip-header">Dawit's Rating</div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Engagement with Tutor</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-tutor" style="width: 96%;"></div></div><div class="tooltip-progress-value">4.8</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Engagement with Child</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-child" style="width: 100%;"></div></div><div class="tooltip-progress-value">5.0</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Responsiveness</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill responsiveness" style="width: 96%;"></div></div><div class="tooltip-progress-value">4.8</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Payment Consistency</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill payment" style="width: 100%;"></div></div><div class="tooltip-progress-value">5.0</div></div>
+                                                        <div class="tooltip-overall"><div class="tooltip-overall-label">Overall</div><div class="tooltip-overall-value">4.9 / 5.0</div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">3 months ago</span>
+                                    </div>
+                                    <p style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">"Outstanding parent involvement! Creates an ideal learning environment for the children. They are always prepared with necessary materials and homework completed. Communication is excellent and professional. One of the best families I've worked with."</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
+                                        <div style="display: flex; gap: 1rem;">
+                                            <button onclick="markHelpful(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>👍</span> Helpful (15)
+                                            </button>
+                                            <button onclick="reportReview(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>🚩</span> Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Review 5 -->
+                                <div class="review-card" data-rating="5" style="background: var(--card-bg); border-radius: 16px; padding: 2rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #f59e0b;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.25rem;">
+                                        <div style="display: flex; gap: 1rem; align-items: center;">
+                                            <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg" alt="Tutor" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;">
+                                            <div>
+                                                <h4 style="font-size: 1.125rem; font-weight: 600; margin: 0 0 0.25rem 0; color: var(--heading);">Meron Tadesse</h4>
+                                                <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0 0 0.25rem 0;">Biology Tutor • 2 years experience</p>
+                                                <div class="rating-tooltip-container" style="display: inline-block;">
+                                                    <div style="color: #f59e0b; font-size: 1rem;">★★★★★</div>
+                                                    <div class="rating-tooltip">
+                                                        <div class="tooltip-header">Meron's Rating</div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Engagement with Tutor</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-tutor" style="width: 94%;"></div></div><div class="tooltip-progress-value">4.7</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Engagement with Child</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill engagement-child" style="width: 98%;"></div></div><div class="tooltip-progress-value">4.9</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Responsiveness</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill responsiveness" style="width: 92%;"></div></div><div class="tooltip-progress-value">4.6</div></div>
+                                                        <div class="tooltip-rating-row"><div class="tooltip-rating-label">Payment Consistency</div><div class="tooltip-progress-bar"><div class="tooltip-progress-fill payment" style="width: 100%;"></div></div><div class="tooltip-progress-value">5.0</div></div>
+                                                        <div class="tooltip-overall"><div class="tooltip-overall-label">Overall</div><div class="tooltip-overall-value">4.8 / 5.0</div></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">4 months ago</span>
+                                    </div>
+                                    <p style="color: var(--text); line-height: 1.7; margin: 0 0 1.25rem 0; font-size: 1rem;">"Working with this parent has been wonderful. Very understanding and appreciative of tutoring efforts. Children are motivated and show genuine interest in learning. Payment is prompt and communication is clear. Definitely recommend!"</p>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid rgba(var(--border-rgb), 0.3);">
+                                        <div style="display: flex; gap: 1rem;">
+                                            <button onclick="markHelpful(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>👍</span> Helpful (9)
+                                            </button>
+                                            <button onclick="reportReview(this)" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(var(--border-rgb), 0.3); background: transparent; color: var(--text); font-size: 0.875rem; cursor: pointer; transition: all 0.3s;">
+                                                <span>🚩</span> Report
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Load More Button -->
+                            <div style="text-align: center; margin-top: 2rem;">
+                                <button onclick="loadMoreReviews()" style="padding: 0.875rem 2rem; border-radius: 12px; background: var(--button-bg); color: white; border: none; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 12px rgba(var(--button-bg-rgb), 0.3);">
+                                    Load More Reviews
+                                </button>
+                                <p style="color: var(--text-muted); font-size: 0.875rem; margin-top: 1rem;">Showing 5 of 45 reviews</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Widgets (Persistent across all panels) -->
+                <div class="admin-right-widgets"
+                    style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
+
+                    <!-- Payment Punctuality Widget -->
+                    <div class="admin-widget-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
+                        <h3 class="text-lg font-semibold mb-4" style="color: white;">💳 Payment Punctuality</h3>
+                        <div style="text-align: center; margin-bottom: 1.5rem;">
+                            <div style="width: 120px; height: 120px; margin: 0 auto; position: relative;">
+                                <svg viewBox="0 0 36 36" style="transform: rotate(-90deg);">
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="3"></circle>
+                                    <circle cx="18" cy="18" r="16" fill="none" stroke="white" stroke-width="3" stroke-dasharray="100.48" stroke-dashoffset="0" stroke-linecap="round"></circle>
+                                </svg>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                                    <div style="font-size: 2rem; font-weight: 700;">100%</div>
+                                    <div style="font-size: 0.75rem; opacity: 0.9;">On Time</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span style="font-size: 0.875rem; opacity: 0.9;">Paid on Time</span>
+                                <span style="font-weight: 600; font-size: 1rem;">20/20</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <span style="font-size: 0.875rem; opacity: 0.9;">Late Payments</span>
+                                <span style="font-weight: 600; font-size: 1rem;">0/20</span>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; text-align: center;">
+                            <div style="background: rgba(34, 197, 94, 0.2); padding: 0.5rem 1rem; border-radius: 12px; font-size: 0.875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                                <span>✅</span> Perfect Record
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parent Overview Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">👨‍👩‍👧‍👦 Parent Overview</h3>
+                        <div class="stats-container" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                            <!-- Children Count -->
+                            <div style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(37,99,235,0.05)); border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #3b82f6;">3</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Children</div>
+                            </div>
+                            <!-- Engagement Rate -->
+                            <div style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(22,163,74,0.05)); border-radius: 8px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #22c55e;">92%</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Engagement</div>
+                            </div>
+                            <!-- Parent Rating -->
+                            <div style="text-align: center; padding: 0.75rem; background: linear-gradient(135deg, rgba(245,158,11,0.1), rgba(217,119,6,0.05)); border-radius: 8px; grid-column: span 2;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4.8</div>
+                                <div style="font-size: 0.75rem; color: var(--text-secondary);">Tutor Rating</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Children Quick Stats Widget -->
+                    <div class="admin-widget-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        <h3 class="text-lg font-semibold mb-4" style="color: white;">👥 Children Overview</h3>
+                        <div class="timeline-content" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div class="timeline-item" style="display: flex; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                                <div class="timeline-dot" style="width: 12px; height: 12px; background: white; border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0; box-shadow: 0 0 10px rgba(255,255,255,0.5);"></div>
+                                <div style="flex: 1;">
+                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Abebe Alemu</p>
+                                    <p style="font-size: 0.875rem; opacity: 0.9;">Grade 10 • GPA: 3.8</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" style="display: flex; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                                <div class="timeline-dot" style="width: 12px; height: 12px; background: rgba(255,255,255,0.7); border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0;"></div>
+                                <div style="flex: 1;">
+                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Sara Alemu</p>
+                                    <p style="font-size: 0.875rem; opacity: 0.9;">Grade 8 • GPA: 3.9</p>
+                                </div>
+                            </div>
+                            <div class="timeline-item" style="display: flex; gap: 0.75rem;">
+                                <div class="timeline-dot" style="width: 12px; height: 12px; background: rgba(255,255,255,0.5); border-radius: 50%; margin-top: 0.25rem; flex-shrink: 0;"></div>
+                                <div style="flex: 1;">
+                                    <p style="font-weight: 600; margin-bottom: 0.25rem; font-size: 0.95rem;">Merhawi Alemu</p>
+                                    <p style="font-size: 0.875rem; opacity: 0.9;">Grade 5 • GPA: 3.7</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Widgets Section -->
+    <section class="bottom-widgets" style="margin-top: 3rem; margin-bottom: 3rem;">
+        <div class="container mx-auto px-4">
+            <div class="bottom-widgets-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+                
+                <!-- News Widget -->
+                <div style="padding: 1.5rem; background: var(--card-bg); border-radius: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">📰 Latest News</h3>
+                        <a href="#" style="color: var(--button-bg); text-decoration: none; font-size: 0.875rem;">View All</a>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <span style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Education</span>
+                            <span style="color: var(--text-muted); font-size: 0.875rem;">2h ago</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <img src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400" alt="News" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                        </div>
+                        <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">New Education Reforms Transform Ethiopian Schools</h4>
+                        <p style="color: var(--text); opacity: 0.8; font-size: 0.875rem; line-height: 1.6; margin-bottom: 1rem;">Latest educational initiatives are revolutionizing how students learn across Ethiopia...</p>
+                        <div style="display: flex; gap: 1rem;">
+                            <span style="font-size: 0.875rem; color: var(--text-muted);">🔥 Trending</span>
+                            <span style="font-size: 0.875rem; color: var(--text-muted);">👁️ 1.2k views</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bookstore Widget -->
+                <div class="sidebar-widget bookstore-widget card" onclick="openComingSoonModal('store')"
+                    style="cursor: pointer; padding: 1.5rem; background: var(--card-bg); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <div class="widget-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">📚 Bookstore</h3>
+                        <span style="background: var(--button-bg); color: white; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">Coming Soon</span>
+                    </div>
+
+                    <!-- Bookstore Content -->
+                    <div class="bookstore-content">
+                        <div class="bookstore-main" style="text-align: center; margin-bottom: 1.5rem;">
+                            <div class="bookstore-icon" style="font-size: 4rem; margin-bottom: 0.5rem;">📖</div>
+                            <div class="bookstore-title-animated" style="position: relative; height: 2.5rem; overflow: hidden;">
+                                <div class="bookstore-title" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--heading); position: absolute; width: 100%; opacity: 1; transition: opacity 0.6s ease, transform 0.6s ease;">Educational Books</div>
+                            </div>
+                            <div class="bookstore-subtitle" style="font-size: 1rem; color: var(--text);">Buy, Sell & Rent Textbooks</div>
+                        </div>
+                        <div class="bookstore-features"
+                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">📗</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">New Books</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">📘</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Used Books</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">💰</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Best Prices</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🚚</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Fast Delivery</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Gamestore Widget -->
+                <div class="sidebar-widget gamestore-widget card" onclick="openComingSoonModal('gamestore')"
+                    style="cursor: pointer; padding: 1.5rem; background: var(--card-bg); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <div class="widget-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">🎮 Gamestore</h3>
+                        <span style="background: var(--button-bg); color: white; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">Coming Soon</span>
+                    </div>
+                    <div class="gamestore-content">
+                        <div class="gamestore-main" style="text-align: center; margin-bottom: 1.5rem;">
+                            <div class="gamestore-icon" style="font-size: 4rem; margin-bottom: 0.5rem;">🎮</div>
+                            <div class="gamestore-title-animated" style="position: relative; height: 2.5rem; overflow: hidden;">
+                                <div class="gamestore-title" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--heading); position: absolute; width: 100%; opacity: 1; transition: opacity 0.6s ease, transform 0.6s ease;">Educational Games</div>
+                            </div>
+                            <div class="gamestore-subtitle" style="font-size: 1rem; color: var(--text);">Learn While Playing</div>
+                        </div>
+                        <div class="gamestore-features"
+                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🧮</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Puzzle Games</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🎯</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Strategy Games</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🏆</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Top Rated</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🎁</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Free to Play</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scripts -->
+    <script src="../js/root/app.js"></script>
+    <script src="../js/root/auth.js"></script>
+    <script src="../js/root/profile-system.js"></script>
+    <script src="../js/root/theme.js"></script>
+    <!-- Common Modal Loader for add-role, logout, coming-soon modals -->
+    <script src="../modals/common-modals/common-modal-loader.js"></script>
+    <script src="../js/common-modals/coming-soon-modal.js"></script>
+    <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/logout-modal.js"></script>
+
+    <script>
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize core app
+            initializeApp();
+
+            // Initialize authentication
+            const authManager = new AuthenticationManager();
+            await authManager.initialize();
+
+            // Load parent data
+            loadParentData();
+
+            // Initialize animations
+            animateStats();
+
+            // Initialize sidebar
+            initializeSidebar();
+        });
+
+        // Load parent data from database
+        async function loadParentData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const parentId = urlParams.get('id');
+            const byUserId = urlParams.get('by_user_id') === 'true';  // Check if ID is user.id
+
+            if (!parentId) {
+                console.warn('No parent ID provided in URL');
+                return;
+            }
+
+            // Show loading indicator
+            showLoadingState(true);
+
+            try {
+                console.log('Loading data for parent ID:', parentId, 'by_user_id:', byUserId);
+
+                // Build URL with by_user_id parameter if needed
+                const url = byUserId
+                    ? `https://api.astegni.com/api/parent/${parentId}?by_user_id=true`
+                    : `https://api.astegni.com/api/parent/${parentId}`;
+
+                // Fetch parent data from API
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('Parent profile not found');
+                    }
+                    throw new Error(`Failed to fetch parent data: ${response.status}`);
+                }
+
+                const parentData = await response.json();
+                console.log('Parent data loaded:', parentData);
+
+                // Update profile header with database data
+                updateProfileHeader(parentData);
+
+            } catch (error) {
+                console.error('Error loading parent data:', error);
+                // Show error message to user
+                showErrorMessage(error.message || 'Unable to load parent profile. Please try again later.');
+            } finally {
+                // Hide loading indicator
+                showLoadingState(false);
+            }
+        }
+
+        // Show/hide loading state
+        function showLoadingState(show) {
+            const profileHeader = document.querySelector('.profile-header-section');
+            if (!profileHeader) return;
+
+            if (show) {
+                // Add loading overlay
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'loading-overlay';
+                loadingOverlay.style.cssText = 'position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 100; border-radius: 20px;';
+                loadingOverlay.innerHTML = '<div style="text-align: center;"><div style="width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite;"></div><p style="margin-top: 1rem; font-weight: 600; color: #4f46e5;">Loading parent profile...</p></div>';
+                profileHeader.style.position = 'relative';
+                profileHeader.appendChild(loadingOverlay);
+
+                // Add spin animation if not exists
+                if (!document.getElementById('spin-animation')) {
+                    const style = document.createElement('style');
+                    style.id = 'spin-animation';
+                    style.textContent = '@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }';
+                    document.head.appendChild(style);
+                }
+            } else {
+                // Remove loading overlay
+                const loadingOverlay = document.getElementById('loading-overlay');
+                if (loadingOverlay) {
+                    loadingOverlay.remove();
+                }
+            }
+        }
+
+        // Update profile header with database data
+        function updateProfileHeader(data) {
+            // Helper function to display value or "None"
+            const displayValue = (value, fallback = 'None') => {
+                return (value !== null && value !== undefined && value !== '') ? value : fallback;
+            };
+
+            // Update profile name - Use username from parent_profiles table (role-specific username)
+            const nameElement = document.getElementById('parentName');
+            if (nameElement) {
+                // Use username from parent_profiles table, ensure it's on one line
+                const displayName = data.username ? String(data.username).replace(/[\n\r]/g, ' ').trim() : displayValue(data.name);
+                nameElement.textContent = displayName;
+            }
+
+            // Update profile avatar
+            const avatarElement = document.getElementById('profile-avatar');
+            if (avatarElement && data.profile_picture) {
+                avatarElement.src = data.profile_picture;
+            }
+
+            // Update cover image
+            const coverElement = document.getElementById('cover-img');
+            if (coverElement && data.cover_image) {
+                coverElement.src = data.cover_image;
+            }
+
+            // Update location
+            const locationElements = document.querySelectorAll('.profile-location span:last-child');
+            if (locationElements.length > 0) {
+                const location = displayValue(data.location, 'Location not specified');
+                const childrenCount = displayValue(data.total_children, 0);
+                locationElements[0].textContent = `${location} | Parent of ${childrenCount} Students`;
+            }
+
+            // Update rating
+            const ratingValueElement = document.querySelector('.rating-value');
+            if (ratingValueElement) {
+                const rating = data.rating ? parseFloat(data.rating).toFixed(1) : 'N/A';
+                ratingValueElement.textContent = rating;
+            }
+
+            const ratingCountElement = document.querySelector('.rating-count');
+            if (ratingCountElement) {
+                const ratingCount = displayValue(data.rating_count, 0);
+                ratingCountElement.textContent = `(${ratingCount} tutor reviews)`;
+            }
+
+            // Update rating stars
+            const ratingStarsElement = document.querySelector('.rating-stars');
+            if (ratingStarsElement && data.rating) {
+                ratingStarsElement.innerHTML = generateStars(parseFloat(data.rating));
+            }
+
+            // Update relationship & occupation (first contact-info grid)
+            const relationshipOccupationGrids = document.querySelectorAll('.profile-contact-info');
+            if (relationshipOccupationGrids.length > 0) {
+                const relationshipOccupationElements = relationshipOccupationGrids[0].querySelectorAll('div > div:last-child > div:last-child');
+
+                // Update relationship (first element)
+                if (relationshipOccupationElements.length > 0) {
+                    relationshipOccupationElements[0].textContent = displayValue(data.relationship_type, 'Not specified');
+                }
+
+                // Update occupation (second element)
+                if (relationshipOccupationElements.length > 1) {
+                    relationshipOccupationElements[1].textContent = displayValue(data.occupation, 'Not specified');
+                }
+            }
+
+            // Update email & phone (second contact-info grid)
+            if (relationshipOccupationGrids.length > 1) {
+                const emailPhoneElements = relationshipOccupationGrids[1].querySelectorAll('div > div:last-child > div:last-child');
+
+                // Update email (first element)
+                if (emailPhoneElements.length > 0) {
+                    emailPhoneElements[0].textContent = displayValue(data.email, 'Not provided');
+                }
+
+                // Update phone (second element)
+                if (emailPhoneElements.length > 1) {
+                    emailPhoneElements[1].textContent = displayValue(data.phone, 'Not provided');
+                }
+            }
+
+            // Update quote
+            const quoteElement = document.querySelector('.profile-quote span');
+            if (quoteElement) {
+                quoteElement.textContent = `"${displayValue(data.quote, 'No quote available')}"`;
+            }
+
+            // Update bio/about section - more robust selector
+            const aboutSections = document.querySelectorAll('section');
+            aboutSections.forEach(section => {
+                const heading = section.querySelector('h3');
+                if (heading && heading.textContent.includes('About This Parent')) {
+                    const bioElement = section.querySelector('p');
+                    if (bioElement) {
+                        bioElement.textContent = displayValue(data.bio, 'No biography available for this parent.');
+                    }
+                }
+            });
+
+            // Update children count in stats
+            const childrenCountElements = document.querySelectorAll('.stats-grid > div:first-child > div:first-child, .stat-item:first-child .stat-number');
+            childrenCountElements.forEach(el => {
+                if (el.textContent === '3' || el.getAttribute('data-target') === '3') {
+                    el.textContent = displayValue(data.total_children, 0);
+                    el.setAttribute('data-target', displayValue(data.total_children, 0));
+                }
+            });
+
+            // Update username if available
+            if (data.username) {
+                const usernameElement = document.querySelector('.profile-username');
+                if (usernameElement) {
+                    usernameElement.textContent = `@${data.username}`;
+                }
+            }
+
+            // Update verified badge based on is_verified
+            const verifiedBadge = document.querySelector('.profile-badge.verified');
+            if (verifiedBadge && !data.is_verified) {
+                verifiedBadge.style.display = 'none';
+            }
+
+            // Update relationship type badge if needed
+            if (data.relationship_type) {
+                const relationshipBadge = document.querySelector('.profile-badge.relationship');
+                if (relationshipBadge) {
+                    relationshipBadge.innerHTML = `👨‍👩‍👧‍👦 ${data.relationship_type}`;
+                }
+            }
+        }
+
+        // Generate star rating HTML
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 >= 0.5;
+            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+            let starsHTML = '';
+            for (let i = 0; i < fullStars; i++) {
+                starsHTML += '★';
+            }
+            if (hasHalfStar) {
+                starsHTML += '⯨';
+            }
+            for (let i = 0; i < emptyStars; i++) {
+                starsHTML += '☆';
+            }
+            return starsHTML;
+        }
+
+        // Show error message to user
+        function showErrorMessage(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 1rem 2rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(239,68,68,0.3); z-index: 9999; font-weight: 600;';
+            errorDiv.textContent = message;
+            document.body.appendChild(errorDiv);
+
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+
+        // Panel switching
+        function switchPanel(event, panelName) {
+            if (event) event.preventDefault();
+            console.log('Switching to panel:', panelName);
+
+            // Hide all panels
+            const allPanels = document.querySelectorAll('.panel-content');
+            allPanels.forEach(panel => {
+                panel.classList.remove('active');
+            });
+
+            // Show selected panel
+            const selectedPanel = document.getElementById(panelName + '-panel');
+            if (selectedPanel) {
+                selectedPanel.classList.add('active');
+            }
+
+            // Update sidebar active link
+            const allLinks = document.querySelectorAll('.sidebar-link');
+            allLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            const clickedLink = event ? event.currentTarget : document.querySelector(`.sidebar-link[data-panel="${panelName}"]`);
+            if (clickedLink) {
+                clickedLink.classList.add('active');
+            }
+
+            // Load blog posts when switching to blog panel
+            if (panelName === 'blog') {
+                const grid = document.getElementById('blog-posts-grid');
+                // Only load if not already loaded (check if there are no child elements, ignoring comments)
+                if (grid && grid.children.length === 0) {
+                    console.log('Blog panel activated - loading blog posts...');
+                    loadBlogPosts();
+                } else {
+                    console.log('Blog posts already loaded, skipping...');
+                }
+            }
+
+            // Load clubs when switching to clubs panel
+            if (panelName === 'clubs') {
+                const grid = document.getElementById('clubs-grid');
+                // Only load if not already loaded (check if there are no child elements)
+                if (grid && grid.children.length === 0) {
+                    console.log('Clubs panel activated - loading clubs...');
+                    loadClubsData();
+                } else {
+                    console.log('Clubs already loaded, skipping...');
+                }
+            }
+
+            // Load events when switching to events panel
+            if (panelName === 'events') {
+                const grid = document.getElementById('events-grid');
+                // Only load if not already loaded (check if there are no child elements)
+                if (grid && grid.children.length === 0) {
+                    console.log('Events panel activated - loading events...');
+                    loadEventsData();
+                } else {
+                    console.log('Events already loaded, skipping...');
+                }
+            }
+
+            // Close sidebar on mobile after selection
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        // Toggle sidebar
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const hamburger = document.querySelector('.hamburger');
+
+            if (sidebar && overlay) {
+                const isOpen = sidebar.style.left === '0px';
+
+                if (isOpen) {
+                    sidebar.style.left = '-280px';
+                    overlay.style.display = 'none';
+                    if (hamburger) hamburger.classList.remove('active');
+                } else {
+                    sidebar.style.left = '0px';
+                    overlay.style.display = 'block';
+                    if (hamburger) hamburger.classList.add('active');
+                }
+            }
+        }
+
+        // Sidebar initialization
+        function initializeSidebar() {
+            // Sidebar is already initialized with inline styles and onclick handlers
+            console.log('Sidebar initialized');
+
+            // Close sidebar with ESC key
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const sidebar = document.getElementById('sidebar');
+                    if (sidebar && sidebar.style.left === '0px') {
+                        toggleSidebar();
+                    }
+                }
+            });
+        }
+
+        // Handle nav clicks
+        function handleNavLinkClick(event, section) {
+            event.preventDefault();
+            console.log('Navigation to:', section);
+        }
+
+        // Modal functions
+        function openConnectModal() {
+            console.log('Opening connect modal');
+            alert('Connect modal - Feature coming soon!');
+        }
+
+        function openMessageModal() {
+            console.log('Opening message modal');
+            alert('Message modal - Feature coming soon!');
+        }
+
+        function openAdAnalyticsModal() {
+            console.log('Opening ad analytics');
+        }
+
+        function viewChildProfile(childId) {
+            console.log('Viewing child profile:', childId);
+            // Navigate to child's profile page
+            window.location.href = `view-student.html?id=${childId}`;
+        }
+
+        function viewAllReviews() {
+            console.log('Switching to reviews panel');
+            switchPanel(null, 'reviews-ratings');
+        }
+
+        // Filter reviews by rating
+        function filterReviews(rating) {
+            console.log('Filtering reviews by rating:', rating);
+
+            // Update active filter button
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.classList.remove('active');
+                btn.style.background = 'transparent';
+                btn.style.color = 'var(--text)';
+                btn.style.border = '2px solid rgba(var(--border-rgb), 0.3)';
+            });
+
+            const activeBtn = document.querySelector(`.filter-btn[data-filter="${rating}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.style.background = 'var(--button-bg)';
+                activeBtn.style.color = 'white';
+                activeBtn.style.border = '2px solid var(--button-bg)';
+            }
+
+            // Show/hide review cards
+            const reviewCards = document.querySelectorAll('.review-card');
+            reviewCards.forEach(card => {
+                if (rating === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    const cardRating = card.getAttribute('data-rating');
+                    if (cardRating === rating) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Sort reviews
+        function sortReviews(sortBy) {
+            console.log('Sorting reviews by:', sortBy);
+
+            const reviewsList = document.getElementById('reviews-list');
+            const reviews = Array.from(reviewsList.querySelectorAll('.review-card'));
+
+            reviews.sort((a, b) => {
+                switch(sortBy) {
+                    case 'recent':
+                        // Already in recent order - no change needed
+                        return 0;
+                    case 'helpful':
+                        const helpfulA = parseInt(a.querySelector('button[onclick*="markHelpful"]').textContent.match(/\d+/)[0]);
+                        const helpfulB = parseInt(b.querySelector('button[onclick*="markHelpful"]').textContent.match(/\d+/)[0]);
+                        return helpfulB - helpfulA;
+                    case 'highest':
+                        return parseInt(b.getAttribute('data-rating')) - parseInt(a.getAttribute('data-rating'));
+                    case 'lowest':
+                        return parseInt(a.getAttribute('data-rating')) - parseInt(b.getAttribute('data-rating'));
+                    default:
+                        return 0;
+                }
+            });
+
+            // Re-append sorted reviews
+            reviews.forEach(review => reviewsList.appendChild(review));
+        }
+
+        // Mark review as helpful
+        function markHelpful(button) {
+            console.log('Marking review as helpful');
+
+            // Extract current count
+            const currentText = button.textContent;
+            const currentCount = parseInt(currentText.match(/\d+/)[0]);
+            const newCount = currentCount + 1;
+
+            // Update button text
+            button.innerHTML = `<span>👍</span> Helpful (${newCount})`;
+
+            // Visual feedback
+            button.style.background = 'rgba(var(--button-bg-rgb), 0.1)';
+            button.style.borderColor = 'var(--button-bg)';
+            button.style.color = 'var(--button-bg)';
+            button.style.fontWeight = '600';
+
+            // Disable button to prevent multiple clicks
+            button.disabled = true;
+            button.style.cursor = 'not-allowed';
+            button.style.opacity = '0.7';
+
+            // Show confirmation
+            const reviewCard = button.closest('.review-card');
+            const feedback = document.createElement('div');
+            feedback.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; box-shadow: 0 4px 12px rgba(16,185,129,0.3); z-index: 100; animation: fadeInOut 2s ease-in-out;';
+            feedback.textContent = '✓ Marked as helpful!';
+            reviewCard.style.position = 'relative';
+            reviewCard.appendChild(feedback);
+
+            setTimeout(() => {
+                feedback.remove();
+            }, 2000);
+        }
+
+        // Report review
+        function reportReview(button) {
+            console.log('Reporting review');
+
+            const confirmed = confirm('Are you sure you want to report this review?\n\nReported reviews will be reviewed by our moderation team.');
+
+            if (confirmed) {
+                // Visual feedback
+                button.style.background = 'rgba(239, 68, 68, 0.1)';
+                button.style.borderColor = '#ef4444';
+                button.style.color = '#ef4444';
+                button.style.fontWeight = '600';
+
+                // Disable button
+                button.disabled = true;
+                button.innerHTML = '<span>✓</span> Reported';
+                button.style.cursor = 'not-allowed';
+
+                // Show confirmation
+                const reviewCard = button.closest('.review-card');
+                const feedback = document.createElement('div');
+                feedback.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 0.75rem 1.5rem; border-radius: 12px; font-weight: 600; box-shadow: 0 4px 12px rgba(239,68,68,0.3); z-index: 100;';
+                feedback.textContent = '✓ Review reported to moderators';
+                reviewCard.style.position = 'relative';
+                reviewCard.appendChild(feedback);
+
+                setTimeout(() => {
+                    feedback.remove();
+                }, 3000);
+            }
+        }
+
+        // Load more reviews
+        function loadMoreReviews() {
+            console.log('Loading more reviews...');
+
+            // Show loading state on button
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Loading...';
+            button.disabled = true;
+            button.style.opacity = '0.6';
+
+            // Simulate loading (in real app, this would be an API call)
+            setTimeout(() => {
+                // Show message
+                alert('More reviews loaded! (Feature demo - in production, this would load actual reviews from the database)');
+
+                // Reset button
+                button.textContent = originalText;
+                button.disabled = false;
+                button.style.opacity = '1';
+            }, 1000);
+        }
+
+        // Rate & Review functionality
+        let selectedRating = 0;
+
+        function selectRating(rating) {
+            selectedRating = rating;
+            const stars = document.querySelectorAll('.rating-star');
+            stars.forEach((star, index) => {
+                if (index < rating) {
+                    star.style.filter = 'brightness(1.2) drop-shadow(0 0 8px rgba(245,158,11,0.6))';
+                    star.style.transform = 'scale(1.2)';
+                } else {
+                    star.style.filter = 'brightness(0.7)';
+                    star.style.transform = 'scale(1)';
+                }
+            });
+        }
+
+        function submitReview() {
+            const reviewText = document.getElementById('review-text').value;
+
+            if (selectedRating === 0) {
+                alert('Please select a rating before submitting your review.');
+                return;
+            }
+
+            if (!reviewText.trim()) {
+                alert('Please write a review before submitting.');
+                return;
+            }
+
+            console.log('Submitting review:', {
+                rating: selectedRating,
+                review: reviewText,
+                parentId: new URLSearchParams(window.location.search).get('id')
+            });
+
+            // TODO: Send to API
+            alert(`Thank you for your ${selectedRating}-star review!\n\nYour feedback helps improve the community.`);
+
+            // Reset form
+            selectedRating = 0;
+            document.getElementById('review-text').value = '';
+            const stars = document.querySelectorAll('.rating-star');
+            stars.forEach(star => {
+                star.style.filter = 'brightness(1)';
+                star.style.transform = 'scale(1)';
+            });
+        }
+
+        // Animate statistics
+        function animateStats() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+
+            statNumbers.forEach(stat => {
+                const target = parseFloat(stat.getAttribute('data-target'));
+                const suffix = stat.getAttribute('data-suffix') || '';
+
+                let current = 0;
+                const increment = target / 50;
+
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    stat.textContent = Math.floor(current) + suffix;
+                }, 30);
+            });
+        }
+
+        // Theme toggle
+        document.getElementById('theme-toggle-btn')?.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // ============================================
+        // BLOG POSTS FUNCTIONALITY
+        // ============================================
+
+        // Load blog posts for the parent
+        async function loadBlogPosts() {
+            console.log('=== loadBlogPosts() called ===');
+            const parentId = new URLSearchParams(window.location.search).get('id');
+            console.log('Parent ID from URL:', parentId);
+
+            if (!parentId) {
+                console.warn('No parent ID provided for blog posts');
+                // Show empty state if no parent ID
+                document.getElementById('blog-loading').style.display = 'none';
+                document.getElementById('blog-posts-grid').style.display = 'none';
+                document.getElementById('blog-empty-state').style.display = 'block';
+                document.getElementById('blog-error-state').style.display = 'none';
+                return;
+            }
+
+            // Show loading state
+            console.log('Showing loading state...');
+            document.getElementById('blog-loading').style.display = 'block';
+            document.getElementById('blog-posts-grid').style.display = 'none';
+            document.getElementById('blog-empty-state').style.display = 'none';
+            document.getElementById('blog-error-state').style.display = 'none';
+
+            try {
+                // Fetch blog posts from API
+                const apiUrl = `https://api.astegni.com/api/blog/posts/author/${parentId}?status=published`;
+                console.log('Fetching from:', apiUrl);
+                const response = await fetch(apiUrl);
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch blog posts: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Blog posts data received:', data);
+                console.log('Number of posts:', data.posts ? data.posts.length : 0);
+
+                // Hide loading state
+                document.getElementById('blog-loading').style.display = 'none';
+
+                // Check if there are any posts
+                if (!data.posts || data.posts.length === 0) {
+                    console.log('No posts found - showing empty state');
+                    // Show empty state
+                    document.getElementById('blog-empty-state').style.display = 'block';
+                } else {
+                    console.log('Posts found - displaying blog cards');
+                    // Display blog posts
+                    displayBlogPosts(data.posts);
+                    document.getElementById('blog-posts-grid').style.display = 'grid';
+                }
+
+            } catch (error) {
+                console.error('Error loading blog posts:', error);
+
+                // Hide loading state
+                document.getElementById('blog-loading').style.display = 'none';
+
+                // Show error state
+                document.getElementById('blog-error-state').style.display = 'block';
+                document.getElementById('blog-error-message').textContent =
+                    error.message || 'Unable to load blog posts. Please try again later.';
+            }
+        }
+
+        // Display blog posts in the grid
+        function displayBlogPosts(posts) {
+            const grid = document.getElementById('blog-posts-grid');
+            grid.innerHTML = ''; // Clear existing content
+
+            posts.forEach(post => {
+                const blogCard = createBlogCard(post);
+                grid.appendChild(blogCard);
+            });
+        }
+
+        // Create a blog card element
+        function createBlogCard(post) {
+            const card = document.createElement('div');
+            card.className = 'blog-card';
+            card.style.cssText = `
+                background: var(--card-bg);
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+            `;
+
+            // Format date
+            const publishedDate = post.published_at
+                ? new Date(post.published_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                })
+                : new Date(post.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+
+            // Truncate description
+            const maxDescriptionLength = 120;
+            const description = post.description && post.description.length > maxDescriptionLength
+                ? post.description.substring(0, maxDescriptionLength) + '...'
+                : post.description || 'No description available';
+
+            // Thumbnail with fallback
+            const thumbnailUrl = post.thumbnail_url || 'https://via.placeholder.com/400x200?text=Blog+Post';
+
+            card.innerHTML = `
+                <!-- Thumbnail -->
+                <div style="width: 100%; height: 200px; overflow: hidden; background: var(--bg-secondary);">
+                    <img
+                        src="${thumbnailUrl}"
+                        alt="${post.title}"
+                        style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
+                        onerror="this.src='https://via.placeholder.com/400x200?text=Blog+Post'"
+                    >
+                </div>
+
+                <!-- Content -->
+                <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                    <!-- Category Badge -->
+                    ${post.category ? `
+                        <div style="margin-bottom: 0.75rem;">
+                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--accent-color); color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                ${post.category}
+                            </span>
+                        </div>
+                    ` : ''}
+
+                    <!-- Title -->
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--heading); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${post.title}
+                    </h3>
+
+                    <!-- Description -->
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem; flex: 1; line-height: 1.6;">
+                        ${description}
+                    </p>
+
+                    <!-- Footer -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <!-- Date -->
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+                            <span>📅</span>
+                            <span>${publishedDate}</span>
+                        </div>
+
+                        <!-- Stats -->
+                        <div style="display: flex; gap: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
+                            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span>👁️</span>
+                                <span>${post.views || 0}</span>
+                            </span>
+                            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span>❤️</span>
+                                <span>${post.likes || 0}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add hover effect
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px)';
+                card.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
+                const img = card.querySelector('img');
+                if (img) img.style.transform = 'scale(1.1)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                const img = card.querySelector('img');
+                if (img) img.style.transform = 'scale(1)';
+            });
+
+            // Add click handler to view blog post
+            card.addEventListener('click', () => {
+                viewBlogPost(post.id);
+            });
+
+            return card;
+        }
+
+        // View blog post (placeholder - implement based on your blog viewing page)
+        function viewBlogPost(postId) {
+            console.log('Viewing blog post:', postId);
+            // TODO: Implement navigation to blog post detail page
+            // Example: window.location.href = `/blog/post?id=${postId}`;
+            alert(`Blog post viewing functionality coming soon! Post ID: ${postId}`);
+        }
+
+        // ============================================
+        // CLUBS PANEL FUNCTIONS
+        // ============================================
+
+        // Load clubs data from API
+        async function loadClubsData() {
+            const parentId = new URLSearchParams(window.location.search).get('id');
+
+            if (!parentId) {
+                console.error('No parent ID found in URL');
+                return;
+            }
+
+            console.log('Loading clubs for parent ID:', parentId);
+
+            // Show loading state, hide other states
+            document.getElementById('clubs-loading').style.display = 'block';
+            document.getElementById('clubs-grid').style.display = 'none';
+            document.getElementById('clubs-empty-state').style.display = 'none';
+            document.getElementById('clubs-error-state').style.display = 'none';
+
+            try {
+                // Fetch clubs from API
+                const apiUrl = `https://api.astegni.com/api/clubs/by-parent/${parentId}`;
+                console.log('Fetching from:', apiUrl);
+                const response = await fetch(apiUrl);
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch clubs: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Clubs data received:', data);
+                console.log('Number of clubs:', data.clubs ? data.clubs.length : 0);
+
+                // Hide loading state
+                document.getElementById('clubs-loading').style.display = 'none';
+
+                // Check if there are any clubs
+                if (!data.clubs || data.clubs.length === 0) {
+                    console.log('No clubs found - showing empty state');
+                    // Show empty state
+                    document.getElementById('clubs-empty-state').style.display = 'block';
+                } else {
+                    console.log('Clubs found - displaying club cards');
+                    // Display clubs
+                    displayClubs(data.clubs);
+                    document.getElementById('clubs-grid').style.display = 'grid';
+                }
+
+            } catch (error) {
+                console.error('Error loading clubs:', error);
+
+                // Hide loading state
+                document.getElementById('clubs-loading').style.display = 'none';
+
+                // Show error state
+                document.getElementById('clubs-error-state').style.display = 'block';
+                document.getElementById('clubs-error-message').textContent =
+                    error.message || 'Unable to load clubs. Please try again later.';
+            }
+        }
+
+        // Display clubs in the grid
+        function displayClubs(clubs) {
+            const grid = document.getElementById('clubs-grid');
+            grid.innerHTML = ''; // Clear existing content
+
+            clubs.forEach(club => {
+                const clubCard = createClubCard(club);
+                grid.appendChild(clubCard);
+            });
+        }
+
+        // Create a club card element
+        function createClubCard(club) {
+            const card = document.createElement('div');
+            card.className = 'club-card';
+            card.style.cssText = `
+                background: var(--card-bg);
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+            `;
+
+            // Format date
+            const createdDate = club.created_at
+                ? new Date(club.created_at).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                })
+                : 'N/A';
+
+            // Truncate description
+            const maxDescriptionLength = 120;
+            const description = club.description && club.description.length > maxDescriptionLength
+                ? club.description.substring(0, maxDescriptionLength) + '...'
+                : club.description || 'No description available';
+
+            // Club picture with fallback
+            const clubPictureUrl = club.club_picture || 'https://via.placeholder.com/400x200?text=Club';
+
+            // Membership type badge color
+            const membershipColors = {
+                'open': '#10b981',
+                'approval': '#f59e0b',
+                'invite': '#6366f1',
+                'closed': '#ef4444'
+            };
+            const membershipColor = membershipColors[club.membership_type] || '#6b7280';
+
+            // Status badge
+            const statusBadge = club.status === 'active'
+                ? '<span style="display: inline-block; padding: 0.25rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Active</span>'
+                : '<span style="display: inline-block; padding: 0.25rem 0.75rem; background: #6b7280; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">Inactive</span>';
+
+            card.innerHTML = `
+                <!-- Club Picture -->
+                <div style="width: 100%; height: 200px; overflow: hidden; background: var(--bg-secondary);">
+                    <img
+                        src="${clubPictureUrl}"
+                        alt="${club.title}"
+                        style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
+                        onerror="this.src='https://via.placeholder.com/400x200?text=Club'"
+                    >
+                </div>
+
+                <!-- Content -->
+                <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                    <!-- Category Badge and Status -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                        ${club.category ? `
+                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--accent-color); color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                ${club.category}
+                            </span>
+                        ` : ''}
+                        ${statusBadge}
+                    </div>
+
+                    <!-- Title -->
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--heading); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${club.title}
+                    </h3>
+
+                    <!-- Description -->
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem; flex: 1; line-height: 1.6;">
+                        ${description}
+                    </p>
+
+                    <!-- Membership Info -->
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                        <span style="display: inline-block; padding: 0.25rem 0.75rem; background: ${membershipColor}; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">
+                            ${club.membership_type}
+                        </span>
+                        ${club.is_paid ? `
+                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #f59e0b; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                ${club.membership_fee} ETB
+                            </span>
+                        ` : `
+                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                Free
+                            </span>
+                        `}
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <!-- Date -->
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+                            <span>📅</span>
+                            <span>${createdDate}</span>
+                        </div>
+
+                        <!-- Member Stats -->
+                        <div style="display: flex; gap: 1rem; color: var(--text-secondary); font-size: 0.875rem;">
+                            <span style="display: flex; align-items: center; gap: 0.25rem;">
+                                <span>👥</span>
+                                <span>${club.member_count || 0}/${club.member_limit}</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add hover effect
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px)';
+                card.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
+                const img = card.querySelector('img');
+                if (img) img.style.transform = 'scale(1.1)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                const img = card.querySelector('img');
+                if (img) img.style.transform = 'scale(1)';
+            });
+
+            // Add click handler to view club
+            card.addEventListener('click', () => {
+                viewClub(club.id);
+            });
+
+            return card;
+        }
+
+        // View club (placeholder - implement based on your club viewing page)
+        function viewClub(clubId) {
+            console.log('Viewing club:', clubId);
+            // TODO: Implement navigation to club detail page
+            alert(`Club viewing functionality coming soon! Club ID: ${clubId}`);
+        }
+
+        // ============================================
+        // EVENTS PANEL FUNCTIONS
+        // ============================================
+
+        async function loadEventsData() {
+            const parentId = new URLSearchParams(window.location.search).get('id');
+
+            if (!parentId) {
+                console.error('No parent ID found in URL');
+                return;
+            }
+
+            console.log('Loading events for parent ID:', parentId);
+
+            // Show loading state, hide other states
+            document.getElementById('events-loading').style.display = 'block';
+            document.getElementById('events-grid').style.display = 'none';
+            document.getElementById('events-empty-state').style.display = 'none';
+            document.getElementById('events-error-state').style.display = 'none';
+
+            try {
+                // Fetch events from API
+                const apiUrl = `https://api.astegni.com/api/events/by-parent/${parentId}`;
+                console.log('Fetching from:', apiUrl);
+                const response = await fetch(apiUrl);
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch events: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Events data received:', data);
+                console.log('Number of events:', data.events ? data.events.length : 0);
+
+                // Hide loading state
+                document.getElementById('events-loading').style.display = 'none';
+
+                // Check if there are any events
+                if (!data.events || data.events.length === 0) {
+                    console.log('No events found - showing empty state');
+                    // Show empty state
+                    document.getElementById('events-empty-state').style.display = 'block';
+                } else {
+                    console.log('Events found - displaying event cards');
+                    // Display events
+                    displayEvents(data.events);
+                    document.getElementById('events-grid').style.display = 'grid';
+                }
+
+            } catch (error) {
+                console.error('Error loading events:', error);
+
+                // Hide loading state
+                document.getElementById('events-loading').style.display = 'none';
+
+                // Show error state
+                document.getElementById('events-error-state').style.display = 'block';
+                document.getElementById('events-error-message').textContent =
+                    error.message || 'Unable to load events. Please try again later.';
+            }
+        }
+
+        // Display events in the grid
+        function displayEvents(events) {
+            const grid = document.getElementById('events-grid');
+            grid.innerHTML = ''; // Clear existing content
+
+            events.forEach(event => {
+                const eventCard = createEventCard(event);
+                grid.appendChild(eventCard);
+            });
+        }
+
+        // Create an event card element
+        function createEventCard(event) {
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            card.style.cssText = `
+                background: var(--card-bg);
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                cursor: pointer;
+                display: flex;
+                flex-direction: column;
+            `;
+
+            // Format dates
+            const startDate = event.start_datetime
+                ? new Date(event.start_datetime).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                : 'TBA';
+
+            const endDate = event.end_datetime
+                ? new Date(event.end_datetime).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                })
+                : 'TBA';
+
+            // Truncate description
+            const maxDescriptionLength = 120;
+            const description = event.description && event.description.length > maxDescriptionLength
+                ? event.description.substring(0, maxDescriptionLength) + '...'
+                : event.description || 'No description available';
+
+            // Event picture with fallback
+            const eventPictureUrl = event.event_picture || 'https://via.placeholder.com/400x200?text=Event';
+
+            // Status badge
+            const statusColors = {
+                'upcoming': '#3b82f6',
+                'ongoing': '#10b981',
+                'completed': '#6b7280',
+                'cancelled': '#ef4444'
+            };
+            const statusColor = statusColors[event.status] || '#6b7280';
+            const statusBadge = `<span style="display: inline-block; padding: 0.25rem 0.75rem; background: ${statusColor}; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: capitalize;">${event.status || 'Upcoming'}</span>`;
+
+            // Online/In-person badge
+            const locationBadge = event.is_online
+                ? '<span style="display: inline-block; padding: 0.25rem 0.75rem; background: #8b5cf6; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">🌐 Online</span>'
+                : '<span style="display: inline-block; padding: 0.25rem 0.75rem; background: #f59e0b; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">📍 In-person</span>';
+
+            // Available seats calculation
+            const seatsLeft = event.available_seats - (event.registered_count || 0);
+            const seatsColor = seatsLeft > 5 ? '#10b981' : seatsLeft > 0 ? '#f59e0b' : '#ef4444';
+
+            card.innerHTML = `
+                <!-- Event Picture -->
+                <div style="width: 100%; height: 200px; overflow: hidden; background: var(--bg-secondary);">
+                    <img
+                        src="${eventPictureUrl}"
+                        alt="${event.title}"
+                        style="width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease;"
+                        onerror="this.src='https://via.placeholder.com/400x200?text=Event'"
+                    >
+                </div>
+
+                <!-- Content -->
+                <div style="padding: 1.5rem; flex: 1; display: flex; flex-direction: column;">
+                    <!-- Type Badge and Status -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                        ${event.type ? `
+                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: var(--accent-color); color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
+                                ${event.type}
+                            </span>
+                        ` : ''}
+                        ${statusBadge}
+                        ${locationBadge}
+                    </div>
+
+                    <!-- Title -->
+                    <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; color: var(--heading); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        ${event.title}
+                    </h3>
+
+                    <!-- Description -->
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1rem; flex: 1; line-height: 1.6;">
+                        ${description}
+                    </p>
+
+                    <!-- Event Details -->
+                    <div style="margin-bottom: 1rem;">
+                        <!-- Date and Time -->
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <span>📅</span>
+                            <span><strong>Start:</strong> ${startDate}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
+                            <span>⏰</span>
+                            <span><strong>End:</strong> ${endDate}</span>
+                        </div>
+                        <!-- Location -->
+                        ${!event.is_online ? `
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                <span>📍</span>
+                                <span>${event.location || 'Location TBA'}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <!-- Price and Seats -->
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                        ${event.price && event.price > 0 ? `
+                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                ${event.price} ETB
+                            </span>
+                        ` : `
+                            <span style="display: inline-block; padding: 0.25rem 0.75rem; background: #10b981; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                                Free
+                            </span>
+                        `}
+                        <span style="display: inline-block; padding: 0.25rem 0.75rem; background: ${seatsColor}; color: white; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                            ${seatsLeft} seats left
+                        </span>
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <!-- Registered Count -->
+                        <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+                            <span>👥</span>
+                            <span>${event.registered_count || 0}/${event.available_seats} registered</span>
+                        </div>
+
+                        <!-- Subjects/Grade Levels -->
+                        ${event.subjects && event.subjects.length > 0 ? `
+                            <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); font-size: 0.875rem;">
+                                <span>📚</span>
+                                <span>${event.subjects.slice(0, 2).join(', ')}${event.subjects.length > 2 ? '...' : ''}</span>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+
+            // Add hover effect
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-8px)';
+                card.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.15)';
+                const img = card.querySelector('img');
+                if (img) img.style.transform = 'scale(1.1)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+                const img = card.querySelector('img');
+                if (img) img.style.transform = 'scale(1)';
+            });
+
+            // Add click handler to view event
+            card.addEventListener('click', () => {
+                viewEvent(event.id);
+            });
+
+            return card;
+        }
+
+        // View event (placeholder - implement based on your event viewing page)
+        function viewEvent(eventId) {
+            console.log('Viewing event:', eventId);
+            // TODO: Implement navigation to event detail page
+            alert(`Event viewing functionality coming soon! Event ID: ${eventId}`);
+        }
+    </script>
+
+    <!-- Widget Animations Script -->
+    <script>
+        // ============================================
+        //   BOOKSTORE WIDGET - FADE IN/OUT ANIMATION
+        // ============================================
+        (function() {
+            const bookstoreTitles = [
+                { icon: '📖', text: 'Educational Books', emoji: '📚' },
+                { icon: '📚', text: 'Fiction & Novels', emoji: '📖' },
+                { icon: '🔬', text: 'Science Textbooks', emoji: '🧪' },
+                { icon: '📐', text: 'Mathematics Books', emoji: '➗' },
+                { icon: '🔥', text: 'Trending Books', emoji: '🔥' },
+                { icon: '💰', text: 'Special Discounts', emoji: '🏷️' },
+                { icon: '🎁', text: 'Bundle Deals', emoji: '📦' },
+                { icon: '✨', text: 'Coming Soon!', emoji: '🎉' }
+            ];
+
+            let currentBookIndex = 0;
+            const bookstoreTitleContainer = document.querySelector('.bookstore-title-animated');
+            const bookstoreIcon = document.querySelector('.bookstore-icon');
+
+            if (bookstoreTitleContainer && bookstoreIcon) {
+                const titleElement = bookstoreTitleContainer.querySelector('.bookstore-title');
+
+                function animateBookstoreTitle() {
+                    // Fade out
+                    titleElement.style.opacity = '0';
+                    titleElement.style.transform = 'translateY(-10px)';
+
+                    setTimeout(() => {
+                        // Update content
+                        currentBookIndex = (currentBookIndex + 1) % bookstoreTitles.length;
+                        const currentTitle = bookstoreTitles[currentBookIndex];
+                        titleElement.textContent = currentTitle.text;
+                        bookstoreIcon.textContent = currentTitle.icon;
+
+                        // Fade in
+                        titleElement.style.transform = 'translateY(10px)';
+                        setTimeout(() => {
+                            titleElement.style.opacity = '1';
+                            titleElement.style.transform = 'translateY(0)';
+                        }, 50);
+                    }, 600);
+                }
+
+                // Start animation every 3 seconds
+                setInterval(animateBookstoreTitle, 3000);
+            }
+        })();
+
+        // ============================================
+        //   GAMESTORE WIDGET - FADE IN/OUT ANIMATION
+        // ============================================
+        (function() {
+            const gamestoreTitles = [
+                { icon: '🎮', text: 'Educational Games', emoji: '🎮' },
+                { icon: '🧮', text: 'Puzzle Games', emoji: '🧩' },
+                { icon: '🎯', text: 'Strategy Games', emoji: '♟️' },
+                { icon: '🏆', text: 'Top Rated Games', emoji: '⭐' },
+                { icon: '🔥', text: 'Trending Games', emoji: '🔥' },
+                { icon: '💰', text: 'Special Discounts', emoji: '🏷️' },
+                { icon: '🎁', text: 'Bundle Deals', emoji: '📦' },
+                { icon: '✨', text: 'Coming Soon!', emoji: '🎉' }
+            ];
+
+            let currentGameIndex = 0;
+            const gamestoreTitleContainer = document.querySelector('.gamestore-title-animated');
+            const gamestoreIcon = document.querySelector('.gamestore-icon');
+
+            if (gamestoreTitleContainer && gamestoreIcon) {
+                const titleElement = gamestoreTitleContainer.querySelector('.gamestore-title');
+
+                function animateGamestoreTitle() {
+                    // Fade out
+                    titleElement.style.opacity = '0';
+                    titleElement.style.transform = 'translateY(-10px)';
+
+                    setTimeout(() => {
+                        // Update content
+                        currentGameIndex = (currentGameIndex + 1) % gamestoreTitles.length;
+                        const currentTitle = gamestoreTitles[currentGameIndex];
+                        titleElement.textContent = currentTitle.text;
+                        gamestoreIcon.textContent = currentTitle.icon;
+
+                        // Fade in
+                        titleElement.style.transform = 'translateY(10px)';
+                        setTimeout(() => {
+                            titleElement.style.opacity = '1';
+                            titleElement.style.transform = 'translateY(0)';
+                        }, 50);
+                    }, 600);
+                }
+
+                // Start animation every 3 seconds
+                setInterval(animateGamestoreTitle, 3000);
+            }
+        })();
+    </script>
+
+    <!-- Make Reviewer Names Clickable in Reviews Section -->
+    <script>
+        (function makeReviewerNamesClickable() {
+            // Sample tutor data - in production this would come from the database
+            const tutorData = {
+                'Dr. Almaz Tesfaye': { role: 'tutor', id: 1 },
+                'Yohannes Bekele': { role: 'tutor', id: 2 },
+                'Hanna Solomon': { role: 'tutor', id: 3 },
+                'Dawit Hagos': { role: 'tutor', id: 4 }
+            };
+
+            // Find all reviewer names in review cards and make them clickable
+            document.querySelectorAll('.review-card h4').forEach(nameElement => {
+                const name = nameElement.textContent.trim();
+                const tutorInfo = tutorData[name];
+
+                if (tutorInfo) {
+                    const profileUrl = `/view-profiles/view-tutor.html?id=${tutorInfo.id}`;
+
+                    // Wrap name in clickable link
+                    nameElement.innerHTML = `<a href="${profileUrl}" style="color: inherit; text-decoration: none; transition: color 0.3s;" onmouseover="this.style.color='#3b82f6'" onmouseout="this.style.color='var(--heading)'">${name}</a>`;
+
+                    // Also make the avatar clickable
+                    const avatarImg = nameElement.closest('.review-card').querySelector('img');
+                    if (avatarImg) {
+                        const avatarLink = document.createElement('a');
+                        avatarLink.href = profileUrl;
+                        avatarLink.style.textDecoration = 'none';
+                        avatarImg.parentNode.insertBefore(avatarLink, avatarImg);
+                        avatarLink.appendChild(avatarImg);
+
+                        // Add hover effect to avatar
+                        avatarImg.style.cursor = 'pointer';
+                        avatarImg.style.transition = 'all 0.3s';
+                        avatarImg.addEventListener('mouseover', () => {
+                            avatarImg.style.boxShadow = '0 0 0 4px rgba(59,130,246,0.3)';
+                        });
+                        avatarImg.addEventListener('mouseout', () => {
+                            avatarImg.style.boxShadow = 'none';
+                        });
+                    }
+                }
+            });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,84 @@
+# Environment files (CONTAINS SECRETS - NEVER COMMIT)
+.env
+*.env
+.env.*
+astegni-backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.venv/
+astegni-backend/venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Local development files
+*.local
+*.local.*
+
+# Sensitive files
+*password*
+*secret*
+*.pem
+*.key
+my server password
+server password*
+
+# Node modules (if any)
+node_modules/
+
+# Cache
+.cache/
+*.cache
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+nul
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Compiled files
+*.pyc
+*.pyo
+
+# Byte-compiled files
+__pycache__/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Test coverage
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local settings
+.claude/settings.local.json

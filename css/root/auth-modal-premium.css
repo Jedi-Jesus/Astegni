@@ -1,0 +1,717 @@
+/* ============================================
+   ULTRA-PREMIUM AUTH MODAL DESIGN
+   Next-Level UI/UX Implementation
+   ============================================ */
+
+/* ============================================
+   BACKDROP - CINEMATIC BLUR
+   ============================================ */
+
+.modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 99999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center,
+        rgba(245, 158, 11, 0.1) 0%,
+        rgba(0, 0, 0, 0.95) 100%);
+    backdrop-filter: blur(30px) saturate(150%);
+    -webkit-backdrop-filter: blur(30px) saturate(150%);
+}
+
+.modal.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ============================================
+   MODAL CONTAINER - GLASSMORPHISM 3.0
+   ============================================ */
+
+#login-modal .modal-content,
+#register-modal .modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    background: linear-gradient(135deg,
+        rgba(255, 255, 255, 0.1) 0%,
+        rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(40px) brightness(1.1);
+    -webkit-backdrop-filter: blur(40px) brightness(1.1);
+    border-radius: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow:
+        0 8px 32px rgba(31, 38, 135, 0.37),
+        0 40px 80px rgba(0, 0, 0, 0.3),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 0 200px rgba(245, 158, 11, 0.1);
+    transform: translateY(100px) scale(0.8) rotateX(10deg);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: visible;
+}
+
+.modal.active #login-modal .modal-content,
+.modal.active #register-modal .modal-content {
+    transform: translateY(0) scale(1) rotateX(0);
+}
+
+/* Animated Border Gradient */
+#login-modal .modal-content::before,
+#register-modal .modal-content::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg,
+        #F59E0B,
+        #EC4899,
+        #8B5CF6,
+        #3B82F6,
+        #10B981,
+        #F59E0B);
+    background-size: 400% 400%;
+    border-radius: 32px;
+    z-index: -1;
+    animation: gradient-border 15s ease infinite;
+    opacity: 0.6;
+    filter: blur(8px);
+}
+
+@keyframes gradient-border {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ============================================
+   HEADER - MINIMALIST LUXURY
+   ============================================ */
+
+#login-modal .modal-header,
+#register-modal .modal-header {
+    text-align: center;
+    padding: 48px 48px 32px;
+    border: none;
+    position: relative;
+}
+
+/* Logo/Brand Mark */
+.modal-logo {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, #F59E0B, #EC4899);
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: white;
+    font-weight: 800;
+    box-shadow:
+        0 20px 40px rgba(245, 158, 11, 0.3),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Title with Animated Gradient */
+.modal-title {
+    font-size: 32px;
+    font-weight: 800;
+    margin-bottom: 8px;
+    background: linear-gradient(270deg,
+        #F59E0B,
+        #EC4899,
+        #8B5CF6,
+        #F59E0B);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease infinite;
+    letter-spacing: -1px;
+}
+
+@keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.modal-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+}
+
+/* Close Button - Magnetic Effect */
+.modal-close {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 24px;
+}
+
+.modal-close:hover {
+    transform: scale(1.1) rotate(90deg);
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+/* ============================================
+   FORM INPUTS - FUTURISTIC DESIGN
+   ============================================ */
+
+.modal-body {
+    padding: 0 48px 48px;
+}
+
+.input-group {
+    position: relative;
+    margin-bottom: 32px;
+}
+
+/* Glowing Input Fields */
+.form-input {
+    width: 100%;
+    padding: 20px 24px;
+    font-size: 16px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+}
+
+.form-input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #F59E0B;
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow:
+        0 0 0 4px rgba(245, 158, 11, 0.1),
+        0 0 40px rgba(245, 158, 11, 0.2),
+        inset 0 0 20px rgba(245, 158, 11, 0.05);
+    transform: translateY(-2px);
+}
+
+/* Floating Label Animation */
+.input-label {
+    position: absolute;
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 16px;
+    font-weight: 500;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(135deg,
+        rgba(17, 24, 39, 0.9),
+        rgba(31, 41, 55, 0.9));
+    padding: 0 8px;
+    border-radius: 4px;
+}
+
+.form-input:focus ~ .input-label,
+.form-input:not(:placeholder-shown) ~ .input-label {
+    top: -12px;
+    left: 20px;
+    font-size: 12px;
+    color: #F59E0B;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Input Icons with Glow */
+.input-icon {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus ~ .input-icon {
+    color: #F59E0B;
+    filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+}
+
+/* ============================================
+   SUBMIT BUTTON - PREMIUM ANIMATION
+   ============================================ */
+
+.btn-login,
+.btn-register {
+    width: 100%;
+    padding: 18px 32px;
+    margin-top: 24px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: white;
+    background: linear-gradient(135deg, #F59E0B 0%, #EC4899 100%);
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow:
+        0 4px 15px rgba(245, 158, 11, 0.4),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Hover State with Glow */
+.btn-login:hover,
+.btn-register:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow:
+        0 10px 40px rgba(245, 158, 11, 0.5),
+        0 0 60px rgba(245, 158, 11, 0.3),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+/* Animated Background */
+.btn-login::before,
+.btn-register::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.3),
+        transparent);
+    transition: left 0.5s ease;
+}
+
+.btn-login:hover::before,
+.btn-register:hover::before {
+    left: 100%;
+}
+
+/* Click Ripple Effect */
+.btn-login::after,
+.btn-register::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-login:active::after,
+.btn-register:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* ============================================
+   SOCIAL LOGIN - MODERN CARDS
+   ============================================ */
+
+.divider-text {
+    text-align: center;
+    margin: 32px 0;
+    position: relative;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.divider-text::before,
+.divider-text::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: calc(50% - 30px);
+    height: 1px;
+    background: linear-gradient(90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2));
+}
+
+.divider-text::before {
+    left: 0;
+}
+
+.divider-text::after {
+    right: 0;
+    background: linear-gradient(270deg,
+        transparent,
+        rgba(255, 255, 255, 0.2));
+}
+
+.social-login-container {
+    display: flex;
+    gap: 16px;
+}
+
+.social-btn {
+    flex: 1;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.social-btn:hover {
+    transform: translateY(-4px);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.3),
+        0 0 30px rgba(245, 158, 11, 0.2);
+}
+
+.social-btn.google:hover {
+    border-color: #4285F4;
+    box-shadow: 0 0 40px rgba(66, 133, 244, 0.3);
+}
+
+.social-btn.facebook:hover {
+    border-color: #1877F2;
+    box-shadow: 0 0 40px rgba(24, 119, 242, 0.3);
+}
+
+/* ============================================
+   FORM OPTIONS - ENHANCED
+   ============================================ */
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 24px 0;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Custom Checkbox */
+.checkbox-custom {
+    position: relative;
+    width: 24px;
+    height: 24px;
+}
+
+.checkbox-custom input {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.checkbox-custom .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 24px;
+    height: 24px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.checkbox-custom input:checked ~ .checkmark {
+    background: linear-gradient(135deg, #F59E0B, #EC4899);
+    border-color: #F59E0B;
+    animation: checkbox-pop 0.3s ease;
+}
+
+@keyframes checkbox-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.checkbox-custom .checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    color: white;
+    font-size: 14px;
+    font-weight: 700;
+    transition: transform 0.3s ease;
+}
+
+.checkbox-custom input:checked ~ .checkmark::after {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.remember-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.forgot-password {
+    color: #F59E0B;
+    font-size: 14px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.forgot-password::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #F59E0B, #EC4899);
+    transition: width 0.3s ease;
+}
+
+.forgot-password:hover::after {
+    width: 100%;
+}
+
+/* ============================================
+   FORM SWITCH - ANIMATED
+   ============================================ */
+
+.form-switch {
+    text-align: center;
+    padding: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 32px;
+}
+
+.form-switch p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+}
+
+.form-switch a {
+    color: #F59E0B;
+    font-weight: 700;
+    text-decoration: none;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.form-switch a:hover {
+    text-shadow: 0 0 20px rgba(245, 158, 11, 0.8);
+}
+
+/* ============================================
+   LOADING STATE - PREMIUM SPINNER
+   ============================================ */
+
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 32px;
+    z-index: 100;
+}
+
+.loading-overlay.active {
+    display: flex;
+}
+
+.spinner-premium {
+    width: 60px;
+    height: 60px;
+    position: relative;
+}
+
+.spinner-premium::before,
+.spinner-premium::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: #F59E0B;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-premium::after {
+    border-top-color: #EC4899;
+    animation-duration: 0.7s;
+    animation-direction: reverse;
+    inset: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   SUCCESS STATE - CELEBRATION
+   ============================================ */
+
+.success-animation {
+    display: none;
+    text-align: center;
+    padding: 48px;
+}
+
+.success-animation.active {
+    display: block;
+}
+
+.success-icon {
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 24px;
+    background: linear-gradient(135deg, #10B981, #059669);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: success-bounce 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    box-shadow:
+        0 20px 60px rgba(16, 185, 129, 0.4),
+        0 0 100px rgba(16, 185, 129, 0.2);
+}
+
+@keyframes success-bounce {
+    0% { transform: scale(0) rotate(-180deg); }
+    50% { transform: scale(1.2) rotate(10deg); }
+    100% { transform: scale(1) rotate(0); }
+}
+
+.success-icon svg {
+    width: 50px;
+    height: 50px;
+    stroke: white;
+    stroke-width: 3;
+    fill: none;
+    stroke-dasharray: 100;
+    animation: check-draw 0.5s ease 0.3s forwards;
+    opacity: 0;
+}
+
+@keyframes check-draw {
+    to {
+        stroke-dashoffset: 0;
+        opacity: 1;
+    }
+}
+
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 540px) {
+    #login-modal .modal-content,
+    #register-modal .modal-content {
+        max-width: calc(100% - 32px);
+        border-radius: 24px;
+    }
+
+    .modal-header,
+    .modal-body {
+        padding-left: 32px;
+        padding-right: 32px;
+    }
+
+    .social-login-container {
+        flex-direction: column;
+    }
+}
+
+/* ============================================
+   PERFORMANCE & ACCESSIBILITY
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus Styles */
+.form-input:focus-visible,
+.btn-login:focus-visible,
+.btn-register:focus-visible,
+.social-btn:focus-visible {
+    outline: 3px solid #F59E0B;
+    outline-offset: 3px;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .modal-content {
+        border-width: 3px;
+    }
+
+    .form-input {
+        border-width: 3px;
+    }
+}

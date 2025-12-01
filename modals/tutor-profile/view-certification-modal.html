@@ -1,0 +1,143 @@
+<!--
+  Modal: viewCertificationModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="viewCertificationModal" class="modal hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">📜 Certification Details</h2>
+                <button onclick="closeViewModal('certification')" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- View Mode Content -->
+                <div class="view-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Column: Certificate/Icon & Status -->
+                        <div>
+                            <!-- Certificate Preview (shown when available) -->
+                            <div id="view-cert-certificate-preview" class="mb-4">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+
+                            <!-- Icon fallback (shown when no certificate) -->
+                            <div id="view-cert-icon-fallback" class="text-center mb-4">
+                                <div class="text-8xl mb-4">📜</div>
+                            </div>
+
+                            <div id="view-cert-status" class="text-center mb-4"></div>
+
+                            <div class="text-sm text-gray-600 space-y-3 bg-gray-50 p-4 rounded">
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">Issue Date</label>
+                                    <p id="view-cert-issue-date" class="text-gray-800 font-semibold"></p>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">Expiry Date</label>
+                                    <p id="view-cert-expiry-date" class="text-gray-800 font-semibold"></p>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">Credential ID</label>
+                                    <p id="view-cert-credential-id" class="text-gray-800 font-mono text-xs break-all">
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Details -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Certification Name</label>
+                                <p id="view-cert-name" class="text-xl font-bold"></p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-600">Issuing Organization</label>
+                                    <p id="view-cert-organization" class="text-gray-800"></p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-600">Field of Study</label>
+                                    <p id="view-cert-field" class="text-gray-800"></p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Description</label>
+                                <p id="view-cert-description" class="text-gray-700 whitespace-pre-line"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode Content -->
+                <div class="edit-content hidden">
+                    <form id="editCertificationForm" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Certification Name *</label>
+                            <input type="text" id="edit-cert-name" name="name" required
+                                class="w-full p-3 border-2 rounded-lg">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Issuing Organization *</label>
+                                <input type="text" id="edit-cert-organization" name="issuing_organization" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Field of Study</label>
+                                <input type="text" id="edit-cert-field" name="field_of_study"
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Issue Date</label>
+                                <input type="date" id="edit-cert-issue-date" name="issue_date"
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Expiry Date</label>
+                                <input type="date" id="edit-cert-expiry-date" name="expiry_date"
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Credential ID</label>
+                            <input type="text" id="edit-cert-credential-id" name="credential_id"
+                                class="w-full p-3 border-2 rounded-lg">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea id="edit-cert-description" name="description" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Replace Certificate (Optional)</label>
+                            <input type="file" id="edit-cert-certificate" name="certificate_image" accept="image/*,.pdf"
+                                class="w-full p-3 border-2 rounded-lg">
+                            <p class="text-sm text-gray-500 mt-1">Leave empty to keep existing certificate</p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-6">
+                    <button onclick="setViewModalMode('certification', 'edit')"
+                        class="edit-btn btn-secondary flex-1">Edit</button>
+                    <button onclick="updateCertification()" class="update-btn btn-primary flex-1 hidden">Update</button>
+                    <button onclick="setViewModalMode('certification', 'view')"
+                        class="cancel-edit-btn btn-secondary flex-1 hidden">Cancel</button>
+                    <button onclick="deleteCertificationFromView()"
+                        class="btn-secondary text-red-600 px-6">Delete</button>
+                    <button onclick="closeViewModal('certification')" class="btn-secondary px-6">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>

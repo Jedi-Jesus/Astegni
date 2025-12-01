@@ -1,0 +1,134 @@
+<!--
+  Modal: verify-personal-info-modal
+  Purpose: Verify and update user personal information from users table
+  Features: Personal info tab + Change password tab
+-->
+
+<div id="verify-personal-info-modal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeVerifyPersonalInfoModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">🔐 Account Settings</h2>
+                <button class="modal-close" onclick="closeVerifyPersonalInfoModal()">×</button>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="modal-tabs" style="display: flex; border-bottom: 2px solid var(--border-color, #e5e7eb); margin-bottom: 20px;">
+                <button class="modal-tab active" id="personalInfoTab" onclick="switchVerifyTab('personal')"
+                    style="flex: 1; padding: 12px 20px; background: none; border: none; cursor: pointer; font-weight: 600; color: var(--primary-color, #3b82f6); border-bottom: 2px solid var(--primary-color, #3b82f6); margin-bottom: -2px;">
+                    👤 Personal Info
+                </button>
+                <button class="modal-tab" id="changePasswordTab" onclick="switchVerifyTab('password')"
+                    style="flex: 1; padding: 12px 20px; background: none; border: none; cursor: pointer; font-weight: 500; color: var(--text-secondary, #6b7280); border-bottom: 2px solid transparent; margin-bottom: -2px;">
+                    🔑 Change Password
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Personal Info Tab Content -->
+                <div id="personalInfoContent" class="tab-content">
+                    <form id="verifyPersonalInfoForm" class="enhanced-form">
+                        <div class="form-group">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" id="modalFirstName" class="form-input" placeholder="First name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Father Name *</label>
+                            <input type="text" id="modalFatherName" class="form-input" placeholder="Father name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Grandfather Name *</label>
+                            <input type="text" id="modalGrandfatherName" class="form-input" placeholder="Grandfather name"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Gender</label>
+                            <select id="modalGender" class="form-select">
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Addresses</label>
+                            <div id="modalEmailContainer" class="space-y-2 mb-3">
+                                <!-- Dynamically populated -->
+                            </div>
+                            <button type="button" class="btn-secondary" onclick="addModalEmail()">
+                                ➕ Add Email
+                            </button>
+                            <small class="status-message">⚠️ Changing email requires OTP verification</small>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Numbers</label>
+                            <div id="modalPhoneContainer" class="space-y-2 mb-3">
+                                <!-- Dynamically populated -->
+                            </div>
+                            <button type="button" class="btn-secondary" onclick="addModalPhone()">
+                                ➕ Add Phone Number
+                            </button>
+                            <small class="status-message">⚠️ Changing phone requires OTP verification</small>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Change Password Tab Content -->
+                <div id="changePasswordContent" class="tab-content" style="display: none;">
+                    <form id="changePasswordForm" class="enhanced-form">
+                        <div class="form-group">
+                            <label class="form-label">Current Password *</label>
+                            <div class="password-input-wrapper" style="position: relative;">
+                                <input type="password" id="currentPassword" class="form-input" placeholder="Enter current password" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('currentPassword')"
+                                    style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary, #6b7280);">
+                                    👁️
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">New Password *</label>
+                            <div class="password-input-wrapper" style="position: relative;">
+                                <input type="password" id="newPassword" class="form-input" placeholder="Enter new password" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('newPassword')"
+                                    style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary, #6b7280);">
+                                    👁️
+                                </button>
+                            </div>
+                            <div id="passwordStrength" style="margin-top: 8px; font-size: 12px;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm New Password *</label>
+                            <div class="password-input-wrapper" style="position: relative;">
+                                <input type="password" id="confirmNewPassword" class="form-input" placeholder="Confirm new password" required>
+                                <button type="button" class="password-toggle" onclick="togglePasswordVisibility('confirmNewPassword')"
+                                    style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-secondary, #6b7280);">
+                                    👁️
+                                </button>
+                            </div>
+                            <div id="passwordMatch" style="margin-top: 8px; font-size: 12px;"></div>
+                        </div>
+                        <div class="password-requirements" style="background: var(--bg-secondary, #f3f4f6); padding: 12px; border-radius: 8px; margin-top: 16px;">
+                            <p style="font-weight: 600; margin-bottom: 8px; font-size: 13px;">Password Requirements:</p>
+                            <ul style="font-size: 12px; color: var(--text-secondary, #6b7280); margin: 0; padding-left: 20px;">
+                                <li id="reqLength">At least 8 characters</li>
+                                <li id="reqUppercase">One uppercase letter</li>
+                                <li id="reqLowercase">One lowercase letter</li>
+                                <li id="reqNumber">One number</li>
+                            </ul>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeVerifyPersonalInfoModal()">Cancel</button>
+                <button id="savePersonalInfoBtn" class="finance-btn-primary" onclick="saveAllPersonalInfo()">
+                    💾 Save Changes
+                </button>
+                <button id="changePasswordBtn" class="finance-btn-primary" onclick="changeUserPassword()" style="display: none;">
+                    🔑 Change Password
+                </button>
+            </div>
+        </div>
+    </div>

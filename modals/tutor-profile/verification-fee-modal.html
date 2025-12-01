@@ -1,0 +1,94 @@
+<!--
+  Modal: verificationFeeModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="verificationFeeModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeVerificationFeeModal()"></div>
+        <div class="modal-content enhanced-modal" style="max-width: 550px;">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">⚠️ Verification Required</h2>
+                <button onclick="closeVerificationFeeModal()" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Icon Circle -->
+                <div
+                    style="background: rgba(245, 158, 11, 0.1); width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                    <span style="font-size: 40px;">💳</span>
+                </div>
+
+                <!-- Alert Banner -->
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">Document Verification Required</h3>
+                            <p class="mt-1 text-sm text-blue-700">
+                                Your submission will be reviewed by our admin team. A verification fee of <strong>50
+                                    ETB</strong> is required to process your request.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fee Breakdown -->
+                <div class="bg-white border-2 border-gray-200 rounded-lg p-4 mb-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-gray-700 font-semibold">Verification Fee</span>
+                        <span class="text-2xl font-bold text-blue-600">50 ETB</span>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        This fee covers the cost of verifying your documents and credentials with the issuing
+                        organizations.
+                    </p>
+                </div>
+
+                <!-- Why Verification? -->
+                <div
+                    style="background: var(--surface-secondary); padding: 16px; border-radius: 8px; margin-bottom: 16px; text-align: left;">
+                    <p style="margin: 0; font-size: 14px; color: var(--text-muted);">
+                        <strong style="color: var(--heading);">Why verification?</strong><br>
+                        These submissions require identity verification to prevent fraud, ensure authenticity, and
+                        maintain platform integrity.
+                    </p>
+                </div>
+
+                <!-- What Happens Next -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <h4 class="font-semibold text-gray-800 mb-2">What happens next?</h4>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-2">✓</span>
+                            <span>Your submission will be saved with "Pending" status</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-2">✓</span>
+                            <span>Our verification team will review your documents</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-2">✓</span>
+                            <span>You'll be notified once verification is complete (2-5 business days)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-green-500 mr-2">✓</span>
+                            <span>Once approved, it will appear on your public profile</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="closeVerificationFeeModal()" class="btn-secondary flex-1">
+                    Cancel
+                </button>
+                <button type="button" onclick="confirmAndPayVerificationFee()" class="btn-primary flex-1">
+                    Confirm & Pay 50 ETB
+                </button>
+            </div>
+        </div>
+    </div>

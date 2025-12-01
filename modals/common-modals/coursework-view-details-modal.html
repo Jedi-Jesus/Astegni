@@ -1,0 +1,37 @@
+<!--
+  Modal: courseworkViewDetailsModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="courseworkViewDetailsModal" class="coursework-modal">
+        <div class="coursework-modal-overlay" onclick="courseworkManager.closeAllModals()"></div>
+        <div class="coursework-modal-content coursework-modal-large">
+            <button class="coursework-modal-close" onclick="courseworkManager.closeAllModals()" aria-label="Close">×</button>
+
+            <div class="coursework-modal-body">
+                <h2 class="coursework-content-title">
+                    <span>📋</span> Coursework Details
+                </h2>
+
+                <div id="courseworkDetailsContent"></div>
+
+                <div class="coursework-modal-actions">
+                    <button id="courseworkEditBtn" class="coursework-btn coursework-btn-edit" onclick="courseworkManager.editCurrentCoursework()">
+                        <span>✏️</span> Edit Coursework
+                    </button>
+                    <button id="courseworkPostFromViewBtn" class="coursework-btn coursework-btn-post"
+                        onclick="courseworkManager.postCurrentCoursework()">
+                        <span>📤</span> Post Coursework
+                    </button>
+                    <button id="courseworkDeleteBtn" class="coursework-btn coursework-btn-delete"
+                        onclick="courseworkManager.deleteCurrentCoursework()">
+                        <span>🗑️</span> Delete Coursework
+                    </button>
+                    <button class="coursework-btn coursework-btn-cancel" onclick="courseworkManager.closeAllModals()">
+                        <span>❌</span> Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>

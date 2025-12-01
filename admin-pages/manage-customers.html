@@ -1,0 +1,1722 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Customer Service</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/admin-profile/admin.css">
+    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="../css/admin-pages/manage-customers.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Inline styles to ensure right-side widget positioning -->
+    <style>
+        .admin-main-layout {
+            display: flex !important;
+            gap: 1.5rem !important;
+        }
+
+        .admin-content-area {
+            flex: 1 !important;
+        }
+
+        .admin-right-widgets {
+            width: 320px !important;
+            flex-shrink: 0 !important;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <span class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <a href="../admin-pages/manage-customers.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Customer Service</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="flex items-center space-x-6">
+
+                <!-- Notification Icon -->
+                <button class="relative focus:outline-none" aria-label="Notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span
+                        class="absolute top-0 right-0 -mt-1 -mr-1 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">12</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>Customer Service</h3>
+                <span class="sidebar-close" id="sidebar-close">&times;</span>
+
+                <a href="#" onclick="switchPanel('dashboard'); return false;" class="sidebar-link active">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel('active-tickets'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🎫</span>
+                    <span>Active Tickets</span>
+                </a>
+                <a href="#" onclick="switchPanel('resolved-tickets'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">✅</span>
+                    <span>Resolved Tickets</span>
+                </a>
+                <a href="#" onclick="switchPanel('messages'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">💬</span>
+                    <span>Customer Messages</span>
+                </a>
+                <a href="#" onclick="switchPanel('live-chat'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🗨️</span>
+                    <span>Live Chat</span>
+                </a>
+                <a href="#" onclick="switchPanel('feedback'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📝</span>
+                    <span>Customer Feedback</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="openFAQManager(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">❓</span>
+                    <span>FAQ Manager</span>
+                </a>
+                <a href="#" onclick="openCannedResponses(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📋</span>
+                    <span>Canned Responses</span>
+                </a>
+                <a href="#" onclick="openCustomerAnalytics(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Analytics</span>
+                </a>
+                
+                <!-- Logout Button at Bottom -->
+                <div class="mt-auto pt-4 border-t border-gray-300">
+                    <a href="#" onclick="logout(); return false;" class="sidebar-link text-red-500 hover:bg-red-50">
+                        <span class="sidebar-icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1">
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+
+                            <!-- Profile Header Section (Only visible in Dashboard) -->
+                            <section class="profile-header-section mb-8">
+                                <div class="cover-image-container relative">
+                                    <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='20'%3E1200x300%3C/text%3E%3C/svg%3E"
+                                        alt="Cover" class="cover-img">
+                                    <div class="cover-overlay"></div>
+                                    <!-- Cover Upload Button -->
+                                    <button onclick="openUploadCoverModal()" class="cover-upload-btn">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                            </path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="profile-main-info">
+                                    <div class="profile-info-wrapper">
+                                        <div class="profile-avatar-container">
+                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
+                                                alt="Admin Profile" class="profile-avatar">
+                                            <span class="online-indicator"></span>
+                                            <!-- Profile Picture Upload Button -->
+                                            <button onclick="openUploadProfileModal()" class="avatar-upload-btn">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                                    </path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="profile-details-section">
+                                            <div class="profile-name-row">
+                                                <h1 class="profile-name" id="adminName">Customer Service</h1>
+                                                <div class="badges-row">
+                                                    <span class="profile-badge verified">✔ System Administrator</span>
+                                                    <span class="profile-badge school">💬 Customer Service</span>
+                                                    <span class="profile-badge expert">📊 Support Expert</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="rating-section">
+                                                <div class="rating-wrapper">
+                                                    <span class="rating-value">4.9</span>
+                                                    <div class="rating-stars">★★★★★</div>
+                                                    <span class="rating-count">(156 reviews)</span>
+                                                    <div class="rating-label">Performance Rating</div>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-location">
+                                                <span class="location-icon">📍</span>
+                                                <span>Astegni Admin Panel | Customer Support & Management</span>
+                                            </div>
+
+                                            <div class="profile-quote">
+                                                <span>"Empowering educational institutions through efficient management
+                                                    and verification."</span>
+                                            </div>
+
+                                            <div class="profile-actions">
+                                                <button onclick="openEditProfileModal()" class="btn-primary">
+                                                    <span class="mr-2">✏️</span>
+                                                    Edit Profile
+                                                </button>
+                                            </div>
+
+                                            <!-- About Me Info -->
+                                            <div class="profile-info-grid">
+                                                <div class="info-item">
+                                                    <span class="info-label">Department:</span>
+                                                    <span class="info-value">Educational Services</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Employee ID:</span>
+                                                    <span class="info-value">ADM-2024-001</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Joined:</span>
+                                                    <span class="info-value">January 2020</span>
+                                                </div>
+                                                <div class="info-description">
+                                                    <p>Senior System Administrator with 5+ years of experience in
+                                                        educational platform management. Specialized in customer
+                                                        service, support ticket management, and user satisfaction.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Page Header -->
+                            <div class="mb-8 animate-fadeIn">
+                                <h1 class="text-3xl font-bold mb-2">Customer Service Dashboard</h1>
+                                <p class="text-gray-600">Manage customer inquiries, support tickets, and feedback</p>
+                            </div>
+
+                            <!-- Achievements Section -->
+                            <div class="card p-6 mb-8">
+                                <h3 class="text-xl font-semibold mb-4">Achievements</h3>
+                                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🏆</div>
+                                        <div class="text-sm">Top Performer</div>
+                                        <div class="text-xs text-gray-500">Q4 2024</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🥇</div>
+                                        <div class="text-sm">Excellence</div>
+                                        <div class="text-xs text-gray-500">Annual 2023</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">⭐</div>
+                                        <div class="text-sm">5-Star Admin</div>
+                                        <div class="text-xs text-gray-500">500+ Reviews</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">📚</div>
+                                        <div class="text-sm">Education Pro</div>
+                                        <div class="text-xs text-gray-500">1000+ Responses</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">🎯</div>
+                                        <div class="text-sm">Goal Achiever</div>
+                                        <div class="text-xs text-gray-500">100% Success</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="text-3xl mb-2">💎</div>
+                                        <div class="text-sm">Premium Admin</div>
+                                        <div class="text-xs text-gray-500">Level 10</div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- All Statistics Cards with Performance Indicators -->
+                            <div class="dashboard-grid mb-8">
+                                <!-- Request Stats -->
+                                <div class="card p-4 relative" id="total-responses-card">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-green-500 text-sm font-bold">↑ 12%</span>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">Total Responses per day</h3>
+                                    <p class="text-2xl font-bold">89</p>
+                                    <span class="text-sm text-gray-500">57% of total</span>
+                                </div>
+                                <div class="card p-4 relative">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-red-500 text-sm font-bold">↑ 5%</span>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">Pending Responses</h3>
+                                    <p class="text-2xl font-bold text-yellow-600">8</p>
+                                    <span class="text-sm text-gray-500">Awaiting review</span>
+                                </div>
+                                <div class="card p-4 relative" id="unanswered-card">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-red-500 text-sm font-bold">↑ 15%</span>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">Unanswered Responses</h3>
+                                    <p class="text-2xl font-bold text-red-600">3</p>
+                                    <span class="text-sm text-gray-500">Last 30 days</span>
+                                </div>
+                                <div class="card p-4 relative">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-green-500 text-sm font-bold">↓ 8%</span>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">Rejected Responses</h3>
+                                    <p class="text-2xl font-bold text-orange-600">2</p>
+                                    <span class="text-sm text-gray-500">Active suspensions</span>
+                                </div>
+                                <div class="card p-4 relative">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-green-500 text-sm font-bold">↑ 3%</span>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">Resolution Rate</h3>
+                                    <p class="text-2xl font-bold text-green-600">98%</p>
+                                    <span class="text-sm text-gray-500">This month</span>
+                                </div>
+                                <div class="card p-4 relative">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-green-500 text-sm font-bold">↑ 7%</span>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">First contact Resolution</h3>
+                                    <p class="text-2xl font-bold text-green-600">98%</p>
+                                    <span class="text-sm text-gray-500">today</span>
+                                </div>
+                                <div class="card p-4 relative">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-green-500 text-sm font-bold">↓ 10%</span>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">Avg Processing</h3>
+                                    <p class="text-2xl font-bold">
+                                        < 1hr</p>
+                                            <span class="text-sm text-gray-500">Per application</span>
+                                </div>
+                                <div class="card p-4 relative">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-green-500 text-sm font-bold">↑ 2%</span>
+                                    </div>
+                                    <h3 class="text-lg font-semibold">Client Satisfaction</h3>
+                                    <p class="text-2xl font-bold">96%</p>
+                                    <span class="text-sm text-gray-500">Happy clients</span>
+                                </div>
+                            </div>
+
+
+                            <!-- Reviews Section -->
+                            <div class="card p-6 mb-8">
+                                <h3 class="text-xl font-semibold mb-4">Recent Reviews</h3>
+                                <div class="space-y-4">
+                                    <div class="border-l-4 border-blue-500 pl-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 class="font-semibold">Outstanding Campaign Management</h4>
+                                                <p class="text-sm text-gray-600">From: Marketing Director</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="text-yellow-400">★★★★★</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Exceptional handling of advertiser relationships.
+                                            Revenue increased by 25% this quarter."</p>
+                                        <p class="text-xs text-gray-500 mt-2">3 days ago</p>
+                                    </div>
+
+                                    <div class="border-l-4 border-green-500 pl-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 class="font-semibold">Quick Approval Process</h4>
+                                                <p class="text-sm text-gray-600">From: Sales Team</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="text-yellow-400">★★★★★</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Campaign approvals are processed within hours. Great
+                                            communication with clients."</p>
+                                        <p class="text-xs text-gray-500 mt-2">5 days ago</p>
+                                    </div>
+
+                                    <div class="border-l-4 border-purple-500 pl-4">
+                                        <div class="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h4 class="font-semibold">Revenue Growth Expert</h4>
+                                                <p class="text-sm text-gray-600">From: Finance Department</p>
+                                            </div>
+                                            <div class="flex items-center">
+                                                <span class="text-yellow-400">★★★★☆</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-gray-700">"Consistently meets revenue targets. Excellent
+                                            advertiser retention rate."</p>
+                                        <p class="text-xs text-gray-500 mt-2">1 week ago</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Active Tickets Panel -->
+                    <div id="active-tickets-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Active Support Tickets</h1>
+                            <p class="text-gray-600">Manage and respond to open customer support tickets</p>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card p-6 mb-6">
+                            <div class="flex flex-wrap gap-4 items-center">
+                                <div class="flex-1 min-w-[300px]">
+                                    <input type="text" class="w-full p-3 border-2 rounded-lg"
+                                        placeholder="Search tickets by ID, customer, or issue...">
+                                </div>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Priorities</option>
+                                    <option value="urgent">Urgent</option>
+                                    <option value="high">High</option>
+                                    <option value="normal">Normal</option>
+                                    <option value="low">Low</option>
+                                </select>
+                                <select class="p-3 border-2 rounded-lg">
+                                    <option value="">All Categories</option>
+                                    <option value="technical">Technical</option>
+                                    <option value="billing">Billing</option>
+                                    <option value="course">Course Related</option>
+                                    <option value="account">Account</option>
+                                </select>
+                                <button onclick="createNewTicket()" class="cta-button">
+                                    <i class="fas fa-plus"></i> New Ticket
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Tickets Table -->
+                        <div class="card overflow-hidden">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Ticket</th>
+                                        <th class="p-4 text-left">Customer</th>
+                                        <th class="p-4 text-left">Category</th>
+                                        <th class="p-4 text-left">Priority</th>
+                                        <th class="p-4 text-left">Created</th>
+                                        <th class="p-4 text-left">Status</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="p-4">
+                                            <div>
+                                                <div class="font-semibold">#2024-567</div>
+                                                <div class="text-sm text-gray-500">Login Issues</div>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">student_234</td>
+                                        <td class="p-4">Technical</td>
+                                        <td class="p-4">
+                                            <span
+                                                class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">High</span>
+                                        </td>
+                                        <td class="p-4">10 min ago</td>
+                                        <td class="p-4">
+                                            <span
+                                                class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Open</span>
+                                        </td>
+                                        <td class="p-4">
+                                            <div class="flex gap-2">
+                                                <button onclick="viewTicket('2024-567')"
+                                                    class="px-4 py-2 bg-blue-500 text-white rounded-lg">View</button>
+                                                <button onclick="assignTicket('2024-567')"
+                                                    class="px-4 py-2 bg-green-500 text-white rounded-lg">Assign</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Resolved Tickets Panel -->
+                    <div id="resolved-tickets-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Resolved Tickets</h1>
+                            <p class="text-gray-600">View and manage closed support tickets</p>
+                        </div>
+
+                        <!-- Statistics Card for this panel only -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Total Resolved</h3>
+                                <p class="text-2xl font-bold">1,234</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">This Week</h3>
+                                <p class="text-2xl font-bold">156</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Satisfaction Rate</h3>
+                                <p class="text-2xl font-bold text-green-600">98%</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Avg Resolution Time</h3>
+                                <p class="text-2xl font-bold">2.5 hrs</p>
+                            </div>
+                        </div>
+
+                        <div class="card overflow-hidden">
+                            <table class="w-full">
+                                <thead>
+                                    <tr>
+                                        <th class="p-4 text-left">Ticket</th>
+                                        <th class="p-4 text-left">Customer</th>
+                                        <th class="p-4 text-left">Issue</th>
+                                        <th class="p-4 text-left">Resolved By</th>
+                                        <th class="p-4 text-left">Resolution Time</th>
+                                        <th class="p-4 text-left">Rating</th>
+                                        <th class="p-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="p-4">
+                                            <div>
+                                                <div class="font-semibold">#2024-560</div>
+                                                <div class="text-sm text-gray-500">Resolved</div>
+                                            </div>
+                                        </td>
+                                        <td class="p-4">parent_123</td>
+                                        <td class="p-4">Payment Issue</td>
+                                        <td class="p-4">Agent Sarah</td>
+                                        <td class="p-4">45 min</td>
+                                        <td class="p-4">
+                                            <span class="text-yellow-400">★★★★★</span>
+                                        </td>
+                                        <td class="p-4">
+                                            <button class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Messages Panel -->
+                    <div id="messages-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Customer Messages</h1>
+                            <p class="text-gray-600">View and respond to customer messages</p>
+                        </div>
+
+                        <!-- Message List -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="card">
+                                <div class="p-4 border-b">
+                                    <h3 class="text-lg font-semibold">Inbox</h3>
+                                </div>
+                                <div class="max-h-96 overflow-y-auto">
+                                    <div class="p-4 border-b hover:bg-gray-50 cursor-pointer">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-semibold">student_456</h4>
+                                                <p class="text-sm text-gray-600">Need help with course enrollment...</p>
+                                            </div>
+                                            <span class="text-xs text-gray-500">5 min ago</span>
+                                        </div>
+                                    </div>
+                                    <div class="p-4 border-b hover:bg-gray-50 cursor-pointer">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <h4 class="font-semibold">tutor_789</h4>
+                                                <p class="text-sm text-gray-600">Question about upload limits...</p>
+                                            </div>
+                                            <span class="text-xs text-gray-500">15 min ago</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="p-4 border-b">
+                                    <h3 class="text-lg font-semibold">Conversation</h3>
+                                </div>
+                                <div class="p-4">
+                                    <div class="h-64 bg-gray-50 rounded-lg mb-4 p-4 overflow-y-auto">
+                                        <!-- Chat messages would go here -->
+                                        <p class="text-center text-gray-500">Select a message to view conversation</p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input type="text" class="flex-1 p-2 border rounded-lg"
+                                            placeholder="Type your message...">
+                                        <button class="px-4 py-2 bg-blue-500 text-white rounded-lg">Send</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Chat Panel -->
+                    <div id="live-chat-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Live Chat Support</h1>
+                            <p class="text-gray-600">Provide real-time support to customers</p>
+                        </div>
+
+                        <!-- Live Chat Interface -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-2 card">
+                                <div class="p-4 border-b">
+                                    <div class="flex justify-between items-center">
+                                        <h3 class="text-lg font-semibold">Active Chat - student_789</h3>
+                                        <span
+                                            class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Online</span>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="h-96 bg-gray-50 rounded-lg mb-4 p-4 overflow-y-auto">
+                                        <div class="space-y-4">
+                                            <div class="flex gap-3">
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23e5e7eb'/%3E%3C/svg%3E"
+                                                    alt="User" class="w-10 h-10 rounded-full">
+                                                <div class="bg-white p-3 rounded-lg max-w-xs">
+                                                    <p class="text-sm">Hi, I need help with my course enrollment</p>
+                                                    <span class="text-xs text-gray-500">10:30 AM</span>
+                                                </div>
+                                            </div>
+                                            <div class="flex gap-3 justify-end">
+                                                <div class="bg-blue-500 text-white p-3 rounded-lg max-w-xs">
+                                                    <p class="text-sm">Hello! I'd be happy to help you with that.</p>
+                                                    <span class="text-xs opacity-80">10:31 AM</span>
+                                                </div>
+                                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23e5e7eb'/%3E%3C/svg%3E"
+                                                    alt="Support" class="w-10 h-10 rounded-full">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input type="text" class="flex-1 p-2 border rounded-lg"
+                                            placeholder="Type your message...">
+                                        <button class="px-4 py-2 bg-blue-500 text-white rounded-lg">Send</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card">
+                                <div class="p-4 border-b">
+                                    <h3 class="text-lg font-semibold">Waiting Queue</h3>
+                                </div>
+                                <div class="p-4 space-y-3">
+                                    <div class="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <h4 class="font-semibold text-sm">parent_234</h4>
+                                                <p class="text-xs text-gray-600">Waiting for 2 min</p>
+                                            </div>
+                                            <button
+                                                class="px-3 py-1 bg-green-500 text-white text-xs rounded">Accept</button>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                        <div class="flex justify-between items-center">
+                                            <div>
+                                                <h4 class="font-semibold text-sm">tutor_567</h4>
+                                                <p class="text-xs text-gray-600">Waiting for 5 min</p>
+                                            </div>
+                                            <button
+                                                class="px-3 py-1 bg-green-500 text-white text-xs rounded">Accept</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Panel -->
+                    <div id="feedback-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Customer Feedback</h1>
+                            <p class="text-gray-600">View and analyze customer feedback and reviews</p>
+                        </div>
+
+                        <!-- Statistics Card for this panel only -->
+                        <div class="dashboard-grid mb-8">
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Total Reviews</h3>
+                                <p class="text-2xl font-bold">3,456</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Average Rating</h3>
+                                <p class="text-2xl font-bold">4.7/5</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">This Month</h3>
+                                <p class="text-2xl font-bold">234</p>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Response Rate</h3>
+                                <p class="text-2xl font-bold">89%</p>
+                            </div>
+                        </div>
+
+                        <div class="card overflow-hidden">
+                            <div class="p-4 border-b">
+                                <h3 class="text-xl font-semibold">Recent Customer Feedback</h3>
+                            </div>
+                            <div class="p-4 space-y-4">
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <h4 class="font-semibold">student_901</h4>
+                                            <span class="text-yellow-400">★★★★★</span>
+                                        </div>
+                                        <span class="text-sm text-gray-500">Yesterday</span>
+                                    </div>
+                                    <p class="text-gray-700 mb-3">"Excellent platform! The customer support is amazing
+                                        and always helpful. The course quality is top-notch."</p>
+                                    <div class="flex gap-2">
+                                        <button class="px-3 py-1 bg-blue-100 text-blue-600 rounded">Reply</button>
+                                        <button class="px-3 py-1 bg-green-100 text-green-600 rounded">Mark as
+                                            Featured</button>
+                                    </div>
+                                </div>
+
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <h4 class="font-semibold">tutor_234</h4>
+                                            <span class="text-yellow-400">★★★★☆</span>
+                                        </div>
+                                        <span class="text-sm text-gray-500">2 days ago</span>
+                                    </div>
+                                    <p class="text-gray-700 mb-3">"Great platform for teaching. The upload process could
+                                        be smoother but overall very satisfied."</p>
+                                    <div class="flex gap-2">
+                                        <button class="px-3 py-1 bg-blue-100 text-blue-600 rounded">Reply</button>
+                                        <button class="px-3 py-1 bg-yellow-100 text-yellow-600 rounded">Forward to
+                                            Team</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Widgets (Persistent across all panels) -->
+                <div class="admin-right-widgets"
+                    style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
+                    
+                    <!-- Recent Tickets Widget -->
+                    <div class="admin-widget-card recent-tickets-widget">
+                        <h3 class="text-lg font-semibold mb-4">
+                            🎫 Live Ticket Feed
+                            <span class="live-indicator ml-2 text-xs text-green-500">
+                                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                Live
+                            </span>
+                        </h3>
+                        <div class="tickets-activity-container">
+                            <div class="tickets-activity-scroll">
+                                <!-- Ticket items that will scroll -->
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                                            <span class="user-name">Bekele Tadesse</span>
+                                            <span class="status-tag pending">PENDING</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Login Issues - Cannot access course</span>
+                                            <span class="ticket-id">#TKT-001</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">2 minutes ago</span>
+                                            <button class="action-btn">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-comments text-blue-600"></i>
+                                            <span class="user-name">Marta Solomon</span>
+                                            <span class="status-tag in-progress">IN PROGRESS</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Course Content - Missing videos</span>
+                                            <span class="ticket-id">#TKT-002</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">5 minutes ago</span>
+                                            <button class="action-btn">Continue</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-exclamation-circle text-red-600"></i>
+                                            <span class="user-name">Abebe Getachew</span>
+                                            <span class="status-tag urgent">URGENT</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Payment Error - Double charged</span>
+                                            <span class="ticket-id">#TKT-003</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">8 minutes ago</span>
+                                            <button class="action-btn urgent">Handle Now</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-check-circle text-green-600"></i>
+                                            <span class="user-name">Helen Kebede</span>
+                                            <span class="status-tag resolved">RESOLVED</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Account Recovery - Email changed</span>
+                                            <span class="ticket-id">#TKT-004</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">12 minutes ago</span>
+                                            <button class="action-btn">View</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-book text-purple-600"></i>
+                                            <span class="user-name">Daniel Haile</span>
+                                            <span class="status-tag pending">PENDING</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Study Materials - Download failed</span>
+                                            <span class="ticket-id">#TKT-005</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">15 minutes ago</span>
+                                            <button class="action-btn">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-graduation-cap text-indigo-600"></i>
+                                            <span class="user-name">Sarah Ahmed</span>
+                                            <span class="status-tag in-progress">IN PROGRESS</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Certificate Issue - Name incorrect</span>
+                                            <span class="ticket-id">#TKT-006</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">18 minutes ago</span>
+                                            <button class="action-btn">Continue</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-bug text-red-500"></i>
+                                            <span class="user-name">Yohannes Tekle</span>
+                                            <span class="status-tag urgent">URGENT</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Technical Bug - App crashes</span>
+                                            <span class="ticket-id">#TKT-007</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">22 minutes ago</span>
+                                            <button class="action-btn urgent">Handle Now</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-user-shield text-orange-600"></i>
+                                            <span class="user-name">Tigist Alemu</span>
+                                            <span class="status-tag pending">PENDING</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Privacy Concern - Data request</span>
+                                            <span class="ticket-id">#TKT-008</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">25 minutes ago</span>
+                                            <button class="action-btn">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Duplicate ALL items for seamless continuous scrolling -->
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                                            <span class="user-name">Bekele Tadesse</span>
+                                            <span class="status-tag pending">PENDING</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Login Issues - Cannot access course</span>
+                                            <span class="ticket-id">#TKT-001</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">2 minutes ago</span>
+                                            <button class="action-btn">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-comments text-blue-600"></i>
+                                            <span class="user-name">Marta Solomon</span>
+                                            <span class="status-tag in-progress">IN PROGRESS</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Course Content - Missing videos</span>
+                                            <span class="ticket-id">#TKT-002</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">5 minutes ago</span>
+                                            <button class="action-btn">Continue</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-exclamation-circle text-red-600"></i>
+                                            <span class="user-name">Abebe Getachew</span>
+                                            <span class="status-tag urgent">URGENT</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Payment Error - Double charged</span>
+                                            <span class="ticket-id">#TKT-003</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">8 minutes ago</span>
+                                            <button class="action-btn urgent">Handle Now</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-check-circle text-green-600"></i>
+                                            <span class="user-name">Helen Kebede</span>
+                                            <span class="status-tag resolved">RESOLVED</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Account Recovery - Email changed</span>
+                                            <span class="ticket-id">#TKT-004</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">12 minutes ago</span>
+                                            <button class="action-btn">View</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-book text-purple-600"></i>
+                                            <span class="user-name">Daniel Haile</span>
+                                            <span class="status-tag pending">PENDING</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Study Materials - Download failed</span>
+                                            <span class="ticket-id">#TKT-005</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">15 minutes ago</span>
+                                            <button class="action-btn">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-graduation-cap text-indigo-600"></i>
+                                            <span class="user-name">Sarah Ahmed</span>
+                                            <span class="status-tag in-progress">IN PROGRESS</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Certificate Issue - Name incorrect</span>
+                                            <span class="ticket-id">#TKT-006</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">18 minutes ago</span>
+                                            <button class="action-btn">Continue</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-bug text-red-500"></i>
+                                            <span class="user-name">Yohannes Tekle</span>
+                                            <span class="status-tag urgent">URGENT</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Technical Bug - App crashes</span>
+                                            <span class="ticket-id">#TKT-007</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">22 minutes ago</span>
+                                            <button class="action-btn urgent">Handle Now</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="ticket-activity-item">
+                                    <div class="ticket-content">
+                                        <div class="ticket-header">
+                                            <i class="fas fa-user-shield text-orange-600"></i>
+                                            <span class="user-name">Tigist Alemu</span>
+                                            <span class="status-tag pending">PENDING</span>
+                                        </div>
+                                        <div class="ticket-info">
+                                            <span class="ticket-subject">Privacy Concern - Data request</span>
+                                            <span class="ticket-id">#TKT-008</span>
+                                        </div>
+                                        <div class="ticket-footer">
+                                            <span class="timestamp">25 minutes ago</span>
+                                            <button class="action-btn">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tickets-activity-fade-top"></div>
+                        <div class="tickets-activity-fade-bottom"></div>
+                    </div>
+                    
+                    <!-- Daily Quota Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">Daily Quota</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Verified</span>
+                                <span class="font-semibold">142/150</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Pending</span>
+                                <span class="font-semibold">8/10</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 80%"></div>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Rejected</span>
+                                <span class="font-semibold">3/5</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: 60%"></div>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Suspended</span>
+                                <span class="font-semibold">2/5</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-orange-500 h-2 rounded-full" style="width: 40%"></div>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Archived</span>
+                                <span class="font-semibold">89/100</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-gray-500 h-2 rounded-full" style="width: 89%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fire Streak Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">🔥 Fire Streak</h3>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-orange-500">15</div>
+                            <div class="text-sm text-gray-600">Days</div>
+                            <div class="mt-4 grid grid-cols-7 gap-1">
+                                <span class="text-xs">🔥</span>
+                                <span class="text-xs">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-2">Keep going!</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- End of admin-right-widgets -->
+
+        </div>
+        <!-- End of flex gap-6 container -->
+
+        </div>
+        <!-- End of container mx-auto px-4 -->
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-section mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <p>&copy; 2025 Astegni. All rights reserved. | Admin Panel</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/root/app.js"></script>
+    <script src="../js/root/auth.js"></script>
+
+    <!-- Standalone Script - All Navigation & Panel Management -->
+    <script src="../js/admin-pages/manage-customers-standalone.js"></script>
+
+    <!-- Page-specific data loading -->
+    <script src="../js/admin-pages/manage-customers.js"></script>
+
+    <!-- Fix theme background -->
+    <script>
+        // Ensure dark theme background is applied correctly
+        document.addEventListener('DOMContentLoaded', function () {
+            // Force background color application
+            function applyThemeBackground() {
+                const theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.body.style.backgroundColor = '#1E1E1E';
+                    document.documentElement.style.backgroundColor = '#1E1E1E';
+                } else {
+                    document.body.style.backgroundColor = '#ffffff';
+                    document.documentElement.style.backgroundColor = '#ffffff';
+                }
+            }
+
+            // Apply immediately
+            applyThemeBackground();
+
+            // Watch for theme changes
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
+                    if (mutation.attributeName === 'data-theme') {
+                        applyThemeBackground();
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['data-theme']
+            });
+
+            // Check if unanswered responses exceed total responses
+            function checkResponseAlert() {
+                const totalResponsesCard = document.getElementById('total-responses-card');
+                const unansweredCard = document.getElementById('unanswered-card');
+
+                if (totalResponsesCard && unansweredCard) {
+                    // Extract the numbers from the cards
+                    const totalResponses = parseInt(totalResponsesCard.querySelector('.text-2xl').textContent);
+                    const unansweredResponses = parseInt(unansweredCard.querySelector('.text-2xl').textContent);
+
+                    // If unanswered > total (shouldn't happen logically but as requested)
+                    // In reality, you might want to check if unanswered > some threshold percentage
+                    // For demo, let's check if unanswered is more than 10% of total
+                    if (unansweredResponses > totalResponses * 0.1) { // Change to > totalResponses if you want exact requirement
+                        unansweredCard.style.backgroundColor = '#FEE2E2'; // Light red background
+                        unansweredCard.style.borderColor = '#DC2626'; // Red border
+                        unansweredCard.style.animation = 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite';
+
+                        // Add alert icon if not already present
+                        if (!unansweredCard.querySelector('.alert-icon')) {
+                            const alertIcon = document.createElement('span');
+                            alertIcon.className = 'alert-icon absolute top-2 left-2 text-red-600';
+                            alertIcon.innerHTML = '⚠️';
+                            alertIcon.style.fontSize = '20px';
+                            unansweredCard.appendChild(alertIcon);
+                        }
+                    }
+                }
+            }
+
+            // Check on page load
+            checkResponseAlert();
+
+            // Add CSS animation for pulse effect
+            if (!document.getElementById('alertStyles')) {
+                const style = document.createElement('style');
+                style.id = 'alertStyles';
+                style.innerHTML = `
+                    @keyframes pulse {
+                        0%, 100% {
+                            opacity: 1;
+                        }
+                        50% {
+                            opacity: .9;
+                        }
+                    }
+                    [data-theme="dark"] #unanswered-card[style*="background-color"] {
+                        background-color: #7F1D1D !important;
+                    }
+
+                    /* Smooth movie credits roll animation */
+                    @keyframes smoothRollUp {
+                        0% {
+                            transform: translateY(120%);
+                            opacity: 0;
+                            max-height: 0;
+                            margin-bottom: 0;
+                        }
+                        20% {
+                            opacity: 0.3;
+                            max-height: 150px;
+                        }
+                        40% {
+                            opacity: 0.7;
+                        }
+                        100% {
+                            transform: translateY(0);
+                            opacity: 1;
+                            max-height: 150px;
+                            margin-bottom: 12px;
+                        }
+                    }
+
+                    #tickets-container {
+                        display: flex;
+                        flex-direction: column;
+                        overflow-y: auto;
+                        overflow-x: hidden;
+                        position: relative;
+                        scroll-behavior: smooth;
+                        scrollbar-width: thin;
+                        scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+                    }
+
+                    #tickets-container::-webkit-scrollbar {
+                        width: 6px;
+                    }
+
+                    #tickets-container::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+
+                    #tickets-container::-webkit-scrollbar-thumb {
+                        background-color: rgba(156, 163, 175, 0.3);
+                        border-radius: 3px;
+                    }
+
+                    /* Smooth continuous scrolling */
+                    #tickets-container.scrolling {
+                        animation: continuousScroll 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                    }
+
+                    @keyframes continuousScroll {
+                        0% {
+                            transform: translateY(0);
+                        }
+                        100% {
+                            transform: translateY(-10px);
+                        }
+                    }
+
+                    .ticket-item {
+                        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                        margin-bottom: 12px;
+                        transform-origin: center bottom;
+                    }
+
+                    .ticket-item.new-ticket {
+                        animation: smoothRollUp 1.2s cubic-bezier(0.35, 0, 0.25, 1) forwards;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: 2px solid #667eea;
+                        box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+                    }
+
+                    /* All tickets move up smoothly when new one arrives */
+                    .ticket-item.shift-up {
+                        animation: shiftUp 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                    }
+
+                    @keyframes shiftUp {
+                        0% {
+                            transform: translateY(0);
+                        }
+                        100% {
+                            transform: translateY(-5px);
+                        }
+                    }
+
+                    .ticket-item.new-ticket h4,
+                    .ticket-item.new-ticket p {
+                        color: white !important;
+                    }
+
+                    .ticket-item {
+                        transition: all 0.3s ease;
+                    }
+
+                    .ticket-item.fade-normal {
+                        animation: fadeToNormal 2s ease-out forwards;
+                    }
+
+                    @keyframes fadeToNormal {
+                        0% {
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            border-color: #667eea;
+                        }
+                        100% {
+                            background: white;
+                            border-color: #e5e7eb;
+                        }
+                    }
+
+                    [data-theme="dark"] .ticket-item.fade-normal {
+                        animation: fadeToNormalDark 2s ease-out forwards;
+                    }
+
+                    @keyframes fadeToNormalDark {
+                        0% {
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            border-color: #667eea;
+                        }
+                        100% {
+                            background: #2d3748;
+                            border-color: #4a5568;
+                        }
+                    }
+
+                    @keyframes fadeOut {
+                        0% {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                        100% {
+                            opacity: 0;
+                            transform: translateY(-20px);
+                            margin-bottom: -100px;
+                        }
+                    }
+
+                    /* Pulse animation for NEW label */
+                    .pulse {
+                        animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                    }
+
+                    @keyframes pulse {
+                        0%, 100% {
+                            opacity: 0.75;
+                        }
+                        50% {
+                            opacity: 1;
+                        }
+                    }
+
+                    /* Smooth height transition for ticket removal */
+                    .ticket-item.removing {
+                        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+                        transform-origin: top center;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Live Ticket Simulation
+            const ticketTypes = [
+                {
+                    icon: 'fa-exclamation-triangle',
+                    iconColor: 'yellow-600',
+                    status: 'Pending',
+                    statusBg: 'yellow-100',
+                    statusText: 'yellow-800',
+                    issues: ['Login Issues', 'Password Reset', 'Account Locked', 'Email Verification']
+                },
+                {
+                    icon: 'fa-comments',
+                    iconColor: 'blue-600',
+                    status: 'In Progress',
+                    statusBg: 'blue-100',
+                    statusText: 'blue-800',
+                    issues: ['Course Content', 'Video Quality', 'Download Problem', 'Assignment Help']
+                },
+                {
+                    icon: 'fa-exclamation-circle',
+                    iconColor: 'red-600',
+                    status: 'Urgent',
+                    statusBg: 'red-100',
+                    statusText: 'red-800',
+                    issues: ['Payment Error', 'Refund Request', 'Billing Issue', 'Subscription Problem']
+                },
+                {
+                    icon: 'fa-question-circle',
+                    iconColor: 'green-600',
+                    status: 'New',
+                    statusBg: 'green-100',
+                    statusText: 'green-800',
+                    issues: ['General Question', 'Feature Request', 'How To', 'Documentation']
+                }
+            ];
+
+            const userTypes = ['student', 'tutor', 'parent', 'institute'];
+            let ticketCounter = 568;
+
+            function generateRandomTicket() {
+                const type = ticketTypes[Math.floor(Math.random() * ticketTypes.length)];
+                const issue = type.issues[Math.floor(Math.random() * type.issues.length)];
+                const user = userTypes[Math.floor(Math.random() * userTypes.length)];
+                const userId = Math.floor(Math.random() * 900) + 100;
+
+                ticketCounter++;
+
+                return {
+                    id: `2024-${ticketCounter}`,
+                    type: type,
+                    issue: issue,
+                    user: `${user}_${userId}`,
+                    time: 'just now'
+                };
+            }
+
+            function addNewTicket() {
+                const container = document.getElementById('tickets-container');
+                if (!container) return;
+
+                // Shift all existing tickets up smoothly
+                const existingTickets = container.querySelectorAll('.ticket-item');
+                existingTickets.forEach(ticket => {
+                    ticket.classList.add('shift-up');
+                    setTimeout(() => {
+                        ticket.classList.remove('shift-up');
+                    }, 800);
+                });
+
+                const ticket = generateRandomTicket();
+                const ticketHtml = `
+                    <div class="ticket-item new-ticket p-3 border rounded-lg" style="opacity: 0;">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i class="fas ${ticket.type.icon} text-${ticket.type.iconColor} text-xs"></i>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-${ticket.type.statusBg} text-${ticket.type.statusText}">${ticket.type.status}</span>
+                            <span class="ml-auto text-xs opacity-75 pulse">● NEW</span>
+                        </div>
+                        <h4 class="font-semibold text-sm">${ticket.issue}</h4>
+                        <p class="text-xs text-gray-600">${ticket.user} • ${ticket.time}</p>
+                        <button class="mt-2 px-3 py-1 bg-white text-blue-500 border border-white rounded text-xs hover:bg-gray-100">
+                            ${ticket.type.status === 'Urgent' ? 'Handle Now' : ticket.type.status === 'In Progress' ? 'Continue' : 'Reply'}
+                        </button>
+                    </div>
+                `;
+
+                // Create a temporary div to hold the HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = ticketHtml;
+                const newTicket = tempDiv.firstElementChild;
+
+                // Add the scrolling class for smooth movement
+                container.classList.add('scrolling');
+
+                // Append at the end with delay for smooth effect
+                setTimeout(() => {
+                    container.appendChild(newTicket);
+                    newTicket.style.opacity = '1';
+
+                    // Smooth scroll animation
+                    requestAnimationFrame(() => {
+                        const scrollOptions = {
+                            top: container.scrollHeight,
+                            behavior: 'smooth'
+                        };
+                        container.scrollTo(scrollOptions);
+                    });
+                }, 50);
+
+                // Remove scrolling class
+                setTimeout(() => {
+                    container.classList.remove('scrolling');
+                }, 600);
+
+                // Fade from purple to normal after 3 seconds
+                setTimeout(() => {
+                    newTicket.classList.remove('new-ticket');
+                    newTicket.classList.add('fade-normal');
+
+                    // Update visual elements after fade
+                    setTimeout(() => {
+                        const h4 = newTicket.querySelector('h4');
+                        const p = newTicket.querySelector('p');
+                        const newLabel = newTicket.querySelector('.pulse');
+                        if (h4) h4.style.color = '';
+                        if (p) p.style.color = '';
+                        if (newLabel) {
+                            newLabel.style.animation = 'fadeOut 0.3s ease-out forwards';
+                            setTimeout(() => newLabel.remove(), 300);
+                        }
+
+                        // Update button style smoothly
+                        const button = newTicket.querySelector('button');
+                        if (button) {
+                            button.style.transition = 'all 0.3s ease';
+                            if (ticket.type.status === 'Urgent') {
+                                button.className = 'mt-2 px-3 py-1 bg-red-500 text-white rounded text-xs';
+                            } else {
+                                button.className = 'mt-2 px-3 py-1 bg-blue-500 text-white rounded text-xs';
+                            }
+                        }
+                    }, 2000);
+                }, 3000);
+
+                // Smooth removal of old tickets when limit exceeded
+                setTimeout(() => {
+                    const tickets = container.querySelectorAll('.ticket-item');
+                    if (tickets.length > 8) {
+                        const oldTicket = tickets[0];
+                        oldTicket.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                        oldTicket.style.transform = 'translateY(-30px) scale(0.9)';
+                        oldTicket.style.opacity = '0';
+                        oldTicket.style.marginBottom = '-' + oldTicket.offsetHeight + 'px';
+
+                        setTimeout(() => {
+                            oldTicket.remove();
+                        }, 500);
+                    }
+                }, 1500);
+
+                // Update time for existing tickets
+                updateTicketTimes();
+            }
+
+            function updateTicketTimes() {
+                const tickets = document.querySelectorAll('.ticket-item');
+                const timeUnits = ['just now', '1 min ago', '2 min ago', '5 min ago', '10 min ago', '15 min ago', '30 min ago', '45 min ago', '1 hour ago', '2 hours ago'];
+
+                // Update times from bottom to top (newest to oldest)
+                const ticketsArray = Array.from(tickets);
+                ticketsArray.reverse().forEach((ticket, index) => {
+                    if (index > 0 && index < timeUnits.length) {
+                        const timeElement = ticket.querySelector('p.text-xs');
+                        if (timeElement) {
+                            const parts = timeElement.textContent.split(' • ');
+                            if (parts.length > 1) {
+                                timeElement.textContent = `${parts[0]} • ${timeUnits[index]}`;
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Start live simulation
+            let liveTicketInterval;
+            function startLiveTickets() {
+                // Add first ticket after 2 seconds for immediate engagement
+                setTimeout(() => {
+                    addNewTicket();
+
+                    // Then add tickets at smoother intervals (4-8 seconds)
+                    // More frequent for continuous movie credit effect
+                    const addTicketWithVariableDelay = () => {
+                        const delay = Math.random() * 4000 + 4000; // 4-8 seconds
+                        liveTicketInterval = setTimeout(() => {
+                            addNewTicket();
+                            addTicketWithVariableDelay(); // Schedule next ticket
+                        }, delay);
+                    };
+
+                    addTicketWithVariableDelay();
+                }, 2000);
+            }
+
+            // Start the live ticket simulation
+            startLiveTickets();
+
+            // Clean up on page unload
+            window.addEventListener('beforeunload', () => {
+                if (liveTicketInterval) {
+                    clearTimeout(liveTicketInterval);
+                }
+            });
+        });
+    </script>
+
+            <!-- Edit Profile Modal -->
+    <!-- This modal ONLY edits admin_profile table fields (personal information) -->
+    <!-- admin_profile_stats fields (employee_id, access_level, etc.) are managed by super admin or system -->
+    <div id="edit-profile-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
+                    <!-- Ethiopian Naming Convention -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">First Name *</label>
+                            <input type="text" id="firstNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Abebe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Father's Name *</label>
+                            <input type="text" id="fatherNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Kebede" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Grandfather's Name *</label>
+                            <input type="text" id="grandfatherNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Tesfa" required>
+                        </div>
+                    </div>
+
+                    <!-- Username (Display Name) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Username (Display Name) *</label>
+                        <input type="text" id="adminUsernameInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., abebe_kebede" required>
+                        <p class="text-xs text-gray-500 mt-1">This will be displayed as your admin username</p>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Email</label>
+                            <input type="email" id="emailInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="admin@astegni.et">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Phone Number</label>
+                            <input type="tel" id="phoneNumberInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="+251911234567">
+                        </div>
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Bio</label>
+                        <textarea id="bioInput" rows="3"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tell us about yourself..."></textarea>
+                    </div>
+
+                    <!-- Quote -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Quote</label>
+                        <input type="text" id="quoteInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Your personal quote or motto">
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                            onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit"
+                            class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update
+                            Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals would go here (Edit Profile, Upload Profile Picture, Upload Cover Image) -->
+    <!-- Similar structure to manage-schools.html modals -->
+
+</body>
+
+</html>

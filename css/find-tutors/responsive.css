@@ -1,0 +1,158 @@
+
+/* Ensure nav links are visible on desktop */
+
+/* Responsive grid */
+@media (max-width: 1200px) {
+    #tutorCards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+
+/* Responsive sidebar shift for large screens */
+@media (min-width: 1024px) {
+    .main-content-container.shifted {
+        margin-left: 280px;
+    }
+}
+
+@media (min-width: 768px) {
+    .nav-links {
+        display: flex !important;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .nav-link {
+        display: inline-block !important;
+        color: var(--nav-link);
+        text-decoration: none;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+    
+    .nav-link:hover {
+        color: var(--nav-link-hover);
+        background: rgba(245, 158, 11, 0.08);
+    }
+    .nav-links.hidden {
+        display: flex !important;
+    }
+
+    .ad-placeholder-section {
+        padding: 40px 20px;
+        margin: 20px 0;
+    }
+    
+    .ad-title {
+        font-size: 28px;
+    }
+    
+    .ad-subtitle {
+        font-size: 16px;
+    }
+    
+    .rating-tooltip {
+        width: 240px;
+        left: 0;
+        transform: translateX(0);
+    }
+    
+    .rating-tooltip::before {
+        left: 30px;
+    }
+    
+    .tutor-teaches-at {
+        font-size: 12px;
+    }
+    
+    .price-amount {
+        font-size: 18px;
+    }
+
+    #tutorCards {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+    }
+}
+
+
+@media (max-width: 480px) {
+    .ad-placeholder-section {
+        padding: 30px 15px;
+    }
+    
+    .ad-title {
+        font-size: 24px;
+    }
+    
+    .ad-subtitle {
+        font-size: 14px;
+    }
+    
+    .ad-cta {
+        padding: 12px 28px;
+        font-size: 14px;
+    }
+    
+    .rating-tooltip {
+        width: 220px;
+    }
+    .content-wrapper {
+        padding: 2.5rem 2rem;
+    }
+
+    .sidebar-container {
+        width: 260px;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .content-wrapper {
+        padding: 1.5rem 1rem;
+    }
+    
+    .tutor-card {
+        padding: 1.25rem;
+    }
+    
+    .tutor-avatar {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .ad-text {
+        font-size: 1.25rem;
+    }
+    
+    .hero-stats {
+        gap: 2rem;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+    }
+    
+    .rating-breakdown-tooltip {
+        min-width: 240px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-10px);
+    }
+    
+    .rating-stars-container:hover .rating-breakdown-tooltip {
+        transform: translateX(-50%) translateY(0);
+    }
+    
+    .tooltip-arrow {
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+    }
+}
+
+

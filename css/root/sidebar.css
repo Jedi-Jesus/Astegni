@@ -1,0 +1,149 @@
+/* ============================================
+   SIDEBAR
+   ============================================ */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -320px;
+    width: 320px;
+    height: 100vh;
+    background: var(--background);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2000;
+    overflow-y: auto;
+}
+
+.sidebar.active {
+    transform: translateX(320px);
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: var(--button-text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.sidebar-close {
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.sidebar-close:hover {
+    transform: rotate(90deg);
+}
+
+.sidebar-nav {
+    padding: 1rem 0;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    color: var(--text);
+    text-decoration: none;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, transparent, var(--button-bg), transparent);
+    transition: width 0.3s;
+}
+
+.sidebar-link:hover {
+    background: rgba(var(--button-bg-rgb), 0.1);
+    color: var(--button-bg);
+}
+
+.sidebar-link:hover::before {
+    width: 100%;
+}
+
+.sidebar-icon {
+    margin-right: 1rem;
+    font-size: 1.2rem;
+}
+
+.sidebar-arrow {
+    margin-left: auto;
+    transition: transform 0.3s;
+}
+
+.sidebar-submenu.active .sidebar-arrow {
+    transform: rotate(180deg);
+}
+
+.submenu-items {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-submenu.active .submenu-items {
+    max-height: 300px;
+}
+
+.submenu-item {
+    padding-left: 3.5rem;
+    font-size: 0.9rem;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 999;
+    pointer-events: none;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: all;
+}
+
+/* Left sidebar specific styles for tutor profile */
+.left-sidebar {
+    z-index: 1000;
+}
+
+.left-sidebar.closed {
+    transform: translateX(-100%);
+}
+
+/* Ensure sidebar shows on mobile when active */
+@media (max-width: 768px) {
+    .left-sidebar {
+        transform: translateX(-100%);
+    }
+
+    .left-sidebar:not(.closed) {
+        transform: translateX(0);
+    }
+}

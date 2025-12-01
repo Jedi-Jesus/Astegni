@@ -1,0 +1,22 @@
+<!--
+  Modal: viewRequestModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="viewRequestModal" class="modal hidden">
+        <div class="modal-overlay" onclick="SessionRequestManager.closeModal()"></div>
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-alt"></i> Session Request Details</h2>
+                <button class="modal-close" onclick="SessionRequestManager.closeModal()">×</button>
+            </div>
+
+            <div class="modal-body" id="viewRequestContent">
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                    <p>Loading request details...</p>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,271 @@
+<!-- Invite Parent Modal -->
+<div id="inviteParentModal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeInviteParentModal()"></div>
+    <div class="modal-content" style="max-width: 600px; max-height: 90vh; display: flex; flex-direction: column;">
+
+        <!-- Step 1: Search for existing user -->
+        <div id="invite-step-1" class="invite-step" style="display: flex; flex-direction: column; height: 100%; max-height: 85vh;">
+            <div class="modal-header" style="flex-shrink: 0;">
+                <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>👨‍👩‍👧</span> Invite Parent
+                </h2>
+                <button class="modal-close" onclick="closeInviteParentModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+                <p class="text-gray-600 dark:text-gray-400 mb-4">Search for your parent in our system or add them as a new user.</p>
+
+                <!-- Search Bar -->
+                <div class="relative mb-4">
+                    <input type="text"
+                           id="parent-search-input"
+                           placeholder="Search by name, email, or phone..."
+                           class="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:border-purple-500 focus:outline-none transition-all"
+                           oninput="parentPortalManager.searchUsers(this.value)">
+                    <svg class="w-5 h-5 absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <div id="search-loading" class="absolute right-4 top-1/2 transform -translate-y-1/2 hidden">
+                        <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-500"></div>
+                    </div>
+                </div>
+
+                <!-- Search Results -->
+                <div id="parent-search-results" class="space-y-3 max-h-64 overflow-y-auto mb-4">
+                    <div class="text-center py-8 text-gray-400">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <p>Start typing to search for your parent</p>
+                    </div>
+                </div>
+
+                <!-- Divider -->
+                <div class="flex items-center gap-4 my-6">
+                    <div class="flex-1 border-t border-gray-200 dark:border-gray-600"></div>
+                    <span class="text-gray-400 text-sm font-medium">OR</span>
+                    <div class="flex-1 border-t border-gray-200 dark:border-gray-600"></div>
+                </div>
+
+                <!-- Add New Person Button -->
+                <button onclick="parentPortalManager.showAddNewParentForm()"
+                        class="w-full py-4 px-6 rounded-xl border-2 border-dashed border-purple-300 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all flex items-center justify-center gap-3 text-purple-600 dark:text-purple-400 font-semibold">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                    </svg>
+                    Add Person Not in System
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Fill Information for Existing User -->
+        <div id="invite-step-2" class="invite-step hidden" style="display: none; flex-direction: column; height: 100%; max-height: 85vh;">
+            <div class="modal-header" style="flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <button onclick="parentPortalManager.backToSearch()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </button>
+                    <h2>Invite as Parent</h2>
+                </div>
+                <button class="modal-close" onclick="closeInviteParentModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+                <!-- Selected User Card -->
+                <div id="selected-user-card" class="p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border border-purple-200 dark:border-purple-700/50 mb-6">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <form id="inviteExistingParentForm" onsubmit="parentPortalManager.submitExistingUserInvitation(event)">
+                    <!-- Relationship Type -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Relationship Type *</label>
+                        <select id="invite-relationship-type" required
+                                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                            <option value="">Select relationship...</option>
+                            <option value="Father">Father</option>
+                            <option value="Mother">Mother</option>
+                            <option value="Guardian">Guardian</option>
+                            <option value="Uncle">Uncle</option>
+                            <option value="Aunt">Aunt</option>
+                            <option value="Grandparent">Grandparent</option>
+                            <option value="Sibling">Older Sibling</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Security Verification -->
+                    <div class="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 mb-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <span class="text-2xl">🔒</span>
+                            <div>
+                                <h4 class="font-semibold text-yellow-800 dark:text-yellow-300">Security Verification</h4>
+                                <p class="text-sm text-yellow-700 dark:text-yellow-400">To verify this is really your parent, enter THEIR father's and grandfather's name.</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">Their Father's Name *</label>
+                                <input type="text" id="security-father-name" required
+                                       placeholder="Enter their father's name"
+                                       class="w-full px-3 py-2 rounded-lg border border-yellow-300 dark:border-yellow-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-yellow-500 focus:outline-none">
+                            </div>
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">Their Grandfather's Name *</label>
+                                <input type="text" id="security-grandfather-name" required
+                                       placeholder="Enter their grandfather's name"
+                                       class="w-full px-3 py-2 rounded-lg border border-yellow-300 dark:border-yellow-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-yellow-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="selected-user-id" value="">
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="parentPortalManager.backToSearch()"
+                                class="flex-1 py-3 px-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                            Back
+                        </button>
+                        <button type="submit"
+                                class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            Send Invitation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Step 3: Add New Person Form -->
+        <div id="invite-step-3" class="invite-step hidden" style="display: none; flex-direction: column; height: 100%; max-height: 85vh;">
+            <div class="modal-header" style="flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <button onclick="parentPortalManager.backToSearch()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </button>
+                    <h2>Add New Parent</h2>
+                </div>
+                <button class="modal-close" onclick="closeInviteParentModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; overflow-y: auto; flex: 1;">
+                <p class="text-gray-500 dark:text-gray-400 mb-4 text-sm">Add your parent's information. They will receive a temporary password via email/SMS to create their account.</p>
+
+                <form id="inviteNewParentForm" onsubmit="parentPortalManager.submitNewUserInvitation(event)">
+                    <!-- Parent Information -->
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">First Name *</label>
+                            <input type="text" id="new-parent-first-name" required
+                                   placeholder="Parent's first name"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Father's Name *</label>
+                            <input type="text" id="new-parent-father-name" required
+                                   placeholder="Parent's father name"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Grandfather's Name *</label>
+                            <input type="text" id="new-parent-grandfather-name" required
+                                   placeholder="Parent's grandfather name"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Gender</label>
+                            <select id="new-parent-gender"
+                                    class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                                <option value="">Select gender...</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                            <input type="email" id="new-parent-email"
+                                   placeholder="parent@email.com"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Phone</label>
+                            <input type="tel" id="new-parent-phone"
+                                   placeholder="+251 9XX XXX XXX"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Relationship Type *</label>
+                        <select id="new-parent-relationship-type" required
+                                class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                            <option value="">Select relationship...</option>
+                            <option value="Father">Father</option>
+                            <option value="Mother">Mother</option>
+                            <option value="Guardian">Guardian</option>
+                            <option value="Uncle">Uncle</option>
+                            <option value="Aunt">Aunt</option>
+                            <option value="Grandparent">Grandparent</option>
+                            <option value="Sibling">Older Sibling</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Security Verification -->
+                    <div class="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 mb-4">
+                        <div class="flex items-start gap-3 mb-3">
+                            <span class="text-2xl">🔒</span>
+                            <div>
+                                <h4 class="font-semibold text-yellow-800 dark:text-yellow-300">Confirm Parent's Names</h4>
+                                <p class="text-sm text-yellow-700 dark:text-yellow-400">Re-enter your parent's father and grandfather name to confirm (must match above).</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">Confirm Father's Name *</label>
+                                <input type="text" id="new-security-father-name" required
+                                       placeholder="Re-enter father's name"
+                                       class="w-full px-3 py-2 rounded-lg border border-yellow-300 dark:border-yellow-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-yellow-500 focus:outline-none">
+                            </div>
+                            <div class="form-group">
+                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">Confirm Grandfather's Name *</label>
+                                <input type="text" id="new-security-grandfather-name" required
+                                       placeholder="Re-enter grandfather's name"
+                                       class="w-full px-3 py-2 rounded-lg border border-yellow-300 dark:border-yellow-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-yellow-500 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 mb-4">
+                        <p class="text-sm text-blue-700 dark:text-blue-400">
+                            <strong>Note:</strong> A temporary password will be sent to the email/phone provided. Your parent will use it to log in and accept your invitation.
+                        </p>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" onclick="parentPortalManager.backToSearch()"
+                                class="flex-1 py-3 px-4 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
+                            Back
+                        </button>
+                        <button type="submit"
+                                class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            Send Invitation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,46 @@
+<!--
+  Modal: otp-verification-modal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="otp-verification-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeOTPVerificationModal()"></div>
+        <div class="modal-content enhanced-modal">
+            <div class="modal-header">
+                <h2>Enter OTP</h2>
+                <button class="modal-close" onclick="closeOTPVerificationModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div
+                        style="background: rgba(16, 185, 129, 0.1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <svg style="width: 32px; height: 32px; color: #10B981;" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 14px;">
+                        We've sent a 6-digit code to:<br>
+                        <strong id="otp-sent-to" style="color: var(--heading);"></strong>
+                    </p>
+                </div>
+                <form id="otp-verification-form">
+                    <div class="form-group">
+                        <label>Enter OTP Code</label>
+                        <input type="text" id="otp-code-input" class="form-input" placeholder="000000" maxlength="6"
+                            required style="text-align: center; font-size: 24px; letter-spacing: 8px;">
+                    </div>
+                    <p style="text-align: center; font-size: 14px; color: var(--text-muted); margin-top: 16px;">
+                        Didn't receive the code? <a href="#" onclick="resendOTP(event)"
+                            style="color: var(--primary); font-weight: 600;">Resend OTP</a>
+                    </p>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeOTPVerificationModal()">Cancel</button>
+                <button class="btn-primary" onclick="verifyOTP()">Verify</button>
+            </div>
+        </div>
+    </div>

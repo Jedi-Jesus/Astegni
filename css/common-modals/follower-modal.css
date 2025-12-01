@@ -1,0 +1,278 @@
+
+/* Followers Modal Layout */
+.followers-modal-layout {
+    display: flex;
+    gap: 24px;
+    height: 550px;
+}
+
+.followers-sidebar {
+    width: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: rgba(245, 158, 11, 0.03);
+    border-radius: 16px;
+    padding: 12px;
+}
+
+.followers-sidebar-title {
+    padding: 14px 18px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid rgba(245, 158, 11, 0.1);
+}
+
+.followers-sidebar-title h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #F59E0B;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.followers-sidebar-title h3::before {
+    content: '🔗';
+    font-size: 1.375rem;
+}
+
+.followers-tab {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+    background: white;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: #78350F;
+    position: relative;
+    overflow: hidden;
+}
+
+.followers-tab::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.followers-tab:hover::before {
+    left: 100%;
+}
+
+.followers-tab:hover {
+    background: linear-gradient(145deg, #ffffff 0%, #fef9f3 100%);
+    transform: translateX(4px);
+    border-color: rgba(245, 158, 11, 0.2);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+}
+
+.followers-tab.active {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    border-color: #F59E0B;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.followers-tab .count {
+    margin-left: auto;
+    padding: 3px 10px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.followers-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.followers-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.followers-controls .search-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.followers-controls .search-wrapper::before {
+    content: '🔍';
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.followers-controls .search-input {
+    width: 100%;
+    padding: 14px 20px 14px 48px;
+    border: 2px solid rgba(245, 158, 11, 0.2);
+    border-radius: 50px;
+    font-size: 1rem;
+    background: white;
+    transition: all 0.3s ease;
+}
+
+.followers-controls .search-input:focus {
+    outline: none;
+    border-color: #F59E0B;
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.1);
+    background: linear-gradient(145deg, #ffffff 0%, #fffbf5 100%);
+}
+
+.filter-buttons-row {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    padding: 10px;
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.03) 0%, rgba(217, 119, 6, 0.03) 100%);
+    border-radius: 60px;
+    border: 1px solid rgba(245, 158, 11, 0.08);
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5),
+                0 4px 12px rgba(245, 158, 11, 0.05);
+}
+
+.followers-controls .filter-btn {
+    padding: 12px 36px;
+    background: linear-gradient(145deg, #ffffff 0%, #fef9f3 100%);
+    border: 2px solid transparent;
+    border-radius: 50px;
+    color: #78350F;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.followers-controls .filter-btn::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50px;
+    padding: 2px;
+    background: linear-gradient(135deg, #F59E0B, #D97706, #F59E0B);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.followers-controls .filter-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.2) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.followers-controls .filter-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.25);
+}
+
+.followers-controls .filter-btn:hover::before {
+    opacity: 1;
+}
+
+.followers-controls .filter-btn:hover::after {
+    width: 200%;
+    height: 200%;
+}
+
+.followers-controls .filter-btn.active {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px) scale(1.05);
+}
+
+.followers-controls .filter-btn.active::before {
+    opacity: 0;
+}
+
+.followers-controls .filter-btn.online-btn {
+    position: relative;
+}
+
+.followers-controls .filter-btn.online-btn::after {
+    content: '';
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    animation: onlinePulse 2s infinite;
+}
+
+.followers-controls .filter-btn.live-btn {
+    position: relative;
+}
+
+.followers-controls .filter-btn.live-btn::after {
+    content: '';
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background: #ef4444;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+    animation: livePulse 1.5s infinite;
+}
+
+.followers-controls .filter-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+
+.followers-list {
+    flex: 1;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 4px;
+}

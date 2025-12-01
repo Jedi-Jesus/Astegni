@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rating Tooltip Test</title>
+    <link rel="stylesheet" href="css/root.css">
+    <style>
+        body {
+            padding: 100px;
+            background: var(--bg-color);
+        }
+
+        .rating-section {
+            position: relative !important;
+            overflow: visible !important;
+            display: inline-block !important;
+        }
+
+        .rating-wrapper {
+            position: relative !important;
+            display: inline-block !important;
+            cursor: pointer !important;
+            overflow: visible !important;
+            background: #f0f0f0;
+            padding: 20px;
+            border: 2px solid #333;
+        }
+
+        .rating-tooltip {
+            position: absolute !important;
+            top: 110% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: white !important;
+            border: 1px solid #ccc !important;
+            border-radius: 12px !important;
+            padding: 1rem !important;
+            min-width: 280px !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transition: all 0.3s ease !important;
+            z-index: 99999 !important;
+            pointer-events: none !important;
+        }
+
+        .rating-wrapper:hover .rating-tooltip {
+            opacity: 1 !important;
+            visibility: visible !important;
+            top: calc(100% + 10px) !important;
+            pointer-events: auto !important;
+            display: block !important;
+        }
+
+        .rating-tooltip::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -8px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            border-left: 8px solid transparent !important;
+            border-right: 8px solid transparent !important;
+            border-bottom: 8px solid white !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rating Tooltip Test</h1>
+    <p>Hover over the rating below:</p>
+
+    <div class="rating-section">
+        <div class="rating-wrapper" id="rating-hover-trigger">
+            <span class="rating-value">4.8</span>
+            <div class="rating-stars">★★★★★</div>
+            <span class="rating-count">(124 reviews)</span>
+
+            <!-- Rating Tooltip -->
+            <div class="rating-tooltip" id="rating-tooltip">
+                <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600;">
+                    Rating Breakdown</h4>
+
+                <div class="rating-metric">
+                    <div class="metric-header">
+                        <span class="metric-label">Retention</span>
+                        <span class="metric-score">4.9</span>
+                    </div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: 98%"></div>
+                    </div>
+                </div>
+
+                <div class="rating-metric">
+                    <div class="metric-header">
+                        <span class="metric-label">Discipline</span>
+                        <span class="metric-score">4.7</span>
+                    </div>
+                    <div class="metric-bar">
+                        <div class="metric-fill" style="width: 94%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p style="margin-top: 200px;">If tooltip appears on hover above, CSS is working correctly.</p>
+</body>
+</html>

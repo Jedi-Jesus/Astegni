@@ -1,0 +1,466 @@
+<!--
+  Modal: scheduleModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="scheduleModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeScheduleModal()"></div>
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 id="schedule-modal-title"><i class="fas fa-calendar-plus"></i> Create Teaching Schedule</h2>
+                <button class="modal-close" onclick="closeScheduleModal()">×</button>
+            </div>
+
+            <form id="scheduleForm" onsubmit="event.preventDefault(); saveSchedule();">
+                <!-- Hidden field to store schedule ID for editing -->
+                <input type="hidden" id="editing-schedule-id" value="">
+
+                <div class="modal-body">
+                    <!-- Schedule Title -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-title" class="form-label">
+                            <i class="fas fa-heading"></i> Schedule Title
+                        </label>
+                        <input type="text" id="schedule-title" class="form-input"
+                            placeholder="e.g., Mathematics - Grade 10" required>
+                        <small class="text-muted">Give your schedule a descriptive name</small>
+                    </div>
+
+                    <!-- Schedule Description -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-description" class="form-label">
+                            <i class="fas fa-align-left"></i> Schedule Description
+                        </label>
+                        <textarea id="schedule-description" class="form-input" rows="4"
+                            placeholder="Describe what will be covered in this schedule..."></textarea>
+                        <small class="text-muted">Provide a detailed description of your teaching schedule</small>
+                    </div>
+
+                    <!-- Priority Level -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-priority" class="form-label">
+                            <i class="fas fa-exclamation-circle"></i> Priority Level
+                        </label>
+                        <div
+                            style="background: linear-gradient(135deg, #f5f7fa 0%, #ffffff 100%); padding: 24px; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
+                            <div style="text-align: center; margin-bottom: 20px;">
+                                <span id="priority-label"
+                                    style="display: inline-block; font-size: 1.25rem; font-weight: 700; padding: 8px 24px; border-radius: 24px; color: white; background: #F59E0B; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3); transition: all 0.3s ease;">Important</span>
+                            </div>
+                            <div style="position: relative; padding: 0 12px;">
+                                <input type="range" id="schedule-priority" class="modern-priority-slider" min="1"
+                                    max="5" value="3" step="1" oninput="updatePriorityLabel(this.value)"
+                                    style="width: 100%;">
+                                <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                                    <div style="text-align: center; flex: 1;">
+                                        <div
+                                            style="width: 12px; height: 12px; border-radius: 50%; background: #10B981; margin: 0 auto 6px; box-shadow: 0 2px 6px rgba(16, 185, 129, 0.4);">
+                                        </div>
+                                        <span style="font-size: 0.7rem; color: #6B7280; font-weight: 500;">Low</span>
+                                    </div>
+                                    <div style="text-align: center; flex: 1;">
+                                        <div
+                                            style="width: 12px; height: 12px; border-radius: 50%; background: #3B82F6; margin: 0 auto 6px; box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);">
+                                        </div>
+                                        <span style="font-size: 0.7rem; color: #6B7280; font-weight: 500;">Normal</span>
+                                    </div>
+                                    <div style="text-align: center; flex: 1;">
+                                        <div
+                                            style="width: 12px; height: 12px; border-radius: 50%; background: #F59E0B; margin: 0 auto 6px; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.4);">
+                                        </div>
+                                        <span
+                                            style="font-size: 0.7rem; color: #6B7280; font-weight: 500;">Important</span>
+                                    </div>
+                                    <div style="text-align: center; flex: 1;">
+                                        <div
+                                            style="width: 12px; height: 12px; border-radius: 50%; background: #EF4444; margin: 0 auto 6px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);">
+                                        </div>
+                                        <span
+                                            style="font-size: 0.7rem; color: #6B7280; font-weight: 500;">Very<br>Important</span>
+                                    </div>
+                                    <div style="text-align: center; flex: 1;">
+                                        <div
+                                            style="width: 12px; height: 12px; border-radius: 50%; background: #DC2626; margin: 0 auto 6px; box-shadow: 0 2px 6px rgba(220, 38, 38, 0.4);">
+                                        </div>
+                                        <span
+                                            style="font-size: 0.7rem; color: #6B7280; font-weight: 500;">Highly<br>Critical</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="text-muted" style="display: block; margin-top: 8px;">Drag the slider to set how
+                            important/critical this schedule is</small>
+                    </div>
+
+                    <style>
+                        .modern-priority-slider {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            height: 8px;
+                            border-radius: 8px;
+                            background: linear-gradient(to right,
+                                    #10B981 0%, #10B981 20%,
+                                    #3B82F6 20%, #3B82F6 40%,
+                                    #F59E0B 40%, #F59E0B 60%,
+                                    #EF4444 60%, #EF4444 80%,
+                                    #DC2626 80%, #DC2626 100%);
+                            outline: none;
+                            cursor: pointer;
+                            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+                        }
+
+                        .modern-priority-slider::-webkit-slider-thumb {
+                            -webkit-appearance: none;
+                            appearance: none;
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            background: white;
+                            cursor: pointer;
+                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(59, 130, 246, 0.1);
+                            border: 3px solid #3B82F6;
+                            transition: all 0.2s ease;
+                        }
+
+                        .modern-priority-slider::-webkit-slider-thumb:hover {
+                            transform: scale(1.15);
+                            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 0 0 6px rgba(59, 130, 246, 0.15);
+                        }
+
+                        .modern-priority-slider::-webkit-slider-thumb:active {
+                            transform: scale(1.05);
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 8px rgba(59, 130, 246, 0.2);
+                        }
+
+                        .modern-priority-slider::-moz-range-thumb {
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 50%;
+                            background: white;
+                            cursor: pointer;
+                            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 4px rgba(59, 130, 246, 0.1);
+                            border: 3px solid #3B82F6;
+                            transition: all 0.2s ease;
+                        }
+
+                        .modern-priority-slider::-moz-range-thumb:hover {
+                            transform: scale(1.15);
+                            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 0 0 6px rgba(59, 130, 246, 0.15);
+                        }
+
+                        .modern-priority-slider::-moz-range-thumb:active {
+                            transform: scale(1.05);
+                            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2), 0 0 0 8px rgba(59, 130, 246, 0.2);
+                        }
+                    </style>
+
+                    <!-- Schedule Type Selection -->
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-check"></i> Schedule Type
+                        </label>
+                        <div style="display: flex; gap: 16px;">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="schedule-type" value="recurring" checked class="mr-2"
+                                    onchange="toggleScheduleType()">
+                                <span>Recurring (Months & Days)</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="schedule-type" value="specific" class="mr-2"
+                                    onchange="toggleScheduleType()">
+                                <span>Specific Dates</span>
+                            </label>
+                        </div>
+                        <small class="text-muted">Choose how to schedule your sessions</small>
+                    </div>
+
+                    <!-- Recurring Schedule Section -->
+                    <div id="recurring-schedule-section">
+                        <!-- Year Range Selection -->
+                        <div class="form-group mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-check"></i> Year Range
+                            </label>
+                            <div
+                                style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center;">
+                                <div>
+                                    <label for="schedule-year-from" class="text-sm text-muted mb-1"
+                                        style="display: block;">From Year *</label>
+                                    <input type="number" id="schedule-year-from" class="form-input" min="2020"
+                                        max="2100" placeholder="2024" style="width: 100%;" required>
+                                </div>
+                                <div style="padding-top: 24px; text-align: center; color: var(--text-secondary);">
+                                    <i class="fas fa-arrow-right"></i>
+                                </div>
+                                <div>
+                                    <label for="schedule-year-to" class="text-sm text-muted mb-1"
+                                        style="display: block;">To Year (Optional)</label>
+                                    <input type="number" id="schedule-year-to" class="form-input" min="2020" max="2100"
+                                        placeholder="Leave empty for ongoing" style="width: 100%;">
+                                </div>
+                            </div>
+                            <small class="text-muted">Specify the year range for this recurring schedule. Leave "To
+                                Year" empty if the schedule continues indefinitely.</small>
+                        </div>
+
+                        <!-- Months of the Year -->
+                        <div class="form-group mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-alt"></i> Months of the Year
+                            </label>
+                            <div class="months-grid"
+                                style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="January">
+                                    <span class="month-label">Jan</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="February">
+                                    <span class="month-label">Feb</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="March">
+                                    <span class="month-label">Mar</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="April">
+                                    <span class="month-label">Apr</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="May">
+                                    <span class="month-label">May</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="June">
+                                    <span class="month-label">Jun</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="July">
+                                    <span class="month-label">Jul</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="August">
+                                    <span class="month-label">Aug</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="September">
+                                    <span class="month-label">Sep</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="October">
+                                    <span class="month-label">Oct</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="November">
+                                    <span class="month-label">Nov</span>
+                                </label>
+                                <label class="month-checkbox">
+                                    <input type="checkbox" name="schedule-month" value="December">
+                                    <span class="month-label">Dec</span>
+                                </label>
+                            </div>
+                            <small class="text-muted">Select one or more months</small>
+                        </div>
+
+                        <!-- Day of Week -->
+                        <div class="form-group mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-week"></i> Days of the Week
+                            </label>
+                            <div class="days-grid"
+                                style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+                                <label class="day-checkbox">
+                                    <input type="checkbox" name="schedule-day" value="Monday">
+                                    <span class="day-label">Mon</span>
+                                </label>
+                                <label class="day-checkbox">
+                                    <input type="checkbox" name="schedule-day" value="Tuesday">
+                                    <span class="day-label">Tue</span>
+                                </label>
+                                <label class="day-checkbox">
+                                    <input type="checkbox" name="schedule-day" value="Wednesday">
+                                    <span class="day-label">Wed</span>
+                                </label>
+                                <label class="day-checkbox">
+                                    <input type="checkbox" name="schedule-day" value="Thursday">
+                                    <span class="day-label">Thu</span>
+                                </label>
+                                <label class="day-checkbox">
+                                    <input type="checkbox" name="schedule-day" value="Friday">
+                                    <span class="day-label">Fri</span>
+                                </label>
+                                <label class="day-checkbox">
+                                    <input type="checkbox" name="schedule-day" value="Saturday">
+                                    <span class="day-label">Sat</span>
+                                </label>
+                                <label class="day-checkbox">
+                                    <input type="checkbox" name="schedule-day" value="Sunday">
+                                    <span class="day-label">Sun</span>
+                                </label>
+                            </div>
+                            <small class="text-muted">Select one or more days</small>
+                        </div>
+
+
+                    </div>
+
+                    <!-- Specific Dates Section -->
+                    <div id="specific-dates-section" style="display: none;">
+                        <!-- Date Range Picker -->
+                        <div class="form-group mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-calendar-week"></i> Select Date(s)
+                            </label>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                                <div>
+                                    <label for="schedule-date-from"
+                                        style="font-size: 0.875rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                                        From Date <span style="color: var(--error-color);">*</span>
+                                    </label>
+                                    <input type="date" id="schedule-date-from" class="form-input"
+                                        onchange="handleFromDateChange()">
+                                </div>
+                                <div>
+                                    <label for="schedule-date-to"
+                                        style="font-size: 0.875rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                                        To Date <span style="font-size: 0.75rem; font-style: italic;">(Optional)</span>
+                                    </label>
+                                    <input type="date" id="schedule-date-to" class="form-input"
+                                        onchange="handleToDateChange()">
+                                </div>
+                            </div>
+                            <p
+                                style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 12px; padding: 8px 12px; background: var(--bg-secondary); border-left: 3px solid var(--primary-color); border-radius: 4px;">
+                                💡 <strong>Note:</strong> Dates are added on-the-fly. Select <strong>From Date</strong>
+                                to add a single date, then optionally select <strong>To Date</strong> to expand it into
+                                a date range. Use the <strong style="color: var(--primary-color);">+</strong> button
+                                below to add more dates/ranges.
+                            </p>
+
+                            <!-- Add Additional Date Range Button -->
+                            <button type="button" class="btn-primary" onclick="addAnotherDateRange()"
+                                title="Click to add another date or date range"
+                                style="padding: 10px 24px; font-size: 1rem; margin-bottom: 12px;">
+                                <i class="fas fa-plus"></i> Add Another Date/Range
+                            </button>
+
+                            <!-- Container for additional date range inputs -->
+                            <div id="additional-date-ranges"></div>
+
+                            <!-- Selected Dates List -->
+                            <div id="selected-dates-list" class="selected-dates-container" style="margin-top: 16px;">
+                                <!-- Selected dates will appear here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Time Range -->
+                    <div class="form-row"
+                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label for="schedule-start-time" class="form-label">
+                                <i class="fas fa-clock"></i> Start Time
+                            </label>
+                            <input type="time" id="schedule-start-time" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="schedule-end-time" class="form-label">
+                                <i class="fas fa-clock"></i> End Time
+                            </label>
+                            <input type="time" id="schedule-end-time" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <!-- Set Alarm/Notification -->
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-bell"></i> Set Alarm/Notification
+                        </label>
+                        <div class="alarm-settings">
+                            <label class="inline-flex items-center mb-3">
+                                <input type="checkbox" id="enable-alarm" name="enable-alarm" class="mr-2"
+                                    onchange="toggleAlarmSettings()">
+                                <span>Enable notifications for this schedule</span>
+                            </label>
+
+                            <div id="alarm-settings-details" style="display: none; margin-left: 24px;">
+                                <div class="form-group mb-3">
+                                    <label for="alarm-before" class="form-label" style="font-size: 0.9rem;">
+                                        Notify me before:
+                                    </label>
+                                    <select id="alarm-before" class="form-select">
+                                        <option value="5">5 minutes before</option>
+                                        <option value="10">10 minutes before</option>
+                                        <option value="15" selected>15 minutes before</option>
+                                        <option value="30">30 minutes before</option>
+                                        <option value="60">1 hour before</option>
+                                        <option value="120">2 hours before</option>
+                                        <option value="1440">1 day before</option>
+                                    </select>
+                                </div>
+
+                                <div class="notification-methods">
+                                    <label class="inline-flex items-center mb-2">
+                                        <input type="checkbox" name="notification-browser" checked class="mr-2">
+                                        <span>Browser notification</span>
+                                    </label>
+                                    <br>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" name="notification-sound" checked class="mr-2">
+                                        <span>Sound alert</span>
+                                    </label>
+                                </div>
+
+                                <small class="text-muted" style="display: block; margin-top: 8px;">
+                                    <i class="fas fa-info-circle"></i> Notifications work when browser is open. For
+                                    persistent alerts, we recommend enabling browser notifications in your system
+                                    settings.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Notes -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-notes" class="form-label">
+                            <i class="fas fa-sticky-note"></i> Additional Notes (Optional)
+                        </label>
+                        <textarea id="schedule-notes" class="form-input" rows="3"
+                            placeholder="Any special instructions or requirements..."></textarea>
+                        <small class="text-muted">Share any additional information about this schedule</small>
+                    </div>
+
+                    <!-- Feature Schedule on Profile -->
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-star"></i> Feature on Profile
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <label class="inline-flex items-center">
+                                <input type="checkbox" id="schedule-is-featured" name="schedule-is-featured"
+                                    class="mr-2">
+                                <span>Show this schedule on my profile</span>
+                            </label>
+                        </div>
+                        <small class="text-muted"
+                            style="display: block; margin-top: 8px; padding: 8px 12px; background: var(--bg-secondary); border-left: 3px solid var(--primary-color); border-radius: 4px;">
+                            <i class="fas fa-info-circle"></i> When enabled, visitors to your profile will see that
+                            you're scheduled on these dates and times, but won't see specific details. This helps
+                            students know when you're available.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="modal-footer"
+                    style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn-secondary" onclick="closeScheduleModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary" id="schedule-submit-btn">
+                        <i class="fas fa-save"></i> Create Schedule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>

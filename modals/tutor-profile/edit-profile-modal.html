@@ -1,0 +1,67 @@
+<!--
+  Modal: edit-profile-modal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="edit-profile-modal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content enhanced-modal">
+            <div class="modal-header">
+                <h2>Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" id="username" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Languages</label>
+                        <div id="languagesContainer"></div>
+                        <button type="button" class="btn-add" onclick="addLanguage()">+ Add Language</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="editLocation" class="form-input" placeholder="e.g., Addis Ababa, Ethiopia">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quote</label>
+                        <textarea id="profileQuote" class="form-textarea" rows="2"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>About Us</label>
+                        <textarea id="aboutUs" class="form-textarea" rows="4"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hero Titles (Multiple titles will cycle on your profile)</label>
+                        <div id="heroTitlesContainer"></div>
+                        <button type="button" class="btn-add" onclick="addHeroTitle()">+ Add Hero Title</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hero Subtitle</label>
+                        <input type="text" id="heroSubtitle" class="form-input"
+                            placeholder="Your hero subtitle (e.g., Empowering students through personalized learning)">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Social Media Links</label>
+                        <div id="socialMediaContainer"></div>
+                        <button type="button" class="btn-add" onclick="addSocialLink()">+ Add Social Link</button>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeEditProfileModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+            </div>
+        </div>
+    </div>

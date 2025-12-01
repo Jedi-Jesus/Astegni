@@ -1,0 +1,125 @@
+<!--
+  Modal: uploadDocumentModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="uploadDocumentModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 650px;">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">📤 Upload Document</h2>
+                <button onclick="closeUploadDocumentModal()" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="uploadDocumentForm" enctype="multipart/form-data">
+                    <div class="space-y-4">
+                        <!-- Document Type -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Document Type *</label>
+                            <select id="doc-type" name="document_type" required
+                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                                <option value="">Select document type...</option>
+                                <option value="academic">🎓 Academic Certificate</option>
+                                <option value="achievement">🏆 Achievement</option>
+                                <option value="experience">💼 Experience/Work History</option>
+                            </select>
+                        </div>
+
+                        <!-- Document Title -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Document Title *</label>
+                            <input type="text" id="doc-title" name="title" required
+                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                                placeholder="e.g., Master's Degree in Mathematics">
+                        </div>
+
+                        <!-- Issued By -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Issued By *</label>
+                            <input type="text" id="doc-issued-by" name="issued_by" required
+                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                                placeholder="e.g., Addis Ababa University, Ethiopian Ministry of Education">
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea id="doc-description" name="description" rows="3"
+                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all"
+                                placeholder="Brief description of the document, achievement, or role..."></textarea>
+                        </div>
+
+                        <!-- Date Fields (2 columns) -->
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Date of Issue *</label>
+                                <input type="date" id="doc-date-of-issue" name="date_of_issue" required
+                                    class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Expiry Date (Optional)</label>
+                                <input type="date" id="doc-expiry-date" name="expiry_date"
+                                    class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                                <p class="text-xs text-gray-500 mt-1">Leave empty if no expiry</p>
+                            </div>
+                        </div>
+
+                        <!-- Upload Certificate/Document File -->
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Upload Document File *</label>
+                            <input type="file" id="doc-file" name="file" required accept="image/*,.pdf,.doc,.docx"
+                                class="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all">
+                            <p class="text-sm text-gray-500 mt-1">Accepted formats: JPG, PNG, PDF, DOC, DOCX (Max 10MB)
+                            </p>
+                        </div>
+
+                        <!-- Featured Document Toggle -->
+                        <div
+                            class="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-2xl">⭐</span>
+                                    <div>
+                                        <label class="block text-gray-800 font-bold mb-1">Featured Document</label>
+                                        <p class="text-xs text-gray-600">Highlight this document on your profile</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="doc-is-featured" name="is_featured" value="true"
+                                        class="sr-only peer">
+                                    <div
+                                        class="w-14 h-7 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-purple-600">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Info Box -->
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg">
+                            <div class="flex items-start">
+                                <span class="text-blue-500 text-xl mr-3">ℹ️</span>
+                                <div class="text-sm text-blue-800">
+                                    <p class="font-semibold mb-1">Verification Process</p>
+                                    <p class="text-blue-700">Your document will be reviewed by our admin team. You'll be
+                                        notified once it's verified or if any changes are needed.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-3 mt-6">
+                        <button type="submit" class="btn-primary flex-1">
+                            <span class="flex items-center justify-center gap-2">
+                                <span>📤</span>
+                                <span>Upload Document</span>
+                            </span>
+                        </button>
+                        <button type="button" onclick="closeUploadDocumentModal()" class="btn-secondary flex-1">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>

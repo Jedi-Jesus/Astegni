@@ -1,0 +1,51 @@
+<!--
+    Modal: unsubscribeConfirm2
+    Purpose: Unsubscription cancellation fee confirmation modal
+    Extracted from: tutor-profile.html
+-->
+
+<div id="unsubscribeConfirm2" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeUnsubscribeConfirm2()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirm Cancellation Fee</h2>
+                <button class="modal-close" onclick="closeUnsubscribeConfirm2()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="unsubscribeSecondConfirmText" class="modal-text">
+                    Subscription cancellation has a fee of 5%. Are you still sure to cancel subscription?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeUnsubscribeConfirm2()">No</button>
+                <button class="finance-btn-primary" onclick="proceedToUnsubscribePassword()">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsubscribe Modal: Step 4 (Password Confirmation) -->
+    <div id="unsubscribePasswordModal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeUnsubscribePasswordModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">It's okay, please enter your password to confirm cancellation.</h2>
+                <button class="modal-close" onclick="closeUnsubscribePasswordModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Enter Password *</label>
+                    <input type="password" id="unsubscribePassword" class="form-input"
+                        placeholder="Enter your password">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeUnsubscribePasswordModal()">Cancel</button>
+                <button class="finance-btn-primary" onclick="finalConfirmUnsubscribe()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsubscribe Modal: Step 5 (Final Message) -->
+    <div id="unsubscribeFinalModal" class="modal hi

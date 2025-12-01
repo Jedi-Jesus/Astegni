@@ -1,0 +1,418 @@
+// Generic Modal Functions
+window.openModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        // Check if it's a .modal class element (uses hidden class)
+        if (modal.classList.contains('modal')) {
+            modal.classList.remove('hidden');
+        } else {
+            // For upload modals that use display style
+            modal.style.display = 'flex';
+            // Add animation class if needed
+            setTimeout(() => {
+                modal.classList.add('active');
+            }, 10);
+        }
+    }
+}
+
+window.closeModal = function(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        // Check if it's a .modal class element (uses hidden class)
+        if (modal.classList.contains('modal')) {
+            modal.classList.add('hidden');
+        } else {
+            // For upload modals that use display style
+            modal.style.display = 'none';
+            modal.classList.remove('active');
+        }
+    }
+}
+
+// Upload Modal Specific Functions
+window.closeCoverUploadModal = function() {
+    const modal = document.getElementById('coverUploadModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+window.closeProfileUploadModal = function() {
+    const modal = document.getElementById('profileUploadModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Community Modal Functions
+window.openCommunityModal = function() {
+    const modal = document.getElementById('communityModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeCommunityModal = function() {
+    const modal = document.getElementById('communityModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Edit Profile Modal Functions
+window.openEditProfileModal = function() {
+    const modal = document.getElementById('edit-profile-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Force visibility by adding active class for CSS animation
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 10);
+    }
+}
+
+window.closeEditProfileModal = function() {
+    const modal = document.getElementById('edit-profile-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+        }, 300); // Match CSS transition duration
+    }
+}
+
+// Verification Modal Functions
+window.openVerificationModal = function() {
+    const modal = document.getElementById('verificationModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeVerificationModal = function() {
+    const modal = document.getElementById('verificationModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Schedule Modal Functions
+window.openScheduleModal = function() {
+    const modal = document.getElementById('create-schedule-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeScheduleModal = function() {
+    const modal = document.getElementById('create-schedule-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Blog Modal Functions
+window.openCreateBlogModal = function() {
+    const modal = document.getElementById('createBlogModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeBlogModal = function() {
+    const modal = document.getElementById('createBlogModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Upload Video Modal Functions
+window.openUploadVideoModal = function(type) {
+    const modal = document.getElementById('uploadVideoModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Store the video type if needed
+        if (type) {
+            modal.setAttribute('data-video-type', type);
+        }
+    }
+}
+
+// Video Review Modal Functions
+window.openVideoReviewModal = function() {
+    const modal = document.getElementById('videoReviewModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+// Student Details Modal Functions
+window.closeStudentDetailsModal = function() {
+    const modal = document.getElementById('studentDetailsModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Certification Modal Functions
+window.openCertificationModal = function() {
+    const modal = document.getElementById('certification-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeCertificationModal = function() {
+    const modal = document.getElementById('certification-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Achievement Modal Functions
+window.openAchievementModal = function() {
+    const modal = document.getElementById('achievement-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeAchievementModal = function() {
+    const modal = document.getElementById('achievement-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Experience Modal Functions
+window.openExperienceModal = function() {
+    const modal = document.getElementById('experience-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeExperienceModal = function() {
+    const modal = document.getElementById('experience-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// School Request Modal Functions
+window.openSchoolRequestModal = function(type) {
+    const modal = document.getElementById('school-request-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Store the request type (cert, ach, exp)
+        if (type) {
+            modal.setAttribute('data-request-type', type);
+        }
+    }
+}
+
+window.closeSchoolRequestModal = function() {
+    const modal = document.getElementById('school-request-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Add School Modal Functions
+window.openAddSchoolModal = function() {
+    const modal = document.getElementById('add-school-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeAddSchoolModal = function() {
+    const modal = document.getElementById('add-school-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Package Modals Functions
+window.openSetPackageModal = function() {
+    const modal = document.getElementById('setPackageModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeSetPackageModal = function() {
+    const modal = document.getElementById('setPackageModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+window.openViewPackageModal = function() {
+    const modal = document.getElementById('viewPackageModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeViewPackageModal = function() {
+    const modal = document.getElementById('viewPackageModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// Coming Soon Modal Functions
+window.openComingSoonModal = function(feature) {
+    const modal = document.getElementById('coming-soon-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        // Store the feature name if needed
+        if (feature) {
+            modal.setAttribute('data-feature', feature);
+        }
+    }
+}
+
+// Ad Analytics Modal Functions
+window.openAdAnalyticsModal = function() {
+    const modal = document.getElementById('adAnalyticsModal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+window.closeAdAnalyticsModal = function() {
+    const modal = document.getElementById('adAnalyticsModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// FAB Modal Functions (placeholder - these might need specific implementation)
+window.openRequestedSessionsModal = function() {
+    console.log('Requested Sessions Modal - To be implemented');
+}
+
+window.openStudentsModal = function() {
+    console.log('Students Modal - To be implemented');
+}
+
+window.openNotesModal = function() {
+    console.log('Notes Modal - To be implemented');
+}
+
+window.openToolsModal = function() {
+    console.log('Tools Modal - To be implemented');
+}
+
+// Modals Manager (for video modals that use window.modalsManager)
+if (!window.modalsManager) {
+    window.modalsManager = {
+        close: function(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        }
+    };
+}
+
+// Close modal on clicking outside
+window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('upload-cover-modal') ||
+        event.target.classList.contains('upload-profile-modal')) {
+        window.closeModal(event.target.id);
+    }
+});
+
+// Ensure dark theme background is applied correctly
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize Stats Counter
+    if (typeof StatsCounter !== 'undefined') {
+        StatsCounter.init();
+    }
+
+    // Force background color application
+    function applyThemeBackground() {
+        const theme = document.documentElement.getAttribute('data-theme');
+        if (theme === 'dark') {
+            document.body.style.backgroundColor = '#1E1E1E';
+            document.documentElement.style.backgroundColor = '#1E1E1E';
+        } else {
+            document.body.style.backgroundColor = '#ffffff';
+            document.documentElement.style.backgroundColor = '#ffffff';
+        }
+    }
+
+    // Apply immediately
+    applyThemeBackground();
+
+    // Watch for theme changes
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.attributeName === 'data-theme') {
+                applyThemeBackground();
+            }
+        });
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+    });
+
+    // Sidebar footer overlap and page animation logic
+    const sidebar = document.getElementById('sidebar');
+    const footer = document.getElementById('footer');
+    const mainContent = document.querySelector('section.py-8');
+
+    // Handle footer overlap on scroll
+    function handleSidebarFooterOverlap() {
+        if (!sidebar || !footer || !sidebar.classList.contains('active')) return;
+
+        const sidebarRect = sidebar.getBoundingClientRect();
+        const footerRect = footer.getBoundingClientRect();
+
+        // Check if sidebar bottom is overlapping with footer
+        // Add some padding (20px) to start animation earlier
+        if (sidebarRect.bottom + 20 > footerRect.top) {
+            sidebar.classList.add('footer-overlap');
+        } else {
+            sidebar.classList.remove('footer-overlap');
+        }
+    }
+
+    // Listen for scroll events with debounce for better performance
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+        if (scrollTimeout) {
+            window.cancelAnimationFrame(scrollTimeout);
+        }
+        scrollTimeout = window.requestAnimationFrame(handleSidebarFooterOverlap);
+    });
+
+    // Observer for sidebar state changes to trigger page animation and footer check
+    if (sidebar && mainContent) {
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.attributeName === 'class') {
+                    const isActive = sidebar.classList.contains('active');
+                    if (isActive) {
+                        mainContent.classList.add('sidebar-active');
+                        setTimeout(handleSidebarFooterOverlap, 350);
+                    } else {
+                        mainContent.classList.remove('sidebar-active');
+                    }
+                }
+            });
+        });
+
+        observer.observe(sidebar, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    }
+});
+    

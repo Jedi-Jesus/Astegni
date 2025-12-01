@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Manage Schools</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/admin-profile/admin.css">
+    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Inline styles to ensure right-side widget positioning -->
+    <style>
+        .admin-main-layout {
+            display: flex !important;
+            gap: 1.5rem !important;
+        }
+        .admin-content-area {
+            flex: 1 !important;
+        }
+        .admin-right-widgets {
+            width: 320px !important;
+            flex-shrink: 0 !important;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <span class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <a href="../admin-pages/manage-schools.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Manage schools</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="flex items-center space-x-6">
+
+                <!-- Notification Icon -->
+                <button class="relative focus:outline-none" aria-label="Notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span
+                        class="absolute top-0 right-0 -mt-1 -mr-1 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">3</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>School Management</h3>
+                <span class="sidebar-close" id="sidebar-close">&times;</span>
+
+                <a href="#" onclick="switchPanel('dashboard'); return false;" class="sidebar-link active">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel('verified'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🏫</span>
+                    <span>Verified Schools</span>
+                </a>
+                <a href="#" onclick="switchPanel('requested'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📝</span>
+                    <span>School Requests</span>
+                </a>
+                <a href="#" onclick="switchPanel('rejected'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">❌</span>
+                    <span>Rejected Schools</span>
+                </a>
+                <a href="#" onclick="switchPanel('suspended'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚠️</span>
+                    <span>Suspended Schools</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="openSchoolReports(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📊</span>
+                    <span>School Reports</span>
+                </a>
+                <a href="#" onclick="openVerificationGuidelines(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📋</span>
+                    <span>Verification Guidelines</span>
+                </a>
+                <a href="#" onclick="openSchoolSettings(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>School Settings</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="manage-advertisers.html" class="sidebar-link">
+                    <span class="sidebar-icon">📢</span>
+                    <span>Manage Advertisers</span>
+                </a>
+                <a href="manage-tutors.html" class="sidebar-link">
+                    <span class="sidebar-icon">👨‍🏫</span>
+                    <span>Manage Tutors</span>
+                </a>
+                <a href="manage-courses.html" class="sidebar-link">
+                    <span class="sidebar-icon">📚</span>
+                    <span>Manage Courses</span>
+                </a>
+                <a href="manage-system-settings.html" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>System Settings</span>
+                </a>
+
+                <!-- Logout Button at Bottom -->
+                <div class="mt-auto pt-4 border-t border-gray-300">
+                    <a href="#" onclick="logout(); return false;" class="sidebar-link text-red-500 hover:bg-red-50">
+                        <span class="sidebar-icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1">
+                    <!-- Profile Header Section -->
+                    <section class="profile-header-section mb-8">
+                    <div class="cover-image-container relative">
+                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='20'%3E1200x300%3C/text%3E%3C/svg%3E" alt="Cover"
+                            class="cover-img w-full h-64 object-cover">
+                        <div class="cover-overlay"></div>
+                        <!-- Cover Upload Button -->
+                        <button onclick="openUploadCoverModal()"
+                            class="absolute top-4 right-4 bg-white/90 hover:bg-white text-gray-700 p-2 rounded-lg shadow-lg transition-all duration-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                </path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="profile-main-info bg-white rounded-lg shadow-lg -mt-20 relative z-10 p-6">
+                        <div class="profile-info-wrapper flex items-start gap-6">
+                            <div class="profile-avatar-container relative">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E" alt="Admin Profile"
+                                    class="profile-avatar w-32 h-32 rounded-full border-4 border-white shadow-lg">
+                                <span
+                                    class="online-indicator absolute bottom-2 right-2 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></span>
+                                <!-- Profile Picture Upload Button -->
+                                <button onclick="openUploadProfileModal()"
+                                    class="absolute bottom-0 right-0 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow-lg transition-all duration-300">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="profile-details-section flex-1">
+                                <div class="profile-name-row">
+                                    <h1 class="text-3xl font-bold mb-2" id="adminName">School Management</h1>
+                                    <div class="badges-row flex gap-2 mb-3">
+                                        <span
+                                            class="verified-badge bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm">✔
+                                            System Administrator</span>
+                                        <span
+                                            class="certification-badge bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-sm">🏫
+                                            School Management</span>
+                                        <span
+                                            class="certification-badge bg-green-100 text-green-600 px-3 py-1 rounded-full text-sm">📊
+                                            Education Expert</span>
+                                    </div>
+                                </div>
+
+                                <div class="rating-section mb-3">
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-2xl font-bold text-yellow-500">4.9</span>
+                                            <div class="flex">
+                                                <span class="text-yellow-500">★★★★★</span>
+                                            </div>
+                                            <span class="text-gray-600">(156 reviews)</span>
+                                        </div>
+                                        <div class="border-l pl-4">
+                                            <span class="text-sm text-gray-600">Performance Rating</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="location-info text-gray-600 mb-3">
+                                    <span class="location-icon">📍</span>
+                                    <span>Astegni Admin Panel | School Registration & Management</span>
+                                </div>
+
+                                <div class="profile-quote italic text-gray-700 mb-4">
+                                    <span>"Empowering educational institutions through efficient management and
+                                        verification."</span>
+                                </div>
+
+                                <!-- Edit Profile Button -->
+                                <div class="mb-4">
+                                    <button onclick="openEditProfileModal()"
+                                        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-all duration-300">
+                                        <span class="mr-2">✏️</span>
+                                        Edit Profile
+                                    </button>
+                                </div>
+
+                                <!-- About Me Info -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold">Department:</span>
+                                        <span class="text-gray-600">Educational Services</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold">Employee ID:</span>
+                                        <span class="text-gray-600">ADM-2024-001</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold">Joined:</span>
+                                        <span class="text-gray-600">January 2020</span>
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <p class="text-gray-700 mt-2">Senior System Administrator with 5+ years of
+                                            experience in educational platform management. Specialized in school
+                                            verification, quality assurance, and institutional partnerships.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </section>
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+                        <!-- Page Header -->
+                        <div class="mb-8 animate-fadeIn">
+                            <h1 class="text-3xl font-bold mb-2">School Management Dashboard</h1>
+                            <p class="text-gray-600">Overview of all school management activities and statistics</p>
+                        </div>
+
+                        <!-- All Statistics Cards -->
+                        <div class="dashboard-grid mb-8">
+                            <!-- Request Stats -->
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Verified Schools</h3>
+                                <p class="text-2xl font-bold">89</p>
+                                <span class="text-sm text-gray-500">57% of total</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Pending Schools</h3>
+                                <p class="text-2xl font-bold text-yellow-600">8</p>
+                                <span class="text-sm text-gray-500">Awaiting review</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Rejected Schools</h3>
+                                <p class="text-2xl font-bold text-red-600">3</p>
+                                <span class="text-sm text-gray-500">Last 30 days</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Suspended Schools</h3>
+                                <p class="text-2xl font-bold text-orange-600">2</p>
+                                <span class="text-sm text-gray-500">Active suspensions</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Archived Schools</h3>
+                                <p class="text-2xl font-bold text-gray-600">89</p>
+                                <span class="text-sm text-gray-500">Completed</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Approval Rate</h3>
+                                <p class="text-2xl font-bold text-green-600">98%</p>
+                                <span class="text-sm text-gray-500">This month</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Avg Processing</h3>
+                                <p class="text-2xl font-bold">2.5 hrs</p>
+                                <span class="text-sm text-gray-500">Per application</span>
+                            </div>
+                            <!-- Performance Metrics -->
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Response Time</h3>
+                                <p class="text-2xl font-bold text-blue-500">
+                                    < 1h</p>
+                                        <span class="text-sm text-gray-500">Avg response</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Client Satisfaction</h3>
+                                <p class="text-2xl font-bold">96%</p>
+                                <span class="text-sm text-gray-500">Happy clients</span>
+                            </div>
+                        </div>
+
+                        <!-- Achievements Section -->
+                        <div class="card p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Achievements</h3>
+                            <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🏆</div>
+                                    <div class="text-sm">Top Performer</div>
+                                    <div class="text-xs text-gray-500">Q4 2024</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🥇</div>
+                                    <div class="text-sm">Excellence</div>
+                                    <div class="text-xs text-gray-500">Annual 2023</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">⭐</div>
+                                    <div class="text-sm">5-Star Admin</div>
+                                    <div class="text-xs text-gray-500">500+ Reviews</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">📚</div>
+                                    <div class="text-sm">Education Pro</div>
+                                    <div class="text-xs text-gray-500">1000+ Schools</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🎯</div>
+                                    <div class="text-sm">Goal Achiever</div>
+                                    <div class="text-xs text-gray-500">100% Success</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">💎</div>
+                                    <div class="text-sm">Premium Admin</div>
+                                    <div class="text-xs text-gray-500">Level 10</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- Right Sidebar Widgets -->
+                <div class="admin-right-widgets">
+                    <!-- Daily Quota Widget -->
+                    <div class="admin-widget-card">
+                            <h3 class="text-lg font-semibold mb-4">Daily Quota</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Verified</span>
+                                    <span class="font-semibold">142/150</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Pending</span>
+                                    <span class="font-semibold">8/10</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 80%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Rejected</span>
+                                    <span class="font-semibold">3/5</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-red-500 h-2 rounded-full" style="width: 60%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Suspended</span>
+                                    <span class="font-semibold">2/5</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-orange-500 h-2 rounded-full" style="width: 40%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600">Archived</span>
+                                    <span class="font-semibold">89/100</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-gray-500 h-2 rounded-full" style="width: 89%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fire Streak Widget -->
+                        <div class="admin-widget-card">
+                            <h3 class="text-lg font-semibold mb-4">🔥 Fire Streak</h3>
+                            <div class="text-center">
+                                <div class="text-4xl font-bold text-orange-500">15</div>
+                                <div class="text-sm text-gray-600">Days</div>
+                                <div class="mt-4 grid grid-cols-7 gap-1">
+                                    <span class="text-xs">🔥</span>
+                                    <span class="text-xs">🔥</span>
+                                    <span class="text-xs opacity-30">🔥</span>
+                                    <span class="text-xs opacity-30">🔥</span>
+                                    <span class="text-xs opacity-30">🔥</span>
+                                    <span class="text-xs opacity-30">🔥</span>
+                                    <span class="text-xs opacity-30">🔥</span>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-2">Keep going!</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Verified Schools Panel -->
+            <div id="verified-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Verified Schools</h1>
+                    <p class="text-gray-600">Manage all verified and active schools</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Verified</h3>
+                        <p class="text-2xl font-bold">156</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Private</h3>
+                        <p class="text-2xl font-bold">89</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Government</h3>
+                        <p class="text-2xl font-bold">67</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Average Rating</h3>
+                        <p class="text-2xl font-bold">4.6/5</p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="card p-6 mb-6">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div class="flex-1 min-w-[300px]">
+                            <input type="text" class="w-full p-3 border-2 rounded-lg"
+                                placeholder="Search schools by name, location, or ID...">
+                        </div>
+                        <select class="p-3 border-2 rounded-lg">
+                            <option value="">All Types</option>
+                            <option value="private">Private</option>
+                            <option value="government">Government</option>
+                            <option value="international">International</option>
+                        </select>
+                        <select class="p-3 border-2 rounded-lg">
+                            <option value="">All Levels</option>
+                            <option value="elementary">Elementary</option>
+                            <option value="high-school">High School</option>
+                            <option value="university">University</option>
+                        </select>
+                        <button onclick="openAddSchoolModal()" class="cta-button">
+                            <i class="fas fa-plus"></i> Add School
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Schools Table -->
+                <div class="card overflow-hidden">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">School</th>
+                                <th class="p-4 text-left">Type</th>
+                                <th class="p-4 text-left">Location</th>
+                                <th class="p-4 text-left">Students</th>
+                                <th class="p-4 text-left">Rating</th>
+                                <th class="p-4 text-left">Status</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4">
+                                    <div class="flex items-center gap-3">
+                                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23e5e7eb'/%3E%3C/svg%3E" alt="School"
+                                            class="w-10 h-10 rounded">
+                                        <div>
+                                            <div class="font-semibold">Addis Ababa Academy</div>
+                                            <div class="text-sm text-gray-500">ID: SCH-001</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-4">Private</td>
+                                <td class="p-4">Addis Ababa, Bole</td>
+                                <td class="p-4">1,250</td>
+                                <td class="p-4">
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-yellow-500">★★★★★</span>
+                                        <span class="text-sm">(4.8)</span>
+                                    </div>
+                                </td>
+                                <td class="p-4">
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Verified</span>
+                                </td>
+                                <td class="p-4">
+                                    <div class="flex gap-2">
+                                        <button class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button
+                                            class="p-2 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- School Requests Panel -->
+            <div id="requested-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">School Registration Requests</h1>
+                    <p class="text-gray-600">Review and process new school registration applications</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Pending Requests</h3>
+                        <p class="text-2xl font-bold text-yellow-600">8</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Under Review</h3>
+                        <p class="text-2xl font-bold">3</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Approved Today</h3>
+                        <p class="text-2xl font-bold text-green-600">2</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Average Processing Time</h3>
+                        <p class="text-2xl font-bold">3.5 days</p>
+                    </div>
+                </div>
+
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b">
+                        <h3 class="text-xl font-semibold">Pending School Registration Requests</h3>
+                    </div>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">School Name</th>
+                                <th class="p-4 text-left">Type</th>
+                                <th class="p-4 text-left">Location</th>
+                                <th class="p-4 text-left">Submitted</th>
+                                <th class="p-4 text-left">Documents</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4">
+                                    <div>
+                                        <div class="font-semibold">Unity International School</div>
+                                        <div class="text-sm text-gray-500">REQ-SCH-005</div>
+                                    </div>
+                                </td>
+                                <td class="p-4">International</td>
+                                <td class="p-4">Hawassa</td>
+                                <td class="p-4">3 days ago</td>
+                                <td class="p-4">
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Complete</span>
+                                </td>
+                                <td class="p-4">
+                                    <div class="flex gap-2">
+                                        <button onclick="reviewSchoolRequest('REQ-SCH-005')"
+                                            class="px-4 py-2 bg-blue-500 text-white rounded-lg">Review</button>
+                                        <button onclick="approveSchool('REQ-SCH-005')"
+                                            class="px-4 py-2 bg-green-500 text-white rounded-lg">Approve</button>
+                                        <button onclick="rejectSchool('REQ-SCH-005')"
+                                            class="px-4 py-2 bg-red-500 text-white rounded-lg">Reject</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Rejected Schools Panel -->
+            <div id="rejected-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Rejected School Applications</h1>
+                    <p class="text-gray-600">Review rejected applications and reconsider if needed</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Rejected</h3>
+                        <p class="text-2xl font-bold text-red-600">12</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">This Month</h3>
+                        <p class="text-2xl font-bold">3</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Reconsidered</h3>
+                        <p class="text-2xl font-bold text-green-600">2</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Main Reason</h3>
+                        <p class="text-lg font-bold">Documentation</p>
+                    </div>
+                </div>
+
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b">
+                        <h3 class="text-xl font-semibold">Rejected School Applications</h3>
+                    </div>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">School Name</th>
+                                <th class="p-4 text-left">Type</th>
+                                <th class="p-4 text-left">Rejected Date</th>
+                                <th class="p-4 text-left">Reason</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4">
+                                    <div>
+                                        <div class="font-semibold">Excellence Academy</div>
+                                        <div class="text-sm text-gray-500">REJ-SCH-002</div>
+                                    </div>
+                                </td>
+                                <td class="p-4">Private</td>
+                                <td class="p-4">Jan 5, 2025</td>
+                                <td class="p-4">
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">
+                                        Incomplete Documentation
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <div class="flex gap-2">
+                                        <button class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button onclick="reconsiderSchool('REJ-SCH-002')"
+                                            class="p-2 rounded-lg bg-yellow-100 text-yellow-600 hover:bg-yellow-200">
+                                            <i class="fas fa-undo"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Suspended Schools Panel -->
+            <div id="suspended-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Suspended Schools</h1>
+                    <p class="text-gray-600">Manage schools under temporary suspension</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Currently Suspended</h3>
+                        <p class="text-2xl font-bold text-orange-600">2</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Policy Violations</h3>
+                        <p class="text-2xl font-bold">1</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Under Investigation</h3>
+                        <p class="text-2xl font-bold">1</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Reinstated This Year</h3>
+                        <p class="text-2xl font-bold text-green-600">4</p>
+                    </div>
+                </div>
+
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b">
+                        <h3 class="text-xl font-semibold">Suspended Schools</h3>
+                    </div>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">School Name</th>
+                                <th class="p-4 text-left">Type</th>
+                                <th class="p-4 text-left">Suspended Date</th>
+                                <th class="p-4 text-left">Reason</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4">
+                                    <div>
+                                        <div class="font-semibold">Bright Future School</div>
+                                        <div class="text-sm text-gray-500">SUS-SCH-001</div>
+                                    </div>
+                                </td>
+                                <td class="p-4">Private</td>
+                                <td class="p-4">Dec 20, 2024</td>
+                                <td class="p-4">
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">
+                                        Policy Violation
+                                    </span>
+                                </td>
+                                <td class="p-4">
+                                    <div class="flex gap-2">
+                                        <button class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button onclick="reinstateSchool('SUS-SCH-001')"
+                                            class="px-4 py-2 bg-green-500 text-white rounded-lg">
+                                            Reinstate
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Add School Modal -->
+    <div id="add-school-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Add New School</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block mb-2 font-semibold">School Name *</label>
+                    <input type="text" class="w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Type *</label>
+                    <select class="w-full p-2 border rounded-lg">
+                        <option>Private</option>
+                        <option>Government</option>
+                        <option>International</option>
+                        <option>Religious</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Level *</label>
+                    <select class="w-full p-2 border rounded-lg">
+                        <option>Elementary</option>
+                        <option>High School</option>
+                        <option>College</option>
+                        <option>University</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Location *</label>
+                    <input type="text" class="w-full p-2 border rounded-lg">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeAddSchoolModal()"
+                    class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button onclick="saveSchool()"
+                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Save School</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-section mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <p>&copy; 2025 Astegni. All rights reserved. | Admin Panel</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/root/app.js"></script>
+    <script src="../js/root/auth.js"></script>
+
+    <!-- Admin Shared Scripts -->
+    <script src="../js/admin-pages/shared/common.js"></script>
+    <script src="../js/admin-pages/shared/panel-manager.js"></script>
+    <script src="../js/admin-pages/shared/sidebar-manager.js"></script>
+    <script src="../js/admin-pages/shared/modal-manager.js"></script>
+
+    <!-- Page-specific functions -->
+    <script src="manage-schools.js"></script>
+    <script src="../js/admin-pages/shared/sidebar-fix.js"></script>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Admin Name *</label>
+                            <input type="text" id="adminNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="School Management" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Department *</label>
+                            <input type="text" id="departmentInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="Educational Services" required>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Employee ID</label>
+                            <input type="text" id="employeeIdInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                value="ADM-2024-001">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Role</label>
+                            <select
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option>System Administrator</option>
+                                <option>Manager</option>
+                                <option>Supervisor</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Bio</label>
+                        <textarea id="bioInput" rows="3"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">Senior System Administrator with 5+ years of experience in educational platform management. Specialized in school verification, quality assurance, and institutional partnerships.</textarea>
+                    </div>
+
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Quote</label>
+                        <input type="text" id="quoteInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value="Empowering educational institutions through efficient management and verification.">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                            onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit"
+                            class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update
+                            Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Profile Picture Modal -->
+    <div id="upload-profile-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeUploadProfileModal()"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Upload Profile Picture</h2>
+                <button class="modal-close" onclick="closeUploadProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <input type="file" id="profilePictureInput" accept="image/*" class="hidden"
+                        onchange="previewProfilePicture(event)">
+                    <label for="profilePictureInput" class="cursor-pointer">
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span class="font-medium text-blue-500 hover:text-blue-600">Click to upload</span> or drag
+                            and drop
+                        </p>
+                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                    </label>
+                </div>
+                <div id="profilePreview" class="hidden mb-4">
+                    <img id="profilePreviewImg" class="w-32 h-32 mx-auto rounded-full object-cover" alt="Preview">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                        onclick="closeUploadProfileModal()">Cancel</button>
+                    <button id="uploadProfileBtn"
+                        class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        onclick="handleProfilePictureUpload()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Cover Image Modal -->
+    <div id="upload-cover-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeUploadCoverModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Upload Cover Image</h2>
+                <button class="modal-close" onclick="closeUploadCoverModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <input type="file" id="coverImageInput" accept="image/*" class="hidden"
+                        onchange="previewCoverImage(event)">
+                    <label for="coverImageInput" class="cursor-pointer">
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span class="font-medium text-blue-500 hover:text-blue-600">Click to upload</span> or drag
+                            and drop
+                        </p>
+                        <p class="text-xs text-gray-500">Recommended: 1200x300px (PNG, JPG up to 10MB)</p>
+                    </label>
+                </div>
+                <div id="coverPreview" class="hidden mb-4">
+                    <img id="coverPreviewImg" class="w-full h-32 object-cover rounded-lg" alt="Preview">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                        onclick="closeUploadCoverModal()">Cancel</button>
+                    <button id="uploadCoverBtn"
+                        class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        onclick="handleCoverImageUpload()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

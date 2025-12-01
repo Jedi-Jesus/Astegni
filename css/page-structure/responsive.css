@@ -1,0 +1,114 @@
+/* ============================================
+   RESPONSIVE DESIGN
+   ============================================ */
+@media (max-width: 1200px) {
+  .content-with-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .right-sidebar {
+    position: static;
+    max-height: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .left-sidebar {
+    width: 250px;
+  }
+
+  .main-container.with-sidebar {
+    margin-left: 250px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bottom-widgets-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-menu {
+    display: none;
+  }
+
+  .left-sidebar {
+    width: 100%;
+    transform: translateX(-100%);
+  }
+
+  .left-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-container.with-sidebar {
+    margin-left: 0;
+  }
+
+  .profile-info-wrapper {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .profile-avatar-container {
+    margin: 0 auto 1rem;
+  }
+
+  .profile-name-row {
+    align-items: center;
+  }
+
+  .follow-stats-cards {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .follow-card {
+    width: 100%;
+  }
+
+  .session-alert {
+    flex-wrap: wrap;
+  }
+
+  .btn-join-inline {
+    margin-left: 0;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  .profile-actions-grid {
+    flex-direction: column;
+  }
+
+  .profile-action-btn {
+    width: 100%;
+  }
+
+  .stats-grid,
+  .awards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .fab-container {
+    bottom: 1rem !important;
+    right: 1rem !important;
+  }
+
+  .weather-details {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .weather-forecast {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .real-time-stats.compact {
+    grid-template-columns: 1fr;
+  }
+}

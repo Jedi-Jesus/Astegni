@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Astegni</title>
+
+    <!-- Favicon - Using data URI as placeholder since image files were deleted -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+
+    <!-- Theme CSS (MUST USE EXISTING VARIABLES) -->
+    <link rel="stylesheet" href="../css/root/theme.css">
+
+    <!-- Dashboard Specific Styles -->
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/neural-network.css">
+
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Monospace Font for Stats -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Neural Network Full Page Background -->
+    <div class="neural-background">
+        <canvas id="neural-network"></canvas>
+    </div>
+
+    <!-- Authentication Modals (Hidden by default) -->
+    <div id="auth-modal" class="modal-overlay">
+        <div class="modal-content glass">
+            <button class="modal-close" onclick="closeAuthModal()">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="auth-container">
+                <!-- Login Form -->
+                <div id="login-form" class="auth-form active">
+                    <h2 class="gradient-text">Admin Login</h2>
+                    <p class="text-muted">Welcome back! Please login to your account.</p>
+
+                    <form onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="login-email">Email / Username</label>
+                            <input type="text" id="login-email" name="email" required
+                                   placeholder="Enter your email or username">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <div class="password-input">
+                                <input type="password" id="login-password" name="password" required
+                                       placeholder="Enter your password">
+                                <button type="button" class="toggle-password" onclick="togglePassword('login-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="remember-me" name="remember">
+                                <span>Remember me</span>
+                            </label>
+                            <a href="#" class="link" onclick="switchAuthForm('forgot-password'); return false;">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" class="cta-button">
+                            <span>Login to Dashboard</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </form>
+
+                    <div class="auth-switch">
+                        <p>Don't have an account?
+                            <a href="#" onclick="switchAuthForm('register')">Register here</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Register Form -->
+                <div id="register-form" class="auth-form">
+                    <h2 class="gradient-text">Create Admin Account</h2>
+                    <p class="text-muted">Join us to manage the platform.</p>
+
+                    <form onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label for="register-name">Full Name</label>
+                            <input type="text" id="register-name" name="name" required
+                                   placeholder="Enter your full name">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-email">Email Address</label>
+                            <input type="email" id="register-email" name="email" required
+                                   placeholder="Enter your email">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <div class="password-input">
+                                <input type="password" id="register-password" name="password" required
+                                       placeholder="Create a strong password" onkeyup="checkPasswordStrength(this.value)">
+                                <button type="button" class="toggle-password" onclick="togglePassword('register-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength">
+                                <div class="strength-bar"></div>
+                                <span class="strength-text">Password strength</span>
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-confirm">Confirm Password</label>
+                            <input type="password" id="register-confirm" name="confirm" required
+                                   placeholder="Confirm your password">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="admin-department">Department</label>
+                            <select id="admin-department" name="department" required>
+                                <option value="">Select your department</option>
+                                <option value="manage-campaigns">Manage Campaigns</option>
+                                <option value="manage-schools">Manage Schools</option>
+                                <option value="manage-courses">Manage Courses</option>
+                                <option value="manage-tutor-documents">Manage Tutor Documents</option>
+                                <option value="manage-customers">Manage Customers</option>
+                                <option value="manage-contents">Manage Contents</option>
+                                <option value="manage-system-settings">Manage System Settings (Full Access)</option>
+                            </select>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="admin-code">Admin Code</label>
+                            <input type="text" id="admin-code" name="code" required
+                                   placeholder="Enter admin invitation code">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <button type="submit" class="cta-button">
+                            <span>Create Account</span>
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                    </form>
+
+                    <div class="auth-switch">
+                        <p>Already have an account?
+                            <a href="#" onclick="switchAuthForm('login')">Login here</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <div id="forgot-password-form" class="auth-form">
+                    <h2 class="gradient-text">Reset Password</h2>
+                    <p class="text-muted">Enter your email to receive a password reset OTP.</p>
+
+                    <form onsubmit="handleForgotPassword(event)">
+                        <div class="form-group">
+                            <label for="forgot-email">Email Address</label>
+                            <input type="email" id="forgot-email" name="email" required
+                                   placeholder="Enter your registered email">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <button type="submit" class="cta-button">
+                            <span>Send Reset OTP</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+
+                    <div class="auth-switch">
+                        <p>Remember your password?
+                            <a href="#" onclick="switchAuthForm('login')">Login here</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Reset Password Form (shown after OTP sent) -->
+                <div id="reset-password-form" class="auth-form">
+                    <h2 class="gradient-text">Enter New Password</h2>
+                    <p class="text-muted">Check your email for the OTP code.</p>
+
+                    <form onsubmit="handleResetPassword(event)">
+                        <div class="form-group">
+                            <label for="reset-email">Email Address</label>
+                            <input type="email" id="reset-email" name="email" required readonly
+                                   placeholder="Your email">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reset-otp">OTP Code</label>
+                            <input type="text" id="reset-otp" name="otp" required maxlength="6"
+                                   placeholder="Enter 6-digit OTP">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reset-new-password">New Password</label>
+                            <div class="password-input">
+                                <input type="password" id="reset-new-password" name="password" required
+                                       placeholder="Enter new password">
+                                <button type="button" class="toggle-password" onclick="togglePassword('reset-new-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="reset-confirm-password">Confirm New Password</label>
+                            <input type="password" id="reset-confirm-password" name="confirm" required
+                                   placeholder="Confirm new password">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <button type="submit" class="cta-button">
+                            <span>Reset Password</span>
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </form>
+
+                    <div class="auth-switch">
+                        <p>Didn't receive OTP?
+                            <a href="#" onclick="switchAuthForm('forgot-password')">Resend OTP</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Department Role Modal -->
+    <div id="add-department-modal" class="modal-overlay">
+        <div class="modal-content glass">
+            <button class="modal-close" onclick="closeAddDepartmentModal()">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="auth-container">
+                <div class="auth-form active">
+                    <h2 class="gradient-text">Add Department Role</h2>
+                    <p class="text-muted">Request access to an additional department</p>
+
+                    <form onsubmit="handleAddDepartment(event)">
+                        <div class="form-group">
+                            <label for="add-dept-department">Select Department</label>
+                            <select id="add-dept-department" name="department" required>
+                                <option value="">Choose a department</option>
+                                <option value="manage-campaigns">Manage Campaigns</option>
+                                <option value="manage-schools">Manage Schools</option>
+                                <option value="manage-courses">Manage Courses</option>
+                                <option value="manage-tutor-documents">Manage Tutor Documents</option>
+                                <option value="manage-customers">Manage Customers</option>
+                                <option value="manage-contents">Manage Contents</option>
+                                <option value="manage-system-settings">Manage System Settings (Full Access)</option>
+                            </select>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="add-dept-position">Position</label>
+                            <input type="text" id="add-dept-position" name="position" required
+                                   placeholder="e.g., Manager, Staff, Coordinator" value="Staff">
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="add-dept-otp">OTP Code</label>
+                            <input type="text" id="add-dept-otp" name="otp" required maxlength="6"
+                                   placeholder="Enter 6-digit OTP from email">
+                            <span class="error-text"></span>
+                            <small class="form-hint">An OTP will be sent to your registered email</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="add-dept-password">Confirm Your Password</label>
+                            <div class="password-input">
+                                <input type="password" id="add-dept-password" name="password" required
+                                       placeholder="Enter your current password">
+                                <button type="button" class="toggle-password" onclick="togglePassword('add-dept-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span class="error-text"></span>
+                        </div>
+
+                        <div class="modal-actions">
+                            <button type="button" class="cta-button secondary" onclick="requestDepartmentOTP()">
+                                <span>Request OTP</span>
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                            <button type="submit" class="cta-button">
+                                <span>Add Department</span>
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard (Always Visible) -->
+    <div id="dashboard" class="dashboard-wrapper">
+        <!-- Header -->
+        <header class="dashboard-header glass">
+            <div class="header-left">
+                <div class="nav-logo">
+                    <i class="fas fa-building"></i>
+                    <span>Astegni Admin</span>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="live-clock">
+                    <span id="current-time" class="time"></span>
+                    <span id="current-date" class="date"></span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <!-- Auth Buttons (shown when not logged in) -->
+                <div class="auth-buttons" id="auth-buttons">
+                    <button class="auth-btn login-btn" onclick="openLoginModal()">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Login</span>
+                    </button>
+                    <button class="auth-btn register-btn" onclick="openRegisterModal()">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Register</span>
+                    </button>
+                </div>
+
+                <!-- User Controls (hidden by default, shown when logged in) -->
+                <div class="user-controls" id="user-controls" style="display: none;">
+                    <button class="icon-button notification-button">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+
+                    <!-- Profile container -->
+                    <div id="profile-container" class="profile-dropdown-container">
+                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                            onclick="toggleProfileDropdown()">
+                            <img id="profile-pic" class="profile-pic"
+                                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                                 alt="Profile">
+                            <span id="profile-name" class="profile-name">Guest</span>
+                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+
+                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                            <!-- User info header - CLICKABLE to go to department page -->
+                            <a href="javascript:void(0)" id="dropdown-profile-link" class="dropdown-header-link">
+                                <div class="dropdown-header">
+                                    <img id="dropdown-profile-pic" class="profile-pic"
+                                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                                         alt="Profile">
+                                    <div class="dropdown-user-info">
+                                        <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                        <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                        <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                    </div>
+                                    <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </a>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Department switcher (shown if user has multiple departments) -->
+                            <div id="department-switcher-section" class="department-switcher-section hidden">
+                                <div class="dropdown-item-header">Your Departments</div>
+                                <div id="department-options" class="department-options">
+                                    <!-- Department options will be dynamically added here -->
+                                </div>
+                                <div class="dropdown-divider"></div>
+                            </div>
+
+                            <!-- Add Department button -->
+                            <button class="dropdown-item" onclick="openAddDepartmentModal()">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Add Department Role</span>
+                            </button>
+
+                            <div class="dropdown-divider"></div>
+
+                            <button class="dropdown-item logout-item" onclick="handleLogout()">
+                                <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                    </path>
+                                </svg>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Theme Toggle (always visible) -->
+                <button id="theme-toggle" class="icon-button" onclick="toggleTheme()">
+                    <span class="theme-icon">
+                        <i class="fas fa-moon" id="moon-icon"></i>
+                        <i class="fas fa-sun" id="sun-icon" style="display: none;"></i>
+                    </span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-main">
+            <div class="container">
+                <!-- Welcome Section -->
+                <section class="welcome-section">
+                    <h1 class="welcome-title gradient-text">Welcome to Admin Dashboard</h1>
+                    <p class="welcome-subtitle" id="welcome-message">
+                        Monitor and manage your platform in real-time
+                    </p>
+                </section>
+
+                <!-- Stats Section -->
+                <section class="stats-section">
+                    <div class="stats-grid">
+                        <!-- Active Connections -->
+                        <div class="stat-card glass hover-lift">
+                            <div class="stat-icon">
+                                <i class="fas fa-network-wired"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="active-connections">0</div>
+                                <div class="stat-label">Active Connections</div>
+                                <div class="stat-trend positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+12% from yesterday</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Uptime -->
+                        <div class="stat-card glass hover-lift">
+                            <div class="stat-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">99.8%</div>
+                                <div class="stat-label">System Uptime</div>
+                                <div class="stat-trend positive">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Excellent performance</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Database Status -->
+                        <div class="stat-card glass hover-lift">
+                            <div class="stat-icon">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">
+                                    <span class="status-dot success pulse"></span>
+                                    Healthy
+                                </div>
+                                <div class="stat-label">Database Status</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>All systems operational</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Requests per Minute -->
+                        <div class="stat-card glass hover-lift">
+                            <div class="stat-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="requests-per-min">0</div>
+                                <div class="stat-label">Requests/min</div>
+                                <div class="stat-trend positive">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+8% traffic increase</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Neural Nodes -->
+                        <div class="stat-card glass hover-lift">
+                            <div class="stat-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value" id="connected-devices">80</div>
+                                <div class="stat-label">Neural Nodes Active</div>
+                                <div class="stat-trend">
+                                    <i class="fas fa-wave-square"></i>
+                                    <span>Synaptic activity</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Alerts -->
+                        <div class="stat-card glass hover-lift">
+                            <div class="stat-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="stat-content">
+                                <div class="stat-value">
+                                    <span class="badge danger">3</span>
+                                    Alerts
+                                </div>
+                                <div class="stat-label">Recent Alerts</div>
+                                <div class="stat-trend warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>Requires attention</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Info Panel and Actions -->
+                <div class="bottom-grid">
+                    <!-- Company Info Panel -->
+                    <aside class="info-panel glass">
+                        <h3 class="gradient-text">System Information</h3>
+                        <ul class="info-list">
+                            <li>
+                                <strong>Company:</strong>
+                                <span>Astegni Educational Platform</span>
+                            </li>
+                            <li>
+                                <strong>System Version:</strong>
+                                <span class="badge">v2.5.1</span>
+                            </li>
+                            <li>
+                                <strong>Last Backup:</strong>
+                                <span id="last-backup">2 hours ago</span>
+                            </li>
+                            <li>
+                                <strong>Server Location:</strong>
+                                <span>Ethiopia (ET-AA-1)</span>
+                            </li>
+                            <li>
+                                <strong>Database Size:</strong>
+                                <span>3.2 GB</span>
+                            </li>
+                            <li>
+                                <strong>Active Users:</strong>
+                                <span id="active-users">1,247</span>
+                            </li>
+                            <li class="status-item">
+                                <strong>Status:</strong>
+                                <span class="badge success">
+                                    <span class="status-dot success pulse"></span>
+                                    Operational
+                                </span>
+                            </li>
+                        </ul>
+                    </aside>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h3 class="gradient-text">Quick Actions</h3>
+
+                        <div class="actions-grid">
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-campaigns.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-bullhorn"></i>
+                                </span>
+                                <span class="action-label">Manage Campaigns</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-courses.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-book"></i>
+                                </span>
+                                <span class="action-label">Manage Courses</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-schools.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-school"></i>
+                                </span>
+                                <span class="action-label">Manage Schools</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-tutor-documents.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                </span>
+                                <span class="action-label">Manage Tutor documents</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-customers.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-users"></i>
+                                </span>
+                                <span class="action-label">Manage Customers</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-contents.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-upload"></i>
+                                </span>
+                                <span class="action-label">Manage Contents</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+
+                            <button class="action-btn glass hover-lift" onclick="requireAuth('manage-system-settings.html')">
+                                <span class="action-icon">
+                                    <i class="fas fa-cog"></i>
+                                </span>
+                                <span class="action-label">System Settings</span>
+                                <span class="auth-lock" title="Login Required">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/theme-toggle.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/neural-network.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

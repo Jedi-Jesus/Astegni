@@ -1,0 +1,177 @@
+<!--
+  Modal: viewExperienceModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="viewExperienceModal" class="modal hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">💼 Experience Details</h2>
+                <button onclick="closeViewModal('experience')" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- View Mode Content -->
+                <div class="view-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Column: Certificate/Icon & Status -->
+                        <div>
+                            <!-- Certificate Preview (shown when available) -->
+                            <div id="view-exp-certificate-preview" class="mb-4">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+
+                            <!-- Icon fallback (shown when no certificate) -->
+                            <div id="view-exp-icon-fallback" class="text-center mb-4">
+                                <div class="text-8xl mb-4">💼</div>
+                            </div>
+
+                            <div id="view-exp-status" class="text-center mb-4"></div>
+
+                            <div class="text-sm text-gray-600 space-y-3 bg-gray-50 p-4 rounded">
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">Start Date</label>
+                                    <p id="view-exp-start-date" class="text-gray-800 font-semibold"></p>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">End Date</label>
+                                    <p id="view-exp-end-date" class="text-gray-800 font-semibold"></p>
+                                </div>
+                                <div>
+                                    <label class="text-xs font-semibold text-gray-500 block mb-1">Employment
+                                        Type</label>
+                                    <p id="view-exp-employment-type" class="text-gray-800 font-semibold"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Details -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Job Title</label>
+                                <p id="view-exp-job-title" class="text-xl font-bold"></p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-600">Institution</label>
+                                    <p id="view-exp-institution" class="text-gray-800"></p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-600">Location</label>
+                                    <p id="view-exp-location" class="text-gray-800"></p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Description</label>
+                                <p id="view-exp-description" class="text-gray-700 whitespace-pre-line"></p>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Key Responsibilities</label>
+                                <p id="view-exp-responsibilities" class="text-gray-700 whitespace-pre-line"></p>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Achievements</label>
+                                <p id="view-exp-achievements" class="text-gray-700 whitespace-pre-line"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode Content -->
+                <div class="edit-content hidden">
+                    <form id="editExperienceForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Job Title *</label>
+                                <input type="text" id="edit-exp-job-title" name="job_title" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Institution *</label>
+                                <input type="text" id="edit-exp-institution" name="institution" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Location</label>
+                                <input type="text" id="edit-exp-location" name="location"
+                                    class="w-full p-3 border-2 rounded-lg" placeholder="City, Country">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Employment Type</label>
+                                <select id="edit-exp-employment-type" name="employment_type"
+                                    class="w-full p-3 border-2 rounded-lg">
+                                    <option value="">Select type</option>
+                                    <option value="Full-time">Full-time</option>
+                                    <option value="Part-time">Part-time</option>
+                                    <option value="Contract">Contract</option>
+                                    <option value="Freelance">Freelance</option>
+                                    <option value="Internship">Internship</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Start Date *</label>
+                                <input type="date" id="edit-exp-start-date" name="start_date" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">End Date</label>
+                                <input type="date" id="edit-exp-end-date" name="end_date"
+                                    class="w-full p-3 border-2 rounded-lg">
+                                <label class="flex items-center mt-2">
+                                    <input type="checkbox" id="edit-exp-is-current" name="is_current"
+                                        onchange="toggleEndDate(this)" class="mr-2">
+                                    <span class="text-sm">I currently work here</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea id="edit-exp-description" name="description" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Key Responsibilities</label>
+                            <textarea id="edit-exp-responsibilities" name="responsibilities" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Achievements</label>
+                            <textarea id="edit-exp-achievements" name="achievements" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Replace Certificate (Optional)</label>
+                            <input type="file" id="edit-exp-certificate" name="certificate" accept="image/*,.pdf"
+                                class="w-full p-3 border-2 rounded-lg">
+                            <p class="text-sm text-gray-500 mt-1">Leave empty to keep existing certificate</p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-6">
+                    <button onclick="setViewModalMode('experience', 'edit')"
+                        class="edit-btn btn-secondary flex-1">Edit</button>
+                    <button onclick="updateExperience()" class="update-btn btn-primary flex-1 hidden">Update</button>
+                    <button onclick="setViewModalMode('experience', 'view')"
+                        class="cancel-edit-btn btn-secondary flex-1 hidden">Cancel</button>
+                    <button onclick="deleteExperienceFromView()" class="btn-secondary text-red-600 px-6">Delete</button>
+                    <button onclick="closeViewModal('experience')" class="btn-secondary px-6">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>

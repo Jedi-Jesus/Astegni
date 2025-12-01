@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tutor Profile Panel Switching</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        .status { padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .test-section { margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+        .test-button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .test-button:hover { background: #0056b3; }
+        .test-button.working { background: #28a745; }
+        .test-button.missing { background: #dc3545; }
+        pre {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .console-line { margin: 2px 0; }
+        .console-success { color: #4ec9b0; }
+        .console-error { color: #f48771; }
+        .console-warning { color: #dcdcaa; }
+        .console-info { color: #569cd6; }
+        code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 13px; }
+        .check { color: #28a745; font-weight: bold; }
+        .cross { color: #dc3545; font-weight: bold; }
+        .step { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #007bff; }
+        .step h3 { margin-top: 0; color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Tutor Profile Panel Switching - Test Suite</h1>
+        <p>This page helps you verify that the panel switching fix is working correctly.</p>
+
+        <!-- Status Check -->
+        <div id="statusCheck"></div>
+
+        <!-- Test Instructions -->
+        <div class="test-section">
+            <h2>📋 Test Instructions</h2>
+
+            <div class="step">
+                <h3>Step 1: Start Servers</h3>
+                <p>Make sure both backend and frontend servers are running:</p>
+                <pre>
+# Terminal 1 - Backend
+cd astegni-backend
+python app.py
+
+# Terminal 2 - Frontend
+python -m http.server 8080</pre>
+            </div>
+
+            <div class="step">
+                <h3>Step 2: Open Tutor Profile</h3>
+                <p>Navigate to: <a href="http://localhost:8080/profile-pages/tutor-profile.html" target="_blank">http://localhost:8080/profile-pages/tutor-profile.html</a></p>
+                <button class="test-button" onclick="window.open('http://localhost:8080/profile-pages/tutor-profile.html', '_blank')">
+                    🚀 Open Tutor Profile
+                </button>
+            </div>
+
+            <div class="step">
+                <h3>Step 3: Open Browser Console</h3>
+                <p>Press <code>F12</code> or right-click → Inspect → Console tab</p>
+                <p>You should see initialization messages like:</p>
+                <div class="console-output">
+                    <div class="console-line console-success">✅ Tutor Profile Panel Manager module loaded</div>
+                    <div class="console-line console-info">📊 Initializing Tutor Profile Panel Manager...</div>
+                    <div class="console-line console-info">🏠 No panel in URL, defaulting to dashboard</div>
+                    <div class="console-line console-info">🔄 Switching to panel: dashboard</div>
+                    <div class="console-line console-success">✅ Panel "dashboard" activated</div>
+                    <div class="console-line console-success">✅ Sidebar link for "dashboard" activated</div>
+                    <div class="console-line console-success">✅ Tutor Profile Panel Manager initialized</div>
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Step 4: Test Panel Switching</h3>
+                <p>Click each sidebar link in the tutor profile page. For each click, verify:</p>
+                <ul>
+                    <li><span class="check">✓</span> Panel content changes</li>
+                    <li><span class="check">✓</span> Sidebar link highlights (active state)</li>
+                    <li><span class="check">✓</span> URL updates with <code>?panel=xyz</code></li>
+                    <li><span class="check">✓</span> Console shows success messages</li>
+                    <li><span class="check">✓</span> Page scrolls to top smoothly</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Working Panels -->
+        <div class="test-section">
+            <h2>✅ Working Panels (Should Work Correctly)</h2>
+            <p>These panels exist in the HTML and should switch properly:</p>
+            <div>
+                <button class="test-button working" onclick="testPanel('dashboard')">Dashboard</button>
+                <button class="test-button working" onclick="testPanel('requested-sessions')">Requested Sessions</button>
+                <button class="test-button working" onclick="testPanel('my-students')">My Students</button>
+                <button class="test-button working" onclick="testPanel('schedule')">My Schedule</button>
+                <button class="test-button working" onclick="testPanel('teaching-tools')">Teaching Tools</button>
+                <button class="test-button working" onclick="testPanel('resources')">Resource Library</button>
+                <button class="test-button working" onclick="testPanel('videos')">My Videos</button>
+                <button class="test-button working" onclick="testPanel('blog')">Blog Posts</button>
+                <button class="test-button working" onclick="testPanel('podcasts')">Podcasts</button>
+                <button class="test-button working" onclick="testPanel('stories')">Stories</button>
+                <button class="test-button working" onclick="testPanel('reviews')">Reviews</button>
+                <button class="test-button working" onclick="testPanel('certifications')">Certifications</button>
+                <button class="test-button working" onclick="testPanel('settings')">Settings</button>
+            </div>
+            <p style="margin-top: 15px;"><small><span class="check">✓</span> These buttons test the direct panel URLs - click to test!</small></p>
+        </div>
+
+        <!-- Missing Panels -->
+        <div class="test-section">
+            <h2>⚠️ Missing Panels (Will Show Error)</h2>
+            <p>These panels are referenced in sidebar but don't exist in HTML yet:</p>
+            <div>
+                <button class="test-button missing" onclick="testPanel('images')">Images ❌</button>
+                <button class="test-button missing" onclick="testPanel('experience')">Experience ❌</button>
+                <button class="test-button missing" onclick="testPanel('notes')">Notes ❌</button>
+                <button class="test-button missing" onclick="testPanel('purchase')">Purchase History ❌</button>
+            </div>
+            <p style="margin-top: 15px;"><small><span class="cross">✗</span> Expected error: "Panel not found in DOM"</small></p>
+        </div>
+
+        <!-- Browser Navigation Test -->
+        <div class="test-section">
+            <h2>🔄 Browser Navigation Test</h2>
+            <p>Test back/forward button functionality:</p>
+            <ol>
+                <li>Click several panel links in the tutor profile</li>
+                <li>Click browser back button (⬅️) - should navigate to previous panel</li>
+                <li>Click browser forward button (➡️) - should navigate to next panel</li>
+                <li>Each navigation should update the panel and sidebar</li>
+            </ol>
+            <div class="status info">
+                <strong>Expected Behavior:</strong> Browser back/forward buttons should work like clicking sidebar links
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="test-section">
+            <h2>🔧 Troubleshooting</h2>
+
+            <h3>If panels don't switch:</h3>
+            <div class="status error">
+                <strong>Error:</strong> <code>ReferenceError: switchPanel is not defined</code><br>
+                <strong>Fix:</strong> Clear browser cache and reload the page. The panel-manager.js file may not be loaded.
+            </div>
+
+            <h3>If some panels are missing:</h3>
+            <div class="status error">
+                <strong>Error:</strong> <code>Panel "xyz-panel" not found in DOM</code><br>
+                <strong>Fix:</strong> This is expected for Images, Experience, Notes, and Purchase History panels. These need to be created in the HTML.
+            </div>
+
+            <h3>If sidebar doesn't update:</h3>
+            <div class="status error">
+                <strong>Error:</strong> Panel switches but sidebar link doesn't highlight<br>
+                <strong>Fix:</strong> Check that sidebar links have <code>class="sidebar-link"</code> and <code>onclick="switchPanel('xyz')"</code>
+            </div>
+        </div>
+
+        <!-- Files Modified -->
+        <div class="test-section">
+            <h2>📁 Files Modified/Created</h2>
+            <ul>
+                <li><code>js/tutor-profile/panel-manager.js</code> - <span class="check">NEW FILE</span></li>
+                <li><code>profile-pages/tutor-profile.html</code> - <span class="check">MODIFIED</span> (added script tag)</li>
+                <li><code>TUTOR-PROFILE-PANEL-SWITCHING-FIX.md</code> - <span class="check">DOCUMENTATION</span></li>
+            </ul>
+        </div>
+
+        <!-- Success Criteria -->
+        <div class="test-section">
+            <h2>✅ Success Criteria</h2>
+            <p>The fix is working correctly if:</p>
+            <ul>
+                <li><span class="check">✓</span> All sidebar links change panels when clicked</li>
+                <li><span class="check">✓</span> Console shows success messages (not errors)</li>
+                <li><span class="check">✓</span> URL updates with <code>?panel=xyz</code></li>
+                <li><span class="check">✓</span> Browser back/forward buttons work</li>
+                <li><span class="check">✓</span> Sidebar highlights the active panel</li>
+                <li><span class="check">✓</span> Page scrolls smoothly to top on switch</li>
+                <li><span class="check">✓</span> Profile header hides for non-dashboard panels</li>
+                <li><span class="check">✓</span> On mobile, sidebar closes after panel switch</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Check if running on localhost
+        function checkStatus() {
+            const statusDiv = document.getElementById('statusCheck');
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+            if (isLocalhost) {
+                statusDiv.innerHTML = `
+                    <div class="status success">
+                        <strong>✅ Running on localhost</strong><br>
+                        You can proceed with testing!
+                    </div>
+                `;
+            } else {
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        <strong>⚠️ Not running on localhost</strong><br>
+                        Please open this file via: <code>http://localhost:8080/test-tutor-panel-switching.html</code>
+                    </div>
+                `;
+            }
+        }
+
+        // Test individual panel
+        function testPanel(panelName) {
+            const url = `http://localhost:8080/profile-pages/tutor-profile.html?panel=${panelName}`;
+            console.log(`🧪 Testing panel: ${panelName}`);
+            console.log(`📍 URL: ${url}`);
+            window.open(url, '_blank');
+        }
+
+        // Initialize
+        checkStatus();
+
+        console.log('🧪 Tutor Profile Panel Switching Test Suite loaded');
+        console.log('📖 Read the instructions above to test the panel switching functionality');
+    </script>
+</body>
+</html>

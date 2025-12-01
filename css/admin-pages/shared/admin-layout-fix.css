@@ -1,0 +1,109 @@
+/* ============================================
+   ADMIN LAYOUT FIX CSS - Right side widget positioning
+   ============================================ */
+
+/* Panel Visibility Control - CRITICAL */
+.panel-content {
+    display: none !important;
+}
+
+.panel-content.active {
+    display: block !important;
+}
+
+.panel-content.hidden {
+    display: none !important;
+}
+
+/* Ensure panels container allows visible panels */
+.panels-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Main layout container for admin pages */
+.admin-main-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 1.5rem;
+    max-width: 100%;
+    position: relative;
+    align-items: flex-start !important;
+}
+
+/* Left content area - takes up available space */
+.admin-content-area {
+    flex: 1;
+    min-width: 0; /* Prevent flex item from overflowing */
+}
+
+/* Right sidebar widgets - fixed width, sticky positioning */
+.admin-right-widgets {
+    width: 320px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 5rem; /* Adjust based on navbar height */
+    height: fit-content;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+}
+
+/* Ensure proper spacing for widget containers */
+.admin-right-widgets > div {
+    margin-bottom: 1rem;
+}
+
+/* Widget card styling */
+.admin-widget-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.admin-widget-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Responsive behavior */
+@media (max-width: 1280px) {
+    .admin-right-widgets {
+        width: 280px;
+    }
+}
+
+@media (max-width: 1024px) {
+    /* On tablets, move widgets below main content */
+    .admin-main-layout {
+        flex-direction: column;
+    }
+
+    .admin-right-widgets {
+        width: 100%;
+        position: static;
+        max-height: none;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-right-widgets {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Special override for manage-system-settings.html */
+.system-settings-page .admin-main-layout {
+    display: block;
+}
+
+.system-settings-page .admin-right-widgets {
+    width: auto;
+    position: static;
+    margin-top: 2rem;
+}

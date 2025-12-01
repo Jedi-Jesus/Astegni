@@ -1,0 +1,87 @@
+<!--
+  Modal: storyViewerModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="storyViewerModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 10000;">
+        <!-- Close Button -->
+        <button onclick="closeStoryViewer()"
+            style="position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.1); border: none; color: white; font-size: 32px; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 10001; display: flex; align-items: center; justify-content: center;">
+            ×
+        </button>
+
+        <!-- Story Container -->
+        <div
+            style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; position: relative;">
+            <!-- Previous Button -->
+            <button onclick="previousStory()"
+                style="position: absolute; left: 20px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.1); border: none; color: white; font-size: 24px; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 10001;">
+                ‹
+            </button>
+
+            <!-- Story Progress Bar -->
+            <div
+                style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 600px; display: flex; gap: 4px; z-index: 10001;">
+                <div class="story-progress-bar"
+                    style="flex: 1; height: 3px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; overflow: hidden;">
+                    <div class="story-progress-fill"
+                        style="width: 0%; height: 100%; background: white; transition: width 5s linear;"></div>
+                </div>
+            </div>
+
+            <!-- Story Content -->
+            <div id="storyContent" style="max-width: 90%; max-height: 90%; position: relative;">
+                <!-- Story Header -->
+                <div
+                    style="position: absolute; top: -60px; left: 0; right: 0; display: flex; align-items: center; gap: 15px; color: white;">
+                    <img id="storyAuthorAvatar" src="" alt="Author"
+                        style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white;">
+                    <div>
+                        <div id="storyAuthorName" style="font-weight: 600; font-size: 16px;">Tutor Name</div>
+                        <div id="storyTime" style="font-size: 14px; opacity: 0.8;">2 hours ago</div>
+                    </div>
+                </div>
+
+                <!-- Image/Video Container -->
+                <div id="storyMediaContainer" style="display: flex; align-items: center; justify-content: center;">
+                    <img id="storyImage" src="" alt="Story"
+                        style="display: none; max-width: 100%; max-height: 80vh; border-radius: 12px;">
+                    <video id="storyVideo" controls
+                        style="display: none; max-width: 100%; max-height: 80vh; border-radius: 12px;"></video>
+                </div>
+
+                <!-- Story Caption -->
+                <div id="storyCaption"
+                    style="position: absolute; bottom: -50px; left: 0; right: 0; color: white; text-align: center; font-size: 16px; padding: 0 20px;">
+                    Caption goes here
+                </div>
+
+                <!-- Story Actions -->
+                <div
+                    style="position: absolute; bottom: -100px; left: 50%; transform: translateX(-50%); display: flex; gap: 30px;">
+                    <button onclick="likeCurrentStory()"
+                        style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span>❤️</span>
+                        <span id="storyLikes" style="font-size: 16px;">0</span>
+                    </button>
+                    <button onclick="commentCurrentStory()"
+                        style="background: none; border: none; color: white; font-size: 24px; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                        <span>💬</span>
+                        <span id="storyComments" style="font-size: 16px;">0</span>
+                    </button>
+                    <button onclick="shareCurrentStory()"
+                        style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">
+                        <span>📤</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Next Button -->
+            <button onclick="nextStory()"
+                style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(255, 255, 255, 0.1); border: none; color: white; font-size: 24px; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; z-index: 10001;">
+                ›
+            </button>
+        </div>
+    </div>

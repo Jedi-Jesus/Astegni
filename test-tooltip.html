@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tooltip Test</title>
+    <style>
+        :root {
+            --card-bg: #ffffff;
+            --text: #1f2937;
+            --text-muted: #6b7280;
+            --heading: #111827;
+            --border-rgb: 229, 231, 235;
+        }
+
+        body {
+            font-family: sans-serif;
+            padding: 100px;
+            background: #f9fafb;
+        }
+
+        /* Rating Tooltip Styles */
+        .rating-tooltip-container {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .rating-tooltip {
+            position: absolute;
+            bottom: 120%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card-bg);
+            border: 1px solid rgba(var(--border-rgb), 0.2);
+            border-radius: 16px;
+            padding: 1.25rem;
+            min-width: 320px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        .rating-tooltip::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: var(--card-bg);
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+        }
+
+        .rating-tooltip-container:hover .rating-tooltip {
+            opacity: 1;
+            visibility: visible;
+            bottom: calc(100% + 10px);
+            pointer-events: auto;
+        }
+
+        .tooltip-header {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tooltip-rating-row {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .tooltip-rating-label {
+            font-size: 0.875rem;
+            color: var(--text);
+            min-width: 140px;
+            font-weight: 500;
+        }
+
+        .tooltip-progress-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(var(--border-rgb), 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .tooltip-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.6s ease;
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .tooltip-progress-value {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--heading);
+            min-width: 35px;
+            text-align: right;
+        }
+
+        .tooltip-overall {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(var(--border-rgb), 0.2);
+            text-align: center;
+        }
+
+        .tooltip-overall-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .tooltip-overall-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #f59e0b;
+        }
+
+        /* Different color variations for tooltips */
+        .tooltip-progress-fill.engagement-tutor {
+            background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+        }
+
+        .tooltip-progress-fill.engagement-child {
+            background: linear-gradient(90deg, #8b5cf6 0%, #7c3aed 100%);
+        }
+
+        .tooltip-progress-fill.responsiveness {
+            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        }
+
+        .tooltip-progress-fill.payment {
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .test-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #111827;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+
+        .stars {
+            color: #f59e0b;
+            font-size: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h1>Tooltip Test Page</h1>
+        <p>Hover over the stars below to test if the tooltip appears:</p>
+
+        <div class="rating-tooltip-container">
+            <div class="stars">★★★★★</div>
+            <div class="rating-tooltip">
+                <div class="tooltip-header">Rating Breakdown</div>
+                <div class="tooltip-rating-row">
+                    <div class="tooltip-rating-label">Engagement with Tutor</div>
+                    <div class="tooltip-progress-bar">
+                        <div class="tooltip-progress-fill engagement-tutor" style="width: 92%;"></div>
+                    </div>
+                    <div class="tooltip-progress-value">4.6</div>
+                </div>
+                <div class="tooltip-rating-row">
+                    <div class="tooltip-rating-label">Engagement with Child</div>
+                    <div class="tooltip-progress-bar">
+                        <div class="tooltip-progress-fill engagement-child" style="width: 96%;"></div>
+                    </div>
+                    <div class="tooltip-progress-value">4.8</div>
+                </div>
+                <div class="tooltip-rating-row">
+                    <div class="tooltip-rating-label">Responsiveness</div>
+                    <div class="tooltip-progress-bar">
+                        <div class="tooltip-progress-fill responsiveness" style="width: 98%;"></div>
+                    </div>
+                    <div class="tooltip-progress-value">4.9</div>
+                </div>
+                <div class="tooltip-rating-row">
+                    <div class="tooltip-rating-label">Payment Consistency</div>
+                    <div class="tooltip-progress-bar">
+                        <div class="tooltip-progress-fill payment" style="width: 100%;"></div>
+                    </div>
+                    <div class="tooltip-progress-value">5.0</div>
+                </div>
+                <div class="tooltip-overall">
+                    <div class="tooltip-overall-label">Overall Rating</div>
+                    <div class="tooltip-overall-value">4.8 / 5.0</div>
+                </div>
+            </div>
+        </div>
+
+        <p style="margin-top: 2rem; color: #10b981; font-weight: 600;">
+            ✓ If you see a tooltip appear above the stars when hovering, it's working!
+        </p>
+        <p style="color: #ef4444; font-weight: 600;">
+            ✗ If nothing appears, there may be a CSS issue or browser compatibility problem.
+        </p>
+    </div>
+
+    <div class="test-section">
+        <h2>Troubleshooting</h2>
+        <ol style="color: #374151; line-height: 1.8;">
+            <li>Make sure you're hovering directly over the stars</li>
+            <li>Check browser console for errors (F12)</li>
+            <li>Try a different browser (Chrome, Firefox, Edge)</li>
+            <li>Clear cache and reload (Ctrl+F5)</li>
+            <li>Disable browser extensions temporarily</li>
+        </ol>
+    </div>
+</body>
+</html>

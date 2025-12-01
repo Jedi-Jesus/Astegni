@@ -1,0 +1,49 @@
+<!--
+    Modal: unsubscribeConfirm1
+    Purpose: Unsubscription first confirmation modal
+    Extracted from: tutor-profile.html
+-->
+
+<div id="unsubscribeConfirm1" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeUnsubscribeConfirm1()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirm Unsubscription</h2>
+                <button class="modal-close" onclick="closeUnsubscribeConfirm1()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="unsubscribeFirstConfirmText" class="modal-text">This decision will deactivate your subscription.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeUnsubscribeConfirm1()">No</button>
+                <button class="finance-btn-primary" onclick="proceedToUnsubscribeFeeWarning()">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsubscribe Modal: Step 3 (Cancellation Fee Warning) -->
+    <div id="unsubscribeConfirm2" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeUnsubscribeConfirm2()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirm Cancellation Fee</h2>
+                <button class="modal-close" onclick="closeUnsubscribeConfirm2()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="unsubscribeSecondConfirmText" class="modal-text">
+                    Subscription cancellation has a fee of 5%. Are you still sure to cancel subscription?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeUnsubscribeConfirm2()">No</button>
+                <button class="finance-btn-primary" onclick="proceedToUnsubscribePassword()">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsubscribe Modal: Step 4 (Password Confirmation) -->
+    <div id="unsubscribePasswordModal" class="modal hidden"
+        style="position: fixed; top: 

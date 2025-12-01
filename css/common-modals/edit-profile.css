@@ -1,0 +1,42 @@
+/* ============================================
+   MODAL LAYOUTS & SPECIFIC FORMS
+   ============================================ */
+
+/* Edit Profile Modal Layout */
+.edit-profile-modal .form-section {
+    border-bottom: 1px solid rgba(245, 158, 11, 0.08);
+    padding-bottom: 24px;
+}
+
+.edit-profile-modal .form-section:last-child {
+    border-bottom: none;
+}
+
+/* Location & Social Items */
+.location-item,
+.social-item {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.location-item .form-input {
+    flex: 1;
+}
+
+.social-item {
+    display: grid;
+    grid-template-columns: 180px 1fr auto;
+    gap: 12px;
+    align-items: center;
+}
+
+.social-item .form-select {
+    width: 180px;
+    flex: none;
+}
+
+.social-item .form-input {
+    flex: 1;
+}

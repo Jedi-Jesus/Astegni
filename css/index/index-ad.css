@@ -1,0 +1,144 @@
+/* ============================================
+   PREMIUM AD SECTION
+   ============================================ */
+.ad-section.premium {
+    padding: 4rem 0;
+    background: linear-gradient(135deg, rgba(var(--button-bg-rgb), 0.05), rgba(var(--button-hover-rgb), 0.05));
+}
+
+.premium-ad-container {
+    position: relative;
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    border-radius: 30px;
+    overflow: hidden;
+    min-height: 400px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+}
+
+.ad-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="grid" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grid)"/></svg>');
+    opacity: 0.3;
+}
+
+.ad-content-wrapper {
+    position: relative;
+    z-index: 2;
+    padding: 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 400px;
+}
+
+.ad-text-content {
+    flex: 1;
+    max-width: 600px;
+}
+
+.ad-tag {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    letter-spacing: 1px;
+}
+
+.ad-headline {
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: white;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.ad-description {
+    font-size: 1.125rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.ad-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.ad-primary-btn,
+.ad-secondary-btn {
+    padding: 0.875rem 2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ad-primary-btn {
+    background: white;
+    color: var(--button-bg);
+}
+
+.ad-primary-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.ad-secondary-btn {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+.ad-secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: white;
+}
+
+.ad-visual-content {
+    position: relative;
+    width: 400px;
+    height: 400px;
+}
+
+.floating-card {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.floating-card.card-1 {
+    width: 200px;
+    height: 150px;
+    top: 50px;
+    left: 50px;
+    animation: float-1 6s ease-in-out infinite;
+}
+
+.floating-card.card-2 {
+    width: 150px;
+    height: 200px;
+    top: 100px;
+    right: 50px;
+    animation: float-2 8s ease-in-out infinite;
+}
+
+.floating-card.card-3 {
+    width: 180px;
+    height: 120px;
+    bottom: 50px;
+    left: 100px;
+    animation: float-3 7s ease-in-out infinite;
+}

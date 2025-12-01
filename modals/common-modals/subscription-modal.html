@@ -1,0 +1,261 @@
+<!--
+  Modal: subscription-modal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="subscription-modal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeSubscriptionModal()"></div>
+        <div class="modal-content modal-large" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title">⭐ Subscription & Storage Plans</h2>
+                <button class="modal-close" onclick="closeSubscriptionModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Enhanced Discount Info Section -->
+                <div
+                    style="background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border-left: 5px solid #6366F1; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);">
+                    <div style="display: flex; align-items: flex-start; gap: 16px;">
+                        <div
+                            style="background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%); width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); flex-shrink: 0;">
+                            <span style="font-size: 28px;">💡</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <h3
+                                style="font-size: 18px; font-weight: 700; color: #312E81; margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
+                                <span>Save More with Longer Subscriptions!</span>
+                                <span
+                                    style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">HOT
+                                    DEAL</span>
+                            </h3>
+                            <!-- Discount Cards in One Row -->
+                            <div
+                                style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px;">
+                                <!-- 3 Months -->
+                                <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12); transition: all 0.3s; cursor: pointer; border: 2px solid transparent;"
+                                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 16px rgba(59, 130, 246, 0.2)'; this.style.borderColor='#3B82F6';"
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(59, 130, 246, 0.12)'; this.style.borderColor='transparent';">
+                                    <div style="text-align: center;">
+                                        <div
+                                            style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3); margin: 0 auto 12px;">
+                                            3</div>
+                                        <div
+                                            style="color: #1E293B; font-weight: 700; font-size: 15px; margin-bottom: 8px;">
+                                            3 Months</div>
+                                        <div
+                                            style="background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%); color: white; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3); display: inline-block;">
+                                            10% OFF</div>
+                                    </div>
+                                </div>
+                                <!-- 6 Months -->
+                                <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(139, 92, 246, 0.12); transition: all 0.3s; cursor: pointer; border: 2px solid transparent;"
+                                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 16px rgba(139, 92, 246, 0.2)'; this.style.borderColor='#8B5CF6';"
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(139, 92, 246, 0.12)'; this.style.borderColor='transparent';">
+                                    <div style="text-align: center;">
+                                        <div
+                                            style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); color: white; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3); margin: 0 auto 12px;">
+                                            6</div>
+                                        <div
+                                            style="color: #1E293B; font-weight: 700; font-size: 15px; margin-bottom: 8px;">
+                                            6 Months</div>
+                                        <div
+                                            style="background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%); color: white; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3); display: inline-block; margin-bottom: 4px;">
+                                            15% OFF</div>
+                                        <div style="color: #10B981; font-weight: 600; font-size: 11px;">💰 Best Value
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- 1 Year -->
+                                <div style="background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12); transition: all 0.3s; cursor: pointer; border: 2px solid transparent;"
+                                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 6px 16px rgba(16, 185, 129, 0.2)'; this.style.borderColor='#10B981';"
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 8px rgba(16, 185, 129, 0.12)'; this.style.borderColor='transparent';">
+                                    <div style="text-align: center;">
+                                        <div
+                                            style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3); margin: 0 auto 12px;">
+                                            12</div>
+                                        <div
+                                            style="color: #1E293B; font-weight: 700; font-size: 15px; margin-bottom: 8px;">
+                                            1 Year</div>
+                                        <div
+                                            style="background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%); color: white; padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.3); display: inline-block; margin-bottom: 4px;">
+                                            20% OFF</div>
+                                        <div style="color: #10B981; font-weight: 700; font-size: 11px;">🔥 Max Savings!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p
+                                style="margin: 16px 0 0 0; padding: 12px; background: rgba(99, 102, 241, 0.1); border-radius: 8px; color: #4338CA; font-size: 13px; font-weight: 500; text-align: center; border: 1px dashed #818CF8;">
+                                ⏰ <strong>Limited Time Offer:</strong> Lock in these rates before prices increase!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="modal-text">Upgrade your storage and get boosted visibility on search and videos!</p>
+
+                <div class="subscription-grid">
+                    <!-- 64 GB Plan -->
+                    <div class="subscription-card">
+                        <h3 class="subscription-title">Starter</h3>
+                        <div class="subscription-price">
+                            <div class="price">500 ETB/month</div>
+                        </div>
+                        <ul class="subscription-features">
+                            <li><i class="fas fa-check"></i> 64 GB Storage</li>
+                            <li><i class="fas fa-check"></i> Boosted Visibility</li>
+                            <li><i class="fas fa-check"></i> Priority Search Ranking</li>
+                            <li><i class="fas fa-check"></i> Video Recommendations</li>
+                        </ul>
+                        <div class="subscription-actions" style="display: flex; flex-direction: column; gap: 8px;">
+                            <button class="subscribe-btn" data-plan="starter" data-price="500" data-storage="64"
+                                onclick="selectPlan('starter', 500, 64)">Subscribe</button>
+                            <button class="switch-plan-btn hidden" data-plan="starter"
+                                onclick="openSwitchSubscriptionModal()"
+                                style="background: #3B82F6; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Switch
+                                Plan</button>
+                            <button class="unsubscribe-btn hidden" data-plan="starter"
+                                onclick="startUnsubscribeFlow('starter')"
+                                style="background: #EF4444; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Unsubscribe</button>
+                        </div>
+                    </div>
+
+                    <!-- 100 GB Plan -->
+                    <div class="subscription-card">
+                        <h3 class="subscription-title">Basic</h3>
+                        <div class="subscription-price">
+                            <div class="price">750 ETB/month</div>
+                        </div>
+                        <ul class="subscription-features">
+                            <li><i class="fas fa-check"></i> 100 GB Storage</li>
+                            <li><i class="fas fa-check"></i> Boosted Visibility</li>
+                            <li><i class="fas fa-check"></i> Priority Search Ranking</li>
+                            <li><i class="fas fa-check"></i> Video Recommendations</li>
+                            <li><i class="fas fa-check"></i> Analytics Dashboard</li>
+                        </ul>
+                        <div class="subscription-actions" style="display: flex; flex-direction: column; gap: 8px;">
+                            <button class="subscribe-btn" data-plan="basic" data-price="750" data-storage="100"
+                                onclick="selectPlan('basic', 750, 100)">Subscribe</button>
+                            <button class="switch-plan-btn hidden" data-plan="basic"
+                                onclick="openSwitchSubscriptionModal()"
+                                style="background: #3B82F6; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Switch
+                                Plan</button>
+                            <button class="unsubscribe-btn hidden" data-plan="basic"
+                                onclick="startUnsubscribeFlow('basic')"
+                                style="background: #EF4444; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Unsubscribe</button>
+                        </div>
+                    </div>
+
+                    <!-- 250 GB Plan -->
+                    <div class="subscription-card featured">
+                        <span class="subscription-badge">Popular</span>
+                        <h3 class="subscription-title">Professional</h3>
+                        <div class="subscription-price">
+                            <div class="price">1,875 ETB/month</div>
+                        </div>
+                        <ul class="subscription-features">
+                            <li><i class="fas fa-check"></i> 250 GB Storage</li>
+                            <li><i class="fas fa-check"></i> Boosted Visibility</li>
+                            <li><i class="fas fa-check"></i> Priority Search Ranking</li>
+                            <li><i class="fas fa-check"></i> Video Recommendations</li>
+                            <li><i class="fas fa-check"></i> Analytics Dashboard</li>
+                            <li><i class="fas fa-check"></i> Premium Support</li>
+                        </ul>
+                        <div class="subscription-actions" style="display: flex; flex-direction: column; gap: 8px;">
+                            <button class="subscribe-btn" data-plan="professional" data-price="1875" data-storage="250"
+                                onclick="selectPlan('professional', 1875, 250)">Subscribe</button>
+                            <button class="switch-plan-btn hidden" data-plan="professional"
+                                onclick="openSwitchSubscriptionModal()"
+                                style="background: #3B82F6; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Switch
+                                Plan</button>
+                            <button class="unsubscribe-btn hidden" data-plan="professional"
+                                onclick="startUnsubscribeFlow('professional')"
+                                style="background: #EF4444; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Unsubscribe</button>
+                        </div>
+                    </div>
+
+                    <!-- 500 GB Plan -->
+                    <div class="subscription-card">
+                        <h3 class="subscription-title">Advanced</h3>
+                        <div class="subscription-price">
+                            <div class="price">3,750 ETB/month</div>
+                        </div>
+                        <ul class="subscription-features">
+                            <li><i class="fas fa-check"></i> 500 GB Storage</li>
+                            <li><i class="fas fa-check"></i> Maximum Visibility Boost</li>
+                            <li><i class="fas fa-check"></i> Top Search Ranking</li>
+                            <li><i class="fas fa-check"></i> Featured Video Placement</li>
+                            <li><i class="fas fa-check"></i> Advanced Analytics</li>
+                            <li><i class="fas fa-check"></i> Premium Support</li>
+                        </ul>
+                        <div class="subscription-actions" style="display: flex; flex-direction: column; gap: 8px;">
+                            <button class="subscribe-btn" data-plan="advanced" data-price="3750" data-storage="500"
+                                onclick="selectPlan('advanced', 3750, 500)">Subscribe</button>
+                            <button class="switch-plan-btn hidden" data-plan="advanced"
+                                onclick="openSwitchSubscriptionModal()"
+                                style="background: #3B82F6; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Switch
+                                Plan</button>
+                            <button class="unsubscribe-btn hidden" data-plan="advanced"
+                                onclick="startUnsubscribeFlow('advanced')"
+                                style="background: #EF4444; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Unsubscribe</button>
+                        </div>
+                    </div>
+
+                    <!-- 1 TB Plan -->
+                    <div class="subscription-card">
+                        <h3 class="subscription-title">Enterprise</h3>
+                        <div class="subscription-price">
+                            <div class="price">7,500 ETB/month</div>
+                        </div>
+                        <ul class="subscription-features">
+                            <li><i class="fas fa-check"></i> 1 TB Storage</li>
+                            <li><i class="fas fa-check"></i> Maximum Visibility Boost</li>
+                            <li><i class="fas fa-check"></i> Top Search Ranking</li>
+                            <li><i class="fas fa-check"></i> Featured Video Placement</li>
+                            <li><i class="fas fa-check"></i> Advanced Analytics</li>
+                            <li><i class="fas fa-check"></i> Priority Support 24/7</li>
+                            <li><i class="fas fa-check"></i> Custom Branding</li>
+                        </ul>
+                        <div class="subscription-actions" style="display: flex; flex-direction: column; gap: 8px;">
+                            <button class="subscribe-btn" data-plan="enterprise" data-price="7500" data-storage="1000"
+                                onclick="selectPlan('enterprise', 7500, 1000)">Subscribe</button>
+                            <button class="switch-plan-btn hidden" data-plan="enterprise"
+                                onclick="openSwitchSubscriptionModal()"
+                                style="background: #3B82F6; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Switch
+                                Plan</button>
+                            <button class="unsubscribe-btn hidden" data-plan="enterprise"
+                                onclick="startUnsubscribeFlow('enterprise')"
+                                style="background: #EF4444; color: white; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; transition: all 0.3s;">Unsubscribe</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Subscription Card (shown when subscribed) -->
+                <div id="current-subscription-card"
+                    class="hidden mt-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-purple-900">✨ Your Current Plan</h3>
+                            <p class="text-purple-700 mt-1" id="current-plan-name">Professional Plan</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-2xl font-bold text-purple-900" id="current-plan-price">1,875 ETB/month</p>
+                            <p class="text-sm text-purple-600" id="current-plan-storage">250 GB Storage</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="openSwitchSubscriptionModal()"
+                            class="flex-1 px-6 py-3 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-all shadow-md">
+                            🔄 Switch Plan
+                        </button>
+                        <button onclick="startUnsubscribeFlow()"
+                            class="flex-1 px-6 py-3 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition-all shadow-md">
+                            ❌ Unsubscribe
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

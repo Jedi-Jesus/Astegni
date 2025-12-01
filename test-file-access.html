@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test File Access</title>
+</head>
+<body>
+    <h1>Test Direct File Access to API</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testAdminEndpoint()">Test Admin Endpoint</button>
+    <div id="results"></div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+        let token = null;
+
+        async function testLogin() {
+            const resultsDiv = document.getElementById('results');
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'username=admin@astegni.com&password=Admin2025!'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    token = data.access_token;
+                    resultsDiv.innerHTML = '<p style="color: green;">✓ Login successful! Token received.</p>';
+                    localStorage.setItem('token', token);
+                } else {
+                    resultsDiv.innerHTML = `<p style="color: red;">✗ Login failed: ${response.status}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">✗ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testAdminEndpoint() {
+            const resultsDiv = document.getElementById('results');
+            const savedToken = token || localStorage.getItem('token');
+
+            if (!savedToken) {
+                resultsDiv.innerHTML = '<p style="color: orange;">Please login first!</p>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/tutors/pending?page=1&limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${savedToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    resultsDiv.innerHTML = `<p style="color: green;">✓ Admin endpoint working! Found ${data.total} pending tutors.</p>`;
+                } else {
+                    resultsDiv.innerHTML = `<p style="color: red;">✗ Admin endpoint failed: ${response.status}</p>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">✗ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

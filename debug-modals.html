@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Modals</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1f2937;
+            color: #f9fafb;
+        }
+        .debug-box {
+            background: #374151;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .success { border-left-color: #10b981; }
+        .error { border-left-color: #ef4444; }
+        button {
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Modal Debug Tool</h1>
+
+    <div class="debug-box">
+        <h3>Step 1: Check if script is loaded</h3>
+        <div id="script-check">Checking...</div>
+    </div>
+
+    <div class="debug-box">
+        <h3>Step 2: Check if functions exist</h3>
+        <div id="function-check">Checking...</div>
+    </div>
+
+    <div class="debug-box">
+        <h3>Step 3: Check if modal elements exist</h3>
+        <div id="element-check">Checking...</div>
+    </div>
+
+    <div class="debug-box">
+        <h3>Step 4: Test opening modals</h3>
+        <button onclick="testOpenCourseModal()">Test Course Modal</button>
+        <button onclick="testOpenSchoolModal()">Test School Modal</button>
+        <div id="test-result"></div>
+    </div>
+
+    <div class="debug-box">
+        <h3>Console Logs:</h3>
+        <div id="console-logs" style="max-height: 200px; overflow-y: auto;"></div>
+    </div>
+
+    <!-- Load the actual modals -->
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/find-tutors/request-modals.css">
+
+    <!-- Request Course Modal -->
+    <div id="requestCourseModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Request a New Course</h3>
+                <button class="modal-close" id="closeCourseModal">×</button>
+            </div>
+            <form id="requestCourseForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Course Title *</label>
+                    <input type="text" id="courseTitle" placeholder="e.g., Advanced Mathematics" class="modal-input" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelCourseBtn" class="modal-btn-cancel">Cancel</button>
+                    <button type="submit" id="submitCourseBtn" class="modal-btn-submit">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Request School Modal -->
+    <div id="requestSchoolModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Request a New School</h3>
+                <button class="modal-close" id="closeSchoolModal">×</button>
+            </div>
+            <form id="requestSchoolForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">School Name *</label>
+                    <input type="text" id="schoolName" placeholder="e.g., Excellence Academy" class="modal-input" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelSchoolBtn" class="modal-btn-cancel">Cancel</button>
+                    <button type="submit" id="submitSchoolBtn" class="modal-btn-submit">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/find-tutors/request-modals.js"></script>
+
+    <script>
+        // Override console.log to capture logs
+        const originalLog = console.log;
+        const logsDiv = document.getElementById('console-logs');
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const logEntry = document.createElement('div');
+            logEntry.textContent = args.join(' ');
+            logEntry.style.padding = '2px 0';
+            logEntry.style.borderBottom = '1px solid #4b5563';
+            logsDiv.appendChild(logEntry);
+        };
+
+        // Step 1: Check script loading
+        setTimeout(() => {
+            const scriptCheck = document.getElementById('script-check');
+            scriptCheck.className = 'success';
+            scriptCheck.textContent = '✓ Script loaded successfully';
+            console.log('Script loaded');
+        }, 100);
+
+        // Step 2: Check functions
+        setTimeout(() => {
+            const functionCheck = document.getElementById('function-check');
+            const checks = [];
+
+            if (typeof openRequestCourseModal === 'function') {
+                checks.push('✓ openRequestCourseModal exists');
+            } else {
+                checks.push('✗ openRequestCourseModal NOT found');
+            }
+
+            if (typeof openRequestSchoolModal === 'function') {
+                checks.push('✓ openRequestSchoolModal exists');
+            } else {
+                checks.push('✗ openRequestSchoolModal NOT found');
+            }
+
+            if (typeof requestModalsManager !== 'undefined') {
+                checks.push('✓ requestModalsManager exists');
+                if (requestModalsManager) {
+                    checks.push('  ✓ Manager is initialized');
+                } else {
+                    checks.push('  ✗ Manager is null');
+                }
+            } else {
+                checks.push('✗ requestModalsManager NOT found');
+            }
+
+            functionCheck.innerHTML = checks.join('<br>');
+            functionCheck.className = checks.some(c => c.includes('✗')) ? 'error' : 'success';
+            console.log('Function check:', checks);
+        }, 200);
+
+        // Step 3: Check elements
+        setTimeout(() => {
+            const elementCheck = document.getElementById('element-check');
+            const checks = [];
+
+            const courseModal = document.getElementById('requestCourseModal');
+            const schoolModal = document.getElementById('requestSchoolModal');
+            const courseForm = document.getElementById('requestCourseForm');
+            const schoolForm = document.getElementById('requestSchoolForm');
+
+            checks.push(courseModal ? '✓ Course modal element exists' : '✗ Course modal NOT found');
+            checks.push(schoolModal ? '✓ School modal element exists' : '✗ School modal NOT found');
+            checks.push(courseForm ? '✓ Course form exists' : '✗ Course form NOT found');
+            checks.push(schoolForm ? '✓ School form exists' : '✗ School form NOT found');
+
+            if (courseModal) {
+                checks.push(`  Classes: ${courseModal.className}`);
+            }
+
+            elementCheck.innerHTML = checks.join('<br>');
+            elementCheck.className = checks.some(c => c.includes('✗')) ? 'error' : 'success';
+            console.log('Element check:', checks);
+        }, 300);
+
+        // Test functions
+        function testOpenCourseModal() {
+            const resultDiv = document.getElementById('test-result');
+            console.log('Testing openRequestCourseModal()...');
+
+            try {
+                if (typeof openRequestCourseModal === 'function') {
+                    openRequestCourseModal();
+
+                    setTimeout(() => {
+                        const modal = document.getElementById('requestCourseModal');
+                        const isVisible = modal && !modal.classList.contains('hidden');
+
+                        if (isVisible) {
+                            resultDiv.innerHTML = '<div class="success">✓ Course modal opened successfully!</div>';
+                            console.log('Course modal is visible');
+                        } else {
+                            resultDiv.innerHTML = '<div class="error">✗ Course modal did not open. Classes: ' + (modal ? modal.className : 'modal not found') + '</div>';
+                            console.log('Course modal failed to open');
+                        }
+                    }, 100);
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ openRequestCourseModal function not found</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">✗ Error: ' + error.message + '</div>';
+                console.error('Error:', error);
+            }
+        }
+
+        function testOpenSchoolModal() {
+            const resultDiv = document.getElementById('test-result');
+            console.log('Testing openRequestSchoolModal()...');
+
+            try {
+                if (typeof openRequestSchoolModal === 'function') {
+                    openRequestSchoolModal();
+
+                    setTimeout(() => {
+                        const modal = document.getElementById('requestSchoolModal');
+                        const isVisible = modal && !modal.classList.contains('hidden');
+
+                        if (isVisible) {
+                            resultDiv.innerHTML = '<div class="success">✓ School modal opened successfully!</div>';
+                            console.log('School modal is visible');
+                        } else {
+                            resultDiv.innerHTML = '<div class="error">✗ School modal did not open. Classes: ' + (modal ? modal.className : 'modal not found') + '</div>';
+                            console.log('School modal failed to open');
+                        }
+                    }, 100);
+                } else {
+                    resultDiv.innerHTML = '<div class="error">✗ openRequestSchoolModal function not found</div>';
+                }
+            } catch (error) {
+                resultDiv.innerHTML = '<div class="error">✗ Error: ' + error.message + '</div>';
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!--
+    Modal: unsubscribeModal1
+    Purpose: Unsubscription reason collection modal (step 1)
+    Extracted from: tutor-profile.html
+-->
+
+<div id="unsubscribeModal1" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeUnsubscribeModal1()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Why did you come to this decision? 😢</h2>
+                <button class="modal-close" onclick="closeUnsubscribeModal1()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 12px;">
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="unsubscribeReason" value="notUseful" class="form-checkbox">
+                        <span>Service not useful</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="unsubscribeReason" value="tooExpensive" class="form-checkbox">
+                        <span>Too expensive</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="unsubscribeReason" value="foundAlternative" class="form-checkbox">
+                        <span>Found an alternative</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="unsubscribeReason" value="privacyConcerns" class="form-checkbox">
+                        <span>Privacy concerns</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="unsubscribeReason" value="notSatisfied" class="form-checkbox">
+                        <span>Not satisfied with features</span>
+                    </label>
+                    <label class="checkbox-label"
+                        style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" name="unsubscribeReason" value="other" id="unsubscribeOtherCheckbox"
+                            class="form-checkbox">
+                        <span>Other</span>
+                    </label>
+                </div>
+                <textarea id="otherTextUnsubscribe" class="form-textarea mt-3" placeholder="Please specify"
+                    style="display: none;"></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeUnsubscribeModal1()">Cancel</button>
+                <button class="finance-btn-primary" onclick="submitUnsubscribeReasons()">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsubscribe Modal: Step 2 (First Confirmation) -->
+    <div id="unsubscribeConfirm1" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeUnsubscribeConfirm1()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirm Unsubscription</h2>
+                <button class="modal-close" onclick="closeUnsubscribeConfirm1()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="unsubscribeFirstConfirmText" class="modal-text">This decision will deactivate your subscription.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeUnsubscribeConfirm1()">No</button>
+                <button class="finance-btn-primary" onclick="proceedToUnsubscribeFeeWarning()">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsubscribe Modal: Step 3 (Cancellation Fee Warning) -->
+    <div id="unsubscribeConfirm2" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeUnsubscribeConfirm2()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">Confirm Cancellation Fee</h2>
+                <button class="modal-close" onclick="closeUnsubscribeConfirm2()">×</button>
+            </div>
+            <div class="modal-body">
+                <p id="unsubscribeSecondConfirmText" class="modal-text">
+                    Subscription cancellation has a fee of 5%. Are you still sure to cancel subscription?
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeUnsubscribeConfirm2()">No</button>
+                <button class="finance-btn-primary" onclick="proceedToUnsubscribePassword()">Yes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unsubscribe Modal: Step 4 (Password Confirmation) -->
+    <div id="unsubscribePasswordModal" class="mod

@@ -1,0 +1,25 @@
+<!--
+  Modal: deleteSubscriptionCheckModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="deleteSubscriptionCheckModal" class="modal hidden"
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-overlay" onclick="closeDeleteSubscriptionCheckModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="modal-title">⚠️ Active Subscriptions Detected</h2>
+                <button class="modal-close" onclick="closeDeleteSubscriptionCheckModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-text">Please cancel all active subscriptions before proceeding with account deletion.
+                </p>
+                <p class="text-sm text-gray-600 mt-2">Go to Settings → Subscription to manage your active subscriptions.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="finance-btn-primary" onclick="closeDeleteSubscriptionCheckModal()">Close</button>
+            </div>
+        </div>
+    </div>

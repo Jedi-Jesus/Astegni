@@ -1,0 +1,81 @@
+<!--
+  Modal: Universal Upload Modal
+  Location: common-modals (shared across all profile types)
+  Purpose: Universal upload modal for Story, Cover Image, Profile Image, and General Images
+-->
+
+<div class="upload-story-modal" id="storyUploadModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="uploadModalTitle">Upload File</h2>
+                    <button class="modal-close" onclick="closeStoryUploadModal()">&times;</button>
+                </div>
+
+                <!-- Upload Type Selector -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="uploadType" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                        What are you uploading?
+                    </label>
+                    <select id="uploadType" class="form-input" onchange="handleUploadTypeChange()"
+                            style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 2px solid var(--border-color); background: var(--bg-primary); color: var(--text-primary); font-size: 1rem;">
+                        <option value="story">📱 Story (Image/Video)</option>
+                        <option value="cover">🖼️ Cover Image</option>
+                        <option value="profile">👤 Profile Picture</option>
+                        <option value="image">🎨 General Image</option>
+                    </select>
+                </div>
+
+                <div class="upload-area" id="storyUploadArea" onclick="document.getElementById('storyInput').click()">
+                    <span class="upload-icon" id="uploadIcon">📱</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint" id="uploadHint">Images (JPG, PNG, GIF) or Videos (MP4, WebM) - Max 50MB</p>
+                    <input type="file" id="storyInput" class="upload-input" accept="image/*,video/*"
+                        onchange="handleStorySelect(event)">
+                </div>
+
+                <div class="preview-container" id="storyPreview" style="display: none;">
+                    <img src="" alt="Story preview" class="preview-image" id="storyPreviewImage" style="display: none;">
+                    <video src="" class="preview-image" id="storyPreviewVideo" controls style="display: none;"></video>
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="storyFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="storyFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Type:</span>
+                            <span id="storyFileType">-</span>
+                        </div>
+                    </div>
+
+                    <!-- Caption input -->
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label for="storyCaption">Caption (optional)</label>
+                        <textarea id="storyCaption" class="form-input" placeholder="Add a caption to your story..."
+                            rows="3" maxlength="200"></textarea>
+                        <small style="color: var(--text-muted); font-size: 0.875rem;">
+                            <span id="storyCaptionCount">0</span>/200 characters
+                        </small>
+                    </div>
+                </div>
+
+                <div class="upload-progress" id="storyProgress" style="display: none;">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="storyProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="storyProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-spinner" id="storySpinner"></div>
+
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('story')">Change File</button>
+                    <button class="btn-upload primary" id="uploadButton" onclick="uploadFile()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>

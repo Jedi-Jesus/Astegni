@@ -1,0 +1,16 @@
+/* Admin Layout Styles */
+/* These styles ensure proper right-side widget positioning in admin pages */
+
+.admin-main-layout {
+    display: flex !important;
+    gap: 1.5rem !important;
+}
+
+.admin-content-area {
+    flex: 1 !important;
+}
+
+.admin-right-widgets {
+    width: 320px !important;
+    flex-shrink: 0 !important;
+}

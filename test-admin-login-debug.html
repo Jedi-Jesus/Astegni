@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #4338CA;
+        }
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            display: none;
+        }
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        .message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #3b82f6;
+        }
+        .debug-log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #1f2937;
+            color: #10b981;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .debug-log .error {
+            color: #ef4444;
+        }
+        .debug-log .success {
+            color: #10b981;
+        }
+        .debug-log .info {
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>🔐 Admin Login Debug</h1>
+        <p style="color: #666; margin-bottom: 20px;">Test the admin login endpoint</p>
+
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required placeholder="admin@example.com" value="jediael.s.abebe@gmail.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter password">
+            </div>
+
+            <button type="submit" id="submit-btn">
+                Login
+            </button>
+        </form>
+
+        <div id="message" class="message"></div>
+
+        <div class="debug-log" id="debug-log">
+            <strong>Debug Log:</strong><br>
+            Waiting for login attempt...
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+        const debugLog = document.getElementById('debug-log');
+        const messageDiv = document.getElementById('message');
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = type;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+
+        function showMessage(message, type) {
+            messageDiv.textContent = message;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const submitBtn = document.getElementById('submit-btn');
+
+            // Clear previous messages
+            messageDiv.style.display = 'none';
+            debugLog.innerHTML = '<strong>Debug Log:</strong><br>';
+
+            log('Starting login attempt...', 'info');
+            log(`Email: ${email}`, 'info');
+            log(`API URL: ${API_BASE_URL}/api/admin/login`, 'info');
+
+            // Disable button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Logging in...';
+
+            try {
+                log('Sending POST request...', 'info');
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        password: password
+                    })
+                });
+
+                log(`Response status: ${response.status} ${response.statusText}`, 'info');
+
+                const data = await response.json();
+                log(`Response data: ${JSON.stringify(data, null, 2)}`, 'info');
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Login failed');
+                }
+
+                if (!data.success) {
+                    throw new Error(data.message || 'Login failed');
+                }
+
+                log('✅ Login successful!', 'success');
+                log(`Admin ID: ${data.admin_id}`, 'success');
+                log(`Name: ${data.name}`, 'success');
+                log(`Email: ${data.email}`, 'success');
+                log(`Departments: ${JSON.stringify(data.departments)}`, 'success');
+                log(`Token: ${data.access_token.substring(0, 20)}...`, 'success');
+
+                showMessage('✅ Login successful! Check debug log for details.', 'success');
+
+                // Store in localStorage
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('adminAuth', 'true');
+                localStorage.setItem('adminId', data.admin_id);
+                localStorage.setItem('adminEmail', data.email);
+
+                log('Token saved to localStorage', 'success');
+                log('You can now go to admin-index.html', 'success');
+
+                // Optional: redirect after 2 seconds
+                setTimeout(() => {
+                    if (confirm('Login successful! Go to admin-index.html?')) {
+                        window.location.href = 'admin-pages/admin-index.html';
+                    }
+                }, 2000);
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                log(`Error stack: ${error.stack}`, 'error');
+                showMessage(`❌ Login failed: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Login';
+            }
+        });
+
+        // Log initial state
+        log('Page loaded', 'info');
+        log('Backend should be running at: ' + API_BASE_URL, 'info');
+    </script>
+</body>
+</html>

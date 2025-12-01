@@ -1,0 +1,115 @@
+/* Schedule Modal */
+.calendar-sync-section {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, rgba(217, 119, 6, 0.05) 100%);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 32px;
+}
+
+.calendar-sync-section h3 {
+    color: #F59E0B;
+    margin-bottom: 16px;
+    font-size: 1.125rem;
+}
+
+.sync-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.sync-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: white;
+    border: 2px solid rgba(245, 158, 11, 0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.sync-btn:hover {
+    border-color: #F59E0B;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.sync-icon {
+    font-size: 24px;
+}
+
+.schedule-form {
+    margin-bottom: 32px;
+}
+
+.schedule-form h3 {
+    color: #F59E0B;
+    margin-bottom: 20px;
+}
+
+.upcoming-schedule {
+    background: rgba(245, 158, 11, 0.03);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.upcoming-schedule h3 {
+    color: #F59E0B;
+    margin-bottom: 20px;
+}
+
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.schedule-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid rgba(245, 158, 11, 0.1);
+    transition: all 0.3s ease;
+}
+
+.schedule-item:hover {
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+    transform: translateX(4px);
+}
+
+.schedule-time {
+    display: flex;
+    flex-direction: column;
+    min-width: 80px;
+}
+
+.schedule-time .time {
+    font-weight: 700;
+    color: #F59E0B;
+    font-size: 1rem;
+}
+
+.schedule-time .date {
+    font-size: 0.875rem;
+    color: #92400E;
+}
+
+.schedule-info {
+    flex: 1;
+}
+
+.schedule-info h4 {
+    margin: 0 0 4px 0;
+    color: #78350F;
+}
+
+.schedule-info p {
+    margin: 0;
+    color: #92400E;
+    font-size: 0.875rem;
+}

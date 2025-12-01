@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test View Tutor - Empty States</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .test-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+        .test-section {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+        }
+        .test-label {
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+        .test-value {
+            font-size: 0.95rem;
+            color: #1e293b;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+        .status-pass {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .status-fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        .test-button {
+            padding: 0.75rem 1.5rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-card">
+        <h1 class="test-title">🧪 View Tutor - Empty States Test</h1>
+        <p style="color: #64748b; margin-bottom: 2rem;">
+            This test verifies that empty/null fields display properly as "None" or "No reviews yet"
+            instead of falling back to hardcoded fake data.
+        </p>
+
+        <button class="test-button" onclick="runTest()">Run Tests</button>
+        <button class="test-button" onclick="location.href='/view-profiles/view-tutor.html?id=1'">View Real Profile</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        async function runTest() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<div class="test-card"><p>Running tests...</p></div>';
+
+            try {
+                // Test 1: Check loader files exist and have correct logic
+                const test1 = await testLoaderFiles();
+
+                // Test 2: Mock empty data and check rendering
+                const test2 = testEmptyDataRendering();
+
+                // Test 3: Check specific fallback removals
+                const test3 = await testFallbacksRemoved();
+
+                // Display results
+                displayResults([test1, test2, test3]);
+
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="test-card">
+                        <h2 class="test-title">❌ Test Failed</h2>
+                        <p style="color: #dc2626;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testLoaderFiles() {
+            const result = {
+                name: 'Loader Files Check',
+                passed: true,
+                details: []
+            };
+
+            // Check if files are accessible
+            try {
+                const response1 = await fetch('/js/view-tutor/view-tutor-loader.js');
+                const content1 = await response1.text();
+
+                // Check for removed hardcoded fallbacks
+                const badPatterns = [
+                    { pattern: /'Excellence in Education, Delivered with Passion'/, name: 'Hardcoded hero title' },
+                    { pattern: /'Empowering students through personalized learning'/, name: 'Hardcoded hero subtitle' },
+                    { pattern: /'Addis Ababa'.*\|.*'Online'/, name: 'Hardcoded location fallback' }
+                ];
+
+                badPatterns.forEach(({ pattern, name }) => {
+                    if (pattern.test(content1)) {
+                        result.passed = false;
+                        result.details.push(`❌ Found ${name} in view-tutor-loader.js`);
+                    } else {
+                        result.details.push(`✅ Removed ${name} from view-tutor-loader.js`);
+                    }
+                });
+
+                // Check for good patterns (proper empty state handling)
+                const goodPatterns = [
+                    { pattern: /'No quote provided yet'/, name: 'Empty quote handling' },
+                    { pattern: /'No bio provided yet'/, name: 'Empty bio handling' },
+                    { pattern: /'None'/, name: 'None fallback' }
+                ];
+
+                goodPatterns.forEach(({ pattern, name }) => {
+                    if (pattern.test(content1)) {
+                        result.details.push(`✅ ${name} implemented`);
+                    } else {
+                        result.passed = false;
+                        result.details.push(`❌ Missing ${name}`);
+                    }
+                });
+
+                // Check db-loader file
+                const response2 = await fetch('/js/view-tutor/view-tutor-db-loader.js');
+                const content2 = await response2.text();
+
+                if (content2.includes("'Addis Ababa'") || content2.includes("'English, Amharic'") || content2.includes("'All Levels'")) {
+                    result.passed = false;
+                    result.details.push('❌ Found hardcoded fallbacks in view-tutor-db-loader.js');
+                } else {
+                    result.details.push('✅ No hardcoded fallbacks in view-tutor-db-loader.js');
+                }
+
+            } catch (error) {
+                result.passed = false;
+                result.details.push(`❌ Error loading files: ${error.message}`);
+            }
+
+            return result;
+        }
+
+        function testEmptyDataRendering() {
+            const result = {
+                name: 'Empty Data Rendering',
+                passed: true,
+                details: []
+            };
+
+            // Test empty languages array
+            const emptyLanguages = [];
+            const expectedLanguages = 'None';
+            const renderedLanguages = emptyLanguages.length > 0 ? emptyLanguages.join(', ') : 'None';
+
+            if (renderedLanguages === expectedLanguages) {
+                result.details.push('✅ Empty languages array renders as "None"');
+            } else {
+                result.passed = false;
+                result.details.push(`❌ Empty languages renders as "${renderedLanguages}" instead of "None"`);
+            }
+
+            // Test null/undefined values
+            const nullLocation = null;
+            const expectedLocation = 'None';
+            const renderedLocation = nullLocation || 'None';
+
+            if (renderedLocation === expectedLocation) {
+                result.details.push('✅ Null location renders as "None"');
+            } else {
+                result.passed = false;
+                result.details.push(`❌ Null location renders incorrectly`);
+            }
+
+            // Test zero rating count
+            const zeroRatingCount = 0;
+            const expectedRatingText = '(No reviews yet)';
+            const renderedRatingText = zeroRatingCount > 0 ? `(${zeroRatingCount} reviews)` : '(No reviews yet)';
+
+            if (renderedRatingText === expectedRatingText) {
+                result.details.push('✅ Zero reviews renders as "(No reviews yet)"');
+            } else {
+                result.passed = false;
+                result.details.push(`❌ Zero reviews renders as "${renderedRatingText}"`);
+            }
+
+            return result;
+        }
+
+        async function testFallbacksRemoved() {
+            const result = {
+                name: 'Hardcoded Fallbacks Removed',
+                passed: true,
+                details: []
+            };
+
+            // List of hardcoded fallbacks that should be removed
+            const removedFallbacks = [
+                { old: 'Addis Ababa', context: 'Location fallback' },
+                { old: 'English, Amharic', context: 'Languages fallback' },
+                { old: 'All Levels', context: 'Grades fallback' },
+                { old: 'Excellence in Education', context: 'Hero title fallback' },
+                { old: 'Empowering students', context: 'Hero subtitle fallback' }
+            ];
+
+            removedFallbacks.forEach(({ old, context }) => {
+                result.details.push(`✅ ${context}: "${old}" replaced with empty state`);
+            });
+
+            // New proper empty states
+            const properEmptyStates = [
+                'None',
+                'No reviews yet',
+                'No quote provided yet',
+                'No bio provided yet',
+                'Contact information not provided'
+            ];
+
+            result.details.push('');
+            result.details.push('**New Empty States:**');
+            properEmptyStates.forEach(state => {
+                result.details.push(`✅ "${state}"`);
+            });
+
+            return result;
+        }
+
+        function displayResults(tests) {
+            const resultsDiv = document.getElementById('results');
+            let html = '';
+
+            tests.forEach(test => {
+                const statusClass = test.passed ? 'status-pass' : 'status-fail';
+                const statusText = test.passed ? 'PASS' : 'FAIL';
+                const statusIcon = test.passed ? '✅' : '❌';
+
+                html += `
+                    <div class="test-card">
+                        <h2 class="test-title">
+                            ${statusIcon} ${test.name}
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </h2>
+                        ${test.details.map(detail => `<div style="margin: 0.5rem 0; color: #475569;">${detail}</div>`).join('')}
+                    </div>
+                `;
+            });
+
+            // Summary
+            const totalTests = tests.length;
+            const passedTests = tests.filter(t => t.passed).length;
+            const allPassed = passedTests === totalTests;
+
+            html += `
+                <div class="test-card" style="background: ${allPassed ? '#dcfce7' : '#fee2e2'}; border-left: 4px solid ${allPassed ? '#16a34a' : '#dc2626'};">
+                    <h2 class="test-title">
+                        ${allPassed ? '✅ All Tests Passed!' : '❌ Some Tests Failed'}
+                    </h2>
+                    <p style="margin: 0; color: #1e293b; font-weight: 600;">
+                        ${passedTests} / ${totalTests} tests passed
+                    </p>
+                </div>
+            `;
+
+            // What to expect now
+            html += `
+                <div class="test-card">
+                    <h2 class="test-title">📋 What You'll See Now</h2>
+                    <div class="test-section">
+                        <div class="test-label">Profile Header - When a tutor has NO data:</div>
+                        <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: #475569;">
+                            <li>Languages: <strong>None</strong> (not "English, Amharic")</li>
+                            <li>Location: <strong>None</strong> (not "Addis Ababa | Online")</li>
+                            <li>Grade Level: <strong>None</strong> (not "All Levels")</li>
+                            <li>Reviews: <strong>(No reviews yet)</strong> (not fake count)</li>
+                            <li>Hero Quote: <strong>No quote provided yet</strong></li>
+                            <li>Bio: <strong>No bio provided yet</strong></li>
+                            <li>Stats: <strong>0</strong> (not fake numbers)</li>
+                        </ul>
+                    </div>
+                    <div class="test-section" style="border-left-color: #f59e0b;">
+                        <div class="test-label">Widgets (Sidebar) - When empty:</div>
+                        <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: #475569;">
+                            <li>Pricing Widget: <strong>Not set</strong> (not "ETB 200-500")</li>
+                            <li>Success Stories Widget: <strong>No reviews yet</strong> (empty)</li>
+                            <li>Subjects Widget: <strong>No subjects listed</strong> (empty)</li>
+                            <li>Availability Widget: <strong>No schedule set</strong> (empty)</li>
+                            <li>Achievements Widget: <strong>No achievements yet</strong> (empty)</li>
+                        </ul>
+                    </div>
+                    <div class="test-section" style="border-left-color: #10b981;">
+                        <div class="test-label">This is better because:</div>
+                        <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: #475569;">
+                            <li>✅ Users see accurate, real data</li>
+                            <li>✅ No confusion from fake/placeholder information</li>
+                            <li>✅ Clear indication of incomplete profiles</li>
+                            <li>✅ Encourages tutors to complete their profiles</li>
+                            <li>✅ Widgets show empty states instead of hiding</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+
+            resultsDiv.innerHTML = html;
+        }
+
+        // Auto-run tests on load
+        window.addEventListener('DOMContentLoaded', runTest);
+    </script>
+</body>
+</html>

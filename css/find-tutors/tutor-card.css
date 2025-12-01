@@ -1,0 +1,1034 @@
+/* ============================================
+   TUTOR CARDS STYLING - THEME-ENHANCED VERSION
+   ============================================ */
+
+/* Import theme variables for consistency */
+:root {
+    --tutor-card-shadow: var(--shadow-lg);
+    --tutor-card-hover-shadow: var(--shadow-2xl);
+    --tutor-card-border-radius: 1rem;
+    --tutor-card-padding: 1.75rem;
+}
+
+[data-theme="dark"] {
+    --tutor-card-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    --tutor-card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Main Tutor Cards Grid Container */
+.tutor-cards-grid,
+#tutorCards {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)) !important;
+    gap: 1.5rem !important;
+    margin-bottom: 2rem;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100% !important;
+}
+
+/* Responsive Grid - Force specific columns at breakpoints */
+@media (max-width: 768px) {
+    .tutor-cards-grid,
+    #tutorCards {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 15px;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1199px) {
+    .tutor-cards-grid,
+    #tutorCards {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .tutor-cards-grid,
+    #tutorCards {
+        grid-template-columns: repeat(3, 1fr) !important;
+        max-width: 1400px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .tutor-cards-grid,
+    #tutorCards {
+        grid-template-columns: repeat(4, 1fr);
+        max-width: 1800px;
+    }
+}
+
+/* Enhanced Tutor Card - Simple Theme Alignment */
+.tutor-card {
+    background: var(--card-bg) !important;
+    border-radius: var(--tutor-card-border-radius);
+    padding: var(--tutor-card-padding);
+    box-shadow: var(--tutor-card-shadow);
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+[data-theme="dark"] .tutor-card {
+    background: var(--card-bg) !important;
+    box-shadow: var(--tutor-card-shadow);
+    border-color: var(--border-color);
+}
+
+/* Simple card hover effect - just the top accent bar */
+.tutor-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--button-bg);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.tutor-card:hover::before {
+    transform: scaleX(1);
+}
+
+.tutor-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--tutor-card-hover-shadow);
+}
+
+[data-theme="dark"] .tutor-card:hover {
+    box-shadow: var(--tutor-card-hover-shadow);
+}
+
+/* Tutor Header */
+.tutor-header {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+}
+
+.tutor-avatar {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    margin-right: 1rem;
+    border: 3px solid var(--button-bg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+[data-theme="dark"] .tutor-avatar {
+    border-color: var(--button-bg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.tutor-card:hover .tutor-avatar {
+    transform: scale(1.05);
+}
+
+.tutor-info {
+    flex: 1;
+}
+
+.tutor-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--heading);
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+}
+
+[data-theme="dark"] .tutor-name {
+    color: var(--heading);
+}
+
+.tutor-name:hover {
+    color: var(--button-bg);
+    text-decoration: underline;
+}
+
+/* Mock Badge */
+.mock-badge {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: var(--button-bg);
+    color: var(--button-text);
+    font-size: 10px;
+    font-weight: 600;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: var(--transition);
+}
+
+.mock-badge:hover {
+    background: var(--button-hover);
+}
+
+.mock-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(245, 158, 11, 0.5);
+}
+
+/* Rating Stars Container */
+.rating-stars-container {
+    position: relative;
+    display: inline-block;
+    margin-top: 0.25rem;
+}
+
+.rating-stars {
+    color: var(--button-bg);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: inline-block;
+    transition: var(--transition);
+}
+
+[data-theme="dark"] .rating-stars {
+    color: #FFD54F;
+}
+
+/* Rating Tooltip */
+.rating-breakdown-tooltip {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    box-shadow: var(--shadow-xl);
+    z-index: var(--z-dropdown);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    min-width: 280px;
+    pointer-events: none;
+}
+
+[data-theme="dark"] .rating-breakdown-tooltip {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.rating-stars-container:hover .rating-breakdown-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.tooltip-arrow {
+    position: absolute;
+    top: -8px;
+    left: 20px;
+    width: 16px;
+    height: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-right: none;
+    border-bottom: none;
+    transform: rotate(45deg);
+}
+
+[data-theme="dark"] .tooltip-arrow {
+    background: var(--card-bg);
+    border-color: var(--border-color);
+}
+
+.tooltip-content {
+    position: relative;
+    z-index: 1;
+}
+
+.rating-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.rating-item:last-child {
+    margin-bottom: 0;
+}
+
+.rating-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--heading);
+    min-width: 100px;
+}
+
+[data-theme="dark"] .rating-label {
+    color: var(--heading);
+}
+
+.rating-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--input-bg);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+[data-theme="dark"] .rating-bar {
+    background: var(--input-bg);
+}
+
+.rating-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--button-bg), var(--button-hover));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+}
+
+.rating-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--button-bg);
+    min-width: 30px;
+    text-align: right;
+}
+
+/* Tutor Actions */
+.tutor-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.tutor-actions > button {
+    flex: 1;
+    min-width: 0;
+}
+
+.action-btn {
+    padding: 0.5rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+    border-radius: 0.5rem;
+}
+
+.action-btn:hover {
+    transform: scale(1.2);
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--button-bg);
+}
+
+.action-btn.active {
+    color: var(--button-bg);
+}
+
+[data-theme="dark"] .action-btn {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .action-btn:hover {
+    background: rgba(255, 213, 79, 0.1);
+}
+
+/* Tutor Details */
+.tutor-details {
+    margin-top: 1.25rem;
+    flex-grow: 1;
+}
+
+.detail-item {
+    margin-bottom: 0.625rem;
+    color: var(--text);
+    font-size: 0.95rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: var(--heading);
+    margin-right: 0.5rem;
+    min-width: 90px;
+}
+
+.detail-value {
+    color: var(--text);
+}
+
+[data-theme="dark"] .detail-item {
+    color: var(--text);
+}
+
+[data-theme="dark"] .detail-label {
+    color: var(--heading);
+}
+
+[data-theme="dark"] .detail-value {
+    color: var(--text);
+}
+
+/* Enhanced teaches at styling */
+.tutor-teaches-at {
+    background: rgba(245, 158, 11, 0.05);
+    padding: 6px 12px;
+    border-left: 3px solid var(--button-bg);
+    margin: 8px 0;
+    border-radius: 0 4px 4px 0;
+    transition: var(--transition);
+}
+
+[data-theme="dark"] .tutor-teaches-at {
+    background: rgba(255, 213, 79, 0.08);
+}
+
+.tutor-teaches-at em {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.tutor-card:hover .tutor-teaches-at {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+[data-theme="dark"] .tutor-card:hover .tutor-teaches-at {
+    background: rgba(255, 213, 79, 0.12);
+}
+
+/* Enhanced price display */
+.tutor-price {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+}
+
+.price-amount {
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.price-period {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .price-period {
+    color: var(--text-muted);
+}
+
+/* View Tutor Button */
+.view-tutor-btn {
+    width: 100%;
+    margin-top: 1.25rem;
+    padding: 0.875rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 0.625rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+    display: block;
+    text-decoration: none;
+    margin-top: auto;
+}
+
+.view-tutor-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+    background: var(--button-hover);
+}
+
+/* ============================================
+   ADDITIONAL TUTOR DETAILS STYLES
+   ============================================ */
+
+/* Tutor Name Wrapper */
+.tutor-name-wrapper {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+/* New Tutor Badge */
+.new-tutor-badge {
+    background: #10b981 !important;
+    color: white !important;
+    padding: 2px 8px !important;
+    border-radius: 12px !important;
+    font-size: 10px !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Quote Section */
+.tutor-quote {
+    margin: 12px 0;
+    padding: 12px;
+    background: rgba(245, 158, 11, 0.05);
+    border-left: 4px solid var(--button-bg);
+    border-radius: 0 8px 8px 0;
+    position: relative;
+}
+
+[data-theme="dark"] .tutor-quote {
+    background: rgba(255, 213, 79, 0.08);
+}
+
+.tutor-quote em {
+    font-size: 0.9rem;
+    color: var(--text);
+    display: block;
+    line-height: 1.5;
+    font-style: italic;
+    padding-left: 10px;
+}
+
+[data-theme="dark"] .tutor-quote {
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.08) 0%, rgba(245, 158, 11, 0.1) 100%);
+}
+
+[data-theme="dark"] .tutor-quote em {
+    color: var(--text);
+}
+
+/* Enhanced Detail Items */
+.detail-item {
+    margin-bottom: 0.75rem;
+    color: #6b7280;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: flex-start;
+    line-height: 1.4;
+}
+
+.detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #374151;
+    margin-right: 0.5rem;
+    min-width: 100px;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .detail-item {
+    color: #9ca3af;
+}
+
+[data-theme="dark"] .detail-label {
+    color: #f3f4f6;
+}
+
+/* Bio Section */
+.detail-item p {
+    margin-top: 4px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--text-muted);
+    margin-left: 0;
+}
+
+[data-theme="dark"] .detail-item p {
+    color: var(--text-muted);
+}
+
+/* Specific detail styling with class-based approach */
+.detail-experience .detail-value {
+    color: var(--success-color, #059669);
+    font-weight: 500;
+}
+
+[data-theme="dark"] .detail-experience .detail-value {
+    color: var(--success-color-dark, #10b981);
+}
+
+.detail-location .detail-value {
+    color: var(--info-color, #7c3aed);
+    font-weight: 500;
+}
+
+[data-theme="dark"] .detail-location .detail-value {
+    color: var(--info-color-dark, #a78bfa);
+}
+
+.detail-gender .detail-value {
+    color: var(--text);
+    font-weight: 500;
+}
+
+.detail-method .detail-value {
+    color: var(--button-bg);
+    font-weight: 500;
+}
+
+[data-theme="dark"] .detail-method .detail-value {
+    color: #FFD54F;
+}
+
+.detail-type .detail-value {
+    color: var(--text);
+    font-weight: 500;
+}
+
+/* Rating display in header */
+.rating-number {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-left: 0.25rem;
+}
+
+.rating-count {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: 0.25rem;
+}
+
+[data-theme="dark"] .rating-number {
+    color: var(--text);
+}
+
+[data-theme="dark"] .rating-count {
+    color: var(--text-muted);
+}
+
+/* Action buttons enhancements */
+.tutor-card .tutor-actions {
+    display: flex;
+    flex-direction: row;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.tutor-card .tutor-actions > button {
+    flex: 1;
+    min-width: 0;
+}
+
+.favorite-btn,
+.save-btn {
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 8px !important;
+    transition: all 0.3s ease !important;
+    border-radius: 6px;
+}
+
+.favorite-btn:hover,
+.save-btn:hover {
+    background: rgba(245, 158, 11, 0.1) !important;
+    transform: scale(1.1);
+}
+
+.favorite-btn.active,
+.save-btn.active {
+    color: #F59E0B !important;
+}
+
+/* Enhanced card layout for more content */
+.tutor-card {
+    min-height: 500px;
+    max-height: none;
+}
+
+/* Smooth transitions for all interactive elements */
+.tutor-card * {
+    transition-property: color, background-color, border-color, transform, box-shadow, opacity, filter;
+    transition-duration: 0.3s;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Card entrance animation */
+@keyframes cardEntry {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tutor-card {
+    animation: cardEntry 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+.tutor-card:nth-child(1) { animation-delay: 0.1s; }
+.tutor-card:nth-child(2) { animation-delay: 0.15s; }
+.tutor-card:nth-child(3) { animation-delay: 0.2s; }
+.tutor-card:nth-child(4) { animation-delay: 0.25s; }
+.tutor-card:nth-child(5) { animation-delay: 0.3s; }
+.tutor-card:nth-child(6) { animation-delay: 0.35s; }
+
+.tutor-details {
+    margin-top: 1rem;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* ============================================
+   ACTION BUTTONS SECTION
+   ============================================ */
+
+/* Main action buttons container */
+.tutor-card-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(229, 231, 235, 0.5);
+}
+
+[data-theme="dark"] .tutor-card-actions {
+    border-top-color: rgba(75, 85, 99, 0.5);
+}
+
+/* Connect Button Styling */
+.connect-btn {
+    flex: 1;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.connect-btn:hover {
+    transform: translateY(-2px);
+    background: var(--button-hover);
+    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+}
+
+/* View Profile Button Styling */
+.view-profile-btn {
+    flex: 1;
+    background: var(--card-bg);
+    color: var(--text);
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.view-profile-btn:hover {
+    border-color: var(--button-bg);
+    color: var(--button-bg);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.15);
+    background: var(--hover-bg);
+}
+
+/* Message Button Styling */
+.message-btn {
+    flex: 1;
+    background: linear-gradient(135deg, var(--button-bg), var(--button-hover));
+    color: var(--button-text);
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+.message-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+    filter: brightness(1.1);
+}
+
+.message-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+}
+
+/* Connect Button Styling - Green */
+.connect-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.connect-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    filter: brightness(1.1);
+}
+
+.connect-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.connect-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+}
+
+/* Connected Button Styling (disabled state) - Muted Green */
+.connected-btn {
+    flex: 1;
+    background: linear-gradient(135deg, #6ee7b7, #34d399);
+    color: #065f46;
+    border: none;
+    border-radius: 0.75rem;
+    padding: 0.875rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: default;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+    opacity: 0.85;
+}
+
+.connected-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+}
+
+/* Button icons */
+.view-profile-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.5;
+}
+
+/* Responsive button layout */
+@media (max-width: 480px) {
+    .tutor-card-actions {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .connect-btn,
+    .view-profile-btn,
+    .message-btn,
+    .connected-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* ============================================
+   RATING TOOLTIP STYLES
+   ============================================ */
+
+/* Rating hover functionality */
+.rating-stars-container:hover .rating-breakdown-tooltip {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+}
+
+.rating-breakdown-tooltip {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+}
+
+.rating-stars-container:hover .rating-breakdown-tooltip {
+    pointer-events: auto;
+}
+
+/* Enhanced rating bar animation */
+.rating-fill {
+    transition: width 0.8s ease-out;
+}
+
+/* Tooltip arrow positioning fix */
+.tooltip-arrow {
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+/* ============================================
+   ENHANCED PRICE SECTION STYLES
+   ============================================ */
+
+.price-section {
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    margin-top: 1rem;
+}
+
+.price-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: var(--transition-slow);
+}
+
+.price-section:hover::before {
+    left: 100%;
+}
+
+.price-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.25);
+    border-color: var(--button-bg);
+}
+
+.price-period {
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+/* Dark mode price section */
+[data-theme="dark"] .price-section {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .price-section:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile price section adjustments */
+@media (max-width: 768px) {
+    .price-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .price-amount {
+        font-size: 2rem;
+    }
+}
+
+/* Dark mode adjustments for tooltip */
+[data-theme="dark"] .rating-breakdown-tooltip {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+[data-theme="dark"] .tooltip-arrow {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+/* Mobile tooltip adjustments */
+@media (max-width: 768px) {
+    .rating-breakdown-tooltip {
+        min-width: 280px;
+        left: -50px;
+    }
+
+    .tooltip-arrow {
+        left: 70px;
+    }
+}
+
+/* ============================================
+   TEST DATA BADGE STYLES
+   ============================================ */
+
+.test-data-badge {
+    background: rgba(245, 158, 11, 0.05);
+    border-top: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: center;
+    width: 100%;
+}
+
+[data-theme="dark"] .test-data-badge {
+    background: rgba(255, 213, 79, 0.05);
+}
+
+.test-data-badge span {
+    color: var(--button-bg);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+[data-theme="dark"] .test-data-badge span {
+    color: #FFD54F;
+}

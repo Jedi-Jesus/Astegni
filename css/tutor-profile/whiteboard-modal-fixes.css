@@ -1,0 +1,297 @@
+/* ============================================================================
+   WHITEBOARD MODAL FIXES - Overlay our enhancements
+   ============================================================================ */
+
+/* Fix transparency when minimized - Override */
+.whiteboard-modal-overlay.minimized-state {
+    background-color: rgba(0, 0, 0, 0.95) !important;
+}
+
+.whiteboard-modal {
+    opacity: 1 !important;
+}
+
+.whiteboard-modal.minimized {
+    background-color: var(--card-background) !important;
+    opacity: 1 !important;
+}
+
+/* Sidebar Search Bar */
+.sidebar-search-bar {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--background-color);
+}
+
+.sidebar-search-bar i {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.sidebar-search-bar input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+}
+
+.sidebar-search-bar input::placeholder {
+    color: var(--text-secondary);
+}
+
+/* Students List */
+.students-list {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.student-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.student-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.student-card-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-color);
+}
+
+.student-card-info {
+    flex: 1;
+}
+
+.student-card-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.student-card-classes {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Tutor Name Subtitle - Visible on all screens */
+.tutor-name-subtitle {
+    display: inline;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 400;
+    margin-left: 8px;
+}
+
+.mobile-toggle-history {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+@media (max-width: 968px) {
+    .tutor-name-subtitle {
+        font-size: 0.7rem;
+        margin-left: 4px;
+    }
+
+    .mobile-toggle-history {
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+    }
+}
+
+/* Recordings Panel */
+.recordings-list {
+    padding: 12px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.recording-item {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.recording-item:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recording-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.recording-icon {
+    font-size: 1.25rem;
+    color: #ef4444;
+    margin-top: 2px;
+}
+
+.recording-info {
+    flex: 1;
+}
+
+.recording-info h4 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: var(--text-primary);
+}
+
+.recording-info p {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.recording-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+}
+
+.recording-meta span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.recording-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.recording-action-btn {
+    flex: 1;
+    padding: 5px 6px;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: var(--text-primary);
+}
+
+.recording-action-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.recording-action-btn.danger {
+    color: #ef4444;
+}
+
+.recording-action-btn.danger:hover {
+    background-color: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.recording-action-btn i {
+    font-size: 0.7rem;
+}
+
+/* Chat recipient selector */
+.chat-recipient-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.chat-recipient-selector label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.chat-recipient-dropdown {
+    padding: 8px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--card-background);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+    min-width: 120px;
+}
+
+.chat-recipient-dropdown:focus {
+    border-color: var(--primary-color);
+}
+
+/* Record button styling */
+.record-btn {
+    background-color: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: background-color 0.3s ease;
+}
+
+.record-btn:hover {
+    background-color: #dc2626;
+}
+
+.record-btn.recording {
+    background-color: #10b981;
+    animation: pulse 2s infinite;
+}
+
+.record-btn.recording:hover {
+    background-color: #059669;
+}
+
+/* Remove "Video: Coming Soon" badge (it's been removed from HTML) */
+.video-coming-soon {
+    display: none;
+}

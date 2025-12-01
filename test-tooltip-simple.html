@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tooltip Test - Simple</title>
+
+    <!-- Load ONLY the CSS files needed -->
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/tutor-profile/tutor-profile.css">
+    <link rel="stylesheet" href="css/view-tutor/view-tutor.css">
+
+    <style>
+        body {
+            padding: 100px;
+            font-family: Arial, sans-serif;
+        }
+
+        .test-container {
+            background: #f0f0f0;
+            padding: 50px;
+            border-radius: 10px;
+        }
+
+        .info {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Rating Tooltip Test</h1>
+
+        <div class="info">
+            <h3>Current Theme: <span id="theme-display">light</span></h3>
+            <button onclick="toggleTheme()">Toggle Theme</button>
+        </div>
+
+        <div class="info">
+            <h3>Hover over the rating below:</h3>
+
+            <div class="rating-section" style="position: relative; overflow: visible;">
+                <div class="rating-wrapper" style="position: relative; display: inline-flex; align-items: center; gap: 0.75rem; cursor: pointer; overflow: visible;">
+                    <div class="rating-stars" style="color: #f59e0b; font-size: 1.5rem; letter-spacing: 2px;">★★★★★</div>
+                    <span class="rating-value" style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4.8</span>
+                    <span class="rating-count" style="color: #666; font-size: 0.95rem;">(127 reviews)</span>
+
+                    <!-- Rating Tooltip -->
+                    <div class="rating-tooltip" id="test-tooltip">
+                        <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600;">Rating Breakdown</h4>
+
+                        <div class="rating-metric">
+                            <div class="metric-header">
+                                <span class="metric-label">Discipline</span>
+                                <span class="metric-score">4.7</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" style="width: 94%"></div>
+                            </div>
+                        </div>
+
+                        <div class="rating-metric">
+                            <div class="metric-header">
+                                <span class="metric-label">Punctuality</span>
+                                <span class="metric-score">4.9</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" style="width: 98%"></div>
+                            </div>
+                        </div>
+
+                        <div class="rating-metric">
+                            <div class="metric-header">
+                                <span class="metric-label">Knowledge Level</span>
+                                <span class="metric-score">4.8</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" style="width: 96%"></div>
+                            </div>
+                        </div>
+
+                        <div class="rating-metric">
+                            <div class="metric-header">
+                                <span class="metric-label">Communication Skills</span>
+                                <span class="metric-score">4.7</span>
+                            </div>
+                            <div class="metric-bar">
+                                <div class="metric-fill" style="width: 94%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info" id="debug-info">
+            <h3>Debug Information:</h3>
+            <div id="debug-output"></div>
+            <button onclick="runDebug()">Run Debug</button>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', newTheme);
+            document.getElementById('theme-display').textContent = newTheme;
+        }
+
+        // Debug function
+        function runDebug() {
+            const tooltip = document.getElementById('test-tooltip');
+            const computedStyle = window.getComputedStyle(tooltip);
+
+            const debugInfo = {
+                'Tooltip Element Found': tooltip ? '✅ Yes' : '❌ No',
+                'Background Color (computed)': computedStyle.backgroundColor,
+                'Background (full)': computedStyle.background,
+                'Opacity': computedStyle.opacity,
+                'Visibility': computedStyle.visibility,
+                'Display': computedStyle.display,
+                'Position': computedStyle.position,
+                'Z-Index': computedStyle.zIndex,
+                'Top': computedStyle.top,
+                'Left': computedStyle.left,
+                'Transform': computedStyle.transform,
+                'Inline Style (background)': tooltip.style.background || 'none',
+                'Inline Style (backgroundColor)': tooltip.style.backgroundColor || 'none',
+                'Current Theme': document.documentElement.getAttribute('data-theme')
+            };
+
+            let output = '<table style="width: 100%; border-collapse: collapse;">';
+            output += '<tr><th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Property</th><th style="text-align: left; padding: 8px; border: 1px solid #ddd;">Value</th></tr>';
+
+            for (const [key, value] of Object.entries(debugInfo)) {
+                const isError = value.includes('rgba(0, 0, 0, 0)') || value === 'transparent';
+                const color = isError ? 'red' : 'black';
+                output += `<tr><td style="padding: 8px; border: 1px solid #ddd; font-weight: bold;">${key}</td><td style="padding: 8px; border: 1px solid #ddd; color: ${color};">${value}</td></tr>`;
+            }
+
+            output += '</table>';
+
+            // Also check all CSS rules
+            output += '<h4 style="margin-top: 20px;">CSS Rules Applied:</h4>';
+            output += '<ul>';
+
+            for (let sheet of document.styleSheets) {
+                try {
+                    const cssRules = sheet.cssRules || sheet.rules;
+                    for (let rule of cssRules) {
+                        if (rule.selectorText && rule.selectorText.includes('.rating-tooltip')) {
+                            const bg = rule.style.background || rule.style.backgroundColor || 'not set';
+                            const source = sheet.href ? sheet.href.split('/').pop() : 'inline/internal';
+                            output += `<li><strong>${rule.selectorText}</strong>: background = <code>${bg}</code> (from: ${source})</li>`;
+                        }
+                    }
+                } catch (e) {
+                    // CORS or access issues
+                }
+            }
+
+            output += '</ul>';
+
+            document.getElementById('debug-output').innerHTML = output;
+        }
+
+        // Run debug on load
+        window.addEventListener('load', () => {
+            setTimeout(runDebug, 500);
+        });
+    </script>
+</body>
+</html>

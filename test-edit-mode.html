@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: In-Modal Edit Mode</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body { padding: 20px; background: #f3f4f6; }
+        .demo-box {
+            background: white;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .edit-mode {
+            border-color: #10b981;
+            background: #f0fdf4;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-3xl font-bold mb-6">Test: In-Modal Edit Mode</h1>
+
+    <div class="demo-box">
+        <h2 class="text-xl font-bold mb-3">🎯 Demo: View → Edit Mode Transformation</h2>
+        <p class="mb-4">Click the button below to see how the modal transforms from view mode to edit mode:</p>
+
+        <button onclick="openViewMode()"
+            class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+            <i class="fas fa-eye"></i> Open Modal (View Mode)
+        </button>
+    </div>
+
+    <div class="demo-box">
+        <h2 class="text-xl font-bold mb-3">✨ What to Expect</h2>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <h3 class="font-bold text-green-600 mb-2">✅ View Mode</h3>
+                <ul class="text-sm space-y-1">
+                    <li>• All fields are static text</li>
+                    <li>• Buttons: Edit / Approve / Reject</li>
+                    <li>• Clean, read-only display</li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="font-bold text-blue-600 mb-2">✏️ Edit Mode (After Clicking Edit)</h3>
+                <ul class="text-sm space-y-1">
+                    <li>• Title becomes text input</li>
+                    <li>• Category becomes dropdown</li>
+                    <li>• Level becomes dropdown</li>
+                    <li>• Description becomes textarea</li>
+                    <li>• Buttons: Cancel / Save Changes</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Course Modal -->
+    <div id="view-course-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="bg-white p-6 rounded-lg w-full max-w-3xl max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex-1">
+                    <h3 class="text-2xl font-bold" id="view-course-title">Advanced Mathematics for Grade 12</h3>
+                    <p class="text-gray-500 text-sm" id="view-course-id">ID: REQ-12345</p>
+                </div>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 text-3xl ml-4">&times;</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Category</label>
+                        <p class="text-lg" id="view-course-category">Mathematics</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Level</label>
+                        <p class="text-lg" id="view-course-level">Grade 11-12</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Requested By</label>
+                        <p class="text-lg" id="view-course-requester">Dr. Alemayehu Bekele</p>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Status</label>
+                        <p class="text-lg">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Pending</span>
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1">Submitted</label>
+                        <p class="text-lg">2 days ago</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-600 mb-2">Description</label>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p class="text-gray-700" id="view-course-description">This course covers advanced mathematical concepts including calculus, linear algebra, and differential equations. Designed for Grade 11-12 students preparing for university entrance exams.</p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 border-t pt-4">
+                <button onclick="closeModal()" class="px-6 py-2 border rounded-lg hover:bg-gray-50">Close</button>
+                <div id="view-course-actions">
+                    <button onclick="enableEditMode()"
+                        class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button onclick="alert('Approve clicked')"
+                        class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                        <i class="fas fa-check"></i> Approve
+                    </button>
+                    <button onclick="alert('Reject clicked')"
+                        class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openViewMode() {
+            const modal = document.getElementById('view-course-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            // Reset to view mode
+            resetViewMode();
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('view-course-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+
+            // Reset to view mode for next open
+            setTimeout(() => resetViewMode(), 300);
+        }
+
+        function resetViewMode() {
+            // Reset title
+            document.getElementById('view-course-title').innerHTML = 'Advanced Mathematics for Grade 12';
+
+            // Reset category
+            document.getElementById('view-course-category').innerHTML = 'Mathematics';
+
+            // Reset level
+            document.getElementById('view-course-level').innerHTML = 'Grade 11-12';
+
+            // Reset requester
+            document.getElementById('view-course-requester').innerHTML = 'Dr. Alemayehu Bekele';
+
+            // Reset description
+            const descContainer = document.getElementById('view-course-description');
+            descContainer.parentElement.innerHTML = `
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p class="text-gray-700" id="view-course-description">This course covers advanced mathematical concepts including calculus, linear algebra, and differential equations. Designed for Grade 11-12 students preparing for university entrance exams.</p>
+                </div>
+            `;
+
+            // Reset buttons
+            document.getElementById('view-course-actions').innerHTML = `
+                <button onclick="enableEditMode()"
+                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button onclick="alert('Approve clicked')"
+                    class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">
+                    <i class="fas fa-check"></i> Approve
+                </button>
+                <button onclick="alert('Reject clicked')"
+                    class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">
+                    <i class="fas fa-times"></i> Reject
+                </button>
+            `;
+        }
+
+        function enableEditMode() {
+            console.log('Enabling edit mode');
+
+            // Get current values
+            const title = document.getElementById('view-course-title').textContent;
+            const category = document.getElementById('view-course-category').textContent;
+            const level = document.getElementById('view-course-level').textContent;
+            const requester = document.getElementById('view-course-requester').textContent;
+            const description = document.getElementById('view-course-description').textContent;
+
+            // Convert title to input
+            document.getElementById('view-course-title').innerHTML =
+                `<input type="text" id="edit-title-input" value="${title}"
+                    class="w-full px-3 py-2 border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">`;
+
+            // Convert category to select
+            const categories = ['Mathematics', 'Science', 'Languages', 'Technology', 'Business', 'Arts'];
+            let categoryOptions = categories.map(cat =>
+                `<option value="${cat}" ${cat === category ? 'selected' : ''}>${cat}</option>`
+            ).join('');
+            document.getElementById('view-course-category').innerHTML =
+                `<select id="edit-category-input" class="w-full px-3 py-2 border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    ${categoryOptions}
+                </select>`;
+
+            // Convert level to select
+            const levels = ['KG', 'Grade 1-6', 'Grade 7-8', 'Grade 9-10', 'Grade 11-12', 'University'];
+            let levelOptions = levels.map(lvl =>
+                `<option value="${lvl}" ${lvl === level ? 'selected' : ''}>${lvl}</option>`
+            ).join('');
+            document.getElementById('view-course-level').innerHTML =
+                `<select id="edit-level-input" class="w-full px-3 py-2 border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    ${levelOptions}
+                </select>`;
+
+            // Convert requester to input
+            document.getElementById('view-course-requester').innerHTML =
+                `<input type="text" id="edit-requester-input" value="${requester}"
+                    class="w-full px-3 py-2 border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">`;
+
+            // Convert description to textarea
+            document.getElementById('view-course-description').parentElement.innerHTML =
+                `<textarea id="edit-description-input" rows="4"
+                    class="w-full px-3 py-2 border-2 border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">${description}</textarea>`;
+
+            // Change buttons
+            document.getElementById('view-course-actions').innerHTML = `
+                <button onclick="cancelEdit()"
+                    class="px-6 py-2 border-2 border-gray-300 rounded-lg hover:bg-gray-50">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button onclick="saveChanges()"
+                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            `;
+
+            // Visual feedback
+            document.querySelector('#view-course-modal > div').classList.add('ring-4', 'ring-green-200');
+
+            alert('✅ Edit mode enabled!\n\nNotice:\n• All fields are now editable\n• Buttons changed to Cancel/Save\n• Green border indicates edit mode');
+        }
+
+        function cancelEdit() {
+            alert('Cancelling edit mode - reverting to view mode');
+            resetViewMode();
+            document.querySelector('#view-course-modal > div').classList.remove('ring-4', 'ring-green-200');
+        }
+
+        function saveChanges() {
+            const title = document.getElementById('edit-title-input')?.value;
+            const category = document.getElementById('edit-category-input')?.value;
+            const level = document.getElementById('edit-level-input')?.value;
+            const requester = document.getElementById('edit-requester-input')?.value;
+            const description = document.getElementById('edit-description-input')?.value;
+
+            alert(`✅ Changes saved!\n\nNew values:\nTitle: ${title}\nCategory: ${category}\nLevel: ${level}\nRequested By: ${requester}\nDescription: ${description.substring(0, 50)}...`);
+
+            closeModal();
+        }
+    </script>
+</body>
+</html>

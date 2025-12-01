@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Connections Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .card { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        .error { color: red; }
+        .success { color: green; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Connection Data Test</h1>
+    <div id="output"></div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+        const output = document.getElementById('output');
+
+        // Get current user ID from JWT
+        function getCurrentUserId() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return null;
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return parseInt(payload.sub) || parseInt(payload.id) || null;
+            } catch (error) {
+                return null;
+            }
+        }
+
+        // Get other user from connection
+        function getOtherUser(connection, currentUserId) {
+            if (connection.requested_by === currentUserId) {
+                // Other user is the recipient
+                return {
+                    id: connection.recipient_id,
+                    name: connection.recipient_name || 'Unknown User',
+                    email: connection.recipient_email || '',
+                    avatar: connection.recipient_profile_picture || null,
+                    roles: connection.recipient_roles || [],
+                    profileType: connection.recipient_type || null
+                };
+            } else {
+                // Other user is the requester
+                return {
+                    id: connection.requested_by,
+                    name: connection.requester_name || 'Unknown User',
+                    email: connection.requester_email || '',
+                    avatar: connection.requester_profile_picture || null,
+                    roles: connection.requester_roles || [],
+                    profileType: connection.requester_type || null
+                };
+            }
+        }
+
+        async function testConnections() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                output.innerHTML = '<p class="error">No token found. Please login first at <a href="/profile-pages/tutor-profile.html">tutor profile</a></p>';
+                return;
+            }
+
+            const currentUserId = getCurrentUserId();
+            output.innerHTML += `<p><strong>Current User ID:</strong> ${currentUserId}</p>`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/connections?status=accepted&direction=all`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API Error: ${response.status}`);
+                }
+
+                const connections = await response.json();
+                output.innerHTML += `<p class="success">✓ Fetched ${connections.length} connections</p>`;
+
+                connections.forEach((conn, index) => {
+                    const otherUser = getOtherUser(conn, currentUserId);
+
+                    output.innerHTML += `
+                        <div class="card">
+                            <h3>Connection ${index + 1} (ID: ${conn.id})</h3>
+                            <p><strong>Raw API Data:</strong></p>
+                            <pre>${JSON.stringify(conn, null, 2)}</pre>
+                            <p><strong>Extracted "Other User":</strong></p>
+                            <ul>
+                                <li>ID: ${otherUser.id}</li>
+                                <li>Name: ${otherUser.name}</li>
+                                <li>Email: ${otherUser.email}</li>
+                                <li>Profile Type: ${otherUser.profileType}</li>
+                                <li>Roles: ${JSON.stringify(otherUser.roles)}</li>
+                            </ul>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                output.innerHTML += `<p class="error">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Run test on load
+        testConnections();
+    </script>
+</body>
+</html>

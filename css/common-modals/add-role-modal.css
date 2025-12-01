@@ -1,0 +1,574 @@
+/* ============================================
+   ADD ROLE MODAL - SHARED STYLES
+   Used across all pages (find-tutors, reels, profiles, etc.)
+   ============================================ */
+
+/* ============================================
+   1. MODAL BACKDROP & CONTAINER
+   ============================================ */
+
+#add-role-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0);
+    backdrop-filter: blur(0px);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+#add-role-modal.active,
+#add-role-modal.show {
+    display: flex;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   2. MODAL CONTENT BOX
+   ============================================ */
+
+#add-role-modal .modal-content.enhanced {
+    position: relative;
+    width: 100%;
+    max-width: 480px;
+    max-height: 90vh;
+    background: var(--modal-bg, #ffffff);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.9);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+#add-role-modal.active .modal-content.enhanced,
+#add-role-modal.show .modal-content.enhanced {
+    transform: scale(1);
+    opacity: 1;
+}
+
+[data-theme="dark"] #add-role-modal .modal-content.enhanced {
+    background: #1f2937;
+}
+
+/* ============================================
+   3. CLOSE BUTTON
+   ============================================ */
+
+#add-role-modal .modal-close-enhanced {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.2s ease;
+}
+
+#add-role-modal .modal-close-enhanced:hover {
+    background: rgba(239, 68, 68, 0.1);
+    transform: rotate(90deg);
+}
+
+#add-role-modal .modal-close-enhanced svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--text-primary, #333);
+}
+
+/* ============================================
+   4. MODAL HEADER
+   ============================================ */
+
+#add-role-modal .modal-header {
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 5;
+}
+
+#add-role-modal .modal-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary-color, #f59e0b);
+    margin: 0 0 0.5rem 0;
+}
+
+#add-role-modal .modal-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    margin: 0;
+}
+
+/* ============================================
+   5. FORM CONTAINER
+   ============================================ */
+
+#add-role-modal .auth-form {
+    padding: 0 2rem 1.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    flex: 1;
+}
+
+#add-role-modal .auth-form::-webkit-scrollbar {
+    width: 4px;
+}
+
+#add-role-modal .auth-form::-webkit-scrollbar-thumb {
+    background: rgba(245, 158, 11, 0.3);
+    border-radius: 2px;
+}
+
+/* ============================================
+   6. FORM GROUPS & INPUTS
+   ============================================ */
+
+#add-role-modal .form-group {
+    margin-bottom: 1.25rem;
+    position: relative;
+    z-index: 10;
+}
+
+/* Standard Inputs */
+#add-role-modal .form-group input[type="text"],
+#add-role-modal .form-group input[type="email"],
+#add-role-modal .form-group input[type="tel"],
+#add-role-modal .form-group input[type="password"] {
+    width: 100%;
+    height: 48px;
+    padding: 0 1rem;
+    font-size: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: var(--text-primary, #333);
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+[data-theme="dark"] #add-role-modal .form-group input {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
+#add-role-modal .form-group input:focus {
+    border-color: var(--primary-color, #f59e0b);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+/* Floating Labels */
+#add-role-modal .form-group label:not(.checkbox-label) {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    pointer-events: none;
+    transition: all 0.2s ease;
+    background: var(--modal-bg, #ffffff);
+    padding: 0 0.25rem;
+    z-index: 5;
+}
+
+[data-theme="dark"] #add-role-modal .form-group label:not(.checkbox-label) {
+    background: #1f2937;
+}
+
+#add-role-modal .form-group input:focus ~ label:not(.checkbox-label),
+#add-role-modal .form-group input:not(:placeholder-shown) ~ label:not(.checkbox-label) {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--primary-color, #f59e0b);
+    font-weight: 600;
+    z-index: 5;
+}
+
+/* Select Dropdowns */
+#add-role-modal .form-group select {
+    width: 100%;
+    height: 48px;
+    padding: 0 2.5rem 0 1rem;
+    font-size: 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+    color: var(--text-primary, #333);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f59e0b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.25rem;
+}
+
+[data-theme="dark"] #add-role-modal .form-group select {
+    background-color: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f3f4f6;
+}
+
+#add-role-modal .form-group select:focus {
+    border-color: var(--primary-color, #f59e0b);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+/* Select label positioning */
+#add-role-modal .form-group:has(select) label:not(.checkbox-label) {
+    top: 50%;
+    z-index: 5;
+}
+
+#add-role-modal .form-group select:focus ~ label:not(.checkbox-label),
+#add-role-modal .form-group select.has-value ~ label:not(.checkbox-label) {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--primary-color, #f59e0b);
+    font-weight: 600;
+    z-index: 5;
+}
+
+/* ============================================
+   7. PASSWORD INPUT WITH TOGGLE
+   ============================================ */
+
+#add-role-modal .password-input-wrapper {
+    position: relative;
+}
+
+#add-role-modal .password-input-wrapper input {
+    padding-right: 3rem !important;
+}
+
+#add-role-modal .password-input-wrapper .password-toggle {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--text-muted, #6b7280);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: color 0.2s ease;
+}
+
+#add-role-modal .password-input-wrapper .password-toggle:hover {
+    color: var(--primary-color, #f59e0b);
+}
+
+#add-role-modal .password-input-wrapper .password-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* ============================================
+   8. SUBMIT BUTTON
+   ============================================ */
+
+#add-role-modal .btn-submit {
+    width: 100%;
+    height: 48px;
+    padding: 0 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: white;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 10;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+#add-role-modal .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
+}
+
+#add-role-modal .btn-submit:active {
+    transform: translateY(0);
+}
+
+#add-role-modal .btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+#add-role-modal .btn-text,
+#add-role-modal .btn-loader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#add-role-modal .btn-loader {
+    display: none;
+}
+
+#add-role-modal .btn-submit.loading .btn-text {
+    display: none;
+}
+
+#add-role-modal .btn-submit.loading .btn-loader {
+    display: flex;
+}
+
+#add-role-modal .btn-loader svg {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   9. INPUT ICONS
+   ============================================ */
+
+#add-role-modal .input-icon {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted, #6b7280);
+    pointer-events: none;
+    z-index: 5;
+}
+
+#add-role-modal .input-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+#add-role-modal input:focus ~ .input-icon,
+#add-role-modal select:focus ~ .input-icon {
+    color: var(--primary-color, #f59e0b);
+}
+
+/* Hide any input-icon inside select form-groups */
+#add-role-modal .form-group:has(select) .input-icon {
+    display: none;
+}
+
+/* ============================================
+   10. OTP INPUT STYLING
+   ============================================ */
+
+#add-role-modal input[type="text"][name="otp"],
+#add-role-modal input[type="text"]#add-role-otp {
+    letter-spacing: 0.5rem;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding-right: 1rem;
+}
+
+/* ============================================
+   11. ALERTS & MESSAGES
+   ============================================ */
+
+#add-role-modal .alert {
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideInUp 0.3s ease;
+}
+
+#add-role-modal .alert-info {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #3b82f6;
+}
+
+#add-role-modal .alert-success {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #10b981;
+}
+
+#add-role-modal .alert-error {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+#add-role-modal .alert svg {
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Dark mode for alerts */
+[data-theme="dark"] #add-role-modal .alert-info {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: rgba(59, 130, 246, 0.4);
+    color: #60a5fa;
+}
+
+[data-theme="dark"] #add-role-modal .alert-success {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+}
+
+[data-theme="dark"] #add-role-modal .alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #f87171;
+}
+
+/* ============================================
+   12. USER INFO SECTION
+   ============================================ */
+
+#add-role-modal .add-role-user-info {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+[data-theme="dark"] #add-role-modal .add-role-user-info {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.12)) !important;
+    border-color: rgba(99, 102, 241, 0.25) !important;
+}
+
+[data-theme="dark"] #add-role-modal .add-role-user-info h4 {
+    color: #f3f4f6 !important;
+}
+
+[data-theme="dark"] #add-role-modal .add-role-user-info p {
+    color: #9ca3af !important;
+}
+
+/* ============================================
+   13. RESEND TIMER
+   ============================================ */
+
+#add-role-modal #resend-timer {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+    font-weight: 500;
+}
+
+/* ============================================
+   14. UTILITY CLASSES
+   ============================================ */
+
+#add-role-modal .text-right {
+    text-align: right;
+}
+
+#add-role-modal .text-link {
+    color: var(--primary-color, #f59e0b);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+#add-role-modal .text-link:hover {
+    text-decoration: underline;
+    color: var(--primary-hover, #d97706);
+}
+
+#add-role-modal .text-muted {
+    color: var(--text-muted, #6b7280);
+}
+
+#add-role-modal .mb-4 {
+    margin-bottom: 1rem;
+}
+
+#add-role-modal .mt-4 {
+    margin-top: 1rem;
+}
+
+#add-role-modal .ml-2 {
+    margin-left: 0.5rem;
+}
+
+#add-role-modal .mr-2 {
+    margin-right: 0.5rem;
+}
+
+/* ============================================
+   15. RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 640px) {
+    #add-role-modal .modal-content.enhanced {
+        max-width: calc(100% - 2rem);
+    }
+
+    #add-role-modal .modal-header {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+
+    #add-role-modal .modal-title {
+        font-size: 1.5rem;
+    }
+
+    #add-role-modal .auth-form {
+        padding: 0 1.5rem 1.25rem;
+    }
+}

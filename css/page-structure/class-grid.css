@@ -1,0 +1,151 @@
+/* Classes Content */
+.classes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.class-card {
+    background: var(--card-bg);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+    position: relative;
+}
+
+.class-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent 0%, rgba(var(--button-bg-rgb), 0.1) 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.class-card:hover::after {
+    opacity: 1;
+}
+
+.class-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: var(--shadow-xl);
+}
+
+.class-banner {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.class-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.class-card:hover .class-banner img {
+    transform: scale(1.1);
+}
+
+.class-category {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 0.3rem 0.8rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.class-content {
+    padding: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.class-content h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.3rem;
+    color: var(--heading);
+}
+
+.instructor-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.instructor-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+}
+
+.class-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.class-price {
+    color: var(--button-bg);
+    font-weight: 700;
+}
+
+.class-filters,
+.filter-chip {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    padding: 0.5rem 1rem;
+    background: rgba(var(--button-bg-rgb), 0.1);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text);
+    position: relative;
+}
+
+.filter-chip::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--primary-gradient);
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.filter-chip:hover,
+.filter-chip.active {
+    border-color: var(--button-bg);
+    transform: translateY(-2px);
+}
+
+.filter-chip.active {
+    background: var(--button-bg);
+    color: white;
+}

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Manage Courses Fixes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="p-8 bg-gray-100">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Manage Courses - Fix Verification</h1>
+
+        <!-- Test Status -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Fix Status</h2>
+            <div class="space-y-2">
+                <div class="flex items-center">
+                    <span class="text-green-500 mr-2">✓</span>
+                    <span class="font-medium">Issue 1: Review/View buttons</span> -
+                    <span class="text-gray-600">Functions viewCourseRequest() and viewCourse() added to manage-courses-standalone.js</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-green-500 mr-2">✓</span>
+                    <span class="font-medium">Issue 2: Requested panel stats</span> -
+                    <span class="text-gray-600">updatePanelStatCard() function added, stats calculation fixed</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-green-500 mr-2">✓</span>
+                    <span class="font-medium">Issue 3: Verified panel stats</span> -
+                    <span class="text-gray-600">Academic/Professional courses and average rating calculations implemented</span>
+                </div>
+                <div class="flex items-center">
+                    <span class="text-green-500 mr-2">✓</span>
+                    <span class="font-medium">Issue 4: All view buttons</span> -
+                    <span class="text-gray-600">All onclick handlers properly connected to global functions</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Implementation Details -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Implementation Details</h2>
+
+            <div class="mb-4">
+                <h3 class="font-semibold text-lg mb-2">1. Global Functions Added (lines 371-683 in standalone.js):</h3>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li><code>viewCourseRequest(requestId)</code> - Opens modal with course request details</li>
+                    <li><code>viewCourse(courseId)</code> - Opens modal with active course details</li>
+                    <li><code>approveCourseRequest()</code> - Handles course approval</li>
+                    <li><code>rejectCourseRequest()</code> - Handles course rejection</li>
+                    <li><code>suspendCourse()</code> - Suspends active course</li>
+                    <li><code>reinstateCourse()</code> - Reinstates suspended course</li>
+                </ul>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="font-semibold text-lg mb-2">2. Stats Calculation Fixed (lines 314-434 in db-loader.js):</h3>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>Academic courses: Filters by Mathematics, Science, Languages, etc.</li>
+                    <li>Professional courses: Filters by Technology, Business, Programming, etc.</li>
+                    <li>Average rating: Calculated from actual course ratings</li>
+                    <li>Time-based stats: Approved Today, This Month calculations</li>
+                    <li>Status-based filtering: Under Review, Quality Issues, etc.</li>
+                </ul>
+            </div>
+
+            <div class="mb-4">
+                <h3 class="font-semibold text-lg mb-2">3. Modal Population Features:</h3>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>Dynamic status badges (Pending, Active, Suspended, Rejected)</li>
+                    <li>Conditional sections (ratings for active courses, reasons for suspended/rejected)</li>
+                    <li>Context-aware action buttons</li>
+                    <li>Star rating display with proper formatting</li>
+                    <li>Relative time formatting (e.g., "2 days ago")</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Test Actions -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold mb-4">Test the Fixes</h2>
+            <div class="flex gap-4">
+                <a href="http://localhost:8080/admin-pages/manage-courses.html" target="_blank"
+                   class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                    <i class="fas fa-external-link-alt mr-2"></i>
+                    Open Manage Courses Page
+                </a>
+                <a href="http://localhost:8080/admin-pages/manage-courses.html?panel=requested" target="_blank"
+                   class="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                    <i class="fas fa-clipboard-list mr-2"></i>
+                    Test Requested Panel
+                </a>
+                <a href="http://localhost:8080/admin-pages/manage-courses.html?panel=verified" target="_blank"
+                   class="px-6 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition">
+                    <i class="fas fa-certificate mr-2"></i>
+                    Test Verified Panel
+                </a>
+            </div>
+
+            <div class="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400">
+                <p class="text-sm">
+                    <strong>To verify the fixes:</strong>
+                </p>
+                <ol class="list-decimal list-inside mt-2 text-sm space-y-1">
+                    <li>Click any of the test buttons above to open the page</li>
+                    <li>Check that stats are showing numbers (not "...")</li>
+                    <li>Click "View Details" buttons in tables - modal should open</li>
+                    <li>In live widget, click "Review" buttons - should work</li>
+                    <li>Switch between panels - stats should update correctly</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="mt-6 p-6 bg-green-50 border-l-4 border-green-500 rounded-lg">
+            <h3 class="font-semibold text-green-800 mb-2">✅ All Issues Fixed!</h3>
+            <p class="text-green-700">
+                The manage-courses.html page is now fully functional with working buttons,
+                properly loading statistics, and correct calculations for academic/professional courses and ratings.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

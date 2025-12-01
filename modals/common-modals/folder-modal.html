@@ -1,0 +1,212 @@
+<!-- ============================================
+     FOLDER MODAL - View folder contents
+     Shows documents within a specific folder
+============================================ -->
+<div id="folder-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div class="flex items-center gap-4">
+                <div id="folder-modal-icon" class="text-5xl">📁</div>
+                <div>
+                    <h2 id="folder-modal-title" class="text-2xl font-bold text-gray-800">Folder Name</h2>
+                    <p id="folder-modal-count" class="text-sm text-gray-500">0 documents</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <!-- Upload to folder button -->
+                <button onclick="uploadToCurrentFolder()" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition flex items-center gap-2">
+                    <i class="fas fa-upload"></i>
+                    <span>Upload</span>
+                </button>
+                <!-- Close button -->
+                <button onclick="closeFolderModal()" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Sort Bar -->
+        <div class="p-4 border-b bg-gray-50 flex flex-wrap items-center gap-4">
+            <div class="relative flex-1 min-w-[200px]">
+                <input type="text" id="folder-docs-search"
+                    class="w-full px-4 py-2 pl-10 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Search in folder..."
+                    oninput="searchFolderDocuments(this.value)">
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            <select id="folder-docs-sort" class="px-4 py-2 border rounded-full bg-white cursor-pointer" onchange="sortFolderDocuments(this.value)">
+                <option value="date">Date Added</option>
+                <option value="name">Name (A-Z)</option>
+                <option value="size">Size</option>
+                <option value="type">Type</option>
+            </select>
+        </div>
+
+        <!-- Documents Grid -->
+        <div class="flex-1 overflow-y-auto p-6">
+            <div id="folder-docs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Documents will be loaded dynamically -->
+            </div>
+            <!-- Empty State -->
+            <div id="folder-empty-state" class="hidden text-center py-12">
+                <div class="text-6xl mb-4">📂</div>
+                <p class="text-lg font-semibold text-gray-600 mb-2">This folder is empty</p>
+                <p class="text-sm text-gray-500 mb-4">Upload documents to this folder to get started</p>
+                <button onclick="uploadToCurrentFolder()" class="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition">
+                    <i class="fas fa-upload mr-2"></i>Upload Document
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="p-4 border-t bg-gray-50 flex items-center justify-between">
+            <span id="folder-selected-count" class="text-sm text-gray-500">0 items selected</span>
+            <div class="flex gap-2">
+                <button onclick="closeFolderModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     CREATE/EDIT FOLDER MODAL
+============================================ -->
+<div id="create-folder-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <!-- Modal Header -->
+        <div class="p-6 border-b bg-gradient-to-r from-yellow-50 to-orange-50">
+            <h2 id="create-folder-title" class="text-xl font-bold text-gray-800">Create New Folder</h2>
+            <p class="text-sm text-gray-500">Organize your documents into folders</p>
+        </div>
+
+        <!-- Modal Body -->
+        <form id="folder-form" class="p-6 space-y-4">
+            <input type="hidden" id="edit-folder-id" value="">
+
+            <!-- Folder Name -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Folder Name *</label>
+                <input type="text" id="folder-name-input" required
+                    class="w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., Mathematics, Physics, Assignments">
+            </div>
+
+            <!-- Folder Icon -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Choose Icon</label>
+                <div id="folder-icon-grid" class="grid grid-cols-8 gap-2">
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent active" data-icon="📁" onclick="selectFolderIcon('📁')">📁</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="📂" onclick="selectFolderIcon('📂')">📂</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="📚" onclick="selectFolderIcon('📚')">📚</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="📖" onclick="selectFolderIcon('📖')">📖</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="📝" onclick="selectFolderIcon('📝')">📝</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="📋" onclick="selectFolderIcon('📋')">📋</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="🗂️" onclick="selectFolderIcon('🗂️')">🗂️</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="📑" onclick="selectFolderIcon('📑')">📑</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="🎓" onclick="selectFolderIcon('🎓')">🎓</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="🔬" onclick="selectFolderIcon('🔬')">🔬</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="⚗️" onclick="selectFolderIcon('⚗️')">⚗️</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="🧮" onclick="selectFolderIcon('🧮')">🧮</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="🌍" onclick="selectFolderIcon('🌍')">🌍</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="🎨" onclick="selectFolderIcon('🎨')">🎨</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="🎵" onclick="selectFolderIcon('🎵')">🎵</button>
+                    <button type="button" class="folder-icon-btn p-2 text-2xl rounded-lg hover:bg-gray-100 border-2 border-transparent" data-icon="💻" onclick="selectFolderIcon('💻')">💻</button>
+                </div>
+                <input type="hidden" id="selected-folder-icon" value="📁">
+            </div>
+
+            <!-- Folder Color (optional) -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Folder Color</label>
+                <div class="flex gap-2">
+                    <button type="button" class="folder-color-btn w-8 h-8 rounded-full bg-blue-500 border-2 border-transparent hover:scale-110 transition active" data-color="blue" onclick="selectFolderColor('blue')"></button>
+                    <button type="button" class="folder-color-btn w-8 h-8 rounded-full bg-green-500 border-2 border-transparent hover:scale-110 transition" data-color="green" onclick="selectFolderColor('green')"></button>
+                    <button type="button" class="folder-color-btn w-8 h-8 rounded-full bg-yellow-500 border-2 border-transparent hover:scale-110 transition" data-color="yellow" onclick="selectFolderColor('yellow')"></button>
+                    <button type="button" class="folder-color-btn w-8 h-8 rounded-full bg-red-500 border-2 border-transparent hover:scale-110 transition" data-color="red" onclick="selectFolderColor('red')"></button>
+                    <button type="button" class="folder-color-btn w-8 h-8 rounded-full bg-purple-500 border-2 border-transparent hover:scale-110 transition" data-color="purple" onclick="selectFolderColor('purple')"></button>
+                    <button type="button" class="folder-color-btn w-8 h-8 rounded-full bg-pink-500 border-2 border-transparent hover:scale-110 transition" data-color="pink" onclick="selectFolderColor('pink')"></button>
+                    <button type="button" class="folder-color-btn w-8 h-8 rounded-full bg-gray-500 border-2 border-transparent hover:scale-110 transition" data-color="gray" onclick="selectFolderColor('gray')"></button>
+                </div>
+                <input type="hidden" id="selected-folder-color" value="blue">
+            </div>
+        </form>
+
+        <!-- Modal Footer -->
+        <div class="p-6 border-t bg-gray-50 flex justify-end gap-3">
+            <button type="button" onclick="closeCreateFolderModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                Cancel
+            </button>
+            <button type="button" onclick="saveFolder()" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                <i class="fas fa-save mr-2"></i>Save Folder
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     FOLDER CONTEXT MENU (Right-click or 3-dot menu)
+============================================ -->
+<div id="folder-context-menu" class="fixed hidden bg-white rounded-lg shadow-xl border z-[100] min-w-[180px] py-2">
+    <button onclick="renameFolderAction()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">
+        <i class="fas fa-edit text-blue-500 w-4"></i>
+        <span>Rename</span>
+    </button>
+    <button onclick="changeFolderIconAction()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">
+        <i class="fas fa-icons text-purple-500 w-4"></i>
+        <span>Change Icon</span>
+    </button>
+    <div class="border-t my-1"></div>
+    <button onclick="zipFolderAction()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">
+        <i class="fas fa-file-archive text-yellow-600 w-4"></i>
+        <span>Zip Folder</span>
+    </button>
+    <button onclick="mergeFolderAction()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">
+        <i class="fas fa-object-group text-green-500 w-4"></i>
+        <span>Merge With...</span>
+    </button>
+    <div class="border-t my-1"></div>
+    <button onclick="cutFolderAction()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">
+        <i class="fas fa-cut text-orange-500 w-4"></i>
+        <span>Cut</span>
+        <span class="ml-auto text-xs text-gray-400">Ctrl+X</span>
+    </button>
+    <button onclick="copyFolderAction()" class="w-full text-left px-4 py-2 hover:bg-gray-100 flex items-center gap-3 text-sm">
+        <i class="fas fa-copy text-blue-500 w-4"></i>
+        <span>Copy</span>
+        <span class="ml-auto text-xs text-gray-400">Ctrl+C</span>
+    </button>
+    <div class="border-t my-1"></div>
+    <button onclick="deleteFolderAction()" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 flex items-center gap-3 text-sm">
+        <i class="fas fa-trash w-4"></i>
+        <span>Delete</span>
+        <span class="ml-auto text-xs text-gray-400">Del</span>
+    </button>
+</div>
+
+<!-- ============================================
+     MERGE FOLDER MODAL
+============================================ -->
+<div id="merge-folder-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div class="p-6 border-b">
+            <h2 class="text-xl font-bold text-gray-800">Merge Folder</h2>
+            <p class="text-sm text-gray-500">Select a folder to merge with "<span id="merge-source-folder"></span>"</p>
+        </div>
+        <div class="p-6">
+            <div id="merge-folder-list" class="space-y-2 max-h-[300px] overflow-y-auto">
+                <!-- Folder list will be populated dynamically -->
+            </div>
+        </div>
+        <div class="p-6 border-t bg-gray-50 flex justify-end gap-3">
+            <button onclick="closeMergeFolderModal()" class="px-4 py-2 border rounded-lg hover:bg-gray-100 transition">
+                Cancel
+            </button>
+            <button onclick="confirmMergeFolder()" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                <i class="fas fa-object-group mr-2"></i>Merge
+            </button>
+        </div>
+    </div>
+</div>

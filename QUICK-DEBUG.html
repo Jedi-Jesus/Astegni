@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Modal Debug</title>
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal.show {
+            display: flex !important;
+        }
+
+        .modal.hidden {
+            display: none !important;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        #console-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body style="padding: 40px; font-family: sans-serif;">
+    <h1>Verification Fee Modal Debug Test</h1>
+
+    <div style="margin-bottom: 20px;">
+        <button class="btn btn-primary" onclick="testOpenModal()">Test Open Modal</button>
+        <button class="btn btn-secondary" onclick="testCloseModal()">Test Close Modal</button>
+        <button class="btn btn-secondary" onclick="checkModalState()">Check Modal State</button>
+        <button class="btn btn-secondary" onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <!-- Verification Fee Modal -->
+    <div id="verificationFeeModal" class="modal hidden">
+        <div class="modal-content">
+            <div style="margin-bottom: 20px;">
+                <h2 style="margin: 0 0 10px 0;">Verification Fee</h2>
+                <button onclick="testCloseModal()" style="float: right; border: none; background: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+
+            <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 15px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 5px 0; color: #1e40af;">Verification Required</h3>
+                <p style="margin: 0; color: #1e40af;">
+                    Your submission will be reviewed by our team. A verification fee of <strong>50 ETB</strong> is required to process your request.
+                </p>
+            </div>
+
+            <div style="background: white; border: 2px solid #e5e7eb; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <span style="font-weight: 600;">Verification Fee</span>
+                    <span style="font-size: 24px; font-weight: bold; color: #3b82f6;">50 ETB</span>
+                </div>
+                <p style="margin: 0; font-size: 14px; color: #6b7280;">
+                    This fee covers the cost of verifying your documents and credentials with the issuing organizations.
+                </p>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="confirmPayment()">
+                    Confirm & Pay 50 ETB
+                </button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="testCloseModal()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="console-output">Console output will appear here...</div>
+
+    <script>
+        function log(message) {
+            const output = document.getElementById('console-output');
+            const time = new Date().toLocaleTimeString();
+            output.innerHTML += `[${time}] ${message}<br>`;
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        function testOpenModal() {
+            log('🔔 testOpenModal() called');
+            const modal = document.getElementById('verificationFeeModal');
+            log('🔍 Found modal: ' + (modal ? 'YES ✅' : 'NO ❌'));
+
+            if (modal) {
+                log('📊 Current state: display=' + modal.style.display + ', hidden=' + modal.classList.contains('hidden') + ', show=' + modal.classList.contains('show'));
+
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+                modal.style.display = 'flex';
+
+                log('📊 New state: display=' + modal.style.display + ', hidden=' + modal.classList.contains('hidden') + ', show=' + modal.classList.contains('show'));
+                log('✅ Modal should now be visible');
+
+                // Check computed styles
+                const computed = window.getComputedStyle(modal);
+                log('🎨 Computed display: ' + computed.display);
+                log('🎨 Computed z-index: ' + computed.zIndex);
+            }
+        }
+
+        function testCloseModal() {
+            log('🚪 testCloseModal() called');
+            const modal = document.getElementById('verificationFeeModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                log('✅ Modal closed');
+            }
+        }
+
+        function checkModalState() {
+            const modal = document.getElementById('verificationFeeModal');
+            if (modal) {
+                log('📊 Current State Check:');
+                log('  - style.display: ' + modal.style.display);
+                log('  - classList: ' + modal.className);
+                log('  - has .hidden: ' + modal.classList.contains('hidden'));
+                log('  - has .show: ' + modal.classList.contains('show'));
+                log('  - Computed display: ' + window.getComputedStyle(modal).display);
+                log('  - Computed z-index: ' + window.getComputedStyle(modal).zIndex);
+            }
+        }
+
+        function confirmPayment() {
+            log('💰 Payment confirmed!');
+            log('✅ This would proceed to backend submission');
+            testCloseModal();
+            setTimeout(() => {
+                log('🎉 Success modal would open here');
+            }, 500);
+        }
+
+        // Initial state check
+        window.addEventListener('DOMContentLoaded', () => {
+            log('✅ Page loaded');
+            checkModalState();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,359 @@
+<!-- share-board-complete.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astegni Share Board - Complete</title>
+    <link rel="stylesheet" href="../css/share-board.css">
+    
+    <!-- Required Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css">
+</head>
+<body>
+    <div class="share-board-container">
+        <!-- Enhanced Toolbar -->
+        <div class="board-toolbar">
+            <!-- Drawing Tools Section -->
+            <div class="toolbar-section drawing-tools">
+                <h4>Drawing</h4>
+                <button class="tool-btn active" data-tool="pen" title="Pen">
+                    <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg>
+                </button>
+                <button class="tool-btn" data-tool="highlighter" title="Highlighter">
+                    <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+                </button>
+                <button class="tool-btn" data-tool="eraser" title="Eraser">
+                    <svg viewBox="0 0 24 24"><path d="M15.14 3c-.51 0-1.02.2-1.41.59L2.59 14.73c-.78.78-.78 2.05 0 2.83L5.03 20H9.5l7.86-7.86 4.05-4.05c.78-.78.78-2.05 0-2.83l-4.86-4.86c-.39-.39-.9-.59-1.41-.59z"/></svg>
+                </button>
+                <button class="tool-btn" data-tool="text" title="Text">
+                    <svg viewBox="0 0 24 24"><path d="M5 4v3h5.5v12h3V7H19V4z"/></svg>
+                </button>
+                
+                <!-- Basic Shapes -->
+                <div class="dropdown">
+                    <button class="tool-btn" data-tool="shapes" title="Shapes">
+                        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>
+                    </button>
+                    <div class="dropdown-content shapes-menu">
+                        <button data-shape="line">Line</button>
+                        <button data-shape="arrow">Arrow</button>
+                        <button data-shape="rectangle">Rectangle</button>
+                        <button data-shape="circle">Circle</button>
+                        <button data-shape="ellipse">Ellipse</button>
+                        <button data-shape="triangle">Triangle</button>
+                        <button data-shape="polygon">Polygon</button>
+                        <button data-shape="star">Star</button>
+                        <button data-shape="hexagon">Hexagon</button>
+                        <button data-shape="diamond">Diamond</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Math Tools Section -->
+            <div class="toolbar-section math-tools">
+                <h4>Math</h4>
+                <button class="tool-btn premium" data-tool="equation" title="Equation Editor">
+                    <span>∑</span>
+                </button>
+                <button class="tool-btn premium" data-tool="graph" title="Graph Plotter">
+                    <svg viewBox="0 0 24 24"><path d="M5 19h15v2H5zM5 7l7 7 5-5 3 3V7z"/></svg>
+                </button>
+                <button class="tool-btn premium" data-tool="ruler" title="Ruler">
+                    <svg viewBox="0 0 24 24"><path d="M1 17h22v2H1zm5-7h2V7H6v3zm4 0h2V7h-2v3zm0 7h2v-3h-2v3zm4 0h2v-3h-2v3zm4-7h2V7h-2v3zm0 7h2v-3h-2v3z"/></svg>
+                </button>
+                <button class="tool-btn premium" data-tool="protractor" title="Protractor">
+                    <svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5h2c0-1.66 1.34-3 3-3s3 1.34 3 3h2c0-2.76-2.24-5-5-5z"/></svg>
+                </button>
+                <button class="tool-btn premium" data-tool="compass" title="Compass">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg>
+                </button>
+                
+                <!-- Math Symbols Dropdown -->
+                <div class="dropdown">
+                    <button class="tool-btn" title="Math Symbols">
+                        <span>π</span>
+                    </button>
+                    <div class="dropdown-content math-symbols-grid">
+                        <button data-symbol="π">π</button>
+                        <button data-symbol="∞">∞</button>
+                        <button data-symbol="√">√</button>
+                        <button data-symbol="∫">∫</button>
+                        <button data-symbol="∑">∑</button>
+                        <button data-symbol="∏">∏</button>
+                        <button data-symbol="±">±</button>
+                        <button data-symbol="≈">≈</button>
+                        <button data-symbol="≠">≠</button>
+                        <button data-symbol="≤">≤</button>
+                        <button data-symbol="≥">≥</button>
+                        <button data-symbol="α">α</button>
+                        <button data-symbol="β">β</button>
+                        <button data-symbol="γ">γ</button>
+                        <button data-symbol="θ">θ</button>
+                        <button data-symbol="λ">λ</button>
+                        <button data-symbol="μ">μ</button>
+                        <button data-symbol="φ">φ</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates Section -->
+            <div class="toolbar-section templates">
+                <h4>Templates</h4>
+                <div class="dropdown">
+                    <button class="tool-btn premium" title="Templates">
+                        <svg viewBox="0 0 24 24"><path d="M10 10h4v4h-4zm0-6h4v4h-4zm6 6h4v4h-4zm0-6h4v4h-4z"/></svg>
+                    </button>
+                    <div class="dropdown-content templates-menu">
+                        <h5>Mathematics</h5>
+                        <button data-template="graph-paper">Graph Paper</button>
+                        <button data-template="coordinate-plane">Coordinate Plane</button>
+                        <button data-template="dot-grid">Dot Grid</button>
+                        <button data-template="isometric">Isometric Grid</button>
+                        
+                        <h5>Music</h5>
+                        <button data-template="music-staff">Music Staff</button>
+                        <button data-template="piano-keys">Piano Keys</button>
+                        <button data-template="guitar-tabs">Guitar Tabs</button>
+                        
+                        <h5>Science</h5>
+                        <button data-template="chemistry-lab">Chemistry Lab</button>
+                        <button data-template="periodic-table">Periodic Table</button>
+                        <button data-template="circuit-diagram">Circuit Diagram</button>
+                        
+                        <h5>Engineering</h5>
+                        <button data-template="blueprint">Blueprint Grid</button>
+                        <button data-template="flowchart">Flowchart</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Premium Features Section -->
+            <div class="toolbar-section premium-features">
+                <h4>Advanced</h4>
+                <button class="tool-btn premium" id="importPDF" title="Import PDF">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+                </button>
+                <button class="tool-btn premium" id="ocrTool" title="Text Recognition">
+                    <span>OCR</span>
+                </button>
+                <button class="tool-btn premium" id="codeTool" title="Code Editor">
+                    <span>&lt;/&gt;</span>
+                </button>
+                <button class="tool-btn premium" id="stickyNote" title="Sticky Notes">
+                    <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/></svg>
+                </button>
+                <button class="tool-btn premium" id="laserPointer" title="Laser Pointer">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="red"/></svg>
+                </button>
+                <button class="tool-btn premium" id="wolframAlpha" title="Wolfram Alpha">
+                    <span>W|α</span>
+                </button>
+            </div>
+
+            <!-- Properties Panel -->
+            <div class="properties-panel">
+                <!-- Color Palette -->
+                <div class="property-group">
+                    <label>Color:</label>
+                    <div class="color-palette">
+                        <button class="color-btn" data-color="#000000" style="background: #000000"></button>
+                        <button class="color-btn" data-color="#FF0000" style="background: #FF0000"></button>
+                        <button class="color-btn" data-color="#00FF00" style="background: #00FF00"></button>
+                        <button class="color-btn" data-color="#0000FF" style="background: #0000FF"></button>
+                        <button class="color-btn" data-color="#FFFF00" style="background: #FFFF00"></button>
+                        <button class="color-btn" data-color="#FF00FF" style="background: #FF00FF"></button>
+                        <button class="color-btn" data-color="#00FFFF" style="background: #00FFFF"></button>
+                        <button class="color-btn" data-color="#FFA500" style="background: #FFA500"></button>
+                        <button class="color-btn" data-color="#800080" style="background: #800080"></button>
+                        <input type="color" class="color-picker" id="colorPicker">
+                    </div>
+                </div>
+
+                <!-- Stroke Size -->
+                <div class="property-group">
+                    <label>Size: <span id="sizeValue">2px</span></label>
+                    <input type="range" id="strokeSize" min="1" max="50" value="2">
+                </div>
+
+                <!-- Opacity -->
+                <div class="property-group">
+                    <label>Opacity: <span id="opacityValue">100%</span></label>
+                    <input type="range" id="opacity" min="0" max="100" value="100">
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="toolbar-section actions">
+                <button class="action-btn" id="undo" title="Undo">
+                    <svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg>
+                </button>
+                <button class="action-btn" id="redo" title="Redo">
+                    <svg viewBox="0 0 24 24"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.9 16c1.05-3.19 4.05-5.5 7.6-5.5 1.95 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg>
+                </button>
+                <button class="action-btn" id="clearBoard" title="Clear">
+                    <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
+                <button class="action-btn" id="saveBoard" title="Save">
+                    <svg viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4z"/></svg>
+                </button>
+                <button class="action-btn" id="downloadBoard" title="Download">
+                    <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                </button>
+                <button class="action-btn record" id="recordBtn" title="Record">
+                    <span class="record-icon">●</span> REC
+                </button>
+                <button class="action-btn share" id="shareBtn" title="Share">
+                    <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92z"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Canvas Area with Fabric.js -->
+        <div class="board-main-area">
+            <div class="canvas-wrapper">
+                <canvas id="shareBoard"></canvas>
+                
+                <!-- Floating Toolbars -->
+                <div class="floating-toolbar equation-toolbar hidden" id="equationToolbar">
+                    <h4>Equation Editor</h4>
+                    <textarea id="latexInput" placeholder="Enter LaTeX: \frac{a}{b}"></textarea>
+                    <div id="latexPreview"></div>
+                    <button onclick="insertEquation()">Insert</button>
+                    <button onclick="solveEquation()">Solve with Wolfram</button>
+                </div>
+
+                <div class="floating-toolbar graph-toolbar hidden" id="graphToolbar">
+                    <h4>Graph Plotter</h4>
+                    <input type="text" id="functionInput" placeholder="y = x^2 + 2x + 1">
+                    <div class="graph-options">
+                        <label>X: <input type="number" id="xMin" value="-10" step="1"> to <input type="number" id="xMax" value="10" step="1"></label>
+                        <label>Y: <input type="number" id="yMin" value="-10" step="1"> to <input type="number" id="yMax" value="10" step="1"></label>
+                    </div>
+                    <button onclick="plotGraph()">Plot</button>
+                    <canvas id="graphCanvas" width="300" height="300"></canvas>
+                </div>
+
+                <div class="floating-toolbar code-toolbar hidden" id="codeToolbar">
+                    <h4>Code Editor</h4>
+                    <select id="codeLanguage">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="cpp">C++</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="sql">SQL</option>
+                    </select>
+                    <textarea id="codeInput" placeholder="Enter code..."></textarea>
+                    <button onclick="insertCode()">Insert with Syntax Highlighting</button>
+                </div>
+
+                <!-- Sticky Notes Container -->
+                <div class="sticky-notes-container" id="stickyNotesContainer"></div>
+
+                <!-- Laser Pointer -->
+                <div class="laser-pointer hidden" id="laserPointer"></div>
+
+                <!-- Page Navigation -->
+                <div class="page-navigation">
+                    <button id="prevPage">◀</button>
+                    <span>Page <span id="currentPage">1</span> / <span id="totalPages">1</span></span>
+                    <button id="nextPage">▶</button>
+                    <button id="addPage">+ Add Page</button>
+                </div>
+
+                <!-- Participants Cursors -->
+                <div class="cursors-layer" id="cursorsLayer"></div>
+            </div>
+
+            <!-- Right Sidebar -->
+            <div class="board-sidebar">
+                <!-- Tabs -->
+                <div class="sidebar-tabs">
+                    <button class="tab-btn active" data-tab="layers">Layers</button>
+                    <button class="tab-btn" data-tab="participants">Participants</button>
+                    <button class="tab-btn" data-tab="chat">Chat</button>
+                    <button class="tab-btn" data-tab="history">History</button>
+                </div>
+
+                <!-- Layers Panel -->
+                <div class="tab-content active" id="layers-tab">
+                    <h4>Layers</h4>
+                    <div class="layers-list" id="layersList">
+                        <!-- Layers will be dynamically added -->
+                    </div>
+                    <button class="btn-add-layer">+ Add Layer</button>
+                </div>
+
+                <!-- Participants Panel -->
+                <div class="tab-content" id="participants-tab">
+                    <h4>Participants (<span id="participantCount">0</span>)</h4>
+                    <div class="participants-list" id="participantsList">
+                        <!-- Participants will be dynamically added -->
+                    </div>
+                    <div class="participant-controls">
+                        <button id="raiseHand">✋ Raise Hand</button>
+                        <button id="requestDraw">✏️ Request Draw Permission</button>
+                    </div>
+                </div>
+
+                <!-- Chat Panel -->
+                <div class="tab-content" id="chat-tab">
+                    <h4>Chat</h4>
+                    <div class="chat-messages" id="chatMessages">
+                        <!-- Messages will appear here -->
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInput" placeholder="Type a message...">
+                        <button id="sendChat">Send</button>
+                    </div>
+                </div>
+
+                <!-- History Panel -->
+                <div class="tab-content" id="history-tab">
+                    <h4>Action History</h4>
+                    <div class="history-list" id="historyList">
+                        <!-- History items will be dynamically added -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recording Indicator -->
+        <div class="recording-indicator hidden" id="recordingIndicator">
+            <span class="rec-dot"></span>
+            Recording: <span id="recordTime">00:00</span>
+        </div>
+    </div>
+
+    <!-- Import PDF Modal -->
+    <div class="modal hidden" id="pdfModal">
+        <div class="modal-content">
+            <h3>Import PDF</h3>
+            <input type="file" id="pdfFile" accept=".pdf">
+            <div id="pdfPreview"></div>
+            <button onclick="importSelectedPage()">Import This Page</button>
+            <button onclick="closePDFModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Wolfram Alpha Results Modal -->
+    <div class="modal hidden" id="wolframModal">
+        <div class="modal-content">
+            <h3>Wolfram Alpha Solution</h3>
+            <div id="wolframResults"></div>
+            <button onclick="closeWolframModal()">Close</button>
+        </div>
+    </div>
+
+    <script src="../js/share-board.js"></script>
+    <script src="../js/share-board-2.js"></script>
+    <script src="../js/share-board-3.js"></script>
+</body>
+</html>

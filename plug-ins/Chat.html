@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enhanced Chat Application</title>
+  <link rel="stylesheet" href="../css/main-modular.css">
+  <link rel="stylesheet" href="../css/plug-ins/chat.css">
+</head>
+<body>
+  <!-- Animated Background -->
+  <div class="bg-animation">
+    <span style="left: 10%; animation-delay: 0s;"></span>
+    <span style="left: 20%; animation-delay: 2s; animation-duration: 12s;"></span>
+    <span style="left: 30%; animation-delay: 4s;"></span>
+    <span style="left: 40%; animation-delay: 0s; animation-duration: 18s;"></span>
+    <span style="left: 50%; animation-delay: 0s;"></span>
+    <span style="left: 60%; animation-delay: 3s;"></span>
+    <span style="left: 70%; animation-delay: 4s;"></span>
+    <span style="left: 80%; animation-delay: 5s; animation-duration: 20s;"></span>
+    <span style="left: 90%; animation-delay: 2s;"></span>
+  </div>
+
+  <!-- Main Chat Container -->
+  <div class="chat-container" id="chatContainer">
+    <!-- Left Sidebar - Contacts List -->
+    <div class="chat-sidebar" id="chatSidebar">
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <div class="sidebar-user-profile">
+          <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Your Profile" class="sidebar-user-avatar">
+          <div class="sidebar-user-info">
+            <h3>You</h3>
+            <span class="user-occupation">Software Developer</span>
+            <div class="user-rating">
+              <span class="rating-stars">★★★★★</span>
+              <span class="rating-value">(4.8)</span>
+            </div>
+          </div>
+          <button class="btn-settings" onclick="openSettings()">⚙️</button>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="sidebar-search">
+        <input type="text" id="contactSearch" placeholder="Search conversations..." class="search-input">
+        <button class="search-btn">🔍</button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="sidebar-tabs">
+        <button class="tab-btn active" data-tab="all">All</button>
+        <button class="tab-btn" data-tab="personal">Personal</button>
+        <button class="tab-btn" data-tab="groups">Groups</button>
+        <button class="tab-btn" data-tab="unread">Unread</button>
+        <button class="tab-btn" data-tab="archived">Archived</button>
+      </div>
+
+      <!-- Contacts List -->
+      <div class="contacts-list" id="contactsList">
+        <!-- Active Conversations -->
+        <div class="contact-item active" data-user-id="1" data-category="personal">
+          <div class="contact-avatar-wrapper">
+            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="John Doe" class="contact-avatar">
+            <span class="status-indicator online"></span>
+          </div>
+          <div class="contact-info">
+            <div class="contact-header">
+              <h4>John Doe</h4>
+              <span class="message-time">2:30 PM</span>
+            </div>
+            <span class="contact-occupation">Product Manager</span>
+            <div class="contact-preview">
+              <span class="typing-indicator" style="display: none;">typing...</span>
+              <p class="last-message">Hey! How's the project going?</p>
+              <span class="unread-count">3</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- More contacts -->
+        <div class="contact-item" data-user-id="2" data-category="personal">
+          <div class="contact-avatar-wrapper">
+            <img src="https://randomuser.me/api/portraits/women/2.jpg" alt="Jane Smith" class="contact-avatar">
+            <span class="status-indicator offline"></span>
+          </div>
+          <div class="contact-info">
+            <div class="contact-header">
+              <h4>Jane Smith</h4>
+              <span class="message-time">Yesterday</span>
+            </div>
+            <span class="contact-occupation">UX Designer</span>
+            <div class="contact-preview">
+              <p class="last-message">Thanks for the help!</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-item" data-user-id="3" data-category="personal">
+          <div class="contact-avatar-wrapper">
+            <img src="https://randomuser.me/api/portraits/men/3.jpg" alt="Mike Johnson" class="contact-avatar">
+            <span class="status-indicator busy"></span>
+          </div>
+          <div class="contact-info">
+            <div class="contact-header">
+              <h4>Mike Johnson</h4>
+              <span class="message-time">Monday</span>
+            </div>
+            <span class="contact-occupation">Marketing Director</span>
+            <div class="contact-preview">
+              <p class="last-message">Let's schedule a meeting</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-item" data-user-id="4" data-category="personal">
+          <div class="contact-avatar-wrapper">
+            <img src="https://randomuser.me/api/portraits/women/4.jpg" alt="Sarah Williams" class="contact-avatar">
+            <span class="status-indicator online"></span>
+          </div>
+          <div class="contact-info">
+            <div class="contact-header">
+              <h4>Sarah Williams</h4>
+              <span class="message-time">3 days ago</span>
+            </div>
+            <span class="contact-occupation">HR Manager</span>
+            <div class="contact-preview">
+              <p class="last-message">Great work on the presentation!</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Group Chat -->
+        <div class="contact-item group" data-user-id="group-1" data-category="groups">
+          <div class="contact-avatar-wrapper">
+            <div class="group-avatar">
+              <span>💼</span>
+            </div>
+          </div>
+          <div class="contact-info">
+            <div class="contact-header">
+              <h4>Project Team</h4>
+              <span class="message-time">1 hour ago</span>
+            </div>
+            <span class="contact-occupation">12 members</span>
+            <div class="contact-preview">
+              <p class="last-message"><strong>Alex:</strong> Meeting at 3 PM</p>
+              <span class="unread-count">12</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <button class="sidebar-action-btn" id="newChatBtn" onclick="startNewChat()">
+          <span>➕</span> New Chat
+        </button>
+        <button class="sidebar-action-btn create-group-btn" id="createGroupBtn" onclick="createGroup()" style="display: none;">
+          <span>👥</span> Create Group
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="chat-main" id="chatMain">
+      <!-- Toggle Sidebar Button (Mobile) -->
+      <button class="toggle-sidebar-btn" id="toggleSidebar" onclick="toggleSidebar()">☰</button>
+
+      <!-- User Info Header -->
+      <div class="user-info">
+        <div class="user-info-row-1">
+          <div class="user-avatar">
+            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="John Doe" id="userAvatar">
+            <div class="online-indicator"></div>
+          </div>
+          <div class="user-basic-info">
+            <h2>John Doe</h2>
+            <span class="user-occupation-header">Product Manager</span>
+            <span class="last-seen" id="lastSeen">Last seen 2 minutes ago</span>
+          </div>
+          <div class="user-contact-quick">
+            <span class="contact-phone">📞 +1-555-123-4567</span>
+          </div>
+          <div class="header-controls">
+            <button class="minimize-btn" id="minimizeBtn" onclick="minimizeChat()" title="Minimize">—</button>
+            <button class="maximize-btn" id="maximizeBtn" onclick="maximizeChat()" style="display: none;" title="Maximize">▢</button>
+            <button class="close-btn" onclick="closeChat()" title="Close">✕</button>
+          </div>
+        </div>
+        
+        <div class="user-info-row-2">
+          <div class="rating-container">
+            <span class="rating-stars">★★★★★</span> 
+            <span class="rating-count">(50 Reviews)</span>
+            <div class="rating-tooltip">
+              <div class="tooltip-header">Rating Breakdown</div>
+              <div class="rating-item">
+                <span>Communication:</span>
+                <div class="rating-bar">
+                  <div class="rating-bar-fill" style="width: 80%"></div>
+                </div>
+                <span class="rating-value">80%</span>
+              </div>
+              <div class="rating-item">
+                <span>Expertise:</span>
+                <div class="rating-bar">
+                  <div class="rating-bar-fill" style="width: 90%"></div>
+                </div>
+                <span class="rating-value">90%</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="user-email">
+            <span>✉️ john.doe@example.com</span>
+          </div>
+          
+          <div class="header-actions">
+            <button class="header-btn call-btn-main voice-call" onclick="startVoiceCall()" title="Voice Call">
+              📞
+            </button>
+            <button class="header-btn video-btn-main" onclick="startVideoCall()" title="Video Call">
+              📹
+            </button>
+            <button class="header-btn info-btn" onclick="toggleInfo()" title="Info">
+              ℹ️
+            </button>
+            <button class="header-btn search-btn-main" onclick="toggleSearch()" title="Search">
+              🔍
+            </button>
+          </div>
+        </div>
+        
+        <!-- Typing Indicator for current user -->
+        <div class="user-typing-indicator" id="userTypingIndicator">
+          <span class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <span class="typing-text">You are typing...</span>
+        </div>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="search-container" id="searchContainer">
+        <input type="text" class="search-bar" id="searchBar" placeholder="Search messages...">
+        <button class="search-close" onclick="toggleSearch()">✕</button>
+      </div>
+
+      <!-- Pinned Messages -->
+      <div id="pinnedMessages" class="pinned-messages">
+        <h3>📌 Pinned Messages</h3>
+        <div class="pinned-messages-list"></div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="chat-area" id="chatArea">
+        <div class="date-divider">
+          <span>Today</span>
+        </div>
+        <!-- Messages will be dynamically added here -->
+      </div>
+
+      <!-- Voice Recording Wave Animation -->
+      <div class="voice-recording" id="voiceRecording">
+        <span class="recording-time" id="recordingTime">0:00</span>
+        <div class="recording-wave">
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+          <div class="wave-bar"></div>
+        </div>
+        <button class="cancel-recording" onclick="cancelRecording()">✕</button>
+      </div>
+
+      <!-- File Preview -->
+      <div class="file-preview" id="filePreview"></div>
+
+      <!-- Reply Preview -->
+      <div class="reply-preview" id="replyPreview">
+        <div class="reply-content">
+          <span class="reply-label">Replying to</span>
+          <p class="reply-text"></p>
+        </div>
+        <button class="reply-close" onclick="cancelReply()">✕</button>
+      </div>
+
+      <!-- Input Area -->
+      <div class="input-area">
+        <div class="input-container">
+          <button class="read-all-btn" id="readAllBtn" onclick="readAllMessages()" title="Read All Messages">🔊</button>
+          <button class="stop-read-btn" id="stopReadBtn" onclick="stopReading()" title="Stop Reading" style="display: none;">⏹️</button>
+          <button class="read-control-btn" id="prevReadBtn" onclick="readPreviousMessage()" title="Previous">⏮️</button>
+          <button class="read-control-btn" id="nextReadBtn" onclick="readNextMessage()" title="Next">⏭️</button>
+          <button class="read-control-btn" id="restartReadBtn" onclick="restartReading()" title="Restart">🔄</button>
+          
+          <div class="input-wrapper">
+            <textarea 
+              class="message-input" 
+              id="messageInput" 
+              placeholder="Type a message..."
+              rows="1"></textarea>
+            <div class="input-actions">
+              <button class="emoji-btn" onclick="openEmojiGifModal()" title="Emoji">😊</button>
+              <label class="file-btn" title="Attach File">
+                📎
+                <input type="file" id="fileInput" class="file-input" accept="image/*,video/*,audio/*,application/pdf,.doc,.docx" multiple onchange="handleFileChange()">
+              </label>
+            </div>
+          </div>
+          
+          <button class="media-btn" id="voiceToTextBtn" onclick="startVoiceToText()" title="Voice to Text">🎤</button>
+          <button class="media-btn" id="voiceRecordBtn" onclick="toggleVoiceRecording()" title="Record Voice">🎙️</button>
+          <button class="media-btn" id="videoRecordBtn" onclick="openVideoRecording()" title="Record Video">📹</button>
+          <button class="send-btn" onclick="sendMessage()" id="sendBtn" title="Send">➤</button>
+        </div>
+        <div id="status" class="status"></div>
+      </div>
+
+      <!-- Right Info Panel (Slides from right) -->
+      <div class="chat-info-panel" id="chatInfoPanel">
+        <div class="info-panel-header">
+          <h3>Contact Info</h3>
+          <button class="info-close-btn" onclick="toggleInfo()">✕</button>
+        </div>
+        
+        <div class="info-panel-content">
+          <div class="info-profile">
+            <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="John Doe" id="infoPanelAvatar">
+            <h3 id="infoPanelName">John Doe</h3>
+            <p id="infoPanelOccupation">Product Manager</p>
+            <p id="infoPanelLastSeen">Last seen today at 2:30 PM</p>
+            
+            <!-- Social Media Links -->
+            <div class="social-links">
+              <a href="https://facebook.com" target="_blank" class="social-link" title="Facebook">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                </svg>
+              </a>
+              <a href="https://twitter.com" target="_blank" class="social-link" title="Twitter">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                </svg>
+              </a>
+              <a href="https://linkedin.com" target="_blank" class="social-link" title="LinkedIn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </a>
+              <a href="https://instagram.com" target="_blank" class="social-link" title="Instagram">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zM5.838 12a6.162 6.162 0 1112.324 0 6.162 6.162 0 01-12.324 0zM12 16a4 4 0 110-8 4 4 0 010 8zm4.965-10.405a1.44 1.44 0 112.881.001 1.44 1.44 0 01-2.881-.001z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+          
+          <div class="info-section">
+            <h4>About</h4>
+            <p>Hey there! I'm using this chat app.</p>
+          </div>
+          
+          <div class="info-section">
+            <h4>Contact Details</h4>
+            <div class="info-detail">
+              <span class="info-icon">📞</span>
+              <span>+1-555-123-4567</span>
+            </div>
+            <div class="info-detail">
+              <span class="info-icon">✉️</span>
+              <span>john.doe@example.com</span>
+            </div>
+            <div class="info-detail">
+              <span class="info-icon">📍</span>
+              <span>New York, NY</span>
+            </div>
+          </div>
+          
+          <!-- Media Tabs -->
+          <div class="info-section">
+            <div class="media-tabs">
+              <button class="media-tab active" onclick="showMediaTab('images')">Images</button>
+              <button class="media-tab" onclick="showMediaTab('videos')">Videos</button>
+              <button class="media-tab" onclick="showMediaTab('links')">Links</button>
+              <button class="media-tab" onclick="showMediaTab('docs')">Docs</button>
+            </div>
+            
+            <div class="media-content">
+              <div id="imagesTab" class="media-tab-content active">
+                <div class="media-grid">
+                  <!-- Sample images -->
+                  <img src="https://via.placeholder.com/100" alt="Image" onclick="viewMedia(this)">
+                  <img src="https://via.placeholder.com/100" alt="Image" onclick="viewMedia(this)">
+                  <img src="https://via.placeholder.com/100" alt="Image" onclick="viewMedia(this)">
+                </div>
+              </div>
+              
+              <div id="videosTab" class="media-tab-content">
+                <div class="media-grid">
+                  <!-- Sample videos -->
+                  <div class="video-thumb" onclick="playVideo(this)">
+                    <span>📹</span>
+                    <p>Video 1</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="linksTab" class="media-tab-content">
+                <div class="links-list">
+                  <a href="#" class="link-item">
+                    <span>🔗</span>
+                    <span>https://example.com</span>
+                  </a>
+                </div>
+              </div>
+              
+              <div id="docsTab" class="media-tab-content">
+                <div class="docs-list">
+                  <div class="doc-item">
+                    <span>📄</span>
+                    <span>Document.pdf</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="info-actions">
+            <button class="info-action-btn danger" onclick="blockContact()">Block Contact</button>
+            <button class="info-action-btn danger" onclick="deleteChat()">Delete Chat</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Chat Modal -->
+  <div id="newChatModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Start New Chat</h2>
+        <button class="modal-close" onclick="closeNewChatModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="newChatSearch" placeholder="Search contacts..." class="modal-input">
+        <div class="contacts-select-list" id="contactsSelectList">
+          <!-- Contacts will be populated here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeNewChatModal()">Cancel</button>
+        <button class="btn-primary" onclick="startChatWithSelected()">Start Chat</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Group Modal -->
+  <div id="createGroupModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create New Group</h2>
+        <button class="modal-close" onclick="closeCreateGroupModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Group Name</label>
+          <input type="text" id="groupName" placeholder="Enter group name..." class="modal-input">
+        </div>
+        <div class="form-group">
+          <label>Group Description</label>
+          <textarea id="groupDescription" placeholder="Enter group description..." class="modal-textarea"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Add Members</label>
+          <input type="text" id="memberSearch" placeholder="Search members..." class="modal-input">
+          <div class="members-list" id="membersList">
+            <!-- Members will be populated here -->
+          </div>
+        </div>
+        <div class="selected-members" id="selectedMembers">
+          <!-- Selected members will appear here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeCreateGroupModal()">Cancel</button>
+        <button class="btn-primary" onclick="createNewGroup()">Create Group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Call Modal -->
+  <div id="callModal" class="call-modal">
+    <div class="call-modal-content">
+      <div class="call-header">
+        <div class="call-user-info">
+          <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="John Doe" id="callUserAvatar">
+          <div>
+            <h2 id="callUserName">John Doe</h2>
+            <p id="callUserOccupation">Product Manager</p>
+            <p class="call-status">Connecting...</p>
+          </div>
+        </div>
+        <div class="call-header-controls">
+          <button class="minimize-btn" onclick="minimizeCallModal()" title="Minimize">—</button>
+          <button class="maximize-btn" onclick="maximizeCallModal()" style="display: none;" title="Maximize">▢</button>
+          <button class="call-close-btn" onclick="closeCallModal()" title="Close">✕</button>
+        </div>
+      </div>
+      
+      <div class="call-timer" id="callTimer">00:00</div>
+      
+      <div class="call-video" id="callVideo">
+        <video id="remoteVideo" autoplay class="main-video"></video>
+        <video id="localVideo" autoplay muted class="pip-video"></video>
+        <button class="swap-video-btn" id="swapVideoBtn" onclick="swapVideos()" title="Swap Videos">🔄</button>
+        <div class="voice-call-animation" id="voiceCallAnimation">
+          <div class="voice-wave">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="call-controls" id="callControls">
+        <button id="toggleVideoBtn" onclick="toggleVideo()" title="Toggle Video">📹</button>
+        <button id="shareScreenBtn" onclick="shareScreen()" title="Share Screen">🖥️</button>
+        <button id="speakerBtn" onclick="toggleSpeaker()" title="Toggle Speaker" class="active">🔊</button>
+        <button id="muteBtn" onclick="toggleMute()" title="Toggle Mute">🎤</button>
+        <button id="endCallBtn" onclick="endCall()" title="End Call" class="end-call">📞</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Recording Modal -->
+  <div id="videoRecordModal" class="video-record-modal">
+    <div class="video-record-content">
+      <div class="video-record-header">
+        <h3>Record Video Message</h3>
+        <button class="video-record-close" onclick="closeVideoRecording()">✕</button>
+      </div>
+      <div class="video-preview-container">
+        <video id="videoPreview" autoplay muted></video>
+        <div class="recording-indicator" id="recordingIndicator">
+          <span class="rec-dot"></span> REC
+        </div>
+      </div>
+      <div class="video-record-controls">
+        <button class="btn-start-record" id="startVideoBtn" onclick="startVideoRecording()">
+          <span class="record-icon">⏺️</span> Start Recording
+        </button>
+        <button class="btn-stop-record" id="stopVideoBtn" onclick="stopVideoRecording()" style="display: none;">
+          <span class="stop-icon">⏹️</span> Stop Recording
+        </button>
+        <button class="btn-delete-video" id="deleteVideoBtn" onclick="deleteVideoRecording()" style="display: none;">
+          <span class="delete-icon">🗑️</span> Delete
+        </button>
+        <button class="btn-send-video" id="sendVideoBtn" onclick="sendVideoMessage()" style="display: none;">
+          <span class="send-icon">➤</span> Send
+        </button>
+      </div>
+      <div class="video-timer" id="videoTimer">00:00</div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="settings-modal">
+    <div class="settings-content">
+      <div class="settings-header">
+        <h2>Settings</h2>
+        <button class="settings-close" onclick="closeSettings()">✕</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-section">
+          <h3>Account</h3>
+          <div class="settings-item">
+            <label>Profile Picture</label>
+            <button class="btn-change-photo">Change Photo</button>
+          </div>
+          <div class="settings-item">
+            <label>Status</label>
+            <input type="text" value="Hey there! I'm using this chat app" class="settings-input">
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Notifications</h3>
+          <div class="settings-item">
+            <label>Message Notifications</label>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <label>Sound</label>
+            <label class="switch">
+              <input type="checkbox" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="settings-section">
+          <h3>Privacy</h3>
+          <div class="settings-item">
+            <label>Last Seen</label>
+            <select class="settings-select">
+              <option>Everyone</option>
+              <option>My Contacts</option>
+              <option>Nobody</option>
+            </select>
+          </div>
+          <div class="settings-item">
+            <label>Profile Photo</label>
+            <select class="settings-select">
+              <option>Everyone</option>
+              <option>My Contacts</option>
+              <option>Nobody</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="settings-footer">
+        <button class="btn-save-settings" onclick="saveSettings()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Emoji/GIF Modal -->
+  <div id="emojiGifModal" class="emoji-gif-modal">
+    <div class="emoji-gif-content">
+      <button class="emoji-gif-close" onclick="closeEmojiGifModal()">✕</button>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('emojiTab')">Emojis</button>
+        <button class="tab" onclick="showTab('gifTab')">GIFs</button>
+      </div>
+      <div id="emojiTab" class="tab-content active">
+        <!-- Emojis will be populated dynamically -->
+      </div>
+      <div id="gifTab" class="tab-content">
+        <div class="gif-search">
+          <input type="text" placeholder="Search GIFs..." id="gifSearch">
+        </div>
+        <div class="gif-grid" id="gifGrid">
+          <!-- GIFs will be loaded here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context Menu (Scrollable) -->
+  <div id="contextMenu" class="context-menu">
+    <div class="context-menu-content">
+      <button id="editBtn" onclick="editMessage()">✏️ Edit</button>
+      <button id="deleteBtn" onclick="deleteMessage()">🗑️ Delete</button>
+      <hr>
+      <button id="forwardBtn" onclick="forwardMessage()">↪️ Forward</button>
+      <button id="copyBtn" onclick="copyMessage()">📋 Copy</button>
+      <button id="selectBtn" onclick="selectMessage()">☑️ Select</button>
+      <hr>
+      <button id="pinBtn" onclick="pinMessage()">📌 Pin</button>
+      <button id="unpinBtn" onclick="unpinMessage()" style="display: none;">📌 Unpin</button>
+      <button id="replyBtn" onclick="replyMessage()">↩️ Reply</button>
+      <button id="starBtn" onclick="starMessage()">⭐ Star</button>
+      <button id="infoBtn" onclick="messageInfo()">ℹ️ Info</button>
+      <hr>
+      <div class="reaction-buttons">
+        <button onclick="reactMessage('❤️')">❤️</button>
+        <button onclick="reactMessage('😂')">😂</button>
+        <button onclick="reactMessage('😮')">😮</button>
+        <button onclick="reactMessage('😢')">😢</button>
+        <button onclick="reactMessage('👍')">👍</button>
+        <button onclick="reactMessage('👎')">👎</button>
+        <button onclick="reactMessage('🔥')">🔥</button>
+        <button onclick="reactMessage('🎉')">🎉</button>
+        <button onclick="reactMessage('😍')">😍</button>
+        <button onclick="reactMessage('😡')">😡</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Minimized Chat Badge -->
+  <div class="minimized-badge" id="minimizedBadge" style="display: none;" onclick="maximizeChat()">
+    <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="Chat">
+    <span class="badge-count">3</span>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js"></script>
+  <script src="../js/plug-ins/chat.js"></script>
+</body>
+</html>

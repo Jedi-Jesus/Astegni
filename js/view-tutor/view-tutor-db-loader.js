@@ -1,0 +1,2514 @@
+/**
+ * View Tutor Database Loader
+ * Comprehensive data loader for view-tutor.html from database
+ * Replaces all hardcoded data with dynamic DB data
+ */
+
+// API_BASE_URL is already defined in view-extension-modals.js (loaded earlier)
+
+// Global variable to store current package for modal
+window.currentPackageData = null;
+
+class ViewTutorDBLoader {
+    constructor(tutorId, byUserId = false) {
+        this.tutorId = tutorId;
+        this.byUserId = byUserId;  // Whether ID is user.id or tutor_profile.id
+        this.data = {
+            profile: null,
+            stats: null,
+            reviews: [],
+            achievements: [],
+            certificates: [],
+            experience: [],
+            videos: [],
+            packages: [],
+            weekAvailability: []
+        };
+    }
+
+    /**
+     * Initialize and load all data
+     */
+    async init() {
+        try {
+            console.log('🔄 Loading tutor profile from database...');
+
+            // Load all data in parallel for better performance
+            await Promise.all([
+                this.loadMainProfile(),
+                this.loadReviews(),
+                this.loadAchievements(),
+                this.loadCertificates(),
+                this.loadExperience(),
+                this.loadVideos(),
+                this.loadPackages(),
+                this.loadWeekAvailability()
+            ]);
+
+            // Populate all sections
+            this.populateAllSections();
+
+            console.log('✅ All data loaded successfully!', this.data);
+
+        } catch (error) {
+            console.error('❌ Error loading tutor data:', error);
+            this.showErrorMessage('Failed to load tutor profile. Please refresh the page.');
+        }
+    }
+
+    /**
+     * Load main profile and stats
+     */
+    async loadMainProfile() {
+        try {
+            // Build URL with by_user_id parameter if needed
+            const url = this.byUserId
+                ? `${API_BASE_URL}/api/view-tutor/${this.tutorId}?by_user_id=true`
+                : `${API_BASE_URL}/api/view-tutor/${this.tutorId}`;
+
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch profile');
+
+            const data = await response.json();
+            this.data.profile = data.profile;
+            this.data.stats = data.stats;
+
+            // Expose tutor data globally for connection manager
+            window.currentTutorData = data.profile;
+
+            console.log('✓ Profile loaded:', data.profile);
+        } catch (error) {
+            console.error('Error loading profile:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Load tutor reviews
+     */
+    async loadReviews(limit = 10) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/reviews?limit=${limit}`);
+            if (!response.ok) throw new Error('Failed to fetch reviews');
+
+            const data = await response.json();
+            this.data.reviews = data.reviews;
+
+            console.log(`✓ Loaded ${data.reviews.length} reviews`);
+        } catch (error) {
+            console.error('Error loading reviews:', error);
+            this.data.reviews = [];
+        }
+    }
+
+    /**
+     * Load tutor achievements
+     */
+    async loadAchievements() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/achievements`);
+            if (!response.ok) throw new Error('Failed to fetch achievements');
+
+            const data = await response.json();
+            this.data.achievements = data.achievements;
+
+            console.log(`✓ Loaded ${data.achievements.length} achievements`);
+        } catch (error) {
+            console.error('Error loading achievements:', error);
+            this.data.achievements = [];
+        }
+    }
+
+    /**
+     * Load tutor certificates
+     */
+    async loadCertificates() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/certificates`);
+            if (!response.ok) throw new Error('Failed to fetch certificates');
+
+            const data = await response.json();
+            this.data.certificates = data.certificates;
+
+            console.log(`✓ Loaded ${data.certificates.length} certificates`);
+        } catch (error) {
+            console.error('Error loading certificates:', error);
+            this.data.certificates = [];
+        }
+    }
+
+    /**
+     * Load tutor experience
+     */
+    async loadExperience() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/experience`);
+            if (!response.ok) throw new Error('Failed to fetch experience');
+
+            const data = await response.json();
+            this.data.experience = data.experience;
+
+            console.log(`✓ Loaded ${data.experience.length} experience records`);
+        } catch (error) {
+            console.error('Error loading experience:', error);
+            this.data.experience = [];
+        }
+    }
+
+    /**
+     * Load tutor videos
+     */
+    async loadVideos() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/videos`);
+            if (!response.ok) throw new Error('Failed to fetch videos');
+
+            const data = await response.json();
+            this.data.videos = data.videos;
+
+            console.log(`✓ Loaded ${data.videos.length} videos`);
+        } catch (error) {
+            console.error('Error loading videos:', error);
+            this.data.videos = [];
+        }
+    }
+
+    /**
+     * Load tutor packages
+     */
+    async loadPackages() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/packages`);
+            if (!response.ok) throw new Error('Failed to fetch packages');
+
+            const data = await response.json();
+            this.data.packages = data.packages;
+
+            console.log(`✓ Loaded ${data.packages.length} packages`);
+        } catch (error) {
+            console.error('Error loading packages:', error);
+            this.data.packages = [];
+        }
+    }
+
+    /**
+     * Load week availability
+     */
+    async loadWeekAvailability() {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/view-tutor/${this.tutorId}/availability/week`);
+            if (!response.ok) throw new Error('Failed to fetch availability');
+
+            const data = await response.json();
+            this.data.weekAvailability = data.availability;
+
+            console.log('✓ Loaded week availability');
+        } catch (error) {
+            console.error('Error loading availability:', error);
+            this.data.weekAvailability = [];
+        }
+    }
+
+    /**
+     * Populate all sections of the page
+     */
+    populateAllSections() {
+        // Store data globally for modal access
+        if (window.viewTutorExtensionsData) {
+            window.viewTutorExtensionsData.achievements = this.data.achievements;
+            window.viewTutorExtensionsData.certifications = this.data.certificates;
+            window.viewTutorExtensionsData.experience = this.data.experience;
+        }
+
+        this.populateHeroSection();
+        this.populateProfileHeader();
+        this.populateQuickStats();
+        this.populateSuccessStoriesSection();
+        this.populateReviewsPanel();
+        this.populateCertificationsPanel();
+        this.populateExperiencePanel();
+        this.populateAchievementsPanel();
+        this.populateVideosPanel();
+        this.populatePackagesPanel();
+        this.populateSuccessWidget();
+        this.populateSubjectsWidget();
+        this.populatePricingWidget();
+        this.populateAvailabilityWidget();
+        this.populateAchievementsWidget();
+    }
+
+    /**
+     * Populate Hero Section
+     */
+    populateHeroSection() {
+        const profile = this.data.profile;
+        if (!profile) return;
+
+        const heroTitleEl = document.querySelector('.hero-title #typedText');
+        const heroSubtitleEl = document.getElementById('hero-subtitle');
+
+        // hero_titles is now a JSONB array - use first title or default
+        if (heroTitleEl) {
+            if (profile.hero_titles && Array.isArray(profile.hero_titles) && profile.hero_titles.length > 0) {
+                heroTitleEl.textContent = profile.hero_titles[0];
+            } else {
+                heroTitleEl.textContent = 'Excellence in Education, Delivered with Passion';
+            }
+        }
+
+        if (heroSubtitleEl && profile.hero_subtitle) {
+            heroSubtitleEl.textContent = profile.hero_subtitle;
+        }
+    }
+
+    /**
+     * Populate Profile Header
+     */
+    populateProfileHeader() {
+        const profile = this.data.profile;
+        if (!profile) return;
+
+        // Name and Username
+        const nameEl = document.getElementById('tutorName');
+        if (nameEl) {
+            // Display name in one row with username as subheader (read username from tutor_profile.username, not email)
+            const usernameDisplay = profile.username ? `@${profile.username}` : '';
+            nameEl.innerHTML = `
+                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+                    <span style="font-size: 2rem; font-weight: bold; color: var(--text-primary); white-space: nowrap;">${profile.full_name}</span>
+                    ${usernameDisplay ? `<span style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500;">${usernameDisplay}</span>` : ''}
+                </div>
+            `;
+        }
+
+        // Badges - Always display with appropriate messages
+        const badgesRow = document.querySelector('.badges-row');
+        if (badgesRow && profile) {
+            let badgesHTML = '';
+
+            // Verified badge - check verification_status and is_verified from tutor_profiles
+            if (profile.is_verified || profile.verification_status === 'verified') {
+                badgesHTML += `
+                    <span class="profile-badge verified" style="background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        ✔ Verified Tutor
+                    </span>
+                `;
+            } else if (profile.verification_status === 'pending') {
+                badgesHTML += `
+                    <span class="profile-badge pending" style="background: rgba(251, 191, 36, 0.1); color: #fbbf24; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        ⏳ Verification Pending
+                    </span>
+                `;
+            } else if (profile.verification_status === 'rejected') {
+                badgesHTML += `
+                    <span class="profile-badge rejected" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        ✗ Verification Rejected
+                    </span>
+                `;
+            } else {
+                badgesHTML += `
+                    <span class="profile-badge not-verified" style="background: rgba(156, 163, 175, 0.1); color: #9ca3af; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        ✗ Not Verified
+                    </span>
+                `;
+            }
+
+            // Expertise badge from tutor_profiles.expertise_badge
+            if (profile.expertise_badge) {
+                const expertiseBadgeMap = {
+                    'Master Tutor': { emoji: '👑', color: '#9333ea', bg: 'rgba(147, 51, 234, 0.1)' },
+                    'Expert Tutor': { emoji: '🏆', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' },
+                    'Senior Tutor': { emoji: '⭐', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
+                    'Tutor': { emoji: '📚', color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' }
+                };
+
+                const badgeInfo = expertiseBadgeMap[profile.expertise_badge] || expertiseBadgeMap['Tutor'];
+                badgesHTML += `
+                    <span class="profile-badge expertise" style="background: ${badgeInfo.bg}; color: ${badgeInfo.color}; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        ${badgeInfo.emoji} ${profile.expertise_badge}
+                    </span>
+                `;
+            }
+
+            // Suspension badge - show if tutor is suspended
+            if (profile.is_suspended) {
+                badgesHTML += `
+                    <span class="profile-badge suspended" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem;">
+                        🚫 Suspended
+                    </span>
+                `;
+            }
+
+            badgesRow.innerHTML = badgesHTML;
+        }
+
+        // Profile Picture
+        const avatarEl = document.getElementById('profile-avatar');
+        if (avatarEl && profile.profile_picture) {
+            avatarEl.src = profile.profile_picture;
+        }
+
+        // Cover Image
+        const coverEl = document.getElementById('cover-img');
+        if (coverEl && profile.cover_image) {
+            coverEl.src = profile.cover_image;
+        }
+
+        // Rating with Tooltip
+        const ratingValueEl = document.querySelector('.rating-value');
+        const ratingCountEl = document.querySelector('.rating-count');
+
+        if (ratingValueEl) ratingValueEl.textContent = profile.rating.toFixed(1);
+        if (ratingCountEl) ratingCountEl.textContent = `(${profile.rating_count} reviews)`;
+
+        // Update rating breakdown tooltip from database (using existing HTML structure)
+        // NO LONGER DYNAMICALLY INSERTING TOOLTIP - using pre-existing HTML in view-tutor.html
+        if (profile.rating_breakdown) {
+            const breakdown = profile.rating_breakdown;
+
+            // Map database fields to display elements
+            const mappings = [
+                { dbField: 'discipline', scoreId: 'rating-discipline', barId: 'bar-discipline' },
+                { dbField: 'punctuality', scoreId: 'rating-punctuality', barId: 'bar-punctuality' },
+                { dbField: 'knowledge_level', scoreId: 'rating-knowledge', barId: 'bar-knowledge' },
+                { dbField: 'communication_skills', scoreId: 'rating-communication', barId: 'bar-communication' }
+            ];
+
+            mappings.forEach(({ dbField, scoreId, barId }) => {
+                const scoreEl = document.getElementById(scoreId);
+                const barEl = document.getElementById(barId);
+
+                if (breakdown[dbField] !== undefined && breakdown[dbField] !== null) {
+                    const score = parseFloat(breakdown[dbField]);
+
+                    // Update score text
+                    if (scoreEl) {
+                        scoreEl.textContent = score.toFixed(1);
+                    }
+
+                    // Update progress bar width (score out of 5, so percentage is score * 20)
+                    if (barEl) {
+                        const percentage = (score / 5) * 100;
+                        barEl.style.width = `${percentage}%`;
+                    }
+                } else {
+                    // No data - show N/A
+                    if (scoreEl) {
+                        scoreEl.textContent = 'N/A';
+                    }
+                    if (barEl) {
+                        barEl.style.width = '0%';
+                    }
+                }
+            });
+
+            console.log('✅ Rating breakdown updated from database (view-tutor-db-loader.js):', breakdown);
+        }
+
+        // Stars
+        this.updateStars(profile.rating);
+
+        // Location
+        const locationEl = document.querySelector('.profile-location span:last-child');
+        if (locationEl) {
+            const locationParts = [];
+            if (profile.location) locationParts.push(profile.location);
+            if (profile.teaches_at) locationParts.push(profile.teaches_at);
+            locationEl.textContent = locationParts.length > 0 ? locationParts.join(' | ') : 'None';
+        }
+
+        // Contact Info
+        this.updateContactInfo(profile);
+
+        // Profile Info Grid
+        this.updateProfileInfoGrid(profile);
+
+        // Quote with proper spacing and empty state
+        const quoteEl = document.querySelector('.profile-quote');
+        if (quoteEl) {
+            if (profile.quote) {
+                quoteEl.innerHTML = `
+                    <span style="color: var(--text);">"${profile.quote}"</span>
+                `;
+                quoteEl.style.marginBottom = '1.5rem'; // Add spacing before About section
+            } else {
+                quoteEl.innerHTML = `
+                    <span style="color: var(--text-muted); font-style: italic;">No quote</span>
+                `;
+                quoteEl.style.marginBottom = '1.5rem'; // Add spacing before About section
+            }
+        }
+
+        // Bio/About
+        const aboutEl = document.querySelector('.profile-about p');
+        if (aboutEl) {
+            if (profile.bio) {
+                aboutEl.textContent = profile.bio;
+                aboutEl.style.fontStyle = 'normal';
+            } else {
+                aboutEl.textContent = 'No bio available';
+                aboutEl.style.fontStyle = 'italic';
+                aboutEl.style.color = 'var(--text-muted)';
+            }
+        }
+
+        // Social Links
+        if (profile.social_links) {
+            this.updateSocialLinks(profile.social_links);
+        }
+    }
+
+    /**
+     * Update star rating display (using unicode stars matching HTML styling)
+     */
+    updateStars(rating) {
+        const starsContainer = document.querySelector('.rating-stars');
+        if (!starsContainer) return;
+
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+
+        let starsHTML = '';
+        for (let i = 0; i < 5; i++) {
+            if (i < fullStars) {
+                // Filled star (unicode)
+                starsHTML += '★';
+            } else if (i === fullStars && hasHalfStar) {
+                // Half star (unicode) - using ⯨ for half-filled appearance
+                starsHTML += '⯨';
+            } else {
+                // Empty star (unicode)
+                starsHTML += '☆';
+            }
+        }
+        starsContainer.innerHTML = starsHTML;
+    }
+
+    /**
+     * Update contact information (matching view-parent.html card-based design)
+     * Always show cards with placeholder text if data is missing
+     */
+    updateContactInfo(profile) {
+        const contactContainer = document.querySelector('.profile-contact-info');
+        if (!contactContainer) return;
+
+        // Always show email card
+        const emailHTML = `
+            <div id="email-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                <span style="font-size: 1.25rem;">📧</span>
+                <div style="flex: 1; overflow: hidden;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Email</div>
+                    <div id="tutor-email" style="color: ${profile.email ? 'var(--text)' : 'var(--text-muted)'}; font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; ${!profile.email ? 'font-style: italic;' : ''}">${profile.email || 'Email will be displayed here'}</div>
+                </div>
+            </div>
+        `;
+
+        // Always show phone card
+        const phoneHTML = `
+            <div id="phone-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                <span style="font-size: 1.25rem;">📱</span>
+                <div style="flex: 1;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Phone</div>
+                    <div id="tutor-phone" style="color: ${profile.phone ? 'var(--text)' : 'var(--text-muted)'}; font-size: 0.875rem; font-weight: 500; ${!profile.phone ? 'font-style: italic;' : ''}">${profile.phone || 'Phone will be displayed here'}</div>
+                </div>
+            </div>
+        `;
+
+        contactContainer.innerHTML = emailHTML + phoneHTML;
+    }
+
+    /**
+     * Update profile info grid
+     */
+    updateProfileInfoGrid(profile) {
+        // Update Teaching Method - target value only, preserve label
+        const teachingMethodValue = document.getElementById('teaching-methods-inline');
+        if (teachingMethodValue) {
+            const sessionFormat = (profile.session_format || '').toLowerCase();
+            let teachingMethodsDisplay = 'Not specified';
+            if (sessionFormat === 'both') {
+                teachingMethodsDisplay = 'Online & In-person';
+            } else if (sessionFormat === 'online') {
+                teachingMethodsDisplay = 'Online';
+            } else if (sessionFormat === 'in-person' || sessionFormat === 'in person') {
+                teachingMethodsDisplay = 'In-person';
+            } else if (sessionFormat) {
+                teachingMethodsDisplay = sessionFormat.charAt(0).toUpperCase() + sessionFormat.slice(1);
+            }
+            teachingMethodValue.textContent = teachingMethodsDisplay;
+        }
+
+        // Update Grade Level - target value only, preserve label
+        const gradeLevelValue = document.getElementById('tutor-grade-level');
+        if (gradeLevelValue) {
+            const grades = profile.grades || profile.grade_level || [];
+            const gradeArray = Array.isArray(grades) ? grades : (grades ? [grades] : []);
+            if (gradeArray.length > 0) {
+                gradeLevelValue.textContent = gradeArray.join(', ');
+            } else {
+                gradeLevelValue.textContent = 'Not specified';
+            }
+        }
+
+        // Update Teaches At - target value only, preserve label
+        const teachesAtValue = document.getElementById('tutor-teaches-at-field');
+        if (teachesAtValue) {
+            teachesAtValue.textContent = profile.teaches_at || 'Not specified';
+        }
+
+        // Update Languages - target value only, preserve label (inline text version)
+        const languagesValue = document.getElementById('tutor-languages-inline');
+        if (languagesValue) {
+            const languages = profile.languages || profile.language || [];
+            const languageArray = Array.isArray(languages) ? languages : (languages ? [languages] : []);
+            if (languageArray.length > 0) {
+                languagesValue.textContent = languageArray.join(', ');
+            } else {
+                languagesValue.textContent = 'Not specified';
+            }
+        }
+
+        // Update Course Type - target value only, preserve label (Skills style)
+        const courseTypeValue = document.getElementById('tutor-course-type-field');
+        if (courseTypeValue) {
+            courseTypeValue.textContent = profile.course_type || 'Not specified';
+        }
+
+        // Update Subjects - create colorful badges (Skills style)
+        this.updateSubjectsBadges(profile.courses || profile.subjects || []);
+
+        // Update Experience - update badge in badges-row
+        const experience = profile.teaching_experience || profile.experience || 0;
+        this.updateExperience(experience);
+    }
+
+    /**
+     * Update subjects with comma-separated text (Contact Info style)
+     */
+    updateSubjectsBadges(subjects) {
+        const subjectsContainer = document.getElementById('tutor-subjects');
+        if (!subjectsContainer) {
+            console.warn('⚠️ Subjects container (#tutor-subjects) not found');
+            return;
+        }
+
+        // Handle both array and string formats
+        let subjectsText = '';
+        if (Array.isArray(subjects)) {
+            subjectsText = subjects.join(', ');
+        } else if (typeof subjects === 'string') {
+            subjectsText = subjects;
+        }
+
+        if (!subjectsText || subjectsText.trim() === '') {
+            subjectsContainer.textContent = 'Not specified';
+        } else {
+            subjectsContainer.textContent = subjectsText;
+        }
+
+        console.log(`✅ Updated subjects in view-tutor: ${subjectsText || 'Not specified'}`);
+    }
+
+    /**
+     * Update experience in badge and inline displays
+     */
+    updateExperience(years) {
+        // Update experience badge in badges-row (if exists)
+        const experienceBadge = document.getElementById('experience-badge');
+        if (experienceBadge) {
+            const yearsNum = parseInt(years) || 0;
+            const experienceText = yearsNum === 1 ? '1 Year' : `${yearsNum} Years`;
+            experienceBadge.textContent = `💼 ${experienceText} Experience`;
+            console.log(`✅ Updated experience badge: ${experienceText}`);
+        }
+
+        // Update inline experience displays (if any exist in profile header)
+        const inlineExperience = document.getElementById('tutor-years-experience');
+        if (inlineExperience) {
+            inlineExperience.textContent = years || 0;
+        }
+    }
+
+    /**
+     * Populate subjects, languages, and grades in profile-subjects-methods-grid
+     */
+    populateSubjectsLanguagesGrades(profile) {
+        // Populate Subjects
+        const subjectsContainer = document.querySelector('.profile-subjects-container');
+        if (subjectsContainer) {
+            const courses = (profile && Array.isArray(profile.courses)) ? profile.courses : [];
+
+            if (courses.length === 0) {
+                subjectsContainer.innerHTML = `
+                    <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-style: italic; font-size: 0.8125rem;">
+                        No subjects listed
+                    </div>
+                `;
+            } else {
+                subjectsContainer.innerHTML = courses.slice(0, 6).map(course => `
+                    <span class="subject-tag" style="padding: 0.4rem 0.875rem; background: var(--card-bg); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; font-size: 0.8125rem; font-weight: 600; color: var(--heading); display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; white-space: nowrap;">
+                        ${course}
+                    </span>
+                `).join('');
+            }
+        }
+
+        // Populate Languages
+        const languagesContainer = document.querySelector('.profile-languages-container');
+        if (languagesContainer) {
+            const languages = profile.languages || profile.language || [];
+            const languageArray = Array.isArray(languages) ? languages : (languages ? [languages] : []);
+
+            if (languageArray.length === 0) {
+                languagesContainer.innerHTML = `
+                    <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-style: italic; font-size: 0.8125rem;">
+                        No languages listed
+                    </div>
+                `;
+            } else {
+                languagesContainer.innerHTML = languageArray.map(lang => `
+                    <span class="language-tag" style="padding: 0.4rem 0.875rem; background: var(--card-bg); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 16px; font-size: 0.8125rem; font-weight: 600; color: var(--heading); display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; white-space: nowrap;">
+                        ${lang}
+                    </span>
+                `).join('');
+            }
+        }
+
+        // Populate Grade Levels
+        const gradesContainer = document.querySelector('.profile-grades-container');
+        if (gradesContainer) {
+            const grades = profile.grades || profile.grade_level || [];
+            const gradeArray = Array.isArray(grades) ? grades : (grades ? [grades] : []);
+
+            if (gradeArray.length === 0) {
+                gradesContainer.innerHTML = `
+                    <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-style: italic; font-size: 0.8125rem;">
+                        No grade levels listed
+                    </div>
+                `;
+            } else {
+                gradesContainer.innerHTML = gradeArray.map(grade => `
+                    <span class="grade-tag" style="padding: 0.4rem 0.875rem; background: var(--card-bg); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 16px; font-size: 0.8125rem; font-weight: 600; color: var(--heading); display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease; white-space: nowrap;">
+                        ${grade}
+                    </span>
+                `).join('');
+            }
+        }
+    }
+
+    /**
+     * Populate teaching methods in profile header
+     */
+    populateTeachingMethods(profile) {
+        const methodsContainer = document.querySelector('.profile-methods-container');
+        if (!methodsContainer) return;
+
+        const methods = [];
+        const sessionFormat = (profile.session_format || '').toLowerCase();
+
+        // Only add methods if session_format is explicitly set
+        if (sessionFormat === 'both') {
+            methods.push({ name: '🌐 Online', color: '#3b82f6' });
+            methods.push({ name: '🏫 In-person', color: '#10b981' });
+        } else if (sessionFormat === 'online') {
+            methods.push({ name: '🌐 Online', color: '#3b82f6' });
+        } else if (sessionFormat === 'in-person' || sessionFormat === 'in person') {
+            methods.push({ name: '🏫 In-person', color: '#10b981' });
+        }
+
+        // Add self-paced if available
+        if (profile.self_paced) {
+            methods.push({ name: '📖 Self-paced', color: '#8b5cf6' });
+        }
+
+        if (methods.length === 0) {
+            methodsContainer.innerHTML = `
+                <div style="padding: 0.5rem; text-align: center; color: var(--text-muted); font-style: italic; font-size: 0.8125rem;">
+                    No teaching methods listed
+                </div>
+            `;
+            return;
+        }
+
+        methodsContainer.innerHTML = methods.map(method => `
+            <span class="method-tag" style="padding: 0.4rem 0.875rem; background: linear-gradient(135deg, ${method.color} 0%, ${method.color}dd 100%); color: white; border-radius: 16px; font-size: 0.8125rem; font-weight: 600; box-shadow: 0 2px 6px ${method.color}33; transition: all 0.3s ease; display: inline-flex; align-items: center; white-space: nowrap;">
+                ${method.name}
+            </span>
+        `).join('');
+    }
+
+    /**
+     * Update social links with beautiful theme-matching styling
+     */
+    updateSocialLinks(socialLinks) {
+        if (!socialLinks || Object.keys(socialLinks).length === 0) return;
+
+        const socialContainer = document.querySelector('.profile-social-links');
+        if (!socialContainer) return;
+
+        let socialHTML = '';
+        const platforms = {
+            facebook: { icon: 'fab fa-facebook-f' },
+            linkedin: { icon: 'fab fa-linkedin-in' },
+            instagram: { icon: 'fab fa-instagram' },
+            twitter: { icon: 'fab fa-twitter' }
+        };
+
+        Object.keys(platforms).forEach(platform => {
+            if (socialLinks[platform]) {
+                const config = platforms[platform];
+
+                socialHTML += `
+                    <a href="${socialLinks[platform]}" target="_blank" rel="noopener noreferrer"
+                       class="social-link social-${platform}"
+                       style="display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; background: linear-gradient(135deg, var(--button-bg), var(--button-hover)); color: white; border-radius: 50%; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(var(--button-bg-rgb), 0.3);"
+                       onmouseover="this.style.transform='translateY(-3px) scale(1.1)'; this.style.boxShadow='0 6px 16px rgba(var(--button-bg-rgb), 0.5)';"
+                       onmouseout="this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 12px rgba(var(--button-bg-rgb), 0.3)';">
+                        <i class="${config.icon}" style="font-size: 1.125rem;"></i>
+                    </a>
+                `;
+            }
+        });
+
+        if (socialHTML) {
+            socialContainer.innerHTML = socialHTML;
+        }
+    }
+
+    /**
+     * Populate Quick Stats Section
+     */
+    populateQuickStats() {
+        const stats = this.data.stats;
+        const profile = this.data.profile;
+        if (!stats || !profile) return;
+
+        const statsContainer = document.querySelector('.quick-stats-grid');
+        if (!statsContainer) return;
+
+        // Beautiful stat cards with gradient accents and proper styling
+        // Format session format for display
+        const sessionFormat = (profile.session_format || '').toLowerCase();
+        let sessionFormatDisplay = 'Not set';
+        if (sessionFormat === 'both') {
+            sessionFormatDisplay = 'Online & In-person';
+        } else if (sessionFormat === 'online') {
+            sessionFormatDisplay = 'Online';
+        } else if (sessionFormat === 'in-person' || sessionFormat === 'in person') {
+            sessionFormatDisplay = 'In-person';
+        }
+
+        const statCards = [
+            {
+                icon: '🎓',
+                label: 'Students Taught',
+                value: profile.students_taught || 0,
+                gradient: 'linear-gradient(90deg, #06b6d4, #3b82f6)',
+                bgColor: 'rgba(6, 182, 212, 0.05)'
+            },
+            {
+                icon: '👥',
+                label: 'Active Students',
+                value: stats.active_students || 0,
+                gradient: 'linear-gradient(90deg, #f59e0b, #ef4444)',
+                bgColor: 'rgba(245, 158, 11, 0.05)'
+            },
+            {
+                icon: '⭐',
+                label: 'Success Rate',
+                value: `${profile.success_rate || 0}%`,
+                gradient: 'linear-gradient(90deg, #f59e0b, #d97706)',
+                bgColor: 'rgba(245, 158, 11, 0.05)'
+            },
+            {
+                icon: '⏱️',
+                label: 'Response Time',
+                value: stats.response_time || 'N/A',
+                gradient: 'linear-gradient(90deg, #3b82f6, #8b5cf6)',
+                bgColor: 'rgba(59, 130, 246, 0.05)'
+            },
+        ];
+
+        statsContainer.innerHTML = statCards.map((stat, index) => `
+            <div class="stat-card" style="
+                position: relative;
+                padding: 1.5rem;
+                background: var(--card-bg);
+                border-radius: 16px;
+                overflow: hidden;
+                transition: all 0.3s ease;
+                animation: fadeInUp 0.6s ease-out backwards;
+                animation-delay: ${index * 0.1}s;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+                cursor: pointer;
+                border: 1px solid rgba(0, 0, 0, 0.05);
+            " onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 10px 40px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 20px rgba(0, 0, 0, 0.05)';">
+                <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: ${stat.gradient};"></div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">${stat.icon}</div>
+                    <div style="font-size: 1.875rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">${stat.value}</div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted); font-weight: 500;">${stat.label}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Populate Success Stories Section (from reviews)
+     * Uses fallback logic: Try featured reviews first, then high-rated reviews
+     * Shows 2 cards in a row with fade carousel animation
+     */
+    populateSuccessStoriesSection() {
+        // Try to get featured reviews first
+        let reviews = this.data.reviews.filter(r => r.is_featured);
+
+        // Fallback: If no featured reviews, use high-rated reviews (>= 4 stars)
+        if (reviews.length === 0) {
+            reviews = this.data.reviews.filter(r => r.rating >= 4);
+        }
+
+        const storiesContainer = document.querySelector('.success-stories-grid');
+        if (!storiesContainer) return;
+
+        if (reviews.length === 0) {
+            storiesContainer.innerHTML = `
+                <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-style: italic;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📝</div>
+                    <p style="font-size: 1.125rem;">No reviews yet</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">Be the first to leave a review!</p>
+                </div>
+            `;
+            return;
+        }
+
+        const colors = ['blue', 'green', 'purple', 'orange'];
+
+        // Create all review cards (hidden initially)
+        const allCards = reviews.map((review, index) => {
+            // Default profile picture if none provided - use avatar generator
+            const reviewerName = review.reviewer_name || 'Anonymous';
+            const profilePic = review.reviewer_picture || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(reviewerName) + '&background=4F46E5&color=fff&size=128';
+
+            // Build student name with grade
+            const studentName = `${reviewerName}${review.reviewer_grade ? ` - ${review.reviewer_grade}` : ''}`;
+
+            return `
+                <div class="success-story" data-review-index="${index}" style="border-left-color: var(--${colors[index % 4]}); display: none;">
+                    <div class="story-header">
+                        <img src="${profilePic}"
+                             alt="${review.reviewer_name}"
+                             class="story-avatar"
+                             onerror="this.style.display='none'; this.onerror=null;">
+                        <div class="story-header-info">
+                            <div class="story-student" data-full-name="${studentName}">
+                                <span class="story-student-inner">${studentName}</span>
+                            </div>
+                            <div class="story-rating">${'⭐'.repeat(Math.round(review.rating))}</div>
+                        </div>
+                    </div>
+                    <div class="story-quote">"${review.review_text}"</div>
+                    <div class="story-time">${this.getTimeAgo(review.created_at)}</div>
+                </div>
+            `;
+        }).join('');
+
+        storiesContainer.innerHTML = allCards;
+
+        // Show first 2 cards
+        const storyCards = storiesContainer.querySelectorAll('.success-story');
+        if (storyCards.length > 0) {
+            storyCards[0].style.display = 'block';
+            storyCards[0].style.opacity = '1';
+        }
+        if (storyCards.length > 1) {
+            storyCards[1].style.display = 'block';
+            storyCards[1].style.opacity = '1';
+        }
+
+        // Add marquee class to long names
+        this.detectLongNames();
+
+        // Only start carousel if more than 2 reviews
+        if (reviews.length > 2) {
+            this.startSuccessStoriesCarousel(reviews.length);
+        }
+    }
+
+    /**
+     * Start carousel animation for success stories
+     * Fades between pairs of reviews every 5 seconds
+     */
+    startSuccessStoriesCarousel(totalReviews) {
+        let currentPairIndex = 0;
+        const totalPairs = Math.ceil(totalReviews / 2);
+
+        setInterval(() => {
+            const storiesContainer = document.querySelector('.success-stories-grid');
+            if (!storiesContainer) return;
+
+            const storyCards = storiesContainer.querySelectorAll('.success-story');
+            if (storyCards.length === 0) return;
+
+            // Fade out current pair
+            const currentStart = currentPairIndex * 2;
+            const currentEnd = Math.min(currentStart + 2, totalReviews);
+
+            for (let i = currentStart; i < currentEnd; i++) {
+                if (storyCards[i]) {
+                    storyCards[i].style.transition = 'opacity 0.5s ease-in-out';
+                    storyCards[i].style.opacity = '0';
+                    setTimeout(() => {
+                        storyCards[i].style.display = 'none';
+                    }, 500);
+                }
+            }
+
+            // Move to next pair
+            currentPairIndex = (currentPairIndex + 1) % totalPairs;
+
+            // Fade in next pair
+            const nextStart = currentPairIndex * 2;
+            const nextEnd = Math.min(nextStart + 2, totalReviews);
+
+            setTimeout(() => {
+                for (let i = nextStart; i < nextEnd; i++) {
+                    if (storyCards[i]) {
+                        storyCards[i].style.display = 'block';
+                        storyCards[i].style.opacity = '0';
+                        setTimeout(() => {
+                            storyCards[i].style.transition = 'opacity 0.5s ease-in-out';
+                            storyCards[i].style.opacity = '1';
+                        }, 50);
+                    }
+                }
+            }, 500);
+
+        }, 5000); // Change every 5 seconds
+    }
+
+    /**
+     * Detect long student names and add marquee class
+     */
+    detectLongNames() {
+        const studentNames = document.querySelectorAll('.story-student');
+        studentNames.forEach(nameElement => {
+            const inner = nameElement.querySelector('.story-student-inner');
+            if (inner && inner.scrollWidth > nameElement.clientWidth) {
+                nameElement.classList.add('long-name');
+            }
+        });
+    }
+
+    /**
+     * Populate Reviews Panel
+     */
+    populateReviewsPanel() {
+        const reviews = this.data.reviews.slice(0, 10);
+        const reviewsPanel = document.getElementById('reviews-panel');
+        if (!reviewsPanel) return;
+
+        const reviewsContainer = reviewsPanel.querySelector('.reviews-list') ||
+                                reviewsPanel.querySelector('.panel-content');
+        if (!reviewsContainer) return;
+
+        if (reviews.length === 0) {
+            reviewsContainer.innerHTML = '<p class="no-data">No reviews yet.</p>';
+            return;
+        }
+
+        reviewsContainer.innerHTML = reviews.map(review => {
+            const reviewerName = review.reviewer_name || 'Anonymous';
+            const defaultPic = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(reviewerName) + '&background=4F46E5&color=fff&size=128';
+            return `
+            <div class="review-card">
+                <div class="review-header">
+                    <img src="${review.reviewer_picture || defaultPic}"
+                         alt="${reviewerName}" class="reviewer-avatar">
+                    <div class="reviewer-info">
+                        <div class="reviewer-name">${review.reviewer_name}</div>
+                        <div class="review-date">${this.formatDate(review.created_at)}</div>
+                    </div>
+                    <div class="review-rating">${this.getStarsHTML(review.rating)}</div>
+                </div>
+                ${review.title ? `<div class="review-title">${review.title}</div>` : ''}
+                <div class="review-text">${review.review_text}</div>
+                ${review.is_verified ? '<span class="verified-badge">✓ Verified</span>' : ''}
+            </div>
+        `}).join('');
+    }
+
+    /**
+     * Populate Certifications Panel
+     */
+    populateCertificationsPanel() {
+        const certificates = this.data.certificates; // Backend already filters by is_active=TRUE
+        const grid = document.getElementById('certifications-grid');
+        if (!grid) return;
+
+        if (certificates.length === 0) {
+            grid.innerHTML = `
+                <div class="text-center text-gray-500 py-12 col-span-full">
+                    <p class="text-lg">No certifications to display.</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = certificates.map(cert => `
+            <div class="card p-6 cursor-pointer hover:shadow-lg transition-shadow" onclick="viewCertificationDetails(${cert.id})">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-xl font-bold mb-2">${cert.name}</h3>
+                        <p class="text-gray-600 mb-1">${cert.issuing_organization}</p>
+                        ${cert.field_of_study ? `<p class="text-sm text-gray-500">${cert.field_of_study}</p>` : ''}
+                    </div>
+                    ${cert.is_verified ? '<span class="text-green-500 text-2xl">✓</span>' : ''}
+                </div>
+
+                ${cert.certificate_image_url ? `
+                    <div class="mb-4">
+                        <img src="${cert.certificate_image_url}" alt="${cert.name}"
+                            class="w-full rounded-lg border-2">
+                    </div>
+                ` : ''}
+
+                <div class="text-sm text-gray-600 space-y-1">
+                    ${cert.issue_date ? `
+                        <p>📅 Issued: ${new Date(cert.issue_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short'
+                        })}</p>
+                    ` : ''}
+                    ${cert.expiry_date ? `
+                        <p>⏰ Expires: ${new Date(cert.expiry_date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short'
+                        })}</p>
+                    ` : ''}
+                    ${cert.credential_id ? `<p>🔑 ID: ${cert.credential_id}</p>` : ''}
+                </div>
+
+                ${cert.description ? `
+                    <p class="text-gray-700 mt-3 line-clamp-3">${cert.description}</p>
+                ` : ''}
+
+                <button onclick="event.stopPropagation(); viewCertificationDetails(${cert.id})" class="btn-secondary text-sm mt-4 w-full">View Details</button>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Populate Experience Panel
+     */
+    populateExperiencePanel() {
+        const experiences = this.data.experience; // Show all experience (no is_verified field)
+        const grid = document.getElementById('experience-timeline');
+        if (!grid) return;
+
+        if (experiences.length === 0) {
+            grid.innerHTML = `
+                <div class="text-center text-gray-500 py-12 col-span-full">
+                    <p class="text-lg">No experience to display.</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = experiences.map(exp => {
+            const startDate = exp.start_date ? new Date(exp.start_date) : null;
+            const endDate = exp.end_date ? new Date(exp.end_date) : null;
+
+            return `
+                <div class="card p-6 border-l-4 border-blue-500 cursor-pointer hover:shadow-lg transition-shadow" onclick="viewExperienceDetails(${exp.id})">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold">${exp.job_title}</h3>
+                            <p class="text-lg text-gray-700">${exp.institution}</p>
+                            ${exp.location ? `<p class="text-sm text-gray-600">${exp.location}</p>` : ''}
+                        </div>
+                        ${exp.is_current ? `
+                            <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold">
+                                Current
+                            </span>
+                        ` : ''}
+                    </div>
+
+                    <div class="text-sm text-gray-600 mb-3">
+                        <p>📅 ${startDate ? startDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short'
+                        }) : 'N/A'} - ${exp.is_current ? 'Present' : (endDate ? endDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short'
+                        }) : 'N/A')}</p>
+                        ${exp.employment_type ? `<p>💼 ${exp.employment_type}</p>` : ''}
+                    </div>
+
+                    ${exp.description ? `
+                        <p class="text-gray-700 mb-3 line-clamp-3">${exp.description}</p>
+                    ` : ''}
+
+                    <button onclick="event.stopPropagation(); viewExperienceDetails(${exp.id})" class="btn-secondary text-sm mt-4 w-full">View Details</button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Populate Achievements Panel
+     */
+    populateAchievementsPanel() {
+        const achievements = this.data.achievements; // Show all achievements (no is_verified field)
+        const grid = document.getElementById('achievements-grid');
+        if (!grid) return;
+
+        if (achievements.length === 0) {
+            grid.innerHTML = `
+                <div class="text-center text-gray-500 py-12 col-span-full">
+                    <p class="text-lg">No achievements to display.</p>
+                </div>
+            `;
+            return;
+        }
+
+        grid.innerHTML = achievements.map(ach => `
+            <div class="card p-6 text-center cursor-pointer hover:shadow-lg transition-shadow" style="border-color: ${ach.color || 'gold'}; border-width: 2px;" onclick="viewAchievementDetails(${ach.id})">
+                <div class="text-6xl mb-3">${ach.icon || '🏆'}</div>
+                ${ach.is_featured ? '<div class="text-yellow-500 text-sm font-bold mb-2">⭐ FEATURED</div>' : ''}
+                <h3 class="text-lg font-bold mb-2">${ach.title}</h3>
+                <p class="text-sm text-gray-600 mb-2">${ach.category || 'achievement'}</p>
+                ${ach.year ? `<p class="text-sm font-semibold">${ach.year}</p>` : ''}
+                ${ach.issuer ? `<p class="text-sm text-gray-600 mt-2">${ach.issuer}</p>` : ''}
+                ${ach.description ? `<p class="text-sm text-gray-700 mt-3 line-clamp-3">${ach.description}</p>` : ''}
+                <button onclick="event.stopPropagation(); viewAchievementDetails(${ach.id})" class="btn-secondary text-sm mt-4 w-full">View Details</button>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Populate Videos Panel
+     */
+    populateVideosPanel() {
+        const videos = this.data.videos;
+        const videosPanel = document.getElementById('videos-panel');
+        if (!videosPanel) return;
+
+        const videosContainer = videosPanel.querySelector('.videos-grid') ||
+                               videosPanel.querySelector('.panel-content');
+        if (!videosContainer) return;
+
+        if (videos.length === 0) {
+            videosContainer.innerHTML = '<p class="no-data">No videos available.</p>';
+            return;
+        }
+
+        videosContainer.innerHTML = videos.map(video => `
+            <div class="video-card">
+                <div class="video-thumbnail">
+                    <img src="${video.thumbnail_url || '../uploads/system_images/video-placeholder.jpg'}"
+                         alt="${video.title}">
+                    <div class="video-duration">${video.duration_display || '0:00'}</div>
+                    <div class="video-play-btn" onclick="playVideo('${video.video_url}')">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="video-info">
+                    <h4>${video.title}</h4>
+                    ${video.description ? `<p>${video.description.substring(0, 100)}...</p>` : ''}
+                    <div class="video-stats">
+                        <span><i class="fas fa-eye"></i> ${video.view_count || 0}</span>
+                        <span><i class="fas fa-thumbs-up"></i> ${video.like_count || 0}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    /**
+     * Populate Packages Panel
+     * Loads packages from tutor_packages table dynamically
+     */
+    populatePackagesPanel() {
+        const packages = this.data.packages;
+        const packagesPanel = document.getElementById('packages-panel');
+        if (!packagesPanel) return;
+
+        const packagesContainer = packagesPanel.querySelector('.packages-grid');
+        if (!packagesContainer) return;
+
+        if (packages.length === 0) {
+            packagesContainer.innerHTML = `
+                <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted); font-style: italic; grid-column: 1 / -1;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">📦</div>
+                    <p style="font-size: 1.125rem;">No packages available</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">This tutor hasn't created any packages yet.</p>
+                </div>
+            `;
+            return;
+        }
+
+        packagesContainer.innerHTML = packages.map((pkg, index) => {
+            // Calculate features based on package data
+            const features = [];
+
+            // 1. COURSES (Subjects taught)
+            if (pkg.courses) {
+                const coursesText = typeof pkg.courses === 'string'
+                    ? pkg.courses
+                    : (Array.isArray(pkg.courses) ? pkg.courses.join(', ') : '');
+                if (coursesText) {
+                    features.push(`<strong>📚 Courses:</strong> ${coursesText}`);
+                }
+            }
+
+            // 2. Session duration
+            if (pkg.duration_minutes || pkg.hours_per_day) {
+                const hours = pkg.hours_per_day || Math.floor(pkg.duration_minutes / 60);
+                const mins = pkg.duration_minutes ? pkg.duration_minutes % 60 : 0;
+                const durationText = hours > 0
+                    ? `${hours} hour${hours > 1 ? 's' : ''}${mins > 0 ? ` ${mins} min` : ''}`
+                    : `${mins} minutes`;
+                features.push(`✔ ${durationText} per session`);
+            }
+
+            // 3. SCHEDULE TYPE with days and times
+            if (pkg.schedule_type || pkg.recurring_days || pkg.start_time) {
+                let scheduleText = '';
+
+                if (pkg.schedule_type === 'recurring') {
+                    const days = pkg.recurring_days && pkg.recurring_days.length > 0
+                        ? pkg.recurring_days.join(', ')
+                        : `${pkg.days_per_week || 0} days/week`;
+
+                    scheduleText = `<strong>📅 Schedule:</strong> ${days}`;
+
+                    // Add time range if available
+                    if (pkg.start_time && pkg.end_time) {
+                        const startTime = pkg.start_time.substring(0, 5); // HH:MM
+                        const endTime = pkg.end_time.substring(0, 5);
+                        scheduleText += ` (${startTime} - ${endTime})`;
+                    }
+                } else if (pkg.schedule_type === 'flexible') {
+                    scheduleText = '<strong>📅 Schedule:</strong> Flexible';
+                } else if (pkg.days_per_week) {
+                    scheduleText = `<strong>📅 Schedule:</strong> ${pkg.days_per_week} days/week`;
+                }
+
+                if (scheduleText) {
+                    features.push(scheduleText);
+                }
+            }
+
+            // 4. Total sessions (if applicable)
+            if (pkg.total_sessions) {
+                features.push(`✔ ${pkg.total_sessions} sessions/month`);
+            }
+
+            // 5. Session format
+            if (pkg.session_format) {
+                const formatText = pkg.session_format.toLowerCase() === 'both'
+                    ? 'Online & In-person'
+                    : pkg.session_format.charAt(0).toUpperCase() + pkg.session_format.slice(1);
+                features.push(`✔ ${formatText}`);
+            }
+
+            // 6. Grade level
+            if (pkg.grade_level) {
+                features.push(`✔ ${pkg.grade_level}`);
+            }
+
+            // 7. PAYMENT FREQUENCY
+            if (pkg.payment_frequency) {
+                const paymentText = pkg.payment_frequency === '2-weeks'
+                    ? 'Bi-weekly'
+                    : pkg.payment_frequency.charAt(0).toUpperCase() + pkg.payment_frequency.slice(1);
+                features.push(`<strong>💳 Payment:</strong> ${paymentText}`);
+            }
+
+            // Price display - use session_price for cleaner display
+            const price = pkg.session_price || pkg.package_price || 0;
+            const priceText = Math.round(price);
+
+            // Build discount badges
+            const discounts = [];
+            if (pkg.discount_1_month > 0) {
+                discounts.push({ period: '1 Month', discount: pkg.discount_1_month, color: '#10b981' });
+            }
+            if (pkg.discount_6_month > 0) {
+                discounts.push({ period: '6 Months', discount: pkg.discount_6_month, color: '#3b82f6' });
+            }
+            if (pkg.discount_12_month > 0) {
+                discounts.push({ period: '1 Year', discount: pkg.discount_12_month, color: '#8b5cf6' });
+            }
+
+            const discountBadgesHTML = discounts.length > 0
+                ? `<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; margin-bottom: 0.75rem;">
+                    ${discounts.map(d => `
+                        <span style="background: ${d.color}; color: white; padding: 0.375rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            🎁 ${d.discount}% OFF - ${d.period}
+                        </span>
+                    `).join('')}
+                   </div>`
+                : '';
+
+            return `
+                <div class="border rounded-lg p-6 hover:shadow-xl transition-all duration-300" style="background: var(--card-bg); border: 2px solid var(--border-color, #e5e7eb); position: relative; overflow: hidden;">
+                    ${discounts.length > 0 ? '<div style="position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 700; border-bottom-left-radius: 8px;">🔥 DISCOUNTS</div>' : ''}
+
+                    <h4 class="font-semibold text-lg mb-2" style="color: var(--heading); margin-top: ${discounts.length > 0 ? '1.5rem' : '0'};">${pkg.name || 'Package ' + (index + 1)}</h4>
+                    <p class="text-2xl font-bold mb-2" style="color: #3b82f6;">ETB ${priceText}/session</p>
+
+                    ${discountBadgesHTML}
+
+                    ${pkg.description ? `<p class="text-sm mb-4" style="color: var(--text-muted); line-height: 1.6;">${pkg.description}</p>` : ''}
+
+                    <ul class="space-y-2 mb-6" style="color: var(--text); line-height: 1.8;">
+                        ${features.map(feature => `<li class="text-sm">${feature}</li>`).join('')}
+                        ${features.length === 0 ? '<li class="text-sm" style="font-style: italic; color: var(--text-muted);">No details available</li>' : ''}
+                    </ul>
+
+                    <button onclick="openPackageDetailsModal(${pkg.id}, '${pkg.name || 'Package ' + (index + 1)}'); return false;"
+                        class="w-full py-2 rounded-lg transition-all duration-300"
+                        style="background: #3b82f6; color: white; border: none; font-weight: 600; cursor: pointer;"
+                        onmouseover="this.style.background='#2563eb'"
+                        onmouseout="this.style.background='#3b82f6'">
+                        <i class="fas fa-info-circle"></i> View Details
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Populate Success Stories Widget (right sidebar)
+     */
+    populateSuccessWidget() {
+        const reviews = this.data.reviews.filter(r => r.rating >= 4).slice(0, 6);
+        const widget = document.querySelector('.success-ticker');
+        const tickerContainer = document.querySelector('.success-ticker-container');
+
+        if (!widget) return;
+
+        if (reviews.length === 0) {
+            // Remove ticker animation class if it exists
+            if (tickerContainer) {
+                tickerContainer.style.height = 'auto';
+                tickerContainer.style.overflow = 'visible';
+            }
+
+            widget.innerHTML = `
+                <div style="text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-style: italic;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;">⭐</div>
+                    <p>No reviews yet</p>
+                </div>
+            `;
+
+            // Remove animation if applied
+            widget.style.animation = 'none';
+            return;
+        }
+
+        // Emoji colors for variety (matching HTML design)
+        const emojiColors = ['#22c55e', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444', '#10b981'];
+        const emojis = ['✨', '🎯', '🏆', '📈', '💡', '⭐'];
+
+        // Duplicate first item at the end for seamless loop
+        const reviewsWithDuplicate = [...reviews];
+        if (reviews.length > 1) {
+            reviewsWithDuplicate.push(reviews[0]);
+        }
+
+        widget.innerHTML = reviewsWithDuplicate.map((review, index) => {
+            const emoji = emojis[index % emojis.length];
+            const emojiColor = emojiColors[index % emojiColors.length];
+            const reviewText = review.review_text.length > 100 ?
+                review.review_text.substring(0, 100) + '...' :
+                review.review_text;
+
+            return `
+                <div class="success-story-item" style="display: flex; gap: 0.75rem; padding: 1rem 0; border-bottom: 1px solid var(--border-color, #e5e7eb);">
+                    <span style="color: ${emojiColor}; font-size: 1.25rem; flex-shrink: 0;">${emoji}</span>
+                    <div style="flex: 1;">
+                        <p style="color: var(--heading); font-weight: 600; font-size: 0.875rem; margin-bottom: 0.25rem;">
+                            ${review.title || review.reviewer_name || 'Student Review'}
+                        </p>
+                        <p style="font-size: 0.75rem; color: var(--text-muted, #6b7280); line-height: 1.5;">
+                            "${reviewText}" ${review.reviewer_name ? `- ${review.reviewer_name}` : ''}
+                        </p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Populate Subjects Widget
+     */
+    populateSubjectsWidget() {
+        const profile = this.data.profile;
+        const widget = document.querySelector('.subjects-ticker');
+        const tickerContainer = widget?.closest('.success-ticker-container');
+
+        if (!widget) return;
+
+        const courses = (profile && Array.isArray(profile.courses)) ? profile.courses : [];
+
+        if (courses.length === 0) {
+            // Remove ticker animation when no subjects
+            if (tickerContainer) {
+                tickerContainer.style.height = 'auto';
+                tickerContainer.style.overflow = 'visible';
+            }
+
+            widget.innerHTML = `
+                <div style="text-align: center; padding: 2rem 1rem; color: var(--text-secondary); font-style: italic;">
+                    No subjects listed
+                </div>
+            `;
+
+            // Remove animation
+            widget.style.animation = 'none';
+            return;
+        }
+
+        // If only 1 subject, disable animation
+        if (courses.length === 1) {
+            if (tickerContainer) {
+                tickerContainer.style.height = 'auto';
+                tickerContainer.style.overflow = 'visible';
+            }
+            widget.style.animation = 'none';
+        } else {
+            // Re-enable animation for multiple subjects
+            if (tickerContainer) {
+                tickerContainer.style.height = '120px';
+                tickerContainer.style.overflow = 'hidden';
+            }
+            widget.style.animation = '';
+        }
+
+        // Subject emojis and colors (matching beautiful design)
+        const subjectEmojis = ['📐', '🧪', '📚', '🌍', '💻', '🎨', '🎭', '⚽', '🎵', '🔬'];
+        const gradientColors = [
+            { from: '#3b82f6', to: '#2563eb' },
+            { from: '#10b981', to: '#059669' },
+            { from: '#8b5cf6', to: '#7c3aed' },
+            { from: '#f59e0b', to: '#d97706' },
+            { from: '#ef4444', to: '#dc2626' },
+            { from: '#06b6d4', to: '#0891b2' }
+        ];
+
+        // Duplicate first item at the end for seamless loop
+        const coursesLimited = courses.slice(0, 6);
+        const coursesWithDuplicate = [...coursesLimited];
+        if (coursesLimited.length > 1) {
+            coursesWithDuplicate.push(coursesLimited[0]);
+        }
+
+        widget.innerHTML = coursesWithDuplicate.map((course, index) => {
+            const emoji = subjectEmojis[index % subjectEmojis.length];
+            const gradient = gradientColors[index % gradientColors.length];
+
+            return `
+                <div class="success-story-item" style="display: flex; gap: 0.75rem; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color, #e5e7eb);">
+                    <div style="width: 50px; height: 50px; background: linear-gradient(135deg, ${gradient.from} 0%, ${gradient.to} 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);">
+                        <span style="font-size: 1.5rem;">${emoji}</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <p style="color: var(--heading); font-weight: 600; font-size: 0.95rem; margin: 0;">${course}</p>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Populate Pricing Widget
+     */
+    populatePricingWidget() {
+        const packages = this.data.packages;
+        const profile = this.data.profile;
+        const widget = document.querySelector('.pricing-widget');
+        if (!widget) return;
+
+        // Check if we have any pricing data
+        let priceDisplay = 'Not set';
+
+        if (packages.length > 0) {
+            const prices = packages.map(p => p.package_price || p.session_price || 0).filter(p => p > 0);
+            if (prices.length > 0) {
+                const minPrice = Math.min(...prices);
+                const maxPrice = Math.max(...prices);
+                priceDisplay = minPrice === maxPrice ?
+                    `ETB ${minPrice}` :
+                    `ETB ${minPrice}-${maxPrice}`;
+            }
+        } else if (profile && profile.price && profile.price > 0) {
+            priceDisplay = `ETB ${profile.price}`;
+        }
+
+        // Generate styled HTML matching the beautiful design from HTML
+        widget.innerHTML = `
+            <div class="widget-header" style="margin-bottom: 1rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">💰 Pricing</h3>
+            </div>
+            <div class="pricing-content" style="text-align: center;">
+                <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">${priceDisplay}</div>
+                <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 1.5rem;">per session</div>
+                <button onclick="switchPanel('packages')"
+                    style="width: 100%; padding: 0.875rem; background: white; color: #059669; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                    View Packages
+                </button>
+            </div>
+        `;
+    }
+
+    /**
+     * Populate Availability Widget
+     */
+    populateAvailabilityWidget() {
+        const availability = this.data.weekAvailability;
+        const widget = document.querySelector('.availability-schedule');
+        if (!widget) return;
+
+        if (!availability || availability.length === 0) {
+            widget.innerHTML = `
+                <div style="text-align: center; padding: 1.5rem; color: var(--text-secondary); font-style: italic; font-size: 0.875rem;">
+                    No schedule set
+                </div>
+            `;
+            return;
+        }
+
+        // Status styling configuration matching the beautiful HTML design
+        const statusConfig = {
+            'available': {
+                bg: 'rgba(34, 197, 94, 0.1)',
+                border: '#22c55e',
+                color: '#22c55e',
+                label: 'Available'
+            },
+            'limited': {
+                bg: 'rgba(251, 191, 36, 0.1)',
+                border: '#fbbf24',
+                color: '#fbbf24',
+                label: 'Limited'
+            },
+            'booked': {
+                bg: 'rgba(239, 68, 68, 0.1)',
+                border: '#ef4444',
+                color: '#ef4444',
+                label: 'Booked'
+            },
+            'unavailable': {
+                bg: 'rgba(156, 163, 175, 0.1)',
+                border: '#9ca3af',
+                color: '#9ca3af',
+                label: 'Unavailable'
+            }
+        };
+
+        widget.innerHTML = availability.map(day => {
+            const shortDay = day.day.substring(0, 3);
+            const status = day.status || 'unavailable';
+            const config = statusConfig[status] || statusConfig['unavailable'];
+
+            return `
+                <div class="schedule-day"
+                    style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-radius: 8px; background: ${config.bg}; border-left: 3px solid ${config.border};">
+                    <span style="font-weight: 600; color: var(--text);">${shortDay}</span>
+                    <span style="font-size: 0.875rem; color: ${config.color}; font-weight: 600;">${config.label}</span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    /**
+     * Populate Achievements Widget (right sidebar)
+     * Shows max 2 achievements with "View All" button when achievements exist
+     */
+    populateAchievementsWidget() {
+        // Get max 2 achievements (prioritize featured ones)
+        const allAchievements = this.data.achievements;
+        const displayAchievements = allAchievements.slice(0, 2);
+        const widgetContainer = document.querySelector('.achievements-sidebar-widget');
+        const achievementsList = document.querySelector('.achievements-list');
+
+        if (!widgetContainer || !achievementsList) return;
+
+        // If no achievements, show empty state
+        if (allAchievements.length === 0) {
+            achievementsList.innerHTML = `
+                <div style="text-align: center; padding: 1rem;">
+                    <p style="color: rgba(255,255,255,0.85); font-size: 0.875rem; font-style: italic;">
+                        No achievements yet
+                    </p>
+                </div>
+            `;
+            // Hide the "View All" button
+            const viewAllBtn = widgetContainer.querySelector('button');
+            if (viewAllBtn) viewAllBtn.style.display = 'none';
+            return;
+        }
+
+        // Achievement icons with different colors
+        const achievementIcons = ['🥇', '🏅', '⭐', '🎖️', '👑'];
+        const iconBackgrounds = [
+            'rgba(255,215,0,0.3)',    // Gold
+            'rgba(59,130,246,0.3)',   // Blue
+            'rgba(139,92,246,0.3)',   // Purple
+            'rgba(34,197,94,0.3)',    // Green
+            'rgba(236,72,153,0.3)'    // Pink
+        ];
+
+        const achievementsHTML = displayAchievements.map((ach, index) => {
+            const icon = ach.icon || achievementIcons[index % achievementIcons.length];
+            const bgColor = iconBackgrounds[index % iconBackgrounds.length];
+            return `
+                <div style="background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 1rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s ease; cursor: pointer;"
+                    onclick="viewAchievementDetails(${ach.id})"
+                    onmouseover="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='translateX(5px)';"
+                    onmouseout="this.style.background='rgba(255,255,255,0.15)'; this.style.transform='translateX(0)';">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 50px; height: 50px; background: ${bgColor}; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="font-size: 1.75rem;">${icon}</span>
+                        </div>
+                        <div style="flex: 1;">
+                            <h4 style="color: white; font-size: 0.95rem; font-weight: 600; margin: 0 0 0.25rem 0;">
+                                ${ach.title}
+                            </h4>
+                            <p style="color: rgba(255,255,255,0.8); font-size: 0.75rem; margin: 0; line-height: 1.4;">
+                                ${ach.description || (ach.year ? `Achieved in ${ach.year}` : 'Achievement unlocked')}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        achievementsList.innerHTML = achievementsHTML;
+
+        // Show "View All" button only if there are achievements
+        const viewAllBtn = widgetContainer.querySelector('button');
+        if (viewAllBtn) {
+            viewAllBtn.style.display = allAchievements.length > 0 ? 'block' : 'none';
+        }
+    }
+
+    // ============================================
+    // HELPER METHODS
+    // ============================================
+
+    formatNumber(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString();
+    }
+
+    formatDate(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    getTimeAgo(dateString) {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) > 1 ? 's' : ''} ago`;
+        if (diffDays < 365) return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) > 1 ? 's' : ''} ago`;
+        return `${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) > 1 ? 's' : ''} ago`;
+    }
+
+    getStarsHTML(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.5;
+        let html = '';
+        for (let i = 0; i < 5; i++) {
+            if (i < fullStars) html += '<i class="fas fa-star"></i>';
+            else if (i === fullStars && hasHalfStar) html += '<i class="fas fa-star-half-alt"></i>';
+            else html += '<i class="far fa-star"></i>';
+        }
+        return html;
+    }
+
+    showErrorMessage(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        errorDiv.textContent = message;
+        errorDiv.style.cssText = `
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f44336;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 10000;
+        `;
+        document.body.appendChild(errorDiv);
+
+        setTimeout(() => errorDiv.remove(), 5000);
+    }
+}
+
+// ============================================
+// GLOBAL FUNCTIONS FOR PACKAGE MODAL
+// ============================================
+
+/**
+ * Open package details modal - Global function accessible from HTML onclick
+ * @param {number} packageId - Package ID
+ * @param {string} packageName - Package name
+ */
+window.openPackageDetailsModal = async function(packageId, packageName) {
+    const modal = document.getElementById('packageDetailsModal');
+    if (!modal) {
+        console.error('Package details modal not found');
+        return;
+    }
+
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('⚠️ Please log in to request a session.\n\nYou need to be logged in as a student or parent to request tutoring sessions.');
+        return;
+    }
+
+    // Check if user is a student or parent
+    const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+    if (!userRoles.includes('student') && !userRoles.includes('parent')) {
+        alert('⚠️ Only students and parents can request tutoring sessions.');
+        return;
+    }
+
+    try {
+        // Get tutor ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const tutorId = urlParams.get('id');
+
+        // Fetch package details from API
+        const response = await fetch(`${API_BASE_URL}/api/view-tutor/${tutorId}/packages`);
+        if (!response.ok) throw new Error('Failed to fetch package details');
+
+        const data = await response.json();
+        const packageData = data.packages.find(pkg => pkg.id === packageId);
+
+        if (!packageData) {
+            throw new Error('Package not found');
+        }
+
+        // Store current package data globally
+        window.currentPackageData = packageData;
+        window.currentTutorId = tutorId;
+
+        // Populate package details
+        populatePackageDetails(packageData);
+
+        // Pre-fill user info
+        prefillPackageModalUserInfo();
+
+        // Show modal
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+
+    } catch (error) {
+        console.error('Error loading package details:', error);
+        alert('❌ Failed to load package details. Please try again.');
+    }
+};
+
+/**
+ * Populate package details in the modal
+ */
+function populatePackageDetails(pkg) {
+    const detailsContent = document.getElementById('packageDetailsContent');
+    if (!detailsContent) return;
+
+    // Build features list
+    const features = [];
+
+    // Courses
+    if (pkg.courses) {
+        const coursesText = typeof pkg.courses === 'string'
+            ? pkg.courses
+            : (Array.isArray(pkg.courses) ? pkg.courses.join(', ') : '');
+        if (coursesText) {
+            features.push(`<strong>📚 Subjects:</strong> ${coursesText}`);
+        }
+    }
+
+    // Duration
+    if (pkg.duration_minutes || pkg.hours_per_day) {
+        const hours = pkg.hours_per_day || Math.floor(pkg.duration_minutes / 60);
+        const mins = pkg.duration_minutes ? pkg.duration_minutes % 60 : 0;
+        const durationText = hours > 0
+            ? `${hours} hour${hours > 1 ? 's' : ''}${mins > 0 ? ` ${mins} min` : ''}`
+            : `${mins} minutes`;
+        features.push(`<strong>⏱️ Duration:</strong> ${durationText} per session`);
+    }
+
+    // Schedule
+    if (pkg.schedule_type || pkg.recurring_days || pkg.start_time) {
+        let scheduleText = '';
+        if (pkg.schedule_type === 'recurring') {
+            const days = pkg.recurring_days && pkg.recurring_days.length > 0
+                ? pkg.recurring_days.join(', ')
+                : `${pkg.days_per_week || 0} days/week`;
+            scheduleText = days;
+            if (pkg.start_time && pkg.end_time) {
+                scheduleText += ` (${pkg.start_time.substring(0, 5)} - ${pkg.end_time.substring(0, 5)})`;
+            }
+        } else if (pkg.schedule_type === 'flexible') {
+            scheduleText = 'Flexible';
+        } else if (pkg.days_per_week) {
+            scheduleText = `${pkg.days_per_week} days/week`;
+        }
+        if (scheduleText) {
+            features.push(`<strong>📅 Schedule:</strong> ${scheduleText}`);
+        }
+    }
+
+    // Total sessions
+    if (pkg.total_sessions) {
+        features.push(`<strong>📊 Total Sessions:</strong> ${pkg.total_sessions} sessions/month`);
+    }
+
+    // Session format
+    if (pkg.session_format) {
+        const formatText = pkg.session_format.toLowerCase() === 'both'
+            ? 'Online & In-person'
+            : pkg.session_format.charAt(0).toUpperCase() + pkg.session_format.slice(1);
+        features.push(`<strong>🌐 Format:</strong> ${formatText}`);
+    }
+
+    // Grade level
+    if (pkg.grade_level) {
+        features.push(`<strong>🎓 Grade Level:</strong> ${pkg.grade_level}`);
+    }
+
+    // Payment frequency
+    if (pkg.payment_frequency) {
+        const paymentText = pkg.payment_frequency === '2-weeks'
+            ? 'Bi-weekly'
+            : pkg.payment_frequency.charAt(0).toUpperCase() + pkg.payment_frequency.slice(1);
+        features.push(`<strong>💳 Payment:</strong> ${paymentText}`);
+    }
+
+    const price = pkg.session_price || pkg.package_price || 0;
+
+    detailsContent.innerHTML = `
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">${pkg.name}</h3>
+            <p style="font-size: 2rem; font-weight: 800; margin: 12px 0;">ETB ${Math.round(price)}<span style="font-size: 1rem; font-weight: 400; opacity: 0.9;">/session</span></p>
+            ${pkg.description ? `<p style="font-size: 0.95rem; opacity: 0.95; margin-top: 12px;">${pkg.description}</p>` : ''}
+        </div>
+
+        ${features.length > 0 ? `
+            <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #374151;">📋 Package Includes:</h4>
+                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                    ${features.map(f => `<li style="font-size: 0.9rem; color: #4b5563;">${f}</li>`).join('')}
+                </ul>
+            </div>
+        ` : ''}
+
+        ${pkg.discount_1_month || pkg.discount_6_month || pkg.discount_12_month ? `
+            <div style="margin-top: 16px; background: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #92400e;">🎁 Available Discounts:</h4>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    ${pkg.discount_1_month ? `<span style="background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">${pkg.discount_1_month}% OFF - 1 Month</span>` : ''}
+                    ${pkg.discount_6_month ? `<span style="background: #3b82f6; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">${pkg.discount_6_month}% OFF - 6 Months</span>` : ''}
+                    ${pkg.discount_12_month ? `<span style="background: #8b5cf6; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">${pkg.discount_12_month}% OFF - 1 Year</span>` : ''}
+                </div>
+            </div>
+        ` : ''}
+    `;
+}
+
+/**
+ * Pre-fill user information in package modal
+ */
+function prefillPackageModalUserInfo() {
+    try {
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        // Pre-fill student name if user is a student
+        const studentNameInput = document.getElementById('detailsStudentName');
+        if (studentNameInput && user.username) {
+            const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
+            if (userRoles.includes('student')) {
+                studentNameInput.value = user.username;
+            }
+        }
+
+        // Pre-fill contact info
+        const contactEmail = document.getElementById('detailsContactEmail');
+        if (contactEmail && user.email) {
+            contactEmail.value = user.email;
+        }
+
+        const contactPhone = document.getElementById('detailsContactPhone');
+        if (contactPhone && user.phone) {
+            contactPhone.value = user.phone;
+        }
+    } catch (error) {
+        console.error('Error pre-filling user info:', error);
+    }
+}
+
+/**
+ * Close package details modal
+ */
+window.closePackageDetailsModal = function() {
+    const modal = document.getElementById('packageDetailsModal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+    }
+
+    // Reset customization fields
+    const fields = [
+        'customPrice', 'customSessionsPerWeek', 'customDuration',
+        'customDays', 'customNotes', 'detailsStudentName', 'detailsGradeLevel',
+        'detailsContactPhone', 'detailsContactEmail', 'detailsPreferredSchedule', 'detailsMessage'
+    ];
+
+    fields.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) field.value = '';
+    });
+
+    window.currentPackageData = null;
+};
+
+/**
+ * Submit package request with customizations
+ */
+window.submitPackageRequest = async function() {
+    if (!window.currentTutorId || !window.currentPackageData) {
+        alert('❌ Error: Missing package or tutor information.');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('❌ You must be logged in to request a session.');
+        window.closePackageDetailsModal();
+        return;
+    }
+
+    // Get required student info
+    const studentName = document.getElementById('detailsStudentName').value.trim();
+    const gradeLevel = document.getElementById('detailsGradeLevel').value;
+
+    if (!studentName || !gradeLevel) {
+        alert('⚠️ Please fill in student name and grade level.');
+        return;
+    }
+
+    // Get contact info
+    const contactPhone = document.getElementById('detailsContactPhone').value.trim();
+    const contactEmail = document.getElementById('detailsContactEmail').value.trim();
+    const preferredSchedule = document.getElementById('detailsPreferredSchedule').value.trim();
+    const message = document.getElementById('detailsMessage').value.trim();
+
+    // Get customization data
+    const customPrice = document.getElementById('customPrice').value.trim();
+    const customSessionsPerWeek = document.getElementById('customSessionsPerWeek').value.trim();
+    const customDuration = document.getElementById('customDuration').value.trim();
+    const customDays = document.getElementById('customDays').value.trim();
+    const customNotes = document.getElementById('customNotes').value.trim();
+
+    // Build customization message
+    let fullMessage = message;
+    const customizations = [];
+
+    if (customPrice) customizations.push(`Requested Price: ETB ${customPrice}/session`);
+    if (customSessionsPerWeek) customizations.push(`Sessions per week: ${customSessionsPerWeek}`);
+    if (customDuration) customizations.push(`Duration: ${customDuration} minutes`);
+    if (customDays) customizations.push(`Preferred days: ${customDays}`);
+    if (customNotes) customizations.push(`Additional requests: ${customNotes}`);
+
+    if (customizations.length > 0) {
+        fullMessage = (fullMessage ? fullMessage + '\n\n' : '') +
+                     '📝 PACKAGE CUSTOMIZATION REQUESTED:\n' +
+                     customizations.join('\n');
+    }
+
+    // Prepare request data
+    const requestData = {
+        tutor_id: parseInt(window.currentTutorId),
+        package_id: window.currentPackageData.id,
+        package_name: window.currentPackageData.name,
+        student_name: studentName,
+        student_grade: gradeLevel,
+        contact_phone: contactPhone || null,
+        contact_email: contactEmail || null,
+        preferred_schedule: preferredSchedule || null,
+        message: fullMessage || null
+    };
+
+    // Show loading state
+    const submitButton = document.getElementById('submitPackageBtn');
+    const originalText = submitButton.innerHTML;
+    submitButton.disabled = true;
+    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/session-requests`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(requestData)
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.detail || 'Failed to send session request');
+        }
+
+        const result = await response.json();
+
+        // Show success message
+        const hasCustomizations = customizations.length > 0;
+        alert(`✅ Session request sent successfully!${hasCustomizations ? '\n\n📝 Your package customization requests have been included.' : ''}\n\nThe tutor will review your request and respond soon. You can check the status in your profile.`);
+
+        // Close modal
+        window.closePackageDetailsModal();
+
+    } catch (error) {
+        console.error('Error submitting session request:', error);
+        alert(`❌ Failed to send session request:\n\n${error.message}\n\nPlease try again.`);
+
+        // Restore button
+        submitButton.disabled = false;
+        submitButton.innerHTML = originalText;
+    }
+};
+
+// ============================================
+// VIEW-ONLY MODAL FUNCTIONS (No Edit/Delete buttons)
+// ============================================
+
+/**
+ * View Achievement Details (View-Only Modal)
+ */
+window.viewAchievementDetails = async function(achId) {
+    try {
+        // Find achievement from loaded data
+        const loader = window.viewTutorLoaderInstance;
+        if (!loader || !loader.data.achievements) {
+            console.error('Achievements data not loaded');
+            return;
+        }
+
+        const ach = loader.data.achievements.find(a => a.id === achId);
+        if (!ach) {
+            console.error('Achievement not found:', achId);
+            return;
+        }
+
+        openViewAchievementModal(ach);
+    } catch (error) {
+        console.error('Error viewing achievement:', error);
+        alert('Failed to load achievement details. Please try again.');
+    }
+};
+
+/**
+ * View Certification Details (View-Only Modal)
+ */
+window.viewCertificationDetails = async function(certId) {
+    try {
+        // Find certification from loaded data
+        const loader = window.viewTutorLoaderInstance;
+        if (!loader || !loader.data.certificates) {
+            console.error('Certifications data not loaded');
+            return;
+        }
+
+        const cert = loader.data.certificates.find(c => c.id === certId);
+        if (!cert) {
+            console.error('Certification not found:', certId);
+            return;
+        }
+
+        openViewCertificationModal(cert);
+    } catch (error) {
+        console.error('Error viewing certification:', error);
+        alert('Failed to load certification details. Please try again.');
+    }
+};
+
+/**
+ * View Experience Details (View-Only Modal)
+ */
+window.viewExperienceDetails = async function(expId) {
+    try {
+        // Find experience from loaded data
+        const loader = window.viewTutorLoaderInstance;
+        if (!loader || !loader.data.experience) {
+            console.error('Experience data not loaded');
+            return;
+        }
+
+        const exp = loader.data.experience.find(e => e.id === expId);
+        if (!exp) {
+            console.error('Experience not found:', expId);
+            return;
+        }
+
+        openViewExperienceModal(exp);
+    } catch (error) {
+        console.error('Error viewing experience:', error);
+        alert('Failed to load experience details. Please try again.');
+    }
+};
+
+/**
+ * Open View Achievement Modal (View-Only - No Edit/Delete)
+ */
+function openViewAchievementModal(ach) {
+    const modal = document.getElementById('viewAchievementModal');
+    if (!modal) {
+        console.error('viewAchievementModal not found');
+        return;
+    }
+
+    // Populate view-only fields
+    const iconEl = document.getElementById('view-ach-icon');
+    const titleEl = document.getElementById('view-ach-title');
+    const categoryEl = document.getElementById('view-ach-category');
+    const yearEl = document.getElementById('view-ach-year');
+    const issuerEl = document.getElementById('view-ach-issuer');
+    const descriptionEl = document.getElementById('view-ach-description');
+    const statusEl = document.getElementById('view-ach-status');
+
+    if (iconEl) iconEl.textContent = ach.icon || '🏆';
+    if (titleEl) titleEl.textContent = ach.title || '';
+    if (categoryEl) categoryEl.textContent = ach.category || 'Achievement';
+    if (yearEl) yearEl.textContent = ach.year || 'N/A';
+    if (issuerEl) issuerEl.textContent = ach.issuer || 'N/A';
+    if (descriptionEl) descriptionEl.textContent = ach.description || 'No description provided';
+
+    // Show verification status
+    if (statusEl) {
+        const statusBadge = getStatusBadge(ach.verification_status || 'verified');
+        statusEl.innerHTML = statusBadge;
+    }
+
+    // Show certificate preview if exists
+    const certificatePreview = document.getElementById('view-ach-certificate-preview');
+    if (certificatePreview && ach.certificate_url) {
+        certificatePreview.classList.remove('hidden');
+        const fileExt = ach.certificate_url.split('.').pop().toLowerCase();
+        if (fileExt === 'pdf') {
+            certificatePreview.innerHTML = `
+                <div class="text-center p-8 bg-gray-100 rounded-lg">
+                    <p class="text-6xl mb-2">📄</p>
+                    <p class="text-sm text-gray-600">PDF Document</p>
+                </div>
+                <button onclick="viewFullFile('${ach.certificate_url}')"
+                    class="btn-secondary w-full mt-2">View Full File</button>
+            `;
+        } else {
+            certificatePreview.innerHTML = `
+                <img src="${ach.certificate_url}" alt="Certificate" class="w-full rounded-lg border-2">
+                <button onclick="viewFullFile('${ach.certificate_url}')"
+                    class="btn-secondary w-full mt-2">View Full File</button>
+            `;
+        }
+    } else if (certificatePreview) {
+        certificatePreview.classList.add('hidden');
+    }
+
+    // Hide edit/delete buttons (view-only mode)
+    const editBtn = modal.querySelector('.edit-btn');
+    const deleteBtn = modal.querySelector('.delete-btn');
+    if (editBtn) editBtn.classList.add('hidden');
+    if (deleteBtn) deleteBtn.classList.add('hidden');
+
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Open View Certification Modal (View-Only - No Edit/Delete)
+ */
+function openViewCertificationModal(cert) {
+    const modal = document.getElementById('viewCertificationModal');
+    if (!modal) {
+        console.error('viewCertificationModal not found');
+        return;
+    }
+
+    // Populate view-only fields
+    const nameEl = document.getElementById('view-cert-name');
+    const organizationEl = document.getElementById('view-cert-organization');
+    const fieldEl = document.getElementById('view-cert-field');
+    const issueDateEl = document.getElementById('view-cert-issue-date');
+    const expiryDateEl = document.getElementById('view-cert-expiry-date');
+    const credentialIdEl = document.getElementById('view-cert-credential-id');
+    const descriptionEl = document.getElementById('view-cert-description');
+    const statusEl = document.getElementById('view-cert-status');
+
+    if (nameEl) nameEl.textContent = cert.name || '';
+    if (organizationEl) organizationEl.textContent = cert.issuing_organization || '';
+    if (fieldEl) fieldEl.textContent = cert.field_of_study || 'N/A';
+    if (issueDateEl) {
+        issueDateEl.textContent = cert.issue_date ? new Date(cert.issue_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }) : 'N/A';
+    }
+    if (expiryDateEl) {
+        expiryDateEl.textContent = cert.expiry_date ? new Date(cert.expiry_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        }) : 'No expiry';
+    }
+    if (credentialIdEl) credentialIdEl.textContent = cert.credential_id || 'N/A';
+    if (descriptionEl) descriptionEl.textContent = cert.description || 'No description provided';
+
+    // Show verification status
+    if (statusEl) {
+        const statusBadge = getStatusBadge(cert.verification_status || 'verified');
+        statusEl.innerHTML = statusBadge;
+    }
+
+    // Show certificate preview if exists
+    const certificatePreview = document.getElementById('view-cert-certificate-preview');
+    if (certificatePreview && cert.certificate_image_url) {
+        certificatePreview.classList.remove('hidden');
+        const fileExt = cert.certificate_image_url.split('.').pop().toLowerCase();
+        if (fileExt === 'pdf') {
+            certificatePreview.innerHTML = `
+                <div class="text-center p-8 bg-gray-100 rounded-lg">
+                    <p class="text-6xl mb-2">📄</p>
+                    <p class="text-sm text-gray-600">PDF Document</p>
+                </div>
+                <button onclick="viewFullFile('${cert.certificate_image_url}')"
+                    class="btn-secondary w-full mt-2">View Full File</button>
+            `;
+        } else {
+            certificatePreview.innerHTML = `
+                <img src="${cert.certificate_image_url}" alt="Certificate" class="w-full rounded-lg border-2">
+                <button onclick="viewFullFile('${cert.certificate_image_url}')"
+                    class="btn-secondary w-full mt-2">View Full File</button>
+            `;
+        }
+    } else if (certificatePreview) {
+        certificatePreview.classList.add('hidden');
+    }
+
+    // Hide edit/delete buttons (view-only mode)
+    const editBtn = modal.querySelector('.edit-btn');
+    const deleteBtn = modal.querySelector('.delete-btn');
+    if (editBtn) editBtn.classList.add('hidden');
+    if (deleteBtn) deleteBtn.classList.add('hidden');
+
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Open View Experience Modal (View-Only - No Edit/Delete)
+ */
+function openViewExperienceModal(exp) {
+    const modal = document.getElementById('viewExperienceModal');
+    if (!modal) {
+        console.error('viewExperienceModal not found');
+        return;
+    }
+
+    // Populate view-only fields
+    const jobTitleEl = document.getElementById('view-exp-job-title');
+    const institutionEl = document.getElementById('view-exp-institution');
+    const locationEl = document.getElementById('view-exp-location');
+    const employmentTypeEl = document.getElementById('view-exp-employment-type');
+    const startDateEl = document.getElementById('view-exp-start-date');
+    const endDateEl = document.getElementById('view-exp-end-date');
+    const descriptionEl = document.getElementById('view-exp-description');
+    const responsibilitiesEl = document.getElementById('view-exp-responsibilities');
+    const achievementsEl = document.getElementById('view-exp-achievements');
+    const statusEl = document.getElementById('view-exp-status');
+
+    if (jobTitleEl) jobTitleEl.textContent = exp.job_title || '';
+    if (institutionEl) institutionEl.textContent = exp.institution || '';
+    if (locationEl) locationEl.textContent = exp.location || 'N/A';
+    if (employmentTypeEl) employmentTypeEl.textContent = exp.employment_type || 'N/A';
+    if (startDateEl) {
+        startDateEl.textContent = exp.start_date ? new Date(exp.start_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long'
+        }) : 'N/A';
+    }
+    if (endDateEl) {
+        endDateEl.textContent = exp.is_current ? 'Present' : (exp.end_date ? new Date(exp.end_date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long'
+        }) : 'N/A');
+    }
+    if (descriptionEl) descriptionEl.textContent = exp.description || 'No description provided';
+    if (responsibilitiesEl) responsibilitiesEl.textContent = exp.responsibilities || 'None provided';
+    if (achievementsEl) achievementsEl.textContent = exp.achievements || 'None provided';
+
+    // Show verification status
+    if (statusEl) {
+        const statusBadge = getStatusBadge(exp.verification_status || 'verified');
+        statusEl.innerHTML = statusBadge;
+    }
+
+    // Show certificate preview if exists
+    const certificatePreview = document.getElementById('view-exp-certificate-preview');
+    if (certificatePreview && exp.certificate_url) {
+        certificatePreview.classList.remove('hidden');
+        const fileExt = exp.certificate_url.split('.').pop().toLowerCase();
+        if (fileExt === 'pdf') {
+            certificatePreview.innerHTML = `
+                <div class="text-center p-8 bg-gray-100 rounded-lg">
+                    <p class="text-6xl mb-2">📄</p>
+                    <p class="text-sm text-gray-600">PDF Document</p>
+                </div>
+                <button onclick="viewFullFile('${exp.certificate_url}')"
+                    class="btn-secondary w-full mt-2">View Full File</button>
+            `;
+        } else {
+            certificatePreview.innerHTML = `
+                <img src="${exp.certificate_url}" alt="Certificate" class="w-full rounded-lg border-2">
+                <button onclick="viewFullFile('${exp.certificate_url}')"
+                    class="btn-secondary w-full mt-2">View Full File</button>
+            `;
+        }
+    } else if (certificatePreview) {
+        certificatePreview.classList.add('hidden');
+    }
+
+    // Hide edit/delete buttons (view-only mode)
+    const editBtn = modal.querySelector('.edit-btn');
+    const deleteBtn = modal.querySelector('.delete-btn');
+    if (editBtn) editBtn.classList.add('hidden');
+    if (deleteBtn) deleteBtn.classList.add('hidden');
+
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+/**
+ * Close View Modal
+ */
+window.closeViewModal = function(type) {
+    const modalId = `view${type.charAt(0).toUpperCase() + type.slice(1)}Modal`;
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+};
+
+/**
+ * View Full File in fullscreen
+ */
+window.viewFullFile = function(fileUrl) {
+    let modal = document.getElementById('fullscreenFileModal');
+
+    // Create fullscreen modal if it doesn't exist
+    if (!modal) {
+        const modalHtml = `
+            <div id="fullscreenFileModal" class="fixed inset-0 z-[9999] hidden bg-black">
+                <div class="relative w-full h-full">
+                    <button onclick="closeFullscreenFile()"
+                        class="absolute top-4 right-4 z-10 text-white bg-black bg-opacity-50 hover:bg-opacity-75 rounded-full p-3 text-2xl">
+                        ✕
+                    </button>
+                    <div id="fullscreenFileContent" class="w-full h-full flex items-center justify-center">
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        modal = document.getElementById('fullscreenFileModal');
+    }
+
+    const fileContent = document.getElementById('fullscreenFileContent');
+    const fileExt = fileUrl.split('.').pop().toLowerCase();
+
+    if (fileExt === 'pdf') {
+        fileContent.innerHTML = `<iframe src="${fileUrl}" class="w-full h-full"></iframe>`;
+    } else {
+        fileContent.innerHTML = `<img src="${fileUrl}" alt="File" class="max-w-full max-h-full object-contain">`;
+    }
+
+    modal.classList.remove('hidden');
+};
+
+/**
+ * Close fullscreen file viewer
+ */
+window.closeFullscreenFile = function() {
+    const modal = document.getElementById('fullscreenFileModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+};
+
+/**
+ * Get status badge HTML
+ */
+function getStatusBadge(verificationStatus) {
+    const statusColors = {
+        'pending': 'bg-yellow-100 text-yellow-700',
+        'verified': 'bg-green-100 text-green-700',
+        'rejected': 'bg-red-100 text-red-700'
+    };
+    const statusText = {
+        'pending': '⏳ Pending',
+        'verified': '✓ Verified',
+        'rejected': '✗ Rejected'
+    };
+    const colorClass = statusColors[verificationStatus] || statusColors['verified'];
+    const text = statusText[verificationStatus] || statusText['verified'];
+    return `<span class="${colorClass} px-3 py-1 rounded-full text-xs font-semibold">${text}</span>`;
+}
+
+// ============================================
+// INITIALIZE ON PAGE LOAD
+// ============================================
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Get tutor ID from URL parameter or use default
+    const urlParams = new URLSearchParams(window.location.search);
+    const tutorId = urlParams.get('id') || 1;  // Default to tutor ID 1 for testing
+    const byUserId = urlParams.get('by_user_id') === 'true';  // Check if ID is user.id
+
+    console.log(`🚀 Initializing View Tutor DB Loader for tutor ID: ${tutorId}, by_user_id: ${byUserId}`);
+
+    const loader = new ViewTutorDBLoader(tutorId, byUserId);
+
+    // Expose loader instance globally for modal functions
+    window.viewTutorLoaderInstance = loader;
+
+    loader.init();
+});

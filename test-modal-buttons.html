@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Buttons</title>
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/find-tutors/request-modals.css">
+    <style>
+        body {
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary, #f3f4f6);
+        }
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #374151;
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        .btn-test {
+            margin: 10px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .btn-test:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .status {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        code {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h1>🧪 Modal Button Test Page</h1>
+        <p>This page tests all the button configurations for request modals.</p>
+
+        <div class="status">
+            <strong>✅ Setup Complete!</strong> Both modals and all button variations are ready to test.
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>1. Sidebar Buttons (find-tutors.html)</h2>
+        <p>These buttons use <code>openRequestCourseModal()</code> and <code>openRequestSchoolModal()</code></p>
+
+        <button onclick="openRequestCourseModal()" class="btn-test btn-primary">
+            📚 Request a Course
+        </button>
+        <button onclick="openRequestSchoolModal()" class="btn-test btn-success">
+            🏫 Request a School
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>2. "No Results" Buttons (UI-management-new.js)</h2>
+        <p>These buttons use <code>requestCourse()</code> and <code>requestSchool()</code></p>
+
+        <button onclick="requestCourse()" class="btn-test btn-primary">
+            📚 Request Course
+        </button>
+        <button onclick="requestSchool()" class="btn-test btn-success">
+            🏫 Request School
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Direct Window Calls</h2>
+        <p>Testing <code>window.openRequestCourseModal()</code> and <code>window.requestCourse()</code></p>
+
+        <button onclick="window.openRequestCourseModal()" class="btn-test btn-primary">
+            window.openRequestCourseModal()
+        </button>
+        <button onclick="window.requestCourse()" class="btn-test btn-primary">
+            window.requestCourse()
+        </button>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Browser Console Check</h2>
+        <p>Press <strong>F12</strong> to open Developer Tools and check the Console tab.</p>
+        <p>When you click any button above, you should see:</p>
+        <ul>
+            <li>✅ Log messages showing which function was called</li>
+            <li>✅ No error messages</li>
+            <li>✅ Modal should open smoothly</li>
+        </ul>
+
+        <button onclick="runDiagnostics()" class="btn-test" style="background: #6366f1; color: white;">
+            🔍 Run Diagnostics
+        </button>
+        <div id="diagnostics-output" style="margin-top: 15px;"></div>
+    </div>
+
+    <!-- Modals (from find-tutors.html) -->
+    <div id="requestCourseModal" class="modal-overlay hidden">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <div class="modal-header">
+                <h3 class="modal-title">Request a New Course</h3>
+                <button class="modal-close" id="closeCourseModal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="requestCourseForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Course Title *</label>
+                    <input type="text" id="courseTitle" placeholder="e.g., Advanced Mathematics" class="modal-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category *</label>
+                    <select id="courseCategory" class="modal-input" required>
+                        <option value="">Select a category</option>
+                        <option value="Academic">Academic</option>
+                        <option value="Professional">Professional</option>
+                        <option value="Technical">Technical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Level *</label>
+                    <select id="courseLevel" class="modal-input" required>
+                        <option value="">Select a level</option>
+                        <option value="KG">Kindergarten</option>
+                        <option value="University">University</option>
+                        <option value="Professional">Professional</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="courseDescription" placeholder="Describe what you'd like to learn..." class="modal-input" rows="4"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelCourseBtn" class="modal-btn-cancel">Cancel</button>
+                    <button type="submit" id="submitCourseBtn" class="modal-btn-submit">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="requestSchoolModal" class="modal-overlay hidden">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <div class="modal-header">
+                <h3 class="modal-title">Request a New School</h3>
+                <button class="modal-close" id="closeSchoolModal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <form id="requestSchoolForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">School Name *</label>
+                    <input type="text" id="schoolName" placeholder="e.g., Excellence Academy" class="modal-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">School Type *</label>
+                    <select id="schoolType" class="modal-input" required>
+                        <option value="">Select school type</option>
+                        <option value="Academic">Academic</option>
+                        <option value="Polytechnic">Polytechnic</option>
+                        <option value="Technical">Technical</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Level *</label>
+                    <select id="schoolLevel" class="modal-input" required>
+                        <option value="">Select level</option>
+                        <option value="Kindergarten">Kindergarten</option>
+                        <option value="Elementary">Elementary</option>
+                        <option value="University">University</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelSchoolBtn" class="modal-btn-cancel">Cancel</button>
+                    <button type="submit" id="submitSchoolBtn" class="modal-btn-submit">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/find-tutors/request-modals.js"></script>
+
+    <script>
+        function runDiagnostics() {
+            const output = document.getElementById('diagnostics-output');
+            const results = [];
+
+            results.push('<strong>🔬 Diagnostics Results:</strong><br>');
+
+            // Check if functions exist
+            results.push(`✓ openRequestCourseModal: ${typeof openRequestCourseModal === 'function' ? 'EXISTS' : 'MISSING'}`);
+            results.push(`✓ openRequestSchoolModal: ${typeof openRequestSchoolModal === 'function' ? 'EXISTS' : 'MISSING'}`);
+            results.push(`✓ requestCourse: ${typeof requestCourse === 'function' ? 'EXISTS' : 'MISSING'}`);
+            results.push(`✓ requestSchool: ${typeof requestSchool === 'function' ? 'EXISTS' : 'MISSING'}`);
+            results.push(`✓ window.openRequestCourseModal: ${typeof window.openRequestCourseModal === 'function' ? 'EXISTS' : 'MISSING'}`);
+            results.push(`✓ window.requestCourse: ${typeof window.requestCourse === 'function' ? 'EXISTS' : 'MISSING'}`);
+
+            // Check if modals exist
+            results.push(`<br>✓ Course Modal Element: ${document.getElementById('requestCourseModal') ? 'EXISTS' : 'MISSING'}`);
+            results.push(`✓ School Modal Element: ${document.getElementById('requestSchoolModal') ? 'EXISTS' : 'MISSING'}`);
+
+            // Check if manager exists
+            results.push(`<br>✓ requestModalsManager: ${typeof requestModalsManager !== 'undefined' ? (requestModalsManager ? 'INITIALIZED' : 'DEFINED BUT NULL') : 'NOT DEFINED'}`);
+
+            output.innerHTML = `
+                <div style="background: #f0fdf4; border: 1px solid #86efac; padding: 15px; border-radius: 8px;">
+                    ${results.join('<br>')}
+                </div>
+            `;
+
+            console.log('=== DIAGNOSTICS ===');
+            console.log('Functions:', {
+                openRequestCourseModal: typeof openRequestCourseModal,
+                openRequestSchoolModal: typeof openRequestSchoolModal,
+                requestCourse: typeof requestCourse,
+                requestSchool: typeof requestSchool
+            });
+            console.log('Manager:', requestModalsManager);
+            console.log('Modals:', {
+                course: document.getElementById('requestCourseModal'),
+                school: document.getElementById('requestSchoolModal')
+            });
+        }
+
+        // Auto-run diagnostics on load
+        window.addEventListener('load', () => {
+            setTimeout(runDiagnostics, 500);
+        });
+    </script>
+</body>
+</html>

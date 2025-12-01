@@ -1,0 +1,56 @@
+<!--
+  Modal: coverUploadModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div class="upload-cover-modal" id="coverUploadModal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="modal-header">
+                    <h2 class="modal-title">Upload Cover Photo</h2>
+                    <button class="modal-close" onclick="closeCoverUploadModal()">&times;</button>
+                </div>
+
+                <div class="upload-area" id="coverUploadArea" onclick="document.getElementById('coverInput').click()">
+                    <span class="upload-icon">📷</span>
+                    <p class="upload-text">Click to upload or drag and drop</p>
+                    <p class="upload-hint">Recommended: 1920x400px (JPG, PNG, GIF)</p>
+                    <input type="file" id="coverInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'cover')">
+                </div>
+
+                <div class="preview-container" id="coverPreview">
+                    <img src="" alt="Cover preview" class="preview-image" id="coverPreviewImage">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File Name:</span>
+                            <span id="coverFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File Size:</span>
+                            <span id="coverFileSize">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>Dimensions:</span>
+                            <span id="coverDimensions">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-progress" id="coverProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="coverProgressFill"></div>
+                    </div>
+                    <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-spinner" id="coverSpinner"></div>
+
+                <div class="upload-actions">
+                    <button class="btn-upload secondary" onclick="resetUpload('cover')">Change Image</button>
+                    <button class="btn-upload primary" onclick="uploadImage('cover')">Upload Cover</button>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Community Panel Empty States</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-3xl font-bold mb-8">Community Panel Empty States Test</h1>
+
+    <!-- Test Grid 1: Connections Empty State -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4">Connections Empty State</h2>
+        <div id="test-connections-grid"
+             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto bg-white p-4 rounded-lg">
+            <!-- Empty state will be injected here -->
+        </div>
+    </div>
+
+    <!-- Test Grid 2: Events Empty State -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4">Events Empty State</h2>
+        <div id="test-events-grid"
+             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto bg-white p-4 rounded-lg">
+            <!-- Empty state will be injected here -->
+        </div>
+    </div>
+
+    <!-- Test Grid 3: Clubs Empty State -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4">Clubs Empty State</h2>
+        <div id="test-clubs-grid"
+             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto bg-white p-4 rounded-lg">
+            <!-- Empty state will be injected here -->
+        </div>
+    </div>
+
+    <!-- Test Grid 4: Requests Empty State -->
+    <div class="mb-8">
+        <h2 class="text-2xl font-bold mb-4">Requests Empty State</h2>
+        <div id="test-requests-list"
+             class="space-y-3 max-h-96 overflow-y-auto bg-white p-4 rounded-lg">
+            <!-- Empty state will be injected here -->
+        </div>
+    </div>
+
+    <script>
+        // Test Connections Empty State
+        const connectionsGrid = document.getElementById('test-connections-grid');
+        connectionsGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-6xl mb-4">👥</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">No Connections Yet</h3>
+                <p class="text-gray-600">You haven't connected with students, parents, and other tutors yet.</p>
+                <p class="text-sm text-gray-500 mt-2">Start building your network by connecting with others!</p>
+            </div>
+        `;
+
+        // Test Events Empty State
+        const eventsGrid = document.getElementById('test-events-grid');
+        eventsGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-6xl mb-4">📅</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">No Events Yet</h3>
+                <p class="text-gray-600">There are no events available yet.</p>
+                <p class="text-sm text-gray-500 mt-2">Check back later for new events!</p>
+            </div>
+        `;
+
+        // Test Clubs Empty State
+        const clubsGrid = document.getElementById('test-clubs-grid');
+        clubsGrid.innerHTML = `
+            <div class="col-span-full text-center py-12">
+                <div class="text-6xl mb-4">🎭</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">No Clubs Yet</h3>
+                <p class="text-gray-600">There are no clubs available yet.</p>
+                <p class="text-sm text-gray-500 mt-2">Check back later for new clubs!</p>
+            </div>
+        `;
+
+        // Test Requests Empty State
+        const requestsList = document.getElementById('test-requests-list');
+        requestsList.innerHTML = `
+            <div class="text-center py-12">
+                <div class="text-6xl mb-4">📤</div>
+                <h3 class="text-xl font-bold text-gray-800 mb-2">No Sent Requests</h3>
+                <p class="text-gray-600">You haven't sent any connection requests recently.</p>
+            </div>
+        `;
+
+        console.log('✅ All empty states injected successfully');
+    </script>
+</body>
+</html>

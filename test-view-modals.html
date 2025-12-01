@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test View Modals</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <h1 class="text-3xl font-bold mb-8">Test View Modal Functions</h1>
+
+    <div class="space-y-4">
+        <div class="card p-6 bg-white rounded shadow">
+            <h2 class="text-xl font-bold mb-4">Achievement Card Test</h2>
+            <button onclick="viewAchievement(1)" class="bg-blue-500 text-white px-4 py-2 rounded">
+                View Achievement (ID: 1)
+            </button>
+        </div>
+
+        <div class="card p-6 bg-white rounded shadow">
+            <h2 class="text-xl font-bold mb-4">Certification Card Test</h2>
+            <button onclick="viewCertification(1)" class="bg-green-500 text-white px-4 py-2 rounded">
+                View Certification (ID: 1)
+            </button>
+        </div>
+
+        <div class="card p-6 bg-white rounded shadow">
+            <h2 class="text-xl font-bold mb-4">Experience Card Test</h2>
+            <button onclick="viewExperience(1)" class="bg-purple-500 text-white px-4 py-2 rounded">
+                View Experience (ID: 1)
+            </button>
+        </div>
+
+        <div class="card p-6 bg-white rounded shadow">
+            <h2 class="text-xl font-bold mb-4">Console Test</h2>
+            <button onclick="testFunctions()" class="bg-red-500 text-white px-4 py-2 rounded">
+                Test if functions exist (check console)
+            </button>
+        </div>
+    </div>
+
+    <!-- Load required scripts -->
+    <script src="js/root/app.js"></script>
+    <script src="js/root/auth.js"></script>
+    <script src="js/tutor-profile/package-manager-clean.js"></script>
+    <script src="js/tutor-profile/profile-extensions-manager.js"></script>
+
+    <script>
+        function testFunctions() {
+            console.log('=== Testing View Functions ===');
+            console.log('viewAchievement exists:', typeof window.viewAchievement);
+            console.log('viewCertification exists:', typeof window.viewCertification);
+            console.log('viewExperience exists:', typeof window.viewExperience);
+            console.log('API_BASE_URL:', typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : 'UNDEFINED');
+
+            alert('Check browser console for results');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Request Modals - Astegni</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/find-tutors/request-modals.css">
+    <style>
+        body {
+            padding: 40px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .test-btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            color: white;
+            margin: 10px;
+        }
+        .test-btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        .test-btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .test-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+        .info-box {
+            background: #f0f9ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 10px;">Request Modals Test Page</h1>
+            <p style="opacity: 0.9;">Test the Request Course and Request School modals functionality</p>
+        </div>
+
+        <div class="test-section">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 15px;">Test Buttons</h2>
+            <p style="margin-bottom: 20px; color: #6b7280;">Click the buttons below to test the modals:</p>
+
+            <button onclick="openRequestCourseModal()" class="test-btn test-btn-primary">
+                Open Request Course Modal
+            </button>
+            <button onclick="openRequestSchoolModal()" class="test-btn test-btn-success">
+                Open Request School Modal
+            </button>
+        </div>
+
+        <div class="test-section">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 15px;">How to Test</h2>
+
+            <div class="info-box">
+                <strong>📋 Prerequisites:</strong>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Backend server must be running on https://api.astegni.com</li>
+                    <li>You need to be logged in to submit requests</li>
+                </ul>
+            </div>
+
+            <div class="warning-box">
+                <strong>⚠️ Authentication:</strong>
+                <p style="margin-top: 10px;">If you're not logged in, you'll see an error message and be redirected to the login page.</p>
+            </div>
+
+            <h3 style="font-size: 1.25rem; font-weight: 600; margin-top: 25px; margin-bottom: 10px;">Test Steps:</h3>
+            <ol style="margin-left: 20px; color: #4b5563;">
+                <li><strong>Start Backend:</strong>
+                    <div class="code-block">cd astegni-backend<br>python app.py</div>
+                </li>
+                <li><strong>Login First:</strong> Make sure you're logged in (use the index.html page to login)</li>
+                <li><strong>Test Course Request:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Click "Open Request Course Modal"</li>
+                        <li>Fill in: Course Title, Category, Level (required)</li>
+                        <li>Add optional description</li>
+                        <li>Click "Submit Request"</li>
+                    </ul>
+                </li>
+                <li><strong>Test School Request:</strong>
+                    <ul style="margin-left: 20px; margin-top: 5px;">
+                        <li>Click "Open Request School Modal"</li>
+                        <li>Fill in: School Name, School Type, Level (required)</li>
+                        <li>Add optional: Location, Email, Phone</li>
+                        <li>Click "Submit Request"</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 15px;">Database Tables</h2>
+            <p style="color: #6b7280; margin-bottom: 15px;">The requests are saved in these database tables:</p>
+
+            <h3 style="font-weight: 600; margin-top: 15px;">course_requests table:</h3>
+            <div class="code-block">
+id, user_id, course_title, category, level, description, status, created_at, updated_at
+            </div>
+
+            <h3 style="font-weight: 600; margin-top: 15px;">requested_schools table:</h3>
+            <div class="code-block">
+id, user_id, school_name, school_type, level, location, school_email, school_phone, status, created_at, updated_at
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 15px;">API Endpoints</h2>
+
+            <h3 style="font-weight: 600; margin-bottom: 10px;">Course Requests:</h3>
+            <ul style="margin-left: 20px; color: #4b5563;">
+                <li><code>POST /api/course-requests</code> - Create new course request</li>
+                <li><code>GET /api/course-requests</code> - Get user's course requests</li>
+                <li><code>GET /api/course-requests/{id}</code> - Get specific course request</li>
+            </ul>
+
+            <h3 style="font-weight: 600; margin-top: 20px; margin-bottom: 10px;">School Requests:</h3>
+            <ul style="margin-left: 20px; color: #4b5563;">
+                <li><code>POST /api/school-requests</code> - Create new school request</li>
+                <li><code>GET /api/school-requests</code> - Get user's school requests</li>
+                <li><code>GET /api/school-requests/{id}</code> - Get specific school request</li>
+            </ul>
+        </div>
+
+        <div class="test-section">
+            <h2 style="font-size: 1.5rem; font-weight: 600; margin-bottom: 15px;">Features</h2>
+            <ul style="margin-left: 20px; color: #4b5563;">
+                <li>✅ Form validation (required fields)</li>
+                <li>✅ Authentication required</li>
+                <li>✅ Loading states during submission</li>
+                <li>✅ Success/error messages</li>
+                <li>✅ Auto-close on success</li>
+                <li>✅ ESC key to close modals</li>
+                <li>✅ Click outside to close</li>
+                <li>✅ Dark mode support</li>
+                <li>✅ Responsive design</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Request Course Modal -->
+    <div id="requestCourseModal" class="modal-overlay hidden">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <div class="modal-header">
+                <h3 class="modal-title">Request a New Course</h3>
+                <button class="modal-close" id="closeCourseModal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <form id="requestCourseForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">Course Title *</label>
+                    <input type="text" id="courseTitle" placeholder="e.g., Advanced Mathematics" class="modal-input"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Category *</label>
+                    <select id="courseCategory" class="modal-input" required>
+                        <option value="">Select a category</option>
+                        <option value="Academic">Academic</option>
+                        <option value="Professional">Professional</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Language">Language</option>
+                        <option value="Science">Science</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Level *</label>
+                    <select id="courseLevel" class="modal-input" required>
+                        <option value="">Select a level</option>
+                        <option value="KG">Kindergarten</option>
+                        <option value="Grade 1-6">Elementary (Grade 1-6)</option>
+                        <option value="Grade 7-8">Junior Secondary (Grade 7-8)</option>
+                        <option value="Grade 9-10">Secondary (Grade 9-10)</option>
+                        <option value="Grade 11-12">Preparatory (Grade 11-12)</option>
+                        <option value="University">University</option>
+                        <option value="Professional">Professional</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="courseDescription" placeholder="Describe the course requirements and what you'd like to learn..."
+                        class="modal-input" rows="4"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelCourseBtn" class="modal-btn-cancel">Cancel</button>
+                    <button type="submit" id="submitCourseBtn" class="modal-btn-submit">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Request School Modal -->
+    <div id="requestSchoolModal" class="modal-overlay hidden">
+        <div class="modal-content animate__animated animate__zoomIn">
+            <div class="modal-header">
+                <h3 class="modal-title">Request a New School</h3>
+                <button class="modal-close" id="closeSchoolModal">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+            <form id="requestSchoolForm" class="modal-form">
+                <div class="form-group">
+                    <label class="form-label">School Name *</label>
+                    <input type="text" id="schoolName" placeholder="e.g., Excellence Academy" class="modal-input"
+                        required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">School Type *</label>
+                    <select id="schoolType" class="modal-input" required>
+                        <option value="">Select school type</option>
+                        <option value="Academic">Academic</option>
+                        <option value="Polytechnic">Polytechnic</option>
+                        <option value="Culinary">Culinary</option>
+                        <option value="Technical">Technical</option>
+                        <option value="Vocational">Vocational</option>
+                        <option value="Arts">Arts</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Level *</label>
+                    <select id="schoolLevel" class="modal-input" required>
+                        <option value="">Select level</option>
+                        <option value="Kindergarten">Kindergarten</option>
+                        <option value="Elementary">Elementary</option>
+                        <option value="High School">High School</option>
+                        <option value="College">College</option>
+                        <option value="University">University</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Location</label>
+                    <input type="text" id="schoolLocation" placeholder="e.g., Addis Ababa, Ethiopia" class="modal-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">School Email</label>
+                    <input type="email" id="schoolEmail" placeholder="contact@school.edu.et" class="modal-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">School Phone</label>
+                    <input type="tel" id="schoolPhone" placeholder="+251 11 xxx xxxx" class="modal-input">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="cancelSchoolBtn" class="modal-btn-cancel">Cancel</button>
+                    <button type="submit" id="submitSchoolBtn" class="modal-btn-submit">Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/find-tutors/request-modals.js"></script>
+</body>
+</html>

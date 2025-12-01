@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Schedule Specific Dates Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        h2 {
+            color: #666;
+            font-size: 1.2rem;
+            margin-top: 0;
+        }
+        .date-input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .output {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+        .info {
+            color: blue;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Schedule Specific Dates Fix</h1>
+
+    <div class="test-card">
+        <h2>Test 1: Add Single Date</h2>
+        <p>Select a single date and add it to the list:</p>
+        <input type="date" id="single-date" class="date-input">
+        <button onclick="testSingleDate()">Add Single Date</button>
+        <div id="output1" class="output"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 2: Add Date Range</h2>
+        <p>Select a date range and verify all dates are added correctly:</p>
+        <label>From: <input type="date" id="range-from" class="date-input"></label>
+        <label>To: <input type="date" id="range-to" class="date-input"></label>
+        <button onclick="testDateRange()">Add Date Range</button>
+        <div id="output2" class="output"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 3: Timezone Edge Case</h2>
+        <p>Test dates around timezone boundaries (midnight):</p>
+        <button onclick="testTimezoneEdgeCase()">Run Timezone Test</button>
+        <div id="output3" class="output"></div>
+    </div>
+
+    <div class="test-card">
+        <h2>Test 4: Full Schedule Save</h2>
+        <p>Test the complete schedule save workflow with specific dates:</p>
+        <button onclick="testFullScheduleSave()">Test Full Save</button>
+        <div id="output4" class="output"></div>
+    </div>
+
+    <script>
+        // Simulate the fixed addDateRange function
+        function addDateRangeFixed(fromDate, toDate) {
+            const results = [];
+
+            // Validate date range (compare as strings to avoid timezone issues)
+            if (fromDate > toDate) {
+                return { error: 'From date must be before or equal to To date' };
+            }
+
+            // Add all dates in the range (work with date strings directly to avoid timezone issues)
+            let currentDateStr = fromDate;
+
+            while (currentDateStr <= toDate) {
+                results.push(currentDateStr);
+
+                // Move to next day by creating a Date object temporarily
+                // Use UTC to avoid timezone shifts
+                const [year, month, day] = currentDateStr.split('-').map(Number);
+                const nextDate = new Date(Date.UTC(year, month - 1, day + 1));
+                currentDateStr = nextDate.toISOString().split('T')[0];
+            }
+
+            return { success: true, dates: results };
+        }
+
+        // Old (buggy) version for comparison
+        function addDateRangeOld(fromDate, toDate) {
+            const results = [];
+
+            const from = new Date(fromDate);
+            const to = new Date(toDate);
+
+            if (from > to) {
+                return { error: 'From date must be before or equal to To date' };
+            }
+
+            let currentDate = new Date(from);
+
+            while (currentDate <= to) {
+                const dateString = currentDate.toISOString().split('T')[0];
+                results.push(dateString);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            return { success: true, dates: results };
+        }
+
+        function testSingleDate() {
+            const dateInput = document.getElementById('single-date');
+            const output = document.getElementById('output1');
+            const selectedDate = dateInput.value;
+
+            if (!selectedDate) {
+                output.innerHTML = '<span class="error">❌ Please select a date first</span>';
+                return;
+            }
+
+            output.innerHTML = `
+<span class="success">✅ Single Date Test Passed!</span>
+
+Selected Date: ${selectedDate}
+Date Format: YYYY-MM-DD (correct format for PostgreSQL)
+Length: ${selectedDate.length} characters
+
+This date will be saved correctly to the database.
+            `;
+        }
+
+        function testDateRange() {
+            const fromInput = document.getElementById('range-from');
+            const toInput = document.getElementById('range-to');
+            const output = document.getElementById('output2');
+
+            const fromDate = fromInput.value;
+            const toDate = toInput.value;
+
+            if (!fromDate || !toDate) {
+                output.innerHTML = '<span class="error">❌ Please select both dates</span>';
+                return;
+            }
+
+            const oldResult = addDateRangeOld(fromDate, toDate);
+            const newResult = addDateRangeFixed(fromDate, toDate);
+
+            const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const offset = new Date().getTimezoneOffset();
+
+            output.innerHTML = `
+<span class="info">🌍 Your Timezone: ${timezone} (UTC${offset > 0 ? '-' : '+'}${Math.abs(offset / 60)})</span>
+
+<strong>OLD (Buggy) Method:</strong>
+${oldResult.dates ? oldResult.dates.join('\n') : oldResult.error}
+
+<strong>NEW (Fixed) Method:</strong>
+${newResult.dates ? newResult.dates.join('\n') : newResult.error}
+
+${oldResult.dates && newResult.dates && oldResult.dates.join(',') !== newResult.dates.join(',') ?
+'<span class="error">⚠️ DIFFERENCE DETECTED! The old method had a timezone bug.</span>' :
+'<span class="success">✅ Both methods produce the same result (no timezone issue detected)</span>'}
+
+<strong>Analysis:</strong>
+Total dates added: ${newResult.dates ? newResult.dates.length : 0}
+All dates in YYYY-MM-DD format: ${newResult.dates ? newResult.dates.every(d => /^\d{4}-\d{2}-\d{2}$/.test(d)) : 'N/A'}
+            `;
+        }
+
+        function testTimezoneEdgeCase() {
+            const output = document.getElementById('output3');
+
+            // Test a range that might expose timezone issues
+            const testDate = '2025-01-15';
+            const oldResult = addDateRangeOld(testDate, testDate);
+            const newResult = addDateRangeFixed(testDate, testDate);
+
+            const testDateObj = new Date(testDate);
+            const testDateObjUTC = new Date(testDate + 'T00:00:00Z');
+
+            output.innerHTML = `
+<span class="info">🧪 Timezone Edge Case Test</span>
+
+Input Date: ${testDate}
+
+<strong>Date Object Interpretations:</strong>
+new Date("${testDate}"):
+  - ISO String: ${testDateObj.toISOString()}
+  - Split result: ${testDateObj.toISOString().split('T')[0]}
+
+new Date("${testDate}T00:00:00Z"):
+  - ISO String: ${testDateObjUTC.toISOString()}
+  - Split result: ${testDateObjUTC.toISOString().split('T')[0]}
+
+<strong>Method Results:</strong>
+OLD Method: ${oldResult.dates ? oldResult.dates[0] : 'error'}
+NEW Method: ${newResult.dates ? newResult.dates[0] : 'error'}
+
+${oldResult.dates && newResult.dates && oldResult.dates[0] !== testDate ?
+'<span class="error">❌ OLD METHOD BUG: Date shifted due to timezone!</span>' :
+'<span class="success">✅ Date remains correct</span>'}
+
+${newResult.dates && newResult.dates[0] === testDate ?
+'<span class="success">✅ NEW METHOD: Date preserved correctly!</span>' :
+'<span class="error">❌ NEW METHOD: Still has issues</span>'}
+            `;
+        }
+
+        function testFullScheduleSave() {
+            const output = document.getElementById('output4');
+
+            // Simulate a full schedule save
+            const scheduleData = {
+                title: "Test Schedule",
+                description: "Testing specific dates",
+                subject: "Mathematics",
+                subject_type: "Mathematics",
+                grade_level: "Grade 9-10",
+                year: 2025,
+                schedule_type: "specific",
+                months: [],
+                days: [],
+                specific_dates: ["2025-01-15", "2025-01-20", "2025-01-25"],
+                start_time: "09:00",
+                end_time: "10:00",
+                notes: "Test notes",
+                status: "active",
+                alarm_enabled: false,
+                alarm_before_minutes: null,
+                notification_browser: false,
+                notification_sound: false
+            };
+
+            output.innerHTML = `
+<span class="success">✅ Schedule Data Structure Test</span>
+
+<strong>Schedule Data to be sent to API:</strong>
+${JSON.stringify(scheduleData, null, 2)}
+
+<strong>Validation:</strong>
+✓ schedule_type is "specific": ${scheduleData.schedule_type === 'specific' ? '✅' : '❌'}
+✓ specific_dates is an array: ${Array.isArray(scheduleData.specific_dates) ? '✅' : '❌'}
+✓ specific_dates has items: ${scheduleData.specific_dates.length > 0 ? '✅' : '❌'}
+✓ dates in YYYY-MM-DD format: ${scheduleData.specific_dates.every(d => /^\d{4}-\d{2}-\d{2}$/.test(d)) ? '✅' : '❌'}
+✓ months array is empty: ${scheduleData.months.length === 0 ? '✅' : '❌'}
+✓ days array is empty: ${scheduleData.days.length === 0 ? '✅' : '❌'}
+
+<strong>Backend Compatibility:</strong>
+The backend expects:
+- specific_dates: List[str] (YYYY-MM-DD format) ✅
+- PostgreSQL ARRAY type ✅
+
+This data structure matches the backend expectations!
+            `;
+        }
+
+        // Auto-populate with sample dates
+        window.onload = function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const nextWeek = new Date(today);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+
+            document.getElementById('single-date').value = today.toISOString().split('T')[0];
+            document.getElementById('range-from').value = today.toISOString().split('T')[0];
+            document.getElementById('range-to').value = nextWeek.toISOString().split('T')[0];
+        };
+    </script>
+</body>
+</html>

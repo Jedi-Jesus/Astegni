@@ -1,0 +1,2892 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - User Profile</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/admin-profile/admin.css">
+    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="../css/tutor-profile/tutor-profile.css">
+    <link rel="stylesheet" href="../css/find-tutors/hero-section.css">
+    <!-- Shared Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Minimal inline styles - only for profile-specific fixes -->
+    <style>
+        /* Compensate for fixed navbar */
+        body {
+            padding-top: 72px;
+        }
+
+        /* Fix overflow hidden that clips tooltip */
+        .profile-header-section {
+            overflow: visible !important;
+        }
+
+        /* Fix name truncation - allow full name to display */
+        .profile-name {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            white-space: normal !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
+            word-wrap: break-word;
+        }
+
+        .profile-main-info {
+            overflow: visible !important;
+        }
+
+        .profile-details-section {
+            overflow: visible !important;
+        }
+
+        /* Rating Tooltip - Force visibility on hover */
+        .profile-header-section .rating-section,
+        .rating-section {
+            position: relative !important;
+            overflow: visible !important;
+            display: inline-block !important;
+        }
+
+        .profile-header-section .rating-wrapper,
+        .rating-wrapper {
+            position: relative !important;
+            display: inline-block !important;
+            cursor: pointer !important;
+            overflow: visible !important;
+        }
+
+        .rating-tooltip {
+            position: absolute !important;
+            top: 110% !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: var(--card-bg) !important;
+            border: 1px solid rgba(0, 0, 0, 0.1) !important;
+            border-radius: 12px !important;
+            padding: 1rem !important;
+            min-width: 280px !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15) !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transition: all 0.3s ease !important;
+            z-index: 99999 !important;
+            pointer-events: none !important;
+        }
+
+        .profile-header-section .rating-wrapper:hover .rating-tooltip,
+        .rating-wrapper:hover .rating-tooltip,
+        #rating-hover-trigger:hover #rating-tooltip {
+            opacity: 1 !important;
+            visibility: visible !important;
+            top: calc(100% + 10px) !important;
+            pointer-events: auto !important;
+            display: block !important;
+        }
+
+        .rating-tooltip::before {
+            content: '' !important;
+            position: absolute !important;
+            top: -8px !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            border-left: 8px solid transparent !important;
+            border-right: 8px solid transparent !important;
+            border-bottom: 8px solid var(--card-bg) !important;
+        }
+
+        /* Dark mode support */
+        [data-theme="dark"] .rating-tooltip {
+            background: #1f2937 !important;
+            border-color: #374151 !important;
+        }
+
+        [data-theme="dark"] .rating-tooltip::before {
+            border-bottom-color: #1f2937 !important;
+        }
+
+        /* Fix ALL parent containers that might clip tooltip */
+        .panels-container,
+        .panel-content,
+        .profile-header,
+        .profile-avatar-container,
+        .profile-name-row,
+        .cover-image-container {
+            overflow: visible !important;
+        }
+
+        /* ============================================
+           ENHANCED PROFILE HEADER SECTION STYLES
+           ============================================ */
+
+        .profile-header-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: visible !important;
+            transition: all 0.3s ease;
+        }
+
+        .profile-header-section:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        /* Enhanced Cover Image */
+        .cover-image-container {
+            position: relative;
+            height: 280px;
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+        }
+
+        .cover-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .cover-image-container:hover .cover-img {
+            transform: scale(1.05);
+        }
+
+        .cover-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg,
+                rgba(0, 0, 0, 0.1) 0%,
+                rgba(0, 0, 0, 0.3) 100%
+            );
+            pointer-events: none;
+        }
+
+        .cover-upload-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10;
+        }
+
+        .cover-upload-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .cover-upload-btn svg {
+            width: 20px;
+            height: 20px;
+            color: #4f46e5;
+        }
+
+        /* Enhanced Profile Info Section */
+        .profile-main-info {
+            padding: 0 2rem 2rem 2rem;
+            margin-top: -60px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .profile-info-wrapper {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        /* Enhanced Avatar */
+        .profile-avatar-container {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 5px solid var(--card-bg);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar-container:hover .profile-avatar {
+            transform: scale(1.05);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .online-indicator {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            background: #22c55e;
+            border: 4px solid var(--card-bg);
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+            animation: pulse-indicator 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-indicator {
+            0%, 100% { box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4); }
+            50% { box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8); }
+        }
+
+        .avatar-upload-btn {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+        }
+
+        .profile-avatar-container:hover .avatar-upload-btn {
+            opacity: 1;
+        }
+
+        .avatar-upload-btn:hover {
+            background: white;
+            transform: translateX(-50%) translateY(-2px);
+        }
+
+        .avatar-upload-btn svg {
+            width: 16px;
+            height: 16px;
+            color: #4f46e5;
+        }
+
+        /* Enhanced Profile Details */
+        .profile-details-section {
+            flex: 1;
+            padding-top: 0.5rem;
+        }
+
+        .profile-name-row {
+            margin-bottom: 1rem;
+        }
+
+        .profile-name {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            line-height: 1.2;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--heading) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .badges-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .profile-badge.verified {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .profile-badge.verified:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+        }
+
+        .profile-badge.member {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .profile-badge.member:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .profile-badge.active {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .profile-badge.active:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Enhanced Rating Section */
+        .rating-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f59e0b;
+            text-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+        }
+
+        .rating-stars {
+            color: #f59e0b;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+        }
+
+        .rating-count {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .rating-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Enhanced Location/Info Items */
+        .profile-location {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: rgba(var(--button-bg-rgb), 0.05);
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .profile-location:hover {
+            background: rgba(var(--button-bg-rgb), 0.1);
+            transform: translateX(5px);
+        }
+
+        .location-icon {
+            font-size: 1.25rem;
+        }
+
+        .profile-location span:last-child {
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        /* Enhanced About Me / Info Grid Section */
+        .profile-info-grid {
+            background: rgba(var(--button-bg-rgb), 0.03);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid rgba(var(--border-rgb), 0.1);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--heading);
+            font-size: 0.95rem;
+            min-width: 100px;
+        }
+
+        .info-value {
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .info-description {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(var(--border-rgb), 0.1);
+        }
+
+        .info-description p {
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        /* Enhanced Quote Section */
+        .profile-quote {
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.1) 0%, rgba(124, 58, 237, 0.05) 100%);
+            border-left: 4px solid #4f46e5;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            margin-top: 1.5rem;
+            position: relative;
+            font-style: italic;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.6;
+            box-shadow: 0 2px 8px rgba(79, 70, 229, 0.1);
+        }
+
+        .profile-quote::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            font-size: 3rem;
+            color: #4f46e5;
+            opacity: 0.3;
+            font-family: Georgia, serif;
+        }
+
+        .profile-quote span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Enhanced Profile Actions */
+        .profile-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .profile-actions .btn-primary,
+        .profile-actions .btn-secondary {
+            flex: 1;
+            min-width: 160px;
+            padding: 0.875rem 1.5rem;
+            font-weight: 600;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .profile-actions .btn-primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .profile-actions .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .profile-actions .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid rgba(var(--border-rgb), 0.3);
+        }
+
+        .profile-actions .btn-secondary:hover {
+            background: rgba(var(--button-bg-rgb), 0.05);
+            border-color: var(--button-bg);
+            transform: translateY(-2px);
+        }
+
+        /* Enhanced Connections Section */
+        .profile-connections {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(var(--button-bg-rgb), 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(var(--border-rgb), 0.1);
+        }
+
+        .connections-header h4 {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--heading);
+            display: flex;
+            align-items: center;
+        }
+
+        .connections-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+        }
+
+        .stat-box {
+            padding: 1rem;
+            background: var(--card-bg);
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(var(--border-rgb), 0.1);
+        }
+
+        .stat-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-box div:first-child {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--heading);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-box div:last-child {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .profile-info-wrapper {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-avatar {
+                width: 120px;
+                height: 120px;
+            }
+
+            .profile-name {
+                font-size: 1.75rem;
+            }
+
+            .badges-row {
+                justify-content: center;
+            }
+
+            .profile-location {
+                justify-content: center;
+            }
+
+            .info-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.25rem;
+            }
+
+            .info-label {
+                min-width: auto;
+            }
+
+            .profile-actions {
+                flex-direction: column;
+            }
+
+            .profile-actions .btn-primary,
+            .profile-actions .btn-secondary {
+                width: 100%;
+            }
+
+            .connections-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ============================================
+           STUDY TIPS TICKER ANIMATION
+           ============================================ */
+        .activity-ticker-container {
+            height: 95px;
+            overflow: hidden;
+            position: relative;
+            background: rgba(var(--button-bg-rgb), 0.02);
+            border-radius: var(--radius-md);
+        }
+
+        .activity-ticker {
+            animation: tickerRoll 18s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: start;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            height: 95px;
+            box-sizing: border-box;
+            transition: background var(--transition-base);
+        }
+
+        .activity-item:hover {
+            background: rgba(var(--button-bg-rgb), 0.05);
+        }
+
+        @keyframes tickerRoll {
+            0% {
+                transform: translateY(0);
+            }
+            16.66% {
+                transform: translateY(0);
+            }
+            20% {
+                transform: translateY(-95px);
+            }
+            36.66% {
+                transform: translateY(-95px);
+            }
+            40% {
+                transform: translateY(-190px);
+            }
+            56.66% {
+                transform: translateY(-190px);
+            }
+            60% {
+                transform: translateY(-285px);
+            }
+            76.66% {
+                transform: translateY(-285px);
+            }
+            80% {
+                transform: translateY(-380px);
+            }
+            96.66% {
+                transform: translateY(-380px);
+            }
+            100% {
+                transform: translateY(-475px);
+            }
+        }
+
+        /* Pause animation on hover */
+        .activity-ticker-container:hover .activity-ticker {
+            animation-play-state: paused;
+        }
+
+        /* ============================================
+           FIX: Prevent profile-header-section from moving with sidebar
+           ============================================ */
+        .profile-header-section.sidebar-active {
+            transform: none !important;
+        }
+
+        .panel-content section.sidebar-active {
+            transform: none !important;
+        }
+
+        /* ============================================
+           UPLOAD MODAL STYLES
+           ============================================ */
+        .upload-cover-modal,
+        .upload-profile-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .upload-cover-modal .modal-content,
+        .upload-profile-modal .modal-content {
+            background: var(--card-bg);
+            border-radius: 20px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .upload-cover-modal .modal-inner,
+        .upload-profile-modal .modal-inner {
+            padding: 2rem;
+        }
+
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--highlight-bg);
+        }
+
+        .upload-area:hover {
+            border-color: var(--button-bg);
+            background: rgba(var(--button-bg-rgb), 0.05);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            font-weight: 600;
+            color: var(--heading);
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-hint {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        .preview-container {
+            margin-top: 1.5rem;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+
+        .preview-info {
+            padding: 1rem;
+            background: var(--highlight-bg);
+        }
+
+        .file-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .file-info span:first-child {
+            color: var(--text-muted);
+        }
+
+        .file-info span:last-child {
+            font-weight: 600;
+            color: var(--heading);
+        }
+
+        .upload-progress {
+            margin-top: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--highlight-bg);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--button-bg), #7c3aed);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-upload {
+            flex: 1;
+            padding: 0.875rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-upload.primary {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .btn-upload.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-upload.secondary {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-upload.secondary:hover {
+            background: var(--highlight-bg);
+            border-color: var(--button-bg);
+        }
+
+        /* ============================================
+           ENGAGEMENT FILTER STYLES
+           ============================================ */
+
+        .engagement-filter-btn {
+            background: var(--card-bg);
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .engagement-filter-btn:hover {
+            background: var(--highlight-bg);
+            border-color: var(--button-bg);
+            color: var(--button-bg);
+        }
+
+        .engagement-filter-btn.active {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        .engagement-type-btn {
+            background: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .engagement-type-btn:hover {
+            background: var(--highlight-bg);
+            color: var(--text);
+            border-color: #3b82f6;
+        }
+
+        .engagement-type-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Engagement Card Styles - Fix glitching */
+        .engagement-card {
+            /* Override admin.css .card:hover background-color transition */
+            background-color: var(--card-bg) !important;
+            /* Only transition specific properties to avoid glitching */
+            transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+            /* Prevent will-change from causing repaints */
+            will-change: auto;
+        }
+
+        .engagement-card:hover {
+            /* Keep background stable - no color change */
+            background-color: var(--card-bg) !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+        }
+    </style>
+    <!-- Profile Dropdown Fix - MUST load last -->
+    <link rel="stylesheet" href="../css/user-profile/profile-specific-fix.css">
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+        <div class="nav-container" style="max-width: 100%; padding: 0 1rem;">
+            <div class="nav-brand">
+                <button class="sidebar-toggle" id="hamburger" aria-label="Toggle sidebar">
+                    <span class="hamburger">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </span>
+                </button>
+                <a href="../profile-pages/user-profile.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">User</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <!-- Right Section: Nav Menu + Actions -->
+            <div class="nav-actions" style="display: flex; align-items: center; gap: 0.5rem; margin-right: 0;">
+                <div class="nav-items" style="display: flex; gap: 0.25rem;">
+                    <a class="nav-link" href="../index.html">
+                        <span class="nav-icon">🏠</span> Home
+                    </a>
+                    <a class="nav-link" href="../branch/find-tutors.html">
+                        <span class="nav-icon">👨‍🏫</span> Find Tutors
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'news')">
+                        <span class="nav-icon">📰</span> News
+                    </a>
+                    <a class="nav-link" href="../branch/reels.html">
+                        <span class="nav-icon">🎬</span> Reels
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'store')">
+                        <span class="nav-icon">📚</span> Bookstore
+                    </a>
+                    <a class="nav-link" href="#" onclick="handleNavLinkClick(event, 'find-jobs')">
+                        <span class="nav-icon">💼</span> Find a Job
+                    </a>
+                </div>
+                <!-- Profile container -->
+                <div id="profile-container" class="profile-dropdown-container">
+                    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                        onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic" alt="Profile">
+                        <span id="profile-name" class="profile-name"></span>
+                        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <div id="profile-dropdown-menu" class="profile-dropdown-menu">
+                        <!-- User info header - CLICKABLE to go to profile page -->
+                        <a href="#" id="dropdown-profile-link" class="dropdown-header-link">
+                            <div class="dropdown-header">
+                                <img id="dropdown-profile-pic" class="profile-pic" alt="Profile">
+                                <div class="dropdown-user-info">
+                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                </div>
+                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <!-- Role switcher (shown only if user has multiple roles) -->
+                        <div id="role-switcher-section" class="role-switcher-section hidden">
+                            <div class="dropdown-item-header">Switch Role</div>
+                            <div id="role-options" class="role-options">
+                                <!-- Role options will be dynamically added here -->
+                            </div>
+                            <div class="dropdown-divider"></div>
+                        </div>
+
+                        <div class="dropdown-divider"></div>
+
+                        <button class="dropdown-item logout-item" onclick="showLogoutModal()">
+                            <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                                </path>
+                            </svg>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Notification Icon -->
+                <button class="icon-btn" aria-label="Notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span class="notification-badge">2</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="icon-btn" aria-label="Toggle theme">
+                    <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Top Advertisement Placeholder -->
+    <div class="ad-container premium-ad" style="margin-top: 2rem;" onclick="openAdAnalyticsModal()">
+        <div class="ad-animation">
+            <div class="pulse-ring"></div>
+            <div class="pulse-ring"></div>
+        </div>
+        <div class="ad-content">
+            <span class="ad-label">Advertisement</span>
+            <h3 class="ad-title">Discover Quality Tutors</h3>
+            <p class="ad-text">Connect with expert tutors today</p>
+            <button class="ad-cta" onclick="openAdAnalyticsModal()">Browse Tutors</button>
+        </div>
+        <div class="ad-visual">
+            <div class="ad-circles">
+                <div class="circle circle-1"></div>
+                <div class="circle circle-2"></div>
+                <div class="circle circle-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>User Dashboard</h3>
+
+                <a href="#" onclick="switchPanel('dashboard'); return false;" class="sidebar-link active">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel('my-engagements'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">❤️</span>
+                    <span>My Engagements</span>
+                    <span class="badge-count">12</span>
+                </a>
+                <a href="#" onclick="switchPanel('viewing-history'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🕒</span>
+                    <span>Viewing History</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="switchPanel('purchase'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">💳</span>
+                    <span>Purchase History</span>
+                </a>
+                <a href="#" onclick="switchPanel('earnings-investments'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon"
+                        style="font-family: 'Times New Roman', serif; font-weight: bold; font-size: 1.1rem;">ℰ</span>
+                    <span>Earnings & Investments</span>
+                </a>
+                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+
+                <!-- Quick Stats Section -->
+                <div class="mt-6 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200 shadow-sm">
+                    <h4 class="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span class="text-lg">📊</span>
+                        <span>Quick Stats</span>
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between p-2 bg-white rounded-lg shadow-sm hover:shadow transition-shadow">
+                            <span class="text-xs font-medium text-gray-700 flex items-center gap-2">
+                                <span class="text-blue-500">👨‍🏫</span>
+                                Saved Tutors
+                            </span>
+                            <span class="font-bold text-base text-blue-600 px-3 py-1 bg-blue-100 rounded-full">5</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-white rounded-lg shadow-sm hover:shadow transition-shadow">
+                            <span class="text-xs font-medium text-gray-700 flex items-center gap-2">
+                                <span class="text-green-500">🎬</span>
+                                Reels Watched
+                            </span>
+                            <span class="font-bold text-base text-green-600 px-3 py-1 bg-green-100 rounded-full">42</span>
+                        </div>
+                        <div class="flex items-center justify-between p-2 bg-white rounded-lg shadow-sm hover:shadow transition-shadow">
+                            <span class="text-xs font-medium text-gray-700 flex items-center gap-2">
+                                <span class="text-purple-500">❤️</span>
+                                Total Likes
+                            </span>
+                            <span class="font-bold text-base text-purple-600 px-3 py-1 bg-purple-100 rounded-full">18</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8" style="padding-top: 1rem;">
+        <div class="container mx-auto px-4">
+
+            <!-- Hero Section -->
+            <section class="hero-section animate__animated animate__fadeIn">
+                <h2 class="hero-title">
+                    <span id="typedText">Discover & Connect with Expert Tutors</span>
+                    <span id="cursor" class="cursor-blink">|</span>
+                </h2>
+                <p id="hero-subtitle" class="hero-subtitle">Explore educational content and find the perfect tutor for your needs</p>
+                <div class="hero-stats">
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+                        <span class="stat-number" data-target="5" data-suffix="">0</span>
+                        <span class="stat-label">Saved Tutors</span>
+                    </div>
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+                        <span class="stat-number" data-target="42" data-suffix="">0</span>
+                        <span class="stat-label">Reels Watched</span>
+                    </div>
+                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
+                        <span class="stat-number" data-target="18" data-suffix="">0</span>
+                        <span class="stat-label">Total Likes</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1" style="min-width: 0;">
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+
+                            <!-- Profile Header Section (Only visible in Dashboard) -->
+                            <section class="profile-header-section mb-8">
+                                <div class="cover-image-container relative">
+                                    <img id="cover-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='20'%3E1200x300%3C/text%3E%3C/svg%3E"
+                                        alt="Cover" class="cover-img">
+                                    <div class="cover-overlay"></div>
+                                    <!-- Cover Upload Button -->
+                                    <button onclick="openCoverUploadModal()" class="cover-upload-btn">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                            </path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+
+                                <div class="profile-main-info">
+                                    <div class="profile-info-wrapper">
+                                        <div class="profile-avatar-container">
+                                            <img id="profile-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
+                                                alt="User Profile" class="profile-avatar">
+                                            <span class="online-indicator"></span>
+                                            <!-- Profile Picture Upload Button -->
+                                            <button onclick="openProfileUploadModal()" class="avatar-upload-btn">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2"
+                                                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                                    </path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                        stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+
+                                        <div class="profile-details-section">
+                                            <div class="profile-name-row">
+                                                <h1 class="profile-name" id="userName">User Name</h1>
+                                                <div class="badges-row">
+                                                    <span class="profile-badge verified" id="verification-badge">✔
+                                                        Verified User</span>
+                                                    <span class="profile-badge member">👤 Active Member</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-location">
+                                                <span class="location-icon">📍</span>
+                                                <span id="user-location">Addis Ababa, Ethiopia</span>
+                                            </div>
+
+                                            <!-- Email (optional) -->
+                                            <div class="profile-location" id="email-container" style="display: none;">
+                                                <span class="location-icon">✉️</span>
+                                                <span id="user-email">email@example.com</span>
+                                            </div>
+
+                                            <!-- Phone (optional) -->
+                                            <div class="profile-location" id="phone-container" style="display: none;">
+                                                <span class="location-icon">📞</span>
+                                                <span id="user-phone">+251 912 345 678</span>
+                                            </div>
+
+                                            <!-- About Me Info -->
+                                            <div class="profile-info-grid">
+                                                <div class="info-item">
+                                                    <span class="info-label">Member Since:</span>
+                                                    <span class="info-value" id="user-joined">January 2025</span>
+                                                </div>
+                                                <div class="info-item">
+                                                    <span class="info-label">Interests:</span>
+                                                    <span class="info-value" id="user-interests">Education, Learning</span>
+                                                </div>
+                                                <div class="info-description">
+                                                    <p id="user-bio">Exploring educational content and connecting with expert tutors on Astegni platform.</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-quote">
+                                                <span id="user-quote">"Learning is a journey, not a destination."</span>
+                                            </div>
+
+                                            <!-- Connections Section -->
+                                            <div class="profile-connections" style="margin-top: 1.5rem;">
+                                                <div class="connections-header"
+                                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                                    <h4
+                                                        style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">
+                                                        <span style="margin-right: 0.5rem;">📊</span>Activity Stats
+                                                    </h4>
+                                                </div>
+                                                <div class="connections-stats"
+                                                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                                                    <div class="stat-box"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md);">
+                                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
+                                                            id="saved-tutors-count">5</div>
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                            Saved Tutors</div>
+                                                    </div>
+                                                    <div class="stat-box"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md);">
+                                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
+                                                            id="saved-reels-count">8</div>
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                            Saved Reels</div>
+                                                    </div>
+                                                    <div class="stat-box"
+                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md);">
+                                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
+                                                            id="total-likes-count">18</div>
+                                                        <div
+                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                                            Total Likes</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-actions">
+                                                <button onclick="openEditProfileModal()" class="btn-primary">
+                                                    <span class="mr-2">✏️</span>
+                                                    Edit Profile
+                                                </button>
+                                                <button onclick="shareProfile()" class="btn-secondary ml-2">
+                                                    <span class="mr-2">🔗</span>
+                                                    Share Profile
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Page Header -->
+                            <div class="mb-8 animate-fadeIn">
+                                <h1 class="text-3xl font-bold mb-2">User Dashboard</h1>
+                                <p class="text-gray-600">Overview of your engagements, saved content, and activity</p>
+                            </div>
+
+                            <!-- Activity Overview Cards -->
+                            <div class="dashboard-grid mb-8">
+                                <div class="card p-4">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="text-3xl">❤️</span>
+                                        <h3 class="text-lg font-semibold">Total Engagements</h3>
+                                    </div>
+                                    <p class="text-2xl font-bold text-red-600" id="stat-total-engagements">12</p>
+                                    <span class="text-sm text-gray-500">Likes & Saves</span>
+                                </div>
+
+                                <div class="card p-4">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="text-3xl">👨‍🏫</span>
+                                        <h3 class="text-lg font-semibold">Saved Tutors</h3>
+                                    </div>
+                                    <p class="text-2xl font-bold text-blue-600" id="stat-saved-tutors">5</p>
+                                    <span class="text-sm text-gray-500">Bookmarked</span>
+                                </div>
+
+                                <div class="card p-4">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="text-3xl">🎬</span>
+                                        <h3 class="text-lg font-semibold">Saved Reels</h3>
+                                    </div>
+                                    <p class="text-2xl font-bold text-purple-600" id="stat-saved-reels">8</p>
+                                    <span class="text-sm text-gray-500">Bookmarked</span>
+                                </div>
+
+                                <div class="card p-4">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <span class="text-3xl">🕒</span>
+                                        <h3 class="text-lg font-semibold">Reels Watched</h3>
+                                    </div>
+                                    <p class="text-2xl font-bold text-green-600" id="stat-reels-watched">42</p>
+                                    <span class="text-sm text-gray-500">Total views</span>
+                                </div>
+                            </div>
+
+                            <!-- Recent Activity Section -->
+                            <div class="card p-6 mb-8">
+                                <h3 class="text-xl font-semibold mb-4">Recent Activity</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                                        <span class="text-2xl">❤️</span>
+                                        <div class="flex-1">
+                                            <p class="font-medium">Liked a reel about Mathematics</p>
+                                            <p class="text-sm text-gray-500">2 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                                        <span class="text-2xl">🔖</span>
+                                        <div class="flex-1">
+                                            <p class="font-medium">Saved tutor: Dr. Abebe Tadesse</p>
+                                            <p class="text-sm text-gray-500">5 hours ago</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                                        <span class="text-2xl">🎬</span>
+                                        <div class="flex-1">
+                                            <p class="font-medium">Watched Chemistry tutorial reel</p>
+                                            <p class="text-sm text-gray-500">1 day ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- My Engagements Panel -->
+                        <div id="my-engagements-panel" class="panel-content hidden">
+                            <div class="mb-8">
+                                <h1 class="text-3xl font-bold mb-2">My Engagements</h1>
+                                <p class="text-gray-600">All your likes, saves, and interactions</p>
+                            </div>
+
+                            <!-- Engagement Filters -->
+                            <div class="card p-6 mb-6">
+                                <div class="flex flex-wrap gap-4 mb-4">
+                                    <!-- Main Filter Buttons -->
+                                    <button onclick="filterEngagements('likes')"
+                                            class="engagement-filter-btn active px-4 py-2 rounded-lg font-medium transition-colors"
+                                            data-filter="likes">
+                                        ❤️ Likes
+                                    </button>
+                                    <button onclick="filterEngagements('saved')"
+                                            class="engagement-filter-btn px-4 py-2 rounded-lg font-medium transition-colors"
+                                            data-filter="saved">
+                                        🔖 Saved
+                                    </button>
+                                    <button onclick="filterEngagements('favorites')"
+                                            class="engagement-filter-btn px-4 py-2 rounded-lg font-medium transition-colors"
+                                            data-filter="favorites">
+                                        ⭐ Favorites
+                                    </button>
+                                    <button onclick="filterEngagements('comments')"
+                                            class="engagement-filter-btn px-4 py-2 rounded-lg font-medium transition-colors"
+                                            data-filter="comments">
+                                        💬 Comments
+                                    </button>
+                                </div>
+
+                                <!-- Sub-Filter Buttons -->
+                                <div class="flex gap-3 pl-4 border-l-4 border-blue-500">
+                                    <button onclick="filterEngagementType('tutors')"
+                                            class="engagement-type-btn active px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+                                            data-type="tutors">
+                                        👨‍🏫 Tutors
+                                    </button>
+                                    <button onclick="filterEngagementType('reels')"
+                                            class="engagement-type-btn px-3 py-1.5 rounded-md text-sm font-medium transition-colors"
+                                            data-type="reels">
+                                        🎬 Reels
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Engagement Content -->
+                            <div class="card p-6">
+                                <div id="engagement-results">
+                                    <p class="text-gray-500">Loading engagement content...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Viewing History Panel -->
+                        <div id="viewing-history-panel" class="panel-content hidden">
+                            <div class="mb-8">
+                                <h1 class="text-3xl font-bold mb-2">Viewing History</h1>
+                                <p class="text-gray-600">Your recent viewing activity</p>
+                            </div>
+                            <div class="card p-6">
+                                <p class="text-gray-500">Viewing history will be displayed here...</p>
+                            </div>
+                        </div>
+
+                        <!-- Earnings & Investments Panel -->
+                        <div id="earnings-investments-panel" class="panel-content hidden">
+                            <div class="mb-8">
+                                <h1 class="text-3xl font-bold mb-2">Earnings & Investments</h1>
+                                <p class="text-gray-600">Track your income streams and investment portfolio</p>
+                            </div>
+
+                            <!-- Tabs -->
+                            <div class="flex gap-4 mb-6 border-b border-gray-200">
+                                <button onclick="switchEarningsTab('earnings')" id="earnings-tab"
+                                    class="earnings-tab-btn px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600 transition-all">
+                                    Earnings
+                                </button>
+                                <button onclick="switchEarningsTab('investments')" id="investments-tab"
+                                    class="earnings-tab-btn px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 transition-all">
+                                    Investments
+                                </button>
+                            </div>
+
+                            <!-- Earnings Tab Content -->
+                            <div id="earnings-tab-content" class="earnings-tab-content">
+                                <!-- Summary Cards (Clickable) -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                                    <div onclick="toggleEarningsSection('total')"
+                                        class="card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 cursor-pointer hover:shadow-lg transition-all duration-200 active-earnings-card">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-green-600 text-2xl">💰</span>
+                                            <span class="text-xs text-green-600 font-semibold">COMPLETED</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">Total Earnings</p>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="total-earnings">0 ETB</h3>
+                                        <p class="text-xs text-green-600 mt-2 font-medium">Click to view all</p>
+                                    </div>
+                                    <div onclick="toggleEarningsSection('direct')"
+                                        class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200 cursor-pointer hover:shadow-lg transition-all duration-200">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-blue-600 text-2xl">👥</span>
+                                            <span class="text-xs text-blue-600 font-semibold">DIRECT</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">Direct Affiliate</p>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="direct-affiliate-earnings">0 ETB
+                                        </h3>
+                                        <p class="text-xs text-blue-600 mt-2 font-medium">Click to view</p>
+                                    </div>
+                                    <div onclick="toggleEarningsSection('indirect')"
+                                        class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 cursor-pointer hover:shadow-lg transition-all duration-200">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-purple-600 text-2xl">🔗</span>
+                                            <span class="text-xs text-purple-600 font-semibold">INDIRECT</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">Indirect Affiliate</p>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="indirect-affiliate-earnings">0 ETB
+                                        </h3>
+                                        <p class="text-xs text-purple-600 mt-2 font-medium">Click to view</p>
+                                    </div>
+                                    <div onclick="toggleEarningsSection('tutoring')"
+                                        class="card p-6 bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 cursor-pointer hover:shadow-lg transition-all duration-200">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-orange-600 text-2xl">📚</span>
+                                            <span class="text-xs text-orange-600 font-semibold">TUTORING</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">Tutoring Sessions</p>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="tutoring-earnings">0 ETB</h3>
+                                        <p class="text-xs text-orange-600 mt-2 font-medium">Click to view</p>
+                                    </div>
+                                </div>
+
+                                <!-- Earnings Sections -->
+                                <div class="space-y-8">
+                                    <!-- Total Earnings Section -->
+                                    <div id="total-earnings-section" class="card p-6 earnings-section">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <div>
+                                                <h3 class="text-xl font-bold flex items-center gap-2">
+                                                    <span class="text-green-600">💰</span>
+                                                    Total Earnings - All Sources
+                                                </h3>
+                                                <p class="text-sm text-gray-600 mt-1">Combined view of all your earnings</p>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <select id="total-period-selector" onchange="loadTotalEarningsData()"
+                                                    class="p-2 border-2 rounded-lg text-sm font-medium">
+                                                    <option value="1">Last Month</option>
+                                                    <option value="3">Last 3 Months</option>
+                                                    <option value="6" selected>Last 6 Months</option>
+                                                    <option value="12">Last Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Total Earnings Chart -->
+                                        <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 300px;">
+                                            <canvas id="total-earnings-chart"></canvas>
+                                        </div>
+                                        <!-- Combined List -->
+                                        <div id="total-earnings-list" class="space-y-3 max-h-96 overflow-y-auto">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Direct Affiliate Section -->
+                                    <div id="direct-affiliate-section" class="card p-6 earnings-section hidden">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <div>
+                                                <h3 class="text-xl font-bold flex items-center gap-2">
+                                                    <span class="text-blue-600">👥</span>
+                                                    Direct Affiliate Earnings
+                                                </h3>
+                                                <p class="text-sm text-gray-600 mt-1">Commission from users you directly
+                                                    referred</p>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <select id="direct-period-selector" onchange="loadDirectAffiliateData()"
+                                                    class="p-2 border-2 rounded-lg text-sm font-medium">
+                                                    <option value="1">Last Month</option>
+                                                    <option value="3">Last 3 Months</option>
+                                                    <option value="6" selected>Last 6 Months</option>
+                                                    <option value="12">Last Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Line Graph -->
+                                        <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
+                                            <canvas id="direct-affiliate-chart"></canvas>
+                                        </div>
+                                        <!-- List of People -->
+                                        <div id="direct-affiliate-list" class="space-y-3 max-h-96 overflow-y-auto">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Indirect Affiliate Section -->
+                                    <div id="indirect-affiliate-section" class="card p-6 earnings-section hidden">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <div>
+                                                <h3 class="text-xl font-bold flex items-center gap-2">
+                                                    <span class="text-purple-600">🔗</span>
+                                                    Indirect Affiliate Earnings
+                                                </h3>
+                                                <p class="text-sm text-gray-600 mt-1">Commission from second-level referrals
+                                                </p>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <select id="indirect-period-selector" onchange="loadIndirectAffiliateData()"
+                                                    class="p-2 border-2 rounded-lg text-sm font-medium">
+                                                    <option value="1">Last Month</option>
+                                                    <option value="3">Last 3 Months</option>
+                                                    <option value="6" selected>Last 6 Months</option>
+                                                    <option value="12">Last Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Line Graph -->
+                                        <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
+                                            <canvas id="indirect-affiliate-chart"></canvas>
+                                        </div>
+                                        <!-- List of People -->
+                                        <div id="indirect-affiliate-list" class="space-y-3 max-h-96 overflow-y-auto">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Tutoring Earnings Section -->
+                                    <div id="tutoring-earnings-section" class="card p-6 earnings-section hidden">
+                                        <div class="flex items-center justify-between mb-6">
+                                            <div>
+                                                <h3 class="text-xl font-bold flex items-center gap-2">
+                                                    <span class="text-orange-600">📚</span>
+                                                    Tutoring Session Earnings
+                                                </h3>
+                                                <p class="text-sm text-gray-600 mt-1">Income from teaching sessions</p>
+                                            </div>
+                                            <div class="flex items-center gap-3">
+                                                <select id="tutoring-period-selector" onchange="loadTutoringData()"
+                                                    class="p-2 border-2 rounded-lg text-sm font-medium">
+                                                    <option value="1">Last Month</option>
+                                                    <option value="3">Last 3 Months</option>
+                                                    <option value="6" selected>Last 6 Months</option>
+                                                    <option value="12">Last Year</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <!-- Line Graph -->
+                                        <div class="mb-6 bg-gray-50 p-4 rounded-lg" style="height: 250px;">
+                                            <canvas id="tutoring-earnings-chart"></canvas>
+                                        </div>
+                                        <!-- List of Sessions -->
+                                        <div id="tutoring-earnings-list" class="space-y-3 max-h-96 overflow-y-auto">
+                                            <!-- Will be populated by JS -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Investments Tab Content -->
+                            <div id="investments-tab-content" class="earnings-tab-content hidden">
+                                <!-- Investment Summary Cards -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                                    <div class="card p-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-blue-600 text-2xl">💼</span>
+                                            <span class="text-xs text-blue-600 font-semibold">INVESTED</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">Total Investment</p>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="total-invested">0 ETB</h3>
+                                    </div>
+                                    <div class="card p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-purple-600 text-2xl">👁️</span>
+                                            <span class="text-xs text-purple-600 font-semibold">IMPRESSIONS</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">Total Impressions</p>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="total-impressions">0</h3>
+                                    </div>
+                                    <div class="card p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="text-green-600 text-2xl">📊</span>
+                                            <span class="text-xs text-green-600 font-semibold">CPM</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">Cost Per Mille</p>
+                                        <h3 class="text-2xl font-bold text-gray-800" id="average-cpm">0 ETB</h3>
+                                    </div>
+                                </div>
+
+                                <!-- Investments List -->
+                                <div class="card p-6">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <h3 class="text-xl font-bold flex items-center gap-2">
+                                            <span class="text-blue-600">💰</span>
+                                            Investment Portfolio
+                                        </h3>
+                                        <button
+                                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                            + Add Investment
+                                        </button>
+                                    </div>
+                                    <div id="investments-list" class="space-y-4">
+                                        <!-- Purchase Card 1: Mathematics Advanced Course -->
+<div class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500">
+    <div class="flex items-start justify-between mb-4">
+        <div class="flex items-center gap-4 flex-1">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white text-2xl">
+                📚
+            </div>
+            <div class="flex-1">
+                <h4 class="font-bold text-lg text-gray-800 mb-1">Mathematics Advanced Course</h4>
+                <p class="text-sm text-gray-600">Grade 12 - Advanced Calculus & Algebra</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold">Completed</span>
+                    <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold">Course</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-2xl font-bold text-blue-600">850 ETB</div>
+            <div class="text-xs text-gray-500 mt-1">Jan 15, 2024</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Amount</div>
+            <div class="font-semibold text-gray-800">850 ETB</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Date</div>
+            <div class="font-semibold text-gray-800">Jan 15, 2024</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Status</div>
+            <div class="font-semibold text-green-600">Completed</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Payment Method</div>
+            <div class="font-semibold text-gray-800">Chapa Pay</div>
+        </div>
+    </div>
+
+    <div class="flex gap-2">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+            View Certificate
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Download Invoice
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Leave Review
+        </button>
+    </div>
+</div>
+
+<!-- Purchase Card 2: Physics Tutoring Session Package -->
+<div class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-purple-500">
+    <div class="flex items-start justify-between mb-4">
+        <div class="flex items-center gap-4 flex-1">
+            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center text-white text-2xl">
+                🎯
+            </div>
+            <div class="flex-1">
+                <h4 class="font-bold text-lg text-gray-800 mb-1">Physics Tutoring Session Package</h4>
+                <p class="text-sm text-gray-600">10 Sessions with Dr. Abebe Kebede</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full font-semibold">In Progress</span>
+                    <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full font-semibold">Tutoring</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-2xl font-bold text-purple-600">1,200 ETB</div>
+            <div class="text-xs text-gray-500 mt-1">Feb 3, 2024</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Amount</div>
+            <div class="font-semibold text-gray-800">1,200 ETB</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Date</div>
+            <div class="font-semibold text-gray-800">Feb 3, 2024</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Status</div>
+            <div class="font-semibold text-yellow-600">In Progress</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Payment Method</div>
+            <div class="font-semibold text-gray-800">M-Pesa</div>
+        </div>
+    </div>
+
+    <div class="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="flex items-center gap-2 text-sm">
+            <span class="font-semibold text-blue-800">Progress:</span>
+            <span class="text-blue-600">6 of 10 sessions completed</span>
+        </div>
+        <div class="w-full bg-blue-200 rounded-full h-2 mt-2">
+            <div class="bg-blue-600 h-2 rounded-full" style="width: 60%"></div>
+        </div>
+    </div>
+
+    <div class="flex gap-2">
+        <button class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium">
+            View Schedule
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Download Invoice
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Contact Tutor
+        </button>
+    </div>
+</div>
+
+<!-- Purchase Card 3: Chemistry Study Materials Bundle -->
+<div class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-green-500">
+    <div class="flex items-start justify-between mb-4">
+        <div class="flex items-center gap-4 flex-1">
+            <div class="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center text-white text-2xl">
+                🧪
+            </div>
+            <div class="flex-1">
+                <h4 class="font-bold text-lg text-gray-800 mb-1">Chemistry Study Materials Bundle</h4>
+                <p class="text-sm text-gray-600">Grade 11 - Organic Chemistry (3 PDFs + 5 Videos)</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold">Delivered</span>
+                    <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold">Materials</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-2xl font-bold text-green-600">350 ETB</div>
+            <div class="text-xs text-gray-500 mt-1">Jan 28, 2024</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Amount</div>
+            <div class="font-semibold text-gray-800">350 ETB</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Date</div>
+            <div class="font-semibold text-gray-800">Jan 28, 2024</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Status</div>
+            <div class="font-semibold text-green-600">Delivered</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Payment Method</div>
+            <div class="font-semibold text-gray-800">Telebirr</div>
+        </div>
+    </div>
+
+    <div class="flex gap-2">
+        <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+            Access Materials
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Download Invoice
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Leave Review
+        </button>
+    </div>
+</div>
+
+<!-- Purchase Card 4: Biology Lab Access Subscription -->
+<div class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-orange-500">
+    <div class="flex items-start justify-between mb-4">
+        <div class="flex items-center gap-4 flex-1">
+            <div class="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white text-2xl">
+                🔬
+            </div>
+            <div class="flex-1">
+                <h4 class="font-bold text-lg text-gray-800 mb-1">Biology Lab Access Subscription</h4>
+                <p class="text-sm text-gray-600">3-Month Premium Digital Lab Access</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full font-semibold">Active</span>
+                    <span class="bg-orange-100 text-orange-800 text-xs px-3 py-1 rounded-full font-semibold">Subscription</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-2xl font-bold text-orange-600">600 ETB</div>
+            <div class="text-xs text-gray-500 mt-1">Feb 10, 2024</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Amount</div>
+            <div class="font-semibold text-gray-800">600 ETB</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Date</div>
+            <div class="font-semibold text-gray-800">Feb 10, 2024</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Status</div>
+            <div class="font-semibold text-green-600">Active</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Payment Method</div>
+            <div class="font-semibold text-gray-800">Bank Transfer</div>
+        </div>
+    </div>
+
+    <div class="mb-3 p-3 bg-orange-50 rounded-lg border border-orange-200">
+        <div class="flex items-center justify-between text-sm">
+            <span class="font-semibold text-orange-800">Subscription:</span>
+            <span class="text-orange-600">Expires May 10, 2024 (60 days left)</span>
+        </div>
+    </div>
+
+    <div class="flex gap-2">
+        <button class="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors text-sm font-medium">
+            Access Lab
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Renew Now
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Download Invoice
+        </button>
+    </div>
+</div>
+
+<!-- Purchase Card 5: SAT Prep Course with Mock Tests -->
+<div class="card p-6 hover:shadow-lg transition-all duration-300 border-l-4 border-indigo-500">
+    <div class="flex items-start justify-between mb-4">
+        <div class="flex items-center gap-4 flex-1">
+            <div class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-lg flex items-center justify-center text-white text-2xl">
+                📝
+            </div>
+            <div class="flex-1">
+                <h4 class="font-bold text-lg text-gray-800 mb-1">SAT Prep Course with Mock Tests</h4>
+                <p class="text-sm text-gray-600">Complete SAT Preparation (Math + English + 10 Mock Tests)</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-semibold">Scheduled</span>
+                    <span class="bg-indigo-100 text-indigo-800 text-xs px-3 py-1 rounded-full font-semibold">Exam Prep</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-2xl font-bold text-indigo-600">1,500 ETB</div>
+            <div class="text-xs text-gray-500 mt-1">Feb 15, 2024</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Amount</div>
+            <div class="font-semibold text-gray-800">1,500 ETB</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Date</div>
+            <div class="font-semibold text-gray-800">Feb 15, 2024</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Status</div>
+            <div class="font-semibold text-blue-600">Scheduled</div>
+        </div>
+        <div>
+            <div class="text-xs text-gray-500 mb-1">Payment Method</div>
+            <div class="font-semibold text-gray-800">Chapa Pay</div>
+        </div>
+    </div>
+
+    <div class="mb-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+        <div class="flex items-center gap-2 text-sm">
+            <span class="font-semibold text-indigo-800">Course Start:</span>
+            <span class="text-indigo-600">March 1, 2024 at 9:00 AM</span>
+        </div>
+    </div>
+
+    <div class="flex gap-2">
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium">
+            View Details
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Add to Calendar
+        </button>
+        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+            Download Invoice
+        </button>
+    </div>
+</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Settings Panel -->
+                        <div id="settings-panel" class="panel-content hidden">
+                            <div class="mb-8">
+                                <h1 class="text-3xl font-bold mb-2">Settings</h1>
+                                <p class="text-gray-600">Manage your account preferences</p>
+                            </div>
+                            <div class="card p-6">
+                                <p class="text-gray-500">Settings options will be displayed here...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Widgets (Persistent across all panels) -->
+                <div class="admin-right-widgets"
+                    style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
+                    
+                                        
+                    <!-- Recommended Topics Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">💡 Recommended Topics</h3>
+                        <div class="activity-ticker-container">
+                            <div class="activity-ticker">
+                                <div class="activity-item">
+                                    <span class="text-blue-500">📐</span>
+                                    <div class="flex-1 text-sm">
+                                        <p class="font-medium" style="color: var(--heading);">Mathematics Mastery</p>
+                                        <p class="text-xs" style="color: var(--text-muted);">Explore algebra, calculus, and geometry with expert tutors. Perfect for all grade levels.</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="text-green-500">⚗️</span>
+                                    <div class="flex-1 text-sm">
+                                        <p class="font-medium" style="color: var(--heading);">Chemistry Fundamentals</p>
+                                        <p class="text-xs" style="color: var(--text-muted);">Learn organic, inorganic chemistry and lab techniques from experienced educators.</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="text-purple-500">🔬</span>
+                                    <div class="flex-1 text-sm">
+                                        <p class="font-medium" style="color: var(--heading);">Physics Exploration</p>
+                                        <p class="text-xs" style="color: var(--text-muted);">Discover mechanics, thermodynamics, and quantum physics with interactive lessons.</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="text-orange-500">🧬</span>
+                                    <div class="flex-1 text-sm">
+                                        <p class="font-medium" style="color: var(--heading);">Biology & Life Sciences</p>
+                                        <p class="text-xs" style="color: var(--text-muted);">Study cells, genetics, ecology and human anatomy with expert guidance.</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="text-pink-500">📚</span>
+                                    <div class="flex-1 text-sm">
+                                        <p class="font-medium" style="color: var(--heading);">English Language Arts</p>
+                                        <p class="text-xs" style="color: var(--text-muted);">Improve reading, writing, grammar and literature analysis skills effectively.</p>
+                                    </div>
+                                </div>
+                                <div class="activity-item">
+                                    <span class="text-indigo-500">🌍</span>
+                                    <div class="flex-1 text-sm">
+                                        <p class="font-medium" style="color: var(--heading);">History & Geography</p>
+                                        <p class="text-xs" style="color: var(--text-muted);">Explore world history, Ethiopian heritage, and global geography concepts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Discover More Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">🎯 Discover More</h3>
+                        <p class="text-sm text-gray-600 mb-4" style="color: var(--text-muted);">Explore new tutors and educational content tailored for you</p>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                            <a href="../branch/find-tutors.html" class="p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg text-center hover:shadow-md transition-all" style="text-decoration: none; background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); padding: 0.75rem; border-radius: 8px;">
+                                <div class="text-2xl mb-1" style="font-size: 1.5rem; margin-bottom: 0.25rem;">👨‍🏫</div>
+                                <div class="text-xs font-semibold text-blue-700" style="font-size: 0.75rem; font-weight: 600; color: #3b82f6;">Find Tutors</div>
+                            </a>
+                            <a href="../branch/reels.html" class="p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg text-center hover:shadow-md transition-all" style="text-decoration: none; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.05)); padding: 0.75rem; border-radius: 8px;">
+                                <div class="text-2xl mb-1" style="font-size: 1.5rem; margin-bottom: 0.25rem;">🎬</div>
+                                <div class="text-xs font-semibold text-purple-700" style="font-size: 0.75rem; font-weight: 600; color: #8b5cf6;">Watch Reels</div>
+                            </a>
+                        </div>
+                    </div>                    
+
+                    <!-- Trending Tutors Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">🔥 Trending Tutors</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-all">
+                                <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg"
+                                    alt="Tutor" class="w-12 h-12 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-sm">Dr. Abebe Tadesse</p>
+                                    <p class="text-xs text-gray-500">⭐ 4.9 • Mathematics</p>
+                                </div>
+                                <a href="../view-profiles/view-tutor.html" class="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded hover:bg-blue-600 transition-colors">View</a>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-all">
+                                <img src="../uploads/system_images/system_profile_pictures/tutor-woman.jpg"
+                                    alt="Tutor" class="w-12 h-12 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-sm">Prof. Sara Alemayehu</p>
+                                    <p class="text-xs text-gray-500">⭐ 4.8 • Physics</p>
+                                </div>
+                                <a href="../view-profiles/view-tutor.html" class="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded hover:bg-blue-600 transition-colors">View</a>
+                            </div>
+                            <div class="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-all">
+                                <img src="../uploads/system_images/system_profile_pictures/tutor-.jpg"
+                                    alt="Tutor" class="w-12 h-12 rounded-full object-cover">
+                                <div class="flex-1">
+                                    <p class="font-semibold text-sm">Dr. Mulugeta Bekele</p>
+                                    <p class="text-xs text-gray-500">⭐ 4.7 • Chemistry</p>
+                                </div>
+                                <a href="../view-profiles/view-tutor.html" class="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded hover:bg-blue-600 transition-colors">View</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Popular Reels Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">🎬 Popular Reels</h3>
+                        <div class="space-y-3">
+                            <a href="../branch/reels.html" class="relative rounded-lg overflow-hidden cursor-pointer group block">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='200'%3E%3Crect width='280' height='200' fill='%236366f1'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='sans-serif' font-size='16'%3EMath Tips%3C/text%3E%3C/svg%3E"
+                                    alt="Reel" class="w-full h-44 object-cover">
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                    </svg>
+                                </div>
+                                <div class="absolute bottom-2 left-2 right-2">
+                                    <p class="text-white text-sm font-semibold">Quick Math Tips</p>
+                                    <p class="text-white text-xs opacity-90">❤️ 2.3K • 👁️ 12K</p>
+                                </div>
+                            </a>
+                            <a href="../branch/reels.html" class="relative rounded-lg overflow-hidden cursor-pointer group block">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='200'%3E%3Crect width='280' height='200' fill='%2310b981'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='white' font-family='sans-serif' font-size='16'%3EChemistry%3C/text%3E%3C/svg%3E"
+                                    alt="Reel" class="w-full h-44 object-cover">
+                                <div class="absolute inset-0 bg-black bg-opacity-40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <svg class="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+                                    </svg>
+                                </div>
+                                <div class="absolute bottom-2 left-2 right-2">
+                                    <p class="text-white text-sm font-semibold">Chemistry Hacks</p>
+                                    <p class="text-white text-xs opacity-90">❤️ 1.8K • 👁️ 8.5K</p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <!-- Bottom Widgets Section -->
+    <section class="bottom-widgets" style="margin-top: 3rem; margin-bottom: 3rem;">
+        <div class="container mx-auto px-4">
+            <div class="bottom-widgets-grid"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+
+                <!-- News Widget -->
+                <div class="sidebar-widget news-widget card" onclick="openComingSoonModal('news')"
+                    style="cursor: pointer; padding: 1.5rem; background: var(--card-bg); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <div class="widget-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">📰 Latest News</h3>
+                        <a href="#" onclick="openComingSoonModal('news'); return false;"
+                            style="color: var(--button-bg); text-decoration: none; font-size: 0.875rem;">View All</a>
+                    </div>
+
+                    <div class="news-carousel" style="position: relative; overflow: hidden;">
+                        <div class="news-card-container" id="newsCardContainer">
+                            <div class="news-card active" data-news-index="0"
+                                style="opacity: 1; transition: opacity 0.5s ease;">
+                                <div class="news-card-header"
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                    <span class="news-category-badge"
+                                        style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Education</span>
+                                    <span class="news-time" style="color: var(--text-muted); font-size: 0.875rem;">2h
+                                        ago</span>
+                                </div>
+                                <div class="news-card-image" style="margin-bottom: 1rem;">
+                                    <img src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400"
+                                        alt="Education News"
+                                        style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4
+                                        style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">
+                                        New Education Reforms Transform Ethiopian Schools</h4>
+                                    <p
+                                        style="color: var(--text); opacity: 0.8; font-size: 0.875rem; line-height: 1.6; margin-bottom: 1rem;">
+                                        Latest educational initiatives are revolutionizing how students learn across
+                                        Ethiopia...</p>
+                                    <div class="news-stats" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">🔥
+                                            Trending</span>
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">👁️
+                                            1.2k views</span>
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">💬
+                                            45 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="news-card" data-news-index="1"
+                                style="display: none; opacity: 0; transition: opacity 0.5s ease;">
+                                <div class="news-card-header"
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                    <span class="news-category-badge"
+                                        style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Technology</span>
+                                    <span class="news-time" style="color: var(--text-muted); font-size: 0.875rem;">5h
+                                        ago</span>
+                                </div>
+                                <div class="news-card-image" style="margin-bottom: 1rem;">
+                                    <img src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=400"
+                                        alt="Tech News"
+                                        style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4
+                                        style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">
+                                        Digital Learning Platforms Surge in Popularity</h4>
+                                    <p
+                                        style="color: var(--text); opacity: 0.8; font-size: 0.875rem; line-height: 1.6; margin-bottom: 1rem;">
+                                        Ethiopian students embrace online education tools for enhanced learning
+                                        experiences...</p>
+                                    <div class="news-stats" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">💡
+                                            Innovation</span>
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">👁️
+                                            890 views</span>
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">💬
+                                            32 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="news-card" data-news-index="2"
+                                style="display: none; opacity: 0; transition: opacity 0.5s ease;">
+                                <div class="news-card-header"
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                    <span class="news-category-badge"
+                                        style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Career</span>
+                                    <span class="news-time" style="color: var(--text-muted); font-size: 0.875rem;">1d
+                                        ago</span>
+                                </div>
+                                <div class="news-card-image" style="margin-bottom: 1rem;">
+                                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=400"
+                                        alt="Career News"
+                                        style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;">
+                                </div>
+                                <div class="news-card-content">
+                                    <h4
+                                        style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">
+                                        Top Skills Every Tutor Should Master in 2025</h4>
+                                    <p
+                                        style="color: var(--text); opacity: 0.8; font-size: 0.875rem; line-height: 1.6; margin-bottom: 1rem;">
+                                        Professional development insights for educators to stay competitive and
+                                        effective...</p>
+                                    <div class="news-stats" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">📚
+                                            Featured</span>
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">👁️
+                                            2.1k views</span>
+                                        <span class="news-stat"
+                                            style="display: flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-muted);">💬
+                                            67 comments</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookstore Widget -->
+                <div class="sidebar-widget bookstore-widget card" onclick="openComingSoonModal('store')"
+                    style="cursor: pointer; padding: 1.5rem; background: var(--card-bg); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <div class="widget-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">📚 Bookstore
+                        </h3>
+                        <span
+                            style="background: var(--button-bg); color: white; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">Coming
+                            Soon</span>
+                    </div>
+
+                    <!-- Bookstore Content -->
+                    <div class="bookstore-content">
+                        <div class="bookstore-main" style="text-align: center; margin-bottom: 1.5rem;">
+                            <div class="bookstore-icon" style="font-size: 4rem; margin-bottom: 0.5rem;">📖</div>
+                            <div class="bookstore-title-animated"
+                                style="position: relative; height: 2.5rem; overflow: hidden;">
+                                <div class="bookstore-title"
+                                    style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--heading); position: absolute; width: 100%; opacity: 1; transition: opacity 0.6s ease, transform 0.6s ease;">
+                                    Educational Books</div>
+                            </div>
+                            <div class="bookstore-subtitle" style="font-size: 1rem; color: var(--text);">Buy, Sell &
+                                Rent Textbooks</div>
+                        </div>
+                        <div class="bookstore-features"
+                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">📗</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">New Books</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">📘</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Used Books</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">💰</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Best
+                                    Prices</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🚚</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Fast
+                                    Delivery</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gamestore Widget -->
+                <div class="sidebar-widget gamestore-widget card" onclick="openComingSoonModal('gamestore')"
+                    style="cursor: pointer; padding: 1.5rem; background: var(--card-bg); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease;"
+                    onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 16px rgba(0,0,0,0.1)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <div class="widget-header"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0; color: var(--heading);">🎮 Gamestore
+                        </h3>
+                        <span
+                            style="background: var(--button-bg); color: white; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600;">Coming
+                            Soon</span>
+                    </div>
+                    <div class="gamestore-content">
+                        <div class="gamestore-main" style="text-align: center; margin-bottom: 1.5rem;">
+                            <div class="gamestore-icon" style="font-size: 4rem; margin-bottom: 0.5rem;">🎮</div>
+                            <div class="gamestore-title-animated"
+                                style="position: relative; height: 2.5rem; overflow: hidden;">
+                                <div class="gamestore-title"
+                                    style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--heading); position: absolute; width: 100%; opacity: 1; transition: opacity 0.6s ease, transform 0.6s ease;">
+                                    Educational Games</div>
+                            </div>
+                            <div class="gamestore-subtitle" style="font-size: 1rem; color: var(--text);">Learn While
+                                Playing</div>
+                        </div>
+                        <div class="gamestore-features"
+                            style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🧮</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Puzzle
+                                    Games</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🎯</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Strategy
+                                    Games</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🏆</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Top Rated</span>
+                            </div>
+                            <div class="feature-item"
+                                style="background: var(--highlight-bg); padding: 0.75rem; border-radius: 8px; text-align: center;">
+                                <span style="display: block; font-size: 1.5rem; margin-bottom: 0.25rem;">🎁</span>
+                                <span style="display: block; font-size: 0.875rem; color: var(--text);">Free to
+                                    Play</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Modals -->
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <!-- Ethiopian Name Fields (Required) -->
+                    <div class="form-group">
+                        <label>First Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="editFirstName" class="form-input" placeholder="Enter first name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Father Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="editFatherName" class="form-input" placeholder="Enter father name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Grandfather Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="editGrandfatherName" class="form-input" placeholder="Enter grandfather name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="editLocation" class="form-input" placeholder="City, Country">
+                    </div>
+
+                    <!-- Email with OTP Verification -->
+                    <div class="form-group">
+                        <label>Email (Optional)</label>
+                        <div class="flex gap-2">
+                            <input type="email" id="editEmail" class="form-input flex-1" placeholder="your@email.com">
+                            <button type="button" id="sendEmailOtpBtn" class="btn-secondary" style="display: none;" onclick="sendEmailOTP()">
+                                Verify Email
+                            </button>
+                        </div>
+                        <small class="text-gray-500 text-xs mt-1" style="display: block;">
+                            Changing your email requires OTP verification
+                        </small>
+                    </div>
+
+                    <!-- OTP Input (Hidden by default) -->
+                    <div id="otpVerificationSection" class="form-group" style="display: none;">
+                        <label>Enter OTP <span class="text-red-500">*</span></label>
+                        <div class="flex gap-2">
+                            <input type="text" id="otpInput" class="form-input flex-1" placeholder="Enter 6-digit OTP" maxlength="6">
+                            <button type="button" class="btn-primary" onclick="verifyEmailOTP()">
+                                Verify
+                            </button>
+                        </div>
+                        <small class="text-gray-500 text-xs mt-1" id="otpTimer" style="display: block;">
+                            OTP sent to your new email
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone (Optional)</label>
+                        <input type="tel" id="editPhone" class="form-input" placeholder="+251 912 345 678">
+                    </div>
+                    <div class="form-group">
+                        <label>Interests</label>
+                        <input type="text" id="editInterests" class="form-input" placeholder="Education, Learning, etc.">
+                    </div>
+                    <div class="form-group">
+                        <label>Bio</label>
+                        <textarea id="editBio" class="form-input" rows="4" placeholder="Tell us about yourself..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Favorite Quote</label>
+                        <input type="text" id="editQuote" class="form-input" placeholder="Your favorite quote...">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeEditProfileModal()" class="btn-secondary">Cancel</button>
+                <button onclick="saveUserProfile()" class="btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cover Upload Modal -->
+    <div id="coverUploadModal" class="upload-cover-modal hidden">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Upload Cover Photo</h3>
+                    <button onclick="closeCoverUploadModal()" class="text-2xl">&times;</button>
+                </div>
+
+                <div id="coverUploadArea" class="upload-area" onclick="document.getElementById('coverInput').click()">
+                    <span class="upload-icon">📷</span>
+                    <p class="upload-text">Click or drag to upload cover photo</p>
+                    <p class="upload-hint">Recommended: 1200x300px, Max 5MB</p>
+                </div>
+                <input type="file" id="coverInput" class="upload-input" accept="image/*" onchange="handleCoverSelect(event)">
+
+                <div id="coverPreview" class="preview-container hidden">
+                    <img id="coverPreviewImg" class="preview-image" alt="Preview">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File name:</span>
+                            <span id="coverFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File size:</span>
+                            <span id="coverFileSize">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="coverUploadProgress" class="upload-progress hidden">
+                    <div class="progress-bar">
+                        <div id="coverProgressFill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <p class="progress-text" id="coverProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-actions">
+                    <button onclick="resetCoverUpload()" class="btn-upload secondary">Reset</button>
+                    <button onclick="uploadCoverImage()" class="btn-upload primary" id="coverUploadBtn" disabled>Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Upload Modal -->
+    <div id="profileUploadModal" class="upload-profile-modal hidden">
+        <div class="modal-content">
+            <div class="modal-inner">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">Upload Profile Picture</h3>
+                    <button onclick="closeProfileUploadModal()" class="text-2xl">&times;</button>
+                </div>
+
+                <div id="profileUploadArea" class="upload-area" onclick="document.getElementById('profileInput').click()">
+                    <span class="upload-icon">📷</span>
+                    <p class="upload-text">Click or drag to upload profile picture</p>
+                    <p class="upload-hint">Recommended: 500x500px, Max 5MB</p>
+                </div>
+                <input type="file" id="profileInput" class="upload-input" accept="image/*" onchange="handleProfileSelect(event)">
+
+                <div id="profilePreview" class="preview-container hidden">
+                    <img id="profilePreviewImg" class="preview-image" alt="Preview">
+                    <div class="preview-info">
+                        <div class="file-info">
+                            <span>File name:</span>
+                            <span id="profileFileName">-</span>
+                        </div>
+                        <div class="file-info">
+                            <span>File size:</span>
+                            <span id="profileFileSize">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profileUploadProgress" class="upload-progress hidden">
+                    <div class="progress-bar">
+                        <div id="profileProgressFill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <p class="progress-text" id="profileProgressText">Uploading... 0%</p>
+                </div>
+
+                <div class="upload-actions">
+                    <button onclick="resetProfileUpload()" class="btn-upload secondary">Reset</button>
+                    <button onclick="uploadProfileImage()" class="btn-upload primary" id="profileUploadBtn" disabled>Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div id="logout-modal" class="modal hidden">
+        <div class="modal-content enhanced" style="max-width: 420px;">
+            <button class="modal-close-enhanced" onclick="closeModal('logout-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+
+            <div class="modal-header" style="text-align: center; padding: 32px 32px 16px;">
+                <div style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                    <svg width="36" height="36" fill="none" stroke="#EF4444" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="modal-title" style="margin-bottom: 8px;">Log Out?</h3>
+                <p class="modal-subtitle" style="margin: 0;">Are you sure you want to log out of your account?</p>
+            </div>
+
+            <div style="padding: 24px 32px 32px;">
+                <!-- Session info -->
+                <div id="logout-session-info" style="background: var(--bg-secondary); border-radius: 12px; padding: 16px; margin-bottom: 24px; display: none;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div id="logout-user-avatar" style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0;">
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <p id="logout-user-name" style="margin: 0; font-weight: 600; color: var(--text-primary); font-size: 15px;"></p>
+                            <p id="logout-user-email" style="margin: 4px 0 0; font-size: 13px; color: var(--text-muted);"></p>
+                            <div id="logout-user-roles" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Warning message -->
+                <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; padding: 14px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: start; gap: 10px;">
+                        <svg style="width: 20px; height: 20px; color: #F59E0B; flex-shrink: 0; margin-top: 1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <p style="margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
+                            You will need to sign in again to access your account and continue your learning journey.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div style="display: flex; gap: 12px;">
+                    <button onclick="closeModal('logout-modal')" class="submit-btn" style="flex: 1; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">
+                        Stay Logged In
+                    </button>
+                    <button onclick="confirmLogout()" class="submit-btn" style="flex: 1; background: #EF4444; border-color: #EF4444;">
+                        <svg style="width: 18px; height: 18px; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7"></path>
+                        </svg>
+                        Log Out
+                    </button>
+                </div>
+
+                <!-- Remember me option -->
+                <div style="margin-top: 20px; text-align: center;">
+                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-muted);">
+                        <input type="checkbox" id="logout-all-devices" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                        <span>Log out from all devices</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Footer -->
+    <footer class="footer-section" id="footer" role="contentinfo">
+        <div class="footer-wave" aria-hidden="true">
+            <svg viewBox="0 0 1440 120" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:var(--footer-accent);stop-opacity:0" />
+                        <stop offset="25%" style="stop-color:var(--footer-accent);stop-opacity:1" />
+                        <stop offset="75%" style="stop-color:var(--footer-hover);stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:var(--footer-hover);stop-opacity:0" />
+                    </linearGradient>
+                </defs>
+                <!-- Main wave fill with explicit class -->
+                <path class="wave-fill"
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
+                </path>
+                <!-- Animated line following the wave curve -->
+                <path class="wave-line"
+                    d="M0,64L48,69.3C96,75,192,85,288,80C384,75,480,53,576,48C672,43,768,53,864,58.7C960,64,1056,64,1152,58.7C1248,53,1344,43,1392,37.3L1440,32">
+                </path>
+            </svg>
+        </div>
+
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section-item">
+                    <h3 class="footer-title">About Astegni</h3>
+                    <p class="footer-description">Ethiopia's premier educational platform connecting students with
+                        expert tutors and quality learning resources.</p>
+                    <div class="footer-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">10k+</span>
+                            <span class="stat-label">Active Users</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">500+</span>
+                            <span class="stat-label">Courses</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">95%</span>
+                            <span class="stat-label">Success Rate</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">About Us</a></li>
+                        <li><a href="#" class="footer-link">How It Works</a></li>
+                        <li><a href="#" class="footer-link">Pricing</a></li>
+                        <li><a href="#" class="footer-link">Success Stories</a></li>
+                        <li><a href="#" class="footer-link">Blog</a></li>
+                        <li><a href="#" class="footer-link">Careers</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" class="footer-link">Help Center</a></li>
+                        <li><a href="#" class="footer-link">Contact Us</a></li>
+                        <li><a href="#" class="footer-link">FAQs</a></li>
+                        <li><a href="#" class="footer-link">Terms of Service</a></li>
+                        <li><a href="#" class="footer-link">Privacy Policy</a></li>
+                        <li><a href="#" class="footer-link">Safety</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section-item">
+                    <h3 class="footer-title">Connect With Us</h3>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook" class="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3V2z"></path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Twitter" class="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+                                </path>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="LinkedIn" class="social-link" target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z">
+                                </path>
+                                <circle cx="4" cy="4" r="2"></circle>
+                            </svg>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="social-link" target="_blank"
+                            rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </a>
+                        <a href="https://www.youtube.com/@Astegni" aria-label="YouTube" class="social-link"
+                            target="_blank" rel="noopener noreferrer">
+                            <svg class="w-6 h-6" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.6c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2A29 29 0 0023 12a29 29 0 00-.46-5.58zM9.75 15.02V8.98L15.5 12l-5.75 3.02z">
+                                </path>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="newsletter-signup">
+                        <h4>Subscribe to Newsletter</h4>
+                        <form class="newsletter-form" id="newsletterForm">
+                            <input type="email" placeholder="Your email address" class="newsletter-input"
+                                id="emailInput" aria-label="Email address" required>
+                            <button type="submit" class="newsletter-btn" id="submitBtn">Subscribe</button>
+                            <div class="newsletter-feedback" id="feedback"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom-content">
+                <div class="footer-badges">
+                    <div class="company-brand">
+                        <span>From the deep of</span>
+                        <span class="trademark-symbol">™</span>
+                        <span class="company-text">Eshtaol</span>
+                    </div>
+                    <a href="tel:+251935244245" class="phone-link">
+                        <span class="phone-icon">📞</span>
+                        <span>+251-935-24-42-45</span>
+                        <span>+251-997-40-98-66</span>
+                    </a>
+                </div>
+                <div class="footer-badges">
+                    <p class="copyright">© </p>
+                    <p>2025 Astegni. All rights reserved.</p>
+                </div>
+                <div class="footer-badges">
+                    <span class="badge glow" tabindex="0">🔒 SSL Secured</span>
+                    <span class="badge" tabindex="0">✓ Verified Platform</span>
+                    <span class="badge" tabindex="0">🏆 Future Awards Winner</span>
+                </div>
+            </div>
+            <!-- TODO: counting cards should count from users where role = 'parent', 'student', 'tutor', etc... register-modal, reviews section professional-reviews-card should be enhanced. -->
+        </div>
+    </footer>
+
+
+    <!-- JavaScript Files -->
+    <!-- Page Structure Scripts -->
+    <script src="../js/page-structure/loading-screen.js"></script>
+    <script src="../js/page-structure/sidebar-toggle.js"></script>
+    <script src="../js/page-structure/ad-placeholder.js"></script>
+    <script src="../js/page-structure/footer.js"></script>
+    <script src="../js/page-structure/settings.js"></script>
+    <script src="../js/page-structure/badge-notification.js"></script>
+    <script src="../js/page-structure/notification-manager.js"></script>
+    <script src="../js/page-structure/humberger-menu.js"></script>
+    <script src="../js/page-structure/coming-soon-notification.js"></script>
+    <script src="../js/page-structure/profile-dropdown.js"></script>
+
+    <!-- Root/Shared Scripts -->
+    <script src="../js/root/app.js"></script>
+    <script src="../js/root/auth.js"></script>
+    <script src="../js/root/theme-toggle.js"></script>
+
+    <!-- Common Modals -->
+    <script src="../modals/common-modals/common-modal-loader.js"></script>
+    <script src="../js/index/init-modals.js"></script>
+    <script src="../js/common-modals/coming-soon-modal.js"></script>
+    <script src="../js/common-modals/ad-modal.js"></script>
+    <script src="../js/common-modals/logout-modal.js"></script>
+
+    <!-- Stats Counter -->
+    <script src="../js/page-structure/stats-counter.js"></script>
+
+    <!-- User Profile Specific Scripts -->
+    <script src="../js/page-structure/user-profile.js"></script>
+
+    <!-- Earnings & Investments Manager -->
+    <script src="../js/tutor-profile/earnings-investments-manager.js"></script>
+
+    <!-- Shared Admin Fix -->
+    <script src="../js/admin-pages/shared/sidebar-fix.js"></script>
+
+    <!-- Floating Action Button -->
+    <div id="fab-container" class="fab-container">
+        <button id="fab-button" class="fab-button" onclick="toggleFabMenu()">
+            <span class="fab-icon">+</span>
+        </button>
+        <div id="fab-menu" class="fab-menu hidden">
+            <a href="../branch/find-tutors.html" class="fab-item">
+                <span class="fab-item-icon">👨‍🏫</span>
+                <span class="fab-item-label">Find Tutors</span>
+            </a>
+            <a href="../branch/reels.html" class="fab-item">
+                <span class="fab-item-icon">🎬</span>
+                <span class="fab-item-label">Browse Reels</span>
+            </a>
+            <a href="#" onclick="switchPanel('my-engagements'); toggleFabMenu(); return false;" class="fab-item">
+                <span class="fab-item-icon">❤️</span>
+                <span class="fab-item-label">Engagements</span>
+            </a>
+            <a href="#" onclick="switchPanel('settings'); toggleFabMenu(); return false;" class="fab-item">
+                <span class="fab-item-icon">⚙️</span>
+                <span class="fab-item-label">Settings</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Coming Soon Modal -->
+    <div id="coming-soon-modal" class="modal hidden">
+        <div class="modal-content enhanced coming-soon-content">
+            <button class="modal-close-enhanced" onclick="closeModal('coming-soon-modal')">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+
+            <div class="coming-soon-header">
+                <div class="coming-soon-icon">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <h3 class="modal-title">Coming Soon!</h3>
+                <p class="modal-subtitle" id="coming-soon-message">We're working hard to bring you this feature. Stay
+                    tuned!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+</body>
+</html>

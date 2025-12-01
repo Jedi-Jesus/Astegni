@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Manage Campaigns</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="../css/root.css">
+    <link rel="stylesheet" href="../css/admin-profile/admin.css">
+    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="../css/admin-pages/manage-campaigns.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- Inline styles to ensure right-side widget positioning -->
+    <style>
+        .admin-main-layout {
+            display: flex !important;
+            gap: 1.5rem !important;
+        }
+        .admin-content-area {
+            flex: 1 !important;
+        }
+        .admin-right-widgets {
+            width: 320px !important;
+            flex-shrink: 0 !important;
+        }
+    </style>
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <span class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <a href="../admin-pages/manage-campaigns.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Manage Campaigns</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="flex items-center space-x-6">
+
+                <!-- Notification Icon -->
+                <button class="relative focus:outline-none" aria-label="Notifications">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
+                        </path>
+                    </svg>
+                    <span
+                        class="absolute top-0 right-0 -mt-1 -mr-1 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">3</span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                        </path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>Campaign Management</h3>
+                <span class="sidebar-close" id="sidebar-close">&times;</span>
+
+                <a href="#" onclick="switchPanel('dashboard'); return false;" class="sidebar-link active">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel('requested'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📝</span>
+                    <span>Campaign Requests</span>
+                </a>
+                <a href="#" onclick="switchPanel('verified'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📢</span>
+                    <span>Verified Campaigns</span>
+                </a>
+                <a href="#" onclick="switchPanel('rejected'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">❌</span>
+                    <span>Rejected Campaigns</span>
+                </a>
+                <a href="#" onclick="switchPanel('suspended'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚠️</span>
+                    <span>Suspended Campaigns</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="openCampaignReports(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Campaign Reports</span>
+                </a>
+                <a href="#" onclick="openVerificationGuidelines(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📋</span>
+                    <span>Verification Guidelines</span>
+                </a>
+                <a href="#" onclick="openCampaignsettings(); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Campaign Settings</span>
+                </a>
+
+                <!-- Logout Button at Bottom -->
+                <div class="mt-auto pt-4 border-t border-gray-300">
+                    <a href="#" onclick="logout(); return false;" class="sidebar-link text-red-500 hover:bg-red-50">
+                        <span class="sidebar-icon">🚪</span>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1">
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+
+                        <!-- Profile Header Section (Only visible in Dashboard) -->
+                        <section class="profile-header-section mb-8">
+                            <div class="cover-image-container relative">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='20'%3E1200x300%3C/text%3E%3C/svg%3E"
+                                    alt="Cover" class="cover-img">
+                                <div class="cover-overlay"></div>
+                                <!-- Cover Upload Button -->
+                                <button onclick="openUploadCoverModal()" class="cover-upload-btn">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="profile-main-info">
+                                <div class="profile-info-wrapper">
+                                    <div class="profile-avatar-container">
+                                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
+                                            alt="Admin Profile" class="profile-avatar">
+                                        <span class="online-indicator"></span>
+                                        <!-- Profile Picture Upload Button -->
+                                        <button onclick="openUploadProfileModal()" class="avatar-upload-btn">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                                </path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div class="profile-details-section">
+                                        <div class="profile-name-row">
+                                            <h1 class="profile-name" id="adminUsername">admin_username</h1>
+                                            <div class="badges-row">
+                                                <span class="profile-badge verified">✔ System Administrator</span>
+                                                <span class="profile-badge campaign">📢 Campaign Management</span>
+                                                <span class="profile-badge expert">📊 Marketing Expert</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="rating-section">
+                                            <div class="rating-wrapper">
+                                                <span class="rating-value">4.8</span>
+                                                <div class="rating-stars">★★★★★</div>
+                                                <span class="rating-count">(312 reviews)</span>
+                                                <div class="rating-label">Performance Rating</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-location">
+                                            <span class="location-icon">📍</span>
+                                            <span>Astegni Admin Panel | Advertising & Campaign Management</span>
+                                        </div>
+
+                                        <div class="profile-quote">
+                                            <span>"Maximizing ROI through strategic campaign management and advertiser partnerships."</span>
+                                        </div>
+
+                                        <div class="profile-actions">
+                                            <button onclick="openEditProfileModal()" class="btn-primary">
+                                                <span class="mr-2">✏️</span>
+                                                Edit Profile
+                                            </button>
+                                        </div>
+
+                                        <!-- About Me Info -->
+                                        <div class="profile-info-grid">
+                                            <div class="info-item">
+                                                <span class="info-label">Email:</span>
+                                                <span class="info-value" id="profile-email">admin@astegni.et</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Phone:</span>
+                                                <span class="info-value" id="profile-phone">+251911234567</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Department:</span>
+                                                <span class="info-value" id="profile-department">Marketing & Advertising</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Employee ID:</span>
+                                                <span class="info-value">ADM-2024-004</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Joined:</span>
+                                                <span class="info-value">February 2020</span>
+                                            </div>
+                                            <div class="info-description">
+                                                <p>Senior System Administrator specializing in advertising campaign management and revenue optimization. Expert in advertiser relations and campaign performance analytics.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Page Header -->
+                        <div class="mb-8 animate-fadeIn">
+                            <h1 class="text-3xl font-bold mb-2">Campaign Management Dashboard</h1>
+                            <p class="text-gray-600">Overview of all Campaign management activities and statistics</p>
+                        </div>
+                        <!-- Achievements Section -->
+                        <div class="card p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Achievements</h3>
+                            <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🏆</div>
+                                    <div class="text-sm">Top Performer</div>
+                                    <div class="text-xs text-gray-500">Q4 2024</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🥇</div>
+                                    <div class="text-sm">Excellence</div>
+                                    <div class="text-xs text-gray-500">Annual 2023</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">⭐</div>
+                                    <div class="text-sm">5-Star Admin</div>
+                                    <div class="text-xs text-gray-500">200+ Reviews</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">💼</div>
+                                    <div class="text-sm">Marketing Pro</div>
+                                    <div class="text-xs text-gray-500">500+ Campaigns</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">🎯</div>
+                                    <div class="text-sm">Goal Achiever</div>
+                                    <div class="text-xs text-gray-500">100% Success</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-3xl mb-2">💎</div>
+                                    <div class="text-sm">Premium Admin</div>
+                                    <div class="text-xs text-gray-500">Level 10</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- All Statistics Cards -->
+                        <div class="dashboard-grid mb-8">
+                            <!-- Request Stats -->
+                            <div class="card p-4">
+                                    <div class="absolute top-2 right-2 flex items-center gap-1">
+                                        <span class="text-green-500 text-sm font-bold">↑ 12%</span>
+                                    </div>
+                                <h3 class="text-lg font-semibold">Verified Campaigns</h3>
+                                <p class="text-2xl font-bold">125</p>
+                                <span class="text-sm text-gray-500">72% of total</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Pending Campaigns</h3>
+                                <p class="text-2xl font-bold text-yellow-600">12</p>
+                                <span class="text-sm text-gray-500">Awaiting review</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Rejected Campaigns</h3>
+                                <p class="text-2xl font-bold text-red-600">5</p>
+                                <span class="text-sm text-gray-500">Last 30 days</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Suspended Campaigns</h3>
+                                <p class="text-2xl font-bold text-orange-600">3</p>
+                                <span class="text-sm text-gray-500">Active suspensions</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Archived Campaigns</h3>
+                                <p class="text-2xl font-bold text-gray-600">45</p>
+                                <span class="text-sm text-gray-500">Completed</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Approval Rate</h3>
+                                <p class="text-2xl font-bold text-green-600">95%</p>
+                                <span class="text-sm text-gray-500">This month</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Avg Processing</h3>
+                                <p class="text-2xl font-bold">< 1hr</p>
+                                <span class="text-sm text-gray-500">Per application</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Client Satisfaction</h3>
+                                <p class="text-2xl font-bold">94%</p>
+                                <span class="text-sm text-gray-500">Happy clients</span>
+                            </div>
+                        </div>
+
+                        <!-- Reviews Section -->
+                        <div class="card p-6 mb-8">
+                            <h3 class="text-xl font-semibold mb-4">Recent Reviews</h3>
+                            <div class="space-y-4">
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h4 class="font-semibold">Outstanding Campaign Management</h4>
+                                            <p class="text-sm text-gray-600">From: Marketing Director</p>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-400">★★★★★</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-700">"Exceptional handling of Campaign relationships. Revenue increased by 25% this quarter."</p>
+                                    <p class="text-xs text-gray-500 mt-2">3 days ago</p>
+                                </div>
+
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h4 class="font-semibold">Quick Approval Process</h4>
+                                            <p class="text-sm text-gray-600">From: Sales Team</p>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-400">★★★★★</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-700">"Campaign approvals are processed within hours. Great communication with clients."</p>
+                                    <p class="text-xs text-gray-500 mt-2">5 days ago</p>
+                                </div>
+
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div>
+                                            <h4 class="font-semibold">Revenue Growth Expert</h4>
+                                            <p class="text-sm text-gray-600">From: Finance Department</p>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <span class="text-yellow-400">★★★★☆</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-gray-700">"Consistently meets revenue targets. Excellent Campaign retention rate."</p>
+                                    <p class="text-xs text-gray-500 mt-2">1 week ago</p>
+                                </div>
+                            </div>
+                        </div>
+                
+                    </div>
+                </div>
+
+            <!-- Verified Campaigns Panel -->
+            <div id="verified-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Verified Campaigns</h1>
+                    <p class="text-gray-600">Manage all verified and active campaigns</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Verified</h3>
+                        <p class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Active</h3>
+                        <p class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Budget</h3>
+                        <p class="text-2xl font-bold">0 ETB</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Avg Performance</h3>
+                        <p class="text-2xl font-bold">0%</p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="card p-6 mb-6">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div class="flex-1 min-w-[300px]">
+                            <input type="text" class="search-input w-full p-3 border-2 rounded-lg"
+                                placeholder="Search campaigns by name or company...">
+                        </div>
+                        <select class="industry-filter p-3 border-2 rounded-lg">
+                            <option value="">All Industries</option>
+                            <option value="Education">Education</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                        <select class="ad-type-filter p-3 border-2 rounded-lg">
+                            <option value="">All Types</option>
+                            <option value="image">Image</option>
+                            <option value="video">Video</option>
+                            <option value="carousel">Carousel</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Campaigns Table -->
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b">
+                        <h3 class="text-xl font-semibold">Verified Campaigns</h3>
+                    </div>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">Company Name</th>
+                                <th class="p-4 text-left">Campaign Name</th>
+                                <th class="p-4 text-left">Ad Type</th>
+                                <th class="p-4 text-left">Target Audience</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded dynamically via manage-campaigns-table-loader.js -->
+                            <tr>
+                                <td colspan="5" class="p-8 text-center text-gray-500">
+                                    <div class="text-4xl mb-4">⏳</div>
+                                    <div>Loading campaigns...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Campaign Requests Panel -->
+            <div id="requested-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Campaign Requests</h1>
+                    <p class="text-gray-600">Review and process new campaign requests</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Pending Requests</h3>
+                        <p class="text-2xl font-bold text-yellow-600">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Under Review</h3>
+                        <p class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Approved Today</h3>
+                        <p class="text-2xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Budget</h3>
+                        <p class="text-2xl font-bold">0 ETB</p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="card p-6 mb-6">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div class="flex-1 min-w-[300px]">
+                            <input type="text" class="search-input w-full p-3 border-2 rounded-lg"
+                                placeholder="Search campaigns by name, company, or ID...">
+                        </div>
+                        <select class="industry-filter p-3 border-2 rounded-lg">
+                            <option value="">All Industries</option>
+                            <option value="Education">Education</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                        <select class="ad-type-filter p-3 border-2 rounded-lg">
+                            <option value="">All Types</option>
+                            <option value="image">Image</option>
+                            <option value="video">Video</option>
+                            <option value="carousel">Carousel</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b">
+                        <h3 class="text-xl font-semibold">Pending Campaign Requests</h3>
+                    </div>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">Company Name</th>
+                                <th class="p-4 text-left">Campaign Name</th>
+                                <th class="p-4 text-left">Ad Type</th>
+                                <th class="p-4 text-left">Target Audience</th>
+                                <th class="p-4 text-left">Submitted Date</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded dynamically via manage-campaigns-table-loader.js -->
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-gray-500">
+                                    <div class="text-4xl mb-4">⏳</div>
+                                    <div>Loading campaign requests...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Rejected Campaigns Panel -->
+            <div id="rejected-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Rejected Campaign Applications</h1>
+                    <p class="text-gray-600">Review rejected applications and reconsider if needed</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Rejected</h3>
+                        <p class="text-2xl font-bold text-red-600">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">This Month</h3>
+                        <p class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Reconsidered</h3>
+                        <p class="text-2xl font-bold text-green-600">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Awaiting Review</h3>
+                        <p class="text-2xl font-bold">0</p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="card p-6 mb-6">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div class="flex-1 min-w-[300px]">
+                            <input type="text" class="search-input w-full p-3 border-2 rounded-lg"
+                                placeholder="Search rejected campaigns...">
+                        </div>
+                        <select class="industry-filter p-3 border-2 rounded-lg">
+                            <option value="">All Industries</option>
+                            <option value="Education">Education</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                        <select class="ad-type-filter p-3 border-2 rounded-lg">
+                            <option value="">All Types</option>
+                            <option value="image">Image</option>
+                            <option value="video">Video</option>
+                            <option value="carousel">Carousel</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b">
+                        <h3 class="text-xl font-semibold">Rejected Campaign Applications</h3>
+                    </div>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">Company Name</th>
+                                <th class="p-4 text-left">Campaign Name</th>
+                                <th class="p-4 text-left">Ad Type</th>
+                                <th class="p-4 text-left">Rejected Date</th>
+                                <th class="p-4 text-left">Rejection Reason</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded dynamically via manage-campaigns-table-loader.js -->
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-gray-500">
+                                    <div class="text-4xl mb-4">⏳</div>
+                                    <div>Loading rejected campaigns...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Suspended Campaigns Panel -->
+            <div id="suspended-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Suspended Campaigns</h1>
+                    <p class="text-gray-600">Manage campaigns under temporary suspension</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Currently Suspended</h3>
+                        <p class="text-2xl font-bold text-orange-600">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Policy Violations</h3>
+                        <p class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Under Investigation</h3>
+                        <p class="text-2xl font-bold">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Reinstated This Year</h3>
+                        <p class="text-2xl font-bold text-green-600">0</p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="card p-6 mb-6">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div class="flex-1 min-w-[300px]">
+                            <input type="text" class="search-input w-full p-3 border-2 rounded-lg"
+                                placeholder="Search suspended campaigns...">
+                        </div>
+                        <select class="industry-filter p-3 border-2 rounded-lg">
+                            <option value="">All Industries</option>
+                            <option value="Education">Education</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Healthcare">Healthcare</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                        <select class="ad-type-filter p-3 border-2 rounded-lg">
+                            <option value="">All Types</option>
+                            <option value="image">Image</option>
+                            <option value="video">Video</option>
+                            <option value="carousel">Carousel</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card overflow-hidden">
+                    <div class="p-4 border-b">
+                        <h3 class="text-xl font-semibold">Suspended Campaigns</h3>
+                    </div>
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">Company Name</th>
+                                <th class="p-4 text-left">Campaign Name</th>
+                                <th class="p-4 text-left">Ad Type</th>
+                                <th class="p-4 text-left">Suspended Date</th>
+                                <th class="p-4 text-left">Suspension Reason</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Data loaded dynamically via manage-campaigns-table-loader.js -->
+                            <tr>
+                                <td colspan="6" class="p-8 text-center text-gray-500">
+                                    <div class="text-4xl mb-4">⏳</div>
+                                    <div>Loading suspended campaigns...</div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar Widgets (Persistent across all panels) -->
+        <div class="admin-right-widgets" style="width: 320px !important; flex-shrink: 0 !important; position: sticky !important; top: 5rem !important; height: fit-content !important;">
+            <!-- Campaign Requests Widget -->
+            <div class="admin-widget-card campaign-requests-widget">
+                <h3 class="text-lg font-semibold mb-4">
+                    📢 Live Campaign Requests
+                    <span class="live-indicator ml-2 text-xs text-green-500">
+                        <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        Live
+                    </span>
+                </h3>
+                <div class="campaign-requests-container">
+                    <div class="campaign-requests-scroll">
+                        <!-- Campaign request items that will scroll -->
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-bullhorn text-blue-600"></i>
+                                    <span class="campaign-name">Educational Tech Promo</span>
+                                    <span class="status-tag new">NEW</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Digital Marketing</span>
+                                    <span class="budget">50K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">2 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-graduation-cap text-purple-600"></i>
+                                    <span class="campaign-name">School Enrollment Drive</span>
+                                    <span class="status-tag pending">PENDING</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Social Media</span>
+                                    <span class="budget">75K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">5 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-book-open text-green-600"></i>
+                                    <span class="campaign-name">Online Course Launch</span>
+                                    <span class="status-tag approved">APPROVED</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Multi-channel</span>
+                                    <span class="budget">100K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">8 minutes ago</span>
+                                    <button class="action-btn">View</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-video text-red-600"></i>
+                                    <span class="campaign-name">Tutorial Video Ads</span>
+                                    <span class="status-tag rejected">REJECTED</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Video Marketing</span>
+                                    <span class="budget">30K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">12 minutes ago</span>
+                                    <button class="action-btn">Details</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-mobile-alt text-orange-600"></i>
+                                    <span class="campaign-name">Mobile App Promotion</span>
+                                    <span class="status-tag pending">PENDING</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">App Marketing</span>
+                                    <span class="budget">45K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">15 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-newspaper text-indigo-600"></i>
+                                    <span class="campaign-name">Newsletter Campaign</span>
+                                    <span class="status-tag new">NEW</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Email Marketing</span>
+                                    <span class="budget">20K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">18 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-globe text-teal-600"></i>
+                                    <span class="campaign-name">Website Banner Ads</span>
+                                    <span class="status-tag approved">APPROVED</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Display Ads</span>
+                                    <span class="budget">60K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">22 minutes ago</span>
+                                    <button class="action-btn">View</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-users text-pink-600"></i>
+                                    <span class="campaign-name">Student Recruitment</span>
+                                    <span class="status-tag pending">PENDING</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Influencer Marketing</span>
+                                    <span class="budget">85K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">25 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Duplicate ALL items for seamless continuous scrolling -->
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-bullhorn text-blue-600"></i>
+                                    <span class="campaign-name">Educational Tech Promo</span>
+                                    <span class="status-tag new">NEW</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Digital Marketing</span>
+                                    <span class="budget">50K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">2 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-graduation-cap text-purple-600"></i>
+                                    <span class="campaign-name">School Enrollment Drive</span>
+                                    <span class="status-tag pending">PENDING</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Social Media</span>
+                                    <span class="budget">75K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">5 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-book-open text-green-600"></i>
+                                    <span class="campaign-name">Online Course Launch</span>
+                                    <span class="status-tag approved">APPROVED</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Multi-channel</span>
+                                    <span class="budget">100K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">8 minutes ago</span>
+                                    <button class="action-btn">View</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-video text-red-600"></i>
+                                    <span class="campaign-name">Tutorial Video Ads</span>
+                                    <span class="status-tag rejected">REJECTED</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Video Marketing</span>
+                                    <span class="budget">30K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">12 minutes ago</span>
+                                    <button class="action-btn">Details</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-mobile-alt text-orange-600"></i>
+                                    <span class="campaign-name">Mobile App Promotion</span>
+                                    <span class="status-tag pending">PENDING</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">App Marketing</span>
+                                    <span class="budget">45K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">15 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-newspaper text-indigo-600"></i>
+                                    <span class="campaign-name">Newsletter Campaign</span>
+                                    <span class="status-tag new">NEW</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Email Marketing</span>
+                                    <span class="budget">20K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">18 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-globe text-teal-600"></i>
+                                    <span class="campaign-name">Website Banner Ads</span>
+                                    <span class="status-tag approved">APPROVED</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Display Ads</span>
+                                    <span class="budget">60K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">22 minutes ago</span>
+                                    <button class="action-btn">View</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="campaign-request-item">
+                            <div class="request-content">
+                                <div class="request-header">
+                                    <i class="fas fa-users text-pink-600"></i>
+                                    <span class="campaign-name">Student Recruitment</span>
+                                    <span class="status-tag pending">PENDING</span>
+                                </div>
+                                <div class="request-info">
+                                    <span class="campaign-type">Influencer Marketing</span>
+                                    <span class="budget">85K ETB</span>
+                                </div>
+                                <div class="request-footer">
+                                    <span class="timestamp">25 minutes ago</span>
+                                    <button class="action-btn">Review</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="campaign-requests-fade-top"></div>
+                <div class="campaign-requests-fade-bottom"></div>
+            </div>
+
+            <!-- Daily Quota Widget -->
+            <div class="admin-widget-card">
+                <h3 class="text-lg font-semibold mb-4">Daily Quota</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Verified</span>
+                        <span class="font-semibold">125/150</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-500 h-2 rounded-full" style="width: 83%"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Pending</span>
+                        <span class="font-semibold">12/15</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-500 h-2 rounded-full" style="width: 80%"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Rejected</span>
+                        <span class="font-semibold">5/10</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-red-500 h-2 rounded-full" style="width: 50%"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Suspended</span>
+                        <span class="font-semibold">3/5</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-orange-500 h-2 rounded-full" style="width: 60%"></div>
+                    </div>
+
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Archived</span>
+                        <span class="font-semibold">45/50</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-gray-500 h-2 rounded-full" style="width: 90%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fire Streak Widget -->
+            <div class="admin-widget-card">
+                <h3 class="text-lg font-semibold mb-4">🔥 Fire Streak</h3>
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-orange-500">22</div>
+                    <div class="text-sm text-gray-600">Days</div>
+                    <div class="mt-4 grid grid-cols-7 gap-1">
+                        <span class="text-xs">🔥</span>
+                        <span class="text-xs">🔥</span>
+                        <span class="text-xs">🔥</span>
+                        <span class="text-xs opacity-30">🔥</span>
+                        <span class="text-xs opacity-30">🔥</span>
+                        <span class="text-xs opacity-30">🔥</span>
+                        <span class="text-xs opacity-30">🔥</span>
+                    </div>
+                    <div class="text-xs text-gray-500 mt-2">Keep going!</div>
+                </div>
+            </div>
+        </div>
+        <!-- End of admin-right-widgets -->
+
+        </div>
+        <!-- End of flex gap-6 container -->
+
+        </div>
+        <!-- End of container mx-auto px-4 -->
+    </section>
+
+    <!-- Add Campaign Modal -->
+    <div id="add-campaign-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-20">
+        <div class="modal-content p-6 rounded-lg w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <h3 class="text-2xl font-bold mb-4">Add New Campaign</h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block mb-2 font-semibold">Company Name *</label>
+                    <input type="text" class="w-full p-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Type *</label>
+                    <select class="w-full p-2 border rounded-lg">
+                        <option>Corporate</option>
+                        <option>Small Business</option>
+                        <option>Agency</option>
+                        <option>Individual</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Industry *</label>
+                    <select class="w-full p-2 border rounded-lg">
+                        <option>Education</option>
+                        <option>Technology</option>
+                        <option>Retail</option>
+                        <option>Services</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-2 font-semibold">Location *</label>
+                    <input type="text" class="w-full p-2 border rounded-lg">
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6">
+                <button onclick="closeAddCampaignModal()"
+                    class="px-6 py-2 border rounded-lg hover:bg-gray-50">Cancel</button>
+                <button onclick="saveCampaign()"
+                    class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Save Campaign</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-section mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <p>&copy; 2025 Astegni. All rights reserved. | Admin Panel</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="../js/root/app.js"></script>
+    <script src="../js/root/auth.js"></script>
+
+    <!-- Standalone Script - All Navigation & Panel Management -->
+    <script src="../js/admin-pages/manage-campaigns-standalone.js"></script>
+
+    <!-- Page-specific data loading -->
+    <script src="../js/admin-pages/manage-campaigns.js"></script>
+
+    <!-- Database integration module -->
+    <script src="../js/admin-pages/manage-campaigns-data-loader.js"></script>
+
+    <!-- Table loader module for campaigns -->
+    <script src="../js/admin-pages/manage-campaigns-table-loader.js"></script>
+
+    <!-- Fix theme background -->
+    <script>
+        // Ensure dark theme background is applied correctly
+        document.addEventListener('DOMContentLoaded', function() {
+            // Force background color application
+            function applyThemeBackground() {
+                const theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.body.style.backgroundColor = '#1E1E1E';
+                    document.documentElement.style.backgroundColor = '#1E1E1E';
+                } else {
+                    document.body.style.backgroundColor = '#ffffff';
+                    document.documentElement.style.backgroundColor = '#ffffff';
+                }
+            }
+
+            // Apply immediately
+            applyThemeBackground();
+
+            // Watch for theme changes
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'data-theme') {
+                        applyThemeBackground();
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['data-theme']
+            });
+        });
+    </script>
+
+    <!-- Edit Profile Modal -->
+    <!-- This modal ONLY edits admin_profile table fields (personal information) -->
+    <!-- admin_profile_stats fields (employee_id, access_level, etc.) are managed by super admin or system -->
+    <div id="edit-profile-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Edit Profile</h2>
+                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
+                    <!-- Ethiopian Naming Convention -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">First Name *</label>
+                            <input type="text" id="firstNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Abebe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Father's Name *</label>
+                            <input type="text" id="fatherNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Kebede" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Grandfather's Name *</label>
+                            <input type="text" id="grandfatherNameInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., Tesfa" required>
+                        </div>
+                    </div>
+
+                    <!-- Username (Display Name) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Username (Display Name) *</label>
+                        <input type="text" id="adminUsernameInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., abebe_kebede" required>
+                        <p class="text-xs text-gray-500 mt-1">This will be displayed as your admin username</p>
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Email</label>
+                            <input type="email" id="emailInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="admin@astegni.et">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-medium mb-1">Phone Number</label>
+                            <input type="tel" id="phoneNumberInput"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="+251911234567">
+                        </div>
+                    </div>
+                    
+                    <!-- Bio -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Bio</label>
+                        <textarea id="bioInput" rows="3"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tell us about yourself..."></textarea>
+                    </div>
+
+                    <!-- Quote -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Quote</label>
+                        <input type="text" id="quoteInput"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Your personal quote or motto">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                            onclick="closeEditProfileModal()">Cancel</button>
+                        <button type="submit"
+                            class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update
+                            Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Profile Picture Modal -->
+    <div id="upload-profile-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeUploadProfileModal()"></div>
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Upload Profile Picture</h2>
+                <button class="modal-close" onclick="closeUploadProfileModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <input type="file" id="profilePictureInput" accept="image/*" class="hidden"
+                        onchange="previewProfilePicture(event)">
+                    <label for="profilePictureInput" class="cursor-pointer">
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span class="font-medium text-blue-500 hover:text-blue-600">Click to upload</span> or drag
+                            and drop
+                        </p>
+                        <p class="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                    </label>
+                </div>
+                <div id="profilePreview" class="hidden mb-4">
+                    <img id="profilePreviewImg" class="w-32 h-32 mx-auto rounded-full object-cover" alt="Preview">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                        onclick="closeUploadProfileModal()">Cancel</button>
+                    <button id="uploadProfileBtn"
+                        class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        onclick="handleProfilePictureUpload()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Cover Image Modal -->
+    <div id="upload-cover-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeUploadCoverModal()"></div>
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Upload Cover Image</h2>
+                <button class="modal-close" onclick="closeUploadCoverModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <input type="file" id="coverImageInput" accept="image/*" class="hidden"
+                        onchange="previewCoverImage(event)">
+                    <label for="coverImageInput" class="cursor-pointer">
+                        <p class="mt-2 text-sm text-gray-600">
+                            <span class="font-medium text-blue-500 hover:text-blue-600">Click to upload</span> or drag
+                            and drop
+                        </p>
+                        <p class="text-xs text-gray-500">Recommended: 1200x300px (PNG, JPG up to 10MB)</p>
+                    </label>
+                </div>
+                <div id="coverPreview" class="hidden mb-4">
+                    <img id="coverPreviewImg" class="w-full h-32 object-cover rounded-lg" alt="Preview">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                        onclick="closeUploadCoverModal()">Cancel</button>
+                    <button id="uploadCoverBtn"
+                        class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                        onclick="handleCoverImageUpload()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Campaign Details Modal -->
+    <div id="view-campaign-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeViewCampaignModal()"></div>
+        <div class="modal-content" style="max-width: 800px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2 class="text-xl font-bold">Campaign Details</h2>
+                <button class="modal-close" onclick="closeViewCampaignModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <!-- Loading State -->
+                <div id="campaign-loading" class="text-center py-8">
+                    <div class="text-4xl mb-4">⏳</div>
+                    <div>Loading campaign details...</div>
+                </div>
+
+                <!-- Campaign Details Content -->
+                <div id="campaign-details-content" class="hidden">
+                    <!-- Campaign Header -->
+                    <div class="mb-6 pb-4 border-b">
+                        <h3 class="text-2xl font-bold mb-2" id="detail-campaign-name">Campaign Name</h3>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-gray-600">Company:</span>
+                            <span class="font-semibold" id="detail-company-name">Company Name</span>
+                        </div>
+                        <div id="detail-verification-status"></div>
+                    </div>
+
+                    <!-- Basic Information -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3">Basic Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="info-item">
+                                <span class="text-gray-600 text-sm">Campaign ID:</span>
+                                <p class="font-medium" id="detail-campaign-id">-</p>
+                            </div>
+                            <div class="info-item">
+                                <span class="text-gray-600 text-sm">Ad Type:</span>
+                                <p class="font-medium" id="detail-ad-type">-</p>
+                            </div>
+                            <div class="info-item">
+                                <span class="text-gray-600 text-sm">Campaign Objective:</span>
+                                <p class="font-medium" id="detail-campaign-objective">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campaign Period -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3">Campaign Period</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="info-item">
+                                <span class="text-gray-600 text-sm">Start Date:</span>
+                                <p class="font-medium" id="detail-start-date">-</p>
+                            </div>
+                            <div class="info-item">
+                                <span class="text-gray-600 text-sm">End Date:</span>
+                                <p class="font-medium" id="detail-end-date">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Creative Media Preview -->
+                    <div id="creative-media-section" class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3">Campaign Media (Images/Videos)</h4>
+                        <div id="detail-creative-media" class="space-y-4">
+                            <!-- Media will be dynamically loaded here -->
+                            <!-- Placeholder if no media -->
+                            <div id="media-placeholder" class="bg-gray-100 p-8 rounded-lg text-center border-2 border-dashed border-gray-300">
+                                <svg class="mx-auto h-16 w-16 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <p class="text-gray-500 font-medium">No media files available for this campaign</p>
+                                <p class="text-gray-400 text-sm mt-1">Campaign media not uploaded yet</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Target Demographics -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3">Target Demographics</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="info-item">
+                                <span class="text-gray-600 text-sm">Target Audience:</span>
+                                <p class="font-medium" id="detail-target-audience">-</p>
+                            </div>
+                            <div class="info-item">
+                                <span class="text-gray-600 text-sm">Target Age Range:</span>
+                                <p class="font-medium" id="detail-target-age-range">-</p>
+                            </div>
+                            <div class="info-item">
+                                <span class="text-gray-600 text-sm">Target Location:</span>
+                                <p class="font-medium" id="detail-target-location">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3">Campaign Description</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <p id="detail-description" class="text-gray-700">-</p>
+                        </div>
+                    </div>
+
+                    <!-- Campaign Socials -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3">Campaign Social Media</h4>
+                        <div id="detail-campaign-socials" class="space-y-2">
+                            <p class="text-gray-500">No social media links provided</p>
+                        </div>
+                    </div>
+
+                    <!-- Rejection Info (if exists) -->
+                    <div id="rejected-reason-section" class="mb-6 hidden">
+                        <h4 class="text-lg font-semibold mb-3 text-red-600">Rejection Information</h4>
+                        <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                            <div class="mb-2">
+                                <span class="text-gray-600 text-sm font-semibold">Rejected Date:</span>
+                                <p class="font-medium" id="detail-rejected-date">-</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-600 text-sm font-semibold">Rejection Reason:</span>
+                                <p id="detail-rejected-reason" class="text-gray-700">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Suspension Info (if exists) -->
+                    <div id="suspended-reason-section" class="mb-6 hidden">
+                        <h4 class="text-lg font-semibold mb-3 text-orange-600">Suspension Information</h4>
+                        <div class="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-500">
+                            <div class="mb-2">
+                                <span class="text-gray-600 text-sm font-semibold">Suspended Date:</span>
+                                <p class="font-medium" id="detail-suspended-date">-</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-600 text-sm font-semibold">Suspension Reason:</span>
+                                <p id="detail-suspended-reason" class="text-gray-700">-</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Metadata -->
+                    <div class="mb-6">
+                        <h4 class="text-lg font-semibold mb-3">Metadata</h4>
+                        <div class="grid grid-cols-1 gap-4 text-sm">
+                            <div class="info-item">
+                                <span class="text-gray-600">Submitted Date:</span>
+                                <p class="font-medium" id="detail-submitted-date">-</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
+                    onclick="closeViewCampaignModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

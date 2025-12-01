@@ -1,0 +1,92 @@
+/* ============================================
+   INDEX.CSS - MODULAR IMPORT SYSTEM
+   ============================================ */
+
+/* Import index-specific components */
+@import url('index/hero-section.css');
+@import url('index/features-section.css');
+@import url('index/professional-reviews.css');
+@import url('index/index-ad.css');
+@import url('index/news-section.css');
+@import url('index/video-carousel.css');
+@import url('index/course-flip.css');
+@import url('index/testimonials.css');
+@import url('index/partners.css');
+@import url('index/share-modal.css');
+@import url('index/utilities.css');
+@import url('index/responsive.css');
+
+/* Scroll progress bar - index specific */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--button-bg), var(--button-hover));
+    z-index: 10000;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+/* Partner Form - Add/Remove Field Buttons */
+.add-field-btn,
+.remove-field-btn {
+    background: var(--button-bg);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.add-field-btn:hover {
+    background: var(--button-hover);
+    transform: scale(1.05);
+}
+
+.remove-field-btn {
+    background: #ef4444;
+}
+
+.remove-field-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Partner Form - Add Button with Text */
+.add-field-btn-with-text {
+    background: var(--button-bg);
+    border: none;
+    color: var(--button-text);
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(var(--button-bg-rgb), 0.2);
+}
+
+.add-field-btn-with-text:hover {
+    background: var(--button-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(var(--button-hover-rgb), 0.3);
+}
+
+.add-field-btn-with-text:active {
+    background: var(--button-active);
+    transform: translateY(0);
+}
+
+.add-field-btn-with-text svg {
+    flex-shrink: 0;
+}

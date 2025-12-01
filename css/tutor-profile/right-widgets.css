@@ -1,0 +1,91 @@
+/* ============================================================
+   TUTOR PROFILE RIGHT WIDGETS STYLES
+   ============================================================
+   These styles are specific to tutor-profile.html only.
+   They override admin-pages styles to provide non-scrollable,
+   sticky right sidebar widgets.
+   ============================================================ */
+
+/* ============================================================
+   SIDEBAR FIX - Prevent page shifting when sidebar opens
+   ============================================================ */
+
+/* Remove the YouTube-style page shift behavior for tutor profile */
+body.sidebar-active section:not(footer),
+body.sidebar-active .ad-placeholder,
+body.sidebar-active .ad-placeholder-section,
+body.sidebar-active .ad-container {
+    margin-left: 0 !important;
+}
+
+section:not(footer),
+.ad-placeholder,
+.ad-placeholder-section,
+.ad-container {
+    margin-left: 0 !important;
+}
+
+/* ============================================================
+   RIGHT WIDGETS SPECIFIC STYLES
+   ============================================================ */
+
+/* Right sidebar widgets container - NO SCROLLING */
+.right-widgets {
+    width: 320px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 5rem; /* Adjust based on navbar height */
+    height: fit-content;
+    max-height: none; /* Remove max-height constraint */
+    overflow-y: visible; /* Make it NOT scrollable */
+    overflow-x: visible;
+}
+
+/* Ensure proper spacing for widget containers */
+.right-widgets > div {
+    margin-bottom: 1rem;
+}
+
+/* Individual widget card styling */
+.widget-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.widget-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* ============================================================
+   RESPONSIVE BEHAVIOR
+   ============================================================ */
+
+@media (max-width: 1280px) {
+    .right-widgets {
+        width: 280px;
+    }
+}
+
+@media (max-width: 1024px) {
+    /* On tablets, move widgets below main content */
+    .right-widgets {
+        width: 100%;
+        position: static;
+        max-height: none;
+        overflow-y: visible;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .right-widgets {
+        grid-template-columns: 1fr;
+    }
+}

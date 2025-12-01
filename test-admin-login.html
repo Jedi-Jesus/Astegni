@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Login</title>
+</head>
+<body>
+    <h1>Test Admin Login</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <pre id="output"></pre>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        async function testLogin() {
+            const output = document.getElementById('output');
+            output.textContent = 'Testing login...\n';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'admin@astegni.com',
+                        password: 'Admin2025!'
+                    })
+                });
+
+                const data = await response.json();
+                output.textContent += '\nLogin Response:\n';
+                output.textContent += JSON.stringify(data, null, 2);
+
+                if (data.success) {
+                    // Simulate what auth.js does
+                    const adminUser = {
+                        id: data.admin_id,
+                        email: data.email,
+                        name: data.name,
+                        role: 'admin',
+                        departments: data.departments || [],
+                        department: (data.departments && data.departments[0]) || 'manage-system-settings',
+                        loginTime: new Date().toISOString()
+                    };
+
+                    output.textContent += '\n\nStored adminUser:\n';
+                    output.textContent += JSON.stringify(adminUser, null, 2);
+
+                    // Test access check
+                    const department = adminUser.department || 'manage-system-settings';
+                    output.textContent += `\n\nDepartment for access check: ${department}`;
+
+                    const departmentAccess = {
+                        'manage-campaigns': ['manage-campaigns.html'],
+                        'manage-schools': ['manage-schools.html'],
+                        'manage-courses': ['manage-courses.html'],
+                        'manage-tutors': ['manage-tutors.html'],
+                        'manage-customers': ['manage-customers.html'],
+                        'manage-contents': ['manage-contents.html'],
+                        'manage-system-settings': [
+                            'manage-campaigns.html',
+                            'manage-schools.html',
+                            'manage-courses.html',
+                            'manage-tutors.html',
+                            'manage-customers.html',
+                            'manage-contents.html',
+                            'manage-system-settings.html'
+                        ]
+                    };
+
+                    const allowedPages = departmentAccess[department] || [];
+                    output.textContent += `\n\nAllowed pages: ${JSON.stringify(allowedPages, null, 2)}`;
+
+                    const page = 'manage-system-settings.html';
+                    const hasAccess = allowedPages.includes(page);
+                    output.textContent += `\n\nHas access to ${page}: ${hasAccess}`;
+                }
+            } catch (error) {
+                output.textContent += '\n\nError: ' + error.message;
+                console.error('Login error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

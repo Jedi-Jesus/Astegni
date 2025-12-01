@@ -1,0 +1,106 @@
+/* Find-Tutors Navigation Extensions */
+/* NOTE: Base navigation styles are in css/root/navigation.css */
+
+/* Find-tutors specific navigation customizations */
+.find-tutors-nav {
+    background: rgba(var(--nav-bg-rgb), 0.98);
+}
+
+/* Enhanced search bar for find-tutors */
+.tutor-search-container {
+    position: relative;
+    flex: 1;
+    max-width: 600px;
+}
+
+.tutor-search-input {
+    width: 100%;
+    padding: 0.75rem 3rem 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: 2rem;
+    background: var(--search-bg);
+    color: var(--text);
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.tutor-search-input:focus {
+    outline: none;
+    border-color: var(--button-bg);
+    box-shadow: 0 0 0 4px rgba(var(--button-bg-rgb), 0.1);
+    background: var(--background);
+}
+
+.tutor-search-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0.5rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.tutor-search-btn:hover {
+    background: var(--button-hover);
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* Filter toggle button for mobile */
+.filter-toggle-btn {
+    display: none;
+    padding: 0.5rem 1rem;
+    background: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-toggle-btn:hover {
+    background: var(--button-hover);
+}
+
+/* Quick stats in navigation */
+.nav-stats {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.nav-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.nav-stat-number {
+    font-weight: 600;
+    color: var(--button-bg);
+}
+
+/* Responsive find-tutors navigation */
+@media (max-width: 768px) {
+    .tutor-search-container {
+        max-width: none;
+        margin: 0.5rem 0;
+    }
+
+    .filter-toggle-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .nav-stats {
+        display: none;
+    }
+}

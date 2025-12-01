@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Health Check</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .test-item {
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #ddd;
+            background: #f9f9f9;
+        }
+        .test-item.testing {
+            border-color: #3b82f6;
+            background: #dbeafe;
+        }
+        .test-item.success {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+        .test-item.error {
+            border-color: #ef4444;
+            background: #fee2e2;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .test-result {
+            font-family: monospace;
+            font-size: 12px;
+            color: #555;
+            white-space: pre-wrap;
+        }
+        button {
+            padding: 12px 24px;
+            background: #4F46E5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #4338CA;
+        }
+        .status-icon {
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Backend Health Check</h1>
+        <p>This will test if your backend is running and responding correctly.</p>
+
+        <button onclick="runAllTests()">Run All Tests</button>
+
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+        const resultsDiv = document.getElementById('test-results');
+
+        function addTest(title, status, result) {
+            const testItem = document.createElement('div');
+            testItem.className = `test-item ${status}`;
+
+            const icon = status === 'success' ? '✅' :
+                        status === 'error' ? '❌' :
+                        status === 'testing' ? '⏳' : '⚪';
+
+            testItem.innerHTML = `
+                <div class="test-title"><span class="status-icon">${icon}</span>${title}</div>
+                <div class="test-result">${result}</div>
+            `;
+
+            resultsDiv.appendChild(testItem);
+            return testItem;
+        }
+
+        function updateTest(element, status, result) {
+            const icon = status === 'success' ? '✅' : '❌';
+            element.className = `test-item ${status}`;
+            element.querySelector('.test-result').textContent = result;
+            element.querySelector('.status-icon').textContent = icon;
+        }
+
+        async function testBackendConnection() {
+            const test = addTest('Test 1: Backend Connection', 'testing', 'Connecting to backend...');
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+                const response = await fetch(`${API_BASE_URL}/docs`, {
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (response.ok) {
+                    updateTest(test, 'success', `✓ Backend is running!\nStatus: ${response.status}\nURL: ${API_BASE_URL}`);
+                    return true;
+                } else {
+                    updateTest(test, 'error', `Backend responded but with error:\nStatus: ${response.status}\nCheck if backend started correctly`);
+                    return false;
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    updateTest(test, 'error', `✗ Connection TIMEOUT (5 seconds)\n\nPossible causes:\n1. Backend is not running\n2. Backend is running on a different port\n3. Backend is hung/crashed\n\nSolution: Check your backend terminal`);
+                } else {
+                    updateTest(test, 'error', `✗ Cannot connect to backend\n\nError: ${error.message}\n\nPossible causes:\n1. Backend is not running\n2. Wrong port (should be 8000)\n3. Backend crashed on startup\n\nSolution: Start backend with:\ncd astegni-backend\nuvicorn app:app --reload`);
+                }
+                return false;
+            }
+        }
+
+        async function testAdminLoginEndpoint() {
+            const test = addTest('Test 2: Admin Login Endpoint', 'testing', 'Checking if /api/admin/login exists...');
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+                    method: 'OPTIONS',
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (response.ok || response.status === 405) {
+                    updateTest(test, 'success', `✓ Admin login endpoint exists!\nStatus: ${response.status}\nEndpoint: ${API_BASE_URL}/api/admin/login`);
+                    return true;
+                } else {
+                    updateTest(test, 'error', `Endpoint exists but returned: ${response.status}`);
+                    return false;
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    updateTest(test, 'error', `✗ Request TIMEOUT\n\nThe endpoint is taking too long to respond.\nBackend might be overloaded or hung.`);
+                } else {
+                    updateTest(test, 'error', `✗ Cannot reach endpoint\nError: ${error.message}`);
+                }
+                return false;
+            }
+        }
+
+        async function testCORS() {
+            const test = addTest('Test 3: CORS Configuration', 'testing', 'Testing cross-origin requests...');
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'test@test.com',
+                        password: 'test'
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                // We don't care about the auth result, just that we got a response
+                updateTest(test, 'success', `✓ CORS is configured correctly!\nStatus: ${response.status}\nNo CORS errors detected`);
+                return true;
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    updateTest(test, 'error', `✗ Request TIMEOUT\n\nThe login request is hanging.\nThis is the problem you're experiencing!`);
+                } else if (error.message.includes('CORS')) {
+                    updateTest(test, 'error', `✗ CORS Error!\n\nError: ${error.message}\n\nSolution: Check backend CORS settings in app.py`);
+                } else {
+                    updateTest(test, 'error', `Request failed: ${error.message}`);
+                }
+                return false;
+            }
+        }
+
+        async function testActualLogin() {
+            const test = addTest('Test 4: Actual Login Request', 'testing', 'Attempting login with test credentials...');
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: 'jediael.s.abebe@gmail.com',
+                        password: 'wrong_password_for_test'
+                    }),
+                    signal: controller.signal
+                });
+
+                const responseTime = Date.now() - startTime;
+                clearTimeout(timeoutId);
+
+                const data = await response.json();
+
+                if (response.status === 401) {
+                    updateTest(test, 'success', `✓ Backend is responding correctly!\n\nResponse time: ${responseTime}ms\nStatus: ${response.status} (Expected - wrong password)\nBackend is working!\n\nNow try with your real password.`);
+                    return true;
+                } else if (response.ok) {
+                    updateTest(test, 'success', `✓ Login successful!\n\nResponse time: ${responseTime}ms\nAdmin: ${data.name}\nBackend is fully functional!`);
+                    return true;
+                } else {
+                    updateTest(test, 'error', `Unexpected response:\nStatus: ${response.status}\nMessage: ${data.detail || JSON.stringify(data)}`);
+                    return false;
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    updateTest(test, 'error', `✗ LOGIN REQUEST TIMEOUT (10 seconds)\n\nThis is the problem!\n\nThe backend is receiving the request but not responding.\n\nPossible causes:\n1. Database connection issue\n2. Backend code error/exception\n3. Backend is processing but stuck\n\nSolution:\n1. Check backend terminal for errors\n2. Restart the backend\n3. Check database is running`);
+                } else {
+                    updateTest(test, 'error', `Login request failed:\n${error.message}`);
+                }
+                return false;
+            }
+        }
+
+        async function runAllTests() {
+            resultsDiv.innerHTML = '';
+
+            addTest('Starting Tests...', 'testing', 'Running backend health checks...');
+
+            const test1 = await testBackendConnection();
+            if (!test1) {
+                addTest('❌ Tests Stopped', 'error', 'Backend is not running. Fix this first before running other tests.');
+                return;
+            }
+
+            await testAdminLoginEndpoint();
+            await testCORS();
+            await testActualLogin();
+
+            addTest('✓ Tests Complete', 'success', 'Check results above to see what needs fixing.');
+        }
+
+        // Run tests on load
+        window.onload = () => {
+            runAllTests();
+        };
+    </script>
+</body>
+</html>

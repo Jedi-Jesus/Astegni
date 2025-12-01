@@ -1,0 +1,115 @@
+<!--
+  Modal: achievementModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="achievementModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">🏆 Add Achievement</h2>
+                <button onclick="closeAchievementModal()" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="achievementForm">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Achievement Title *</label>
+                            <input type="text" id="ach-title" name="title" required
+                                class="w-full p-3 border-2 rounded-lg" placeholder="e.g., Teacher of the Year 2024">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Category</label>
+                            <select id="ach-category" name="category" class="w-full p-3 border-2 rounded-lg">
+                                <option value="award">Award</option>
+                                <option value="milestone">Milestone</option>
+                                <option value="certification">Certification</option>
+                                <option value="honor">Honor</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Icon</label>
+                                <select id="ach-icon" name="icon" class="w-full p-3 border-2 rounded-lg text-2xl">
+                                    <option value="🏆">🏆 Trophy</option>
+                                    <option value="🥇">🥇 Gold Medal</option>
+                                    <option value="🎖️">🎖️ Military Medal</option>
+                                    <option value="⭐">⭐ Star</option>
+                                    <option value="🌟">🌟 Glowing Star</option>
+                                    <option value="💎">💎 Diamond</option>
+                                    <option value="👑">👑 Crown</option>
+                                    <option value="🎓">🎓 Graduation Cap</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Color</label>
+                                <select id="ach-color" name="color" class="w-full p-3 border-2 rounded-lg">
+                                    <option value="gold">Gold</option>
+                                    <option value="purple">Purple</option>
+                                    <option value="blue">Blue</option>
+                                    <option value="green">Green</option>
+                                    <option value="red">Red</option>
+                                    <option value="orange">Orange</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Year</label>
+                                <input type="number" id="ach-year" name="year" class="w-full p-3 border-2 rounded-lg"
+                                    placeholder="2024" min="1900" max="2100">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Date Achieved</label>
+                                <input type="date" id="ach-date" name="date_achieved"
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Issuer/Organization</label>
+                            <input type="text" id="ach-issuer" name="issuer" class="w-full p-3 border-2 rounded-lg"
+                                placeholder="Organization that gave this achievement">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Verification URL</label>
+                            <input type="url" id="ach-url" name="verification_url"
+                                class="w-full p-3 border-2 rounded-lg"
+                                placeholder="https://verify.example.com/achievement">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea id="ach-description" name="description" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"
+                                placeholder="Describe your achievement"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Upload Certificate/Proof *</label>
+                            <input type="file" id="ach-certificate" name="certificate_file" required
+                                accept="image/*,.pdf" class="w-full p-3 border-2 rounded-lg">
+                            <p class="text-sm text-gray-500 mt-1">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="ach-featured" name="is_featured" class="mr-2">
+                                <span>Feature this achievement on my profile</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="submit" class="btn-primary flex-1">Add Achievement</button>
+                        <button type="button" onclick="closeAchievementModal()"
+                            class="btn-secondary flex-1">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Admin Session</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .section {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #00ffff;
+        }
+        pre {
+            background: #222;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00ffff;
+        }
+        .error { color: #ff0000; }
+        .success { color: #00ff00; }
+        .warning { color: #ffff00; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Admin Session Debug Tool</h1>
+
+    <div class="section">
+        <h2>1. Current LocalStorage Data</h2>
+        <button onclick="showLocalStorage()">Refresh LocalStorage</button>
+        <button onclick="clearAll()">Clear All Storage</button>
+        <pre id="localStorage-output">Click "Refresh LocalStorage" to view...</pre>
+    </div>
+
+    <div class="section">
+        <h2>2. AdminSession Details</h2>
+        <pre id="adminSession-output">Loading...</pre>
+    </div>
+
+    <div class="section">
+        <h2>3. User Details</h2>
+        <pre id="user-output">Loading...</pre>
+    </div>
+
+    <div class="section">
+        <h2>4. Test API Call</h2>
+        <button onclick="testProfileAPI()">Test GET /api/admin-profile/profile/{id}</button>
+        <pre id="api-output">Click button to test API...</pre>
+    </div>
+
+    <div class="section">
+        <h2>5. Create Test Session</h2>
+        <button onclick="createTestSession(1)">Set Admin ID 1 (test1@example.com)</button>
+        <button onclick="createTestSession(4)">Set Admin ID 4 (jediael.s.abebe@gmail.com)</button>
+        <button onclick="createTestSession(7)">Set Admin ID 7 (campaigns@astegni.et)</button>
+        <pre id="test-output"></pre>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        function showLocalStorage() {
+            const output = document.getElementById('localStorage-output');
+            let html = 'LocalStorage Contents:\n\n';
+
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                html += `${key}:\n${value}\n\n`;
+            }
+
+            output.textContent = html || 'LocalStorage is empty';
+            showAdminSession();
+            showUser();
+        }
+
+        function showAdminSession() {
+            const output = document.getElementById('adminSession-output');
+            const adminSession = localStorage.getItem('adminSession');
+
+            if (adminSession) {
+                try {
+                    const parsed = JSON.parse(adminSession);
+                    output.innerHTML = `<span class="success">✓ adminSession found!</span>\n\n` +
+                        JSON.stringify(parsed, null, 2);
+                } catch (e) {
+                    output.innerHTML = `<span class="error">✗ Parse error: ${e.message}</span>`;
+                }
+            } else {
+                output.innerHTML = `<span class="error">✗ No adminSession in localStorage</span>\n\nThis is why you're seeing Admin ID 1 fallback data!`;
+            }
+        }
+
+        function showUser() {
+            const output = document.getElementById('user-output');
+            const user = localStorage.getItem('user');
+
+            if (user) {
+                try {
+                    const parsed = JSON.parse(user);
+                    output.innerHTML = `<span class="success">✓ user found!</span>\n\n` +
+                        JSON.stringify(parsed, null, 2);
+                } catch (e) {
+                    output.innerHTML = `<span class="error">✗ Parse error: ${e.message}</span>`;
+                }
+            } else {
+                output.innerHTML = `<span class="warning">⚠ No user in localStorage</span>`;
+            }
+        }
+
+        async function testProfileAPI() {
+            const output = document.getElementById('api-output');
+            const adminSession = localStorage.getItem('adminSession');
+
+            if (!adminSession) {
+                output.innerHTML = `<span class="error">✗ No adminSession - cannot test</span>`;
+                return;
+            }
+
+            try {
+                const session = JSON.parse(adminSession);
+                output.innerHTML = `<span class="warning">Testing GET /api/admin/profile/${session.id}...</span>`;
+
+                const response = await fetch(`${API_BASE_URL}/api/admin/profile/${session.id}`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    output.innerHTML = `<span class="success">✓ API Response (Status: ${response.status})</span>\n\n` +
+                        JSON.stringify(data, null, 2);
+                } else {
+                    output.innerHTML = `<span class="error">✗ API Error (Status: ${response.status})</span>\n\n` +
+                        JSON.stringify(data, null, 2);
+                }
+            } catch (e) {
+                output.innerHTML = `<span class="error">✗ Error: ${e.message}</span>`;
+            }
+        }
+
+        async function createTestSession(adminId) {
+            const output = document.getElementById('test-output');
+            output.innerHTML = `<span class="warning">Fetching admin ${adminId} profile...</span>`;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/profile/${adminId}`);
+                const profileData = await response.json();
+
+                if (response.ok) {
+                    const adminSession = {
+                        id: adminId,
+                        email: profileData.email,
+                        username: profileData.username,
+                        first_name: profileData.first_name,
+                        father_name: profileData.father_name,
+                        grandfather_name: profileData.grandfather_name,
+                        department: profileData.departments?.[0] || 'manage-system-settings',
+                        departments: profileData.departments || []
+                    };
+
+                    localStorage.setItem('adminSession', JSON.stringify(adminSession));
+
+                    output.innerHTML = `<span class="success">✓ Admin session created for ID ${adminId}!</span>\n\n` +
+                        JSON.stringify(adminSession, null, 2);
+
+                    showLocalStorage();
+                } else {
+                    output.innerHTML = `<span class="error">✗ API Error: ${JSON.stringify(profileData)}</span>`;
+                }
+            } catch (e) {
+                output.innerHTML = `<span class="error">✗ Error: ${e.message}</span>`;
+            }
+        }
+
+        function clearAll() {
+            if (confirm('Clear all localStorage data?')) {
+                localStorage.clear();
+                showLocalStorage();
+                document.getElementById('test-output').innerHTML =
+                    `<span class="success">✓ All storage cleared!</span>`;
+            }
+        }
+
+        // Auto-load on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            showLocalStorage();
+        });
+    </script>
+</body>
+</html>

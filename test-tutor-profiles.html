@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tutor Profiles Data</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">Tutor Profiles Database Test</h1>
+
+        <!-- Login Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Step 1: Login to Get Token</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <input type="text" id="username" placeholder="Username" class="px-4 py-2 border rounded" value="admin">
+                <input type="password" id="password" placeholder="Password" class="px-4 py-2 border rounded" value="admin123">
+                <button onclick="login()" class="col-span-2 bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+                    Login
+                </button>
+            </div>
+            <div id="loginStatus" class="mt-4"></div>
+        </div>
+
+        <!-- Direct Database Check -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Step 2: Check Database Directly (No Auth)</h2>
+            <button onclick="checkDatabase()" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
+                Query Database
+            </button>
+            <div id="dbStatus" class="mt-4"></div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Step 3: Fetch Statistics</h2>
+            <button onclick="fetchStats()" class="bg-purple-500 text-white px-6 py-2 rounded hover:bg-purple-600">
+                Get Statistics
+            </button>
+            <div id="stats" class="mt-4"></div>
+        </div>
+
+        <!-- Tutor Lists -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-4">Step 4: Fetch Tutors by Status</h2>
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button onclick="fetchTutors('pending')" class="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600">
+                    Pending Tutors
+                </button>
+                <button onclick="fetchTutors('verified')" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">
+                    Verified Tutors
+                </button>
+                <button onclick="fetchTutors('rejected')" class="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600">
+                    Rejected Tutors
+                </button>
+                <button onclick="fetchTutors('suspended')" class="bg-orange-500 text-white px-6 py-2 rounded hover:bg-orange-600">
+                    Suspended Tutors
+                </button>
+            </div>
+            <div id="tutorsList" class="mt-4"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+        let authToken = localStorage.getItem('token');
+
+        // Check if we have a token on load
+        window.onload = function() {
+            if (authToken) {
+                document.getElementById('loginStatus').innerHTML =
+                    '<div class="p-4 bg-green-100 text-green-800 rounded">✓ Token found in localStorage</div>';
+            }
+        };
+
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // Use FormData for login
+                const formData = new FormData();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    authToken = data.access_token;
+                    localStorage.setItem('token', authToken);
+
+                    document.getElementById('loginStatus').innerHTML =
+                        `<div class="p-4 bg-green-100 text-green-800 rounded">
+                            <strong>✓ Login successful!</strong><br>
+                            User: ${data.user.username}<br>
+                            Roles: ${JSON.stringify(data.user.roles)}
+                        </div>`;
+                } else {
+                    const error = await response.text();
+                    document.getElementById('loginStatus').innerHTML =
+                        `<div class="p-4 bg-red-100 text-red-800 rounded">✗ Login failed: ${error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('loginStatus').innerHTML =
+                    `<div class="p-4 bg-red-100 text-red-800 rounded">✗ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function checkDatabase() {
+            // This would need a public endpoint, so let's show what we know
+            document.getElementById('dbStatus').innerHTML =
+                `<div class="p-4 bg-blue-100 text-blue-800 rounded">
+                    <strong>Database Status (from migration):</strong><br>
+                    • pending: 10 tutors<br>
+                    • rejected: 6 tutors<br>
+                    • suspended: 4 tutors<br>
+                    • verified: 19 tutors<br>
+                    <br>
+                    <em>Total: 39 tutors in tutor_profiles table</em>
+                </div>`;
+        }
+
+        async function fetchStats() {
+            if (!authToken) {
+                document.getElementById('stats').innerHTML =
+                    '<div class="p-4 bg-yellow-100 text-yellow-800 rounded">⚠ Please login first</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/tutors/statistics`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('stats').innerHTML =
+                        `<div class="p-4 bg-green-100 text-green-800 rounded">
+                            <strong>✓ Statistics from tutor_profiles:</strong><br>
+                            • Pending: ${data.pending}<br>
+                            • Verified: ${data.verified}<br>
+                            • Rejected: ${data.rejected}<br>
+                            • Suspended: ${data.suspended}<br>
+                            • Total: ${data.totalTutors}<br>
+                            • Approval Rate: ${data.approvalRate}%
+                        </div>`;
+                } else if (response.status === 401) {
+                    document.getElementById('stats').innerHTML =
+                        '<div class="p-4 bg-red-100 text-red-800 rounded">✗ 401 Unauthorized - Token may be expired</div>';
+                } else if (response.status === 403) {
+                    document.getElementById('stats').innerHTML =
+                        '<div class="p-4 bg-red-100 text-red-800 rounded">✗ 403 Forbidden - Need admin role</div>';
+                } else {
+                    const error = await response.text();
+                    document.getElementById('stats').innerHTML =
+                        `<div class="p-4 bg-red-100 text-red-800 rounded">✗ Error: ${error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('stats').innerHTML =
+                    `<div class="p-4 bg-red-100 text-red-800 rounded">✗ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function fetchTutors(status) {
+            if (!authToken) {
+                document.getElementById('tutorsList').innerHTML =
+                    '<div class="p-4 bg-yellow-100 text-yellow-800 rounded">⚠ Please login first</div>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/tutors/${status}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    let html = `<div class="p-4 bg-green-100 text-green-800 rounded">
+                        <strong>✓ ${status.charAt(0).toUpperCase() + status.slice(1)} Tutors (${data.total}):</strong><br>`;
+
+                    if (data.tutors && data.tutors.length > 0) {
+                        html += '<ul class="mt-2">';
+                        data.tutors.slice(0, 5).forEach(tutor => {
+                            html += `<li>• ${tutor.name} - ${tutor.location || 'No location'}
+                                     - Courses: ${Array.isArray(tutor.courses) ? tutor.courses.join(', ') : tutor.courses || 'None'}</li>`;
+                        });
+                        html += '</ul>';
+                        if (data.tutors.length > 5) {
+                            html += `<em>... and ${data.tutors.length - 5} more</em>`;
+                        }
+                    } else {
+                        html += '<em>No tutors found</em>';
+                    }
+
+                    html += '</div>';
+                    document.getElementById('tutorsList').innerHTML = html;
+                } else if (response.status === 401) {
+                    document.getElementById('tutorsList').innerHTML =
+                        '<div class="p-4 bg-red-100 text-red-800 rounded">✗ 401 Unauthorized - Token may be expired</div>';
+                } else if (response.status === 403) {
+                    document.getElementById('tutorsList').innerHTML =
+                        '<div class="p-4 bg-red-100 text-red-800 rounded">✗ 403 Forbidden - Need admin role</div>';
+                } else {
+                    const error = await response.text();
+                    document.getElementById('tutorsList').innerHTML =
+                        `<div class="p-4 bg-red-100 text-red-800 rounded">✗ Error: ${error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('tutorsList').innerHTML =
+                    `<div class="p-4 bg-red-100 text-red-800 rounded">✗ Network Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

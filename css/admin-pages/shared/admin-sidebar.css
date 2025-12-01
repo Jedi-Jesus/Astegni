@@ -1,0 +1,229 @@
+/* ============================================
+   ADMIN SIDEBAR CSS - Shared sidebar styles
+   ============================================ */
+
+.sidebar-container {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 280px;
+    background: var(--sidebar-bg);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 999;
+    overflow-y: auto;
+}
+
+.sidebar-container.active {
+    transform: translateX(0);
+}
+
+.sidebar-content {
+    padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.sidebar-nav h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text);
+    padding: 0 0.75rem;
+}
+
+.sidebar-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+}
+
+.sidebar-close:hover {
+    color: var(--text);
+    background: var(--bg-hover);
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.sidebar-link:hover {
+    background: var(--bg-hover);
+    color: var(--text);
+    transform: translateX(4px);
+}
+
+.sidebar-link.active {
+    background: var(--primary-light);
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.sidebar-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 70%;
+    background: var(--primary);
+    border-radius: 0 3px 3px 0;
+}
+
+.sidebar-icon {
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sidebar-link span:not(.sidebar-icon) {
+    font-size: 0.9375rem;
+}
+
+/* Sidebar Sections */
+.sidebar-nav hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 1rem 0;
+}
+
+/* Hamburger Menu */
+.hamburger {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: transform 0.2s;
+}
+
+.hamburger span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: var(--text);
+    border-radius: 3px;
+    transition: all 0.3s;
+}
+
+.hamburger:hover {
+    transform: scale(1.05);
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    display: none;
+    backdrop-filter: blur(2px);
+}
+
+/* Desktop Responsive */
+@media (min-width: 768px) {
+    .sidebar-container {
+        position: sticky;
+        top: 0;
+        transform: translateX(0);
+        width: 250px;
+        height: calc(100vh - 80px);
+        margin-top: 80px;
+    }
+
+    .sidebar-close {
+        display: none;
+    }
+
+    .hamburger {
+        display: none;
+    }
+
+    body.has-sidebar {
+        padding-left: 250px;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 767px) {
+    .sidebar-container {
+        width: 280px;
+    }
+
+    .sidebar-link span:not(.sidebar-icon) {
+        font-size: 0.875rem;
+    }
+}
+
+/* Sidebar Theme Variants */
+html[data-theme="dark"] .sidebar-container {
+    background: #1a1a1a;
+    border-right: 1px solid var(--border);
+}
+
+html[data-theme="dark"] .sidebar-link.active {
+    background: rgba(var(--primary-rgb), 0.15);
+}
+
+/* Scrollbar Styling */
+.sidebar-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-container::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+.sidebar-container::-webkit-scrollbar-thumb {
+    background: var(--text-secondary);
+    border-radius: 3px;
+}
+
+.sidebar-container::-webkit-scrollbar-thumb:hover {
+    background: var(--text);
+}

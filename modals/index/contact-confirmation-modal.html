@@ -1,0 +1,57 @@
+<!--
+  Modal: contact-confirmation-modal
+  Source: index.html
+  Purpose: Confirm contact info before sending OTP during registration
+-->
+
+<div id="contact-confirmation-modal" class="modal hidden">
+    <div class="modal-content enhanced">
+        <button class="modal-close-enhanced" onclick="closeModal('contact-confirmation-modal')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <div class="modal-header">
+            <div class="forgot-icon" style="background: rgba(245, 158, 11, 0.1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #F59E0B;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                </svg>
+            </div>
+            <h3 class="modal-title">Confirm Your Contact</h3>
+            <p class="modal-subtitle">Please confirm your contact information. We'll send an OTP to verify it's you.</p>
+        </div>
+
+        <div style="padding: 0 40px 32px;">
+            <div style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 24px;">
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <div style="flex-shrink: 0; width: 24px; height: 24px; background: rgba(245, 158, 11, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <svg style="width: 14px; height: 14px; color: #F59E0B;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <p style="margin: 0; font-size: 14px; color: #6B7280; line-height: 1.5;">
+                            <strong style="color: #1F2937;">Phone:</strong> <span id="confirm-phone-display"></span><br>
+                            <strong style="color: #1F2937;">Email:</strong> <span id="confirm-email-display"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <p style="font-size: 14px; color: #6B7280; margin-bottom: 24px; text-align: center;">
+                Is this information correct? An OTP will be sent to verify your phone number.
+            </p>
+
+            <div style="display: flex; gap: 12px;">
+                <button onclick="editRegistrationInfo()" class="submit-btn" style="background: white; color: #F59E0B; border: 2px solid #F59E0B; flex: 1;">
+                    Edit Info
+                </button>
+                <button onclick="sendOTP()" class="submit-btn" style="flex: 1;">
+                    Send OTP
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

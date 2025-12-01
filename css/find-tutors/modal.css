@@ -1,0 +1,86 @@
+/* Find-Tutors Specific Modal Extensions */
+/* NOTE: Base modal styles are in css/root/modals.css */
+
+/* Tutor profile modal specific styles */
+.tutor-profile-modal .modal-content {
+    max-width: 800px;
+}
+
+.tutor-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.tutor-stat-card {
+    padding: 1rem;
+    background: rgba(var(--button-bg-rgb), 0.05);
+    border-radius: 0.75rem;
+    border: 1px solid rgba(var(--button-bg-rgb), 0.1);
+}
+
+.tutor-rating-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.rating-stars {
+    color: #fbbf24;
+    font-size: 1.25rem;
+}
+
+/* Filter modal styles */
+.filter-modal .modal-content {
+    max-width: 600px;
+}
+
+.filter-section {
+    margin-bottom: 1.5rem;
+}
+
+.filter-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--heading);
+    margin-bottom: 0.75rem;
+}
+
+.price-range-inputs {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.price-range-inputs input {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Responsive design for find-tutors modals */
+@media (max-width: 768px) {
+    .tutor-details-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .tutor-profile-modal .modal-content,
+    .filter-modal .modal-content {
+        max-width: 95%;
+        margin: 0.5rem;
+    }
+
+    .price-range-inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .price-range-inputs input {
+        width: 100%;
+    }
+}
+
+
+

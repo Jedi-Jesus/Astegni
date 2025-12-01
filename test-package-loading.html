@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Package Loading Diagnostic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8 bg-gray-100">
+    <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow">
+        <h1 class="text-2xl font-bold mb-4">Package Loading Diagnostic</h1>
+
+        <div class="mb-4">
+            <h2 class="text-xl font-semibold mb-2">Test Results:</h2>
+            <div id="results" class="space-y-2"></div>
+        </div>
+
+        <div class="mb-4">
+            <button onclick="testPackageLoading()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                Test Package Loading
+            </button>
+            <button onclick="createSamplePackages()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 ml-2">
+                Create Sample Packages
+            </button>
+            <button onclick="clearPackages()" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 ml-2">
+                Clear Packages
+            </button>
+        </div>
+
+        <div>
+            <h2 class="text-xl font-semibold mb-2">Current Packages in localStorage:</h2>
+            <pre id="packageData" class="bg-gray-100 p-4 rounded overflow-auto max-h-96"></pre>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `p-2 rounded ${type === 'error' ? 'bg-red-100 text-red-700' : type === 'success' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`;
+            div.textContent = message;
+            resultsDiv.appendChild(div);
+        }
+
+        function showPackages() {
+            const stored = localStorage.getItem('tutorPackages');
+            const packageData = document.getElementById('packageData');
+
+            if (stored) {
+                try {
+                    const packages = JSON.parse(stored);
+                    packageData.textContent = JSON.stringify(packages, null, 2);
+                    log(`Found ${packages.length} package(s) in localStorage`, 'success');
+                } catch (e) {
+                    packageData.textContent = 'Error parsing packages: ' + e.message;
+                    log('Error parsing packages from localStorage', 'error');
+                }
+            } else {
+                packageData.textContent = 'No packages found in localStorage';
+                log('No packages in localStorage', 'info');
+            }
+        }
+
+        function testPackageLoading() {
+            document.getElementById('results').innerHTML = '';
+
+            log('Starting package loading test...', 'info');
+
+            // Check if packageManagerClean exists
+            if (typeof window.packageManagerClean !== 'undefined') {
+                log('✓ packageManagerClean is defined', 'success');
+                log(`Found ${window.packageManagerClean.packages.length} packages`, 'success');
+            } else {
+                log('✗ packageManagerClean is NOT defined', 'error');
+            }
+
+            // Check localStorage
+            const stored = localStorage.getItem('tutorPackages');
+            if (stored) {
+                const packages = JSON.parse(stored);
+                log(`✓ Found ${packages.length} package(s) in localStorage`, 'success');
+            } else {
+                log('✗ No packages in localStorage', 'error');
+            }
+
+            // Check modal elements
+            const modal = document.getElementById('package-management-modal');
+            const packagesList = document.getElementById('packagesList');
+            const packageEditor = document.getElementById('packageEditor');
+
+            log(`Modal element: ${modal ? '✓ Found' : '✗ Not found'}`, modal ? 'success' : 'error');
+            log(`packagesList element: ${packagesList ? '✓ Found' : '✗ Not found'}`, packagesList ? 'success' : 'error');
+            log(`packageEditor element: ${packageEditor ? '✓ Found' : '✗ Not found'}`, packageEditor ? 'success' : 'error');
+
+            showPackages();
+        }
+
+        function createSamplePackages() {
+            const samplePackages = [
+                {
+                    id: Date.now(),
+                    name: "Mathematics Package",
+                    courses: ["Algebra", "Geometry", "Calculus"],
+                    paymentFrequency: "monthly",
+                    hourlyRate: 250,
+                    discounts: { threeMonths: 10, sixMonths: 15, yearly: 20 },
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: Date.now() + 1,
+                    name: "Science Package",
+                    courses: ["Physics", "Chemistry", "Biology"],
+                    paymentFrequency: "2-weeks",
+                    hourlyRate: 300,
+                    discounts: { threeMonths: 5, sixMonths: 10, yearly: 15 },
+                    createdAt: new Date().toISOString()
+                }
+            ];
+
+            localStorage.setItem('tutorPackages', JSON.stringify(samplePackages));
+            log('Created 2 sample packages', 'success');
+            showPackages();
+        }
+
+        function clearPackages() {
+            localStorage.removeItem('tutorPackages');
+            log('Cleared all packages from localStorage', 'info');
+            showPackages();
+        }
+
+        // Initial load
+        window.addEventListener('DOMContentLoaded', () => {
+            showPackages();
+        });
+    </script>
+</body>
+</html>

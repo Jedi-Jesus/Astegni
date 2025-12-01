@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Modal Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .test-container {
+            background: white;
+            padding: 60px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .test-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .test-button:active {
+            transform: translateY(-1px);
+        }
+
+        .features {
+            margin-top: 50px;
+            text-align: left;
+        }
+
+        .features h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .feature-item i {
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .status {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .status-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status-message {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .test-container {
+                padding: 40px 30px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Import schedule modal styles */
+        @import url('../css/tutor-profile/tutor-profile.css');
+        @import url('../css/root.css');
+
+        /* Modal base styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.show {
+            display: flex !important;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 700px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            animation: slideUp 0.3s ease-out;
+            position: relative;
+            z-index: 1;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: #000;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Success notification */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            z-index: 11000;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .notification.show {
+            display: flex;
+        }
+
+        .notification.error {
+            background: #ef4444;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-calendar-plus"></i> Schedule Modal</h1>
+        <p class="subtitle">Test the teaching schedule creation modal</p>
+
+        <button class="test-button" onclick="openScheduleModal()">
+            <i class="fas fa-rocket"></i>
+            Open Schedule Modal
+        </button>
+
+        <div class="features">
+            <h3><i class="fas fa-star"></i> Features Included</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Schedule title</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Subject selection</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Grade level</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Multiple days</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Time range</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Session format</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Dynamic location</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Duration selector</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Max students</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Price in ETB</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Additional notes</span>
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Active/Draft status</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="status">
+            <div class="status-title"><i class="fas fa-info-circle"></i> Implementation Status</div>
+            <div class="status-message">
+                ✅ Modal HTML added<br>
+                ✅ JavaScript functions implemented<br>
+                ✅ CSS styling complete<br>
+                ✅ Dark mode support<br>
+                ✅ Mobile responsive<br>
+                🔄 Backend API ready for integration
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle"></i>
+        <span id="notification-message">Success!</span>
+    </div>
+
+    <!-- Include the actual schedule modal from tutor-profile.html -->
+    <!-- Schedule Modal -->
+    <div id="scheduleModal" class="modal hidden">
+        <div class="modal-overlay" onclick="closeScheduleModal()"></div>
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2><i class="fas fa-calendar-plus"></i> Create Teaching Schedule</h2>
+                <button class="modal-close" onclick="closeScheduleModal()">×</button>
+            </div>
+
+            <form id="scheduleForm" onsubmit="event.preventDefault(); saveSchedule();">
+                <div class="modal-body">
+                    <!-- Schedule Title -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-title" class="form-label">
+                            <i class="fas fa-heading"></i> Schedule Title
+                        </label>
+                        <input type="text" id="schedule-title" class="form-input" placeholder="e.g., Mathematics - Grade 10" required>
+                        <small class="text-muted">Give your schedule a descriptive name</small>
+                    </div>
+
+                    <!-- Subject/Course -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-subject" class="form-label">
+                            <i class="fas fa-book"></i> Subject/Course
+                        </label>
+                        <select id="schedule-subject" class="form-select" required>
+                            <option value="">Select a subject</option>
+                            <option value="Mathematics">Mathematics</option>
+                            <option value="Physics">Physics</option>
+                            <option value="Chemistry">Chemistry</option>
+                            <option value="Biology">Biology</option>
+                            <option value="English">English</option>
+                            <option value="Amharic">Amharic</option>
+                            <option value="History">History</option>
+                            <option value="Geography">Geography</option>
+                            <option value="Civics">Civics</option>
+                            <option value="Economics">Economics</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Grade Level -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-grade" class="form-label">
+                            <i class="fas fa-graduation-cap"></i> Grade Level
+                        </label>
+                        <select id="schedule-grade" class="form-select" required>
+                            <option value="">Select grade level</option>
+                            <option value="KG">Kindergarten</option>
+                            <option value="Grade 1-6">Grade 1-6</option>
+                            <option value="Grade 7-8">Grade 7-8</option>
+                            <option value="Grade 9-10">Grade 9-10</option>
+                            <option value="Grade 11-12">Grade 11-12</option>
+                            <option value="University">University Level</option>
+                            <option value="Adult Education">Adult Education</option>
+                        </select>
+                    </div>
+
+                    <!-- Day of Week -->
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-week"></i> Days of the Week
+                        </label>
+                        <div class="days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="schedule-day" value="Monday">
+                                <span class="day-label">Mon</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="schedule-day" value="Tuesday">
+                                <span class="day-label">Tue</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="schedule-day" value="Wednesday">
+                                <span class="day-label">Wed</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="schedule-day" value="Thursday">
+                                <span class="day-label">Thu</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="schedule-day" value="Friday">
+                                <span class="day-label">Fri</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="schedule-day" value="Saturday">
+                                <span class="day-label">Sat</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" name="schedule-day" value="Sunday">
+                                <span class="day-label">Sun</span>
+                            </label>
+                        </div>
+                        <small class="text-muted">Select one or more days</small>
+                    </div>
+
+                    <!-- Time Range -->
+                    <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label for="schedule-start-time" class="form-label">
+                                <i class="fas fa-clock"></i> Start Time
+                            </label>
+                            <input type="time" id="schedule-start-time" class="form-input" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="schedule-end-time" class="form-label">
+                                <i class="fas fa-clock"></i> End Time
+                            </label>
+                            <input type="time" id="schedule-end-time" class="form-input" required>
+                        </div>
+                    </div>
+
+                    <!-- Session Format -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-format" class="form-label">
+                            <i class="fas fa-chalkboard-teacher"></i> Session Format
+                        </label>
+                        <select id="schedule-format" class="form-select" required onchange="toggleLocationField()">
+                            <option value="">Select format</option>
+                            <option value="Online">Online</option>
+                            <option value="In-person">In-person</option>
+                            <option value="Hybrid">Hybrid (Online & In-person)</option>
+                        </select>
+                    </div>
+
+                    <!-- Location (for in-person/hybrid) -->
+                    <div class="form-group mb-4" id="location-group" style="display: none;">
+                        <label for="schedule-location" class="form-label">
+                            <i class="fas fa-map-marker-alt"></i> Location
+                        </label>
+                        <input type="text" id="schedule-location" class="form-input" placeholder="e.g., Addis Ababa, Bole area">
+                        <small class="text-muted">Where will the session take place?</small>
+                    </div>
+
+                    <!-- Session Duration -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-duration" class="form-label">
+                            <i class="fas fa-hourglass-half"></i> Session Duration
+                        </label>
+                        <select id="schedule-duration" class="form-select" required>
+                            <option value="">Select duration</option>
+                            <option value="30">30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">1 hour</option>
+                            <option value="90">1.5 hours</option>
+                            <option value="120">2 hours</option>
+                            <option value="150">2.5 hours</option>
+                            <option value="180">3 hours</option>
+                        </select>
+                    </div>
+
+                    <!-- Max Students -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-max-students" class="form-label">
+                            <i class="fas fa-users"></i> Maximum Students
+                        </label>
+                        <input type="number" id="schedule-max-students" class="form-input" min="1" max="50" value="1" required>
+                        <small class="text-muted">How many students can join this session?</small>
+                    </div>
+
+                    <!-- Price per Session -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-price" class="form-label">
+                            <i class="fas fa-money-bill-wave"></i> Price per Session (ETB)
+                        </label>
+                        <input type="number" id="schedule-price" class="form-input" min="0" step="10" placeholder="e.g., 200" required>
+                        <small class="text-muted">Set your price in Ethiopian Birr</small>
+                    </div>
+
+                    <!-- Schedule Notes -->
+                    <div class="form-group mb-4">
+                        <label for="schedule-notes" class="form-label">
+                            <i class="fas fa-sticky-note"></i> Additional Notes (Optional)
+                        </label>
+                        <textarea id="schedule-notes" class="form-input" rows="3" placeholder="Any special instructions or requirements..."></textarea>
+                        <small class="text-muted">Share any additional information about this schedule</small>
+                    </div>
+
+                    <!-- Schedule Status -->
+                    <div class="form-group mb-4">
+                        <label class="form-label">
+                            <i class="fas fa-toggle-on"></i> Schedule Status
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="schedule-status" value="active" checked class="mr-2">
+                                <span>Active (Available for booking)</span>
+                            </label>
+                            <label class="inline-flex items-center">
+                                <input type="radio" name="schedule-status" value="draft" class="mr-2">
+                                <span>Draft (Not visible to students)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <button type="button" class="btn-secondary" onclick="closeScheduleModal()" style="padding: 12px 24px; border: 2px solid #e5e7eb; background: white; border-radius: 8px; cursor: pointer; transition: all 0.2s;">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn-primary" style="padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-save"></i> Create Schedule
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/tutor-profile/global-functions.js"></script>
+    <script>
+        // Simple modal functions for testing
+        function openScheduleModal() {
+            const modal = document.getElementById('scheduleModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeScheduleModal() {
+            const modal = document.getElementById('scheduleModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const messageEl = document.getElementById('notification-message');
+
+            if (notification && messageEl) {
+                messageEl.textContent = message;
+                notification.className = 'notification show' + (type === 'error' ? ' error' : '');
+
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+        }
+
+        async function saveSchedule() {
+            try {
+                // Get form values
+                const title = document.getElementById('schedule-title')?.value;
+                const subject = document.getElementById('schedule-subject')?.value;
+                const grade = document.getElementById('schedule-grade')?.value;
+                const startTime = document.getElementById('schedule-start-time')?.value;
+                const endTime = document.getElementById('schedule-end-time')?.value;
+                const format = document.getElementById('schedule-format')?.value;
+                const location = document.getElementById('schedule-location')?.value;
+                const duration = document.getElementById('schedule-duration')?.value;
+                const maxStudents = document.getElementById('schedule-max-students')?.value;
+                const price = document.getElementById('schedule-price')?.value;
+                const notes = document.getElementById('schedule-notes')?.value;
+                const status = document.querySelector('input[name="schedule-status"]:checked')?.value;
+
+                // Get selected days
+                const selectedDays = Array.from(document.querySelectorAll('input[name="schedule-day"]:checked'))
+                    .map(checkbox => checkbox.value);
+
+                // Validation
+                if (!title || !subject || !grade || !startTime || !endTime || !format || !duration || !maxStudents || !price) {
+                    showNotification('Please fill in all required fields', 'error');
+                    return;
+                }
+
+                if (selectedDays.length === 0) {
+                    showNotification('Please select at least one day', 'error');
+                    return;
+                }
+
+                if (startTime >= endTime) {
+                    showNotification('End time must be after start time', 'error');
+                    return;
+                }
+
+                // Build schedule data
+                const scheduleData = {
+                    title, subject, grade,
+                    days: selectedDays,
+                    startTime, endTime, format,
+                    location: (format === 'In-person' || format === 'Hybrid') ? location : null,
+                    duration: parseInt(duration),
+                    maxStudents: parseInt(maxStudents),
+                    price: parseFloat(price),
+                    notes, status,
+                    createdAt: new Date().toISOString()
+                };
+
+                console.log('📅 Schedule created:', scheduleData);
+
+                // Show success
+                showNotification('Schedule created successfully!', 'success');
+
+                // Close modal
+                closeScheduleModal();
+
+                // Reset form
+                document.getElementById('scheduleForm')?.reset();
+
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Failed to create schedule', 'error');
+            }
+        }
+
+        function toggleLocationField() {
+            const formatSelect = document.getElementById('schedule-format');
+            const locationGroup = document.getElementById('location-group');
+            const locationInput = document.getElementById('schedule-location');
+
+            if (formatSelect && locationGroup && locationInput) {
+                const selectedFormat = formatSelect.value;
+
+                if (selectedFormat === 'In-person' || selectedFormat === 'Hybrid') {
+                    locationGroup.style.display = 'block';
+                    locationInput.required = true;
+                } else {
+                    locationGroup.style.display = 'none';
+                    locationInput.required = false;
+                    locationInput.value = '';
+                }
+            }
+        }
+
+        // ESC key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeScheduleModal();
+            }
+        });
+    </script>
+</body>
+</html>

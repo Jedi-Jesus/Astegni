@@ -1,0 +1,56 @@
+<!--
+  Modal: otp-verification-modal
+  Source: index.html
+  Purpose: OTP verification modal for registration and other verifications
+-->
+
+<div id="otp-verification-modal" class="modal hidden">
+    <div class="modal-content enhanced">
+        <button class="modal-close-enhanced" onclick="closeModal('otp-verification-modal')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <div class="modal-header">
+            <div class="forgot-icon" style="background: rgba(16, 185, 129, 0.1); width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #10B981;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <h3 class="modal-title">Verify Your Account</h3>
+            <p class="modal-subtitle">Enter the 6-digit OTP sent to your email/phone to complete registration</p>
+        </div>
+
+        <div style="padding: 0 40px 32px;">
+            <div class="form-group">
+                <label style="font-weight: 600; color: #374151; margin-bottom: 8px; display: block;">Enter OTP Code</label>
+                <input type="text"
+                       id="registration-otp-input"
+                       maxlength="6"
+                       placeholder="000000"
+                       style="text-align: center; font-size: 24px; letter-spacing: 8px; padding: 16px; font-weight: 600;"
+                       pattern="[0-9]*"
+                       inputmode="numeric"
+                       required>
+                <p style="font-size: 12px; color: #6B7280; margin-top: 8px; text-align: center;">
+                    The code expires in 5 minutes
+                </p>
+            </div>
+
+            <button onclick="verifyRegistrationOTP()" class="submit-btn" style="width: 100%; margin-top: 16px;">
+                Verify & Register
+            </button>
+
+            <p style="font-size: 14px; color: #6B7280; margin-top: 20px; text-align: center;">
+                Didn't receive the code?
+                <a href="#" onclick="resendRegistrationOTP(); return false;" style="color: #F59E0B; font-weight: 600; text-decoration: none;">Resend OTP</a>
+            </p>
+
+            <p style="font-size: 13px; color: #9CA3AF; margin-top: 12px; text-align: center;">
+                <a href="#" onclick="editRegistrationInfo(); return false;" style="color: #6B7280; text-decoration: underline;">Edit registration info</a>
+            </p>
+        </div>
+    </div>
+</div>

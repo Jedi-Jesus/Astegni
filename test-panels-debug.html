@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Panels</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-4">Debug Manage Tutors Panels</h1>
+
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="border p-4 rounded">
+            <h2 class="font-bold mb-2">1. Authentication</h2>
+            <button onclick="checkAuth()" class="bg-gray-500 text-white px-4 py-2 rounded mb-2">Check Auth Status</button>
+            <button onclick="login()" class="bg-blue-500 text-white px-4 py-2 rounded mb-2">Login as Admin</button>
+            <div id="auth-status" class="text-sm mt-2"></div>
+        </div>
+
+        <div class="border p-4 rounded">
+            <h2 class="font-bold mb-2">2. Test API Endpoints</h2>
+            <button onclick="testEndpoint('pending')" class="bg-yellow-500 text-white px-3 py-1 rounded mr-2 mb-2">Pending</button>
+            <button onclick="testEndpoint('verified')" class="bg-green-500 text-white px-3 py-1 rounded mr-2 mb-2">Verified</button>
+            <button onclick="testEndpoint('rejected')" class="bg-red-500 text-white px-3 py-1 rounded mr-2 mb-2">Rejected</button>
+            <button onclick="testEndpoint('suspended')" class="bg-orange-500 text-white px-3 py-1 rounded mb-2">Suspended</button>
+            <div id="api-status" class="text-sm mt-2"></div>
+        </div>
+
+        <div class="border p-4 rounded">
+            <h2 class="font-bold mb-2">3. Check localStorage</h2>
+            <button onclick="checkStorage()" class="bg-purple-500 text-white px-4 py-2 rounded">Check Storage</button>
+            <div id="storage-status" class="text-sm mt-2"></div>
+        </div>
+
+        <div class="border p-4 rounded">
+            <h2 class="font-bold mb-2">4. Open Manage Tutors</h2>
+            <button onclick="openPage('dashboard')" class="bg-indigo-500 text-white px-3 py-1 rounded mr-2">Dashboard</button>
+            <button onclick="openPage('requested')" class="bg-indigo-500 text-white px-3 py-1 rounded mr-2">Requested</button>
+            <button onclick="openPage('verified')" class="bg-indigo-500 text-white px-3 py-1 rounded">Verified</button>
+        </div>
+    </div>
+
+    <div class="border p-4 rounded">
+        <h2 class="font-bold mb-2">Results:</h2>
+        <pre id="results" class="bg-gray-100 p-4 rounded overflow-auto max-h-96"></pre>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        function log(message, data = null) {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            results.innerHTML += `[${timestamp}] ${message}\n`;
+            if (data) {
+                results.innerHTML += JSON.stringify(data, null, 2) + '\n';
+            }
+            results.innerHTML += '---\n';
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            const authStatus = document.getElementById('auth-status');
+
+            if (token && user) {
+                const userData = JSON.parse(user);
+                authStatus.innerHTML = `✅ Logged in as: ${userData.email}`;
+                log('Auth check: Logged in', userData);
+            } else {
+                authStatus.innerHTML = '❌ Not logged in';
+                log('Auth check: Not logged in');
+            }
+        }
+
+        async function login() {
+            const authStatus = document.getElementById('auth-status');
+            try {
+                log('Attempting login...');
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'username=admin@astegni.com&password=Admin2025!'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('refreshToken', data.refresh_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    authStatus.innerHTML = '✅ Login successful!';
+                    log('Login successful', data.user);
+                } else {
+                    authStatus.innerHTML = `❌ Login failed: ${response.status}`;
+                    log('Login failed', { status: response.status });
+                }
+            } catch (error) {
+                authStatus.innerHTML = `❌ Error: ${error.message}`;
+                log('Login error', { error: error.message });
+            }
+        }
+
+        async function testEndpoint(status) {
+            const apiStatus = document.getElementById('api-status');
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                apiStatus.innerHTML = '❌ Please login first';
+                log('API test failed: No token');
+                return;
+            }
+
+            try {
+                log(`Testing ${status} endpoint...`);
+                const response = await fetch(`${API_BASE_URL}/api/admin/tutors/${status}?page=1&limit=3`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    apiStatus.innerHTML = `✅ ${status}: ${data.total} tutors`;
+                    log(`${status} endpoint success`, {
+                        total: data.total,
+                        page: data.page,
+                        tutors: data.tutors.slice(0, 2)
+                    });
+                } else {
+                    apiStatus.innerHTML = `❌ ${status} failed: ${response.status}`;
+                    log(`${status} endpoint failed`, { status: response.status });
+                }
+            } catch (error) {
+                apiStatus.innerHTML = `❌ Error: ${error.message}`;
+                log(`${status} endpoint error`, { error: error.message });
+            }
+        }
+
+        function checkStorage() {
+            const storageStatus = document.getElementById('storage-status');
+            const items = {
+                token: localStorage.getItem('token') ? '✅ Present' : '❌ Missing',
+                refreshToken: localStorage.getItem('refreshToken') ? '✅ Present' : '❌ Missing',
+                user: localStorage.getItem('user') ? '✅ Present' : '❌ Missing'
+            };
+
+            storageStatus.innerHTML = Object.entries(items).map(([key, value]) =>
+                `${key}: ${value}`
+            ).join('<br>');
+
+            log('localStorage check', items);
+        }
+
+        function openPage(panel) {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+
+            window.location.href = `admin-pages/manage-tutors.html?panel=${panel}`;
+        }
+
+        // Check on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            checkStorage();
+        });
+    </script>
+</body>
+</html>

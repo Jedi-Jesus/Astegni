@@ -1,0 +1,128 @@
+/* ============================================
+   FAB (FLOATING ACTION BUTTON)
+   ============================================ */
+.fab-container {
+  position: fixed !important;
+  bottom: 2rem !important;
+  right: 2rem !important;
+  z-index: 10000 !important;
+  display: block !important;
+}
+
+.fab {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 6px 20px rgba(var(--button-bg-rgb), 0.4);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fab:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: 0 8px 25px rgba(var(--button-bg-rgb), 0.5);
+}
+
+.fab:active {
+  transform: scale(0.95);
+}
+
+.fab-icon {
+  transition: transform var(--transition);
+  font-size: 1.8rem;
+  font-weight: 300;
+}
+
+.fab.active .fab-icon {
+  transform: rotate(45deg);
+}
+
+.fab-label {
+  display: none;
+}
+
+.fab-menu {
+  position: absolute;
+  bottom: 80px;
+  right: 0;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.75rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+  pointer-events: none;
+}
+
+.fab-container.active .fab-menu {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.fab-option {
+  padding: 0.75rem 1.25rem;
+  background: var(--card-bg);
+  border: none;
+  border-radius: 28px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  color: var(--text);
+  white-space: nowrap;
+  transform: translateX(20px);
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.fab-container.active .fab-option {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+.fab-container.active .fab-option:nth-child(1) {
+  transition-delay: 0.05s;
+}
+
+.fab-container.active .fab-option:nth-child(2) {
+  transition-delay: 0.1s;
+}
+
+.fab-container.active .fab-option:nth-child(3) {
+  transition-delay: 0.15s;
+}
+
+.fab-container.active .fab-option:nth-child(4) {
+  transition-delay: 0.2s;
+}
+
+.fab-container.active .fab-option:nth-child(5) {
+  transition-delay: 0.25s;
+}
+
+.fab-container.active .fab-option:nth-child(6) {
+  transition-delay: 0.3s;
+}
+
+.fab-option:hover {
+  background: var(--primary-gradient);
+  color: white;
+  transform: translateX(-5px) scale(1.05);
+  box-shadow: 0 6px 20px rgba(var(--button-bg-rgb), 0.3);
+}
+
+.fab-option span {
+  font-size: 1.2rem;
+}

@@ -1,0 +1,83 @@
+/* Reels Specific Theme Extensions */
+/* NOTE: Base theme variables are in css/root/theme.css */
+
+/* Reels-specific CSS variables */
+:root {
+    --reel-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --reel-card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --reel-card-radius: 12px;
+    --filter-height: 56px;
+    --filter-gap: 12px;
+    --video-aspect-ratio: 16/9;
+    --play-button-size: 64px;
+    --reel-grid-gap: 1.5rem;
+}
+
+/* Reels-specific dark mode adjustments */
+[data-theme="dark"] {
+    --reel-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --reel-card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+/* Video-specific theme adjustments */
+.video-card {
+    background: var(--card-bg);
+    box-shadow: var(--reel-card-shadow);
+    border-radius: var(--reel-card-radius);
+    transition: var(--transition);
+}
+
+.video-card:hover {
+    box-shadow: var(--reel-card-hover-shadow);
+    transform: translateY(-2px);
+}
+
+/* Filter button theme */
+.video-filter-btn {
+    background: rgba(var(--button-bg-rgb), 0.1);
+    border: 1px solid rgba(var(--button-bg-rgb), 0.2);
+    color: var(--text);
+    transition: var(--transition);
+}
+
+.video-filter-btn:hover {
+    background: rgba(var(--button-bg-rgb), 0.15);
+}
+
+.video-filter-btn.active {
+    background: var(--button-bg);
+    color: var(--button-text);
+    border-color: var(--button-bg);
+}
+
+/* Play button theme */
+.video-play-button {
+    width: var(--play-button-size);
+    height: var(--play-button-size);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 50%;
+    transition: var(--transition);
+}
+
+.video-play-button:hover {
+    background: var(--button-bg);
+    transform: scale(1.1);
+}
+
+/* Video grid responsive variables */
+@media (max-width: 768px) {
+    :root {
+        --reel-grid-gap: 1rem;
+        --play-button-size: 48px;
+        --video-aspect-ratio: 4/3;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --reel-grid-gap: 0.75rem;
+        --play-button-size: 40px;
+        --video-aspect-ratio: 1/1;
+    }
+}

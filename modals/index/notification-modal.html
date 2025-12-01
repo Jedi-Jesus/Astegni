@@ -1,0 +1,55 @@
+<!--
+  Modal: notification-modal
+  Source: index.html
+  Purpose: User notifications display
+-->
+
+<div id="notification-modal" class="modal hidden">
+    <div class="modal-content notification-modal">
+        <button class="modal-close-enhanced" onclick="closeModal('notification-modal')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                </path>
+            </svg>
+        </button>
+        <h3 class="modal-title">Notifications</h3>
+
+        <div class="notification-tabs">
+            <button class="tab-btn active" data-tab="all">All</button>
+            <button class="tab-btn" data-tab="unread">Unread</button>
+            <button class="tab-btn" data-tab="mentions">Mentions</button>
+        </div>
+
+        <div class="notifications-list">
+            <div class="notification-item unread">
+                <div class="notification-icon">🎉</div>
+                <div class="notification-content">
+                    <h4>Welcome to Astegni!</h4>
+                    <p>Start your learning journey by exploring our courses</p>
+                    <span class="notification-time">Just now</span>
+                </div>
+            </div>
+            <div class="notification-item unread">
+                <div class="notification-icon">📚</div>
+                <div class="notification-content">
+                    <h4>New Course Available</h4>
+                    <p>Advanced Mathematics course is now live</p>
+                    <span class="notification-time">5 minutes ago</span>
+                </div>
+            </div>
+            <div class="notification-item">
+                <div class="notification-icon">👨‍🏫</div>
+                <div class="notification-content">
+                    <h4>Tutor Request Accepted</h4>
+                    <p>Your tutor request has been accepted by John Doe</p>
+                    <span class="notification-time">1 hour ago</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="notification-footer">
+            <button class="mark-all-read">Mark all as read</button>
+            <a href="#" class="view-all">View all notifications</a>
+        </div>
+    </div>
+</div>

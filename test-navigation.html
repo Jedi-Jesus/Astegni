@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .test-link {
+            display: block;
+            padding: 10px;
+            margin: 10px 0;
+            background: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .test-link:hover {
+            background: #45a049;
+        }
+        h1 { color: #333; }
+        h2 { color: #666; }
+        code {
+            background: #e0e0e0;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Astegni Navigation Test</h1>
+
+    <div class="test-section">
+        <h2>✅ Server Status</h2>
+        <p><strong>Frontend Server:</strong> http://localhost:8080</p>
+        <p><strong>Backend Server:</strong> https://api.astegni.com</p>
+        <p><strong>Folder Name:</strong> Astegni (renamed from "astegni v-1.1")</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🔗 Test Profile Page Navigation</h2>
+        <p>These links use the same relative paths as the application:</p>
+
+        <a href="profile-pages/tutor-profile.html" class="test-link">
+            👨‍🏫 Tutor Profile
+        </a>
+
+        <a href="profile-pages/student-profile.html" class="test-link">
+            🎓 Student Profile
+        </a>
+
+        <a href="profile-pages/parent-profile.html" class="test-link">
+            👪 Parent Profile
+        </a>
+
+        <a href="profile-pages/advertiser-profile.html" class="test-link">
+            📢 Advertiser Profile
+        </a>
+
+        <a href="index.html" class="test-link">
+            🏠 Back to Home
+        </a>
+    </div>
+
+    <div class="test-section">
+        <h2>📝 What Was Fixed</h2>
+        <ul>
+            <li><strong>Issue:</strong> Multiple processes (4) were running on port 8080, causing conflicts</li>
+            <li><strong>Solution:</strong> Killed all conflicting processes and started fresh server</li>
+            <li><strong>Impact:</strong> Folder rename from "astegni v-1.1" to "Astegni" doesn't affect relative paths</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🧭 Next Steps</h2>
+        <ol>
+            <li>Open <code>http://localhost:8080</code> in your browser</li>
+            <li>Login to the application</li>
+            <li>Click on your profile dropdown menu</li>
+            <li>Navigate to your profile page (tutor/student/parent/advertiser)</li>
+            <li>Verify the page loads correctly without ERR_EMPTY_RESPONSE</li>
+        </ol>
+    </div>
+
+    <script>
+        // Display current location for debugging
+        console.log('Current URL:', window.location.href);
+        console.log('Base path:', window.location.origin);
+    </script>
+</body>
+</html>

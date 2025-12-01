@@ -1,0 +1,391 @@
+"""
+Astegni Reviews Endpoints - Platform review management for admins
+"""
+from fastapi import APIRouter, HTTPException, Query
+from pydantic import BaseModel
+from typing import Optional, List
+from datetime import datetime
+import os
+import psycopg
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Database setup
+DATABASE_URL = os.getenv('DATABASE_URL', 'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_db')
+
+router = APIRouter()
+
+# ============================================
+# PYDANTIC MODELS
+# ============================================
+
+class ReviewResponse(BaseModel):
+    id: int
+    reviewer_id: int
+    reviewer_name: str
+    reviewer_profile_picture: Optional[str]
+    reviewer_role: str
+    review: str
+    rating: int
+    review_type: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class ReviewStats(BaseModel):
+    total_reviews: int
+    average_rating: float
+    five_star: int
+    four_star: int
+    three_star: int
+    two_star: int
+    one_star: int
+    by_role: dict
+
+class FeatureReviewRequest(BaseModel):
+    review_ids: List[int]
+    display_location: str = 'all'
+
+class FeaturedReviewResponse(ReviewResponse):
+    is_featured: bool
+    display_location: Optional[str]
+    display_order: int
+
+# ============================================
+# ENDPOINTS
+# ============================================
+
+@router.get("/api/admin/reviews/stats", response_model=ReviewStats)
+async def get_review_stats():
+    """Get review statistics for admin dashboard"""
+    try:
+        # Get total reviews and average rating
+        result = db.execute(text("""
+            SELECT
+                COUNT(*) as total,
+                COALESCE(AVG(rating), 0) as avg_rating
+            FROM astegni_reviews;
+        """)).fetchone()
+
+        total_reviews = result[0] if result else 0
+        avg_rating = float(result[1]) if result and result[1] else 0.0
+
+        # Get count by rating
+        rating_counts = db.execute(text("""
+            SELECT rating, COUNT(*) as count
+            FROM astegni_reviews
+            GROUP BY rating
+            ORDER BY rating DESC;
+        """)).fetchall()
+
+        # Initialize counts
+        counts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0}
+        for rating, count in rating_counts:
+            counts[rating] = count
+
+        # Get count by role
+        role_counts = db.execute(text("""
+            SELECT
+                CASE
+                    WHEN u.roles::text LIKE '%student%' THEN 'student'
+                    WHEN u.roles::text LIKE '%tutor%' THEN 'tutor'
+                    WHEN u.roles::text LIKE '%parent%' THEN 'parent'
+                    WHEN u.roles::text LIKE '%advertiser%' THEN 'advertiser'
+                    ELSE 'other'
+                END as role,
+                COUNT(*) as count
+            FROM astegni_reviews ar
+            JOIN users u ON ar.reviewer_id = u.id
+            GROUP BY role;
+        """)).fetchall()
+
+        by_role = {role: count for role, count in role_counts}
+
+        return ReviewStats(
+            total_reviews=total_reviews,
+            average_rating=round(avg_rating, 2),
+            five_star=counts[5],
+            four_star=counts[4],
+            three_star=counts[3],
+            two_star=counts[2],
+            one_star=counts[1],
+            by_role=by_role
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/api/admin/reviews", response_model=List[ReviewResponse])
+async def get_reviews(
+    role: Optional[str] = None,
+    rating: Optional[int] = Query(None, ge=1, le=5),
+    page: int = Query(1, ge=1),
+    limit: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    """Get reviews with optional filters"""
+    try:
+        # Build base query
+        query = """
+            SELECT
+                ar.id,
+                ar.reviewer_id,
+                COALESCE(
+                    NULLIF(TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.father_name, ''))), ''),
+                    u.username,
+                    'Anonymous'
+                ) as reviewer_name,
+                u.profile_picture,
+                CASE
+                    WHEN u.roles::text LIKE '%student%' THEN 'student'
+                    WHEN u.roles::text LIKE '%tutor%' THEN 'tutor'
+                    WHEN u.roles::text LIKE '%parent%' THEN 'parent'
+                    WHEN u.roles::text LIKE '%advertiser%' THEN 'advertiser'
+                    ELSE 'user'
+                END as reviewer_role,
+                ar.review,
+                ar.rating,
+                ar.review_type,
+                ar.created_at
+            FROM astegni_reviews ar
+            JOIN users u ON ar.reviewer_id = u.id
+            WHERE 1=1
+        """
+
+        params = {}
+
+        # Add filters
+        if role:
+            query += f" AND u.roles::text LIKE :role"
+            params['role'] = f'%{role}%'
+
+        if rating is not None:
+            query += " AND ar.rating = :rating"
+            params['rating'] = rating
+
+        # Add ordering and pagination
+        query += " ORDER BY ar.created_at DESC"
+        query += " LIMIT :limit OFFSET :offset"
+        params['limit'] = limit
+        params['offset'] = (page - 1) * limit
+
+        # Execute query
+        result = db.execute(text(query), params).fetchall()
+
+        reviews = []
+        for row in result:
+            reviews.append(ReviewResponse(
+                id=row[0],
+                reviewer_id=row[1],
+                reviewer_name=row[2],
+                reviewer_profile_picture=row[3],
+                reviewer_role=row[4],
+                review=row[5],
+                rating=row[6],
+                review_type=row[7],
+                created_at=row[8]
+            ))
+
+        return reviews
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/api/admin/reviews/{review_id}")
+async def delete_review(review_id: int, db: Session = Depends(get_db)):
+    """Delete a review (admin only)"""
+    try:
+        result = db.execute(
+            text("DELETE FROM astegni_reviews WHERE id = :id RETURNING id"),
+            {"id": review_id}
+        )
+        deleted = result.fetchone()
+
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Review not found")
+
+        db.commit()
+        return {"message": "Review deleted successfully", "id": review_id}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/api/admin/reviews/count")
+async def get_reviews_count(
+    role: Optional[str] = None,
+    rating: Optional[int] = Query(None, ge=1, le=5),
+    db: Session = Depends(get_db)
+):
+    """Get total count of reviews with filters"""
+    try:
+        query = """
+            SELECT COUNT(*)
+            FROM astegni_reviews ar
+            JOIN users u ON ar.reviewer_id = u.id
+            WHERE 1=1
+        """
+
+        params = {}
+
+        if role:
+            query += f" AND u.roles::text LIKE :role"
+            params['role'] = f'%{role}%'
+
+        if rating is not None:
+            query += " AND ar.rating = :rating"
+            params['rating'] = rating
+
+        result = db.execute(text(query), params).fetchone()
+        count = result[0] if result else 0
+
+        return {"count": count}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/api/admin/reviews/feature")
+async def feature_reviews(request: FeatureReviewRequest, db: Session = Depends(get_db)):
+    """Feature selected reviews for display on pages"""
+    try:
+        featured_count = 0
+
+        for review_id in request.review_ids:
+            # Check if review exists
+            review_check = db.execute(
+                text("SELECT id FROM astegni_reviews WHERE id = :id"),
+                {"id": review_id}
+            ).fetchone()
+
+            if not review_check:
+                continue
+
+            # Insert or update featured review
+            db.execute(text("""
+                INSERT INTO featured_reviews (review_id, display_location, display_order, is_active)
+                VALUES (:review_id, :location, :order, true)
+                ON CONFLICT (review_id, display_location)
+                DO UPDATE SET
+                    is_active = true,
+                    display_order = :order,
+                    featured_at = CURRENT_TIMESTAMP
+            """), {
+                "review_id": review_id,
+                "location": request.display_location,
+                "order": featured_count
+            })
+            featured_count += 1
+
+        db.commit()
+        return {
+            "message": f"Successfully featured {featured_count} reviews",
+            "count": featured_count,
+            "location": request.display_location
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/api/admin/reviews/feature/{review_id}")
+async def unfeature_review(
+    review_id: int,
+    location: Optional[str] = Query('all'),
+    db: Session = Depends(get_db)
+):
+    """Remove a review from featured list"""
+    try:
+        result = db.execute(
+            text("""
+                DELETE FROM featured_reviews
+                WHERE review_id = :review_id AND display_location = :location
+                RETURNING id
+            """),
+            {"review_id": review_id, "location": location}
+        )
+        deleted = result.fetchone()
+
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Featured review not found")
+
+        db.commit()
+        return {"message": "Review unfeatured successfully", "review_id": review_id}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/api/featured-reviews")
+async def get_featured_reviews(
+    location: str = Query('all'),
+    limit: int = Query(6, ge=1, le=20),
+    db: Session = Depends(get_db)
+):
+    """Get featured reviews for display on pages (public endpoint)"""
+    try:
+        query = """
+            SELECT
+                ar.id,
+                ar.reviewer_id,
+                COALESCE(
+                    NULLIF(TRIM(CONCAT(COALESCE(u.first_name, ''), ' ', COALESCE(u.father_name, ''))), ''),
+                    u.username,
+                    'Anonymous'
+                ) as reviewer_name,
+                u.profile_picture,
+                CASE
+                    WHEN u.roles::text LIKE '%student%' THEN 'student'
+                    WHEN u.roles::text LIKE '%tutor%' THEN 'tutor'
+                    WHEN u.roles::text LIKE '%parent%' THEN 'parent'
+                    WHEN u.roles::text LIKE '%advertiser%' THEN 'advertiser'
+                    ELSE 'user'
+                END as reviewer_role,
+                ar.review,
+                ar.rating,
+                ar.review_type,
+                ar.created_at,
+                fr.display_location,
+                fr.display_order
+            FROM featured_reviews fr
+            JOIN astegni_reviews ar ON fr.review_id = ar.id
+            JOIN users u ON ar.reviewer_id = u.id
+            WHERE fr.is_active = true
+            AND (fr.display_location = :location OR fr.display_location = 'all')
+            ORDER BY fr.display_order ASC, fr.featured_at DESC
+            LIMIT :limit
+        """
+
+        result = db.execute(text(query), {"location": location, "limit": limit}).fetchall()
+
+        reviews = []
+        for row in result:
+            reviews.append({
+                "id": row[0],
+                "reviewer_id": row[1],
+                "reviewer_name": row[2],
+                "reviewer_profile_picture": row[3],
+                "reviewer_role": row[4],
+                "review": row[5],
+                "rating": row[6],
+                "review_type": row[7],
+                "created_at": row[8],
+                "display_location": row[9],
+                "display_order": row[10]
+            })
+
+        return reviews
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

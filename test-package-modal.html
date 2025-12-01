@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Package Modal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/tutor-profile/tutor-profile.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 50px;
+            background: #f3f4f6;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 30px;
+            color: #1f2937;
+        }
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0fdf4;
+            border-left: 4px solid #10b981;
+            border-radius: 4px;
+            display: none;
+        }
+        .status.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1><i class="fas fa-vial"></i> Package Modal Test Page</h1>
+        <p style="margin-bottom: 30px; color: #6b7280;">
+            This page tests the package management modal functionality. Click the button below to open the modal.
+        </p>
+
+        <button class="btn-primary" onclick="testOpenModal()">
+            <i class="fas fa-box"></i> Open Package Modal
+        </button>
+
+        <div id="status" class="status">
+            <strong>Success!</strong> Check the console for debugging information.
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: #fef3c7; border-radius: 8px;">
+            <h3 style="margin-top: 0; color: #92400e;"><i class="fas fa-info-circle"></i> Step-by-Step Instructions</h3>
+            <ol style="color: #78350f; margin: 0; line-height: 1.8;">
+                <li><strong>Open Modal:</strong> Click "Open Package Modal" button above</li>
+                <li><strong>Add Courses:</strong> Type a course name (e.g., "Mathematics") and click the <i class="fas fa-plus"></i> button</li>
+                <li><strong>Add More Courses:</strong> Repeat for multiple courses (e.g., "Physics", "Chemistry")</li>
+                <li><strong>Set Pricing:</strong>
+                    <ul style="margin: 5px 0;">
+                        <li>Choose payment frequency (2 weeks or monthly)</li>
+                        <li>Enter hourly rate in ETB (e.g., 150)</li>
+                        <li>Add discounts for 3/6/12 months (optional)</li>
+                    </ul>
+                </li>
+                <li><strong>Add More Packages:</strong> Click "Add Package" button at bottom to create additional packages</li>
+                <li><strong>Save:</strong> Click "Save Packages" button</li>
+                <li><strong>View Packages:</strong> Switch to "View Package" tab</li>
+                <li><strong>Calculate Fees:</strong> Enter days/week and hours/day, then click "Calculate Fees"</li>
+            </ol>
+        </div>
+
+        <div style="margin-top: 20px; padding: 20px; background: #dbeafe; border-radius: 8px;">
+            <h3 style="margin-top: 0; color: #1e3a8a;"><i class="fas fa-lightbulb"></i> Expected Behavior</h3>
+            <ul style="color: #1e40af; margin: 0; line-height: 1.8;">
+                <li>✅ Courses should appear as blue tags when added</li>
+                <li>✅ You can remove courses by clicking the × on each tag</li>
+                <li>✅ You can remove entire packages by clicking the red × button</li>
+                <li>✅ Pressing Enter in course input should add the course</li>
+                <li>✅ ESC key should close the modal</li>
+                <li>✅ All data persists in localStorage</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Package Management Modal -->
+    <div id="package-management-modal" class="hidden">
+        <div class="modal-overlay" onclick="closePackageModal()"></div>
+        <div class="modal-content package-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title"><i class="fas fa-box mr-2"></i>Package Management</h2>
+                <button class="modal-close" onclick="closePackageModal()">×</button>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="package-tabs">
+                <button class="package-tab active" data-tab="set-package" onclick="switchPackageTab('set-package')">
+                    <i class="fas fa-cog"></i> Set Package
+                </button>
+                <button class="package-tab" data-tab="view-package" onclick="switchPackageTab('view-package')">
+                    <i class="fas fa-eye"></i> View Package
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Set Package -->
+                <div id="set-package" class="tab-content">
+                    <div class="tab-header">
+                        <h3 class="tab-title">Set Package</h3>
+                        <p class="tab-subtitle">Configure your course packages and pricing</p>
+                    </div>
+                    <form id="setPackageForm" class="enhanced-form">
+                        <div id="coursesContainer" class="space-y-4">
+                            <!-- Package Entry Template -->
+                            <div class="course-entry">
+                                <div class="course-header">
+                                    <h4 class="course-title"><i class="fas fa-box mr-2"></i>Package 1</h4>
+                                    <button type="button" class="remove-course-btn" onclick="removePackageEntry(this)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="course-grid">
+                                    <div class="form-group">
+                                        <label class="form-label">
+                                            <i class="fas fa-plus-circle mr-1"></i>Course Names (Add multiple courses)
+                                        </label>
+                                        <div class="courses-list-container">
+                                            <div class="course-name-group">
+                                                <input type="text" class="course-name form-input" placeholder="Enter course name">
+                                                <button type="button" class="add-course-to-package btn-icon" onclick="addCourseToPackage(this)">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <div class="added-courses-list"></div>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Payment Frequency</label>
+                                        <select class="payment-frequency form-select" required>
+                                            <option value="2-weeks">2 Weeks</option>
+                                            <option value="monthly">Monthly</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Hourly Rate (ETB)</label>
+                                        <input type="number" class="hourly-rate form-input" placeholder="Enter hourly rate" min="0" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Discounts (%)</label>
+                                        <div class="discount-grid">
+                                            <input type="number" class="discount-3months form-input" placeholder="3 Months" min="0" max="100" value="0">
+                                            <input type="number" class="discount-6months form-input" placeholder="6 Months" min="0" max="100" value="0">
+                                            <input type="number" class="discount-yearly form-input" placeholder="Yearly" min="0" max="100" value="0">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" id="addCourseBtn" class="btn-add-course" onclick="addNewPackageEntry()">
+                            <i class="fas fa-plus mr-2"></i>Add Package
+                        </button>
+                    </form>
+                </div>
+
+                <!-- View Package -->
+                <div id="view-package" class="tab-content hidden">
+                    <div class="tab-header">
+                        <h3 class="tab-title">View Package</h3>
+                        <p class="tab-subtitle">Review your course packages and calculate fees</p>
+                    </div>
+                    <div class="calculation-section">
+                        <div class="calc-grid">
+                            <div class="form-group">
+                                <label class="form-label">Days per Week</label>
+                                <input type="number" id="days-per-week" class="form-input" placeholder="Enter days per week" min="1" max="7" value="3">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Hours per Day</label>
+                                <input type="number" id="hours-per-day" class="form-input" placeholder="Enter hours per day" min="1" max="24" value="1">
+                            </div>
+                        </div>
+                        <button id="calculate-fees" class="btn-primary" onclick="calculatePackageFees()">
+                            <i class="fas fa-calculator mr-2"></i>Calculate Fees
+                        </button>
+                    </div>
+                    <div id="coursesDisplay" class="courses-display">
+                        <p class="no-courses-message">No courses have been set. Please add packages in the "Set Package" tab.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closePackageModal()">Close</button>
+                <button type="button" class="btn-primary" onclick="savePackages()">
+                    <i class="fas fa-save mr-2"></i>Save Packages
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/tutor-profile/package-manager.js"></script>
+    <script>
+        function testOpenModal() {
+            console.log('Test button clicked');
+            document.getElementById('status').classList.add('show');
+            openPackageModal();
+        }
+
+        // Log when script loads
+        console.log('Test page loaded');
+        console.log('packageManager available:', typeof window.packageManager !== 'undefined');
+        console.log('openPackageModal available:', typeof window.openPackageModal !== 'undefined');
+    </script>
+</body>
+</html>

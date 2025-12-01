@@ -1,0 +1,25 @@
+/* ============================================
+   ASTEGNI MAIN STYLESHEET
+   Modular CSS Architecture - All modules imported here
+   ============================================ */
+
+/* Core foundational styles */
+@import url('root/theme.css');
+
+/* Component-specific modules */
+@import url('root/buttons-forms.css');
+@import url('root/cards-panels.css');
+@import url('root/modals.css');
+/* @import url('root/auth-modal-premium.css'); -- Removed: Using index/auth-modal-enhanced.css instead */
+
+/* Root components */
+@import url('root/loading-screen.css');
+@import url('root/navigation.css');
+@import url('root/logo-badge.css');
+@import url('root/search-box.css');
+@import url('root/sidebar.css');
+@import url('root/profile-dropdown.css');
+@import url('root/ad-placeholder.css');
+@import url('root/badge-notification.css');
+@import url('root/progress-container.css');
+@import url('root/footer.css');

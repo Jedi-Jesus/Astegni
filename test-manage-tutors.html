@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Manage Tutors</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-4">Test Manage Tutors Page</h1>
+
+    <div class="space-y-4">
+        <div>
+            <button onclick="login()" class="bg-blue-500 text-white px-4 py-2 rounded">
+                1. Login as Admin
+            </button>
+            <span id="login-status" class="ml-4"></span>
+        </div>
+
+        <div>
+            <button onclick="testPendingTutors()" class="bg-green-500 text-white px-4 py-2 rounded">
+                2. Test Pending Tutors
+            </button>
+            <span id="pending-status" class="ml-4"></span>
+        </div>
+
+        <div>
+            <button onclick="openManageTutors()" class="bg-purple-500 text-white px-4 py-2 rounded">
+                3. Open Manage Tutors Page
+            </button>
+        </div>
+    </div>
+
+    <div id="results" class="mt-8 p-4 border rounded"></div>
+
+    <script>
+        const API_BASE_URL = 'https://api.astegni.com';
+
+        async function login() {
+            const statusEl = document.getElementById('login-status');
+            const resultsEl = document.getElementById('results');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'username=admin@astegni.com&password=Admin2025!'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('refreshToken', data.refresh_token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+
+                    statusEl.innerHTML = '✅ Logged in successfully!';
+                    resultsEl.innerHTML = `<pre>${JSON.stringify(data.user, null, 2)}</pre>`;
+                } else {
+                    statusEl.innerHTML = '❌ Login failed';
+                    resultsEl.innerHTML = `Error: ${response.status}`;
+                }
+            } catch (error) {
+                statusEl.innerHTML = '❌ Error';
+                resultsEl.innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        async function testPendingTutors() {
+            const statusEl = document.getElementById('pending-status');
+            const resultsEl = document.getElementById('results');
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                statusEl.innerHTML = '❌ Please login first';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/tutors/pending?page=1&limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    statusEl.innerHTML = `✅ Found ${data.total} pending tutors`;
+                    resultsEl.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    statusEl.innerHTML = `❌ Failed: ${response.status}`;
+                    resultsEl.innerHTML = await response.text();
+                }
+            } catch (error) {
+                statusEl.innerHTML = '❌ Error';
+                resultsEl.innerHTML = `Error: ${error.message}`;
+            }
+        }
+
+        function openManageTutors() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login first!');
+                return;
+            }
+
+            // Open the manage tutors page
+            window.location.href = 'admin-pages/manage-tutors.html';
+        }
+
+        // Check if already logged in
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+
+            if (token && user) {
+                document.getElementById('login-status').innerHTML = '✅ Already logged in';
+                document.getElementById('results').innerHTML = `<pre>${JSON.stringify(JSON.parse(user), null, 2)}</pre>`;
+            }
+        });
+    </script>
+</body>
+</html>

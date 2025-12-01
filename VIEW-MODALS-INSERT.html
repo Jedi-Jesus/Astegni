@@ -1,0 +1,431 @@
+    <!-- ========================================== -->
+    <!-- VIEW MODALS FOR ACHIEVEMENTS, CERTIFICATIONS, EXPERIENCE -->
+    <!-- ========================================== -->
+
+    <!-- View Achievement Modal -->
+    <div id="viewAchievementModal" class="modal hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">🏆 Achievement Details</h2>
+                <button onclick="closeViewModal('achievement')" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- View Mode Content -->
+                <div class="view-content">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Left Column: Icon & Status -->
+                        <div class="text-center">
+                            <div class="text-8xl mb-4" id="view-ach-icon">🏆</div>
+                            <div id="view-ach-status" class="mb-4"></div>
+                        </div>
+
+                        <!-- Middle Column: Details -->
+                        <div class="md:col-span-2 space-y-4">
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Title</label>
+                                <p id="view-ach-title" class="text-xl font-bold"></p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-600">Category</label>
+                                    <p id="view-ach-category" class="text-gray-800"></p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-600">Year</label>
+                                    <p id="view-ach-year" class="text-gray-800"></p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Issuing Organization</label>
+                                <p id="view-ach-issuer" class="text-gray-800"></p>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Description</label>
+                                <p id="view-ach-description" class="text-gray-700 whitespace-pre-line"></p>
+                            </div>
+
+                            <!-- Certificate Preview -->
+                            <div id="view-ach-certificate-preview" class="hidden">
+                                <label class="text-sm font-semibold text-gray-600 block mb-2">Certificate</label>
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode Content -->
+                <div class="edit-content hidden">
+                    <form id="editAchievementForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Icon (Emoji)</label>
+                                <input type="text" id="edit-ach-icon" name="icon" maxlength="2"
+                                    class="w-full p-3 border-2 rounded-lg" placeholder="🏆">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Title *</label>
+                                <input type="text" id="edit-ach-title" name="title" required
+                                    class="w-full p-3 border-2 rounded-lg" placeholder="First Place Math Competition">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Category *</label>
+                                <select id="edit-ach-category" name="category" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                                    <option value="">Select category</option>
+                                    <option value="academic">Academic</option>
+                                    <option value="teaching">Teaching</option>
+                                    <option value="research">Research</option>
+                                    <option value="leadership">Leadership</option>
+                                    <option value="competition">Competition</option>
+                                    <option value="publication">Publication</option>
+                                    <option value="award">Award</option>
+                                    <option value="community">Community Service</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Year</label>
+                                <input type="number" id="edit-ach-year" name="year" min="1900" max="2100"
+                                    class="w-full p-3 border-2 rounded-lg" placeholder="2024">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Issuing Organization</label>
+                            <input type="text" id="edit-ach-issuer" name="issuer"
+                                class="w-full p-3 border-2 rounded-lg" placeholder="Organization name">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea id="edit-ach-description" name="description" rows="4"
+                                class="w-full p-3 border-2 rounded-lg"
+                                placeholder="Describe your achievement..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Replace Certificate (Optional)</label>
+                            <input type="file" id="edit-ach-certificate" name="certificate"
+                                accept="image/*,.pdf" class="w-full p-3 border-2 rounded-lg">
+                            <p class="text-sm text-gray-500 mt-1">Leave empty to keep existing certificate</p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-6">
+                    <button onclick="setViewModalMode('achievement', 'edit')"
+                        class="edit-btn btn-secondary flex-1">Edit</button>
+                    <button onclick="updateAchievement()"
+                        class="update-btn btn-primary flex-1 hidden">Update</button>
+                    <button onclick="setViewModalMode('achievement', 'view')"
+                        class="cancel-edit-btn btn-secondary flex-1 hidden">Cancel</button>
+                    <button onclick="deleteAchievementFromView()"
+                        class="btn-secondary text-red-600 px-6">Delete</button>
+                    <button onclick="closeViewModal('achievement')"
+                        class="btn-secondary px-6">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Certification Modal -->
+    <div id="viewCertificationModal" class="modal hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">📜 Certification Details</h2>
+                <button onclick="closeViewModal('certification')" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- View Mode Content -->
+                <div class="view-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Left Column: Certificate Image -->
+                        <div>
+                            <div id="view-cert-certificate-preview" class="mb-4">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                            <div id="view-cert-status" class="text-center"></div>
+                        </div>
+
+                        <!-- Right Column: Details -->
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Certification Name</label>
+                                <p id="view-cert-name" class="text-xl font-bold"></p>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Issuing Organization</label>
+                                <p id="view-cert-organization" class="text-gray-800"></p>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Field of Study</label>
+                                <p id="view-cert-field" class="text-gray-800"></p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-600">Issue Date</label>
+                                    <p id="view-cert-issue-date" class="text-gray-800"></p>
+                                </div>
+                                <div>
+                                    <label class="text-sm font-semibold text-gray-600">Expiry Date</label>
+                                    <p id="view-cert-expiry-date" class="text-gray-800"></p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Credential ID</label>
+                                <p id="view-cert-credential-id" class="text-gray-800 font-mono text-sm"></p>
+                            </div>
+
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Description</label>
+                                <p id="view-cert-description" class="text-gray-700 whitespace-pre-line"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode Content -->
+                <div class="edit-content hidden">
+                    <form id="editCertificationForm" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Certification Name *</label>
+                            <input type="text" id="edit-cert-name" name="name" required
+                                class="w-full p-3 border-2 rounded-lg">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Issuing Organization *</label>
+                                <input type="text" id="edit-cert-organization" name="issuing_organization" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Field of Study</label>
+                                <input type="text" id="edit-cert-field" name="field_of_study"
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Issue Date</label>
+                                <input type="date" id="edit-cert-issue-date" name="issue_date"
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Expiry Date</label>
+                                <input type="date" id="edit-cert-expiry-date" name="expiry_date"
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Credential ID</label>
+                            <input type="text" id="edit-cert-credential-id" name="credential_id"
+                                class="w-full p-3 border-2 rounded-lg">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea id="edit-cert-description" name="description" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Replace Certificate (Optional)</label>
+                            <input type="file" id="edit-cert-certificate" name="certificate_image"
+                                accept="image/*,.pdf" class="w-full p-3 border-2 rounded-lg">
+                            <p class="text-sm text-gray-500 mt-1">Leave empty to keep existing certificate</p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-6">
+                    <button onclick="setViewModalMode('certification', 'edit')"
+                        class="edit-btn btn-secondary flex-1">Edit</button>
+                    <button onclick="updateCertification()"
+                        class="update-btn btn-primary flex-1 hidden">Update</button>
+                    <button onclick="setViewModalMode('certification', 'view')"
+                        class="cancel-edit-btn btn-secondary flex-1 hidden">Cancel</button>
+                    <button onclick="deleteCertificationFromView()"
+                        class="btn-secondary text-red-600 px-6">Delete</button>
+                    <button onclick="closeViewModal('certification')"
+                        class="btn-secondary px-6">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Experience Modal -->
+    <div id="viewExperienceModal" class="modal hidden">
+        <div class="modal-content max-w-4xl">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">💼 Experience Details</h2>
+                <button onclick="closeViewModal('experience')" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- View Mode Content -->
+                <div class="view-content">
+                    <div class="space-y-6">
+                        <!-- Header Section -->
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p id="view-exp-job-title" class="text-2xl font-bold text-gray-800 mb-1"></p>
+                                    <p id="view-exp-institution" class="text-lg text-gray-700 mb-1"></p>
+                                    <p id="view-exp-location" class="text-sm text-gray-600"></p>
+                                </div>
+                                <div id="view-exp-status"></div>
+                            </div>
+                        </div>
+
+                        <!-- Details Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Employment Type</label>
+                                <p id="view-exp-employment-type" class="text-gray-800"></p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">Start Date</label>
+                                <p id="view-exp-start-date" class="text-gray-800"></p>
+                            </div>
+                            <div>
+                                <label class="text-sm font-semibold text-gray-600">End Date</label>
+                                <p id="view-exp-end-date" class="text-gray-800"></p>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-600 block mb-2">Description</label>
+                            <p id="view-exp-description" class="text-gray-700 whitespace-pre-line bg-gray-50 p-4 rounded"></p>
+                        </div>
+
+                        <!-- Responsibilities -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-600 block mb-2">Key Responsibilities</label>
+                            <p id="view-exp-responsibilities" class="text-gray-700 whitespace-pre-line bg-gray-50 p-4 rounded"></p>
+                        </div>
+
+                        <!-- Achievements -->
+                        <div>
+                            <label class="text-sm font-semibold text-gray-600 block mb-2">Achievements</label>
+                            <p id="view-exp-achievements" class="text-gray-700 whitespace-pre-line bg-gray-50 p-4 rounded"></p>
+                        </div>
+
+                        <!-- Certificate Preview -->
+                        <div id="view-exp-certificate-preview" class="hidden">
+                            <label class="text-sm font-semibold text-gray-600 block mb-2">Employment Letter / Certificate</label>
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Edit Mode Content -->
+                <div class="edit-content hidden">
+                    <form id="editExperienceForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Job Title *</label>
+                                <input type="text" id="edit-exp-job-title" name="job_title" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Institution *</label>
+                                <input type="text" id="edit-exp-institution" name="institution" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Location</label>
+                                <input type="text" id="edit-exp-location" name="location"
+                                    class="w-full p-3 border-2 rounded-lg" placeholder="City, Country">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Employment Type</label>
+                                <select id="edit-exp-employment-type" name="employment_type"
+                                    class="w-full p-3 border-2 rounded-lg">
+                                    <option value="">Select type</option>
+                                    <option value="Full-time">Full-time</option>
+                                    <option value="Part-time">Part-time</option>
+                                    <option value="Contract">Contract</option>
+                                    <option value="Freelance">Freelance</option>
+                                    <option value="Internship">Internship</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Start Date *</label>
+                                <input type="date" id="edit-exp-start-date" name="start_date" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">End Date</label>
+                                <input type="date" id="edit-exp-end-date" name="end_date"
+                                    class="w-full p-3 border-2 rounded-lg">
+                                <label class="flex items-center mt-2">
+                                    <input type="checkbox" id="edit-exp-is-current" name="is_current"
+                                        onchange="toggleEndDate(this)" class="mr-2">
+                                    <span class="text-sm">I currently work here</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea id="edit-exp-description" name="description" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Key Responsibilities</label>
+                            <textarea id="edit-exp-responsibilities" name="responsibilities" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Achievements</label>
+                            <textarea id="edit-exp-achievements" name="achievements" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Replace Certificate (Optional)</label>
+                            <input type="file" id="edit-exp-certificate" name="certificate"
+                                accept="image/*,.pdf" class="w-full p-3 border-2 rounded-lg">
+                            <p class="text-sm text-gray-500 mt-1">Leave empty to keep existing certificate</p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-3 mt-6">
+                    <button onclick="setViewModalMode('experience', 'edit')"
+                        class="edit-btn btn-secondary flex-1">Edit</button>
+                    <button onclick="updateExperience()"
+                        class="update-btn btn-primary flex-1 hidden">Update</button>
+                    <button onclick="setViewModalMode('experience', 'view')"
+                        class="cancel-edit-btn btn-secondary flex-1 hidden">Cancel</button>
+                    <button onclick="deleteExperienceFromView()"
+                        class="btn-secondary text-red-600 px-6">Delete</button>
+                    <button onclick="closeViewModal('experience')"
+                        class="btn-secondary px-6">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard System Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/root.css">
+    <link rel="stylesheet" href="css/tutor-profile/whiteboard-modal.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px;
+            max-width: 800px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 30px;
+            border-radius: 16px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .main-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .main-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #10b981;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            margin-top: 20px;
+            font-size: 0.875rem;
+        }
+
+        .info-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: #f8fafc;
+            border-radius: 12px;
+            text-align: left;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 16px;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-list li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-list li i {
+            color: #10b981;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 style="font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px;">
+            🎨 Digital Whiteboard
+        </h1>
+
+        <p style="font-size: 1.25rem; color: #64748b; margin-bottom: 20px;">
+            The Holy Grail of Collaborative Teaching
+        </p>
+
+        <div class="status-badge">
+            <i class="fas fa-check-circle"></i> System Ready
+        </div>
+
+        <button class="main-button" onclick="openWhiteboard()">
+            <i class="fas fa-chalkboard-teacher"></i> Launch Whiteboard
+        </button>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎨</div>
+                <h3 style="font-size: 1.125rem; font-weight: 600;">Drawing Tools</h3>
+                <p style="font-size: 0.875rem; margin-top: 8px;">Pen, shapes, colors</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📝</div>
+                <h3 style="font-size: 1.125rem; font-weight: 600;">Text Writing</h3>
+                <p style="font-size: 0.875rem; margin-top: 8px;">Click to type</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3 style="font-size: 1.125rem; font-weight: 600;">Live Chat</h3>
+                <p style="font-size: 0.875rem; margin-top: 8px;">Real-time messages</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📄</div>
+                <h3 style="font-size: 1.125rem; font-weight: 600;">Multi-Page</h3>
+                <p style="font-size: 0.875rem; margin-top: 8px;">Like a notebook</p>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h3><i class="fas fa-info-circle"></i> Features Implemented</h3>
+            <ul class="info-list">
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span><strong>7 Drawing Tools:</strong> Pen, Eraser, Text, Line, Rectangle, Circle, Arrow</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span><strong>Color Picker:</strong> Choose any color for your strokes</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span><strong>Adjustable Width:</strong> Stroke width from 1-20px</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span><strong>Multi-Page Canvas:</strong> Create unlimited pages like a notebook</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span><strong>Session History:</strong> View and reload past teaching sessions</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span><strong>Live Chat:</strong> Communicate with students in real-time</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span><strong>Permissions:</strong> Control student drawing access</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span><strong>Keyboard Shortcuts:</strong> P, E, T, L, R, C, A, Ctrl+Z</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="info-section" style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);">
+            <h3 style="color: #92400e;"><i class="fas fa-keyboard"></i> Keyboard Shortcuts</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 16px;">
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <strong>P</strong> - Pen
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <strong>E</strong> - Eraser
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <strong>T</strong> - Text
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <strong>L</strong> - Line
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <strong>R</strong> - Rectangle
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <strong>C</strong> - Circle
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <strong>A</strong> - Arrow
+                </div>
+                <div style="background: white; padding: 12px; border-radius: 8px; text-align: center;">
+                    <strong>Ctrl+Z</strong> - Undo
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 30px; padding: 20px; background: #dbeafe; border-radius: 12px; border-left: 4px solid #3b82f6;">
+            <p style="color: #1e40af; font-weight: 600;">
+                <i class="fas fa-lightbulb"></i> <strong>Quick Start:</strong>
+            </p>
+            <ol style="color: #1e40af; text-align: left; margin-top: 12px; padding-left: 20px;">
+                <li>Click "Launch Whiteboard" button above</li>
+                <li>Select a session from the history sidebar (or it auto-loads)</li>
+                <li>Choose a drawing tool from the toolbar</li>
+                <li>Start drawing on the canvas!</li>
+                <li>Try the text tool - click anywhere and type</li>
+                <li>Use chat to send messages</li>
+                <li>Navigate between pages using Prev/Next buttons</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Include whiteboard manager -->
+    <script src="js/tutor-profile/whiteboard-manager.js"></script>
+
+    <script>
+        // Override localStorage for testing
+        localStorage.setItem('token', 'test_token');
+        localStorage.setItem('user', JSON.stringify({
+            id: 115,
+            full_name: 'Test Tutor',
+            roles: ['tutor']
+        }));
+
+        function openWhiteboard() {
+            // Initialize if not already done
+            if (!window.whiteboardManager) {
+                window.whiteboardManager = new WhiteboardManager();
+                whiteboardManager.initialize().then(() => {
+                    whiteboardManager.openWhiteboard();
+                });
+            } else {
+                whiteboardManager.openWhiteboard();
+            }
+        }
+
+        // Auto-initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✅ Whiteboard Test Page Loaded');
+            console.log('📊 Sample Data: Tutor ID 115 with 3 students, 9 sessions');
+            console.log('🎨 Click "Launch Whiteboard" to begin!');
+        });
+    </script>
+</body>
+</html>

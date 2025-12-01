@@ -1,0 +1,103 @@
+<!--
+  Modal: experienceModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="experienceModal" class="modal hidden">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2 class="text-2xl font-bold">💼 Add Work Experience</h2>
+                <button onclick="closeExperienceModal()" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="experienceForm">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Job Title *</label>
+                            <input type="text" id="exp-title" name="job_title" required
+                                class="w-full p-3 border-2 rounded-lg" placeholder="e.g., Mathematics Teacher">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Institution/Company *</label>
+                            <input type="text" id="exp-institution" name="institution" required
+                                class="w-full p-3 border-2 rounded-lg" placeholder="e.g., Addis Ababa University">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Location</label>
+                            <input type="text" id="exp-location" name="location" class="w-full p-3 border-2 rounded-lg"
+                                placeholder="e.g., Addis Ababa, Ethiopia">
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Employment Type</label>
+                            <select id="exp-type" name="employment_type" class="w-full p-3 border-2 rounded-lg">
+                                <option value="full-time">Full-time</option>
+                                <option value="part-time">Part-time</option>
+                                <option value="contract">Contract</option>
+                                <option value="volunteer">Volunteer</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">Start Date *</label>
+                                <input type="date" id="exp-start-date" name="start_date" required
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-semibold mb-2">End Date</label>
+                                <input type="date" id="exp-end-date" name="end_date"
+                                    class="w-full p-3 border-2 rounded-lg">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="flex items-center">
+                                <input type="checkbox" id="exp-current" name="is_current" onchange="toggleEndDate(this)"
+                                    class="mr-2">
+                                <span>I currently work here</span>
+                            </label>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Description</label>
+                            <textarea id="exp-description" name="description" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"
+                                placeholder="Brief description of your role"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Key Responsibilities</label>
+                            <textarea id="exp-responsibilities" name="responsibilities" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"
+                                placeholder="List your main responsibilities (one per line)"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Achievements</label>
+                            <textarea id="exp-achievements" name="achievements" rows="3"
+                                class="w-full p-3 border-2 rounded-lg"
+                                placeholder="Notable achievements in this role"></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Upload Certificate/Letter of
+                                Employment *</label>
+                            <input type="file" id="exp-certificate" name="certificate_file" required
+                                accept="image/*,.pdf" class="w-full p-3 border-2 rounded-lg">
+                            <p class="text-sm text-gray-500 mt-1">Accepted formats: JPG, PNG, PDF (Max 5MB)</p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 mt-6">
+                        <button type="submit" class="btn-primary flex-1">Add Experience</button>
+                        <button type="button" onclick="closeExperienceModal()"
+                            class="btn-secondary flex-1">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,130 @@
+<!--
+  Modal: add-role-modal
+  Source: index.html
+  Purpose: Add new role to existing user account with OTP verification
+-->
+
+<div id="add-role-modal" class="modal hidden">
+    <div class="modal-content enhanced">
+        <button class="modal-close-enhanced" onclick="closeModal('add-role-modal')">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <div class="modal-header">
+            <h3 class="modal-title">Add New Role</h3>
+            <p class="modal-subtitle">Verify your identity and add a new role to your account</p>
+        </div>
+
+        <!-- User Info Section - Full width below header -->
+        <div id="add-role-user-info" class="add-role-user-info" style="display: none; text-align: center; margin: 0 2rem 1rem; padding: 16px; background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08)); border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.15);">
+            <h4 id="add-role-user-name" style="margin: 0 0 8px 0; font-size: 1.1rem; font-weight: 600; color: var(--text-primary);"></h4>
+            <div id="add-role-user-roles" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 8px;"></div>
+            <p id="add-role-user-contact" style="margin: 0; font-size: 0.8rem; color: var(--text-muted);"></p>
+        </div>
+
+        <form id="add-role-form" class="auth-form">
+            <!-- Step 1: Password & Role Selection -->
+            <div id="add-role-step1">
+                <!-- Register As Dropdown -->
+                <div class="form-group">
+                    <select id="add-role-type" name="role" required>
+                        <option value="">Select a role...</option>
+                        <option value="user">User</option>
+                        <option value="student">Student</option>
+                        <option value="tutor">Tutor</option>
+                        <option value="parent">Parent</option>
+                        <option value="advertiser">Advertiser</option>
+                    </select>
+                    <label>Register As</label>
+                </div>
+
+                <!-- Email Address (for verification) -->
+                <div class="form-group">
+                    <input type="email" id="add-role-email" name="email" placeholder=" " required>
+                    <label>Email Address</label>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group password-input-wrapper">
+                    <input type="password" id="add-role-password" name="password" placeholder=" " required>
+                    <label>Confirm Password</label>
+                    <button type="button" class="password-toggle" onclick="togglePasswordVisibility('add-role-password')">
+                        <svg class="eye-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Forgot Password Link -->
+                <div class="text-right mb-4">
+                    <a href="#" class="text-link" onclick="switchModal('add-role-modal', 'forgot-password-modal')">
+                        Forgot Password?
+                    </a>
+                </div>
+            </div>
+
+            <!-- Step 2: OTP Verification (hidden initially) -->
+            <div id="add-role-step2" style="display: none;">
+                <!-- OTP Sent Message -->
+                <div id="otp-sent-message" class="alert alert-info mt-4">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    OTP sent to your <span id="otp-destination"></span>
+                </div>
+
+                <!-- Selected Role Display -->
+                <div class="alert alert-success mt-4" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 12px;">
+                    <span style="color: #10B981;">Adding role: <strong id="selected-role-display"></strong></span>
+                </div>
+
+                <!-- OTP Input -->
+                <div class="form-group mt-4">
+                    <input type="text" id="add-role-otp" name="otp" placeholder=" "
+                           maxlength="6" pattern="[0-9]{6}" inputmode="numeric"
+                           style="text-align: center; font-size: 20px; letter-spacing: 8px;">
+                    <label>Enter 6-digit OTP</label>
+                    <div class="input-icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Resend OTP Link -->
+                <div class="text-right mb-4">
+                    <a href="#" class="text-link" id="resend-otp-link" onclick="handleResendOTP(event)">
+                        Resend OTP
+                    </a>
+                    <span id="resend-timer" class="text-muted ml-2" style="display: none;"></span>
+                </div>
+
+                <!-- Back Button -->
+                <div class="text-left mb-4">
+                    <a href="#" class="text-link" onclick="goBackToStep1(event)">
+                        ← Back to edit
+                    </a>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-submit">
+                <span class="btn-text">Add Role</span>
+                <span class="btn-loader" style="display: none;">
+                    <svg class="animate-spin" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Processing...
+                </span>
+            </button>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+/* ============================================
+   PROFILE DROPDOWN FIX
+   Fixes font-size override issues from other CSS files
+   ============================================ */
+
+/* Fix navigation dropdown profile name size - must have high specificity */
+.nav-actions .profile-name,
+#profile-container .profile-name,
+.profile-dropdown-toggle .profile-name {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: var(--text) !important;
+    max-width: 150px !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    margin-bottom: 0 !important;
+}
+
+/* Ensure dropdown menu items have correct sizes */
+.profile-dropdown-menu .dropdown-user-name {
+    font-size: 0.95rem !important;
+}
+
+.profile-dropdown-menu .dropdown-user-email {
+    font-size: 0.75rem !important;
+}
+
+.profile-dropdown-menu .dropdown-user-role {
+    font-size: 0.75rem !important;
+}
+
+.profile-dropdown-menu .dropdown-item {
+    font-size: 0.875rem !important;
+}

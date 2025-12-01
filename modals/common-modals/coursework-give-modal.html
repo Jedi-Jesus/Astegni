@@ -1,0 +1,110 @@
+<!--
+  Modal: courseworkGiveModal
+  Extracted from: tutor-profile.html
+  Purpose: [Auto-extracted modal component]
+-->
+
+<div id="courseworkGiveModal" class="coursework-modal">
+        <div class="coursework-modal-overlay" onclick="courseworkManager.closeAllModals()"></div>
+        <div class="coursework-modal-content coursework-modal-large">
+            <button class="coursework-modal-close" onclick="courseworkManager.closeAllModals()" aria-label="Close">×</button>
+
+            <div class="coursework-modal-body flex flex-col lg:flex-row gap-6">
+                <!-- Sidebar -->
+                <aside class="coursework-sidebar">
+                    <h3 class="coursework-sidebar-title">
+                        <span>📋</span> My Courseworkzes
+                    </h3>
+                    <div class="coursework-search-box">
+                        <input type="text" id="courseworkTutorSearch" class="coursework-search-input"
+                            placeholder="Search courseworkzes...">
+                        <span class="coursework-search-icon">🔍</span>
+                    </div>
+                    <div id="courseworkTutorSearchResults" class="coursework-search-results hidden"></div>
+                    <div id="courseworkTutorList" class="mt-4"></div>
+                </aside>
+
+                <!-- Main Content -->
+                <div class="coursework-content-area flex-1">
+                    <h2 class="coursework-content-title">
+                        <span>✨</span> Create a Coursework
+                    </h2>
+
+                    <!-- Form Fields -->
+                    <div class="coursework-form-grid">
+                        <!-- Student Name - Full Width -->
+                        <div class="coursework-form-group coursework-form-group-full">
+                            <label class="coursework-form-label">
+                                <span>👤</span> Student Name
+                            </label>
+                            <div class="coursework-student-search-wrapper">
+                                <input type="text" id="courseworkStudentSearch" class="coursework-form-input"
+                                    placeholder="Search students...">
+                                <div id="courseworkStudentSearchResults" class="coursework-dropdown-results hidden"></div>
+                            </div>
+                            <div id="courseworkSelectedStudent"></div>
+                        </div>
+
+                        <!-- Course Name - Full Width -->
+                        <div class="coursework-form-group coursework-form-group-full">
+                            <label class="coursework-form-label">
+                                <span>📖</span> Course Name
+                            </label>
+                            <input type="text" id="courseworkCourseName" class="coursework-form-input"
+                                placeholder="Enter course name">
+                        </div>
+
+                        <!-- Coursework Type, Time Limit, Days to Complete - Share Row -->
+                        <div class="coursework-form-group">
+                            <label class="coursework-form-label">
+                                <span>📊</span> Coursework Type
+                            </label>
+                            <select id="courseworkType" class="coursework-form-select">
+                                <option value="">Select Coursework Type</option>
+                                <option value="Class work">Class work</option>
+                                <option value="Home work">Home work</option>
+                                <option value="Practice test">Practice test</option>
+                                <option value="Exam">Exam</option>
+                            </select>
+                        </div>
+
+                        <div class="coursework-form-group">
+                            <label class="coursework-form-label">
+                                <span>⏱️</span> Time Limit (min)
+                            </label>
+                            <input type="number" id="courseworkTime" class="coursework-form-input" value="20" min="1">
+                        </div>
+
+                        <div class="coursework-form-group">
+                            <label class="coursework-form-label">
+                                <span>📅</span> Days to Complete
+                            </label>
+                            <input type="number" id="courseworkDays" class="coursework-form-input" placeholder="Enter days" min="1">
+                        </div>
+                    </div>
+
+                    <!-- Questions Container -->
+                    <div class="coursework-questions-section">
+                        <h3 class="coursework-section-title">Questions</h3>
+                        <div id="courseworkQuestionsContainer" class="coursework-questions-container"></div>
+                        <button class="coursework-btn-add-question" onclick="courseworkManager.addQuestion()">
+                            <span>➕</span> Add Question
+                        </button>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="coursework-modal-actions">
+                        <button class="coursework-btn coursework-btn-save" onclick="courseworkManager.saveCoursework()">
+                            <span>💾</span> Save Coursework
+                        </button>
+                        <button class="coursework-btn coursework-btn-post" onclick="courseworkManager.postCoursework()">
+                            <span>📤</span> Post Coursework
+                        </button>
+                        <button class="coursework-btn coursework-btn-cancel" onclick="courseworkManager.closeAllModals()">
+                            <span>❌</span> Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
