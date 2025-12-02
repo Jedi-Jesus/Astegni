@@ -12,12 +12,12 @@ async function fetchStatistics() {
         if (response.ok) {
             const stats = await response.json();
             return [
-                { id: "counter-parents", target: stats.registered_parents || 1273, current: 0, suffix: "+" },
-                { id: "counter-students", target: stats.students || 5670, current: 0, suffix: "+" },
-                { id: "counter-tutors", target: stats.expert_tutors || 327, current: 0, suffix: "+" },
-                { id: "counter-centers", target: stats.training_centers || 59, current: 0, suffix: "+" },
-                { id: "counter-books", target: stats.books_available || 13879, current: 0, suffix: "+" },
-                { id: "counter-jobs", target: stats.job_opportunities || 47, current: 0, suffix: "+" },
+                { id: "counter-parents", target: stats.registered_parents ?? 0, current: 0, suffix: "+" },
+                { id: "counter-students", target: stats.students ?? 0, current: 0, suffix: "+" },
+                { id: "counter-tutors", target: stats.expert_tutors ?? 0, current: 0, suffix: "+" },
+                { id: "counter-centers", target: stats.training_centers ?? 0, current: 0, suffix: "+" },
+                { id: "counter-books", target: stats.books_available ?? 0, current: 0, suffix: "+" },
+                { id: "counter-jobs", target: stats.job_opportunities ?? 0, current: 0, suffix: "+" },
             ];
         }
     } catch (error) {
