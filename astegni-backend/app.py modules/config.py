@@ -12,14 +12,24 @@ load_dotenv()
 # DATABASE CONFIGURATION
 # ============================================
 
+# User Database (main application data - users, tutors, sessions, content, etc.)
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_db"
+    "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db"
 )
 
-# Convert DATABASE_URL for psycopg3
+# Admin Database (admin-only data - logs, settings, moderation, analytics, etc.)
+ADMIN_DATABASE_URL = os.getenv(
+    "ADMIN_DATABASE_URL",
+    "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db"
+)
+
+# Convert DATABASE_URLs for psycopg3
 if DATABASE_URL.startswith("postgresql://"):
     DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
+
+if ADMIN_DATABASE_URL.startswith("postgresql://"):
+    ADMIN_DATABASE_URL = ADMIN_DATABASE_URL.replace("postgresql://", "postgresql+psycopg://")
 
 # ============================================
 # SECURITY CONFIGURATION
