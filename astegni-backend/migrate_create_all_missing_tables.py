@@ -98,64 +98,6 @@ def create_requested_sessions(cur, conn):
     print("  [OK] requested_sessions created")
 
 
-def create_tutor_schedules(cur, conn):
-    """Create tutor_schedules table"""
-    if table_exists(cur, 'tutor_schedules'):
-        print("  [SKIP] tutor_schedules already exists")
-        return
-
-    print("  Creating tutor_schedules...")
-    cur.execute("""
-        CREATE TABLE tutor_schedules (
-            id SERIAL PRIMARY KEY,
-            tutor_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            day_of_week INTEGER NOT NULL CHECK (day_of_week >= 0 AND day_of_week <= 6),
-            start_time TIME NOT NULL,
-            end_time TIME NOT NULL,
-            is_available BOOLEAN DEFAULT TRUE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            UNIQUE(tutor_id, day_of_week, start_time)
-        );
-    """)
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_tutor_schedules_tutor_id ON tutor_schedules(tutor_id);")
-    conn.commit()
-    print("  [OK] tutor_schedules created")
-
-
-def create_tutor_sessions(cur, conn):
-    """Create tutor_sessions table (actual sessions, not requests)"""
-    if table_exists(cur, 'tutor_sessions'):
-        print("  [SKIP] tutor_sessions already exists")
-        return
-
-    print("  Creating tutor_sessions...")
-    cur.execute("""
-        CREATE TABLE tutor_sessions (
-            id SERIAL PRIMARY KEY,
-            tutor_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            student_ids INTEGER[] DEFAULT '{}',
-            package_id INTEGER REFERENCES tutor_packages(id) ON DELETE SET NULL,
-            title VARCHAR(255),
-            description TEXT,
-            session_type VARCHAR(50) DEFAULT 'one-on-one',
-            status VARCHAR(20) DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'in_progress', 'completed', 'cancelled')),
-            scheduled_date DATE NOT NULL,
-            scheduled_time TIME NOT NULL,
-            duration_minutes INTEGER DEFAULT 60,
-            meeting_link TEXT,
-            notes TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            started_at TIMESTAMP,
-            ended_at TIMESTAMP
-        );
-    """)
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_tutor_sessions_tutor_id ON tutor_sessions(tutor_id);")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_tutor_sessions_status ON tutor_sessions(status);")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_tutor_sessions_date ON tutor_sessions(scheduled_date);")
-    conn.commit()
-    print("  [OK] tutor_sessions created")
 
 
 def create_connections(cur, conn):
@@ -411,38 +353,6 @@ def create_student_reviews(cur, conn):
     print("  [OK] student_reviews created")
 
 
-def create_blog_tables(cur, conn):
-    """Create blog_posts table"""
-    if table_exists(cur, 'blog_posts'):
-        print("  [SKIP] blog_posts already exists")
-        return
-
-    print("  Creating blog_posts...")
-    cur.execute("""
-        CREATE TABLE blog_posts (
-            id SERIAL PRIMARY KEY,
-            author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-            author_role VARCHAR(20) DEFAULT 'tutor',
-            title VARCHAR(255) NOT NULL,
-            slug VARCHAR(255) UNIQUE,
-            content TEXT NOT NULL,
-            excerpt TEXT,
-            cover_image TEXT,
-            category VARCHAR(100),
-            tags TEXT[],
-            status VARCHAR(20) DEFAULT 'draft',
-            views INTEGER DEFAULT 0,
-            likes INTEGER DEFAULT 0,
-            published_at TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    """)
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_blog_posts_author ON blog_posts(author_id);")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_blog_posts_status ON blog_posts(status);")
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_blog_posts_slug ON blog_posts(slug);")
-    conn.commit()
-    print("  [OK] blog_posts created")
 
 
 def create_partner_requests(cur, conn):
@@ -485,37 +395,28 @@ def run_migration():
     cur = conn.cursor()
 
     try:
-        print("\n[1/11] Tutor Packages...")
+        print("\n[1/8] Tutor Packages...")
         create_tutor_packages(cur, conn)
 
-        print("\n[2/11] Requested Sessions...")
+        print("\n[2/8] Requested Sessions...")
         create_requested_sessions(cur, conn)
 
-        print("\n[3/11] Tutor Schedules...")
-        create_tutor_schedules(cur, conn)
-
-        print("\n[4/11] Tutor Sessions...")
-        create_tutor_sessions(cur, conn)
-
-        print("\n[5/11] Connections...")
+        print("\n[3/8] Connections...")
         create_connections(cur, conn)
 
-        print("\n[6/11] Events & Clubs...")
+        print("\n[4/8] Events & Clubs...")
         create_events_clubs(cur, conn)
 
-        print("\n[7/11] Earnings & Investments...")
+        print("\n[5/8] Earnings & Investments...")
         create_earnings_investments(cur, conn)
 
-        print("\n[8/11] Documents & Credentials...")
+        print("\n[6/8] Documents & Credentials...")
         create_documents_credentials(cur, conn)
 
-        print("\n[9/11] Student Reviews...")
+        print("\n[7/8] Student Reviews...")
         create_student_reviews(cur, conn)
 
-        print("\n[10/11] Blog Posts...")
-        create_blog_tables(cur, conn)
-
-        print("\n[11/11] Partner Requests...")
+        print("\n[8/8] Partner Requests...")
         create_partner_requests(cur, conn)
 
         print("\n" + "=" * 60)
