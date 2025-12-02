@@ -286,20 +286,27 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     user = db.query(User).filter(User.email == form_data.username).first()
 
     # If no user found, check for pending parent invitation (new user with temp password)
+    invitation = None
     if not user:
         # Check parent_invitations table for pending new user invitation
-        invitation = db.execute(
-            text("""
-            SELECT * FROM parent_invitations
-            WHERE pending_email = :email
-            AND status = 'pending'
-            AND is_new_user = TRUE
-            AND token_expires_at > :now
-            ORDER BY created_at DESC
-            LIMIT 1
-            """),
-            {"email": form_data.username, "now": datetime.utcnow()}
-        ).fetchone()
+        # Wrapped in try-except in case the table doesn't exist (optional feature)
+        try:
+            invitation = db.execute(
+                text("""
+                SELECT * FROM parent_invitations
+                WHERE pending_email = :email
+                AND status = 'pending'
+                AND is_new_user = TRUE
+                AND token_expires_at > :now
+                ORDER BY created_at DESC
+                LIMIT 1
+                """),
+                {"email": form_data.username, "now": datetime.utcnow()}
+            ).fetchone()
+        except Exception as e:
+            # Table doesn't exist or other DB error - skip parent invitation check
+            print(f"[Login] parent_invitations check skipped: {e}")
+            invitation = None
 
         if invitation and verify_password(form_data.password, invitation.temp_password_hash):
             # Valid temp password login - create user and process invitation
