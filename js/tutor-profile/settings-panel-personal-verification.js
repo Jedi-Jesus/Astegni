@@ -293,7 +293,7 @@
 
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/change-password', {
+                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/change-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -447,7 +447,7 @@
 
                 if (token) {
                     try {
-                        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/me', {
+                        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/me`, {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
@@ -609,7 +609,7 @@
 
                 // Save names and gender (immediate update to users table)
                 if (Object.keys(updateData).length > 0) {
-                    const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/user/profile', {
+                    const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/user/profile`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',

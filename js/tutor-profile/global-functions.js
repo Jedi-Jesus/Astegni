@@ -2293,7 +2293,7 @@ async function fetchConnectionsFromAPI() {
             return getConnectionsData();
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/connections/my', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/connections/my`, {
             headers: {
                 'Authorization': 'Bearer ' + token
             }
@@ -2699,7 +2699,7 @@ async function searchEvents(query) {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/events?status_filter=upcoming', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/events?status_filter=upcoming`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -2803,7 +2803,7 @@ async function searchClubs(query) {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/clubs?status_filter=active', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/clubs?status_filter=active`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -3041,7 +3041,7 @@ async function loadEventsSection() {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/events?status_filter=upcoming', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/events?status_filter=upcoming`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -3143,7 +3143,7 @@ async function loadClubsSection() {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/clubs?status_filter=active', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/clubs?status_filter=active`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -5206,7 +5206,7 @@ async function loadSchedules(page = 1) {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

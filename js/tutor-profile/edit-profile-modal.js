@@ -348,7 +348,7 @@
 
             try {
                 // ALWAYS use tutor endpoint since this is tutor-profile.html
-                const endpoint = (window.API_BASE_URL || 'http://localhost:8000')/api/tutor/profile;
+                const endpoint = `${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/profile`;
                 console.log('🔍 Edit Modal: Fetching from TUTOR endpoint:', endpoint);
 
                 // Fetch fresh profile data from database
@@ -557,7 +557,7 @@
 
             try {
                 // ALWAYS use tutor endpoint since this is tutor-profile.html
-                const endpoint = (window.API_BASE_URL || 'http://localhost:8000')/api/tutor/profile;
+                const endpoint = `${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/profile`;
                 console.log('🔍 Save Profile: Using TUTOR endpoint:', endpoint);
                 console.log('📤 Sending data to server:', JSON.stringify(updateData, null, 2));
 

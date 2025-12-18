@@ -533,7 +533,7 @@ async function loadStudentParentingInvitations() {
         }
 
         // Fetch ONLY received invitations (as parent) - sent invitations are in Parent Portal
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
             headers: { 'Authorization': `Bearer ${token}` }
         }).catch(() => ({ ok: false })); // Gracefully handle if user is not a parent
 
@@ -873,7 +873,7 @@ async function loadStudentCourseRequests() {
         }
 
         // Build API URL with status filter
-        let apiUrl = (window.API_BASE_URL || 'http://localhost:8000')/api/student/my-course-requests;
+        let apiUrl = `${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-course-requests`;
         if (currentStudentRequestStatus && currentStudentRequestStatus !== 'all') {
             apiUrl += `?status=${currentStudentRequestStatus}`;
         }
@@ -1023,7 +1023,7 @@ async function loadStudentSchoolRequests() {
         }
 
         // Build API URL with status filter
-        let apiUrl = (window.API_BASE_URL || 'http://localhost:8000')/api/student/my-school-requests;
+        let apiUrl = `${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-school-requests`;
         if (currentStudentRequestStatus && currentStudentRequestStatus !== 'all') {
             apiUrl += `?status=${currentStudentRequestStatus}`;
         }
@@ -1181,7 +1181,7 @@ async function loadStudentTutorRequests() {
             return;
         }
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/my-requests', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/my-requests`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -1346,7 +1346,7 @@ async function loadStudentRequestCounts() {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return;
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-requests/counts', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-requests/counts`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -1414,7 +1414,7 @@ async function loadStudentSchedules(statusFilter = 'all', typeFilter = 'all') {
         }
 
         // Build URL with filters
-        let url = (window.API_BASE_URL || 'http://localhost:8000')/api/student/my-schedules;
+        let url = `${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-schedules`;
         const params = new URLSearchParams();
         if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter);
         if (typeFilter && typeFilter !== 'all') params.append('schedule_type', typeFilter);
@@ -2440,7 +2440,7 @@ async function loadSchedulePanelCounts() {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return;
 
-        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedule-panel/counts', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedule-panel/counts`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -2540,7 +2540,7 @@ async function loadStudentSessions(statusFilter = 'all') {
         }
 
         // Build URL with filters
-        let url = (window.API_BASE_URL || 'http://localhost:8000')/api/student/my-sessions;
+        let url = `${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-sessions`;
         if (statusFilter && statusFilter !== 'all') {
             url += `?status=${statusFilter}`;
         }

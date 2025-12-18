@@ -590,7 +590,7 @@ const SessionRequestManager = {
                 return;
             }
 
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/my-students', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/my-students`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -991,7 +991,7 @@ const ParentingInvitationManager = {
                 return;
             }
 
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -1313,7 +1313,7 @@ const ParentingInvitationManager = {
                 throw new Error('Not authenticated. Please log in and try again.');
             }
 
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/accept-invitation-otp', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/accept-invitation-otp`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -1418,7 +1418,7 @@ const ParentingInvitationManager = {
                 return;
             }
 
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/sent-invitations', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/sent-invitations`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -1635,7 +1635,7 @@ const ParentingInvitationManager = {
             if (!token) return;
 
             // Fetch received invitations count (Invited tab)
-            const receivedResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations', {
+            const receivedResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -1669,7 +1669,7 @@ const ParentingInvitationManager = {
             }
 
             // Fetch sent invitations count (Invites tab)
-            const sentResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/sent-invitations', {
+            const sentResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/sent-invitations`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

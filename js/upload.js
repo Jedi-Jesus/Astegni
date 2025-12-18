@@ -5,7 +5,7 @@
 
 class AstegniUploadManager {
     constructor() {
-        this.API_BASE = (window.API_BASE_URL || 'http://localhost:8000')/api;
+        this.API_BASE = `${window.API_BASE_URL || 'http://localhost:8000'}/api`;
         this.token = localStorage.getItem('token');
         this.activeUploads = new Map();
         this.init();

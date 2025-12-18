@@ -103,7 +103,7 @@ if (typeof UrlHelper === 'undefined') {
         
         getApiBaseUrl() {
             return this.isFileProtocol 
-                ? (window.API_BASE_URL || 'http://localhost:8000')/api
+                ? `${window.API_BASE_URL || 'http://localhost:8000'}/api`
                 : '/api';
         },
         

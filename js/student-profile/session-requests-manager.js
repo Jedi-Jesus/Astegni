@@ -45,7 +45,7 @@ const StudentSessionRequestsManager = {
                 return;
             }
 
-            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/my-requests', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/my-requests`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
