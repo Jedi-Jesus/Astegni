@@ -20,8 +20,11 @@ window.addEventListener("error", (e) => {
     }
 });
 
-// API Configuration
+// API Configuration - Use global config from config.js
+// Debug: Log what we're getting from window.API_BASE_URL
+console.log('[index.js] window.API_BASE_URL at load:', window.API_BASE_URL);
 const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+console.log('[index.js] Using API_BASE_URL:', API_BASE_URL);
 
 // Helper function for API calls
 async function apiCall(endpoint, method = "GET", body = null, token = null) {

@@ -1,9 +1,15 @@
 class AuthenticationManager {
     constructor() {
+        // Debug: Log what window.API_BASE_URL is at initialization time
+        console.log('[AuthManager] window.API_BASE_URL at init:', window.API_BASE_URL);
+        console.log('[AuthManager] window.ASTEGNI_CONFIG:', window.ASTEGNI_CONFIG);
+
         this.API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
         this.token = null;
         this.user = null;
         this.isFetchingUserData = false; // Guard to prevent multiple fetches
+
+        console.log('[AuthManager] Using API_BASE_URL:', this.API_BASE_URL);
 
         // Try to restore session on initialization
         this.restoreSession();
