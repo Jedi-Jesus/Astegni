@@ -223,6 +223,54 @@ class ConnectionManager {
     }
 
     /**
+     * Accept an incoming connection request
+     * @param {number} connectionId - The connection ID to accept
+     * @returns {Promise<Object>} Updated connection object
+     */
+    async acceptConnectionRequest(connectionId) {
+        const token = this.getToken();
+
+        if (!token) {
+            throw new Error('You must be logged in to accept a connection request');
+        }
+
+        try {
+            const response = await fetch(`${this.API_BASE_URL}/api/connections/${connectionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ status: 'accepted' })
+            });
+
+            if (response.status === 401) {
+                throw new Error('Authentication required. Please log in.');
+            }
+
+            if (response.status === 403) {
+                throw new Error('Only the recipient can accept connection requests');
+            }
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || `Failed to accept connection: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+
+            // Update local status
+            this.currentConnectionStatus = 'accepted';
+            this.currentConnectionId = data.id;
+
+            return data;
+        } catch (error) {
+            console.error('Error accepting connection request:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Cancel/withdraw a connection request
      * @param {number} connectionId - The connection ID to cancel
      * @returns {Promise<boolean>} Success status
