@@ -533,7 +533,7 @@ async function loadStudentParentingInvitations() {
         }
 
         // Fetch ONLY received invitations (as parent) - sent invitations are in Parent Portal
-        const response = await fetch('http://localhost:8000/api/parent/pending-invitations', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations', {
             headers: { 'Authorization': `Bearer ${token}` }
         }).catch(() => ({ ok: false })); // Gracefully handle if user is not a parent
 
@@ -1181,7 +1181,7 @@ async function loadStudentTutorRequests() {
             return;
         }
 
-        const response = await fetch('http://localhost:8000/api/session-requests/my-requests', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/my-requests', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -1346,7 +1346,7 @@ async function loadStudentRequestCounts() {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:8000/api/student/my-requests/counts', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-requests/counts', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -2440,7 +2440,7 @@ async function loadSchedulePanelCounts() {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:8000/api/student/schedule-panel/counts', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedule-panel/counts', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 

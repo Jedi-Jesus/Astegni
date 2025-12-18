@@ -1381,7 +1381,7 @@ async function loadParentParentingInvitations() {
             return;
         }
 
-        const response = await fetch('http://localhost:8000/api/parent/pending-invitations', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -1618,10 +1618,10 @@ async function loadCoParentingInvitations() {
 
         // Fetch BOTH sent and received co-parent invitations
         const [sentResponse, receivedResponse] = await Promise.all([
-            fetch('http://localhost:8000/api/parent/coparent-invitations-sent', {
+            fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/coparent-invitations-sent', {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            fetch('http://localhost:8000/api/parent/coparent-invitations-received', {
+            fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/coparent-invitations-received', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
         ]);

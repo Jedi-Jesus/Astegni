@@ -90,13 +90,13 @@ async function loadAllData() {
 
         // Fetch schedules and sessions in parallel
         const [schedulesResponse, sessionsResponse, statsResponse] = await Promise.all([
-            fetch('http://localhost:8000/api/tutor/schedules', {
+            fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules', {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            fetch('http://localhost:8000/api/tutor/sessions', {
+            fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/sessions', {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            fetch('http://localhost:8000/api/tutor/sessions/stats/summary', {
+            fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/sessions/stats/summary', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
         ]);
@@ -331,7 +331,7 @@ async function loadSessionStats() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('http://localhost:8000/api/tutor/sessions/stats/summary', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/sessions/stats/summary', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 

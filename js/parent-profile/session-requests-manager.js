@@ -46,7 +46,7 @@ const ParentRequestsManager = {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            const response = await fetch('http://localhost:8000/api/parent/my-courses', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/my-courses', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -68,7 +68,7 @@ const ParentRequestsManager = {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            const response = await fetch('http://localhost:8000/api/parent/my-schools', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/my-schools', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -90,7 +90,7 @@ const ParentRequestsManager = {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            const response = await fetch('http://localhost:8000/api/session-requests/my-requests', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/my-requests', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -112,7 +112,7 @@ const ParentRequestsManager = {
             const token = localStorage.getItem('token');
             if (!token) return;
 
-            const response = await fetch('http://localhost:8000/api/parent/pending-invitations', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/pending-invitations', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 

@@ -31,7 +31,7 @@
                 console.log('✅ [Rating Display] User loaded, proceeding with rating update');
 
                 // Get tutor profile to find tutor_id
-                const profileResponse = await fetch('http://localhost:8000/api/tutor/profile', {
+                const profileResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/profile', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,

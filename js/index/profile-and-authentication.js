@@ -75,7 +75,7 @@ async function switchRole(newRole) {
             return;
         }
 
-        const response = await fetch('http://localhost:8000/api/switch-role', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/switch-role`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -501,7 +501,7 @@ window.sendOTP = async function() {
 
     try {
         // Step 1: Send registration OTP (does NOT create account yet)
-        const response = await fetch('http://localhost:8000/api/send-registration-otp', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/send-registration-otp`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -575,7 +575,7 @@ window.verifyRegistrationOTP = async function() {
 
     try {
         // Step 2: Verify OTP and create account
-        const response = await fetch('http://localhost:8000/api/verify-registration-otp', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/verify-registration-otp`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -686,7 +686,7 @@ window.resendRegistrationOTP = async function() {
     }
 
     try {
-        const response = await fetch('http://localhost:8000/api/send-registration-otp', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/send-registration-otp`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -762,7 +762,7 @@ function logout() {
     // Call backend logout
     const token = localStorage.getItem('token') || localStorage.getItem('access_token');
     if (token) {
-        fetch('http://localhost:8000/api/logout', {
+        fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/logout`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -836,7 +836,7 @@ async function handleForgotPassword(e) {
     submitBtn.textContent = 'Sending OTP...';
 
     try {
-        const response = await fetch('http://localhost:8000/api/forgot-password', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -938,7 +938,7 @@ async function handleResetPassword(e) {
     submitBtn.textContent = 'Resetting Password...';
 
     try {
-        const response = await fetch('http://localhost:8000/api/reset-password', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/reset-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1014,7 +1014,7 @@ async function resendPasswordResetOTP(event) {
     }
 
     try {
-        const response = await fetch('http://localhost:8000/api/forgot-password', {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/forgot-password`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

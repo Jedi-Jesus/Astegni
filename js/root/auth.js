@@ -1,6 +1,6 @@
 class AuthenticationManager {
     constructor() {
-        this.API_BASE_URL = 'http://localhost:8000';
+        this.API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
         this.token = null;
         this.user = null;
         this.isFetchingUserData = false; // Guard to prevent multiple fetches

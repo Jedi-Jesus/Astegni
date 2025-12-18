@@ -109,7 +109,7 @@
     // Fetch news from backend
     async function fetchNewsFromBackend() {
         try {
-            const response = await fetch('http://localhost:8000/api/news', {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/news`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
