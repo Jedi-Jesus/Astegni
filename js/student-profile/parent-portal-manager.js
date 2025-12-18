@@ -11,7 +11,7 @@
 
 // Use existing API_BASE_URL or window.API_BASE_URL, don't redeclare
 const PARENT_PORTAL_API_URL = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL :
-                              (window.API_BASE_URL || 'https://api.astegni.com');
+                              (window.API_BASE_URL || 'http://localhost:8000');
 
 class ParentPortalManager {
     constructor() {
@@ -34,7 +34,7 @@ class ParentPortalManager {
      * Get auth token from localStorage
      */
     getToken() {
-        return localStorage.getItem('token');
+        return localStorage.getItem('token') || localStorage.getItem('access_token');
     }
 
     /**
@@ -95,51 +95,176 @@ class ParentPortalManager {
      * Create a parent card HTML
      */
     createParentCard(parent) {
-        const profilePic = parent.profile_picture || 'https://via.placeholder.com/80?text=' + parent.first_name.charAt(0);
+        const firstInitial = (parent.first_name || 'P').charAt(0).toUpperCase();
+        const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(parent.full_name || parent.first_name || 'Parent')}&background=8B5CF6&color=fff&size=80`;
+        const profilePic = parent.profile_picture || defaultAvatar;
         const relationshipBadge = this.getRelationshipBadge(parent.relationship_type);
 
+        // Encode parent data for message button
+        const parentDataForChat = JSON.stringify({
+            id: parent.user_id || parent.id,
+            user_id: parent.user_id || parent.id,
+            profile_id: parent.profile_id,
+            full_name: parent.full_name,
+            profile_picture: parent.profile_picture,
+            role: 'parent',
+            profile_type: 'parent'
+        }).replace(/"/g, '&quot;');
+
         return `
-            <div class="parent-card p-4 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all">
-                <div class="flex items-start gap-4">
-                    <img src="${profilePic}"
-                         alt="${parent.full_name}"
-                         class="w-14 h-14 rounded-full object-cover border-2 border-purple-200 dark:border-purple-700"
-                         onerror="this.src='https://via.placeholder.com/80?text=${parent.first_name.charAt(0)}'">
-                    <div class="flex-1 min-w-0">
-                        <h4 class="font-semibold text-gray-800 dark:text-gray-200 truncate">${parent.full_name}</h4>
-                        <span class="inline-block px-2 py-0.5 text-xs font-medium rounded-full ${relationshipBadge.class} mt-1">
-                            ${parent.relationship_type || 'Parent'}
-                        </span>
-                        <div class="mt-2 space-y-1">
-                            ${parent.email ? `<p class="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                                ${parent.email}
-                            </p>` : ''}
-                            ${parent.phone ? `<p class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                </svg>
-                                ${parent.phone}
-                            </p>` : ''}
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-2">
+            <div class="parent-card rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all overflow-hidden">
+                <!-- Gradient Header with Centered Avatar -->
+                <div class="relative h-20 bg-gradient-to-r from-purple-500 via-violet-500 to-indigo-500">
+                    <div class="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+                        <img src="${profilePic}"
+                             alt="${parent.full_name}"
+                             class="w-16 h-16 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-md"
+                             onerror="this.src='${defaultAvatar}'">
                         ${parent.is_verified ? `
-                            <span class="text-green-500 text-lg" title="Verified">✓</span>
+                            <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800">
+                                <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </span>
                         ` : ''}
-                        <button onclick="parentPortalManager.unlinkParent(${parent.user_id})"
-                                class="text-gray-400 hover:text-red-500 transition-colors"
-                                title="Unlink parent">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="pt-10 pb-4 px-4 text-center">
+                    <!-- Clickable Parent Name -->
+                    <h4 class="font-semibold text-gray-800 dark:text-gray-200 truncate cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                        onclick="parentPortalManager.viewParentProfile(${parent.profile_id})"
+                        title="View ${parent.full_name}'s profile">
+                        ${parent.full_name}
+                    </h4>
+
+                    <!-- Relationship Badge -->
+                    <span class="inline-block px-3 py-1 text-xs font-medium rounded-full ${relationshipBadge.class} mt-2">
+                        ${parent.relationship_type || 'Parent'}
+                    </span>
+
+                    <!-- Contact Info -->
+                    <div class="mt-3 space-y-1">
+                        ${parent.email ? `<p class="text-xs text-gray-500 dark:text-gray-400 truncate flex items-center justify-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            ${parent.email}
+                        </p>` : ''}
+                        ${parent.phone ? `<p class="text-xs text-gray-500 dark:text-gray-400 flex items-center justify-center gap-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            </svg>
+                            ${parent.phone}
+                        </p>` : ''}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-center gap-2 mt-4">
+                        <!-- Message Button -->
+                        <button onclick="parentPortalManager.messageParent(${parentDataForChat})"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors text-sm font-medium"
+                                title="Message ${parent.full_name}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            Message
+                        </button>
+
+                        <!-- Unlink Button -->
+                        <button onclick="parentPortalManager.unlinkParent(${parent.profile_id})"
+                                class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 transition-colors text-sm font-medium"
+                                title="Unlink ${parent.full_name}">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
+                            Unlink
                         </button>
                     </div>
                 </div>
             </div>
         `;
+    }
+
+    /**
+     * Navigate to view-parent profile page
+     */
+    viewParentProfile(profileId) {
+        if (!profileId) {
+            console.error('No profile ID provided for viewing parent');
+            return;
+        }
+        window.location.href = `../view-profiles/view-parent.html?id=${profileId}`;
+    }
+
+    /**
+     * Open chat modal with parent
+     */
+    messageParent(parentData) {
+        console.log('Opening chat with parent:', parentData);
+
+        // Check if user is authenticated
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        if (!token) {
+            if (window.openAuthModal) {
+                window.openAuthModal('login');
+            } else {
+                alert('Please log in to message parents');
+            }
+            return;
+        }
+
+        // Handle both object and parsed data
+        let parent = parentData;
+        if (typeof parentData === 'string') {
+            try {
+                parent = JSON.parse(parentData);
+            } catch (e) {
+                console.error('Failed to parse parent data:', e);
+                return;
+            }
+        }
+
+        // Build the target user object for chat modal
+        const targetUser = {
+            id: parent.user_id || parent.id,
+            user_id: parent.user_id || parent.id,
+            profile_id: parent.profile_id,
+            full_name: parent.full_name,
+            name: parent.full_name,
+            profile_picture: parent.profile_picture,
+            avatar: parent.profile_picture,
+            role: 'parent',
+            profile_type: 'parent',
+            is_online: parent.is_online || false
+        };
+
+        console.log('Target user for chat:', targetUser);
+
+        // Open chat modal with the parent
+        if (typeof openChatModal === 'function') {
+            openChatModal(targetUser);
+            console.log('Chat modal opened for parent:', targetUser.full_name);
+        } else if (typeof ChatModalManager !== 'undefined') {
+            if (typeof ChatModalManager.init === 'function' && !ChatModalManager.state?.isOpen) {
+                ChatModalManager.init();
+            }
+            if (typeof ChatModalManager.openChatWithUser === 'function') {
+                ChatModalManager.openChatWithUser(targetUser);
+                console.log('Chat modal opened via ChatModalManager');
+            } else if (typeof ChatModalManager.open === 'function') {
+                ChatModalManager.open();
+                setTimeout(() => {
+                    if (ChatModalManager.selectDirectMessageTarget) {
+                        ChatModalManager.selectDirectMessageTarget(targetUser);
+                    }
+                }, 300);
+            }
+        } else {
+            console.error('Chat modal not available');
+            alert('Chat feature is not available. Please refresh the page.');
+        }
     }
 
     /**
@@ -210,13 +335,15 @@ class ParentPortalManager {
             return;
         }
 
-        list.innerHTML = this.pendingInvitations.map(inv => `
+        list.innerHTML = this.pendingInvitations.map(inv => {
+            const defaultAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(inv.parent_name || 'P')}&background=F59E0B&color=fff&size=40`;
+            return `
             <div class="flex items-center justify-between p-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-200 dark:border-yellow-700/50">
                 <div class="flex items-center gap-3">
-                    <img src="${inv.parent_profile_picture || 'https://via.placeholder.com/40?text=' + inv.parent_name.charAt(0)}"
+                    <img src="${inv.parent_profile_picture || defaultAvatar}"
                          alt="${inv.parent_name}"
                          class="w-10 h-10 rounded-full object-cover"
-                         onerror="this.src='https://via.placeholder.com/40?text=${inv.parent_name.charAt(0)}'">
+                         onerror="this.src='${defaultAvatar}'">
                     <div>
                         <p class="font-medium text-gray-800 dark:text-gray-200">${inv.parent_name}</p>
                         <p class="text-xs text-gray-500 dark:text-gray-400">${inv.relationship_type} - Sent ${this.formatDate(inv.created_at)}</p>
@@ -226,7 +353,7 @@ class ParentPortalManager {
                     Pending
                 </span>
             </div>
-        `).join('');
+        `}).join('');
     }
 
     /**
@@ -507,7 +634,7 @@ class ParentPortalManager {
         const securityGrandfatherName = document.getElementById('security-grandfather-name').value;
 
         if (!userId || !relationshipType || !securityFatherName || !securityGrandfatherName) {
-            this.showToast('Please fill in all required fields', 'error');
+            this.showToast('Please fill in all required fields including security verification', 'error');
             return;
         }
 
@@ -560,10 +687,8 @@ class ParentPortalManager {
         const email = document.getElementById('new-parent-email').value;
         const phone = document.getElementById('new-parent-phone').value;
         const relationshipType = document.getElementById('new-parent-relationship-type').value;
-        const securityFatherName = document.getElementById('new-security-father-name').value;
-        const securityGrandfatherName = document.getElementById('new-security-grandfather-name').value;
 
-        if (!firstName || !fatherName || !grandfatherName || !relationshipType || !securityFatherName || !securityGrandfatherName) {
+        if (!firstName || !fatherName || !grandfatherName || !relationshipType) {
             this.showToast('Please fill in all required fields', 'error');
             return;
         }
@@ -587,9 +712,7 @@ class ParentPortalManager {
                     gender: gender || null,
                     email: email || null,
                     phone: phone || null,
-                    relationship_type: relationshipType,
-                    security_father_name: securityFatherName,
-                    security_grandfather_name: securityGrandfatherName
+                    relationship_type: relationshipType
                 })
             });
 
@@ -615,8 +738,9 @@ class ParentPortalManager {
 
     /**
      * Unlink a parent
+     * @param {number} parentProfileId - The parent's profile ID (from parent_profiles table)
      */
-    async unlinkParent(parentUserId) {
+    async unlinkParent(parentProfileId) {
         if (!confirm('Are you sure you want to unlink this parent? They will no longer be able to view your progress.')) {
             return;
         }
@@ -628,7 +752,7 @@ class ParentPortalManager {
         }
 
         try {
-            const response = await fetch(`${PARENT_PORTAL_API_URL}/api/student/unlink-parent/${parentUserId}`, {
+            const response = await fetch(`${PARENT_PORTAL_API_URL}/api/student/unlink-parent/${parentProfileId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

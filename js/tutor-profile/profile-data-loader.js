@@ -6,10 +6,21 @@
 const TutorProfileDataLoader = {
     currentTutorId: null,
     profileData: null,
+    _initialized: false,  // Guard to prevent multiple initializations
 
     // Initialize and load profile
     async init() {
+        // Prevent multiple initializations
+        if (this._initialized) {
+            console.log('⚠️ TutorProfileDataLoader already initialized, skipping...');
+            return;
+        }
+        this._initialized = true;
+
         try {
+            // Wait for AuthManager to be ready before loading profile
+            await this.waitForAuth();
+
             // Get tutor ID from URL (optional - if viewing another tutor's profile)
             this.currentTutorId = this.getTutorIdFromURL();
 
@@ -26,6 +37,38 @@ const TutorProfileDataLoader = {
         } catch (error) {
             console.error('Error initializing profile:', error);
         }
+    },
+
+    // Wait for AuthManager to be ready with valid token
+    async waitForAuth(maxAttempts = 10, intervalMs = 100) {
+        for (let i = 0; i < maxAttempts; i++) {
+            // Check if AuthManager exists and has a token
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (token && window.AuthManager && window.AuthManager.token) {
+                console.log('✅ AuthManager ready with token');
+                return true;
+            }
+
+            // Also check if AuthManager just needs to restore from localStorage
+            if (token && window.AuthManager && !window.AuthManager.token) {
+                // Token exists in localStorage but AuthManager hasn't picked it up yet
+                window.AuthManager.token = token;
+                console.log('✅ Token restored to AuthManager from localStorage');
+                return true;
+            }
+
+            if (token) {
+                // Token exists in localStorage, good enough to proceed
+                console.log('✅ Token found in localStorage, proceeding...');
+                return true;
+            }
+
+            // Wait before next attempt
+            await new Promise(resolve => setTimeout(resolve, intervalMs));
+        }
+
+        console.warn('⚠️ AuthManager not ready after waiting, proceeding anyway...');
+        return false;
     },
 
     // Get tutor ID from URL parameters
@@ -369,7 +412,7 @@ const TutorProfileDataLoader = {
             }
 
             // Fetch profile summary from the new API endpoint
-            const response = await fetch(`https://api.astegni.com/api/tutor/profile-summary/${tutorId}`);
+            const response = await fetch(`http://localhost:8000/api/tutor/profile-summary/${tutorId}`);
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch profile summary: ${response.status}`);
@@ -431,7 +474,7 @@ const TutorProfileDataLoader = {
             }
 
             // Fetch courses from the courses table via API
-            const response = await fetch(`https://api.astegni.com/api/course-management/tutor/${tutorId}/courses`);
+            const response = await fetch(`http://localhost:8000/api/course-management/tutor/${tutorId}/courses`);
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch courses: ${response.status}`);
@@ -1145,6 +1188,17 @@ const TutorProfileDataLoader = {
 
     showError(message) {
         console.error(message);
-        alert(message);
+        // Don't use alert() - it blocks the page and creates bad UX
+        // Instead, show a toast notification if available
+        if (typeof TutorProfileUI !== 'undefined' && TutorProfileUI.showNotification) {
+            TutorProfileUI.showNotification(message, 'error');
+        } else {
+            // Fallback: create a simple toast notification
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 5000);
+        }
     }
 };

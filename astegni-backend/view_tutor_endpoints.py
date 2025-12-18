@@ -516,19 +516,18 @@ async def get_tutor_videos(tutor_id: int, video_type: Optional[str] = None):
 
 @router.get("/{tutor_id}/packages")
 async def get_tutor_packages(tutor_id: int):
-    """Get tutor packages"""
+    """Get tutor packages with course names"""
     conn = get_db_connection()
     try:
         with conn.cursor() as cur:
             # Query actual columns from tutor_packages table
-            # Fixed: use course_ids instead of courses
             cur.execute("""
                 SELECT id, name, grade_level, course_ids, description,
                        session_format, schedule_type, schedule_days,
                        start_time, end_time, session_duration,
                        hourly_rate, days_per_week, hours_per_day,
                        payment_frequency,
-                       discount_1_month, discount_3_month, discount_6_month, discount_12_month,
+                       discount_1_month, discount_3_month, discount_6_month, yearly_discount,
                        is_active, created_at
                 FROM tutor_packages
                 WHERE tutor_id = %s AND is_active = TRUE
@@ -547,15 +546,23 @@ async def get_tutor_packages(tutor_id: int):
                 session_price = hourly_rate * hours_per_day
                 package_price = hourly_rate * hours_per_day * days_per_week * 4
 
-                # course_ids is an array - convert to list
+                # course_ids is an array - fetch course names
                 course_ids = row[3] if row[3] else []
+                courses_with_names = []
+
+                if course_ids:
+                    cur.execute("""
+                        SELECT id, course_name FROM courses WHERE id = ANY(%s)
+                    """, (course_ids,))
+                    course_rows = cur.fetchall()
+                    courses_with_names = [{"id": c[0], "course_name": c[1]} for c in course_rows]
 
                 packages.append({
                     "id": row[0],
                     "name": row[1],
                     "grade_level": row[2],
                     "course_ids": course_ids,
-                    "courses": course_ids,  # Alias for backward compatibility
+                    "courses": courses_with_names,  # Now includes course names
                     "description": row[4],
                     "session_format": row[5],
                     "schedule_type": row[6],
@@ -573,7 +580,7 @@ async def get_tutor_packages(tutor_id: int):
                     "discount_1_month": float(row[15]) if row[15] else 0,
                     "discount_3_month": float(row[16]) if row[16] else 0,
                     "discount_6_month": float(row[17]) if row[17] else 0,
-                    "discount_12_month": float(row[18]) if row[18] else 0,
+                    "yearly_discount": float(row[18]) if row[18] else 0,
                     "is_active": row[19]
                 })
 

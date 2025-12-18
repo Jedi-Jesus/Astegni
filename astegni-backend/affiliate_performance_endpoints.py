@@ -9,7 +9,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_db")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db")
 
 router = APIRouter(prefix="/api/admin", tags=["Affiliate Performance"])
 
@@ -58,7 +58,7 @@ async def get_affiliate_performance():
         cursor.execute("""
             SELECT
                 a.id,
-                u.username,
+                CONCAT(u.first_name, ' ', u.father_name) as full_name,
                 u.email,
                 a.affiliate_code,
                 a.total_referrals,
@@ -91,7 +91,7 @@ async def get_affiliate_performance():
                 ar.conversion_value,
                 ar.commission_earned,
                 ar.converted_at,
-                u.username as referred_username,
+                CONCAT(u.first_name, ' ', u.father_name) as referred_name,
                 a.affiliate_code
             FROM affiliate_referrals ar
             JOIN affiliates a ON ar.affiliate_id = a.id

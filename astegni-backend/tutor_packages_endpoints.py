@@ -93,8 +93,7 @@ router = APIRouter(prefix="/api/tutor", tags=["tutor-packages"])
 class PackageCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     grade_level: Optional[str] = None
-    course_ids: Optional[List[int]] = []  # Array of approved course IDs from courses table
-    pending_course_ids: Optional[List[int]] = []  # Array of pending course IDs from requested_courses table
+    course_ids: Optional[List[int]] = []  # Array of course IDs (status determined from courses table)
     description: Optional[str] = None
     session_format: Optional[str] = None
     schedule_type: str = Field(default="recurring")
@@ -112,12 +111,12 @@ class PackageCreate(BaseModel):
     discount_1_month: float = Field(default=0, ge=0, le=100)
     discount_3_month: float = Field(default=0, ge=0, le=100)
     discount_6_month: float = Field(default=0, ge=0, le=100)
+    yearly_discount: float = Field(default=0, ge=0, le=100)
 
 class PackageUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=255)
     grade_level: Optional[str] = None
-    course_ids: Optional[List[int]] = None  # Array of approved course IDs
-    pending_course_ids: Optional[List[int]] = None  # Array of pending course IDs
+    course_ids: Optional[List[int]] = None  # Array of course IDs (status determined from courses table)
     description: Optional[str] = None
     session_format: Optional[str] = None
     schedule_type: Optional[str] = None
@@ -135,6 +134,7 @@ class PackageUpdate(BaseModel):
     discount_1_month: Optional[float] = Field(None, ge=0, le=100)
     discount_3_month: Optional[float] = Field(None, ge=0, le=100)
     discount_6_month: Optional[float] = Field(None, ge=0, le=100)
+    yearly_discount: Optional[float] = Field(None, ge=0, le=100)
     is_active: Optional[bool] = None
 
 class CourseInfo(BaseModel):
@@ -169,10 +169,9 @@ class PackageResponse(BaseModel):
     tutor_id: int
     name: str
     grade_level: Optional[str]
-    course_ids: List[int] = []  # Array of approved course IDs
-    pending_course_ids: List[int] = []  # Array of pending course IDs
-    courses: Optional[List[CourseInfo]] = []  # Full course details (populated on read)
-    pending_courses: Optional[List[PendingCourseInfo]] = []  # Full pending course details
+    course_ids: List[int] = []  # Array of course IDs
+    courses: Optional[List[CourseInfo]] = []  # Full approved course details (populated on read)
+    pending_courses: Optional[List[PendingCourseInfo]] = []  # Full pending course details (filtered by status)
     description: Optional[str]
     session_format: Optional[str]
     schedule_type: Optional[str]
@@ -190,6 +189,7 @@ class PackageResponse(BaseModel):
     discount_1_month: float
     discount_3_month: float
     discount_6_month: float
+    yearly_discount: float
     is_active: bool
     created_at: datetime
     updated_at: datetime
@@ -198,50 +198,23 @@ class PackageResponse(BaseModel):
         from_attributes = True
 
 
-# Helper function to fetch course details
+# Helper function to fetch course details (includes status for filtering)
 def fetch_course_details(cur, course_ids):
-    """Fetch full course details for a list of course IDs"""
+    """Fetch full course details for a list of course IDs, returns approved and pending separately"""
     if not course_ids:
-        return []
-
-    cur.execute("""
-        SELECT id, course_name, course_category, course_level, course_description,
-               thumbnail, duration, lessons, lesson_title, language
-        FROM courses
-        WHERE id = ANY(%s)
-    """, (course_ids,))
-
-    courses = []
-    for row in cur.fetchall():
-        courses.append({
-            'id': row[0],
-            'course_name': row[1],
-            'course_category': row[2],
-            'course_level': row[3],
-            'course_description': row[4],
-            'thumbnail': row[5],
-            'duration': row[6] or 0,
-            'lessons': row[7] or 0,
-            'lesson_title': row[8] if row[8] else [],
-            'language': row[9] if row[9] else ["English"]
-        })
-    return courses
-
-def fetch_pending_course_details(cur, pending_course_ids):
-    """Fetch pending course details for a list of requested_courses IDs"""
-    if not pending_course_ids:
-        return []
+        return [], []
 
     cur.execute("""
         SELECT id, course_name, course_category, course_level, course_description,
                thumbnail, duration, lessons, lesson_title, language, status
-        FROM requested_courses
-        WHERE id = ANY(%s) AND status = 'pending'
-    """, (pending_course_ids,))
+        FROM courses
+        WHERE id = ANY(%s)
+    """, (course_ids,))
 
-    courses = []
+    approved_courses = []
+    pending_courses = []
     for row in cur.fetchall():
-        courses.append({
+        course = {
             'id': row[0],
             'course_name': row[1],
             'course_category': row[2],
@@ -252,9 +225,13 @@ def fetch_pending_course_details(cur, pending_course_ids):
             'lessons': row[7] or 0,
             'lesson_title': row[8] if row[8] else [],
             'language': row[9] if row[9] else ["English"],
-            'status': row[10] or 'pending'
-        })
-    return courses
+            'status': row[10] or 'approved'
+        }
+        if row[10] == 'pending':
+            pending_courses.append(course)
+        else:
+            approved_courses.append(course)
+    return approved_courses, pending_courses
 
 
 # GET - Get all packages for current tutor
@@ -286,12 +263,12 @@ async def get_tutor_packages(current_user = Depends(get_current_user)):
         print(f"✅ Found tutor_profile.id = {tutor_profile_id} for user.id = {current_user['id']}")
 
         cur.execute("""
-            SELECT id, tutor_id, name, grade_level, course_ids, pending_course_ids, description,
+            SELECT id, tutor_id, name, grade_level, course_ids, description,
                    session_format, schedule_type, schedule_days,
                    start_time, end_time, start_date, end_date,
                    session_time, session_duration,
                    hourly_rate, days_per_week, hours_per_day, payment_frequency,
-                   discount_1_month, discount_3_month, discount_6_month,
+                   discount_1_month, discount_3_month, discount_6_month, yearly_discount,
                    is_active, created_at, updated_at
             FROM tutor_packages
             WHERE tutor_id = %s
@@ -300,13 +277,11 @@ async def get_tutor_packages(current_user = Depends(get_current_user)):
 
         packages = []
         for row in cur.fetchall():
-            # Get course_ids and pending_course_ids arrays
+            # Get course_ids array
             course_ids = row[4] if row[4] else []
-            pending_course_ids = row[5] if row[5] else []
 
-            # Fetch full course details
-            courses = fetch_course_details(cur, course_ids)
-            pending_courses = fetch_pending_course_details(cur, pending_course_ids)
+            # Fetch full course details (returns approved and pending separately based on status)
+            courses, pending_courses = fetch_course_details(cur, course_ids)
 
             # Handle None values with proper defaults
             packages.append({
@@ -315,26 +290,26 @@ async def get_tutor_packages(current_user = Depends(get_current_user)):
                 'name': row[2] or '',
                 'grade_level': row[3],
                 'course_ids': course_ids,
-                'pending_course_ids': pending_course_ids,
                 'courses': courses,
                 'pending_courses': pending_courses,
-                'description': row[6],
-                'session_format': row[7],
-                'schedule_type': row[8],
-                'schedule_days': row[9],
-                'start_time': str(row[10]) if row[10] else None,
-                'end_time': str(row[11]) if row[11] else None,
-                'start_date': str(row[12]) if row[12] else None,
-                'end_date': str(row[13]) if row[13] else None,
-                'session_time': str(row[14]) if row[14] else None,
-                'session_duration': float(row[15]) if row[15] is not None else None,
-                'hourly_rate': float(row[16]) if row[16] is not None else 0.0,
-                'days_per_week': row[17],
-                'hours_per_day': float(row[18]) if row[18] is not None else 0.0,
-                'payment_frequency': row[19] or 'monthly',
-                'discount_1_month': float(row[20]) if row[20] is not None else 0.0,
-                'discount_3_month': float(row[21]) if row[21] is not None else 0.0,
-                'discount_6_month': float(row[22]) if row[22] is not None else 0.0,
+                'description': row[5],
+                'session_format': row[6],
+                'schedule_type': row[7],
+                'schedule_days': row[8],
+                'start_time': str(row[9]) if row[9] else None,
+                'end_time': str(row[10]) if row[10] else None,
+                'start_date': str(row[11]) if row[11] else None,
+                'end_date': str(row[12]) if row[12] else None,
+                'session_time': str(row[13]) if row[13] else None,
+                'session_duration': float(row[14]) if row[14] is not None else None,
+                'hourly_rate': float(row[15]) if row[15] is not None else 0.0,
+                'days_per_week': row[16],
+                'hours_per_day': float(row[17]) if row[17] is not None else 0.0,
+                'payment_frequency': row[18] or 'monthly',
+                'discount_1_month': float(row[19]) if row[19] is not None else 0.0,
+                'discount_3_month': float(row[20]) if row[20] is not None else 0.0,
+                'discount_6_month': float(row[21]) if row[21] is not None else 0.0,
+                'yearly_discount': float(row[22]) if row[22] is not None else 0.0,
                 'is_active': row[23] if row[23] is not None else True,
                 'created_at': row[24] or datetime.now(),
                 'updated_at': row[25] or datetime.now()
@@ -371,33 +346,31 @@ async def create_package(package: PackageCreate, current_user = Depends(get_curr
         tutor_profile_id = tutor_profile[0]
         print(f"✅ Found tutor_profile.id = {tutor_profile_id} for user.id = {current_user['id']}")
 
-        # Handle course_ids arrays
+        # Handle course_ids array
         course_ids = package.course_ids if package.course_ids else []
-        pending_course_ids = package.pending_course_ids if package.pending_course_ids else []
 
         cur.execute("""
             INSERT INTO tutor_packages (
-                tutor_id, name, grade_level, course_ids, pending_course_ids, description,
+                tutor_id, name, grade_level, course_ids, description,
                 session_format, schedule_type, schedule_days,
                 start_time, end_time, start_date, end_date,
                 session_time, session_duration,
                 hourly_rate, days_per_week, hours_per_day, payment_frequency,
-                discount_1_month, discount_3_month, discount_6_month,
+                discount_1_month, discount_3_month, discount_6_month, yearly_discount,
                 is_active, created_at, updated_at
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            RETURNING id, tutor_id, name, grade_level, course_ids, pending_course_ids, description,
+            RETURNING id, tutor_id, name, grade_level, course_ids, description,
                       session_format, schedule_type, schedule_days,
                       start_time, end_time, start_date, end_date,
                       session_time, session_duration,
                       hourly_rate, days_per_week, hours_per_day, payment_frequency,
-                      discount_1_month, discount_3_month, discount_6_month,
+                      discount_1_month, discount_3_month, discount_6_month, yearly_discount,
                       is_active, created_at, updated_at
         """, (
             tutor_profile_id,  # Use tutor_profiles.id, not users.id
             package.name,
             package.grade_level,
             course_ids,
-            pending_course_ids,
             package.description,
             package.session_format,
             package.schedule_type,
@@ -415,19 +388,18 @@ async def create_package(package: PackageCreate, current_user = Depends(get_curr
             package.discount_1_month,
             package.discount_3_month,
             package.discount_6_month,
+            package.yearly_discount,
             True  # is_active = True by default
         ))
 
         row = cur.fetchone()
         conn.commit()
 
-        # Get course_ids and pending_course_ids arrays from returned row
+        # Get course_ids array from returned row
         returned_course_ids = row[4] if row[4] else []
-        returned_pending_course_ids = row[5] if row[5] else []
 
-        # Fetch full course details
-        courses = fetch_course_details(cur, returned_course_ids)
-        pending_courses = fetch_pending_course_details(cur, returned_pending_course_ids)
+        # Fetch full course details (returns approved and pending separately based on status)
+        courses, pending_courses = fetch_course_details(cur, returned_course_ids)
 
         return {
             'id': row[0],
@@ -435,26 +407,26 @@ async def create_package(package: PackageCreate, current_user = Depends(get_curr
             'name': row[2] or '',
             'grade_level': row[3],
             'course_ids': returned_course_ids,
-            'pending_course_ids': returned_pending_course_ids,
             'courses': courses,
             'pending_courses': pending_courses,
-            'description': row[6],
-            'session_format': row[7],
-            'schedule_type': row[8],
-            'schedule_days': row[9],
-            'start_time': str(row[10]) if row[10] else None,
-            'end_time': str(row[11]) if row[11] else None,
-            'start_date': str(row[12]) if row[12] else None,
-            'end_date': str(row[13]) if row[13] else None,
-            'session_time': str(row[14]) if row[14] else None,
-            'session_duration': float(row[15]) if row[15] is not None else None,
-            'hourly_rate': float(row[16]) if row[16] is not None else 0.0,
-            'days_per_week': row[17],
-            'hours_per_day': float(row[18]) if row[18] is not None else 0.0,
-            'payment_frequency': row[19] or 'monthly',
-            'discount_1_month': float(row[20]) if row[20] is not None else 0.0,
-            'discount_3_month': float(row[21]) if row[21] is not None else 0.0,
-            'discount_6_month': float(row[22]) if row[22] is not None else 0.0,
+            'description': row[5],
+            'session_format': row[6],
+            'schedule_type': row[7],
+            'schedule_days': row[8],
+            'start_time': str(row[9]) if row[9] else None,
+            'end_time': str(row[10]) if row[10] else None,
+            'start_date': str(row[11]) if row[11] else None,
+            'end_date': str(row[12]) if row[12] else None,
+            'session_time': str(row[13]) if row[13] else None,
+            'session_duration': float(row[14]) if row[14] is not None else None,
+            'hourly_rate': float(row[15]) if row[15] is not None else 0.0,
+            'days_per_week': row[16],
+            'hours_per_day': float(row[17]) if row[17] is not None else 0.0,
+            'payment_frequency': row[18] or 'monthly',
+            'discount_1_month': float(row[19]) if row[19] is not None else 0.0,
+            'discount_3_month': float(row[20]) if row[20] is not None else 0.0,
+            'discount_6_month': float(row[21]) if row[21] is not None else 0.0,
+            'yearly_discount': float(row[22]) if row[22] is not None else 0.0,
             'is_active': row[23] if row[23] is not None else True,
             'created_at': row[24] or datetime.now(),
             'updated_at': row[25] or datetime.now()
@@ -476,6 +448,12 @@ async def update_package(
     current_user = Depends(get_current_user)
 ):
     """Update an existing package"""
+    print(f"========================================")
+    print(f"📝 PUT /packages/{package_id} endpoint called!")
+    print(f"📦 Received package data: {package}")
+    print(f"📦 Package dict: {package.dict()}")
+    print(f"📦 Package dict (exclude_unset): {package.dict(exclude_unset=True)}")
+    print(f"========================================")
 
     conn = get_db_connection()
     cur = conn.cursor()
@@ -512,9 +490,11 @@ async def update_package(
         update_values = []
 
         for field, value in package.dict(exclude_unset=True).items():
-            if value is not None:
+            # Allow 0 values to be saved (not just non-None values)
+            if value is not None or value == 0:
                 update_fields.append(f"{field} = %s")
                 update_values.append(value)
+                print(f"📝 Adding field: {field} = {value} (type: {type(value).__name__})")
 
         if not update_fields:
             raise HTTPException(status_code=400, detail="No fields to update")
@@ -527,26 +507,27 @@ async def update_package(
             UPDATE tutor_packages
             SET {', '.join(update_fields)}
             WHERE id = %s
-            RETURNING id, tutor_id, name, grade_level, course_ids, pending_course_ids, description,
+            RETURNING id, tutor_id, name, grade_level, course_ids, description,
                       session_format, schedule_type, schedule_days,
                       start_time, end_time, start_date, end_date,
                       session_time, session_duration,
                       hourly_rate, days_per_week, hours_per_day, payment_frequency,
-                      discount_1_month, discount_3_month, discount_6_month,
+                      discount_1_month, discount_3_month, discount_6_month, yearly_discount,
                       is_active, created_at, updated_at
         """
+
+        print(f"📝 SQL Query: {query}")
+        print(f"📝 SQL Values: {update_values}")
 
         cur.execute(query, update_values)
         row = cur.fetchone()
         conn.commit()
 
-        # Get course_ids and pending_course_ids arrays from returned row
+        # Get course_ids array from returned row
         returned_course_ids = row[4] if row[4] else []
-        returned_pending_course_ids = row[5] if row[5] else []
 
-        # Fetch full course details
-        courses = fetch_course_details(cur, returned_course_ids)
-        pending_courses = fetch_pending_course_details(cur, returned_pending_course_ids)
+        # Fetch full course details (returns approved and pending separately based on status)
+        courses, pending_courses = fetch_course_details(cur, returned_course_ids)
 
         return {
             'id': row[0],
@@ -554,26 +535,26 @@ async def update_package(
             'name': row[2] or '',
             'grade_level': row[3],
             'course_ids': returned_course_ids,
-            'pending_course_ids': returned_pending_course_ids,
             'courses': courses,
             'pending_courses': pending_courses,
-            'description': row[6],
-            'session_format': row[7],
-            'schedule_type': row[8],
-            'schedule_days': row[9],
-            'start_time': str(row[10]) if row[10] else None,
-            'end_time': str(row[11]) if row[11] else None,
-            'start_date': str(row[12]) if row[12] else None,
-            'end_date': str(row[13]) if row[13] else None,
-            'session_time': str(row[14]) if row[14] else None,
-            'session_duration': float(row[15]) if row[15] is not None else None,
-            'hourly_rate': float(row[16]) if row[16] is not None else 0.0,
-            'days_per_week': row[17],
-            'hours_per_day': float(row[18]) if row[18] is not None else 0.0,
-            'payment_frequency': row[19] or 'monthly',
-            'discount_1_month': float(row[20]) if row[20] is not None else 0.0,
-            'discount_3_month': float(row[21]) if row[21] is not None else 0.0,
-            'discount_6_month': float(row[22]) if row[22] is not None else 0.0,
+            'description': row[5],
+            'session_format': row[6],
+            'schedule_type': row[7],
+            'schedule_days': row[8],
+            'start_time': str(row[9]) if row[9] else None,
+            'end_time': str(row[10]) if row[10] else None,
+            'start_date': str(row[11]) if row[11] else None,
+            'end_date': str(row[12]) if row[12] else None,
+            'session_time': str(row[13]) if row[13] else None,
+            'session_duration': float(row[14]) if row[14] is not None else None,
+            'hourly_rate': float(row[15]) if row[15] is not None else 0.0,
+            'days_per_week': row[16],
+            'hours_per_day': float(row[17]) if row[17] is not None else 0.0,
+            'payment_frequency': row[18] or 'monthly',
+            'discount_1_month': float(row[19]) if row[19] is not None else 0.0,
+            'discount_3_month': float(row[20]) if row[20] is not None else 0.0,
+            'discount_6_month': float(row[21]) if row[21] is not None else 0.0,
+            'yearly_discount': float(row[22]) if row[22] is not None else 0.0,
             'is_active': row[23] if row[23] is not None else True,
             'created_at': row[24] or datetime.now(),
             'updated_at': row[25] or datetime.now()
@@ -601,6 +582,7 @@ class PackageCourseRequest(BaseModel):
     lessons: Optional[int] = 0
     lesson_title: Optional[List[str]] = []
     language: Optional[List[str]] = ["English"]
+    tags: Optional[List[str]] = []  # Course tags for categorization
     package_id: Optional[int] = None  # Link to package if needed
 
 
@@ -612,9 +594,8 @@ async def create_package_course_request(
 ):
     """
     Create a course request from the package modal.
-    The course goes to requested_courses with 'pending' status.
-    When approved by admin, it moves to courses table and the package's
-    pending_course_ids gets updated to course_ids.
+    The course is saved to the courses table with 'pending' status.
+    When approved by admin, the status is changed to 'approved'.
     """
     import json
 
@@ -622,18 +603,20 @@ async def create_package_course_request(
     cur = conn.cursor()
 
     try:
-        # Insert into requested_courses
-        lesson_title_json = json.dumps(course.lesson_title if course.lesson_title else [])
-        language_json = json.dumps(course.language if course.language else ["English"])
+        # Insert into courses table with 'pending' status
+        # lesson_title, language, and tags are JSONB columns in the courses table
+        lesson_title_json = course.lesson_title if course.lesson_title else []
+        language_json = course.language if course.language else ["English"]
+        tags_json = course.tags if course.tags else []
 
         cur.execute("""
-            INSERT INTO requested_courses
-            (requester_id, course_name, course_category, course_level, course_description,
-             thumbnail, duration, lessons, lesson_title, language,
+            INSERT INTO courses
+            (uploader_id, course_name, course_category, course_level, course_description,
+             thumbnail, duration, lessons, lesson_title, language, tags,
              status, created_at, updated_at)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id, course_name, course_category, course_level, course_description,
-                      thumbnail, duration, lessons, lesson_title, language, status, created_at
+                      thumbnail, duration, lessons, lesson_title, language, tags, status, created_at
         """, (
             current_user['id'],
             course.course_name,
@@ -643,28 +626,30 @@ async def create_package_course_request(
             course.thumbnail,
             course.duration or 0,
             course.lessons or 0,
-            lesson_title_json,
-            language_json
+            json.dumps(lesson_title_json),
+            json.dumps(language_json),
+            json.dumps(tags_json)
         ))
 
         row = cur.fetchone()
-        course_request_id = row[0]
+        course_id = row[0]
 
-        # If package_id is provided, add this course to the package's pending_course_ids
+        # If package_id is provided, add this course to the package's course_ids
+        # (course status is 'pending' so it will show in pending_courses when fetched)
         if course.package_id:
             cur.execute("""
                 UPDATE tutor_packages
-                SET pending_course_ids = array_append(COALESCE(pending_course_ids, '{}'), %s),
+                SET course_ids = array_append(COALESCE(course_ids, '{}'), %s),
                     updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
-            """, (course_request_id, course.package_id))
+            """, (course_id, course.package_id))
 
         conn.commit()
 
         return {
             "message": "Course request created successfully",
-            "id": course_request_id,
-            "request_id": f"REQ-{course_request_id:06d}",
+            "id": course_id,
+            "request_id": f"CRS-{course_id:06d}",
             "course_name": row[1],
             "course_category": row[2],
             "course_level": row[3],
@@ -674,8 +659,9 @@ async def create_package_course_request(
             "lessons": row[7] or 0,
             "lesson_title": row[8] if row[8] else [],
             "language": row[9] if row[9] else ["English"],
-            "status": row[10] or "pending",
-            "created_at": row[11].isoformat() if row[11] else None
+            "tags": row[10] if row[10] else [],
+            "status": row[11] or "pending",
+            "created_at": row[12].isoformat() if row[12] else None
         }
 
     except Exception as e:
@@ -686,20 +672,21 @@ async def create_package_course_request(
         conn.close()
 
 
-# GET - Get tutor's pending course requests
+# GET - Get tutor's course requests (courses with pending status)
 @router.get("/packages/course-requests")
 async def get_tutor_course_requests(current_user = Depends(get_current_user)):
-    """Get all pending course requests for the current tutor"""
+    """Get all course requests (pending courses) for the current tutor"""
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
+        # Get courses uploaded by this user that are pending
         cur.execute("""
             SELECT id, course_name, course_category, course_level, course_description,
                    thumbnail, duration, lessons, lesson_title, language, status,
                    status_reason, status_at, created_at, updated_at
-            FROM requested_courses
-            WHERE requester_id = %s
+            FROM courses
+            WHERE uploader_id = %s
             ORDER BY created_at DESC
         """, (current_user['id'],))
 
@@ -707,7 +694,7 @@ async def get_tutor_course_requests(current_user = Depends(get_current_user)):
         for row in cur.fetchall():
             courses.append({
                 "id": row[0],
-                "request_id": f"REQ-{row[0]:06d}",
+                "request_id": f"CRS-{row[0]:06d}",
                 "course_name": row[1],
                 "course_category": row[2],
                 "course_level": row[3],
@@ -734,46 +721,46 @@ async def get_tutor_course_requests(current_user = Depends(get_current_user)):
 # DELETE - Delete a pending course request
 @router.delete("/packages/course-request/{request_id}")
 async def delete_course_request(request_id: int, current_user = Depends(get_current_user)):
-    """Delete a pending course request (only if still pending)"""
+    """Delete a pending course (only if still pending)"""
     conn = get_db_connection()
     cur = conn.cursor()
 
     try:
         # Verify ownership and status
         cur.execute("""
-            SELECT requester_id, status FROM requested_courses WHERE id = %s
+            SELECT uploader_id, status FROM courses WHERE id = %s
         """, (request_id,))
 
         result = cur.fetchone()
         if not result:
-            raise HTTPException(status_code=404, detail="Course request not found")
+            raise HTTPException(status_code=404, detail="Course not found")
 
         if result[0] != current_user['id']:
-            raise HTTPException(status_code=403, detail="Not authorized to delete this course request")
+            raise HTTPException(status_code=403, detail="Not authorized to delete this course")
 
         if result[1] != 'pending':
-            raise HTTPException(status_code=400, detail=f"Cannot delete course request with status '{result[1]}'")
+            raise HTTPException(status_code=400, detail=f"Cannot delete course with status '{result[1]}'")
 
-        # Remove from any packages' pending_course_ids
+        # Remove from any packages' course_ids
         cur.execute("""
             UPDATE tutor_packages
-            SET pending_course_ids = array_remove(pending_course_ids, %s),
+            SET course_ids = array_remove(course_ids, %s),
                 updated_at = CURRENT_TIMESTAMP
-            WHERE %s = ANY(pending_course_ids)
+            WHERE %s = ANY(course_ids)
         """, (request_id, request_id))
 
-        # Delete the request
-        cur.execute("DELETE FROM requested_courses WHERE id = %s", (request_id,))
+        # Delete the course
+        cur.execute("DELETE FROM courses WHERE id = %s", (request_id,))
 
         conn.commit()
 
-        return {"message": "Course request deleted successfully"}
+        return {"message": "Course deleted successfully"}
 
     except HTTPException:
         raise
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=f"Error deleting course request: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting course: {str(e)}")
     finally:
         cur.close()
         conn.close()
@@ -900,6 +887,126 @@ async def get_tutor_profile_summary(tutor_id: int):
     except Exception as e:
         print(f"❌ Error getting profile summary: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting profile summary: {str(e)}")
+    finally:
+        cur.close()
+        conn.close()
+
+
+# ============================================
+# SCHOOLS ENDPOINTS (For Tutor Requests Panel)
+# ============================================
+
+@router.get("/schools")
+async def get_schools_for_tutor(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get schools list for tutor requests panel.
+    Returns all schools or filtered by status (pending, verified, rejected, suspended).
+    """
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        # Build query based on status filter
+        if status and status != 'all':
+            cur.execute("""
+                SELECT id, name, type, level, location, email, phone,
+                       rating, student_count, established_year, principal,
+                       status, status_reason, status_at, created_at, updated_at
+                FROM schools
+                WHERE status = %s
+                ORDER BY created_at DESC
+            """, (status,))
+        else:
+            cur.execute("""
+                SELECT id, name, type, level, location, email, phone,
+                       rating, student_count, established_year, principal,
+                       status, status_reason, status_at, created_at, updated_at
+                FROM schools
+                ORDER BY created_at DESC
+            """)
+
+        rows = cur.fetchall()
+        schools = []
+
+        for row in rows:
+            # Parse location from JSONB
+            location_data = row[4]
+            location_str = 'N/A'
+            if location_data:
+                if isinstance(location_data, dict):
+                    parts = []
+                    if location_data.get('subcity'):
+                        parts.append(location_data['subcity'])
+                    if location_data.get('city'):
+                        parts.append(location_data['city'])
+                    if location_data.get('address'):
+                        parts.append(location_data['address'])
+                    location_str = ', '.join(parts) if parts else 'N/A'
+                elif isinstance(location_data, str):
+                    location_str = location_data
+
+            # Parse level from JSONB array
+            level_data = row[3]
+            level_str = ''
+            if level_data:
+                if isinstance(level_data, list):
+                    level_str = ', '.join(level_data)
+                else:
+                    level_str = str(level_data)
+
+            # Parse email from JSONB
+            email_data = row[5]
+            email_str = ''
+            if email_data:
+                if isinstance(email_data, list) and len(email_data) > 0:
+                    email_str = email_data[0]
+                elif isinstance(email_data, str):
+                    email_str = email_data
+
+            # Parse phone from JSONB
+            phone_data = row[6]
+            phone_str = ''
+            if phone_data:
+                if isinstance(phone_data, list) and len(phone_data) > 0:
+                    phone_str = phone_data[0]
+                elif isinstance(phone_data, str):
+                    phone_str = phone_data
+
+            school = {
+                'id': row[0],
+                'name': row[1],
+                'school_name': row[1],  # Frontend expects this
+                'type': row[2],
+                'school_type': row[2],  # Frontend expects this
+                'level': level_str,
+                'school_level': level_str,  # Frontend expects this
+                'location': location_str,
+                'email': email_str,
+                'phone': phone_str,
+                'rating': float(row[7]) if row[7] else 0,
+                'student_count': row[8] or 0,
+                'established_year': row[9],
+                'principal': row[10],
+                'status': row[11] or 'pending',
+                'status_reason': row[12],
+                'status_at': row[13].isoformat() if row[13] else None,
+                'created_at': row[14].isoformat() if row[14] else None,
+                'updated_at': row[15].isoformat() if row[15] else None,
+                'icon': '🏫'
+            }
+            schools.append(school)
+
+        return {
+            'schools': schools,
+            'total': len(schools)
+        }
+
+    except Exception as e:
+        print(f"❌ Error getting schools: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting schools: {str(e)}")
     finally:
         cur.close()
         conn.close()

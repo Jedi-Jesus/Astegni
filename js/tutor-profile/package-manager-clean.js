@@ -5,7 +5,7 @@
  * ═══════════════════════════════════════════════════════════
  */
 
-const API_BASE_URL = 'https://api.astegni.com';
+const API_BASE_URL = 'http://localhost:8000';
 
 class PackageManagerClean {
     constructor() {
@@ -19,8 +19,19 @@ class PackageManagerClean {
         console.log('📡 loadPackages called');
         try {
             // Try to load from database first
-            const token = localStorage.getItem('token');
-            console.log('🔑 Token exists:', !!token);
+            // Check multiple token sources for compatibility
+            let token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+            // Also try getting from AuthManager if available
+            if (!token && window.AuthManager && window.AuthManager.token) {
+                token = window.AuthManager.token;
+                console.log('🔑 Got token from AuthManager');
+            }
+
+            console.log('🔑 Token check - token:', !!localStorage.getItem('token'),
+                        'access_token:', !!localStorage.getItem('access_token'),
+                        'AuthManager:', !!(window.AuthManager && window.AuthManager.token));
+            console.log('🔑 Final token exists:', !!token);
 
             if (token) {
                 console.log('📡 Fetching packages from database...');
@@ -79,16 +90,29 @@ class PackageManagerClean {
     async addPackage(packageData) {
         console.log('📦 addPackage called with:', packageData);
         try {
-            const token = localStorage.getItem('token');
-            console.log('🔑 Token exists:', !!token);
+            // Try multiple token storage keys for compatibility
+            let token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+            // Also try getting from AuthManager if available
+            if (!token && window.AuthManager && window.AuthManager.token) {
+                token = window.AuthManager.token;
+                console.log('🔑 Got token from AuthManager');
+            }
+
+            console.log('🔑 Token check - token:', !!localStorage.getItem('token'),
+                        'access_token:', !!localStorage.getItem('access_token'),
+                        'AuthManager:', !!(window.AuthManager && window.AuthManager.token));
+            console.log('🔑 Final token exists:', !!token);
+            if (token) {
+                console.log('🔑 Token value (first 20 chars):', token.substring(0, 20) + '...');
+            }
 
             if (token) {
                 // Convert frontend format to backend format
                 const backendData = {
                     name: packageData.name || `Package ${this.packages.length + 1}`,
                     grade_level: packageData.gradeLevel || null,
-                    course_ids: packageData.courseIds || [],  // Array of approved course IDs
-                    pending_course_ids: packageData.pendingCourseIds || [],  // Array of pending course IDs
+                    course_ids: packageData.courseIds || [],  // Array of course IDs (status from courses table)
                     description: packageData.description || null,
                     session_format: Array.isArray(packageData.sessionFormat) ? packageData.sessionFormat.join(', ') : null,
                     schedule_type: packageData.scheduleType || 'recurring',
@@ -105,10 +129,12 @@ class PackageManagerClean {
                     payment_frequency: packageData.paymentFrequency || 'monthly',
                     discount_1_month: 0,
                     discount_3_month: parseFloat(packageData.discounts?.threeMonths) || 0,
-                    discount_6_month: parseFloat(packageData.discounts?.sixMonths) || 0
+                    discount_6_month: parseFloat(packageData.discounts?.sixMonths) || 0,
+                    yearly_discount: parseFloat(packageData.discounts?.yearly) || 0
                 };
 
                 console.log('📡 Sending to backend:', backendData);
+                console.log('📡 POST URL:', `${API_BASE_URL}/api/tutor/packages`);
 
                 const response = await fetch(`${API_BASE_URL}/api/tutor/packages`, {
                     method: 'POST',
@@ -126,6 +152,7 @@ class PackageManagerClean {
                     console.log('✅ Package saved to database:', savedPackage);
                     // Convert backend format to frontend format
                     const newPackage = this.convertBackendToFrontend(savedPackage);
+                    newPackage._savedToDatabase = true;  // Mark as saved to database
                     this.packages.push(newPackage);
                     this.savePackages();
                     console.log('✅ Package added to local state');
@@ -133,23 +160,35 @@ class PackageManagerClean {
                 } else {
                     const errorText = await response.text();
                     console.error('❌ Backend error:', response.status, errorText);
+                    // Don't fall through to localStorage on auth errors
+                    if (response.status === 401 || response.status === 403) {
+                        alert('Authentication error. Please refresh the page and log in again.');
+                        return null;
+                    }
                 }
             } else {
-                console.warn('⚠️ No token found - saving to localStorage only');
+                console.warn('⚠️ No token found - cannot save to database');
+                alert('You are not logged in. Please refresh the page and log in again.');
+                return null;
             }
         } catch (e) {
             console.error('❌ Error saving to database:', e);
+            alert('Network error. Please check your connection and try again.');
+            return null;
         }
 
-        // Fallback to localStorage
+        // Fallback to localStorage (only reached if backend returned non-auth error)
+        console.warn('⚠️ Falling back to localStorage save for new package');
         const newPackage = {
             id: Date.now(),
             name: packageData.name || `Package ${this.packages.length + 1}`,
             courses: packageData.courses || [],
+            courseIds: packageData.courseIds || [],
             paymentFrequency: packageData.paymentFrequency || 'monthly',
             hourlyRate: packageData.hourlyRate || 0,
             discounts: packageData.discounts || { threeMonths: 0, sixMonths: 0, yearly: 0 },
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            _savedToDatabase: false  // Mark as NOT saved to database
         };
         this.packages.push(newPackage);
         this.savePackages();
@@ -160,21 +199,35 @@ class PackageManagerClean {
         console.log('📝 updatePackage called for ID:', id, 'with data:', data);
         const index = this.packages.findIndex(p => p.id === id);
         if (index === -1) {
-            console.error('❌ Package not found:', id);
+            console.error('❌ Package not found in local state:', id);
+            console.log('📦 Available packages:', this.packages.map(p => ({ id: p.id, name: p.name })));
             return null;
         }
 
         try {
-            const token = localStorage.getItem('token');
-            console.log('🔑 Token exists:', !!token);
+            // Try multiple token storage keys for compatibility
+            let token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+            // Also try getting from AuthManager if available
+            if (!token && window.AuthManager && window.AuthManager.token) {
+                token = window.AuthManager.token;
+                console.log('🔑 Got token from AuthManager');
+            }
+
+            console.log('🔑 Token check - token:', !!localStorage.getItem('token'),
+                        'access_token:', !!localStorage.getItem('access_token'),
+                        'AuthManager:', !!(window.AuthManager && window.AuthManager.token));
+            console.log('🔑 Final token exists:', !!token);
+            if (token) {
+                console.log('🔑 Token value (first 20 chars):', token.substring(0, 20) + '...');
+            }
 
             if (token) {
                 // Convert frontend format to backend format
                 const backendData = {
                     name: data.name,
                     grade_level: data.gradeLevel || null,
-                    course_ids: data.courseIds || [],  // Array of approved course IDs
-                    pending_course_ids: data.pendingCourseIds || [],  // Array of pending course IDs
+                    course_ids: data.courseIds || [],  // Array of course IDs (status from courses table)
                     session_format: Array.isArray(data.sessionFormat) ? data.sessionFormat.join(', ') : null,
                     schedule_type: data.scheduleType || 'recurring',
                     schedule_days: Array.isArray(data.scheduleDays) ? data.scheduleDays.join(', ') : null,
@@ -187,10 +240,12 @@ class PackageManagerClean {
                     hourly_rate: parseFloat(data.hourlyRate),
                     payment_frequency: data.paymentFrequency,
                     discount_3_month: parseFloat(data.discounts?.threeMonths) || 0,
-                    discount_6_month: parseFloat(data.discounts?.sixMonths) || 0
+                    discount_6_month: parseFloat(data.discounts?.sixMonths) || 0,
+                    yearly_discount: parseFloat(data.discounts?.yearly) || 0
                 };
 
                 console.log('📡 Sending update to backend:', backendData);
+                console.log('📡 PUT URL:', `${API_BASE_URL}/api/tutor/packages/${id}`);
 
                 const response = await fetch(`${API_BASE_URL}/api/tutor/packages/${id}`, {
                     method: 'PUT',
@@ -207,6 +262,7 @@ class PackageManagerClean {
                     const savedPackage = await response.json();
                     console.log('✅ Package updated in database:', savedPackage);
                     const updatedPackage = this.convertBackendToFrontend(savedPackage);
+                    updatedPackage._savedToDatabase = true;  // Mark as saved to database
                     this.packages[index] = updatedPackage;
                     this.savePackages();
                     console.log('✅ Package updated in local state');
@@ -214,16 +270,27 @@ class PackageManagerClean {
                 } else {
                     const errorText = await response.text();
                     console.error('❌ Backend error:', response.status, errorText);
+                    // Don't fall through to localStorage on auth errors
+                    if (response.status === 401 || response.status === 403) {
+                        alert('Authentication error. Please refresh the page and log in again.');
+                        return null;
+                    }
                 }
             } else {
-                console.warn('⚠️ No token found - saving to localStorage only');
+                console.warn('⚠️ No token found - cannot save to database');
+                alert('You are not logged in. Please refresh the page and log in again.');
+                return null;
             }
         } catch (e) {
             console.error('❌ Error updating in database:', e);
+            alert('Network error. Please check your connection and try again.');
+            return null;
         }
 
-        // Fallback to localStorage
+        // Fallback to localStorage (only reached if backend returned non-auth error)
+        console.warn('⚠️ Falling back to localStorage save');
         this.packages[index] = { ...this.packages[index], ...data };
+        this.packages[index]._savedToDatabase = false;  // Mark as NOT saved to database
         this.savePackages();
         return this.packages[index];
     }
@@ -261,11 +328,10 @@ class PackageManagerClean {
             id: backendPackage.id,
             name: backendPackage.name,
             gradeLevel: backendPackage.grade_level || '',
-            // New course_ids based structure
+            // course_ids array - status determined by courses table
             courseIds: backendPackage.course_ids || [],
-            pendingCourseIds: backendPackage.pending_course_ids || [],
-            courses: backendPackage.courses || [],  // Full course objects from courses table
-            pendingCourses: backendPackage.pending_courses || [],  // Full pending course objects from requested_courses
+            courses: backendPackage.courses || [],  // Approved course objects from courses table
+            pendingCourses: backendPackage.pending_courses || [],  // Pending course objects (filtered by status)
             sessionFormat: backendPackage.session_format ? backendPackage.session_format.split(', ').filter(f => f) : [],
             scheduleType: backendPackage.schedule_type || 'recurring',
             scheduleDays: backendPackage.schedule_days ? backendPackage.schedule_days.split(', ').filter(d => d) : [],
@@ -280,7 +346,7 @@ class PackageManagerClean {
             discounts: {
                 threeMonths: backendPackage.discount_3_month || 0,
                 sixMonths: backendPackage.discount_6_month || 0,
-                yearly: 0
+                yearly: backendPackage.yearly_discount || 0
             },
             createdAt: backendPackage.created_at
         };
@@ -447,16 +513,31 @@ function renderPackagesList() {
 }
 
 window.createNewPackage = async function() {
+    console.log('📦 createNewPackage called');
     const newPackage = await window.packageManagerClean.addPackage({
         name: `Package ${window.packageManagerClean.packages.length + 1}`,
         courses: [],
+        courseIds: [],
         paymentFrequency: 'monthly',
         hourlyRate: 0,
         discounts: { threeMonths: 0, sixMonths: 0, yearly: 0 }
     });
 
-    renderPackagesList();
-    selectPackage(newPackage.id);
+    if (newPackage) {
+        console.log('✅ New package created:', newPackage);
+        renderPackagesList();
+        renderPackagesGrid();  // Update the package cards on the main page
+        selectPackage(newPackage.id);
+
+        if (newPackage._savedToDatabase) {
+            console.log('✅ Package saved to database');
+        } else {
+            console.warn('⚠️ Package only saved locally');
+        }
+    } else {
+        console.error('❌ Failed to create package');
+        // Alert already shown by addPackage
+    }
 };
 
 /**
@@ -573,6 +654,7 @@ window.deletePackageConfirm = async function(packageId) {
     if (confirm('Are you sure you want to delete this package?')) {
         await window.packageManagerClean.deletePackage(packageId);
         renderPackagesList();
+        renderPackagesGrid();  // Update the package cards on the main page
 
         if (window.packageManagerClean.packages.length === 0) {
             showEmptyState();
@@ -644,12 +726,38 @@ function renderPackageEditor() {
                 <div class="form-section courses-section-expanded">
                     <div class="form-section-title">
                         <i class="fas fa-book"></i> Courses Included
-                        <button class="btn-add-course-card" onclick="openAddCourseForm()">
-                            <i class="fas fa-plus"></i> Add Course
-                        </button>
                     </div>
 
-                    <!-- Add/Edit Course Form (hidden by default) -->
+                    <!-- Live Course Search Bar -->
+                    <div class="course-search-section" style="margin-bottom: 1rem;">
+                        <div class="course-search-wrapper" style="position: relative;">
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <div style="flex: 1; position: relative;">
+                                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af;"></i>
+                                    <input type="text"
+                                           id="courseSearchInput"
+                                           placeholder="Search verified courses..."
+                                           oninput="handleCourseSearch(this.value)"
+                                           onfocus="showCourseSearchResults()"
+                                           autocomplete="off"
+                                           style="width: 100%; padding: 0.75rem 1rem 0.75rem 2.5rem; border: 2px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; transition: all 0.2s;">
+                                </div>
+                                <button class="btn-request-course" onclick="openCourseRequestModal()" title="Request new course"
+                                        style="padding: 0.75rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-weight: 600; white-space: nowrap;">
+                                    <i class="fas fa-plus"></i> Request New
+                                </button>
+                            </div>
+                            <!-- Search Results Dropdown -->
+                            <div id="courseSearchResults" class="course-search-results" style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg); border: 2px solid var(--border-color); border-radius: 8px; margin-top: 4px; max-height: 300px; overflow-y: auto; z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+                                <!-- Search results will be inserted here -->
+                            </div>
+                        </div>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem; color: #6b7280;">
+                            <i class="fas fa-info-circle"></i> Search for verified courses or request a new one
+                        </p>
+                    </div>
+
+                    <!-- Add/Edit Course Form (hidden by default) - KEPT FOR LEGACY -->
                     <div id="courseFormContainer" class="course-form-container" style="display: none;">
                         <div class="course-form-card">
                             <div class="course-form-header">
@@ -1172,7 +1280,9 @@ function renderCourseCard(course, index, status) {
                         <i class="fas fa-times"></i>
                     </button>
                 ` : `
-                    <span class="course-id-badge" style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">ID: ${course.id}</span>
+                    <button onclick="removeVerifiedCourse(${course.id})" class="btn-remove-course" title="Remove from package" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                        <i class="fas fa-times"></i>
+                    </button>
                 `}
             </div>
         </div>
@@ -1802,7 +1912,12 @@ window.updateCalculator = function() {
 
 window.saveCurrentPackage = async function() {
     const pkg = window.packageManagerClean.currentPackage;
-    if (!pkg) return;
+    if (!pkg) {
+        console.error('❌ saveCurrentPackage: No current package selected');
+        return;
+    }
+
+    console.log('💾 saveCurrentPackage called for package:', pkg.id, pkg.name);
 
     // Get values from form
     const nameInput = document.getElementById('packageName');
@@ -1850,9 +1965,23 @@ window.saveCurrentPackage = async function() {
     }
 
     // Update package (grade level is now per-course, not per-package)
-    await window.packageManagerClean.updatePackage(pkg.id, {
+    // Extract course IDs from both approved and pending courses for database storage
+    // Also check pkg.courseIds which is populated when courses are added via live search
+    const existingCourseIds = (pkg.courseIds || []).filter(id => typeof id === 'number');
+    const approvedIds = (pkg.courses || []).map(c => typeof c === 'object' ? c.id : c).filter(id => typeof id === 'number');
+    const pendingIds = (pkg.pendingCourses || []).map(c => typeof c === 'object' ? c.id : c).filter(id => typeof id === 'number');
+    const allCourseIds = [...new Set([...existingCourseIds, ...approvedIds, ...pendingIds])];  // Combine and deduplicate
+
+    console.log('📦 Course IDs being saved:', {
+        existingCourseIds,
+        approvedIds,
+        pendingIds,
+        allCourseIds
+    });
+
+    const updateData = {
         name: nameInput?.value || pkg.name,
-        courses: pkg.courses,
+        courseIds: allCourseIds,
         sessionFormat: sessionFormat,
         hourlyRate: parseFloat(hourlyRateInput?.value || 0),
         paymentFrequency: paymentFreqSelect?.value || 'monthly',
@@ -1862,14 +1991,33 @@ window.saveCurrentPackage = async function() {
             yearly: parseFloat(discountYearInput?.value || 0)
         },
         ...scheduleData
-    });
+    };
 
-    // Update UI
+    console.log('📡 Update data being sent:', updateData);
+
+    const result = await window.packageManagerClean.updatePackage(pkg.id, updateData);
+
+    // Update currentPackage reference with the result so UI reflects changes immediately
+    if (result) {
+        window.packageManagerClean.currentPackage = result;
+    }
+
+    // Update UI - both modal and main page cards
     renderPackagesList();
     renderPackageEditor();
+    renderPackagesGrid();  // Update the package cards on the main page
 
-    // Show success message
-    alert('Package saved successfully!');
+    // Show success message only if we got a valid result saved to database
+    if (result && result._savedToDatabase) {
+        console.log('✅ Package saved to database successfully:', result);
+        alert('Package saved successfully!');
+    } else if (result) {
+        console.warn('⚠️ Package saved to localStorage only');
+        // Don't show alert here - updatePackage already showed one
+    } else {
+        console.error('❌ Package save failed completely');
+        // Don't show alert here - updatePackage already showed one
+    }
 };
 
 /**
@@ -1975,7 +2123,7 @@ function renderPackagesGrid() {
                     <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                         ${pkg.courses && pkg.courses.length > 0
                             ? pkg.courses.map(course =>
-                                `<span style="background: var(--badge-bg); color: var(--primary-color); border: 1px solid var(--badge-border); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">${course}</span>`
+                                `<span style="background: var(--badge-bg); color: var(--primary-color); border: 1px solid var(--badge-border); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">${course.course_name || course}</span>`
                               ).join('')
                             : `<span style="color: var(--text-secondary); font-size: 0.875rem;">No courses</span>`
                         }
@@ -2187,3 +2335,232 @@ window.editPackageFromView = function() {
         selectPackage(window.currentViewingPackageId);
     }, 100);
 };
+
+/**
+ * ═══════════════════════════════════════════════════════════
+ * COURSE SEARCH FUNCTIONS (Live search for verified courses)
+ * ═══════════════════════════════════════════════════════════
+ */
+
+// Debounce timer for search
+let courseSearchTimeout = null;
+
+// Cache for search results
+let courseSearchCache = {};
+
+window.handleCourseSearch = function(query) {
+    // Debounce the search
+    if (courseSearchTimeout) {
+        clearTimeout(courseSearchTimeout);
+    }
+
+    courseSearchTimeout = setTimeout(() => {
+        performCourseSearch(query);
+    }, 300);
+};
+
+async function performCourseSearch(query) {
+    const resultsContainer = document.getElementById('courseSearchResults');
+    if (!resultsContainer) return;
+
+    // Show loading state
+    resultsContainer.innerHTML = `
+        <div style="padding: 1rem; text-align: center; color: #6b7280;">
+            <i class="fas fa-spinner fa-spin" style="margin-right: 0.5rem;"></i> Searching...
+        </div>
+    `;
+    resultsContainer.style.display = 'block';
+
+    // If query is empty, show popular courses
+    if (!query.trim()) {
+        // Check cache first
+        if (courseSearchCache['popular']) {
+            renderCourseSearchResults(courseSearchCache['popular']);
+            return;
+        }
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/course-management/search?q=${encodeURIComponent(query)}&limit=10`);
+
+        if (response.ok) {
+            const data = await response.json();
+            const courses = data.courses || [];
+
+            // Cache results
+            if (!query.trim()) {
+                courseSearchCache['popular'] = courses;
+            }
+
+            renderCourseSearchResults(courses);
+        } else {
+            resultsContainer.innerHTML = `
+                <div style="padding: 1rem; text-align: center; color: #ef4444;">
+                    <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i> Failed to search courses
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error searching courses:', error);
+        resultsContainer.innerHTML = `
+            <div style="padding: 1rem; text-align: center; color: #ef4444;">
+                <i class="fas fa-exclamation-triangle" style="margin-right: 0.5rem;"></i> Error searching courses
+            </div>
+        `;
+    }
+}
+
+function renderCourseSearchResults(courses) {
+    const resultsContainer = document.getElementById('courseSearchResults');
+    if (!resultsContainer) return;
+
+    const pkg = window.packageManagerClean.currentPackage;
+    const existingCourseIds = pkg ? (pkg.courseIds || []).map(id => id) : [];
+
+    if (courses.length === 0) {
+        resultsContainer.innerHTML = `
+            <div style="padding: 1.5rem; text-align: center;">
+                <i class="fas fa-search" style="font-size: 2rem; color: #9ca3af; margin-bottom: 0.5rem; display: block;"></i>
+                <p style="margin: 0 0 0.5rem 0; color: #6b7280; font-weight: 500;">No courses found</p>
+                <p style="margin: 0; font-size: 0.875rem; color: #9ca3af;">Try a different search or request a new course</p>
+                <button onclick="openCourseRequestModal()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                    <i class="fas fa-plus"></i> Request New Course
+                </button>
+            </div>
+        `;
+        return;
+    }
+
+    resultsContainer.innerHTML = courses.map(course => {
+        const isAdded = existingCourseIds.includes(course.id);
+        const languages = course.language || ['English'];
+        const languagesText = Array.isArray(languages) ? languages.slice(0, 2).join(', ') : languages;
+
+        return `
+            <div class="course-search-result" onclick="${isAdded ? '' : `addVerifiedCourseToPackage(${course.id})`}"
+                 style="display: flex; gap: 0.75rem; padding: 0.75rem 1rem; cursor: ${isAdded ? 'default' : 'pointer'}; border-bottom: 1px solid var(--border-color); transition: background 0.2s; ${isAdded ? 'opacity: 0.6; background: var(--hover-bg);' : ''}"
+                 ${isAdded ? '' : 'onmouseover="this.style.background=\'var(--hover-bg)\'" onmouseout="this.style.background=\'transparent\'"'}>
+                <!-- Thumbnail -->
+                <div style="width: 50px; height: 50px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
+                    ${course.thumbnail
+                        ? `<img src="${course.thumbnail}" style="width: 100%; height: 100%; object-fit: cover;">`
+                        : `<i class="fas fa-book" style="color: #9ca3af; font-size: 1.25rem;"></i>`
+                    }
+                </div>
+                <!-- Course Info -->
+                <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 0.5rem;">
+                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${course.course_name}</h4>
+                        ${isAdded
+                            ? `<span style="padding: 2px 8px; background: #d1fae5; color: #065f46; border-radius: 4px; font-size: 0.7rem; white-space: nowrap;"><i class="fas fa-check"></i> Added</span>`
+                            : `<span style="padding: 2px 8px; background: var(--primary-color); color: white; border-radius: 4px; font-size: 0.7rem; white-space: nowrap;"><i class="fas fa-plus"></i> Add</span>`
+                        }
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; margin-top: 0.25rem; font-size: 0.8rem; color: #6b7280;">
+                        <span><i class="fas fa-folder" style="margin-right: 4px;"></i>${course.course_category || 'General'}</span>
+                        <span><i class="fas fa-graduation-cap" style="margin-right: 4px;"></i>${course.course_level || 'All Levels'}</span>
+                        <span><i class="fas fa-language" style="margin-right: 4px;"></i>${languagesText}</span>
+                    </div>
+                    ${course.rating > 0 ? `
+                        <div style="margin-top: 0.25rem; font-size: 0.8rem;">
+                            <span style="color: #f59e0b;"><i class="fas fa-star"></i> ${course.rating.toFixed(1)}</span>
+                            <span style="color: #9ca3af; margin-left: 0.25rem;">(${course.rating_count} reviews)</span>
+                        </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+window.showCourseSearchResults = function() {
+    const resultsContainer = document.getElementById('courseSearchResults');
+    const input = document.getElementById('courseSearchInput');
+
+    if (resultsContainer && input) {
+        // Trigger search with current value
+        performCourseSearch(input.value);
+    }
+};
+
+window.hideCourseSearchResults = function() {
+    const resultsContainer = document.getElementById('courseSearchResults');
+    if (resultsContainer) {
+        resultsContainer.style.display = 'none';
+    }
+};
+
+// Add verified course to package
+window.addVerifiedCourseToPackage = async function(courseId) {
+    const pkg = window.packageManagerClean.currentPackage;
+    if (!pkg) {
+        alert('Please select a package first');
+        return;
+    }
+
+    // Check if already added
+    if (pkg.courseIds && pkg.courseIds.includes(courseId)) {
+        return;
+    }
+
+    // Add to package
+    if (!pkg.courseIds) pkg.courseIds = [];
+    pkg.courseIds.push(courseId);
+
+    // Fetch course details to add to courses array
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/course-management/search?q=&limit=50`);
+        if (response.ok) {
+            const data = await response.json();
+            const course = data.courses.find(c => c.id === courseId);
+            if (course) {
+                if (!pkg.courses) pkg.courses = [];
+                pkg.courses.push(course);
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching course details:', error);
+    }
+
+    // Clear search
+    const input = document.getElementById('courseSearchInput');
+    if (input) input.value = '';
+
+    // Hide results
+    hideCourseSearchResults();
+
+    // Re-render editor
+    renderPackageEditor();
+
+    console.log('✅ Course added to package:', courseId);
+};
+
+// Remove verified course from package
+window.removeVerifiedCourse = function(courseId) {
+    const pkg = window.packageManagerClean.currentPackage;
+    if (!pkg) return;
+
+    // Remove from courseIds
+    if (pkg.courseIds) {
+        pkg.courseIds = pkg.courseIds.filter(id => id !== courseId);
+    }
+
+    // Remove from courses array
+    if (pkg.courses) {
+        pkg.courses = pkg.courses.filter(c => c.id !== courseId);
+    }
+
+    // Re-render editor
+    renderPackageEditor();
+    console.log('✅ Course removed from package:', courseId);
+};
+
+// Close search results when clicking outside
+document.addEventListener('click', function(event) {
+    const searchWrapper = document.querySelector('.course-search-wrapper');
+    const resultsContainer = document.getElementById('courseSearchResults');
+
+    if (searchWrapper && resultsContainer && !searchWrapper.contains(event.target)) {
+        resultsContainer.style.display = 'none';
+    }
+});

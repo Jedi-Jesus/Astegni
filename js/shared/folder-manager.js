@@ -255,11 +255,11 @@ async function loadFolderDocuments(folderId) {
     `;
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         const role = folderManagerRole;
 
         // Fetch documents filtered by folder
-        const response = await fetch(`https://api.astegni.com/api/teaching-documents?uploader_role=${role}&folder=${folderId}`, {
+        const response = await fetch(`http://localhost:8000/api/teaching-documents?uploader_role=${role}&folder=${folderId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 

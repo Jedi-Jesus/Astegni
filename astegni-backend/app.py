@@ -121,9 +121,20 @@ app.include_router(tutor_extensions_router)
 from credentials_endpoints import router as credentials_router
 app.include_router(credentials_router)
 
-# Include tutor documents routes (uses unified documents table)
-from tutor_documents_endpoints import router as tutor_documents_router
-app.include_router(tutor_documents_router)
+# Include student requests panel routes (courses, schools, counts)
+# IMPORTANT: Must be BEFORE routes.py to avoid /api/student/{student_id} conflict
+from student_requests_endpoints import router as student_requests_router
+app.include_router(student_requests_router)
+
+# IMPORTANT: Must be BEFORE routes.py to avoid /api/parent/{parent_id} conflict
+# Parent invitation endpoints has /api/parent/pending-invitations which must come before
+# the wildcard /api/parent/{parent_id} route in routes.py
+from parent_invitation_endpoints import router as parent_invitation_router
+app.include_router(parent_invitation_router)
+
+# Include parent profile routes (has wildcard /api/parent/{parent_id} - must come after specific routes)
+from parent_endpoints import router as parent_router
+app.include_router(parent_router)
 
 # Include all routes from routes.py
 app.include_router(router)
@@ -149,8 +160,9 @@ from student_reviews_endpoints import router as student_reviews_router
 app.include_router(student_reviews_router)
 
 # Include system settings routes
-from system_settings_endpoints import router as system_settings_router
+from system_settings_endpoints import router as system_settings_router, media_router as system_media_router
 app.include_router(system_settings_router)
+app.include_router(system_media_router)
 
 # Include admin profile routes
 from admin_profile_endpoints import router as admin_profile_router
@@ -222,25 +234,54 @@ app.include_router(events_clubs_router)
 from partner_request_endpoints import router as partner_request_router
 app.include_router(partner_request_router)
 
+# student_requests_router already included above (before routes.py to avoid /api/student/{student_id} conflict)
+
 # Include student profile routes
 from student_profile_endpoints import router as student_profile_router
 app.include_router(student_profile_router)
+
+# Include student credentials routes (achievements, certifications, extracurricular)
+from student_credentials_endpoints import router as student_credentials_router
+app.include_router(student_credentials_router)
 
 # Include blog routes
 from blog_endpoints import router as blog_router
 app.include_router(blog_router)
 
-# Include parent profile routes
-from parent_endpoints import router as parent_router
-app.include_router(parent_router)
-
-# Include parent invitation routes (student invites parent)
-from parent_invitation_endpoints import router as parent_invitation_router
-app.include_router(parent_invitation_router)
+# NOTE: parent_invitation_router and parent_router are now included earlier in the file
+# (before routes.py) to avoid wildcard route conflicts
 
 # Include teaching/learning documents routes (documents table, NOT credentials)
 from documents_endpoints import router as teaching_documents_router
 app.include_router(teaching_documents_router)
+
+# Include admin database routes (reads from astegni_admin_db)
+from admin_db_endpoints import router as admin_db_router
+app.include_router(admin_db_router)
+
+# Include admin courses routes (dual database: admin_db for profile/reviews, user_db for courses)
+from admin_courses_endpoints import router as admin_courses_router
+app.include_router(admin_courses_router)
+
+# Include admin schools routes (dual database: admin_db for profile/reviews, user_db for schools)
+from admin_schools_endpoints import router as admin_schools_router
+app.include_router(admin_schools_router)
+
+# Include admin advertisers routes (brands and campaigns from user_db)
+from admin_advertisers_endpoints import router as admin_advertisers_router
+app.include_router(admin_advertisers_router)
+
+# Include admin admins routes (manage-admins page profile and reviews)
+from admin_admins_endpoints import router as admin_admins_router
+app.include_router(admin_admins_router)
+
+# Include admin leave request routes
+from admin_leave_endpoints import router as admin_leave_router
+app.include_router(admin_leave_router)
+
+# Include chat routes
+from chat_endpoints import router as chat_router
+app.include_router(chat_router)
 
 # Student documents routes already included above (before student reviews to avoid route conflicts)
 

@@ -4,11 +4,12 @@
 // ============================================
 
 const TutorProfileAPI = {
-    baseURL: 'https://api.astegni.com',
+    baseURL: 'http://localhost:8000',
 
     // Helper method to get auth headers
     getAuthHeaders() {
-        const token = localStorage.getItem('token');
+        // Check both 'token' and 'access_token' for compatibility
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         return {
             'Content-Type': 'application/json',
             'Authorization': token ? `Bearer ${token}` : ''
@@ -154,7 +155,7 @@ const TutorProfileAPI = {
             const formData = new FormData();
             formData.append('file', file);
 
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const response = await fetch(`${this.baseURL}/api/upload/profile-picture`, {
                 method: 'POST',
                 headers: {
@@ -180,7 +181,7 @@ const TutorProfileAPI = {
             const formData = new FormData();
             formData.append('file', file);
 
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const response = await fetch(`${this.baseURL}/api/upload/cover-image`, {
                 method: 'POST',
                 headers: {
@@ -203,7 +204,7 @@ const TutorProfileAPI = {
     // Upload video
     async uploadVideo(formData) {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const response = await fetch(`${this.baseURL}/api/upload/video`, {
                 method: 'POST',
                 headers: {
@@ -450,7 +451,7 @@ const TutorProfileAPI = {
                 formData.append('caption', caption);
             }
 
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const response = await fetch(`${this.baseURL}/api/upload/story`, {
                 method: 'POST',
                 headers: {
@@ -594,3 +595,99 @@ const TutorProfileAPI = {
         }
     }
 };
+
+// ============================================
+// CENTRALIZED AUTH READY UTILITY
+// All tutor-profile panels should use this
+// ============================================
+const TutorAuthReady = {
+    _isReady: false,
+    _readyPromise: null,
+    _readyResolve: null,
+
+    /**
+     * Initialize the auth ready system
+     * Call this once on page load
+     */
+    init() {
+        if (this._readyPromise) return this._readyPromise;
+
+        this._readyPromise = new Promise((resolve) => {
+            this._readyResolve = resolve;
+        });
+
+        // Start checking for auth
+        this._checkAuth();
+        return this._readyPromise;
+    },
+
+    /**
+     * Check if auth is ready (token exists)
+     */
+    async _checkAuth(maxAttempts = 20, intervalMs = 100) {
+        for (let i = 0; i < maxAttempts; i++) {
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+            if (token) {
+                console.log('✅ [TutorAuthReady] Token found, auth is ready');
+                this._isReady = true;
+                if (this._readyResolve) {
+                    this._readyResolve(true);
+                }
+                // Dispatch custom event for panels that are already listening
+                window.dispatchEvent(new CustomEvent('tutorAuthReady', { detail: { token } }));
+                return true;
+            }
+
+            await new Promise(resolve => setTimeout(resolve, intervalMs));
+        }
+
+        console.warn('⚠️ [TutorAuthReady] No token found after waiting');
+        this._isReady = false;
+        if (this._readyResolve) {
+            this._readyResolve(false);
+        }
+        return false;
+    },
+
+    /**
+     * Wait for auth to be ready
+     * @returns {Promise<boolean>} - True if auth is ready, false otherwise
+     */
+    async waitForAuth() {
+        // If already ready, return immediately
+        if (this._isReady) {
+            return true;
+        }
+
+        // If promise exists, wait for it
+        if (this._readyPromise) {
+            return this._readyPromise;
+        }
+
+        // Initialize and wait
+        return this.init();
+    },
+
+    /**
+     * Get token (only after auth is ready)
+     * @returns {string|null}
+     */
+    getToken() {
+        return localStorage.getItem('token') || localStorage.getItem('access_token');
+    },
+
+    /**
+     * Check if currently authenticated (synchronous)
+     * @returns {boolean}
+     */
+    isAuthenticated() {
+        return !!(localStorage.getItem('token') || localStorage.getItem('access_token'));
+    }
+};
+
+// Auto-initialize on script load
+TutorAuthReady.init();
+
+// Export for global access
+window.TutorAuthReady = TutorAuthReady;

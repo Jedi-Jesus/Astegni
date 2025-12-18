@@ -90,9 +90,13 @@ async def create_connection(
     Create a new connection request (Simplified)
 
     Request body:
-    - recipient_id: User ID to send request to (references users.id)
+    - recipient_id: User ID to send request to (references users.id) - DEPRECATED
+    - recipient_profile_id: Profile ID of the recipient (e.g., tutor_profiles.id) - PREFERRED
     - recipient_type: Role of recipient ('tutor', 'student', 'parent', 'advertiser')
     - requester_type: (Optional) Role to connect as - uses active role if provided
+
+    Note: Either recipient_id OR recipient_profile_id must be provided.
+    If recipient_profile_id is provided, the user_id will be looked up from the profile.
 
     The backend automatically sets:
     - requested_by: Current user ID (from JWT)
@@ -101,9 +105,33 @@ async def create_connection(
     - requested_at: Current timestamp
     """
     user_id = current_user.id
-    target_user_id = connection_data.recipient_id
     target_role = connection_data.recipient_type
     requested_role = connection_data.requester_type
+    target_profile_id = connection_data.recipient_profile_id
+
+    # Resolve user_id from profile_id if recipient_profile_id is provided
+    if connection_data.recipient_profile_id:
+        # Look up user_id from the appropriate profile table based on recipient_type
+        if target_role == 'tutor':
+            profile = db.query(TutorProfile).filter(TutorProfile.id == connection_data.recipient_profile_id).first()
+        elif target_role == 'student':
+            profile = db.query(StudentProfile).filter(StudentProfile.id == connection_data.recipient_profile_id).first()
+        elif target_role == 'parent':
+            profile = db.query(ParentProfile).filter(ParentProfile.id == connection_data.recipient_profile_id).first()
+        elif target_role == 'advertiser':
+            profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.id == connection_data.recipient_profile_id).first()
+        else:
+            profile = None
+
+        if not profile:
+            raise HTTPException(
+                status_code=404,
+                detail=f"{target_role.capitalize()} profile with ID {connection_data.recipient_profile_id} not found"
+            )
+        target_user_id = profile.user_id
+    else:
+        # Use the provided recipient_id (user_id) directly
+        target_user_id = connection_data.recipient_id
 
     # Determine the requester's role
     if requested_role:
@@ -201,10 +229,28 @@ async def create_connection(
     return response
 
 
+def get_profile_id_for_role(db: Session, user_id: int, role: str) -> Optional[int]:
+    """Get the profile ID for a user's specific role"""
+    if role == 'tutor':
+        profile = db.query(TutorProfile).filter(TutorProfile.user_id == user_id).first()
+        return profile.id if profile else None
+    elif role == 'student':
+        profile = db.query(StudentProfile).filter(StudentProfile.user_id == user_id).first()
+        return profile.id if profile else None
+    elif role == 'parent':
+        profile = db.query(ParentProfile).filter(ParentProfile.user_id == user_id).first()
+        return profile.id if profile else None
+    elif role == 'advertiser':
+        profile = db.query(AdvertiserProfile).filter(AdvertiserProfile.user_id == user_id).first()
+        return profile.id if profile else None
+    return None
+
+
 @router.get("/api/connections", response_model=List[ConnectionResponse])
 async def get_my_connections(
     status_filter: Optional[str] = Query(None, alias="status", description="Filter by status: pending, accepted, rejected, blocked"),
     direction: Optional[str] = Query("all", description="Filter by direction: outgoing, incoming, all"),
+    role: Optional[str] = Query(None, description="Filter by role: tutor, student, parent, advertiser. If provided, filters by profile_id for that role."),
     search: Optional[str] = Query(None, description="Search by user name or email"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -215,29 +261,64 @@ async def get_my_connections(
     Query parameters:
     - status: Filter by status (pending, accepted, rejected, blocked)
     - direction: Filter by direction (outgoing, incoming, all)
+    - role: Filter by specific role (tutor, student, parent, advertiser).
+            When provided, queries by profile_id and role type instead of user_id.
     - search: Search by user name or email
     """
     user_id = current_user.id
 
-    # Build query based on direction
-    if direction == "outgoing":
-        # Connections initiated by current user
-        query = db.query(Connection).filter(
-            Connection.requested_by == user_id
-        )
-    elif direction == "incoming":
-        # Connections where current user is the recipient
-        query = db.query(Connection).filter(
-            Connection.recipient_id == user_id
-        )
+    # If role is specified, filter by profile_id and role type
+    if role:
+        profile_id = get_profile_id_for_role(db, user_id, role)
+        if not profile_id:
+            return []  # User doesn't have this role profile
+
+        # Build query based on direction using profile_id and role type
+        if direction == "outgoing":
+            query = db.query(Connection).filter(
+                and_(
+                    Connection.requester_profile_id == profile_id,
+                    Connection.requester_type == role
+                )
+            )
+        elif direction == "incoming":
+            query = db.query(Connection).filter(
+                and_(
+                    Connection.recipient_profile_id == profile_id,
+                    Connection.recipient_type == role
+                )
+            )
+        else:
+            # All connections for this role
+            query = db.query(Connection).filter(
+                or_(
+                    and_(
+                        Connection.requester_profile_id == profile_id,
+                        Connection.requester_type == role
+                    ),
+                    and_(
+                        Connection.recipient_profile_id == profile_id,
+                        Connection.recipient_type == role
+                    )
+                )
+            )
     else:
-        # All connections
-        query = db.query(Connection).filter(
-            or_(
-                Connection.requested_by == user_id,
+        # Legacy behavior: filter by user_id (for backward compatibility)
+        if direction == "outgoing":
+            query = db.query(Connection).filter(
+                Connection.requested_by == user_id
+            )
+        elif direction == "incoming":
+            query = db.query(Connection).filter(
                 Connection.recipient_id == user_id
             )
-        )
+        else:
+            query = db.query(Connection).filter(
+                or_(
+                    Connection.requested_by == user_id,
+                    Connection.recipient_id == user_id
+                )
+            )
 
     # Apply status filter
     if status_filter:
@@ -289,11 +370,16 @@ async def get_my_connections(
 
 @router.get("/api/connections/stats", response_model=dict)
 async def get_connection_stats(
+    role: Optional[str] = Query(None, description="Filter by role: tutor, student, parent, advertiser. If provided, filters by profile_id for that role."),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
     Get connection statistics for current user (Simplified)
+
+    Query parameters:
+    - role: Filter by specific role (tutor, student, parent, advertiser).
+            When provided, counts connections by profile_id and role type instead of user_id.
 
     Returns:
     - total_connections: Number of accepted connections
@@ -306,44 +392,116 @@ async def get_connection_stats(
     """
     user_id = current_user.id
 
-    # Accepted connections
-    accepted_count = db.query(func.count(Connection.id)).filter(
-        or_(
+    # If role is specified, filter by profile_id and role type
+    if role:
+        profile_id = get_profile_id_for_role(db, user_id, role)
+        if not profile_id:
+            # User doesn't have this role, return zeros
+            return {
+                "total_connections": 0,
+                "pending_count": 0,
+                "accepted_count": 0,
+                "connected_count": 0,
+                "incoming_requests": 0,
+                "outgoing_requests": 0,
+                "rejected_count": 0,
+                "blocked_count": 0
+            }
+
+        # Accepted connections for this role
+        accepted_count = db.query(func.count(Connection.id)).filter(
+            or_(
+                and_(
+                    Connection.requester_profile_id == profile_id,
+                    Connection.requester_type == role
+                ),
+                and_(
+                    Connection.recipient_profile_id == profile_id,
+                    Connection.recipient_type == role
+                )
+            ),
+            Connection.status == 'accepted'
+        ).scalar()
+
+        # Pending requests - incoming for this role
+        incoming_requests = db.query(func.count(Connection.id)).filter(
+            Connection.recipient_profile_id == profile_id,
+            Connection.recipient_type == role,
+            Connection.status == 'pending'
+        ).scalar()
+
+        # Pending requests - outgoing for this role
+        outgoing_requests = db.query(func.count(Connection.id)).filter(
+            Connection.requester_profile_id == profile_id,
+            Connection.requester_type == role,
+            Connection.status == 'pending'
+        ).scalar()
+
+        # Total pending
+        pending_count = incoming_requests + outgoing_requests
+
+        # Rejected connections for this role
+        rejected_count = db.query(func.count(Connection.id)).filter(
+            or_(
+                and_(
+                    Connection.requester_profile_id == profile_id,
+                    Connection.requester_type == role
+                ),
+                and_(
+                    Connection.recipient_profile_id == profile_id,
+                    Connection.recipient_type == role
+                )
+            ),
+            Connection.status == 'rejected'
+        ).scalar()
+
+        # Blocked users for this role
+        blocked_count = db.query(func.count(Connection.id)).filter(
+            Connection.requester_profile_id == profile_id,
+            Connection.requester_type == role,
+            Connection.status == 'blocked'
+        ).scalar()
+
+    else:
+        # Legacy behavior: filter by user_id (for backward compatibility)
+        # Accepted connections
+        accepted_count = db.query(func.count(Connection.id)).filter(
+            or_(
+                Connection.requested_by == user_id,
+                Connection.recipient_id == user_id
+            ),
+            Connection.status == 'accepted'
+        ).scalar()
+
+        # Pending requests - incoming
+        incoming_requests = db.query(func.count(Connection.id)).filter(
+            Connection.recipient_id == user_id,
+            Connection.status == 'pending'
+        ).scalar()
+
+        # Pending requests - outgoing
+        outgoing_requests = db.query(func.count(Connection.id)).filter(
             Connection.requested_by == user_id,
-            Connection.recipient_id == user_id
-        ),
-        Connection.status == 'accepted'
-    ).scalar()
+            Connection.status == 'pending'
+        ).scalar()
 
-    # Pending requests - incoming
-    incoming_requests = db.query(func.count(Connection.id)).filter(
-        Connection.recipient_id == user_id,
-        Connection.status == 'pending'
-    ).scalar()
+        # Total pending
+        pending_count = incoming_requests + outgoing_requests
 
-    # Pending requests - outgoing
-    outgoing_requests = db.query(func.count(Connection.id)).filter(
-        Connection.requested_by == user_id,
-        Connection.status == 'pending'
-    ).scalar()
+        # Rejected connections
+        rejected_count = db.query(func.count(Connection.id)).filter(
+            or_(
+                Connection.requested_by == user_id,
+                Connection.recipient_id == user_id
+            ),
+            Connection.status == 'rejected'
+        ).scalar()
 
-    # Total pending
-    pending_count = incoming_requests + outgoing_requests
-
-    # Rejected connections
-    rejected_count = db.query(func.count(Connection.id)).filter(
-        or_(
+        # Blocked users
+        blocked_count = db.query(func.count(Connection.id)).filter(
             Connection.requested_by == user_id,
-            Connection.recipient_id == user_id
-        ),
-        Connection.status == 'rejected'
-    ).scalar()
-
-    # Blocked users
-    blocked_count = db.query(func.count(Connection.id)).filter(
-        Connection.requested_by == user_id,
-        Connection.status == 'blocked'
-    ).scalar()
+            Connection.status == 'blocked'
+        ).scalar()
 
     return {
         "total_connections": accepted_count,
@@ -593,3 +751,98 @@ async def check_connection_status(
         "requested_at": connection.requested_at,
         "connected_at": connection.connected_at
     }
+
+
+@router.post("/api/connections/check-batch", response_model=dict)
+async def check_connection_status_batch(
+    request_data: dict,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Check connection status between current user and multiple target users (batch)
+
+    Request body: { "target_profile_ids": [int], "target_type": "tutor" }
+
+    Returns a dict mapping profile_id to connection status:
+    {
+        "connections": {
+            "85": {
+                "is_connected": true,
+                "status": "accepted",
+                "direction": "outgoing",
+                "connection_id": 123
+            },
+            "86": {
+                "is_connected": false,
+                "status": "pending",
+                "direction": "incoming",
+                "connection_id": 124
+            }
+        }
+    }
+    """
+    user_id = current_user.id
+    target_profile_ids = request_data.get('target_profile_ids', [])
+    target_type = request_data.get('target_type', 'tutor')
+
+    if not target_profile_ids:
+        return {"connections": {}}
+
+    # Look up user_ids from profile_ids based on target_type
+    profile_to_user = {}
+    if target_type == 'tutor':
+        profiles = db.query(TutorProfile).filter(TutorProfile.id.in_(target_profile_ids)).all()
+        profile_to_user = {p.id: p.user_id for p in profiles}
+    elif target_type == 'student':
+        profiles = db.query(StudentProfile).filter(StudentProfile.id.in_(target_profile_ids)).all()
+        profile_to_user = {p.id: p.user_id for p in profiles}
+    elif target_type == 'parent':
+        profiles = db.query(ParentProfile).filter(ParentProfile.id.in_(target_profile_ids)).all()
+        profile_to_user = {p.id: p.user_id for p in profiles}
+    elif target_type == 'advertiser':
+        profiles = db.query(AdvertiserProfile).filter(AdvertiserProfile.id.in_(target_profile_ids)).all()
+        profile_to_user = {p.id: p.user_id for p in profiles}
+
+    if not profile_to_user:
+        return {"connections": {}}
+
+    target_user_ids = list(profile_to_user.values())
+
+    # Fetch all connections with these users in a single query
+    connections = db.query(Connection).filter(
+        or_(
+            and_(Connection.requested_by == user_id, Connection.recipient_id.in_(target_user_ids)),
+            and_(Connection.requested_by.in_(target_user_ids), Connection.recipient_id == user_id)
+        )
+    ).all()
+
+    # Build a map of user_id -> connection
+    user_to_connection = {}
+    for conn in connections:
+        if conn.requested_by == user_id:
+            user_to_connection[conn.recipient_id] = conn
+        else:
+            user_to_connection[conn.requested_by] = conn
+
+    # Build the response mapping profile_id -> status
+    result = {}
+    for profile_id, target_user_id in profile_to_user.items():
+        conn = user_to_connection.get(target_user_id)
+        if conn:
+            direction = "outgoing" if conn.requested_by == user_id else "incoming"
+            result[str(profile_id)] = {
+                "is_connected": conn.status == 'accepted',
+                "status": conn.status,
+                "direction": direction,
+                "connection_id": conn.id
+            }
+        else:
+            result[str(profile_id)] = {
+                "is_connected": False,
+                "status": None,
+                "direction": None,
+                "connection_id": None
+            }
+
+    return {"connections": result}

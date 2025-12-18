@@ -129,7 +129,7 @@ window.CommunityDebug = {
         console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
         const token = localStorage.getItem('token');
-        const API_BASE = window.API_BASE_URL || 'https://api.astegni.com';
+        const API_BASE = window.API_BASE_URL || 'http://localhost:8000';
 
         if (!token) {
             console.error('❌ No authentication token found');
@@ -310,7 +310,7 @@ window.CommunityDebug = {
 
         try {
             const token = localStorage.getItem('token');
-            const API_BASE = window.API_BASE_URL || 'https://api.astegni.com';
+            const API_BASE = window.API_BASE_URL || 'http://localhost:8000';
 
             console.log('📡 Fetching connections...');
             const response = await fetch(`${API_BASE}/api/connections?status=accepted`, {

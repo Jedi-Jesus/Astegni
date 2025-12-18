@@ -8,10 +8,10 @@
     <!-- TailwindCSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="../css/root.css">
-    <link rel="stylesheet" href="../css/admin-profile/admin.css">
-    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
-    <link rel="stylesheet" href="../css/admin-pages/manage-customers.css">
+    <link rel="stylesheet" href="./css/root.css">
+    <link rel="stylesheet" href="./css/admin-profile/admin.css">
+    <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="./css/admin-pages/manage-customers.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -36,15 +36,16 @@
 <body class="font-sans">
 
     <!-- Navigation -->
-    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+    <nav class="admin-nav p-4 sticky top-0 z-50" role="navigation" aria-label="Main navigation">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
+            <!-- Left: Hamburger + Logo -->
+            <div class="nav-left flex items-center gap-4">
                 <span class="hamburger" id="hamburger">
                     <span></span>
                     <span></span>
                     <span></span>
                 </span>
-                <a href="../admin-pages/manage-customers.html" class="logo-container">
+                <a href="manage-customers.html" class="logo-container">
                     <div class="logo-text">
                         <span class="logo-main">Astegni</span>
                         <span class="logo-sub">Customer Service</span>
@@ -53,27 +54,94 @@
                 </a>
             </div>
 
-            <div class="flex items-center space-x-6">
+            <!-- Center: Live Clock -->
+            <div class="nav-center">
+                <div class="live-clock">
+                    <span id="current-time" class="time">--:--:--</span>
+                    <span id="current-date" class="date">Loading...</span>
+                </div>
+            </div>
 
-                <!-- Notification Icon -->
-                <button class="relative focus:outline-none" aria-label="Notifications">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                        </path>
-                    </svg>
-                    <span
-                        class="absolute top-0 right-0 -mt-1 -mr-1 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">12</span>
+            <!-- Right: Home, Theme, User Controls -->
+            <div class="header-right">
+                <!-- Home Icon Link -->
+                <a href="index.html" class="icon-button" title="Go to Admin Home">
+                    <i class="fas fa-home"></i>
+                </a>
+
+                <!-- Theme Toggle (always visible) -->
+                <button id="theme-toggle" class="icon-button" onclick="toggleTheme()">
+                    <span class="theme-icon">
+                        <i class="fas fa-moon" id="moon-icon"></i>
+                        <i class="fas fa-sun" id="sun-icon" style="display: none;"></i>
+                    </span>
                 </button>
 
-                <!-- Theme Toggle -->
-                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                        </path>
-                    </svg>
-                </button>
+                <!-- User Controls (hidden by default, shown when logged in) -->
+                <div class="user-controls" id="user-controls" style="display: none;">
+                    <!-- Notification Icon -->
+                    <button class="icon-button notification-button" onclick="openNotificationModal()">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge notification-count-badge">12</span>
+                    </button>
+
+                    <!-- Profile container -->
+                    <div id="profile-container" class="profile-dropdown-container">
+                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                            onclick="toggleProfileDropdown()">
+                            <img id="profile-pic" class="profile-pic"
+                                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                                 alt="Profile">
+                            <span id="profile-name" class="profile-name">Guest</span>
+                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+
+                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                            <!-- User info header -->
+                            <a href="javascript:void(0)" id="dropdown-profile-link" class="dropdown-header-link">
+                                <div class="dropdown-header">
+                                    <img id="dropdown-profile-pic" class="profile-pic"
+                                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                                         alt="Profile">
+                                    <div class="dropdown-user-info">
+                                        <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                        <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                        <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                    </div>
+                                    <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </a>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Department switcher -->
+                            <div id="department-switcher-section" class="department-switcher-section hidden">
+                                <div class="dropdown-item-header">Your Departments</div>
+                                <div id="department-options" class="department-options"></div>
+                                <div class="dropdown-divider"></div>
+                            </div>
+
+                            <!-- Add Department button -->
+                            <button class="dropdown-item" onclick="openAddDepartmentModal()">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Add Department Role</span>
+                            </button>
+
+                            <div class="dropdown-divider"></div>
+
+                            <button class="dropdown-item logout-item" onclick="openLogoutModal()">
+                                <i class="fas fa-sign-out-alt dropdown-icon"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div><!-- /user-controls -->
             </div>
         </div>
     </nav>
@@ -109,6 +177,10 @@
                     <span class="sidebar-icon">📝</span>
                     <span>Customer Feedback</span>
                 </a>
+                <a href="#" onclick="switchPanel('credentials'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🎓</span>
+                    <span>Credentials</span>
+                </a>
                 <hr class="my-4 border-gray-300">
                 <a href="#" onclick="openFAQManager(); return false;" class="sidebar-link">
                     <span class="sidebar-icon">❓</span>
@@ -122,7 +194,16 @@
                     <span class="sidebar-icon">📊</span>
                     <span>Analytics</span>
                 </a>
-                
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="switchPanel('portfolio'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📁</span>
+                    <span>Portfolio</span>
+                </a>
+                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+
                 <!-- Logout Button at Bottom -->
                 <div class="mt-auto pt-4 border-t border-gray-300">
                     <a href="#" onclick="logout(); return false;" class="sidebar-link text-red-500 hover:bg-red-50">
@@ -251,111 +332,28 @@
                                 <p class="text-gray-600">Manage customer inquiries, support tickets, and feedback</p>
                             </div>
 
-                            <!-- Achievements Section -->
-                            <div class="card p-6 mb-8">
-                                <h3 class="text-xl font-semibold mb-4">Achievements</h3>
-                                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">🏆</div>
-                                        <div class="text-sm">Top Performer</div>
-                                        <div class="text-xs text-gray-500">Q4 2024</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">🥇</div>
-                                        <div class="text-sm">Excellence</div>
-                                        <div class="text-xs text-gray-500">Annual 2023</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">⭐</div>
-                                        <div class="text-sm">5-Star Admin</div>
-                                        <div class="text-xs text-gray-500">500+ Reviews</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">📚</div>
-                                        <div class="text-sm">Education Pro</div>
-                                        <div class="text-xs text-gray-500">1000+ Responses</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">🎯</div>
-                                        <div class="text-sm">Goal Achiever</div>
-                                        <div class="text-xs text-gray-500">100% Success</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">💎</div>
-                                        <div class="text-sm">Premium Admin</div>
-                                        <div class="text-xs text-gray-500">Level 10</div>
-                                    </div>
-                                </div>
-                            </div>
-
-
-                            <!-- All Statistics Cards with Performance Indicators -->
+                            <!-- All Statistics Cards -->
                             <div class="dashboard-grid mb-8">
                                 <!-- Request Stats -->
-                                <div class="card p-4 relative" id="total-responses-card">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <span class="text-green-500 text-sm font-bold">↑ 12%</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold">Total Responses per day</h3>
-                                    <p class="text-2xl font-bold">89</p>
-                                    <span class="text-sm text-gray-500">57% of total</span>
-                                </div>
-                                <div class="card p-4 relative">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <span class="text-red-500 text-sm font-bold">↑ 5%</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold">Pending Responses</h3>
-                                    <p class="text-2xl font-bold text-yellow-600">8</p>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Pending Requests</h3>
+                                    <p class="text-2xl font-bold text-yellow-600">0</p>
                                     <span class="text-sm text-gray-500">Awaiting review</span>
                                 </div>
-                                <div class="card p-4 relative" id="unanswered-card">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <span class="text-red-500 text-sm font-bold">↑ 15%</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold">Unanswered Responses</h3>
-                                    <p class="text-2xl font-bold text-red-600">3</p>
-                                    <span class="text-sm text-gray-500">Last 30 days</span>
+                                <div class="card p-4">
+                                    <h3 class="text-lg font-semibold">Approval Rate</h3>
+                                    <p class="text-2xl font-bold text-green-600">0%</p>
+                                    <span class="text-sm text-gray-500">Overall rate</span>
                                 </div>
-                                <div class="card p-4 relative">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <span class="text-green-500 text-sm font-bold">↓ 8%</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold">Rejected Responses</h3>
-                                    <p class="text-2xl font-bold text-orange-600">2</p>
-                                    <span class="text-sm text-gray-500">Active suspensions</span>
-                                </div>
-                                <div class="card p-4 relative">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <span class="text-green-500 text-sm font-bold">↑ 3%</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold">Resolution Rate</h3>
-                                    <p class="text-2xl font-bold text-green-600">98%</p>
-                                    <span class="text-sm text-gray-500">This month</span>
-                                </div>
-                                <div class="card p-4 relative">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <span class="text-green-500 text-sm font-bold">↑ 7%</span>
-                                    </div>
-                                    <h3 class="text-lg font-semibold">First contact Resolution</h3>
-                                    <p class="text-2xl font-bold text-green-600">98%</p>
-                                    <span class="text-sm text-gray-500">today</span>
-                                </div>
-                                <div class="card p-4 relative">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <span class="text-green-500 text-sm font-bold">↓ 10%</span>
-                                    </div>
+                                <div class="card p-4">
                                     <h3 class="text-lg font-semibold">Avg Processing</h3>
-                                    <p class="text-2xl font-bold">
-                                        < 1hr</p>
-                                            <span class="text-sm text-gray-500">Per application</span>
+                                    <p class="text-2xl font-bold text-blue-600">&lt; 24hrs</p>
+                                    <span class="text-sm text-gray-500">Response time</span>
                                 </div>
-                                <div class="card p-4 relative">
-                                    <div class="absolute top-2 right-2 flex items-center gap-1">
-                                        <span class="text-green-500 text-sm font-bold">↑ 2%</span>
-                                    </div>
+                                <div class="card p-4">
                                     <h3 class="text-lg font-semibold">Client Satisfaction</h3>
-                                    <p class="text-2xl font-bold">96%</p>
-                                    <span class="text-sm text-gray-500">Happy clients</span>
+                                    <p class="text-2xl font-bold text-purple-600">0%</p>
+                                    <span class="text-sm text-gray-500">User feedback</span>
                                 </div>
                             </div>
 
@@ -759,6 +757,351 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Credentials Panel -->
+                    <div id="credentials-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h1 class="text-3xl font-bold mb-2">My Credentials</h1>
+                                    <p class="text-gray-600">View and manage your professional achievements and work experience</p>
+                                </div>
+                                <button onclick="openAddCredentialModal()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center gap-2">
+                                    <i class="fas fa-plus"></i>
+                                    Add Credential
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card p-4 mb-6">
+                            <div class="flex gap-4">
+                                <button onclick="switchCredentialsSection('achievements')"
+                                    class="credentials-tab active px-6 py-3 rounded-lg font-semibold transition-all bg-blue-500 text-white"
+                                    id="achievements-tab">
+                                    <span class="mr-2">🏆</span> Achievements
+                                </button>
+                                <button onclick="switchCredentialsSection('experience')"
+                                    class="credentials-tab px-6 py-3 rounded-lg font-semibold transition-all bg-gray-100 hover:bg-gray-200"
+                                    id="experience-tab">
+                                    <span class="mr-2">💼</span> Experience
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="credentials-achievements-section" class="credentials-section">
+                            <div class="dashboard-grid mb-8">
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Total Achievements</h3>
+                                    <p class="text-3xl font-bold mt-2 text-yellow-500">15</p>
+                                    <p class="text-sm text-gray-500 mt-1">Badges & Awards</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Certifications</h3>
+                                    <p class="text-3xl font-bold mt-2 text-blue-500">4</p>
+                                    <p class="text-sm text-gray-500 mt-1">Verified credentials</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">CSAT Score</h3>
+                                    <p class="text-3xl font-bold mt-2 text-purple-500">96%</p>
+                                    <p class="text-sm text-gray-500 mt-1">Customer satisfaction</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Current Level</h3>
+                                    <p class="text-3xl font-bold mt-2 text-green-500">Level 9</p>
+                                    <p class="text-sm text-gray-500 mt-1">Support Lead</p>
+                                </div>
+                            </div>
+
+                            <div class="card p-6 mb-6">
+                                <h3 class="text-xl font-semibold mb-4">Achievement Badges</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200">
+                                        <div class="text-4xl mb-2">🏆</div>
+                                        <div class="font-semibold text-sm">Support Hero</div>
+                                        <div class="text-xs text-gray-500">Q4 2024</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200">
+                                        <div class="text-4xl mb-2">💬</div>
+                                        <div class="font-semibold text-sm">Chat Champion</div>
+                                        <div class="text-xs text-gray-500">5K+ Resolved</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200">
+                                        <div class="text-4xl mb-2">⭐</div>
+                                        <div class="font-semibold text-sm">5-Star Support</div>
+                                        <div class="text-xs text-gray-500">96% CSAT</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200">
+                                        <div class="text-4xl mb-2">🚀</div>
+                                        <div class="font-semibold text-sm">Fast Responder</div>
+                                        <div class="text-xs text-gray-500">&lt; 2min Avg</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200">
+                                        <div class="text-4xl mb-2">🔥</div>
+                                        <div class="font-semibold text-sm">Fire Streak</div>
+                                        <div class="text-xs text-gray-500">25+ Days</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-pink-50 to-pink-100 border-2 border-pink-200">
+                                        <div class="text-4xl mb-2">❤️</div>
+                                        <div class="font-semibold text-sm">Customer Favorite</div>
+                                        <div class="text-xs text-gray-500">200+ Thanks</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4">Professional Certifications</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                                        <div class="flex items-center gap-4">
+                                            <div class="text-3xl">📜</div>
+                                            <div>
+                                                <h4 class="font-semibold">Certified Customer Support Specialist</h4>
+                                                <p class="text-sm text-gray-600">Astegni Education Platform</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Verified</span>
+                                            <p class="text-xs text-gray-500 mt-1">Issued: Jan 2024</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                                        <div class="flex items-center gap-4">
+                                            <div class="text-3xl">🎓</div>
+                                            <div>
+                                                <h4 class="font-semibold">Customer Experience Professional</h4>
+                                                <p class="text-sm text-gray-600">CX Academy International</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Verified</span>
+                                            <p class="text-xs text-gray-500 mt-1">Issued: Sep 2023</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="credentials-experience-section" class="credentials-section hidden">
+                            <div class="dashboard-grid mb-8">
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Total Experience</h3>
+                                    <p class="text-3xl font-bold mt-2 text-blue-500">5+ Years</p>
+                                    <p class="text-sm text-gray-500 mt-1">In Customer Service</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Tickets Resolved</h3>
+                                    <p class="text-3xl font-bold mt-2 text-green-500">12,500+</p>
+                                    <p class="text-sm text-gray-500 mt-1">Lifetime total</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Team Size</h3>
+                                    <p class="text-3xl font-bold mt-2 text-purple-500">8</p>
+                                    <p class="text-sm text-gray-500 mt-1">Direct reports</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Avg Response Time</h3>
+                                    <p class="text-3xl font-bold mt-2 text-orange-500">1.8min</p>
+                                    <p class="text-sm text-gray-500 mt-1">Industry best</p>
+                                </div>
+                            </div>
+
+                            <div class="card p-6 mb-6">
+                                <h3 class="text-xl font-semibold mb-6">Work Experience</h3>
+                                <div class="space-y-6">
+                                    <div class="relative pl-8 border-l-4 border-blue-500">
+                                        <div class="absolute -left-3 top-0 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white text-xs">✓</span>
+                                        </div>
+                                        <div class="bg-blue-50 p-4 rounded-lg">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <h4 class="font-bold text-lg">Customer Support Lead</h4>
+                                                    <p class="text-blue-600 font-semibold">Astegni Education Platform</p>
+                                                </div>
+                                                <span class="px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-semibold">Current</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mb-2">Jan 2022 - Present</p>
+                                            <ul class="text-sm text-gray-700 list-disc list-inside space-y-1">
+                                                <li>Lead team of 8 customer support agents</li>
+                                                <li>Achieved 96% customer satisfaction rating</li>
+                                                <li>Reduced ticket resolution time by 40%</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="relative pl-8 border-l-4 border-green-500">
+                                        <div class="absolute -left-3 top-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white text-xs">✓</span>
+                                        </div>
+                                        <div class="bg-green-50 p-4 rounded-lg">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <h4 class="font-bold text-lg">Senior Support Agent</h4>
+                                                    <p class="text-green-600 font-semibold">Astegni Education Platform</p>
+                                                </div>
+                                                <span class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-semibold">Completed</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mb-2">Mar 2020 - Dec 2021</p>
+                                            <ul class="text-sm text-gray-700 list-disc list-inside space-y-1">
+                                                <li>Handled 150+ tickets daily</li>
+                                                <li>Trained 12 new support agents</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4">Skills & Expertise</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 class="font-semibold mb-3 text-gray-700">Support Skills</h4>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Ticket Resolution</span>
+                                                    <span class="text-sm font-semibold">96%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 96%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Live Chat Support</span>
+                                                    <span class="text-sm font-semibold">94%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 94%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Product Knowledge</span>
+                                                    <span class="text-sm font-semibold">92%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-purple-500 h-2 rounded-full" style="width: 92%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold mb-3 text-gray-700">Soft Skills</h4>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Customer Empathy</span>
+                                                    <span class="text-sm font-semibold">98%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-teal-500 h-2 rounded-full" style="width: 98%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Problem Solving</span>
+                                                    <span class="text-sm font-semibold">95%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-pink-500 h-2 rounded-full" style="width: 95%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Team Leadership</span>
+                                                    <span class="text-sm font-semibold">90%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 90%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Portfolio Panel -->
+                    <div id="portfolio-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">My Portfolio</h1>
+                            <p class="text-gray-600">Showcase your work, achievements, and professional accomplishments</p>
+                        </div>
+                        <!-- Coming Soon -->
+                        <div class="flex flex-col items-center justify-center py-20">
+                            <div class="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
+                                <i class="fas fa-folder-open text-white text-5xl"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-700 mb-2">Coming Soon</h2>
+                            <p class="text-gray-500 text-center max-w-md">
+                                We're working on an amazing portfolio feature where you can showcase your work, achievements, and professional accomplishments. Stay tuned!
+                            </p>
+                            <div class="mt-6 flex items-center gap-2 text-blue-600">
+                                <i class="fas fa-clock"></i>
+                                <span class="text-sm">Expected: Q2 2025</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div id="settings-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Settings</h1>
+                            <p class="text-gray-600">Manage your account preferences and configurations</p>
+                        </div>
+                        <!-- Settings Cards Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Verify Personal Information Card -->
+                            <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openVerifyPersonalInfoModal()">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-user-check text-blue-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold mb-1">Verify Personal Information</h3>
+                                        <p class="text-gray-500 text-sm">Update and verify your personal details for account security</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Add Payment Method Card -->
+                            <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openAddPaymentMethodModal()">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-credit-card text-green-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold mb-1">Add Payment Method</h3>
+                                        <p class="text-gray-500 text-sm">Set up your preferred payment methods for transactions</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- File a Leave Request Card -->
+                            <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openLeaveRequestModal()">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-calendar-minus text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold mb-1">File a Leave Request</h3>
+                                        <p class="text-gray-500 text-sm">Submit time-off requests and manage your leave balance</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Resign Card -->
+                            <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer border-red-100" onclick="openResignModal()">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-sign-out-alt text-red-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-red-600 mb-1">Resign</h3>
+                                        <p class="text-gray-500 text-sm">Submit your resignation and begin the offboarding process</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Right Sidebar Widgets (Persistent across all panels) -->
@@ -1157,17 +1500,47 @@
     </footer>
 
     <!-- Scripts -->
-    <script src="../js/root/app.js"></script>
-    <script src="../js/root/auth.js"></script>
+    <script src="./js/api-config.js"></script>
+    <script src="./js/auth.js"></script>
+
+    <!-- Admin DB Service - reads from astegni_admin_db -->
+    <script src="./js/admin-pages/shared/admin-api-service.js"></script>
+    <script src="./js/admin-pages/shared/array-field-utils.js"></script>
+    <script src="./js/admin-pages/shared/geolocation-utils.js"></script>
 
     <!-- Standalone Script - All Navigation & Panel Management -->
-    <script src="../js/admin-pages/manage-customers-standalone.js"></script>
+    <script src="./js/admin-pages/manage-customers-standalone.js"></script>
 
     <!-- Page-specific data loading -->
-    <script src="../js/admin-pages/manage-customers.js"></script>
+    <script src="./js/admin-pages/manage-customers.js"></script>
+    <script src="./js/admin-pages/shared/admin-credentials-manager.js"></script>
 
     <!-- Fix theme background -->
     <script>
+        // Switch between Achievements and Experience sections in Credentials panel
+        function switchCredentialsSection(section) {
+            const achievementsTab = document.getElementById('achievements-tab');
+            const experienceTab = document.getElementById('experience-tab');
+            const achievementsSection = document.getElementById('credentials-achievements-section');
+            const experienceSection = document.getElementById('credentials-experience-section');
+
+            if (section === 'achievements') {
+                achievementsSection.classList.remove('hidden');
+                experienceSection.classList.add('hidden');
+                achievementsTab.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                achievementsTab.classList.add('bg-blue-500', 'text-white');
+                experienceTab.classList.remove('bg-blue-500', 'text-white');
+                experienceTab.classList.add('bg-gray-100', 'hover:bg-gray-200');
+            } else if (section === 'experience') {
+                experienceSection.classList.remove('hidden');
+                achievementsSection.classList.add('hidden');
+                experienceTab.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                experienceTab.classList.add('bg-blue-500', 'text-white');
+                achievementsTab.classList.remove('bg-blue-500', 'text-white');
+                achievementsTab.classList.add('bg-gray-100', 'hover:bg-gray-200');
+            }
+        }
+
         // Ensure dark theme background is applied correctly
         document.addEventListener('DOMContentLoaded', function () {
             // Force background color application
@@ -1628,68 +2001,50 @@
     </script>
 
             <!-- Edit Profile Modal -->
-    <!-- This modal ONLY edits admin_profile table fields (personal information) -->
-    <!-- admin_profile_stats fields (employee_id, access_level, etc.) are managed by super admin or system -->
+    <!-- This modal edits manage_customers_profile table fields only -->
     <div id="edit-profile-modal" class="modal hidden">
         <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
                 <h2 class="text-xl font-bold">Edit Profile</h2>
-                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+                <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
-                    <!-- Ethiopian Naming Convention -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">First Name *</label>
-                            <input type="text" id="firstNameInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="e.g., Abebe" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">Father's Name *</label>
-                            <input type="text" id="fatherNameInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="e.g., Kebede" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">Grandfather's Name *</label>
-                            <input type="text" id="grandfatherNameInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="e.g., Tesfa" required>
-                        </div>
-                    </div>
-
                     <!-- Username (Display Name) -->
                     <div class="form-group mb-4">
-                        <label class="block text-sm font-medium mb-1">Username (Display Name) *</label>
-                        <input type="text" id="adminUsernameInput"
+                        <label class="block text-sm font-medium mb-1">Username (Display Name) <span class="text-red-500">*</span></label>
+                        <input type="text" id="editUsername"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="e.g., abebe_kebede" required>
                         <p class="text-xs text-gray-500 mt-1">This will be displayed as your admin username</p>
                     </div>
 
-                    <!-- Contact Information -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">Email</label>
-                            <input type="email" id="emailInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="admin@astegni.et">
+                    <!-- Hero Titles (Array) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Hero Titles</label>
+                        <div id="heroTitleContainer" class="space-y-2">
+                            <!-- Dynamic hero title inputs will be added here -->
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">Phone Number</label>
-                            <input type="tel" id="phoneNumberInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="+251911234567">
-                        </div>
+                        <button type="button" onclick="addHeroTitleField()"
+                            class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            <i class="fas fa-plus"></i> Add Hero Title
+                        </button>
+                        <p class="text-xs text-gray-500 mt-1">Add multiple titles (e.g., Customer Support Manager, Team Lead)</p>
+                    </div>
+
+                    <!-- Hero Subtitle -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Hero Subtitle</label>
+                        <input type="text" id="editHeroSubtitle"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., Astegni Admin Panel">
                     </div>
 
                     <!-- Bio -->
                     <div class="form-group mb-4">
                         <label class="block text-sm font-medium mb-1">Bio</label>
-                        <textarea id="bioInput" rows="3"
+                        <textarea id="editBio" rows="3"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Tell us about yourself..."></textarea>
                     </div>
@@ -1697,15 +2052,64 @@
                     <!-- Quote -->
                     <div class="form-group mb-4">
                         <label class="block text-sm font-medium mb-1">Quote</label>
-                        <input type="text" id="quoteInput"
+                        <input type="text" id="editQuote"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Your personal quote or motto">
                     </div>
-                    
+
+                    <!-- Locations (Array) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Locations</label>
+                        <div id="locationContainer" class="space-y-2">
+                            <!-- Dynamic location inputs will be added here -->
+                        </div>
+                        <button type="button" onclick="addLocationField()"
+                            class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            <i class="fas fa-plus"></i> Add Location
+                        </button>
+                        <p class="text-xs text-gray-500 mt-1">Add multiple locations (e.g., Addis Ababa, Bahir Dar)</p>
+
+                        <!-- Allow Location Checkbox (GPS Detection Permission) -->
+                        <div class="flex items-center mt-3">
+                            <input type="checkbox" id="editAllowLocation"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                onchange="handleAllowLocationChange(this)">
+                            <label for="editAllowLocation" class="ml-2 text-sm font-medium text-gray-700">
+                                Allow system to detect my location (GPS)
+                            </label>
+                        </div>
+
+                        <!-- Detect Location Button (appears when GPS allowed) -->
+                        <button type="button" id="detectLocationBtn" onclick="detectCurrentLocation()"
+                            class="hidden mt-2 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 flex items-center gap-1">
+                            <i class="fas fa-location-arrow mr-1"></i> Detect Location
+                        </button>
+                        <p id="locationStatus" class="hidden text-xs mt-1"></p>
+
+                        <!-- Display Location Checkbox (Public Visibility) -->
+                        <div class="flex items-center mt-3">
+                            <input type="checkbox" id="editDisplayLocation"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <label for="editDisplayLocation" class="ml-2 text-sm font-medium text-gray-700">
+                                Display location on my public profile
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">When enabled, your location will be visible on your public profile</p>
+                    </div>
+
+                    <!-- Languages -->
+                    <div class="form-group mb-6">
+                        <label class="block text-sm font-medium mb-1">Languages</label>
+                        <input type="text" id="editLanguages"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., English, Amharic, Oromo">
+                        <p class="text-xs text-gray-500 mt-1">Separate multiple languages with commas</p>
+                    </div>
+
                     <div class="modal-footer">
                         <button type="button" class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
                             onclick="closeEditProfileModal()">Cancel</button>
-                        <button type="submit"
+                        <button type="submit" id="editProfileSubmitBtn"
                             class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update
                             Profile</button>
                     </div>
@@ -1714,8 +2118,188 @@
         </div>
     </div>
 
-    <!-- Modals would go here (Edit Profile, Upload Profile Picture, Upload Cover Image) -->
-    <!-- Similar structure to manage-schools.html modals -->
+    <!-- Add Credential Modal -->
+    <div id="add-credential-modal" class="modal hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50">
+        <div class="modal-overlay absolute inset-0" onclick="closeAddCredentialModal()"></div>
+        <div class="modal-content relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="modal-header flex justify-between items-center p-6 border-b sticky top-0 bg-white rounded-t-xl">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Add New Credential</h2>
+                    <p class="text-sm text-gray-500 mt-1">Add your achievements, certifications, or work experience</p>
+                </div>
+                <button class="modal-close text-3xl text-gray-400 hover:text-gray-600 transition-colors" onclick="closeAddCredentialModal()">&times;</button>
+            </div>
+            <div class="modal-body p-6">
+                <form id="addCredentialForm" onsubmit="handleCredentialSubmit(event)">
+                    <div class="form-group mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Credential Type *</label>
+                        <select id="credentialType" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                            <option value="">Select type...</option>
+                            <optgroup label="Achievements">
+                                <option value="certification">Certification</option>
+                                <option value="degree">Degree / Diploma</option>
+                                <option value="award">Award / Recognition</option>
+                                <option value="license">Professional License</option>
+                                <option value="course">Course Completion</option>
+                            </optgroup>
+                            <optgroup label="Experience">
+                                <option value="work_experience">Work Experience</option>
+                                <option value="project">Project</option>
+                                <option value="volunteer">Volunteer Work</option>
+                                <option value="teaching">Teaching Experience</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="form-group mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
+                        <input type="text" id="credentialTitle" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., AWS Certified Solutions Architect">
+                    </div>
+                    <div class="form-group mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Issued By / Organization</label>
+                        <input type="text" id="credentialIssuedBy" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., Amazon Web Services, Addis Ababa University">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Issue</label>
+                            <input type="date" id="credentialDateOfIssue" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Expiry Date (if applicable)</label>
+                            <input type="date" id="credentialExpiryDate" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+                    <div class="form-group mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                        <textarea id="credentialDescription" rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none" placeholder="Describe your achievement, responsibilities, or what you learned..."></textarea>
+                    </div>
+                    <div class="form-group mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Document (Optional)</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                            <input type="file" id="credentialDocument" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="previewCredentialDocument(event)">
+                            <label for="credentialDocument" class="cursor-pointer">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-600 font-medium">Click to upload or drag and drop</p>
+                                    <p class="text-gray-400 text-sm mt-1">PDF, JPG, PNG, DOC up to 10MB</p>
+                                </div>
+                            </label>
+                            <div id="credentialDocumentPreview" class="hidden mt-4 p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-file-alt text-2xl text-blue-500"></i>
+                                        <div class="text-left">
+                                            <p id="credentialDocumentName" class="text-sm font-medium text-gray-700"></p>
+                                            <p id="credentialDocumentSize" class="text-xs text-gray-500"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="removeCredentialDocument()" class="text-red-500 hover:text-red-700"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-end gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeAddCredentialModal()" class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">Cancel</button>
+                        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"><i class="fas fa-save"></i> Save Credential</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Department Role Modal (loaded from common-modals) -->
+    <div id="add-department-modal-container"></div>
+
+    <!-- Load Add Department Modal from common-modals -->
+    <script>
+        // Define placeholder functions immediately (before component loads)
+        window._addDeptModalLoaded = false;
+        window._addDeptModalQueue = [];
+
+        if (typeof window.openAddDepartmentModal !== 'function') {
+            window.openAddDepartmentModal = function() {
+                if (window._addDeptModalLoaded) {
+                    const modal = document.getElementById('add-department-modal');
+                    if (modal) modal.classList.add('active');
+                } else {
+                    console.log('Add Department Modal not loaded yet, queuing request...');
+                    window._addDeptModalQueue.push('open');
+                }
+            };
+        }
+
+        if (typeof window.closeAddDepartmentModal !== 'function') {
+            window.closeAddDepartmentModal = function() {
+                const modal = document.getElementById('add-department-modal');
+                if (modal) modal.classList.remove('active');
+            };
+        }
+
+        // Load add department modal component
+        fetch('common-modals/add-department-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('add-department-modal-container').innerHTML = html;
+                // Execute any script tags in the loaded HTML
+                const scripts = document.getElementById('add-department-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+
+                // Mark as loaded and process any queued requests
+                window._addDeptModalLoaded = true;
+                if (window._addDeptModalQueue.length > 0) {
+                    window._addDeptModalQueue.forEach(action => {
+                        if (action === 'open') {
+                            // Directly open the modal instead of calling the function
+                            const modal = document.getElementById('add-department-modal');
+                            if (modal) modal.classList.add('active');
+                        }
+                    });
+                    window._addDeptModalQueue = [];
+                }
+
+                console.log('Add Department Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading add department modal:', error));
+    </script>
+
+    <!-- Notification Modal Container -->
+    <div id="notification-modal-container"></div>
+    <script>
+        fetch('common-modals/notification-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('notification-modal-container').innerHTML = html;
+                const scripts = document.getElementById('notification-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+                console.log('Notification Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading notification modal:', error));
+    </script>
+
+    <!-- Logout Modal Container -->
+    <div id="logout-modal-container"></div>
+    <script>
+        fetch('common-modals/logout-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('logout-modal-container').innerHTML = html;
+                const scripts = document.getElementById('logout-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+                console.log('Logout Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading logout modal:', error));
+    </script>
 
 </body>
 

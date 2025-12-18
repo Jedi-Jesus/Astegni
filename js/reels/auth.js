@@ -14,7 +14,7 @@
                     if (!token) return false;
 
                     try {
-                        const response = await fetch('https://api.astegni.com/api/me', {
+                        const response = await fetch('http://localhost:8000/api/me', {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }

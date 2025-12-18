@@ -1,0 +1,1157 @@
+<!--
+  Modal: chatModal
+  Purpose: Full-featured chat modal for messaging between users (tutors, students, parents, institutes)
+  Features: Real-time messaging, voice/video calls, file sharing, voice recording, emoji/GIF support
+-->
+
+<div id="chatModal" class="modal hidden" style="display: none; z-index: 10001;">
+    <div class="modal-overlay" onclick="closeChatModal()"></div>
+
+    <!-- Main Chat Container -->
+    <div class="chat-modal-container">
+        <!-- Left Sidebar - Contacts List -->
+        <div class="chat-sidebar" id="chatSidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <div class="sidebar-user-profile">
+                    <img src="" alt="Your Profile" class="sidebar-user-avatar" id="chatCurrentUserAvatar">
+                    <div class="sidebar-user-info">
+                        <h3 id="chatCurrentUserName">You</h3>
+                        <span class="user-occupation" id="chatCurrentUserRole">User</span>
+                    </div>
+                    <button class="btn-settings" onclick="toggleChatSettings()" title="Chat Settings">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="sidebar-search">
+                <input type="text" id="chatContactSearch" placeholder="Search conversations..." class="search-input">
+                <button class="search-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="sidebar-tabs">
+                <button class="tab-btn active" data-tab="all">All</button>
+                <button class="tab-btn" data-tab="personal">Personal</button>
+                <button class="tab-btn" data-tab="groups">Groups</button>
+                <button class="tab-btn" data-tab="unread">Unread</button>
+            </div>
+
+            <!-- Contacts List -->
+            <div class="contacts-list" id="chatContactsList">
+                <!-- Loading state -->
+                <div class="chat-loading" id="chatContactsLoading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading conversations...</p>
+                </div>
+                <!-- Contacts will be dynamically loaded here -->
+            </div>
+
+            <!-- Sidebar Footer -->
+            <div class="sidebar-footer">
+                <button class="sidebar-action-btn" id="newChatBtn" onclick="startNewChatFromModal()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14"></path>
+                    </svg>
+                    New Chat
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="chat-main" id="chatMain">
+            <!-- Top Header with Toggle and Window Controls -->
+            <div class="chat-main-header">
+                <!-- Toggle Sidebar Button (Mobile) -->
+                <button class="toggle-sidebar-btn" id="toggleChatSidebar" onclick="toggleChatSidebar()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18M3 6h18M3 18h18"></path>
+                    </svg>
+                </button>
+
+                <!-- Window Controls (Minimize/Close) -->
+                <div class="window-controls">
+                    <button class="minimize-btn" onclick="minimizeChatModal()" title="Minimize">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12h14"></path>
+                        </svg>
+                    </button>
+                    <button class="close-btn" onclick="closeChatModal()" title="Close">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Empty State (when no chat selected) -->
+            <div class="chat-empty-state" id="chatEmptyState">
+                <div class="empty-state-icon">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <h3>Select a conversation</h3>
+                <p>Choose from your existing conversations or start a new one</p>
+            </div>
+
+            <!-- Chat Content (hidden until chat selected) -->
+            <div class="chat-content" id="chatContent" style="display: none;">
+                <!-- User Info Header -->
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <img src="" alt="" id="chatUserAvatar">
+                        <div class="online-indicator" id="chatUserOnlineIndicator"></div>
+                    </div>
+                    <div class="user-basic-info">
+                        <h2 id="chatUserName">User Name</h2>
+                        <span class="user-occupation-header" id="chatUserRole">Role</span>
+                        <span class="last-seen" id="chatLastSeen">Last seen recently</span>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-btn" onclick="toggleChatSearch()" title="Search">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
+                        <button class="header-btn read-messages" id="chatReadMessagesBtn" onclick="showComingSoonReadMessages()" title="Read Messages Aloud">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                            </svg>
+                        </button>
+                        <button class="header-btn voice-call" onclick="startChatVoiceCall()" title="Voice Call">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                            </svg>
+                        </button>
+                        <button class="header-btn" onclick="startChatVideoCall()" title="Video Call">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                            </svg>
+                        </button>
+                        <button class="header-btn translate-btn" id="chatTranslateBtn" onclick="toggleTranslatePanel()" title="Translate Messages">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 8l6 6"></path>
+                                <path d="M4 14l6-6 2-3"></path>
+                                <path d="M2 5h12"></path>
+                                <path d="M7 2v3"></path>
+                                <path d="M22 22l-5-10-5 10"></path>
+                                <path d="M14 18h6"></path>
+                            </svg>
+                        </button>
+                        <button class="header-btn" id="chatInfoBtn" onclick="toggleChatInfo()" title="Info">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 16v-4M12 8h.01"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Container -->
+                <div class="search-container" id="chatSearchContainer">
+                    <input type="text" class="search-bar" id="chatSearchBar" placeholder="Search messages...">
+                    <div class="search-nav-buttons" id="searchNavButtons" style="display: none;">
+                        <button class="search-nav-btn" onclick="navigateSearchPrev()" title="Previous (Shift+Enter)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="18 15 12 9 6 15"></polyline>
+                            </svg>
+                        </button>
+                        <button class="search-nav-btn" onclick="navigateSearchNext()" title="Next (Enter)">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="search-close" onclick="toggleChatSearch()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Pinned Messages -->
+                <div id="chatPinnedMessages" class="pinned-messages">
+                    <h3>Pinned Messages</h3>
+                    <div class="pinned-messages-list"></div>
+                </div>
+
+                <!-- Chat Area -->
+                <div class="chat-area" id="chatArea">
+                    <!-- Messages will be dynamically added here -->
+
+                    <!-- Other Party Typing Indicator (left side, like received message) -->
+                    <div class="message typing-message" id="chatTypingIndicator">
+                        <img src="" alt="" class="message-avatar" id="typingUserAvatar">
+                        <div class="message-content">
+                            <div class="message-bubble typing-bubble">
+                                <div class="typing-dots-wave">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Self Typing Indicator (right side, like sent message) -->
+                    <div class="message sent typing-message" id="selfTypingIndicator">
+                        <div class="message-content">
+                            <div class="message-bubble typing-bubble">
+                                <div class="typing-dots-wave">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blocked Contact Overlay -->
+                <div class="chat-blocked-overlay" id="chatBlockedOverlay" style="display: none;">
+                    <div class="blocked-content">
+                        <div class="blocked-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="m4.93 4.93 14.14 14.14"></path>
+                            </svg>
+                        </div>
+                        <h3>Contact Blocked</h3>
+                        <p>You have blocked this contact. You won't receive messages from them.</p>
+                        <button class="unblock-btn" onclick="unblockChatContact()">Unblock Contact</button>
+                    </div>
+                </div>
+
+                <!-- File Preview -->
+                <div class="file-preview" id="chatFilePreview"></div>
+
+                <!-- Reply Preview -->
+                <div class="reply-preview" id="chatReplyPreview">
+                    <div class="reply-content">
+                        <span class="reply-label">Replying to</span>
+                        <p class="reply-text"></p>
+                    </div>
+                    <button class="reply-close" onclick="cancelChatReply()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <div class="input-container">
+                        <!-- Normal Text Input (shown by default) -->
+                        <div class="input-wrapper" id="chatInputWrapper">
+                            <textarea
+                                class="message-input"
+                                id="chatMessageInput"
+                                placeholder="Type a message..."
+                                rows="1"></textarea>
+                            <div class="input-actions">
+                                <button class="emoji-btn" onclick="openChatEmojiModal()" title="Emoji">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                        <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                        <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                                    </svg>
+                                </button>
+                                <label class="file-btn" title="Attach File">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                    </svg>
+                                    <input type="file" id="chatFileInput" class="file-input" accept="image/*,video/*,audio/*,application/pdf,.doc,.docx" multiple>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Voice Recording UI (replaces input when recording) -->
+                        <div class="voice-input-wrapper" id="chatVoiceInputRecording" style="display: none;">
+                            <span class="recording-time" id="chatRecordingTime">0:00</span>
+                            <div class="recording-wave">
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                            </div>
+                            <button class="cancel-recording" onclick="cancelChatRecording()" title="Cancel">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Voice Preview UI (replaces input after recording) -->
+                        <div class="voice-input-wrapper voice-preview-mode" id="chatVoiceInputPreview" style="display: none;">
+                            <button class="voice-preview-play" id="voicePreviewPlayBtn" onclick="toggleVoicePreviewPlay()">
+                                <svg class="play-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                                </svg>
+                                <svg class="pause-icon" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                                    <rect x="6" y="4" width="4" height="16"></rect>
+                                    <rect x="14" y="4" width="4" height="16"></rect>
+                                </svg>
+                            </button>
+                            <div class="voice-preview-waveform">
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                                <div class="waveform-bar"></div>
+                            </div>
+                            <span class="voice-preview-duration" id="voicePreviewDuration">0:00</span>
+                            <button class="voice-preview-cancel" onclick="cancelVoicePreview()" title="Discard">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 6L6 18M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                            <audio id="voicePreviewAudio" style="display: none;"></audio>
+                        </div>
+
+                        <button class="media-btn" id="chatVoiceRecordBtn" onclick="toggleChatVoiceRecordingWithMode()" ondblclick="toggleVoiceRecordMode(event)" title="Record Voice (Double-click for Voice-to-Text mode)">
+                            <!-- Normal mic icon (Recording mode) -->
+                            <svg class="voice-icon-normal" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                            <!-- VTT mode icon (Voice-to-Text) - keyboard with mic -->
+                            <svg class="voice-icon-vtt" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                                <line x1="6" y1="8" x2="6.01" y2="8"></line>
+                                <line x1="10" y1="8" x2="10.01" y2="8"></line>
+                                <line x1="14" y1="8" x2="14.01" y2="8"></line>
+                                <line x1="18" y1="8" x2="18.01" y2="8"></line>
+                                <line x1="8" y1="12" x2="8.01" y2="12"></line>
+                                <line x1="12" y1="12" x2="12.01" y2="12"></line>
+                                <line x1="16" y1="12" x2="16.01" y2="12"></line>
+                                <line x1="7" y1="16" x2="17" y2="16"></line>
+                            </svg>
+                        </button>
+                        <button class="media-btn video-btn" id="chatVideoRecordBtn" onclick="toggleVideoRecording()" title="Record Video">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                            </svg>
+                        </button>
+                        <button class="send-btn" onclick="handleSendMessage()" ondblclick="toggleSendMode(event)" id="chatSendBtn" title="Send (Double-click to toggle TTS mode)">
+                            <!-- Normal send icon -->
+                            <svg class="send-icon-normal" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            <!-- TTS send icon (hidden by default) -->
+                            <svg class="send-icon-tts" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                            </svg>
+                        </button>
+
+                        <!-- Send Options Context Menu -->
+                        <div class="send-options-menu" id="chatSendOptionsMenu">
+                            <button onclick="setSendMode('text')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                                </svg>
+                                Send (Normal)
+                            </button>
+                            <button onclick="setSendMode('tts')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                                </svg>
+                                Send with TTS (Coming Soon)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Info Panel -->
+            <div class="chat-info-panel" id="chatInfoPanel">
+                <div class="info-panel-header">
+                    <h3>Contact Info</h3>
+                </div>
+
+                <div class="info-panel-content">
+                    <div class="info-profile">
+                        <img src="" alt="" id="chatInfoPanelAvatar">
+                        <h3 id="chatInfoPanelName">User Name</h3>
+                        <p id="chatInfoPanelRole">Role</p>
+                        <p id="chatInfoPanelLastSeen">Last seen today</p>
+                    </div>
+
+                    <div class="info-section">
+                        <h4>Location</h4>
+                        <div class="info-detail" id="chatInfoLocation" style="display: none;">
+                            <span class="info-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                            </span>
+                            <span class="info-value"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="info-section info-quote-section">
+                        <h4>Quote</h4>
+                        <p class="info-quote" id="chatInfoPanelQuote">No quote available</p>
+                    </div>
+
+                    <!-- Media Tabs -->
+                    <div class="info-section">
+                        <div class="media-tabs">
+                            <button class="media-tab active" onclick="showChatMediaTab('images')">Images</button>
+                            <button class="media-tab" onclick="showChatMediaTab('videos')">Videos</button>
+                            <button class="media-tab" onclick="showChatMediaTab('files')">Files</button>
+                            <button class="media-tab" onclick="showChatMediaTab('links')">Links</button>
+                        </div>
+
+                        <div class="media-content">
+                            <div id="chatImagesTab" class="media-tab-content active">
+                                <div class="media-grid" id="chatMediaGrid">
+                                    <!-- Images will be loaded here -->
+                                    <p class="no-media">No shared images</p>
+                                </div>
+                            </div>
+
+                            <div id="chatVideosTab" class="media-tab-content">
+                                <div class="media-grid" id="chatVideosGrid">
+                                    <!-- Videos will be loaded here -->
+                                    <p class="no-media">No shared videos</p>
+                                </div>
+                            </div>
+
+                            <div id="chatFilesTab" class="media-tab-content">
+                                <div class="docs-list" id="chatFilesList">
+                                    <p class="no-media">No shared files</p>
+                                </div>
+                            </div>
+
+                            <div id="chatLinksTab" class="media-tab-content">
+                                <div class="links-list" id="chatLinksList">
+                                    <p class="no-media">No shared links</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-actions">
+                        <button class="info-action-btn danger" id="chatBlockBtn" onclick="blockChatContact()">
+                            <span class="block-text">Block Contact</span>
+                            <span class="unblock-text" style="display: none;">Unblock Contact</span>
+                        </button>
+                        <button class="info-action-btn danger" onclick="deleteChatHistory()">Delete Chat</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Translate Panel (slide-out like info panel) -->
+            <div class="chat-translate-panel" id="chatTranslatePanel">
+                <div class="translate-panel-header">
+                    <h3>Translate Messages</h3>
+                </div>
+                <div class="translate-panel-content">
+                    <p class="translate-description">Select a language to translate incoming messages:</p>
+
+                    <!-- Language Search Bar -->
+                    <div class="language-search">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        <input type="text" id="languageSearchInput" placeholder="Search languages..." oninput="filterLanguages(this.value)">
+                    </div>
+
+                    <div class="language-list" id="languageList">
+                        <button class="language-option active" data-lang="none" data-name="no translation disable off" onclick="setTranslateLanguage('none')">
+                            <span class="lang-flag">🚫</span>
+                            <span class="lang-name">No Translation</span>
+                        </button>
+                        <button class="language-option" data-lang="en" data-name="english uk gb britain" onclick="setTranslateLanguage('en')">
+                            <span class="lang-flag">🇬🇧</span>
+                            <span class="lang-name">English</span>
+                        </button>
+                        <button class="language-option" data-lang="am" data-name="amharic ethiopia ethiopian" onclick="setTranslateLanguage('am')">
+                            <span class="lang-flag">🇪🇹</span>
+                            <span class="lang-name">Amharic</span>
+                        </button>
+                        <button class="language-option" data-lang="om" data-name="oromo oromiffa ethiopia ethiopian" onclick="setTranslateLanguage('om')">
+                            <span class="lang-flag">🇪🇹</span>
+                            <span class="lang-name">Oromo</span>
+                        </button>
+                        <button class="language-option" data-lang="ti" data-name="tigrinya tigray ethiopia ethiopian eritrea" onclick="setTranslateLanguage('ti')">
+                            <span class="lang-flag">🇪🇹</span>
+                            <span class="lang-name">Tigrinya</span>
+                        </button>
+                        <button class="language-option" data-lang="fr" data-name="french france francais" onclick="setTranslateLanguage('fr')">
+                            <span class="lang-flag">🇫🇷</span>
+                            <span class="lang-name">French</span>
+                        </button>
+                        <button class="language-option" data-lang="ar" data-name="arabic arab saudi arabia" onclick="setTranslateLanguage('ar')">
+                            <span class="lang-flag">🇸🇦</span>
+                            <span class="lang-name">Arabic</span>
+                        </button>
+                        <button class="language-option" data-lang="es" data-name="spanish espanol spain" onclick="setTranslateLanguage('es')">
+                            <span class="lang-flag">🇪🇸</span>
+                            <span class="lang-name">Spanish</span>
+                        </button>
+                        <button class="language-option" data-lang="pt" data-name="portuguese portugal brasil brazil" onclick="setTranslateLanguage('pt')">
+                            <span class="lang-flag">🇵🇹</span>
+                            <span class="lang-name">Portuguese</span>
+                        </button>
+                        <button class="language-option" data-lang="zh" data-name="chinese china mandarin" onclick="setTranslateLanguage('zh')">
+                            <span class="lang-flag">🇨🇳</span>
+                            <span class="lang-name">Chinese</span>
+                        </button>
+                        <button class="language-option" data-lang="hi" data-name="hindi india indian" onclick="setTranslateLanguage('hi')">
+                            <span class="lang-flag">🇮🇳</span>
+                            <span class="lang-name">Hindi</span>
+                        </button>
+                        <button class="language-option" data-lang="sw" data-name="swahili kiswahili kenya tanzania africa" onclick="setTranslateLanguage('sw')">
+                            <span class="lang-flag">🇰🇪</span>
+                            <span class="lang-name">Swahili</span>
+                        </button>
+                        <button class="language-option" data-lang="de" data-name="german germany deutsch" onclick="setTranslateLanguage('de')">
+                            <span class="lang-flag">🇩🇪</span>
+                            <span class="lang-name">German</span>
+                        </button>
+                        <button class="language-option" data-lang="it" data-name="italian italy italiano" onclick="setTranslateLanguage('it')">
+                            <span class="lang-flag">🇮🇹</span>
+                            <span class="lang-name">Italian</span>
+                        </button>
+                        <button class="language-option" data-lang="ja" data-name="japanese japan nihongo" onclick="setTranslateLanguage('ja')">
+                            <span class="lang-flag">🇯🇵</span>
+                            <span class="lang-name">Japanese</span>
+                        </button>
+                        <button class="language-option" data-lang="ko" data-name="korean korea hangul" onclick="setTranslateLanguage('ko')">
+                            <span class="lang-flag">🇰🇷</span>
+                            <span class="lang-name">Korean</span>
+                        </button>
+                        <button class="language-option" data-lang="ru" data-name="russian russia" onclick="setTranslateLanguage('ru')">
+                            <span class="lang-flag">🇷🇺</span>
+                            <span class="lang-name">Russian</span>
+                        </button>
+                        <button class="language-option" data-lang="tr" data-name="turkish turkey" onclick="setTranslateLanguage('tr')">
+                            <span class="lang-flag">🇹🇷</span>
+                            <span class="lang-name">Turkish</span>
+                        </button>
+                        <button class="language-option" data-lang="nl" data-name="dutch netherlands holland" onclick="setTranslateLanguage('nl')">
+                            <span class="lang-flag">🇳🇱</span>
+                            <span class="lang-name">Dutch</span>
+                        </button>
+                        <button class="language-option" data-lang="pl" data-name="polish poland" onclick="setTranslateLanguage('pl')">
+                            <span class="lang-flag">🇵🇱</span>
+                            <span class="lang-name">Polish</span>
+                        </button>
+                        <button class="language-option" data-lang="vi" data-name="vietnamese vietnam" onclick="setTranslateLanguage('vi')">
+                            <span class="lang-flag">🇻🇳</span>
+                            <span class="lang-name">Vietnamese</span>
+                        </button>
+                        <button class="language-option" data-lang="th" data-name="thai thailand" onclick="setTranslateLanguage('th')">
+                            <span class="lang-flag">🇹🇭</span>
+                            <span class="lang-name">Thai</span>
+                        </button>
+                        <button class="language-option" data-lang="id" data-name="indonesian indonesia" onclick="setTranslateLanguage('id')">
+                            <span class="lang-flag">🇮🇩</span>
+                            <span class="lang-name">Indonesian</span>
+                        </button>
+                        <button class="language-option" data-lang="ms" data-name="malay malaysia" onclick="setTranslateLanguage('ms')">
+                            <span class="lang-flag">🇲🇾</span>
+                            <span class="lang-name">Malay</span>
+                        </button>
+                        <button class="language-option" data-lang="he" data-name="hebrew israel" onclick="setTranslateLanguage('he')">
+                            <span class="lang-flag">🇮🇱</span>
+                            <span class="lang-name">Hebrew</span>
+                        </button>
+                        <button class="language-option" data-lang="uk" data-name="ukrainian ukraine" onclick="setTranslateLanguage('uk')">
+                            <span class="lang-flag">🇺🇦</span>
+                            <span class="lang-name">Ukrainian</span>
+                        </button>
+                        <button class="language-option" data-lang="bn" data-name="bengali bangladesh bangla" onclick="setTranslateLanguage('bn')">
+                            <span class="lang-flag">🇧🇩</span>
+                            <span class="lang-name">Bengali</span>
+                        </button>
+                        <button class="language-option" data-lang="ur" data-name="urdu pakistan" onclick="setTranslateLanguage('ur')">
+                            <span class="lang-flag">🇵🇰</span>
+                            <span class="lang-name">Urdu</span>
+                        </button>
+                        <button class="language-option" data-lang="ta" data-name="tamil india sri lanka" onclick="setTranslateLanguage('ta')">
+                            <span class="lang-flag">🇮🇳</span>
+                            <span class="lang-name">Tamil</span>
+                        </button>
+                        <button class="language-option" data-lang="te" data-name="telugu india" onclick="setTranslateLanguage('te')">
+                            <span class="lang-flag">🇮🇳</span>
+                            <span class="lang-name">Telugu</span>
+                        </button>
+                        <button class="language-option" data-lang="yo" data-name="yoruba nigeria" onclick="setTranslateLanguage('yo')">
+                            <span class="lang-flag">🇳🇬</span>
+                            <span class="lang-name">Yoruba</span>
+                        </button>
+                        <button class="language-option" data-lang="ig" data-name="igbo nigeria" onclick="setTranslateLanguage('ig')">
+                            <span class="lang-flag">🇳🇬</span>
+                            <span class="lang-name">Igbo</span>
+                        </button>
+                        <button class="language-option" data-lang="ha" data-name="hausa nigeria niger" onclick="setTranslateLanguage('ha')">
+                            <span class="lang-flag">🇳🇬</span>
+                            <span class="lang-name">Hausa</span>
+                        </button>
+                        <button class="language-option" data-lang="zu" data-name="zulu south africa" onclick="setTranslateLanguage('zu')">
+                            <span class="lang-flag">🇿🇦</span>
+                            <span class="lang-name">Zulu</span>
+                        </button>
+                        <button class="language-option" data-lang="af" data-name="afrikaans south africa" onclick="setTranslateLanguage('af')">
+                            <span class="lang-flag">🇿🇦</span>
+                            <span class="lang-name">Afrikaans</span>
+                        </button>
+                    </div>
+
+                    <p class="no-languages-found" id="noLanguagesFound" style="display: none;">No languages found</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Chat Settings Modal (separate from main chat modal) -->
+    <div class="chat-settings-modal" id="chatSettingsModal">
+        <div class="chat-settings-modal-overlay" onclick="toggleChatSettings()"></div>
+        <div class="chat-settings-modal-content">
+            <div class="settings-modal-header">
+                <h3>Chat Settings</h3>
+                <button class="settings-modal-close" onclick="toggleChatSettings()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="settings-modal-body">
+                    <!-- Privacy & Security Section -->
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            Privacy & Security
+                        </h4>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Who can message me</span>
+                                <span class="option-desc">Control who can start conversations</span>
+                            </div>
+                            <select class="settings-select" id="settingWhoCanMessage" onchange="updateChatSetting('who_can_message', this.value)">
+                                <option value="everyone">Everyone</option>
+                                <option value="connections">Connections only</option>
+                                <option value="none">No one</option>
+                            </select>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Read receipts</span>
+                                <span class="option-desc">Show when you've read messages</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingReadReceipts" checked onchange="updateChatSetting('read_receipts', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Online status</span>
+                                <span class="option-desc">Show when you're online</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingOnlineStatus" checked onchange="updateChatSetting('online_status', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Typing indicators</span>
+                                <span class="option-desc">Show when you're typing</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingTypingIndicators" checked onchange="updateChatSetting('typing_indicators', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Notifications Section -->
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                            Notifications
+                        </h4>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Message notifications</span>
+                                <span class="option-desc">Get notified for new messages</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingMessageNotifications" checked onchange="updateChatSetting('message_notifications', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Sound alerts</span>
+                                <span class="option-desc">Play sound for new messages</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingSoundAlerts" checked onchange="updateChatSetting('sound_alerts', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Mute all chats</span>
+                                <span class="option-desc">Temporarily mute notifications</span>
+                            </div>
+                            <select class="settings-select" id="settingMuteAll" onchange="updateChatSetting('mute_duration', this.value)">
+                                <option value="off">Off</option>
+                                <option value="1h">For 1 hour</option>
+                                <option value="8h">For 8 hours</option>
+                                <option value="24h">For 24 hours</option>
+                                <option value="forever">Until I turn back on</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Appearance Section -->
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <circle cx="12" cy="12" r="4"></circle>
+                                <line x1="21.17" y1="8" x2="12" y2="8"></line>
+                                <line x1="3.95" y1="6.06" x2="8.54" y2="14"></line>
+                                <line x1="10.88" y1="21.94" x2="15.46" y2="14"></line>
+                            </svg>
+                            Appearance
+                        </h4>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Chat bubble style</span>
+                                <span class="option-desc">Choose message bubble shape</span>
+                            </div>
+                            <select class="settings-select" id="settingBubbleStyle" onchange="updateChatSetting('bubble_style', this.value)">
+                                <option value="rounded">Rounded</option>
+                                <option value="square">Square</option>
+                            </select>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Font size</span>
+                                <span class="option-desc">Adjust message text size</span>
+                            </div>
+                            <select class="settings-select" id="settingFontSize" onchange="updateChatSetting('font_size', this.value)">
+                                <option value="small">Small</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="large">Large</option>
+                            </select>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Message density</span>
+                                <span class="option-desc">Spacing between messages</span>
+                            </div>
+                            <select class="settings-select" id="settingDensity" onchange="updateChatSetting('message_density', this.value)">
+                                <option value="compact">Compact</option>
+                                <option value="comfortable" selected>Comfortable</option>
+                                <option value="spacious">Spacious</option>
+                            </select>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Enter key behavior</span>
+                                <span class="option-desc">What Enter key does</span>
+                            </div>
+                            <select class="settings-select" id="settingEnterKey" onchange="updateChatSetting('enter_key', this.value)">
+                                <option value="send">Send message</option>
+                                <option value="newline">New line</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Media & Storage Section -->
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                            </svg>
+                            Media & Storage
+                        </h4>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Auto-download media</span>
+                                <span class="option-desc">Automatically download images/videos</span>
+                            </div>
+                            <select class="settings-select" id="settingAutoDownload" onchange="updateChatSetting('auto_download', this.value)">
+                                <option value="wifi">Wi-Fi only</option>
+                                <option value="always">Always</option>
+                                <option value="never">Never</option>
+                            </select>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Image quality</span>
+                                <span class="option-desc">Quality when sending images</span>
+                            </div>
+                            <select class="settings-select" id="settingImageQuality" onchange="updateChatSetting('image_quality', this.value)">
+                                <option value="original">Original</option>
+                                <option value="compressed" selected>Compressed</option>
+                            </select>
+                        </div>
+                        <div class="settings-option storage-info">
+                            <div class="option-info">
+                                <span class="option-label">Storage used</span>
+                                <span class="option-desc" id="settingStorageUsed">Calculating...</span>
+                            </div>
+                            <button class="settings-action-btn" onclick="clearChatCache()">Clear Cache</button>
+                        </div>
+                    </div>
+
+                    <!-- Blocked Contacts Section -->
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="m4.93 4.93 14.14 14.14"></path>
+                            </svg>
+                            Blocked Contacts
+                        </h4>
+                        <div class="blocked-contacts-list" id="settingsBlockedList">
+                            <p class="no-blocked">No blocked contacts</p>
+                        </div>
+                    </div>
+
+                    <!-- Voice Preferences Section -->
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                                <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                                <line x1="12" y1="19" x2="12" y2="23"></line>
+                                <line x1="8" y1="23" x2="16" y2="23"></line>
+                            </svg>
+                            Voice Preferences
+                        </h4>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Text-to-speech voice</span>
+                                <span class="option-desc">Voice for reading messages aloud</span>
+                            </div>
+                            <select class="settings-select" id="settingTTSVoice" onchange="updateChatSetting('tts_voice', this.value)">
+                                <option value="default">Default</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                            </select>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Speech rate</span>
+                                <span class="option-desc">Speed of text-to-speech playback</span>
+                            </div>
+                            <select class="settings-select" id="settingSpeechRate" onchange="updateChatSetting('speech_rate', this.value)">
+                                <option value="0.75">Slow</option>
+                                <option value="1" selected>Normal</option>
+                                <option value="1.25">Fast</option>
+                                <option value="1.5">Very Fast</option>
+                            </select>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Auto-play voice messages</span>
+                                <span class="option-desc">Automatically play received voice messages</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingAutoPlayVoice" onchange="updateChatSetting('auto_play_voice', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Language & Translation Section -->
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="2" y1="12" x2="22" y2="12"></line>
+                                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+                            </svg>
+                            Language & Translation
+                        </h4>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Default translation</span>
+                                <span class="option-desc">Language for auto-translate</span>
+                            </div>
+                            <select class="settings-select" id="settingDefaultTranslation" onchange="updateChatSetting('default_translation', this.value)">
+                                <option value="none">No translation</option>
+                                <option value="en">English</option>
+                                <option value="am">Amharic</option>
+                                <option value="om">Oromo</option>
+                                <option value="ti">Tigrinya</option>
+                                <option value="fr">French</option>
+                                <option value="ar">Arabic</option>
+                                <option value="es">Spanish</option>
+                                <option value="zh">Chinese</option>
+                                <option value="hi">Hindi</option>
+                                <option value="sw">Swahili</option>
+                            </select>
+                        </div>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Auto-translate messages</span>
+                                <span class="option-desc">Automatically translate incoming messages</span>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="settingAutoTranslate" onchange="updateChatSetting('auto_translate', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Data & Backup Section -->
+                    <div class="settings-section">
+                        <h4 class="settings-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            Data & Backup
+                        </h4>
+                        <div class="settings-option">
+                            <div class="option-info">
+                                <span class="option-label">Export chat history</span>
+                                <span class="option-desc">Download all your conversations</span>
+                            </div>
+                            <button class="settings-action-btn" onclick="exportChatHistory()">Export</button>
+                        </div>
+                        <div class="settings-option danger-option">
+                            <div class="option-info">
+                                <span class="option-label">Delete all chat data</span>
+                                <span class="option-desc">Permanently delete all messages</span>
+                            </div>
+                            <button class="settings-action-btn danger" onclick="deleteAllChatData()">Delete All</button>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emoji Modal -->
+    <div id="chatEmojiModal" class="emoji-gif-modal">
+        <div class="emoji-gif-content">
+            <button class="emoji-gif-close" onclick="closeChatEmojiModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"></path>
+                </svg>
+            </button>
+            <div class="tabs">
+                <button class="tab active" onclick="showChatEmojiTab('emoji')">Emojis</button>
+                <button class="tab" onclick="showChatEmojiTab('gif')">GIFs</button>
+            </div>
+            <div id="chatEmojiTab" class="tab-content active">
+                <!-- Emojis will be populated dynamically -->
+            </div>
+            <div id="chatGifTab" class="tab-content">
+                <div class="gif-search">
+                    <input type="text" placeholder="Search GIFs..." id="chatGifSearch">
+                </div>
+                <div class="gif-grid" id="chatGifGrid">
+                    <!-- GIFs will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div id="chatContextMenu" class="context-menu">
+        <div class="context-menu-content">
+            <button onclick="replyChatMessage()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="9 17 4 12 9 7"></polyline>
+                    <path d="M20 18v-2a4 4 0 0 0-4-4H4"></path>
+                </svg>
+                Reply
+            </button>
+            <button onclick="copyChatMessage()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy
+            </button>
+            <button onclick="forwardChatMessage()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 17 20 12 15 7"></polyline>
+                    <path d="M4 18v-2a4 4 0 0 1 4-4h12"></path>
+                </svg>
+                Forward
+            </button>
+            <hr>
+            <button id="chatEditMsgBtn" onclick="editChatMessage()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edit
+            </button>
+            <button id="chatDeleteMsgBtn" onclick="deleteChatMessage()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete
+            </button>
+            <hr>
+            <div class="reaction-buttons">
+                <button onclick="reactToChatMessage('heart')">&#10084;</button>
+                <button onclick="reactToChatMessage('thumbsup')">&#128077;</button>
+                <button onclick="reactToChatMessage('laugh')">&#128514;</button>
+                <button onclick="reactToChatMessage('wow')">&#128558;</button>
+                <button onclick="reactToChatMessage('sad')">&#128546;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call Modal -->
+    <div id="chatCallModal" class="call-modal">
+        <div class="call-modal-content">
+            <div class="call-header">
+                <div class="call-user-info">
+                    <img src="" alt="" id="chatCallUserAvatar">
+                    <div>
+                        <h2 id="chatCallUserName">User Name</h2>
+                        <p id="chatCallUserRole">Role</p>
+                        <p class="call-status" id="chatCallStatus">Connecting...</p>
+                    </div>
+                </div>
+                <div class="call-header-controls">
+                    <button class="call-close-btn" onclick="endChatCall()" title="Close">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 6L6 18M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="call-timer" id="chatCallTimer">00:00</div>
+
+            <div class="call-video" id="chatCallVideo">
+                <video id="chatRemoteVideo" autoplay class="main-video"></video>
+                <video id="chatLocalVideo" autoplay muted class="pip-video"></video>
+                <div class="voice-call-animation" id="chatVoiceCallAnimation">
+                    <div class="voice-wave">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="call-controls" id="chatCallControls">
+                <button id="chatToggleVideoBtn" onclick="toggleChatCallVideo()" title="Toggle Video">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                    </svg>
+                </button>
+                <button id="chatMuteBtn" onclick="toggleChatMute()" title="Toggle Mute">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                        <line x1="12" y1="19" x2="12" y2="23"></line>
+                        <line x1="8" y1="23" x2="16" y2="23"></line>
+                    </svg>
+                </button>
+                <button id="chatEndCallBtn" onclick="endChatCall()" title="End Call" class="end-call">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Recording Preview Modal -->
+    <div id="chatVideoPreviewModal" class="video-preview-modal">
+        <div class="video-preview-content">
+            <div class="video-preview-header">
+                <h3>Record Video Message</h3>
+                <button class="video-preview-close" onclick="closeVideoPreview()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="video-preview-body">
+                <video id="chatVideoPreview" autoplay muted playsinline></video>
+                <div class="video-recording-indicator" id="videoRecordingIndicator">
+                    <span class="recording-dot"></span>
+                    <span class="recording-text">REC</span>
+                    <span class="recording-timer" id="videoRecordingTimer">0:00</span>
+                </div>
+            </div>
+            <div class="video-preview-controls">
+                <button class="video-control-btn cancel" onclick="closeVideoPreview()" title="Cancel">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <button class="video-control-btn record" id="videoRecordToggleBtn" onclick="toggleVideoRecordingInPreview()" title="Start Recording">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10"></circle>
+                    </svg>
+                </button>
+                <button class="video-control-btn send" id="videoSendBtn" onclick="sendRecordedVideo()" title="Send Video" disabled>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="chat-toast-container" id="chatToastContainer"></div>
+</div>

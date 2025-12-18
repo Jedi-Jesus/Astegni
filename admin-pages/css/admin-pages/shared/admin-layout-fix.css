@@ -1,0 +1,117 @@
+/* ============================================
+   ADMIN LAYOUT FIX CSS - Right side widget positioning
+   ============================================ */
+
+/* Panel Visibility Control - CRITICAL */
+.panel-content {
+    display: none !important;
+}
+
+.panel-content.active {
+    display: block !important;
+}
+
+.panel-content.hidden {
+    display: none !important;
+}
+
+/* Ensure panels container allows visible panels */
+.panels-container {
+    position: relative;
+    width: 100%;
+}
+
+/* Main layout container for admin pages */
+/* DESKTOP FIRST: Side-by-side layout by default */
+.admin-main-layout {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 1.5rem !important;
+    max-width: 100%;
+    position: relative;
+    align-items: flex-start !important;
+    justify-content: space-between !important;
+}
+
+/* Left content area - takes up available space */
+.admin-content-area {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    max-width: calc(100% - 350px) !important;
+}
+
+/* Right sidebar widgets - fixed width, sticky positioning */
+.admin-right-widgets {
+    flex: 0 0 320px !important;
+    width: 320px !important;
+    min-width: 320px !important;
+    max-width: 320px !important;
+    position: sticky !important;
+    top: 5rem !important;
+    height: fit-content;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+    align-self: flex-start !important;
+}
+
+/* Ensure proper spacing for widget containers */
+.admin-right-widgets > div {
+    margin-bottom: 1rem;
+}
+
+/* Widget card styling */
+.admin-widget-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    transition: all 0.3s ease;
+}
+
+.admin-widget-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+/* Responsive: Stack on tablets and below */
+@media (max-width: 1024px) {
+    .admin-main-layout {
+        flex-direction: column !important;
+        flex-wrap: wrap !important;
+    }
+
+    .admin-content-area {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .admin-right-widgets {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        position: static !important;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-right-widgets {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Special override for manage-system-settings.html */
+.system-settings-page .admin-main-layout {
+    display: block;
+}
+
+.system-settings-page .admin-right-widgets {
+    width: auto;
+    position: static;
+    margin-top: 2rem;
+}

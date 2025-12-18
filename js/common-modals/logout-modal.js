@@ -197,7 +197,7 @@ async function performLogout(logoutAll = false) {
         const token = localStorage.getItem('token');
         if (token) {
             try {
-                const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+                const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
                 await fetch(`${API_BASE_URL}/api/logout`, {
                     method: 'POST',
                     headers: {

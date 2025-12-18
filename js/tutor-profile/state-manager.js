@@ -62,7 +62,8 @@ const TutorProfileState = {
 
     getToken() {
         if (!this.currentToken) {
-            this.currentToken = localStorage.getItem('token');
+            // Try 'token' first, then fall back to 'access_token'
+            this.currentToken = localStorage.getItem('token') || localStorage.getItem('access_token');
         }
         return this.currentToken;
     },

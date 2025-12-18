@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -1962,6 +1964,11 @@
                 const advertiserData = await response.json();
                 console.log('Advertiser data loaded:', advertiserData);
 
+                // Store advertiser data globally for contact/message functionality
+                window.currentAdvertiserData = advertiserData;
+                window.currentAdvertiserUserId = advertiserData.user_id;
+                window.currentAdvertiserProfileId = advertiserData.id;
+
                 // Update profile header with database data
                 updateProfileHeader(advertiserData);
 
@@ -2246,8 +2253,51 @@
         }
 
         function contactAdvertiser() {
-            console.log('Contacting advertiser');
-            alert('Contact form - Feature coming soon!');
+            // Check if user is authenticated
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            if (!token) {
+                if (window.openAuthModal) {
+                    window.openAuthModal('login');
+                } else {
+                    alert('Please log in to contact this advertiser');
+                }
+                return;
+            }
+
+            // Get advertiser data from the global variable
+            const advertiserData = window.currentAdvertiserData;
+            if (!advertiserData) {
+                console.error('Advertiser data not loaded yet');
+                alert('Please wait for the profile to load');
+                return;
+            }
+
+            console.log('Opening chat with advertiser:', advertiserData);
+
+            // Build target user object for chat modal
+            const targetUser = {
+                id: advertiserData.user_id,
+                user_id: advertiserData.user_id,
+                profile_id: advertiserData.id,
+                full_name: advertiserData.company_name || advertiserData.full_name || `${advertiserData.first_name || ''} ${advertiserData.father_name || ''}`.trim(),
+                name: advertiserData.company_name || advertiserData.full_name || `${advertiserData.first_name || ''} ${advertiserData.father_name || ''}`.trim(),
+                profile_picture: advertiserData.logo || advertiserData.profile_picture,
+                avatar: advertiserData.logo || advertiserData.profile_picture,
+                role: 'advertiser',
+                profile_type: 'advertiser',
+                is_online: advertiserData.is_online || false
+            };
+
+            console.log('Target user for chat:', targetUser);
+
+            // Open chat modal with the advertiser
+            if (typeof ChatModalManager !== 'undefined' && typeof ChatModalManager.open === 'function') {
+                ChatModalManager.open(targetUser);
+                console.log('Chat modal opened for advertiser:', targetUser.full_name);
+            } else {
+                console.error('ChatModalManager not available');
+                alert('Chat feature is not available. Please refresh the page.');
+            }
         }
 
         function openAdAnalyticsModal() {
@@ -2442,6 +2492,30 @@
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
         });
+    </script>
+
+    <!-- Chat Modal Container -->
+    <div id="chat-modal-container"></div>
+
+    <!-- Chat Modal Script -->
+    <script src="../js/common-modals/chat-modal.js"></script>
+    <script src="../js/common-modals/view-request-modal.js"></script>
+
+    <!-- Load Chat Modal HTML and Initialize -->
+    <script>
+        // Load chat modal HTML dynamically
+        (function loadChatModal() {
+            fetch('../modals/common-modals/chat-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('chat-modal-container').innerHTML = html;
+                    // Re-initialize chat modal after HTML is loaded
+                    if (typeof ChatModalManager !== 'undefined') {
+                        ChatModalManager.init();
+                    }
+                })
+                .catch(err => console.log('Chat modal will load on demand:', err.message));
+        })();
     </script>
 </body>
 

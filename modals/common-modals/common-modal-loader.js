@@ -26,14 +26,16 @@ const CommonModalLoader = (function() {
     const COMMON_MODALS = [
         'add-role-modal.html',
         'coming-soon-modal.html',
-        'logout-modal.html'
+        'logout-modal.html',
+        'view-request-modal.html'
     ];
 
     // Modal ID to filename mapping
     const MODAL_ID_MAP = {
         'add-role-modal': 'add-role-modal.html',
         'coming-soon-modal': 'coming-soon-modal.html',
-        'logout-modal': 'logout-modal.html'
+        'logout-modal': 'logout-modal.html',
+        'view-request-modal': 'view-request-modal.html'
     };
 
     // Cache for loaded modals

@@ -9,7 +9,7 @@ const EarningsWidget = {
     earningsData: [],
     investmentsData: [],
     currentType: 'earnings', // 'earnings' or 'investments'
-    API_BASE_URL: 'https://api.astegni.com',
+    API_BASE_URL: 'http://localhost:8000',
 
     init() {
         this.canvas = document.getElementById('earnings-line-chart');
@@ -48,7 +48,7 @@ const EarningsWidget = {
      * Get auth headers
      */
     getAuthHeaders() {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         return {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

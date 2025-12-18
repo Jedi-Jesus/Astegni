@@ -133,94 +133,123 @@ const AdvertiserProfileDataLoader = {
     populateProfileHeader() {
         const data = this.profileData;
 
-        // Company name
-        if (data.company_name) {
-            // FIXED: Use specific ID selector to target profile header, NOT nav bar
-            this.updateElement('hero-name', data.company_name);
+        // Username - update in profile-header-section
+        if (data.username) {
+            this.updateElement('advertiserName', data.username);
         }
 
-        // Bio
+        // Hero Title (array) - join with line breaks or space
+        if (data.hero_title && Array.isArray(data.hero_title) && data.hero_title.length > 0) {
+            const titleText = data.hero_title.join(' ');
+            this.updateElement('advertiser-hero-title', titleText);
+        }
+
+        // Hero Subtitle (array) - join with line breaks or space
+        if (data.hero_subtitle && Array.isArray(data.hero_subtitle) && data.hero_subtitle.length > 0) {
+            const subtitleText = data.hero_subtitle.join(' ');
+            this.updateElement('advertiser-hero-subtitle', subtitleText);
+        }
+
+        // Bio - update in profile info grid
         if (data.bio) {
-            this.updateElement('hero-bio', data.bio);
             this.updateElement('advertiser-bio', data.bio);
         }
 
-        // Quote
+        // Quote/Tagline
         if (data.quote) {
-            this.updateElement('advertiser-quote', data.quote);
+            this.updateElement('advertiser-quote', `"${data.quote}"`);
         }
 
-        // Location
-        if (data.location) {
-            this.updateElement('advertiser-location', data.location);
-            this.updateElement('hero-location', data.location);
+        // Location (array) - join with comma
+        if (data.location && Array.isArray(data.location) && data.location.length > 0) {
+            const locationText = data.location.join(', ');
+            this.updateElement('advertiser-location', locationText);
         }
 
-        // Website
-        if (data.website) {
-            this.updateElement('advertiser-website', data.website);
-        }
-
-        // Email
+        // Email (from user data if available)
         if (data.email) {
             this.updateElement('advertiser-email', data.email);
         }
 
-        // Phone
+        // Phone (from user data if available)
         if (data.phone) {
             this.updateElement('advertiser-phone', data.phone);
         }
 
-        // Images
-        if (data.profile_picture || data.logo) {
-            const profilePic = data.profile_picture || data.logo;
-            this.updateImage('hero-avatar', profilePic);
-            this.updateImage('nav-profile-pic', profilePic);
-            const profileAvatars = document.querySelectorAll('.profile-avatar');
+        // Social links (JSONB object) - only show section if there are socials
+        if (data.socials && typeof data.socials === 'object' && Object.keys(data.socials).length > 0) {
+            this.populateSocialLinks(data.socials);
+        }
+
+        // Profile picture - update avatar
+        if (data.profile_picture) {
+            this.updateImage('profile-avatar', data.profile_picture);
+            // Also update nav profile pics
+            const profileAvatars = document.querySelectorAll('.profile-avatar, #profile-pic, #dropdown-profile-pic');
             profileAvatars.forEach(img => {
-                if (img) img.src = profilePic;
+                if (img) img.src = data.profile_picture;
             });
         }
 
+        // Cover image
         if (data.cover_image) {
-            this.updateImage('hero-cover', data.cover_image);
+            this.updateImage('cover-img', data.cover_image);
             const coverImages = document.querySelectorAll('.cover-img');
             coverImages.forEach(img => {
                 if (img) img.src = data.cover_image;
             });
         }
 
-        // Stats
-        this.updateElement('stat-campaigns', data.total_campaigns || '0');
-        this.updateElement('stat-impressions', this.formatNumber(data.total_impressions) || '0');
-        this.updateElement('stat-followers', this.formatNumber(data.total_followers) || '0');
-
-        // Rating
-        if (data.rating) {
-            this.updateElement('stat-rating', data.rating.toFixed(1) + '/5');
-            this.updateElement('advertiser-rating', data.rating.toFixed(1));
-        }
-
-        // Success rate
-        if (data.success_rate) {
-            this.updateElement('stat-success', data.success_rate.toFixed(0) + '%');
-        }
-
         // Verified badge
-        const verifiedBadges = document.querySelectorAll('.verified-badge');
-        verifiedBadges.forEach(badge => {
-            if (badge) {
-                badge.style.display = data.is_verified ? 'inline-flex' : 'none';
-            }
-        });
+        const verificationBadge = document.getElementById('verification-badge');
+        if (verificationBadge) {
+            verificationBadge.style.display = data.is_verified ? 'inline-flex' : 'none';
+        }
 
-        // Premium badge
-        const premiumBadges = document.querySelectorAll('.premium-badge');
-        premiumBadges.forEach(badge => {
-            if (badge) {
-                badge.style.display = data.is_premium ? 'inline-flex' : 'none';
+        // Member since date (joined_in)
+        if (data.joined_in) {
+            const joinDate = new Date(data.joined_in);
+            // Validate the date is real and not in the future
+            if (!isNaN(joinDate.getTime()) && joinDate <= new Date()) {
+                const formattedDate = joinDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                this.updateElement('advertiser-joined', formattedDate);
+            } else {
+                console.warn('[AdvertiserProfileDataLoader] Invalid joined_in date:', data.joined_in);
             }
-        });
+        }
+
+        console.log('[AdvertiserProfileDataLoader] Profile header populated with database data');
+    },
+
+    // Populate social links from socials JSONB
+    populateSocialLinks(socials) {
+        const socialLinksSection = document.getElementById('social-links-section');
+        let hasAnySocial = false;
+
+        // Map of social key to element ID
+        const socialMap = {
+            website: 'socialWebsite',
+            facebook: 'socialFacebook',
+            twitter: 'socialTwitter',
+            linkedin: 'socialLinkedin',
+            instagram: 'socialInstagram',
+            youtube: 'socialYoutube',
+            tiktok: 'socialTiktok'
+        };
+
+        for (const [key, elementId] of Object.entries(socialMap)) {
+            const element = document.getElementById(elementId);
+            if (element && socials[key]) {
+                element.href = socials[key];
+                element.style.display = 'flex';
+                hasAnySocial = true;
+            }
+        }
+
+        // Show/hide the entire social links section
+        if (socialLinksSection) {
+            socialLinksSection.style.display = hasAnySocial ? 'flex' : 'none';
+        }
     },
 
     // Utility functions

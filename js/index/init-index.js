@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         // Check for saved user session
         const savedUser = localStorage.getItem("currentUser");
         const savedRole = localStorage.getItem("userRole");
-        const savedToken = localStorage.getItem("token");
+        const savedToken = localStorage.getItem("token") || localStorage.getItem("access_token");
 
         if (savedUser && savedRole && savedToken) {
             try {
@@ -80,6 +80,10 @@ if (registerForm) {
         initializeTestimonials();
         initializePartners();
         initializeModals();
+
+        // Handle URL parameters for parent invitation registration
+        handleParentInvitationFromURL();
+
         initializeScrollEffects();
         initializeFormValidation();
         initializeSearch();

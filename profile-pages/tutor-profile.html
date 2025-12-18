@@ -41,6 +41,9 @@
     <link rel="stylesheet" href="../css/root/testimonials-widget.css">
     <!-- Finance/Settings Modal Styles -->
     <link rel="stylesheet" href="../css/plug-ins/finance.css">
+    <!-- Chat Modal Styles -->
+    <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <!-- Package Modal Fix - MUST be loaded LAST to override all conflicts -->
     <link rel="stylesheet" href="../css/tutor-profile/package-modal-fix.css">
     <!-- Market Trend Styles -->
@@ -230,9 +233,9 @@
                     <span class="sidebar-icon">📦</span>
                     <span>Packages</span>
                 </a>
-                <a href="#" onclick="switchPanel('requested-sessions'); return false;" class="sidebar-link">
+                <a href="#" onclick="switchPanel('requests'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📮</span>
-                    <span>Requested Sessions</span>
+                    <span>Requests</span>
                 </a>
                 <a href="#" onclick="switchPanel('my-students'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">👥</span>
@@ -316,9 +319,7 @@
                                     <span id="hero-text-content"></span>
                                     <span class="typing-cursor">|</span>
                                 </h2>
-                                <p id="hero-subtitle" class="hero-subtitle">Empowering students through personalized
-                                    learning and expert
-                                    guidance</p>
+                                <p id="hero-subtitle" class="hero-subtitle"></p>
                                 <div class="hero-stats">
                                     <div class="stat-item animate__animated animate__fadeInUp"
                                         style="animation-delay: 0.2s">
@@ -532,64 +533,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Teaching Method & Grade Level (Contact Info Style) -->
-                                            <div class="profile-contact-info" id="teaching-grade-container"
-                                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div id="teaching-method-container"
-                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">🎓</span>
-                                                    <div style="flex: 1;">
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Teaching Method</div>
-                                                        <div id="teaching-methods-inline"
-                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
-                                                            Loading...</div>
-                                                    </div>
-                                                </div>
-                                                <div id="grade-level-container"
-                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📖</span>
-                                                    <div style="flex: 1;">
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Grade Level</div>
-                                                        <div id="tutor-grade-level"
-                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
-                                                            Loading...</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Courses & Course Category (Contact Info Style) -->
-                                            <div class="profile-contact-info" id="courses-category-container"
-                                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div id="courses-container"
-                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📖</span>
-                                                    <div style="flex: 1;">
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Courses</div>
-                                                        <div id="tutor-courses"
-                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
-                                                            Loading...</div>
-                                                    </div>
-                                                </div>
-                                                <div id="course-category-container"
-                                                    style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📚</span>
-                                                    <div style="flex: 1;">
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">
-                                                            Course Category</div>
-                                                        <div id="tutor-course-category"
-                                                            style="color: var(--text); font-size: 0.875rem; font-weight: 500;">
-                                                            Loading...</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-
                                             <!-- Social Links -->
                                             <div class="profile-social-links" id="social-links-container"
                                                 style="display: flex; gap: 0.75rem; margin-top: 1.5rem; margin-bottom: 0.75rem; padding: 0.5rem 0;">
@@ -642,6 +585,10 @@
                                                 <button onclick="openEditProfileModal()" class="btn-primary">
                                                     <span class="mr-2">✏️</span>
                                                     Edit Profile
+                                                </button>
+                                                <button onclick="openChatModal()" class="btn-secondary ml-2">
+                                                    <span class="mr-2">💬</span>
+                                                    Message
                                                 </button>
                                                 <button onclick="shareProfile()" class="btn-secondary ml-2">
                                                     <span class="mr-2">🔗</span>
@@ -727,16 +674,31 @@
                         </div>
                     </div>
 
-                    <!-- Requested Sessions Panel -->
-                    <div id="requested-sessions-panel" class="panel-content hidden">
+                    <!-- Requests Panel -->
+                    <div id="requests-panel" class="panel-content hidden">
                         <div class="mb-8">
                             <h1 class="text-3xl font-bold mb-2">My Requests</h1>
-                            <p class="text-gray-600">Manage your school and tutor session requests</p>
+                            <p class="text-gray-600">Manage your courses, schools, sessions, and parenting requests</p>
                         </div>
 
                         <!-- Request Type Filter Cards -->
-                        <div class="request-type-cards grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div class="request-type-cards grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                             <div class="request-type-card card p-4 cursor-pointer border-2 transition active"
+                                onclick="filterTutorRequestType('courses')" data-type="courses">
+                                <div class="flex items-center gap-3">
+                                    <div class="text-3xl">📚</div>
+                                    <div>
+                                        <h3 class="font-bold text-lg">Requested Courses</h3>
+                                        <p class="text-sm text-gray-600">View course requests</p>
+                                        <button class="mt-2 text-xs bg-blue-500 text-white px-3 py-1 rounded-full hover:bg-blue-600 transition"
+                                            onclick="event.stopPropagation(); openCourseRequestModal()">
+                                            <i class="fas fa-plus"></i> Request Course
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="request-type-card card p-4 cursor-pointer border-2 transition"
                                 onclick="filterTutorRequestType('schools')" data-type="schools">
                                 <div class="flex items-center gap-3">
                                     <div class="text-3xl">🏫</div>
@@ -771,7 +733,7 @@
                             </div>
                         </div>
 
-                        <!-- Request Status Sub-Tabs -->
+                        <!-- Request Status Sub-Tabs (for courses, schools, sessions) -->
                         <div class="status-tabs mb-6"
                             style="display: flex; gap: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
                             <button class="status-tab active"
@@ -792,6 +754,23 @@
                                 onclick="filterTutorRequestStatus('rejected')"
                                 data-status="rejected">
                                 Rejected
+                            </button>
+                        </div>
+
+                        <!-- Parenting Direction Tabs (only visible for parenting type) -->
+                        <div id="parenting-direction-tabs" class="mb-6 hidden"
+                            style="display: none; gap: 1rem; border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem;">
+                            <button class="parenting-tab active"
+                                onclick="filterParentingDirection('invited')" data-direction="invited"
+                                style="padding: 0.5rem 1rem; font-weight: 500; color: var(--primary-color); border-bottom: 2px solid var(--primary-color); background: none; border-left: none; border-right: none; border-top: none; cursor: pointer;">
+                                <i class="fas fa-inbox mr-2"></i>Invited (Received)
+                                <span id="parenting-invited-count" class="ml-2 text-xs bg-purple-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
+                            </button>
+                            <button class="parenting-tab"
+                                onclick="filterParentingDirection('invites')" data-direction="invites"
+                                style="padding: 0.5rem 1rem; font-weight: 400; color: var(--text-secondary); border-bottom: 2px solid transparent; background: none; border-left: none; border-right: none; border-top: none; cursor: pointer;">
+                                <i class="fas fa-paper-plane mr-2"></i>Invites (Sent)
+                                <span id="parenting-invites-count" class="ml-2 text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full hidden">0</span>
                             </button>
                         </div>
 
@@ -825,20 +804,34 @@
                     <!-- My Students Panel -->
                     <div id="my-students-panel" class="panel-content hidden">
                         <div class="mb-8">
-                            <h1 class="text-3xl font-bold mb-2">My Students</h1>
-                            <p class="text-gray-600">View and manage your current students</p>
+                            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                                <h1 class="text-3xl font-bold">My Students</h1>
+                                <span id="student-count-badge" class="hidden" style="background: var(--primary-color); color: white; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.875rem; font-weight: 600;">0 students</span>
+                            </div>
+                            <p class="text-gray-600">View and manage your enrolled students from the enrolled_students table</p>
                         </div>
 
                         <div class="card p-6 mb-6">
-                            <input type="text" id="student-search" class="w-full p-3 border-2 rounded-lg"
-                                placeholder="Search students by name...">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <div style="position: relative; flex: 1;">
+                                    <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary);"></i>
+                                    <input type="search" id="student-search" class="w-full p-3 pl-12 border-2 rounded-lg"
+                                        placeholder="Search students by name, grade, package, or email..."
+                                        autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                        data-form-type="other" data-lpignore="true">
+                                </div>
+                                <button onclick="SessionRequestManager.loadMyStudents()" class="btn-secondary" style="padding: 0.75rem 1.25rem; white-space: nowrap;">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
                         </div>
 
                         <div class="students-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                             id="my-students-grid">
-                            <!-- Students will be loaded dynamically -->
-                            <div class="card p-6 text-center text-gray-500">
-                                <p>No students yet</p>
+                            <!-- Students will be loaded dynamically from enrolled_students table -->
+                            <div class="col-span-full card p-6 text-center text-gray-500">
+                                <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                                <p>Loading students...</p>
                             </div>
                         </div>
                     </div>
@@ -2984,7 +2977,7 @@
                                         </div>
                                     </div>
                                     <div id="all-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3010,7 +3003,7 @@
                                         </div>
                                     </div>
                                     <div id="my-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3032,7 +3025,7 @@
                                         </div>
                                     </div>
                                     <div id="discover-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3054,7 +3047,7 @@
                                         </div>
                                     </div>
                                     <div id="joined-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3076,7 +3069,7 @@
                                         </div>
                                     </div>
                                     <div id="upcoming-events-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3128,7 +3121,7 @@
                                         </div>
                                     </div>
                                     <div id="all-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3154,7 +3147,7 @@
                                         </div>
                                     </div>
                                     <div id="my-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3176,7 +3169,7 @@
                                         </div>
                                     </div>
                                     <div id="discover-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3198,7 +3191,7 @@
                                         </div>
                                     </div>
                                     <div id="joined-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -3220,7 +3213,7 @@
                                         </div>
                                     </div>
                                     <div id="upcoming-clubs-grid"
-                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto min-h-[300px]">
+                                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <!-- Will be populated by JS -->
                                     </div>
                                 </div>
@@ -4014,6 +4007,9 @@
     <!-- 6. Main Controller -->
     <script src="../js/tutor-profile/profile-controller.js"></script>
 
+    <!-- 6.25. Session Request Manager (MUST load before panel-manager.js) -->
+    <script src="../js/tutor-profile/session-request-manager.js"></script>
+
     <!-- 6.5. Panel Manager (for sidebar panel switching) -->
     <script src="../js/tutor-profile/panel-manager.js"></script>
 
@@ -4035,11 +4031,12 @@
     <script src="../js/tutor-profile/image-upload-handler.js"></script>
     <script src="../js/tutor-profile/profile-edit-handler.js"></script>
     <script src="../js/tutor-profile/package-manager-clean.js"></script>
+    <script src="../js/tutor-profile/course-request-manager.js"></script>
     <script src="../js/tutor-profile/market-trend-functions.js"></script>
     <script src="../js/tutor-profile/reviews-panel-manager.js?v=20251122"></script>
 
     <!-- 10. Shared Utilities -->
-    <script src="../js/admin-pages/shared/sidebar-fix.js"></script>
+    <script src="../js/shared/sidebar-toggle.js"></script>
 
     <!-- Folder Manager (for document folders) -->
     <script src="../js/shared/folder-manager.js"></script>
@@ -4057,9 +4054,6 @@
 
     <!-- Quiz Management System -->
     <script src="../js/tutor-profile/coursework-manager.js"></script>
-
-    <!-- Session Request Manager -->
-    <script src="../js/tutor-profile/session-request-manager.js"></script>
 
     <!-- Profile Extensions Manager (Certifications, Achievements, Experience) -->
     <script src="../js/tutor-profile/profile-extensions-manager.js"></script>
@@ -4163,6 +4157,28 @@
 
     <!-- Toast Notification Container -->
     <div id="toast-container" class="toast-container"></div>
+
+    <!-- Chat Modal Container (loaded dynamically) -->
+    <div id="chat-modal-container"></div>
+
+    <!-- Chat Modal JavaScript -->
+    <script src="../js/common-modals/chat-modal.js"></script>
+    <script src="../js/common-modals/view-request-modal.js"></script>
+    <script>
+        // Load chat modal HTML dynamically
+        (function loadChatModal() {
+            fetch('../modals/common-modals/chat-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('chat-modal-container').innerHTML = html;
+                    // Re-initialize chat modal after HTML is loaded
+                    if (typeof ChatModalManager !== 'undefined') {
+                        ChatModalManager.init();
+                    }
+                })
+                .catch(err => console.log('Chat modal will load on demand:', err.message));
+        })();
+    </script>
 
 </body>
 </html>

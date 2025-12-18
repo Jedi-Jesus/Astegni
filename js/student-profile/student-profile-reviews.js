@@ -6,7 +6,7 @@
  */
 
 // Use existing API_BASE_URL or define it
-const REVIEWS_API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+const REVIEWS_API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 // Global variable to store all reviews for filtering
 let allReviews = [];
@@ -19,7 +19,7 @@ async function loadRecentFeedback() {
     console.log('🔄 loadRecentFeedback called');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             console.error('No authentication token found');
             displayFeedbackError();
@@ -158,7 +158,7 @@ async function loadStudentReviews() {
     console.log('🔄 loadStudentReviews called for ratings-and-reviews-panel');
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             console.error('No authentication token found');
             displayNoReviews();

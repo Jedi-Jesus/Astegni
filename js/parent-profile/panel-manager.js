@@ -74,6 +74,56 @@ function switchPanel(panelName) {
         detail: { panelName }
     });
     window.dispatchEvent(panelSwitchEvent);
+
+    // Load data for specific panels
+    loadPanelData(panelName);
+}
+
+/**
+ * Load data for specific panels when they become active
+ * @param {string} panelName - The name of the panel
+ */
+function loadPanelData(panelName) {
+    switch (panelName) {
+        case 'co-parents':
+            // Load co-parents from database
+            if (typeof CoparentsManager !== 'undefined' && CoparentsManager.loadCoparents) {
+                console.log('📥 Loading co-parents data...');
+                CoparentsManager.loadCoparents();
+            }
+            break;
+        case 'my-children':
+            // Load children from database
+            if (typeof ChildrenManager !== 'undefined' && ChildrenManager.loadChildren) {
+                console.log('📥 Loading children data...');
+                ChildrenManager.loadChildren();
+            }
+            break;
+        case 'session-requests':
+            // Load session requests
+            if (typeof SessionRequestsManager !== 'undefined' && SessionRequestsManager.loadRequests) {
+                console.log('📥 Loading session requests...');
+                SessionRequestsManager.loadRequests();
+            }
+            break;
+        case 'family-schedule':
+            // Load schedules when schedule panel opens
+            if (typeof loadSchedules === 'function') {
+                console.log('📥 Loading schedules data...');
+                loadSchedules();
+            }
+            break;
+        case 'community':
+            // Load community data
+            if (typeof ParentCommunityManager !== 'undefined' && ParentCommunityManager.loadCommunity) {
+                console.log('📥 Loading community data...');
+                ParentCommunityManager.loadCommunity();
+            }
+            break;
+        default:
+            // No specific loading needed
+            break;
+    }
 }
 
 /**

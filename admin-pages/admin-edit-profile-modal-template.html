@@ -1,77 +1,50 @@
 <!-- Edit Profile Modal Template -->
-<!-- This modal ONLY edits admin_profile table fields (personal information) -->
-<!-- admin_profile_stats fields (employee_id, access_level, etc.) are managed by super admin or system -->
+<!-- This modal edits manage_*_profile table fields only -->
+<!-- Fields: username, bio, quote, location (array), languages, hero_title (array), hero_subtitle -->
 
 <div id="edit-profile-modal" class="modal hidden">
     <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
     <div class="modal-content" style="max-width: 600px;">
         <div class="modal-header">
             <h2 class="text-xl font-bold">Edit Profile</h2>
-            <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+            <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
         </div>
         <div class="modal-body">
             <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
-                <!-- Ethiopian Naming Convention -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                    <div class="form-group">
-                        <label class="block text-sm font-medium mb-1">First Name *</label>
-                        <input type="text" id="firstNameInput"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="e.g., Abebe" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="block text-sm font-medium mb-1">Father's Name *</label>
-                        <input type="text" id="fatherNameInput"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="e.g., Kebede" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="block text-sm font-medium mb-1">Grandfather's Name *</label>
-                        <input type="text" id="grandfatherNameInput"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="e.g., Tesfa" required>
-                    </div>
-                </div>
-
                 <!-- Username (Display Name) -->
                 <div class="form-group mb-4">
-                    <label class="block text-sm font-medium mb-1">Username (Display Name) *</label>
-                    <input type="text" id="adminUsernameInput"
+                    <label class="block text-sm font-medium mb-1">Username (Display Name) <span class="text-red-500">*</span></label>
+                    <input type="text" id="editUsername"
                         class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="e.g., abebe_kebede" required>
                     <p class="text-xs text-gray-500 mt-1">This will be displayed as your admin username</p>
                 </div>
 
-                <!-- Contact Information -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div class="form-group">
-                        <label class="block text-sm font-medium mb-1">Email</label>
-                        <input type="email" id="emailInput"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="admin@astegni.et">
+                <!-- Hero Titles (Array) -->
+                <div class="form-group mb-4">
+                    <label class="block text-sm font-medium mb-1">Hero Titles</label>
+                    <div id="heroTitleContainer" class="space-y-2">
+                        <!-- Dynamic hero title inputs will be added here -->
                     </div>
-                    <div class="form-group">
-                        <label class="block text-sm font-medium mb-1">Phone Number</label>
-                        <input type="tel" id="phoneNumberInput"
-                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="+251911234567">
-                    </div>
+                    <button type="button" onclick="addHeroTitleField()"
+                        class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                        <i class="fas fa-plus"></i> Add Hero Title
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1">Add multiple titles (e.g., Course Manager, Content Lead)</p>
                 </div>
 
-                <!-- Department (Read-only, managed by super admin) -->
+                <!-- Hero Subtitle -->
                 <div class="form-group mb-4">
-                    <label class="block text-sm font-medium mb-1">Department</label>
-                    <input type="text" id="departmentInput"
-                        class="w-full px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
-                        readonly
-                        title="Department is managed by Super Admin">
-                    <p class="text-xs text-gray-500 mt-1">Department is managed by Super Admin</p>
+                    <label class="block text-sm font-medium mb-1">Hero Subtitle</label>
+                    <input type="text" id="editHeroSubtitle"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., Astegni Admin Panel">
                 </div>
 
                 <!-- Bio -->
                 <div class="form-group mb-4">
                     <label class="block text-sm font-medium mb-1">Bio</label>
-                    <textarea id="bioInput" rows="3"
+                    <textarea id="editBio" rows="3"
                         class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Tell us about yourself..."></textarea>
                 </div>
@@ -79,35 +52,47 @@
                 <!-- Quote -->
                 <div class="form-group mb-4">
                     <label class="block text-sm font-medium mb-1">Quote</label>
-                    <input type="text" id="quoteInput"
+                    <input type="text" id="editQuote"
                         class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Your personal quote or motto">
                 </div>
 
-                <!-- Read-only Stats Information (for reference) -->
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-                    <h3 class="text-sm font-semibold mb-2 text-gray-700">Account Information (Read-only)</h3>
-                    <div class="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                            <span class="text-gray-600">Employee ID:</span>
-                            <span id="displayEmployeeId" class="font-medium ml-2">-</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Access Level:</span>
-                            <span id="displayAccessLevel" class="font-medium ml-2">-</span>
-                        </div>
-                        <div class="col-span-2">
-                            <span class="text-gray-600">Responsibilities:</span>
-                            <span id="displayResponsibilities" class="font-medium ml-2">-</span>
-                        </div>
+                <!-- Locations (Array) -->
+                <div class="form-group mb-4">
+                    <label class="block text-sm font-medium mb-1">Locations</label>
+                    <div id="locationContainer" class="space-y-2">
+                        <!-- Dynamic location inputs will be added here -->
                     </div>
-                    <p class="text-xs text-gray-500 mt-2">These fields are managed by Super Admin</p>
+                    <button type="button" onclick="addLocationField()"
+                        class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                        <i class="fas fa-plus"></i> Add Location
+                    </button>
+                    <p class="text-xs text-gray-500 mt-1">Add multiple locations (e.g., Addis Ababa, Bahir Dar)</p>
+
+                    <!-- Allow Location Checkbox -->
+                    <div class="flex items-center mt-3">
+                        <input type="checkbox" id="editAllowLocation"
+                            class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                        <label for="editAllowLocation" class="ml-2 text-sm font-medium text-gray-700">
+                            Allow location to be displayed publicly
+                        </label>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">When enabled, your location will be visible on your public profile</p>
+                </div>
+
+                <!-- Languages -->
+                <div class="form-group mb-6">
+                    <label class="block text-sm font-medium mb-1">Languages</label>
+                    <input type="text" id="editLanguages"
+                        class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g., English, Amharic, Oromo">
+                    <p class="text-xs text-gray-500 mt-1">Separate multiple languages with commas</p>
                 </div>
 
                 <div class="modal-footer">
                     <button type="button" class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
                         onclick="closeEditProfileModal()">Cancel</button>
-                    <button type="submit"
+                    <button type="submit" id="editProfileSubmitBtn"
                         class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update
                         Profile</button>
                 </div>
@@ -115,3 +100,80 @@
         </div>
     </div>
 </div>
+
+<!-- JavaScript for array field management -->
+<script>
+// Hero Title array field management
+function addHeroTitleField(value = '') {
+    const container = document.getElementById('heroTitleContainer');
+    const index = container.children.length;
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+        <input type="text" name="heroTitle[]" value="${value}"
+            class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Course Manager">
+        <button type="button" onclick="removeArrayField(this)"
+            class="text-red-500 hover:text-red-700 p-2">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+// Location array field management
+function addLocationField(value = '') {
+    const container = document.getElementById('locationContainer');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+        <input type="text" name="location[]" value="${value}"
+            class="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="e.g., Addis Ababa, Ethiopia">
+        <button type="button" onclick="removeArrayField(this)"
+            class="text-red-500 hover:text-red-700 p-2">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(div);
+}
+
+// Remove array field
+function removeArrayField(button) {
+    button.parentElement.remove();
+}
+
+// Get all hero titles as array
+function getHeroTitles() {
+    const inputs = document.querySelectorAll('input[name="heroTitle[]"]');
+    return Array.from(inputs).map(input => input.value.trim()).filter(v => v);
+}
+
+// Get all locations as array
+function getLocations() {
+    const inputs = document.querySelectorAll('input[name="location[]"]');
+    return Array.from(inputs).map(input => input.value.trim()).filter(v => v);
+}
+
+// Populate hero titles from array
+function populateHeroTitles(titles) {
+    const container = document.getElementById('heroTitleContainer');
+    container.innerHTML = '';
+    if (Array.isArray(titles) && titles.length > 0) {
+        titles.forEach(title => addHeroTitleField(title));
+    } else {
+        addHeroTitleField(''); // Add one empty field
+    }
+}
+
+// Populate locations from array
+function populateLocations(locations) {
+    const container = document.getElementById('locationContainer');
+    container.innerHTML = '';
+    if (Array.isArray(locations) && locations.length > 0) {
+        locations.forEach(loc => addLocationField(loc));
+    } else {
+        addLocationField(''); // Add one empty field
+    }
+}
+</script>

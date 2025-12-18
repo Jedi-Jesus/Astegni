@@ -327,8 +327,8 @@
             }
 
             // Get token and user from localStorage
-            const token = localStorage.getItem('token');
-            const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const localUser = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
             if (!token) {
                 alert('Please log in first');
@@ -348,7 +348,7 @@
 
             try {
                 // ALWAYS use tutor endpoint since this is tutor-profile.html
-                const endpoint = 'https://api.astegni.com/api/tutor/profile';
+                const endpoint = 'http://localhost:8000/api/tutor/profile';
                 console.log('🔍 Edit Modal: Fetching from TUTOR endpoint:', endpoint);
 
                 // Fetch fresh profile data from database
@@ -523,8 +523,8 @@
          * Save Edit Profile Modal
          */
         async function saveEditProfile() {
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
             if (!token) {
                 alert('Please log in first');
@@ -557,7 +557,7 @@
 
             try {
                 // ALWAYS use tutor endpoint since this is tutor-profile.html
-                const endpoint = 'https://api.astegni.com/api/tutor/profile';
+                const endpoint = 'http://localhost:8000/api/tutor/profile';
                 console.log('🔍 Save Profile: Using TUTOR endpoint:', endpoint);
                 console.log('📤 Sending data to server:', JSON.stringify(updateData, null, 2));
 

@@ -3,7 +3,7 @@
 // ============================================
 
 // Use global API base URL
-const courseApiUrl = window.API_BASE_URL || 'https://api.astegni.com';
+const courseApiUrl = window.API_BASE_URL || 'http://localhost:8000';
 
 async function fetchCoursesFromAPI() {
     try {

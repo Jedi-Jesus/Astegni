@@ -85,6 +85,46 @@ def get_role_specific_username(user: User, db: Session) -> Optional[str]:
     return None
 
 # ============================================
+# PLATFORM STATS ENDPOINT (Public - No Auth Required)
+# ============================================
+
+@router.get("/api/platform-stats")
+def get_platform_stats(db: Session = Depends(get_db)):
+    """
+    Get platform statistics for the hero section.
+    Returns: tutor count, courses count, and average tutor rating.
+    This endpoint is public and does not require authentication.
+    """
+    try:
+        # Get total tutor count from tutor_profiles table
+        tutor_count = db.execute(text("SELECT COUNT(*) FROM tutor_profiles")).scalar() or 0
+
+        # Get total courses count from courses table (only verified/active courses)
+        courses_count = db.execute(text(
+            "SELECT COUNT(*) FROM courses WHERE status = 'verified' OR status IS NULL"
+        )).scalar() or 0
+
+        # Get average rating from tutor_reviews table
+        avg_rating_result = db.execute(text(
+            "SELECT COALESCE(AVG(rating), 0) as avg_rating FROM tutor_reviews"
+        )).fetchone()
+        avg_rating = float(avg_rating_result[0]) if avg_rating_result else 0.0
+
+        return {
+            "tutors_count": tutor_count,
+            "courses_count": courses_count,
+            "average_rating": round(avg_rating, 1)
+        }
+    except Exception as e:
+        # Return default values if database error occurs
+        return {
+            "tutors_count": 0,
+            "courses_count": 0,
+            "average_rating": 0.0,
+            "error": str(e)
+        }
+
+# ============================================
 # AUTHENTICATION ENDPOINTS
 # ============================================
 
@@ -718,6 +758,7 @@ def get_tutors(
     max_rating: Optional[float] = Query(None),
     sort_by: Optional[str] = Query("smart"),  # Default to smart ranking
     search_history_ids: Optional[str] = Query(None),  # Comma-separated tutor IDs from search history
+    exclude_user_id: Optional[int] = Query(None),  # Exclude this user from results (e.g., current user)
     db: Session = Depends(get_db)
 ):
     """
@@ -739,15 +780,42 @@ def get_tutors(
         User.is_active == True
     )
 
+    # Exclude current user from results (tutor should not see their own card)
+    if exclude_user_id:
+        query = query.filter(TutorProfile.user_id != exclude_user_id)
+
     # Apply filters
     if search:
         search_lower = search.lower()
+
+        # Build subquery to find tutor IDs that have courses with matching tags
+        # tutor_packages.tutor_id -> tutor_packages.course_ids -> courses.tags
+        tag_search_subquery = text("""
+            SELECT DISTINCT tp.tutor_id
+            FROM tutor_packages tp
+            JOIN courses c ON c.id = ANY(tp.course_ids)
+            WHERE c.status = 'verified'
+            AND (
+                c.tags::text ILIKE :search_pattern
+                OR c.course_name ILIKE :search_pattern
+                OR c.course_category ILIKE :search_pattern
+            )
+        """)
+
+        # Get tutor IDs that match tag/course search
+        tag_matching_tutor_ids = db.execute(
+            tag_search_subquery,
+            {"search_pattern": f'%{search_lower}%'}
+        ).scalars().all()
+
         search_filter = or_(
             func.lower(User.first_name).contains(search_lower),
             func.lower(User.father_name).contains(search_lower),
             func.lower(TutorProfile.location).contains(search_lower),
             # Search in JSON arrays - languages
-            cast(TutorProfile.languages, String).ilike(f'%{search_lower}%')
+            cast(TutorProfile.languages, String).ilike(f'%{search_lower}%'),
+            # Include tutors who have courses with matching tags
+            TutorProfile.id.in_(tag_matching_tutor_ids) if tag_matching_tutor_ids else False
         )
         query = query.filter(search_filter)
 
@@ -934,9 +1002,151 @@ def get_tutors(
     offset = (page - 1) * limit
     tutors = tutors[offset:offset + limit]
 
+    # Get tutor IDs for batch fetching package data
+    tutor_ids = [tutor.id for tutor in tutors]
+    user_ids = [tutor.user_id for tutor in tutors]
+
+    # Fetch package data for all tutors in one query (courses, grade_level, session_format, price)
+    package_data_query = text("""
+        SELECT
+            tp.tutor_id,
+            ARRAY_AGG(DISTINCT c.course_name) FILTER (WHERE c.course_name IS NOT NULL) as courses,
+            ARRAY_AGG(DISTINCT tp.grade_level) FILTER (WHERE tp.grade_level IS NOT NULL AND tp.grade_level != '') as grade_levels,
+            ARRAY_AGG(DISTINCT tp.session_format) FILTER (WHERE tp.session_format IS NOT NULL AND tp.session_format != '') as session_formats,
+            MIN(tp.hourly_rate) as min_price,
+            MAX(tp.hourly_rate) as max_price
+        FROM tutor_packages tp
+        LEFT JOIN courses c ON c.id = ANY(tp.course_ids)
+        WHERE tp.tutor_id = ANY(:tutor_ids)
+        AND tp.is_active = true
+        GROUP BY tp.tutor_id
+    """)
+
+    # Fetch ratings from tutor_reviews table (4-factor rating system)
+    ratings_query = text("""
+        SELECT
+            tutor_id,
+            COUNT(*) as review_count,
+            ROUND(AVG(rating)::numeric, 1) as avg_rating,
+            ROUND(AVG(subject_understanding_rating)::numeric, 1) as subject_matter,
+            ROUND(AVG(communication_rating)::numeric, 1) as communication,
+            ROUND(AVG(discipline_rating)::numeric, 1) as discipline,
+            ROUND(AVG(punctuality_rating)::numeric, 1) as punctuality
+        FROM tutor_reviews
+        WHERE tutor_id = ANY(:tutor_ids)
+        GROUP BY tutor_id
+    """)
+
+    # Fetch experience credentials count from credentials table
+    # Note: uploader_id in credentials table stores the tutor profile ID (not user_id)
+    experience_query = text("""
+        SELECT
+            uploader_id,
+            COUNT(*) as experience_count
+        FROM credentials
+        WHERE uploader_id = ANY(:tutor_ids)
+        AND uploader_role = 'tutor'
+        AND document_type = 'experience'
+        GROUP BY uploader_id
+    """)
+
+    # Fetch current workplace (teaches_at) from credentials where is_current=true
+    # Note: uploader_id in credentials table stores the tutor profile ID (not user_id)
+    current_workplace_query = text("""
+        SELECT DISTINCT ON (uploader_id)
+            uploader_id,
+            title as current_workplace
+        FROM credentials
+        WHERE uploader_id = ANY(:tutor_ids)
+        AND uploader_role = 'tutor'
+        AND document_type = 'experience'
+        AND is_current = true
+        ORDER BY uploader_id, created_at DESC
+    """)
+
+    package_results = db.execute(package_data_query, {"tutor_ids": tutor_ids}).fetchall()
+    ratings_results = db.execute(ratings_query, {"tutor_ids": tutor_ids}).fetchall()
+    experience_results = db.execute(experience_query, {"tutor_ids": tutor_ids}).fetchall()
+    current_workplace_results = db.execute(current_workplace_query, {"tutor_ids": tutor_ids}).fetchall()
+
+    # Create a mapping of tutor_id to package data
+    package_data_map = {}
+    for row in package_results:
+        package_data_map[row.tutor_id] = {
+            "courses": row.courses or [],
+            "grade_levels": row.grade_levels or [],
+            "session_formats": row.session_formats or [],
+            "min_price": float(row.min_price) if row.min_price else 0,
+            "max_price": float(row.max_price) if row.max_price else 0
+        }
+
+    # Create a mapping of tutor_id to ratings data
+    ratings_data_map = {}
+    for row in ratings_results:
+        ratings_data_map[row.tutor_id] = {
+            "rating": float(row.avg_rating) if row.avg_rating else 0,
+            "rating_count": row.review_count or 0,
+            "subject_matter": float(row.subject_matter) if row.subject_matter else 0,
+            "communication": float(row.communication) if row.communication else 0,
+            "discipline": float(row.discipline) if row.discipline else 0,
+            "punctuality": float(row.punctuality) if row.punctuality else 0
+        }
+
+    # Create a mapping of tutor_id (profile ID) to experience count
+    experience_data_map = {}
+    for row in experience_results:
+        experience_data_map[row.uploader_id] = row.experience_count or 0
+
+    # Create a mapping of tutor_id (profile ID) to current workplace (teaches_at)
+    current_workplace_map = {}
+    for row in current_workplace_results:
+        current_workplace_map[row.uploader_id] = row.current_workplace
+
     # Format response
     tutor_list = []
     for tutor in tutors:
+        # Get package data for this tutor
+        pkg_data = package_data_map.get(tutor.id, {
+            "courses": [],
+            "grade_levels": [],
+            "session_formats": [],
+            "min_price": 0,
+            "max_price": 0
+        })
+
+        # Get ratings data for this tutor
+        rating_data = ratings_data_map.get(tutor.id, {
+            "rating": 0,
+            "rating_count": 0,
+            "subject_matter": 0,
+            "communication": 0,
+            "discipline": 0,
+            "punctuality": 0
+        })
+
+        # Get experience count for this tutor (from credentials table)
+        # Note: credentials.uploader_id stores the tutor profile ID
+        experience_count = experience_data_map.get(tutor.id, 0)
+
+        # Get current workplace (from credentials where is_current=true)
+        # Note: credentials.uploader_id stores the tutor profile ID
+        current_workplace = current_workplace_map.get(tutor.id, None)
+
+        # Format session formats (combine unique values)
+        session_formats = pkg_data["session_formats"]
+        session_format_display = ", ".join(session_formats) if session_formats else "Not specified"
+
+        # Format price (show range if different min/max, otherwise single value)
+        min_price = pkg_data["min_price"]
+        max_price = pkg_data["max_price"]
+        if min_price > 0 and max_price > 0:
+            if min_price == max_price:
+                price = min_price
+            else:
+                price = min_price  # Use min price for display, max available in price_max
+        else:
+            price = 0
+
         tutor_data = {
             "id": tutor.id,
             "user_id": tutor.user_id,
@@ -947,18 +1157,24 @@ def get_tutors(
             "bio": tutor.bio,
             "quote": tutor.quote,
             "gender": tutor.user.gender,
-            "courses": [],
-            "grades": [],
+            "courses": pkg_data["courses"],  # From tutor_packages -> course_ids -> courses
+            "grades": pkg_data["grade_levels"],  # From tutor_packages.grade_level
             "course_type": None,
             "location": tutor.location,
-            "teaches_at": None,
-            "sessionFormat": None,
+            "teaches_at": current_workplace,  # From credentials.title where is_current=true (no fallback - frontend shows "Not provided")
+            "sessionFormat": session_format_display,  # From tutor_packages.session_format
             "languages": tutor.languages or [],
-            "experience": None,
-            # Removed fields that don't exist in DB:
-            # "education_level", "certifications", "achievements", "experiences",
-            # "price", "currency", "availability", "rating", "rating_count",
-            # "total_students", "total_sessions"
+            "experience": experience_count,  # Count of experience credentials
+            "price": price,  # From tutor_packages.hourly_rate (min)
+            "price_max": max_price,  # From tutor_packages.hourly_rate (max)
+            "currency": "ETB",
+            # Ratings from tutor_reviews table
+            "rating": rating_data["rating"],
+            "rating_count": rating_data["rating_count"],
+            "subject_matter": rating_data["subject_matter"],
+            "communication_skills": rating_data["communication"],
+            "discipline": rating_data["discipline"],
+            "punctuality": rating_data["punctuality"],
             "is_verified": tutor.is_verified,
             "is_active": tutor.is_active,
             "is_basic": getattr(tutor, 'is_basic', False),
@@ -1169,7 +1385,7 @@ def get_tutor_public_profile(tutor_id: int, db: Session = Depends(get_db)):
         "first_name": tutor.user.first_name,
         "father_name": tutor.user.father_name,
         "grandfather_name": tutor.user.grandfather_name,
-        "username": tutor.user.username,
+        "username": tutor.username,
         "email": tutor.user.email,
         "phone": tutor.user.phone,
         "profile_picture": tutor.user.profile_picture,
@@ -3005,24 +3221,40 @@ def update_user_profile(
 @router.post("/api/blog/posts")
 def create_blog_post(
     post_data: BlogCreate,
-    current_user: User = Depends(get_current_user),
+    current_user: dict = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """Create a new blog post"""
-    new_post = BlogPost(
-        author_id=current_user.id,
+    # Get the profile_id based on active_role
+    user_id = current_user["id"]
+    active_role = current_user.get("active_role", "student")
+
+    # Get the appropriate profile_id
+    profile_id = user_id  # Default to user_id
+    if active_role == "tutor":
+        tutor = db.query(TutorProfile).filter(TutorProfile.user_id == user_id).first()
+        if tutor:
+            profile_id = tutor.id
+    elif active_role == "student":
+        student = db.query(StudentProfile).filter(StudentProfile.user_id == user_id).first()
+        if student:
+            profile_id = student.id
+
+    new_blog = Blog(
+        profile_id=profile_id,
+        role=active_role,
         title=post_data.title,
         description=post_data.description,
-        content=post_data.content,
+        blog_text=post_data.content,
         category=post_data.category,
-        thumbnail_url=post_data.thumbnail_url
+        blog_picture=post_data.thumbnail_url
     )
 
-    db.add(new_post)
+    db.add(new_blog)
     db.commit()
-    db.refresh(new_post)
+    db.refresh(new_blog)
 
-    return {"message": "Blog post created successfully", "post_id": new_post.id}
+    return {"message": "Blog post created successfully", "post_id": new_blog.id}
 
 @router.get("/api/blog/posts")
 def get_blog_posts(
@@ -3030,56 +3262,97 @@ def get_blog_posts(
     limit: int = Query(10, ge=1, le=50),
     category: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    status: str = Query("published"),
+    author: Optional[str] = Query(None),
+    filter: Optional[str] = Query(None),
+    current_user: dict = Depends(get_current_user_optional),
     db: Session = Depends(get_db)
 ):
     """Get blog posts with pagination and filtering"""
-    query = db.query(BlogPost).join(User)
+    query = db.query(Blog)
 
-    query = query.filter(BlogPost.status == status)
+    # Filter by author if specified
+    if author == "me" and current_user:
+        user_id = current_user["id"]
+        active_role = current_user.get("active_role", "student")
+
+        # Get the profile_id based on active_role
+        profile_id = user_id
+        if active_role == "tutor":
+            tutor = db.query(TutorProfile).filter(TutorProfile.user_id == user_id).first()
+            if tutor:
+                profile_id = tutor.id
+        elif active_role == "student":
+            student = db.query(StudentProfile).filter(StudentProfile.user_id == user_id).first()
+            if student:
+                profile_id = student.id
+
+        query = query.filter(Blog.profile_id == profile_id, Blog.role == active_role)
 
     if category:
-        query = query.filter(func.lower(BlogPost.category) == category.lower())
+        query = query.filter(func.lower(Blog.category) == category.lower())
 
     if search:
         search_filter = or_(
-            func.lower(BlogPost.title).contains(search.lower()),
-            func.lower(BlogPost.description).contains(search.lower()),
-            func.lower(BlogPost.content).contains(search.lower())
+            func.lower(Blog.title).contains(search.lower()),
+            func.lower(Blog.description).contains(search.lower()),
+            func.lower(Blog.blog_text).contains(search.lower())
         )
         query = query.filter(search_filter)
 
-    query = query.order_by(desc(BlogPost.created_at))
+    query = query.order_by(desc(Blog.created_at))
 
     total = query.count()
     offset = (page - 1) * limit
-    posts = query.offset(offset).limit(limit).all()
+    blogs = query.offset(offset).limit(limit).all()
 
-    post_list = []
-    for post in posts:
-        post_data = {
-            "id": post.id,
-            "title": post.title,
-            "description": post.description,
-            "content": post.content,
-            "thumbnail_url": post.thumbnail_url,
-            "category": post.category,
-            "status": post.status,
-            "views": post.views,
-            "likes": post.likes,
-            "author": {
-                "id": post.author.id,
-                "first_name": post.author.first_name,
-                "father_name": post.author.father_name,
-                "profile_picture": post.author.profile_picture
-            },
-            "created_at": post.created_at,
-            "published_at": post.published_at
+    blog_list = []
+    for blog in blogs:
+        # Get author info based on role and profile_id
+        author_info = {"id": blog.profile_id, "first_name": "Unknown", "father_name": "", "profile_picture": None}
+
+        if blog.role == "tutor":
+            tutor = db.query(TutorProfile).filter(TutorProfile.id == blog.profile_id).first()
+            if tutor:
+                user = db.query(User).filter(User.id == tutor.user_id).first()
+                if user:
+                    author_info = {
+                        "id": user.id,
+                        "first_name": user.first_name,
+                        "father_name": user.father_name,
+                        "profile_picture": user.profile_picture
+                    }
+        elif blog.role == "student":
+            student = db.query(StudentProfile).filter(StudentProfile.id == blog.profile_id).first()
+            if student:
+                user = db.query(User).filter(User.id == student.user_id).first()
+                if user:
+                    author_info = {
+                        "id": user.id,
+                        "first_name": user.first_name,
+                        "father_name": user.father_name,
+                        "profile_picture": user.profile_picture
+                    }
+
+        blog_data = {
+            "id": blog.id,
+            "title": blog.title,
+            "description": blog.description,
+            "content": blog.blog_text,
+            "thumbnail_url": blog.blog_picture,
+            "category": blog.category,
+            "reading_time": blog.reading_time,
+            "likes": blog.likes,
+            "dislikes": blog.dislikes,
+            "shares": blog.shares,
+            "saves": blog.saves,
+            "author": author_info,
+            "created_at": blog.created_at,
+            "updated_at": blog.updated_at
         }
-        post_list.append(post_data)
+        blog_list.append(blog_data)
 
     return {
-        "posts": post_list,
+        "posts": blog_list,
         "total": total,
         "page": page,
         "limit": limit,
@@ -3091,44 +3364,65 @@ def get_blog_posts_by_author(
     author_id: int,
     page: int = Query(1, ge=1),
     limit: int = Query(10, ge=1, le=50),
-    status: str = Query("published"),
+    role: str = Query("tutor"),
     db: Session = Depends(get_db)
 ):
-    """Get blog posts by a specific author"""
-    query = db.query(BlogPost).join(User).filter(BlogPost.author_id == author_id)
-
-    query = query.filter(BlogPost.status == status)
-    query = query.order_by(desc(BlogPost.created_at))
+    """Get blog posts by a specific author (profile_id and role)"""
+    query = db.query(Blog).filter(Blog.profile_id == author_id, Blog.role == role)
+    query = query.order_by(desc(Blog.created_at))
 
     total = query.count()
     offset = (page - 1) * limit
-    posts = query.offset(offset).limit(limit).all()
+    blogs = query.offset(offset).limit(limit).all()
 
-    post_list = []
-    for post in posts:
-        post_data = {
-            "id": post.id,
-            "title": post.title,
-            "description": post.description,
-            "content": post.content,
-            "thumbnail_url": post.thumbnail_url,
-            "category": post.category,
-            "status": post.status,
-            "views": post.views,
-            "likes": post.likes,
-            "author": {
-                "id": post.author.id,
-                "first_name": post.author.first_name,
-                "father_name": post.author.father_name,
-                "profile_picture": post.author.profile_picture
-            },
-            "created_at": post.created_at,
-            "published_at": post.published_at
+    blog_list = []
+    for blog in blogs:
+        # Get author info based on role and profile_id
+        author_info = {"id": blog.profile_id, "first_name": "Unknown", "father_name": "", "profile_picture": None}
+
+        if blog.role == "tutor":
+            tutor = db.query(TutorProfile).filter(TutorProfile.id == blog.profile_id).first()
+            if tutor:
+                user = db.query(User).filter(User.id == tutor.user_id).first()
+                if user:
+                    author_info = {
+                        "id": user.id,
+                        "first_name": user.first_name,
+                        "father_name": user.father_name,
+                        "profile_picture": user.profile_picture
+                    }
+        elif blog.role == "student":
+            student = db.query(StudentProfile).filter(StudentProfile.id == blog.profile_id).first()
+            if student:
+                user = db.query(User).filter(User.id == student.user_id).first()
+                if user:
+                    author_info = {
+                        "id": user.id,
+                        "first_name": user.first_name,
+                        "father_name": user.father_name,
+                        "profile_picture": user.profile_picture
+                    }
+
+        blog_data = {
+            "id": blog.id,
+            "title": blog.title,
+            "description": blog.description,
+            "content": blog.blog_text,
+            "thumbnail_url": blog.blog_picture,
+            "category": blog.category,
+            "reading_time": blog.reading_time,
+            "likes": blog.likes,
+            "dislikes": blog.dislikes,
+            "shares": blog.shares,
+            "saves": blog.saves,
+            "author": author_info,
+            "created_at": blog.created_at,
+            "updated_at": blog.updated_at
         }
-        post_list.append(post_data)
+        blog_list.append(blog_data)
 
     return {
-        "posts": post_list,
+        "posts": blog_list,
         "total": total,
         "page": page,
         "limit": limit,
@@ -3329,7 +3623,8 @@ def get_courses(
             "rating_count": course.rating_count or 0,
             "students": course.rating_count or 0,  # Use rating_count as student proxy
             "uploader_id": course.uploader_id,
-            "approved_at": course.approved_at.isoformat() if course.approved_at else None,
+            "status": course.status or "pending",
+            "status_at": course.status_at.isoformat() if course.status_at else None,
             "created_at": course.created_at.isoformat() if course.created_at else None,
             "updated_at": course.updated_at.isoformat() if course.updated_at else None
         }
@@ -3400,8 +3695,9 @@ def get_course_details(
             "rating_count": course.rating_count or 0,
             "students": course.rating_count or 0,
             "uploader_id": course.uploader_id,
-            "approved_by": course.approved_by,
-            "approved_at": course.approved_at.isoformat() if course.approved_at else None,
+            "status": course.status or "pending",
+            "status_by": course.status_by,
+            "status_at": course.status_at.isoformat() if course.status_at else None,
             "created_at": course.created_at.isoformat() if course.created_at else None,
             "updated_at": course.updated_at.isoformat() if course.updated_at else None
         }
@@ -4049,8 +4345,8 @@ def get_student_tutors(
                 SELECT
                     AVG(rating) as overall_rating,
                     COUNT(*) as total_reviews,
-                    AVG(subject_understanding_rating) as subject_matter_expertise,
-                    AVG(communication_rating) as communication_skills,
+                    AVG(subject_understanding_rating) as subject_understanding,
+                    AVG(communication_rating) as communication,
                     AVG(discipline_rating) as discipline,
                     AVG(punctuality_rating) as punctuality
                 FROM tutor_reviews
@@ -4068,6 +4364,7 @@ def get_student_tutors(
             "id": tutor_profile.id,
             "tutor_id": tutor_profile.id,
             "user_id": tutor_user.id,
+            "tutor_user_id": tutor_user.id,  # For chat/messaging
             "first_name": tutor_user.first_name,
             "father_name": tutor_user.father_name,
             "full_name": f"{tutor_user.first_name} {tutor_user.father_name}",
@@ -4080,8 +4377,8 @@ def get_student_tutors(
             "rating": calculated_rating,
             "rating_count": rating_count,
             "rating_breakdown": {
-                "subject_understanding": round(avg_metrics.subject_matter_expertise, 1) if avg_metrics and avg_metrics.subject_matter_expertise else 0.0,
-                "communication": round(avg_metrics.communication_skills, 1) if avg_metrics and avg_metrics.communication_skills else 0.0,
+                "subject_understanding": round(avg_metrics.subject_understanding, 1) if avg_metrics and avg_metrics.subject_understanding else 0.0,
+                "communication": round(avg_metrics.communication, 1) if avg_metrics and avg_metrics.communication else 0.0,
                 "discipline": round(avg_metrics.discipline, 1) if avg_metrics and avg_metrics.discipline else 0.0,
                 "punctuality": round(avg_metrics.punctuality, 1) if avg_metrics and avg_metrics.punctuality else 0.0
             },
@@ -4176,12 +4473,12 @@ def get_student_tutor_detail(
     avg_metrics = db.execute(
         text("""
             SELECT
-                AVG(overall_rating) as overall_rating,
+                AVG(rating) as overall_rating,
                 COUNT(*) as total_reviews,
-                AVG(subject_matter_expertise) as subject_matter_expertise,
-                AVG(communication_skills) as communication_skills,
-                AVG(discipline) as discipline,
-                AVG(punctuality) as punctuality
+                AVG(subject_understanding_rating) as subject_understanding,
+                AVG(communication_rating) as communication,
+                AVG(discipline_rating) as discipline,
+                AVG(punctuality_rating) as punctuality
             FROM tutor_reviews
             WHERE tutor_id = :tutor_id
         """),
@@ -4207,8 +4504,8 @@ def get_student_tutor_detail(
         "rating": calculated_rating,
         "rating_count": rating_count,
         "rating_breakdown": {
-            "subject_matter_expertise": round(avg_metrics.subject_matter_expertise, 1) if avg_metrics and avg_metrics.subject_matter_expertise else 0.0,
-            "communication_skills": round(avg_metrics.communication_skills, 1) if avg_metrics and avg_metrics.communication_skills else 0.0,
+            "subject_understanding": round(avg_metrics.subject_understanding, 1) if avg_metrics and avg_metrics.subject_understanding else 0.0,
+            "communication": round(avg_metrics.communication, 1) if avg_metrics and avg_metrics.communication else 0.0,
             "discipline": round(avg_metrics.discipline, 1) if avg_metrics and avg_metrics.discipline else 0.0,
             "punctuality": round(avg_metrics.punctuality, 1) if avg_metrics and avg_metrics.punctuality else 0.0
         },
@@ -4273,6 +4570,7 @@ def get_student_courses(
             status_filter = "AND ec.status = 'upcoming'"
 
     # Get enrolled courses where student is in the students_id array
+    # Note: course_id is an integer array, so we don't join courses directly
     query = f"""
         SELECT
             ec.id as enrollment_id,
@@ -4285,21 +4583,12 @@ def get_student_courses(
             ec.start_time,
             ec.end_time,
             ec.is_recurring,
-            c.title as course_title,
-            c.icon as course_icon,
-            c.category as course_category,
-            c.level as course_level,
-            c.description as course_description,
-            c.thumbnail as course_thumbnail,
-            c.duration as course_duration,
-            c.lessons as course_lessons,
             tp.id as tutor_profile_id,
             tp.username as tutor_username,
             tp.profile_picture as tutor_profile_picture,
             u.first_name as tutor_first_name,
             u.father_name as tutor_father_name
         FROM enrolled_courses ec
-        LEFT JOIN courses c ON ec.course_id = c.id
         LEFT JOIN tutor_profiles tp ON ec.tutor_id = tp.id
         LEFT JOIN users u ON tp.user_id = u.id
         WHERE :student_id = ANY(ec.students_id)
@@ -4314,14 +4603,51 @@ def get_student_courses(
 
     # Build response with complete course data
     result = []
-    for course in enrolled_courses:
+    for enrollment in enrolled_courses:
+        # Get course info from course_id array
+        course_ids = enrollment.course_id if enrollment.course_id else []
+        course_titles = []
+        course_icon = "📚"
+        course_category = None
+        course_level = None
+        course_description = None
+        course_thumbnail = None
+        course_duration = None
+        course_lessons = 0
+
+        if course_ids:
+            # Fetch course details for all courses in the array
+            courses_result = db.execute(
+                text("""
+                    SELECT id, course_name, course_category, course_level, course_description,
+                           thumbnail, duration, lessons
+                    FROM courses WHERE id = ANY(:course_ids)
+                """),
+                {"course_ids": course_ids}
+            ).fetchall()
+
+            for c in courses_result:
+                course_titles.append(c.course_name)
+                if c.course_category:
+                    course_category = c.course_category
+                if c.course_level:
+                    course_level = c.course_level
+                if c.course_description:
+                    course_description = c.course_description
+                if c.thumbnail:
+                    course_thumbnail = c.thumbnail
+                if c.duration:
+                    course_duration = c.duration
+                if c.lessons:
+                    course_lessons += c.lessons
+
         # Get package info if exists
         package_name = None
         package_price = None
-        if course.package_id:
+        if enrollment.package_id:
             package_result = db.execute(
                 text("SELECT name, hourly_rate FROM tutor_packages WHERE id = :package_id"),
-                {"package_id": course.package_id}
+                {"package_id": enrollment.package_id}
             ).first()
             if package_result:
                 package_name = package_result.name
@@ -4334,44 +4660,46 @@ def get_student_courses(
                 FROM tutor_reviews
                 WHERE tutor_id = :tutor_id
             """),
-            {"tutor_id": course.tutor_id}
+            {"tutor_id": enrollment.tutor_id}
         ).first()
 
         # Calculate progress (placeholder - can be enhanced with actual session tracking)
         progress = 0
-        if course.status == 'completed':
+        if enrollment.status == 'completed':
             progress = 100
-        elif course.status == 'active':
+        elif enrollment.status == 'active':
             progress = 50  # Can be calculated from completed sessions vs total
 
         result.append({
-            "id": course.enrollment_id,
-            "enrollment_id": course.enrollment_id,
-            "course_id": course.course_id,
-            "course_title": course.course_title or "Untitled Course",
-            "course_icon": course.course_icon or "📚",
-            "course_category": course.course_category,
-            "course_level": course.course_level,
-            "course_description": course.course_description,
-            "course_thumbnail": course.course_thumbnail,
-            "course_duration": course.course_duration,
-            "course_lessons": course.course_lessons or 0,
-            "status": course.status or "active",
+            "id": enrollment.enrollment_id,
+            "enrollment_id": enrollment.enrollment_id,
+            "course_id": course_ids,
+            "course_ids": course_ids,
+            "course_title": ", ".join(course_titles) if course_titles else "Untitled Course",
+            "course_titles": course_titles,
+            "course_icon": course_icon,
+            "course_category": course_category,
+            "course_level": course_level,
+            "course_description": course_description,
+            "course_thumbnail": course_thumbnail,
+            "course_duration": course_duration,
+            "course_lessons": course_lessons,
+            "status": enrollment.status or "active",
             "progress": progress,
-            "enrolled_at": course.enrolled_at.isoformat() if course.enrolled_at else None,
-            "schedule_type": course.schedule_type,
-            "start_time": str(course.start_time) if course.start_time else None,
-            "end_time": str(course.end_time) if course.end_time else None,
-            "is_recurring": course.is_recurring,
+            "enrolled_at": enrollment.enrolled_at.isoformat() if enrollment.enrolled_at else None,
+            "schedule_type": enrollment.schedule_type,
+            "start_time": str(enrollment.start_time) if enrollment.start_time else None,
+            "end_time": str(enrollment.end_time) if enrollment.end_time else None,
+            "is_recurring": enrollment.is_recurring,
             # Tutor info
-            "tutor_id": course.tutor_id,
-            "tutor_name": f"{course.tutor_first_name or ''} {course.tutor_father_name or ''}".strip() or "Unknown Tutor",
-            "tutor_username": course.tutor_username,
-            "tutor_profile_picture": course.tutor_profile_picture,
+            "tutor_id": enrollment.tutor_id,
+            "tutor_name": f"{enrollment.tutor_first_name or ''} {enrollment.tutor_father_name or ''}".strip() or "Unknown Tutor",
+            "tutor_username": enrollment.tutor_username,
+            "tutor_profile_picture": enrollment.tutor_profile_picture,
             "tutor_rating": round(tutor_rating.avg_rating, 1) if tutor_rating and tutor_rating.avg_rating else 0.0,
             "tutor_review_count": tutor_rating.review_count if tutor_rating else 0,
             # Package info
-            "package_id": course.package_id,
+            "package_id": enrollment.package_id,
             "package_name": package_name,
             "package_price": package_price
         })
@@ -4514,7 +4842,7 @@ async def get_student_reviews(
 ):
     """
     Get all reviews for a specific student with calculated rating
-    Rating = average of (subject_matter_expertise + communication_skills + discipline + punctuality + class_activity) / 5
+    Rating = average of (subject_understanding + communication_skills + discipline + punctuality + class_activity) / 5
     """
     try:
         # Query to get all reviews for the student with reviewer information
@@ -4525,7 +4853,7 @@ async def get_student_reviews(
             User.first_name.label('reviewer_first_name'),
             User.father_name.label('reviewer_father_name'),
             User.profile_picture.label('reviewer_picture'),
-            StudentReview.subject_matter_expertise,
+            StudentReview.subject_understanding,
             StudentReview.communication_skills,
             StudentReview.discipline,
             StudentReview.punctuality,
@@ -4547,7 +4875,7 @@ async def get_student_reviews(
         reviews = []
         total_rating = 0
         category_sums = {
-            'subject_matter_expertise': 0,
+            'subject_understanding': 0,
             'communication_skills': 0,
             'discipline': 0,
             'punctuality': 0,
@@ -4563,7 +4891,7 @@ async def get_student_reviews(
                 "reviewer_id": review.reviewer_id,
                 "reviewer_name": reviewer_name,
                 "reviewer_picture": review.reviewer_picture or '../uploads/system_images/system_profile_pictures/default-avatar.png',
-                "subject_matter_expertise": float(review.subject_matter_expertise) if review.subject_matter_expertise else 0.0,
+                "subject_understanding": float(review.subject_understanding) if review.subject_understanding else 0.0,
                 "communication_skills": float(review.communication_skills) if review.communication_skills else 0.0,
                 "discipline": float(review.discipline) if review.discipline else 0.0,
                 "punctuality": float(review.punctuality) if review.punctuality else 0.0,
@@ -4576,7 +4904,7 @@ async def get_student_reviews(
 
             # Accumulate for averages
             total_rating += review_dict["rating"]
-            category_sums['subject_matter_expertise'] += review_dict['subject_matter_expertise']
+            category_sums['subject_understanding'] += review_dict['subject_understanding']
             category_sums['communication_skills'] += review_dict['communication_skills']
             category_sums['discipline'] += review_dict['discipline']
             category_sums['punctuality'] += review_dict['punctuality']
@@ -4812,188 +5140,13 @@ async def get_parent_by_id(
     return response
 
 # ============================================
-# CHILD MANAGEMENT ENDPOINTS
+# CHILD MANAGEMENT ENDPOINTS - REMOVED
 # ============================================
-
-@router.post("/api/parent/children")
-async def register_child(
-    child_data: ChildProfileCreate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Register a new child"""
-    # Check if user has parent role
-    if "parent" not in current_user.roles:
-        raise HTTPException(status_code=403, detail="User does not have parent role")
-
-    # Get parent profile
-    parent_profile = db.query(ParentProfile).filter(
-        ParentProfile.user_id == current_user.id
-    ).first()
-
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
-
-    # Create new child profile
-    new_child = ChildProfile(
-        parent_id=parent_profile.id,
-        name=child_data.name,
-        date_of_birth=child_data.date_of_birth,
-        gender=child_data.gender,
-        grade=child_data.grade,
-        school_name=child_data.school_name,
-        courses=child_data.courses or [],
-        profile_picture=child_data.profile_picture
-    )
-
-    db.add(new_child)
-
-    # Update parent statistics
-    parent_profile.total_children += 1
-    parent_profile.active_children += 1
-
-    db.commit()
-    db.refresh(new_child)
-
-    return {
-        "message": "Child registered successfully",
-        "child": ChildProfileResponse.from_orm(new_child)
-    }
-
-@router.get("/api/parent/children")
-async def get_children(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get all children for current parent"""
-    # Check if user has parent role
-    if "parent" not in current_user.roles:
-        raise HTTPException(status_code=403, detail="User does not have parent role")
-
-    # Get parent profile
-    parent_profile = db.query(ParentProfile).filter(
-        ParentProfile.user_id == current_user.id
-    ).first()
-
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
-
-    # Get all active children
-    children = db.query(ChildProfile).filter(
-        ChildProfile.parent_id == parent_profile.id,
-        ChildProfile.is_active == True
-    ).all()
-
-    return [ChildProfileResponse.from_orm(child) for child in children]
-
-@router.get("/api/parent/children/{child_id}")
-async def get_child_by_id(
-    child_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Get specific child details"""
-    # Check if user has parent role
-    if "parent" not in current_user.roles:
-        raise HTTPException(status_code=403, detail="User does not have parent role")
-
-    # Get parent profile
-    parent_profile = db.query(ParentProfile).filter(
-        ParentProfile.user_id == current_user.id
-    ).first()
-
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
-
-    # Get child
-    child = db.query(ChildProfile).filter(
-        ChildProfile.id == child_id,
-        ChildProfile.parent_id == parent_profile.id
-    ).first()
-
-    if not child:
-        raise HTTPException(status_code=404, detail="Child not found")
-
-    return ChildProfileResponse.from_orm(child)
-
-@router.put("/api/parent/children/{child_id}")
-async def update_child(
-    child_id: int,
-    child_data: ChildProfileUpdate,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Update child information"""
-    # Check if user has parent role
-    if "parent" not in current_user.roles:
-        raise HTTPException(status_code=403, detail="User does not have parent role")
-
-    # Get parent profile
-    parent_profile = db.query(ParentProfile).filter(
-        ParentProfile.user_id == current_user.id
-    ).first()
-
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
-
-    # Get child
-    child = db.query(ChildProfile).filter(
-        ChildProfile.id == child_id,
-        ChildProfile.parent_id == parent_profile.id
-    ).first()
-
-    if not child:
-        raise HTTPException(status_code=404, detail="Child not found")
-
-    # Update child fields
-    update_data = child_data.dict(exclude_unset=True)
-    for key, value in update_data.items():
-        if hasattr(child, key):
-            setattr(child, key, value)
-
-    db.commit()
-    db.refresh(child)
-
-    return {"message": "Child updated successfully", "child": ChildProfileResponse.from_orm(child)}
-
-@router.delete("/api/parent/children/{child_id}")
-async def delete_child(
-    child_id: int,
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db)
-):
-    """Remove/unregister a child"""
-    # Check if user has parent role
-    if "parent" not in current_user.roles:
-        raise HTTPException(status_code=403, detail="User does not have parent role")
-
-    # Get parent profile
-    parent_profile = db.query(ParentProfile).filter(
-        ParentProfile.user_id == current_user.id
-    ).first()
-
-    if not parent_profile:
-        raise HTTPException(status_code=404, detail="Parent profile not found")
-
-    # Get child
-    child = db.query(ChildProfile).filter(
-        ChildProfile.id == child_id,
-        ChildProfile.parent_id == parent_profile.id
-    ).first()
-
-    if not child:
-        raise HTTPException(status_code=404, detail="Child not found")
-
-    # Soft delete - just mark as inactive
-    child.is_active = False
-
-    # Update parent statistics
-    if parent_profile.active_children > 0:
-        parent_profile.active_children -= 1
-
-    db.commit()
-
-    return {"message": "Child removed successfully"}
+# NOTE: Child management now uses student_profiles table directly.
+# Parents link to children via:
+# - parent_profiles.children_ids = [student_profile_id1, student_profile_id2, ...]
+# - student_profiles.parent_id = [parent_user_id1, parent_user_id2, ...]
+# See parent_endpoints.py for the new child management endpoints.
 
 # ============================================
 # ADVERTISER PROFILE ENDPOINTS
@@ -5017,11 +5170,16 @@ async def get_advertiser_profile(
     ).first()
 
     if not advertiser_profile:
-        # Create new advertiser profile (username will be set later by user)
+        # Create new advertiser profile with defaults
+        from datetime import date
         advertiser_profile = AdvertiserProfile(
             user_id=current_user.id,
-            username=None,  # Username no longer in users table, will be set in advertiser_profiles
-            company_name=f"{current_user.first_name} {current_user.father_name} Inc."
+            username=None,  # Will be set later by user
+            joined_in=date.today(),
+            location=[],
+            socials={},
+            hero_title=[],
+            hero_subtitle=[]
         )
         db.add(advertiser_profile)
         db.commit()
@@ -6085,511 +6243,6 @@ def get_recent_tutor_activity(
 # ============================================
 # SCHOOL MANAGEMENT ENDPOINTS
 # ============================================
-
-@router.post("/api/schools/request", response_model=RequestedSchoolResponse)
-async def create_school_request(
-    school: RequestedSchoolCreate,
-    db: Session = Depends(get_db)
-):
-    """Create a new school registration request"""
-
-    # Check if email already exists
-    existing = db.query(RequestedSchool).filter(RequestedSchool.email == school.email).first()
-    if existing:
-        raise HTTPException(status_code=400, detail="School with this email already exists")
-
-    # Check if email exists in other school tables
-    if db.query(School).filter(School.email == school.email).first():
-        raise HTTPException(status_code=400, detail="School with this email is already verified")
-
-    # Create new request
-    new_request = RequestedSchool(**school.model_dump())
-    db.add(new_request)
-    db.commit()
-    db.refresh(new_request)
-
-    return new_request
-
-@router.get("/api/schools/requested", response_model=List[RequestedSchoolResponse])
-async def get_requested_schools(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """Get all school requests"""
-    schools = db.query(RequestedSchool).offset(skip).limit(limit).all()
-    return schools
-
-@router.get("/api/schools/requested/{school_id}", response_model=RequestedSchoolResponse)
-async def get_requested_school(
-    school_id: int,
-    db: Session = Depends(get_db)
-):
-    """Get a specific school request"""
-    school = db.query(RequestedSchool).filter(RequestedSchool.id == school_id).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="School request not found")
-    return school
-
-@router.post("/api/schools/approve/{request_id}")
-async def approve_school_request(
-    request_id: int,
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Approve a school request and move to schools table"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to approve schools")
-
-    # Get the request
-    request_school = db.query(RequestedSchool).filter(RequestedSchool.id == request_id).first()
-    if not request_school:
-        raise HTTPException(status_code=404, detail="School request not found")
-
-    # Create approved school
-    approved_school = School(
-        school_name=request_school.school_name,
-        school_type=request_school.school_type,
-        school_level=request_school.school_level,
-        location=request_school.location,
-        email=request_school.email,
-        phone=request_school.phone,
-        students_count=request_school.students_count,
-        documents=request_school.documents,
-        approved_date=datetime.utcnow(),
-        status="Verified"
-    )
-
-    db.add(approved_school)
-    db.delete(request_school)
-    db.commit()
-    db.refresh(approved_school)
-
-    return {
-        "success": True,
-        "message": "School approved successfully",
-        "school_id": approved_school.id
-    }
-
-@router.post("/api/schools/reject/{request_id}")
-async def reject_school_request(
-    request_id: int,
-    action: SchoolActionRequest,
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Reject a school request and move to rejected table"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to reject schools")
-
-    if not action.reason:
-        raise HTTPException(status_code=400, detail="Rejection reason is required")
-
-    # Get the request
-    request_school = db.query(RequestedSchool).filter(RequestedSchool.id == request_id).first()
-    if not request_school:
-        raise HTTPException(status_code=404, detail="School request not found")
-
-    # Create rejected school
-    rejected_school = RejectedSchool(
-        school_name=request_school.school_name,
-        school_type=request_school.school_type,
-        school_level=request_school.school_level,
-        location=request_school.location,
-        email=request_school.email,
-        phone=request_school.phone,
-        students_count=request_school.students_count,
-        documents=request_school.documents,
-        rejection_reason=action.reason,
-        rejected_date=datetime.utcnow(),
-        original_request_id=request_school.id,
-        status="Rejected"
-    )
-
-    db.add(rejected_school)
-    db.delete(request_school)
-    db.commit()
-    db.refresh(rejected_school)
-
-    return {
-        "success": True,
-        "message": "School rejected",
-        "rejected_id": rejected_school.id
-    }
-
-@router.get("/api/schools/verified", response_model=List[SchoolResponse])
-async def get_verified_schools(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """Get all verified schools"""
-    schools = db.query(School).offset(skip).limit(limit).all()
-    return schools
-
-@router.get("/api/schools/verified/{school_id}", response_model=SchoolResponse)
-async def get_verified_school(
-    school_id: int,
-    db: Session = Depends(get_db)
-):
-    """Get a specific verified school"""
-    school = db.query(School).filter(School.id == school_id).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="School not found")
-    return school
-
-@router.put("/api/schools/verified/{school_id}", response_model=SchoolResponse)
-async def update_verified_school(
-    school_id: int,
-    school_update: SchoolUpdate,
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Update a verified school"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to update schools")
-
-    school = db.query(School).filter(School.id == school_id).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="School not found")
-
-    # Update fields
-    update_data = school_update.model_dump(exclude_unset=True)
-    for key, value in update_data.items():
-        setattr(school, key, value)
-
-    db.commit()
-    db.refresh(school)
-
-    return school
-
-@router.post("/api/schools/reject-verified/{school_id}")
-async def reject_verified_school(
-    school_id: int,
-    action: SchoolActionRequest,
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Reject a verified school and move to rejected table"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to reject schools")
-
-    if not action.reason:
-        raise HTTPException(status_code=400, detail="Rejection reason is required")
-
-    # Get the verified school
-    school = db.query(School).filter(School.id == school_id).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="Verified school not found")
-
-    # Create rejected school
-    rejected_school = RejectedSchool(
-        school_name=school.school_name,
-        school_type=school.school_type,
-        school_level=school.school_level,
-        location=school.location,
-        email=school.email,
-        phone=school.phone,
-        students_count=school.students_count,
-        documents=school.documents,
-        rejection_reason=action.reason,
-        rejected_date=datetime.utcnow(),
-        original_request_id=school.id,
-        status="Rejected"
-    )
-
-    db.add(rejected_school)
-    db.delete(school)
-    db.commit()
-    db.refresh(rejected_school)
-
-    return {
-        "success": True,
-        "message": "Verified school rejected",
-        "rejected_id": rejected_school.id
-    }
-
-@router.post("/api/schools/reconsider-verified/{school_id}")
-async def reconsider_verified_school(
-    school_id: int,
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Reconsider a verified school and move back to requested (downgrade)"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to reconsider schools")
-
-    # Get the verified school
-    school = db.query(School).filter(School.id == school_id).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="Verified school not found")
-
-    # Move back to requested
-    requested_school = RequestedSchool(
-        school_name=school.school_name,
-        school_type=school.school_type,
-        school_level=school.school_level,
-        location=school.location,
-        email=school.email,
-        phone=school.phone,
-        students_count=school.students_count,
-        documents=school.documents,
-        submitted_date=datetime.utcnow(),
-        status="Pending"
-    )
-
-    db.add(requested_school)
-    db.delete(school)
-    db.commit()
-    db.refresh(requested_school)
-
-    return {
-        "success": True,
-        "message": "Verified school moved to pending for reconsideration",
-        "request_id": requested_school.id
-    }
-
-@router.post("/api/schools/suspend/{school_id}")
-async def suspend_school(
-    school_id: int,
-    action: SchoolActionRequest,
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Suspend a verified school and move to suspended table"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to suspend schools")
-
-    if not action.reason:
-        raise HTTPException(status_code=400, detail="Suspension reason is required")
-
-    # Get the school
-    school = db.query(School).filter(School.id == school_id).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="School not found")
-
-    # Create suspended school
-    suspended_school = SuspendedSchool(
-        school_name=school.school_name,
-        school_type=school.school_type,
-        school_level=school.school_level,
-        location=school.location,
-        email=school.email,
-        phone=school.phone,
-        students_count=school.students_count,
-        rating=school.rating,
-        established_year=school.established_year,
-        principal=school.principal,
-        documents=school.documents,
-        suspension_reason=action.reason,
-        suspended_date=datetime.utcnow(),
-        original_school_id=school.id,
-        status="Suspended"
-    )
-
-    db.add(suspended_school)
-    db.delete(school)
-    db.commit()
-    db.refresh(suspended_school)
-
-    return {
-        "success": True,
-        "message": "School suspended",
-        "suspended_id": suspended_school.id
-    }
-
-@router.get("/api/schools/rejected", response_model=List[RejectedSchoolResponse])
-async def get_rejected_schools(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """Get all rejected schools"""
-    schools = db.query(RejectedSchool).offset(skip).limit(limit).all()
-    return schools
-
-@router.get("/api/schools/rejected/{school_id}", response_model=RejectedSchoolResponse)
-async def get_rejected_school(
-    school_id: int,
-    db: Session = Depends(get_db)
-):
-    """Get a specific rejected school"""
-    school = db.query(RejectedSchool).filter(RejectedSchool.id == school_id).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="Rejected school not found")
-    return school
-
-@router.post("/api/schools/reconsider/{rejected_id}")
-async def reconsider_rejected_school(
-    rejected_id: int,
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Reconsider a rejected school and move back to requested"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to reconsider schools")
-
-    # Get the rejected school
-    rejected_school = db.query(RejectedSchool).filter(RejectedSchool.id == rejected_id).first()
-    if not rejected_school:
-        raise HTTPException(status_code=404, detail="Rejected school not found")
-
-    # Move back to requested
-    requested_school = RequestedSchool(
-        school_name=rejected_school.school_name,
-        school_type=rejected_school.school_type,
-        school_level=rejected_school.school_level,
-        location=rejected_school.location,
-        email=rejected_school.email,
-        phone=rejected_school.phone,
-        students_count=rejected_school.students_count,
-        documents=rejected_school.documents,
-        submitted_date=datetime.utcnow(),
-        status="Pending"
-    )
-
-    db.add(requested_school)
-    db.delete(rejected_school)
-    db.commit()
-    db.refresh(requested_school)
-
-    return {
-        "success": True,
-        "message": "School reconsidered and moved to pending",
-        "request_id": requested_school.id
-    }
-
-@router.get("/api/schools/suspended", response_model=List[SuspendedSchoolResponse])
-async def get_suspended_schools(
-    skip: int = 0,
-    limit: int = 100,
-    db: Session = Depends(get_db)
-):
-    """Get all suspended schools"""
-    schools = db.query(SuspendedSchool).offset(skip).limit(limit).all()
-    return schools
-
-@router.get("/api/schools/suspended/{school_id}", response_model=SuspendedSchoolResponse)
-async def get_suspended_school(
-    school_id: int,
-    db: Session = Depends(get_db)
-):
-    """Get a specific suspended school"""
-    school = db.query(SuspendedSchool).filter(SuspendedSchool.id == school_id).first()
-    if not school:
-        raise HTTPException(status_code=404, detail="Suspended school not found")
-    return school
-
-@router.post("/api/schools/reinstate/{suspended_id}")
-async def reinstate_suspended_school(
-    suspended_id: int,
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Reinstate a suspended school and move back to verified"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to reinstate schools")
-
-    # Get the suspended school
-    suspended_school = db.query(SuspendedSchool).filter(SuspendedSchool.id == suspended_id).first()
-    if not suspended_school:
-        raise HTTPException(status_code=404, detail="Suspended school not found")
-
-    # Move back to verified schools
-    reinstated_school = School(
-        school_name=suspended_school.school_name,
-        school_type=suspended_school.school_type,
-        school_level=suspended_school.school_level,
-        location=suspended_school.location,
-        email=suspended_school.email,
-        phone=suspended_school.phone,
-        students_count=suspended_school.students_count,
-        rating=suspended_school.rating,
-        established_year=suspended_school.established_year,
-        principal=suspended_school.principal,
-        documents=suspended_school.documents,
-        approved_date=datetime.utcnow(),
-        status="Verified"
-    )
-
-    db.add(reinstated_school)
-    db.delete(suspended_school)
-    db.commit()
-    db.refresh(reinstated_school)
-
-    return {
-        "success": True,
-        "message": "School reinstated",
-        "school_id": reinstated_school.id
-    }
-
-@router.delete("/api/schools/{school_id}")
-async def delete_school(
-    school_id: int,
-    table: str,  # "requested", "verified", "rejected", or "suspended"
-    db: Session = Depends(get_db),
-    current_admin: dict = Depends(get_current_admin)
-):
-    """Permanently delete a school from any table"""
-
-    # Check if admin has permission (manage-schools or manage-system-settings)
-    allowed_departments = {"manage-schools", "manage-system-settings"}
-    admin_departments = set(current_admin.get("departments", []))
-    if not admin_departments.intersection(allowed_departments):
-        raise HTTPException(status_code=403, detail="You don't have permission to delete schools")
-
-    # Determine which table to delete from
-    if table == "requested":
-        school = db.query(RequestedSchool).filter(RequestedSchool.id == school_id).first()
-    elif table == "verified":
-        school = db.query(School).filter(School.id == school_id).first()
-    elif table == "rejected":
-        school = db.query(RejectedSchool).filter(RejectedSchool.id == school_id).first()
-    elif table == "suspended":
-        school = db.query(SuspendedSchool).filter(SuspendedSchool.id == school_id).first()
-    else:
-        raise HTTPException(status_code=400, detail="Invalid table name")
-
-    if not school:
-        raise HTTPException(status_code=404, detail="School not found")
-
-    school_name = school.school_name
-    db.delete(school)
-    db.commit()
-
-    return {
-        "success": True,
-        "message": f"School '{school_name}' permanently deleted"
-    }
+# NOTE: School management has been migrated to use a single 'schools' table
+# with a 'status' field (pending, verified, rejected, suspended).
+# All school endpoints are now in admin_schools_endpoints.py under /api/admin/schools/*

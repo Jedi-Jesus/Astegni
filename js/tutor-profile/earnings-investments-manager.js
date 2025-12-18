@@ -4,7 +4,7 @@
  */
 
 const EarningsInvestmentsManager = {
-    API_BASE_URL: 'https://api.astegni.com',
+    API_BASE_URL: 'http://localhost:8000',
     charts: {},
     currentPeriod: {
         direct: 6,

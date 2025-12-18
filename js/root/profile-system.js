@@ -3,6 +3,15 @@
    Updated: 2025-10-03 - Removed default-avatar.png (v2)
    ============================================ */
 // ============================================
+// HELPER FUNCTIONS
+// ============================================
+
+// Get auth token from localStorage (checks both 'token' and 'access_token' for compatibility)
+function getStoredAuthToken() {
+    return localStorage.getItem('token') || localStorage.getItem('access_token');
+}
+
+// ============================================
 // FALLBACK FUNCTIONS FOR OPTIONAL DEPENDENCIES
 // ============================================
 
@@ -94,7 +103,7 @@ if (typeof UrlHelper === 'undefined') {
         
         getApiBaseUrl() {
             return this.isFileProtocol 
-                ? 'https://api.astegni.com/api'
+                ? 'http://localhost:8000/api'
                 : '/api';
         },
         
@@ -108,7 +117,7 @@ if (typeof UrlHelper === 'undefined') {
             
             // For file protocol, prepend backend server URL
             if (this.isFileProtocol) {
-                return `https://api.astegni.com${path}`;
+                return `http://localhost:8000${path}`;
             }
             
             // For http protocol, return as is
@@ -132,7 +141,7 @@ const ProfileSystem = (function() {
     'use strict';
 
     // Configuration
-    const API_BASE_URL = "https://api.astegni.com";
+    const API_BASE_URL = "http://localhost:8000";
     
     const PROFILE_URLS = {
         user: "../profile-pages/user-profile.html",
@@ -179,6 +188,7 @@ const ProfileSystem = (function() {
     // State
     let currentUser = null;
     let userRole = null;
+    let _initialized = false;  // Guard to prevent multiple initializations
 
     // Helper function to refresh token
     async function attemptTokenRefresh() {
@@ -273,14 +283,17 @@ const ProfileSystem = (function() {
         };
         userRole = userData.active_role;
         localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        localStorage.setItem('userRole', userRole);
+        // Only store userRole if it has a valid value (prevent storing "undefined" string)
+        if (userRole && userRole !== 'undefined') {
+            localStorage.setItem('userRole', userRole);
+        }
         return true;
     }
 
     // API Functions
     async function fetchCurrentUserData() {
         try {
-            const token = localStorage.getItem('token');
+            const token = getStoredAuthToken();
             if (!token) {
                 // No token, user is not logged in - this is normal, not an error
                 return false;
@@ -324,7 +337,10 @@ const ProfileSystem = (function() {
                 userRole = userData.role;
 
                 localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                localStorage.setItem('userRole', userData.role);
+                // Only store userRole if it has a valid value (prevent storing "undefined" string)
+                if (userData.role && userData.role !== 'undefined') {
+                    localStorage.setItem('userRole', userData.role);
+                }
 
                 await fetchUserRoles();
                 return true;
@@ -338,7 +354,7 @@ const ProfileSystem = (function() {
             return false;
         } catch (error) {
             // Only log unexpected errors, not network errors when not logged in
-            if (localStorage.getItem('token')) {
+            if (getStoredAuthToken()) {
                 console.error('Error fetching user data:', error);
             }
             return false;
@@ -347,7 +363,7 @@ const ProfileSystem = (function() {
 
     async function fetchUserRoles() {
         try {
-            const token = localStorage.getItem('token');
+            const token = getStoredAuthToken();
             if (!token) {
                 // No token, user is not logged in - this is normal, not an error
                 return [];
@@ -367,7 +383,10 @@ const ProfileSystem = (function() {
                     currentUser.roles = data.user_roles || data.roles || [];
                     userRole = data.active_role || userRole;
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                    localStorage.setItem('userRole', data.active_role);
+                    // Only store userRole if it has a valid value (prevent storing "undefined" string)
+                    if (data.active_role && data.active_role !== 'undefined') {
+                        localStorage.setItem('userRole', data.active_role);
+                    }
                 }
                 return data.user_roles || data.roles || [];
             } else if (response.status === 401) {
@@ -377,7 +396,7 @@ const ProfileSystem = (function() {
             return [];
         } catch (error) {
             // Only log unexpected errors, not network errors when not logged in
-            if (localStorage.getItem('token')) {
+            if (getStoredAuthToken()) {
                 console.error('Error fetching user roles:', error);
             }
             return [];
@@ -407,7 +426,7 @@ function updateProfilePictures() {
         
         // Fallback for file protocol without UrlHelper
         if (window.location.protocol === 'file:') {
-            return `https://api.astegni.com${url}`;
+            return `http://localhost:8000${url}`;
         }
         
         return url;
@@ -524,7 +543,7 @@ function updateProfilePictures() {
     }
 
     async function updateProfileDropdown() {
-        const token = localStorage.getItem('token');
+        const token = getStoredAuthToken();
         if (!token) return;
 
         await fetchCurrentUserData();
@@ -579,7 +598,7 @@ function updateProfilePictures() {
         if (!roleSwitcherSection || !roleOptions) return;
 
         // Check if user is logged in
-        const token = localStorage.getItem('token');
+        const token = getStoredAuthToken();
         if (!token) {
             roleSwitcherSection.classList.add('hidden');
             return;
@@ -626,7 +645,10 @@ function updateProfilePictures() {
                 currentUser.roles = userRoles;
             }
             userRole = activeRole;
-            localStorage.setItem('userRole', activeRole);
+            // Only store userRole if it has a valid value (prevent storing "undefined" string)
+            if (activeRole && activeRole !== 'undefined') {
+                localStorage.setItem('userRole', activeRole);
+            }
 
             // Filter out admin roles - admins should only access through admin-index.html
             const userFacingRoles = userRoles.filter(role => role !== 'admin');
@@ -722,16 +744,41 @@ function updateProfilePictures() {
 
     async function openAddRoleModal() {
         // Wait for modal to be loaded if using CommonModalLoader
+        let attempts = 0;
+        const maxAttempts = 50; // Max 5 seconds wait (50 * 100ms)
+
         const tryOpenModal = () => {
             const modal = document.getElementById('add-role-modal');
             if (!modal) {
-                console.log('[ProfileSystem] Add-role modal not found, waiting for CommonModalLoader...');
-                setTimeout(tryOpenModal, 100);
+                attempts++;
+                if (attempts < maxAttempts) {
+                    console.log('[ProfileSystem] Add-role modal not found, waiting for modal loader... (attempt ' + attempts + ')');
+                    setTimeout(tryOpenModal, 100);
+                } else {
+                    console.error('[ProfileSystem] Add-role modal not found after ' + maxAttempts + ' attempts. Modal loader may not be configured.');
+                    if (window.showToast) {
+                        window.showToast('Unable to load add role modal. Please refresh the page.', 'error');
+                    }
+                }
                 return;
             }
+
+            // Ensure form event listener is attached (modal may have been loaded dynamically)
+            attachAddRoleFormListener();
+
             openAddRoleModalInternal();
         };
         tryOpenModal();
+    }
+
+    // Attach form listener - can be called multiple times safely
+    function attachAddRoleFormListener() {
+        const addRoleForm = document.getElementById('add-role-form');
+        if (addRoleForm && !addRoleForm.dataset.listenerAttached) {
+            addRoleForm.addEventListener('submit', handleAddRoleSubmit);
+            addRoleForm.dataset.listenerAttached = 'true';
+            console.log('[ProfileSystem] Add-role form listener attached');
+        }
     }
 
     function openAddRoleModalInternal() {
@@ -883,7 +930,7 @@ function updateProfilePictures() {
             const response = await fetch(`${API_BASE_URL}/api/send-otp`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${getStoredAuthToken()}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
@@ -997,7 +1044,7 @@ function updateProfilePictures() {
         const btnText = submitBtn?.querySelector('.btn-text');
         const btnLoader = submitBtn?.querySelector('.btn-loader');
 
-        const token = localStorage.getItem('token');
+        const token = getStoredAuthToken();
         if (!token) {
             if (window.showToast) {
                 window.showToast('Please login first', 'error');
@@ -1171,7 +1218,7 @@ function updateProfilePictures() {
             const response = await fetch(`${API_BASE_URL}/api/switch-role`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${getStoredAuthToken()}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ role: newRole })
@@ -1198,7 +1245,10 @@ function updateProfilePictures() {
                 }
 
                 userRole = data.active_role;
-                localStorage.setItem('userRole', data.active_role);
+                // Only store userRole if it has a valid value (prevent storing "undefined" string)
+                if (data.active_role && data.active_role !== 'undefined') {
+                    localStorage.setItem('userRole', data.active_role);
+                }
 
                 if (currentUser) {
                     currentUser.role = data.active_role;
@@ -1282,7 +1332,7 @@ function updateProfilePictures() {
         const isProfilePage = currentPath.includes('/profile-pages/');
 
         // CRITICAL FIX: Also check for undefined/null string values
-        if (!isProfilePage || !userRole || userRole === 'undefined' || userRole === 'null' || !currentUser || !localStorage.getItem('token')) {
+        if (!isProfilePage || !userRole || userRole === 'undefined' || userRole === 'null' || !currentUser || !getStoredAuthToken()) {
             console.log('[profile-system.checkRolePageMismatch] Skipping check - not logged in or invalid role:', userRole);
             return; // Not on a profile page or no role set or not logged in
         }
@@ -1324,10 +1374,17 @@ function updateProfilePictures() {
 
     // Initialization
     async function initialize() {
+        // Prevent multiple initializations
+        if (_initialized) {
+            console.log('⚠️ ProfileSystem already initialized, skipping...');
+            return;
+        }
+        _initialized = true;
+
         // Check for saved user session
         const savedUser = localStorage.getItem("currentUser");
         const savedRole = localStorage.getItem("userRole");
-        const savedToken = localStorage.getItem("token");
+        const savedToken = getStoredAuthToken(); // Check both 'token' and 'access_token'
 
         if (savedUser && savedRole && savedToken) {
             try {
@@ -1359,10 +1416,18 @@ function updateProfilePictures() {
         });
 
         // Setup add role form submission
-        const addRoleForm = document.getElementById('add-role-form');
-        if (addRoleForm) {
-            addRoleForm.addEventListener('submit', handleAddRoleSubmit);
-        }
+        // Try immediately in case modal is already in DOM
+        attachAddRoleFormListener();
+
+        // Also listen for modal loader events (modals load asynchronously)
+        document.addEventListener('modalsLoaded', function() {
+            console.log('[ProfileSystem] modalsLoaded event received, attaching form listener');
+            attachAddRoleFormListener();
+        });
+        document.addEventListener('commonModalsLoaded', function() {
+            console.log('[ProfileSystem] commonModalsLoaded event received, attaching form listener');
+            attachAddRoleFormListener();
+        });
     }
 
     // Public API

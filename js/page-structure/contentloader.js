@@ -668,7 +668,7 @@ class UpdatedContentLoader extends ContentLoader {
 
         try {
             const token = localStorage.getItem('token');
-            const API_BASE_URL = 'https://api.astegni.com';
+            const API_BASE_URL = 'http://localhost:8000';
 
             const response = await fetch(`${API_BASE_URL}/api/clubs`, {
                 headers: token ? {

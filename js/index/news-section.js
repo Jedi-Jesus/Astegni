@@ -109,7 +109,7 @@
     // Fetch news from backend
     async function fetchNewsFromBackend() {
         try {
-            const response = await fetch('https://api.astegni.com/api/news', {
+            const response = await fetch('http://localhost:8000/api/news', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'

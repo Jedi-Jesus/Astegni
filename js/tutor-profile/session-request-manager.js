@@ -4,13 +4,18 @@
 
 const SessionRequestManager = {
     currentRequestId: null,
+    allStudents: [], // Store all students for search filtering
 
     /**
      * Load and display session requests
      */
     async loadRequests(status = 'pending') {
-        const container = document.getElementById('session-requests-list');
-        if (!container) return;
+        // Try both container IDs for compatibility
+        const container = document.getElementById('tutor-requests-list') || document.getElementById('session-requests-list');
+        if (!container) {
+            console.error('[SessionRequestManager] No container found (tutor-requests-list or session-requests-list)');
+            return;
+        }
 
         try {
             // Show loading state
@@ -21,7 +26,12 @@ const SessionRequestManager = {
                 </div>
             `;
 
-            const token = localStorage.getItem('token');
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) {
                 container.innerHTML = `
                     <div class="card p-6 text-center text-gray-500">
@@ -33,8 +43,8 @@ const SessionRequestManager = {
             }
 
             const url = status
-                ? `https://api.astegni.com/api/session-requests/tutor?status=${status}`
-                : 'https://api.astegni.com/api/session-requests/tutor';
+                ? `http://localhost:8000/api/session-requests/tutor?status=${status}`
+                : 'http://localhost:8000/api/session-requests/tutor';
 
             const response = await fetch(url, {
                 headers: {
@@ -183,7 +193,7 @@ const SessionRequestManager = {
             modal.classList.remove('hidden');
 
             const token = localStorage.getItem('token');
-            const response = await fetch(`https://api.astegni.com/api/session-requests/tutor/${requestId}`, {
+            const response = await fetch(`http://localhost:8000/api/session-requests/tutor/${requestId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -445,7 +455,7 @@ const SessionRequestManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`https://api.astegni.com/api/session-requests/tutor/${this.currentRequestId}`, {
+            const response = await fetch(`http://localhost:8000/api/session-requests/tutor/${this.currentRequestId}`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -496,7 +506,7 @@ const SessionRequestManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`https://api.astegni.com/api/session-requests/tutor/${this.currentRequestId}`, {
+            const response = await fetch(`http://localhost:8000/api/session-requests/tutor/${this.currentRequestId}`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -544,11 +554,16 @@ const SessionRequestManager = {
     },
 
     /**
-     * Load My Students (accepted requests)
+     * Load My Students from enrolled_students table
      */
     async loadMyStudents() {
         const container = document.getElementById('my-students-grid');
-        if (!container) return;
+        if (!container) {
+            console.warn('[SessionRequestManager] my-students-grid container not found');
+            return;
+        }
+
+        console.log('[SessionRequestManager] Loading my students from enrolled_students...');
 
         try {
             // Show loading state
@@ -559,7 +574,12 @@ const SessionRequestManager = {
                 </div>
             `;
 
-            const token = localStorage.getItem('token');
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) {
                 container.innerHTML = `
                     <div class="col-span-full card p-6 text-center text-gray-500">
@@ -570,34 +590,50 @@ const SessionRequestManager = {
                 return;
             }
 
-            const response = await fetch('https://api.astegni.com/api/session-requests/tutor/my-students', {
+            const response = await fetch('http://localhost:8000/api/session-requests/tutor/my-students', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('[SessionRequestManager] API Error:', response.status, errorText);
                 throw new Error('Failed to load students');
             }
 
             const students = await response.json();
+            console.log('[SessionRequestManager] Loaded', students.length, 'students from enrolled_students');
+
+            // Store for search filtering
+            this.allStudents = students;
+
+            // Update student count badge
+            this.updateStudentCount(students.length);
 
             if (students.length === 0) {
                 container.innerHTML = `
                     <div class="col-span-full card p-6 text-center text-gray-500">
                         <i class="fas fa-user-graduate text-3xl mb-3"></i>
                         <p>No students yet</p>
-                        <p class="text-sm mt-2">Accept session requests to add students</p>
+                        <p class="text-sm mt-2">Accept session requests to add students to your enrolled list</p>
                     </div>
                 `;
                 return;
             }
 
             // Render student cards
-            container.innerHTML = students.map(student => this.renderStudentCard(student)).join('');
+            this.renderStudents(students);
+
+            // Clear and setup search functionality
+            const searchInput = document.getElementById('student-search');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            this.setupStudentSearch();
 
         } catch (error) {
-            console.error('Error loading students:', error);
+            console.error('[SessionRequestManager] Error loading students:', error);
             container.innerHTML = `
                 <div class="col-span-full card p-6 text-center text-red-500">
                     <i class="fas fa-exclamation-triangle text-3xl mb-3"></i>
@@ -605,6 +641,94 @@ const SessionRequestManager = {
                     <p class="text-sm mt-2">${error.message}</p>
                 </div>
             `;
+        }
+    },
+
+    /**
+     * Render students to the grid
+     */
+    renderStudents(students) {
+        const container = document.getElementById('my-students-grid');
+        if (!container) return;
+
+        if (students.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full card p-6 text-center text-gray-500">
+                    <i class="fas fa-search text-3xl mb-3"></i>
+                    <p>No students found matching your search</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = students.map(student => this.renderStudentCard(student)).join('');
+    },
+
+    /**
+     * Setup search functionality for students
+     */
+    setupStudentSearch() {
+        const searchInput = document.getElementById('student-search');
+        if (!searchInput) {
+            console.warn('[SessionRequestManager] student-search input not found');
+            return;
+        }
+
+        // Remove existing listener if any
+        searchInput.removeEventListener('input', this.handleStudentSearch);
+
+        // Add debounced search
+        let searchTimeout;
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.filterStudents(e.target.value);
+            }, 300);
+        });
+
+        console.log('[SessionRequestManager] Student search setup complete');
+    },
+
+    /**
+     * Filter students by search term
+     */
+    filterStudents(searchTerm) {
+        const term = searchTerm.toLowerCase().trim();
+
+        if (!term) {
+            // Show all students if search is empty
+            this.renderStudents(this.allStudents);
+            return;
+        }
+
+        const filtered = this.allStudents.filter(student => {
+            const name = (student.student_name || '').toLowerCase();
+            const grade = (student.student_grade || '').toLowerCase();
+            const packageName = (student.package_name || '').toLowerCase();
+            const email = (student.contact_email || '').toLowerCase();
+
+            return name.includes(term) ||
+                   grade.includes(term) ||
+                   packageName.includes(term) ||
+                   email.includes(term);
+        });
+
+        console.log(`[SessionRequestManager] Search "${term}" found ${filtered.length} students`);
+        this.renderStudents(filtered);
+    },
+
+    /**
+     * Update student count badge
+     */
+    updateStudentCount(count) {
+        const badge = document.getElementById('student-count-badge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = `${count} student${count !== 1 ? 's' : ''}`;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
         }
     },
 
@@ -711,11 +835,11 @@ const SessionRequestManager = {
                         <i class="fas fa-chart-line"></i> View Details
                     </button>
                     <button
-                        onclick="SessionRequestManager.messageStudent(${student.student_id})"
+                        onclick="SessionRequestManager.messageStudent(JSON.parse(this.dataset.student))"
+                        data-student="${this.encodeStudentDataForChat(student)}"
                         class="btn-secondary"
                         style="padding: 0.625rem 1rem; font-size: 0.875rem; border-radius: 8px;"
-                        disabled
-                        title="Messaging feature coming in Phase 2">
+                        title="Message this student">
                         <i class="fas fa-envelope"></i>
                     </button>
                 </div>
@@ -724,10 +848,77 @@ const SessionRequestManager = {
     },
 
     /**
-     * Message student (Phase 2)
+     * Encode student data for onclick handler
      */
-    messageStudent(studentId) {
-        alert('📧 Messaging feature coming in Phase 2!');
+    encodeStudentDataForChat(student) {
+        const chatData = {
+            id: student.student_user_id,  // users.id for chat
+            user_id: student.student_user_id,  // users.id for chat
+            profile_id: student.student_id,  // student_profiles.id
+            full_name: student.student_name || 'Unknown Student',
+            name: student.student_name || 'Unknown Student',
+            profile_picture: student.profile_picture,
+            avatar: student.profile_picture,
+            role: student.requester_type || 'student',
+            profile_type: student.requester_type || 'student',
+            is_online: false,
+            grade: student.student_grade,
+            package_name: student.package_name
+        };
+        return JSON.stringify(chatData).replace(/"/g, '&quot;');
+    },
+
+    /**
+     * Message student - opens chat modal with student highlighted
+     */
+    messageStudent(studentData) {
+        console.log('[SessionRequestManager] Opening chat with student:', studentData);
+
+        // Check if user is authenticated
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+        if (!token) {
+            if (window.openAuthModal) {
+                window.openAuthModal('login');
+            } else {
+                alert('Please log in to message students');
+            }
+            return;
+        }
+
+        // Build target user object for chat modal
+        const targetUser = {
+            id: studentData.user_id || studentData.id,
+            user_id: studentData.user_id || studentData.id,
+            profile_id: studentData.profile_id,
+            full_name: studentData.full_name || studentData.name,
+            name: studentData.full_name || studentData.name,
+            profile_picture: studentData.profile_picture || studentData.avatar,
+            avatar: studentData.profile_picture || studentData.avatar,
+            role: studentData.role || studentData.profile_type || 'student',
+            profile_type: studentData.role || studentData.profile_type || 'student',
+            is_online: studentData.is_online || false
+        };
+
+        console.log('[SessionRequestManager] Target user for chat:', targetUser);
+
+        // Open chat modal with the student
+        if (typeof openChatModal === 'function') {
+            openChatModal(targetUser);
+            console.log('[SessionRequestManager] Chat modal opened for student:', targetUser.full_name);
+        } else if (typeof ChatModalManager !== 'undefined') {
+            // Initialize if needed
+            if (typeof ChatModalManager.init === 'function' && !ChatModalManager.state?.isOpen) {
+                ChatModalManager.init();
+            }
+            // Open with the student
+            if (typeof ChatModalManager.open === 'function') {
+                ChatModalManager.open(targetUser);
+                console.log('[SessionRequestManager] Chat modal opened via ChatModalManager for:', targetUser.full_name);
+            }
+        } else {
+            console.error('[SessionRequestManager] Chat modal not available');
+            alert('Chat feature is not available. Please refresh the page.');
+        }
     },
 
     /**
@@ -767,6 +958,7 @@ function refreshRequests() {
 
 const ParentingInvitationManager = {
     currentInvitationId: null,
+    currentInvitation: null,
 
     /**
      * Load parenting invitations for the current user
@@ -783,7 +975,12 @@ const ParentingInvitationManager = {
                 </div>
             `;
 
-            const token = localStorage.getItem('token');
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) {
                 container.innerHTML = `
                     <div class="card p-6 text-center text-gray-500">
@@ -794,7 +991,7 @@ const ParentingInvitationManager = {
                 return;
             }
 
-            const response = await fetch('https://api.astegni.com/api/parent/pending-invitations', {
+            const response = await fetch('http://localhost:8000/api/parent/pending-invitations', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -859,23 +1056,39 @@ const ParentingInvitationManager = {
     },
 
     /**
-     * Render a parenting invitation card
+     * Render a parenting invitation card with full profile info
      */
     renderInvitationCard(invitation) {
         const studentUrl = `../view-profiles/view-student.html?id=${invitation.student_user_id}`;
         const createdDate = new Date(invitation.created_at);
         const timeAgo = SessionRequestManager.getTimeAgo(createdDate);
-        const studentInitial = (invitation.student_name || 'S').charAt(0).toUpperCase();
+        const profilePic = invitation.student_profile_picture || '/uploads/system_images/system_profile_pictures/woman-user.jpg';
+
+        // Mask email for privacy (show first 3 chars and domain)
+        const maskEmail = (email) => {
+            if (!email) return null;
+            const [local, domain] = email.split('@');
+            return local.substring(0, 3) + '***@' + domain;
+        };
+
+        // Mask phone for privacy (show last 4 digits)
+        const maskPhone = (phone) => {
+            if (!phone) return null;
+            return '***' + phone.slice(-4);
+        };
 
         return `
-            <div class="card p-4" style="border: 2px solid var(--border-color); border-radius: 12px;">
-                <div class="flex items-start gap-3 mb-4">
-                    <!-- Student Avatar (Initial) -->
-                    <div style="width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; font-size: 1.25rem; font-weight: bold;">
-                        ${studentInitial}
-                    </div>
+            <div class="card p-5" style="border: 2px solid var(--border-color); border-radius: 16px; transition: all 0.2s; background: var(--card-bg);"
+                 onmouseover="this.style.borderColor='#8B5CF6'; this.style.boxShadow='0 8px 24px rgba(139, 92, 246, 0.15)'"
+                 onmouseout="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'">
+
+                <!-- Student Header with Profile Pic -->
+                <div class="flex items-start gap-4 mb-4 pb-4" style="border-bottom: 1px solid var(--border-color);">
+                    <img src="${profilePic}"
+                         alt="${invitation.student_name}"
+                         style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 3px solid #8B5CF6; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);">
                     <div class="flex-1">
-                        <h4 class="font-bold text-lg">
+                        <h4 class="font-bold text-lg mb-1">
                             <a href="${studentUrl}" class="hover:text-purple-600 hover:underline" style="color: var(--heading);">
                                 ${invitation.student_name || 'Unknown Student'}
                             </a>
@@ -883,29 +1096,60 @@ const ParentingInvitationManager = {
                         <p class="text-sm" style="color: var(--text-secondary);">
                             ${invitation.grade_level || ''} ${invitation.studying_at ? '@ ' + invitation.studying_at : ''}
                         </p>
+                        <span style="display: inline-block; background: linear-gradient(135deg, #8B5CF6, #6366F1); color: white; padding: 2px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: 600; margin-top: 4px;">
+                            ${invitation.relationship_type || 'Parent'}
+                        </span>
                     </div>
                 </div>
 
-                <div class="mb-4 p-3 rounded-lg" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); border: 1px solid rgba(139, 92, 246, 0.2);">
-                    <p class="text-sm" style="color: var(--text-secondary);">Relationship Type</p>
-                    <p class="font-semibold" style="color: #8B5CF6;">${invitation.relationship_type || 'Parent'}</p>
+                <!-- Contact Info -->
+                <div class="mb-4 space-y-2">
+                    ${invitation.student_email ? `
+                        <div class="flex items-center gap-2" style="color: var(--text-secondary); font-size: 0.85rem;">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #8B5CF6;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>${maskEmail(invitation.student_email)}</span>
+                        </div>
+                    ` : ''}
+                    ${invitation.student_phone ? `
+                        <div class="flex items-center gap-2" style="color: var(--text-secondary); font-size: 0.85rem;">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #8B5CF6;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                            </svg>
+                            <span>${maskPhone(invitation.student_phone)}</span>
+                        </div>
+                    ` : ''}
                 </div>
 
+                <!-- Time Ago -->
                 <p class="text-xs mb-4" style="color: var(--text-secondary);">
-                    <i class="fas fa-clock"></i> Requested ${timeAgo}
+                    <svg class="w-3 h-3" style="display: inline-block; vertical-align: middle; margin-right: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Requested ${timeAgo}
                 </p>
 
+                <!-- Action Buttons -->
                 <div class="flex gap-2">
                     <button
-                        onclick="ParentingInvitationManager.acceptInvitation(${invitation.id})"
+                        onclick="ParentingInvitationManager.openAcceptModal(${invitation.id}, '${invitation.student_name}', '${profilePic}', '${invitation.relationship_type || 'Parent'}')"
                         class="flex-1 btn-primary"
-                        style="padding: 8px 12px; border-radius: 8px; font-size: 0.875rem;">
-                        <i class="fas fa-check"></i> Accept
+                        style="padding: 10px 12px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Accept
                     </button>
                     <button
                         onclick="ParentingInvitationManager.rejectInvitation(${invitation.id})"
-                        style="flex: 1; padding: 8px 12px; border-radius: 8px; font-size: 0.875rem; background: #EF4444; color: white; border: none; cursor: pointer;">
-                        <i class="fas fa-times"></i> Reject
+                        style="flex: 1; padding: 10px 12px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; background: #EF4444; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;"
+                        onmouseover="this.style.background='#DC2626'"
+                        onmouseout="this.style.background='#EF4444'">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Reject
                     </button>
                 </div>
             </div>
@@ -913,33 +1157,202 @@ const ParentingInvitationManager = {
     },
 
     /**
-     * Accept a parenting invitation
+     * Open the OTP verification modal for accepting an invitation
      */
-    async acceptInvitation(invitationId) {
-        if (!confirm('Are you sure you want to accept this parenting invitation? You will become this student\'s linked parent.')) {
+    async openAcceptModal(invitationId, studentName, profilePic, relationshipType) {
+        this.currentInvitationId = invitationId;
+
+        // Load the modal if not already loaded
+        let modal = document.getElementById('accept-parent-invitation-modal');
+        if (!modal) {
+            // Try to load via modal loader
+            if (typeof ModalLoader !== 'undefined') {
+                await ModalLoader.load('accept-parent-invitation-modal.html');
+                modal = document.getElementById('accept-parent-invitation-modal');
+            }
+
+            if (!modal) {
+                // Fallback: Create modal dynamically
+                const modalHTML = `
+                    <div id="accept-parent-invitation-modal" class="modal hidden">
+                        <div class="modal-content enhanced" style="max-width: 480px; background: var(--card-bg); border-radius: 16px; padding: 0;">
+                            <button class="modal-close-enhanced" onclick="ParentingInvitationManager.closeAcceptModal()" style="position: absolute; top: 16px; right: 16px; background: var(--bg-secondary); border: none; border-radius: 50%; padding: 8px; cursor: pointer; z-index: 10;">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                            <div class="modal-header" style="text-align: center; padding: 24px 24px 0;">
+                                <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #8B5CF6;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="modal-title" style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin-bottom: 8px;">Accept Parent Invitation</h3>
+                                <p class="modal-subtitle" style="color: var(--text-secondary); font-size: 0.875rem;">Enter the OTP code sent to your email to verify</p>
+                            </div>
+                            <div id="invitation-student-info" style="padding: 16px 24px; margin: 16px 24px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05)); border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.2);">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <img id="invitation-student-pic" src="/uploads/system_images/system_profile_pictures/woman-user.jpg" alt="Student" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #8B5CF6;">
+                                    <div>
+                                        <p style="font-weight: 600; color: var(--heading); margin: 0;" id="invitation-student-name">Student Name</p>
+                                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 4px 0 0;">
+                                            Wants you as their <span id="invitation-relationship" style="color: #8B5CF6; font-weight: 600;">Parent</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="padding: 0 24px 24px;">
+                                <div class="form-group" style="margin-bottom: 20px;">
+                                    <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 8px; display: block; font-size: 0.875rem;">Enter OTP Code</label>
+                                    <input type="text" id="parent-invitation-otp-input" maxlength="6" placeholder="000000"
+                                           style="text-align: center; font-size: 28px; letter-spacing: 10px; padding: 16px; font-weight: 700; width: 100%; border: 2px solid var(--border-color); border-radius: 12px; background: var(--input-bg); color: var(--text-primary);"
+                                           pattern="[0-9]*" inputmode="numeric" required>
+                                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; text-align: center;">Code valid for 7 days from invitation</p>
+                                </div>
+                                <div id="parent-invitation-otp-error" class="hidden" style="background: #FEE2E2; border: 1px solid #FECACA; color: #DC2626; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.875rem; text-align: center;">
+                                    Invalid OTP code. Please try again.
+                                </div>
+                                <button onclick="ParentingInvitationManager.submitAcceptWithOTP()" id="accept-invitation-submit-btn"
+                                        style="width: 100%; padding: 14px 24px; background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); color: white; font-weight: 600; font-size: 1rem; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Verify & Accept Invitation
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                modal = document.getElementById('accept-parent-invitation-modal');
+            }
+        }
+
+        // Update modal content with invitation details
+        const studentPicEl = document.getElementById('invitation-student-pic');
+        const studentNameEl = document.getElementById('invitation-student-name');
+        const relationshipEl = document.getElementById('invitation-relationship');
+        const otpInput = document.getElementById('parent-invitation-otp-input');
+        const errorEl = document.getElementById('parent-invitation-otp-error');
+
+        if (studentPicEl) studentPicEl.src = profilePic;
+        if (studentNameEl) studentNameEl.textContent = studentName;
+        if (relationshipEl) relationshipEl.textContent = relationshipType;
+        if (otpInput) otpInput.value = '';
+        if (errorEl) errorEl.classList.add('hidden');
+
+        // Show modal
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        // Focus on OTP input
+        if (otpInput) {
+            setTimeout(() => otpInput.focus(), 100);
+        }
+    },
+
+    /**
+     * Close the accept invitation modal
+     */
+    closeAcceptModal() {
+        const modal = document.getElementById('accept-parent-invitation-modal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        this.currentInvitationId = null;
+    },
+
+    /**
+     * Submit accept with OTP verification
+     */
+    async submitAcceptWithOTP() {
+        const otpInput = document.getElementById('parent-invitation-otp-input');
+        const errorEl = document.getElementById('parent-invitation-otp-error');
+        const submitBtn = document.getElementById('accept-invitation-submit-btn');
+
+        const otpCode = otpInput ? otpInput.value.trim() : '';
+
+        if (!otpCode || otpCode.length !== 6) {
+            if (errorEl) {
+                errorEl.textContent = 'Please enter a valid 6-digit OTP code';
+                errorEl.classList.remove('hidden');
+            }
             return;
         }
 
+        if (!this.currentInvitationId) {
+            alert('Error: No invitation selected');
+            return;
+        }
+
+        // Show loading state
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `
+                <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Verifying...
+            `;
+        }
+
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`https://api.astegni.com/api/parent/respond-invitation/${invitationId}?accept=true`, {
+            // Try both possible token keys
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+            console.log('[AcceptInvitation] Token present:', !!token);
+            console.log('[AcceptInvitation] Token length:', token ? token.length : 0);
+            console.log('[AcceptInvitation] Invitation ID:', this.currentInvitationId);
+            console.log('[AcceptInvitation] OTP Code:', otpCode);
+
+            if (!token) {
+                throw new Error('Not authenticated. Please log in and try again.');
+            }
+
+            const response = await fetch('http://localhost:8000/api/parent/accept-invitation-otp', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
-                }
+                },
+                body: JSON.stringify({
+                    invitation_id: this.currentInvitationId,
+                    otp_code: otpCode
+                })
             });
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error('Failed to accept invitation');
+                throw new Error(data.detail || 'Failed to verify OTP');
             }
 
-            alert('Invitation accepted! You are now linked as this student\'s parent.');
+            // Success!
+            this.closeAcceptModal();
+            alert('Invitation accepted successfully! You are now linked as this student\'s parent.');
             this.loadParentingInvitations();
 
         } catch (error) {
-            console.error('Error accepting invitation:', error);
-            alert('Failed to accept invitation. Please try again.');
+            console.error('Error accepting invitation with OTP:', error);
+            if (errorEl) {
+                errorEl.textContent = error.message || 'Invalid OTP code. Please try again.';
+                errorEl.classList.remove('hidden');
+            }
+        } finally {
+            // Reset button state
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Verify & Accept Invitation
+                `;
+            }
         }
     },
 
@@ -953,7 +1366,7 @@ const ParentingInvitationManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`https://api.astegni.com/api/parent/respond-invitation/${invitationId}?accept=false`, {
+            const response = await fetch(`http://localhost:8000/api/parent/respond-invitation/${invitationId}?accept=false`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -975,31 +1388,306 @@ const ParentingInvitationManager = {
     },
 
     /**
-     * Check for pending parenting invitations count (for badge)
+     * Load sent parenting invitations (invitations the current user sent to others)
      */
-    async updateInvitationCount() {
-        try {
-            const token = localStorage.getItem('token');
-            if (!token) return;
+    async loadSentInvitations() {
+        const container = document.getElementById('tutor-requests-list');
+        if (!container) return;
 
-            const response = await fetch('https://api.astegni.com/api/parent/pending-invitations', {
+        try {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-spinner fa-spin text-3xl mb-3"></i>
+                    <p>Loading sent invitations...</p>
+                </div>
+            `;
+
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (!token) {
+                container.innerHTML = `
+                    <div class="card p-6 text-center text-gray-500">
+                        <i class="fas fa-lock text-3xl mb-3"></i>
+                        <p>Please log in to view sent invitations</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const response = await fetch('http://localhost:8000/api/parent/sent-invitations', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
 
-            if (!response.ok) return;
+            if (!response.ok) {
+                if (response.status === 404) {
+                    container.innerHTML = `
+                        <div class="card p-6 text-center text-gray-500">
+                            <i class="fas fa-paper-plane text-3xl mb-3"></i>
+                            <p>No sent invitations</p>
+                            <p class="text-sm mt-2">You haven't invited anyone to be your parent yet</p>
+                        </div>
+                    `;
+                    return;
+                }
+                throw new Error('Failed to load sent invitations');
+            }
 
             const data = await response.json();
             const invitations = data.invitations || [];
 
-            const countBadge = document.getElementById('parenting-invitation-count');
+            // Update count badge for invites tab
+            const countBadge = document.getElementById('parenting-invites-count');
             if (countBadge) {
                 if (invitations.length > 0) {
                     countBadge.textContent = invitations.length;
                     countBadge.classList.remove('hidden');
                 } else {
                     countBadge.classList.add('hidden');
+                }
+            }
+
+            if (invitations.length === 0) {
+                container.innerHTML = `
+                    <div class="card p-6 text-center text-gray-500">
+                        <i class="fas fa-paper-plane text-3xl mb-3"></i>
+                        <p>No sent invitations</p>
+                        <p class="text-sm mt-2">You haven't invited anyone to be your parent yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render sent invitations as cards
+            container.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${invitations.map(inv => this.renderSentInvitationCard(inv)).join('')}
+                </div>
+            `;
+
+        } catch (error) {
+            console.error('Error loading sent invitations:', error);
+            container.innerHTML = `
+                <div class="card p-6 text-center text-red-500">
+                    <i class="fas fa-exclamation-triangle text-3xl mb-3"></i>
+                    <p>Failed to load sent invitations</p>
+                    <p class="text-sm mt-2">${error.message}</p>
+                </div>
+            `;
+        }
+    },
+
+    /**
+     * Render a sent invitation card (invitation the user sent to someone else)
+     */
+    renderSentInvitationCard(invitation) {
+        const createdDate = new Date(invitation.created_at);
+        const timeAgo = SessionRequestManager.getTimeAgo(createdDate);
+
+        // Determine status badge
+        let statusBadge = '';
+        let statusColor = '';
+        if (invitation.status === 'pending') {
+            statusBadge = 'Pending';
+            statusColor = '#FFA500';
+        } else if (invitation.status === 'accepted') {
+            statusBadge = 'Accepted';
+            statusColor = '#10B981';
+        } else if (invitation.status === 'rejected') {
+            statusBadge = 'Rejected';
+            statusColor = '#EF4444';
+        } else if (invitation.status === 'expired') {
+            statusBadge = 'Expired';
+            statusColor = '#6B7280';
+        }
+
+        // Mask email for privacy
+        const maskEmail = (email) => {
+            if (!email) return 'No email provided';
+            const [local, domain] = email.split('@');
+            return local.substring(0, 3) + '***@' + domain;
+        };
+
+        return `
+            <div class="card p-5" style="border: 2px solid var(--border-color); border-radius: 16px; transition: all 0.2s; background: var(--card-bg);"
+                 onmouseover="this.style.borderColor='#3B82F6'; this.style.boxShadow='0 8px 24px rgba(59, 130, 246, 0.15)'"
+                 onmouseout="this.style.borderColor='var(--border-color)'; this.style.boxShadow='none'">
+
+                <!-- Header with Status Badge -->
+                <div class="flex items-start justify-between mb-4 pb-4" style="border-bottom: 1px solid var(--border-color);">
+                    <div class="flex items-center gap-3">
+                        <div style="background: linear-gradient(135deg, #3B82F6, #1D4ED8); width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-paper-plane text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg" style="color: var(--heading);">
+                                Invitation Sent
+                            </h4>
+                            <p class="text-sm" style="color: var(--text-secondary);">
+                                to ${invitation.invitee_email ? maskEmail(invitation.invitee_email) : 'Unknown'}
+                            </p>
+                        </div>
+                    </div>
+                    <span style="display: inline-block; background: ${statusColor}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                        ${statusBadge}
+                    </span>
+                </div>
+
+                <!-- Invitation Details -->
+                <div class="mb-4 space-y-2">
+                    <div class="flex items-center gap-2" style="color: var(--text-secondary); font-size: 0.85rem;">
+                        <i class="fas fa-user-friends" style="color: #3B82F6; width: 16px;"></i>
+                        <span>Relationship: <strong style="color: var(--text-primary);">${invitation.relationship_type || 'Parent'}</strong></span>
+                    </div>
+                    ${invitation.invitee_name ? `
+                        <div class="flex items-center gap-2" style="color: var(--text-secondary); font-size: 0.85rem;">
+                            <i class="fas fa-user" style="color: #3B82F6; width: 16px;"></i>
+                            <span>Name: <strong style="color: var(--text-primary);">${invitation.invitee_name}</strong></span>
+                        </div>
+                    ` : ''}
+                </div>
+
+                <!-- Time Ago -->
+                <p class="text-xs mb-4" style="color: var(--text-secondary);">
+                    <i class="fas fa-clock" style="margin-right: 4px;"></i>
+                    Sent ${timeAgo}
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                    ${invitation.status === 'pending' ? `
+                        <button
+                            onclick="ParentingInvitationManager.resendInvitation(${invitation.id})"
+                            class="flex-1 btn-secondary"
+                            style="padding: 10px 12px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <i class="fas fa-redo"></i>
+                            Resend
+                        </button>
+                        <button
+                            onclick="ParentingInvitationManager.cancelInvitation(${invitation.id})"
+                            style="flex: 1; padding: 10px 12px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; background: #EF4444; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;"
+                            onmouseover="this.style.background='#DC2626'"
+                            onmouseout="this.style.background='#EF4444'">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </button>
+                    ` : `
+                        <div class="flex-1 text-center py-2" style="color: var(--text-secondary); font-style: italic;">
+                            ${invitation.status === 'accepted' ? '✅ Parent accepted this invitation' :
+                              invitation.status === 'rejected' ? '❌ Invitation was rejected' :
+                              '⏰ Invitation has expired'}
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Cancel a sent invitation
+     */
+    async cancelInvitation(invitationId) {
+        if (!confirm('Are you sure you want to cancel this invitation?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:8000/api/parent/cancel-invitation/${invitationId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.detail || 'Failed to cancel invitation');
+            }
+
+            alert('Invitation cancelled successfully.');
+            this.loadSentInvitations();
+
+        } catch (error) {
+            console.error('Error cancelling invitation:', error);
+            alert('Failed to cancel invitation: ' + error.message);
+        }
+    },
+
+    /**
+     * Resend an invitation (placeholder - needs backend endpoint)
+     */
+    async resendInvitation(invitationId) {
+        alert('📧 Resend invitation feature coming soon!\n\nThe invitation OTP is valid for 7 days.');
+    },
+
+    /**
+     * Check for pending parenting invitations count (for badges on both tabs)
+     */
+    async updateInvitationCount() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) return;
+
+            // Fetch received invitations count (Invited tab)
+            const receivedResponse = await fetch('http://localhost:8000/api/parent/pending-invitations', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (receivedResponse.ok) {
+                const receivedData = await receivedResponse.json();
+                const receivedInvitations = receivedData.invitations || [];
+
+                // Update the main parenting card badge
+                const mainCountBadge = document.getElementById('parenting-invitation-count');
+                if (mainCountBadge) {
+                    if (receivedInvitations.length > 0) {
+                        mainCountBadge.textContent = receivedInvitations.length;
+                        mainCountBadge.classList.remove('hidden');
+                    } else {
+                        mainCountBadge.classList.add('hidden');
+                    }
+                }
+
+                // Update the Invited tab badge
+                const invitedCountBadge = document.getElementById('parenting-invited-count');
+                if (invitedCountBadge) {
+                    if (receivedInvitations.length > 0) {
+                        invitedCountBadge.textContent = receivedInvitations.length;
+                        invitedCountBadge.classList.remove('hidden');
+                    } else {
+                        invitedCountBadge.classList.add('hidden');
+                    }
+                }
+            }
+
+            // Fetch sent invitations count (Invites tab)
+            const sentResponse = await fetch('http://localhost:8000/api/parent/sent-invitations', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (sentResponse.ok) {
+                const sentData = await sentResponse.json();
+                const sentInvitations = sentData.invitations || [];
+
+                // Update the Invites tab badge
+                const invitesCountBadge = document.getElementById('parenting-invites-count');
+                if (invitesCountBadge) {
+                    if (sentInvitations.length > 0) {
+                        invitesCountBadge.textContent = sentInvitations.length;
+                        invitesCountBadge.classList.remove('hidden');
+                    } else {
+                        invitesCountBadge.classList.add('hidden');
+                    }
                 }
             }
         } catch (error) {
@@ -1010,88 +1698,9 @@ const ParentingInvitationManager = {
 
 // ============================================
 // REQUEST TYPE FILTER FUNCTIONS
+// Note: The filter variables and functions are defined in global-functions.js
+// to avoid duplicate declarations. This section is kept for reference only.
 // ============================================
-
-let currentTutorRequestType = 'schools';
-let currentTutorRequestStatus = 'all';
-
-/**
- * Filter tutor requests by type (schools, sessions, parenting)
- */
-function filterTutorRequestType(type) {
-    currentTutorRequestType = type;
-
-    // Update active state on cards
-    const cards = document.querySelectorAll('.request-type-card');
-    cards.forEach(card => {
-        if (card.getAttribute('data-type') === type) {
-            card.classList.add('active');
-            card.style.borderColor = 'var(--primary-color)';
-            card.style.background = 'rgba(139, 92, 246, 0.05)';
-        } else {
-            card.classList.remove('active');
-            card.style.borderColor = 'var(--border-color)';
-            card.style.background = 'var(--card-bg)';
-        }
-    });
-
-    // Load the appropriate content
-    if (type === 'parenting') {
-        // Hide status tabs for parenting (they only have pending)
-        const statusTabs = document.querySelector('.status-tabs');
-        if (statusTabs) statusTabs.style.display = 'none';
-
-        ParentingInvitationManager.loadParentingInvitations();
-    } else {
-        // Show status tabs for schools and sessions
-        const statusTabs = document.querySelector('.status-tabs');
-        if (statusTabs) statusTabs.style.display = 'flex';
-
-        if (type === 'sessions') {
-            SessionRequestManager.loadRequests(currentTutorRequestStatus === 'all' ? null : currentTutorRequestStatus);
-        } else {
-            // Load school requests (placeholder)
-            const container = document.getElementById('tutor-requests-list');
-            if (container) {
-                container.innerHTML = `
-                    <div class="card p-6 text-center text-gray-500">
-                        <i class="fas fa-school text-3xl mb-3"></i>
-                        <p>School requests coming in Phase 2!</p>
-                        <p class="text-sm mt-2">Schools will be able to invite you to teach at their institution</p>
-                    </div>
-                `;
-            }
-        }
-    }
-}
-
-/**
- * Filter tutor requests by status
- */
-function filterTutorRequestStatus(status) {
-    currentTutorRequestStatus = status;
-
-    // Update active state on tabs
-    const tabs = document.querySelectorAll('.status-tab');
-    tabs.forEach(tab => {
-        if (tab.getAttribute('data-status') === status) {
-            tab.classList.add('active');
-            tab.style.color = 'var(--primary-color)';
-            tab.style.fontWeight = '600';
-            tab.style.borderBottom = '2px solid var(--primary-color)';
-        } else {
-            tab.classList.remove('active');
-            tab.style.color = 'var(--text-secondary)';
-            tab.style.fontWeight = '400';
-            tab.style.borderBottom = 'none';
-        }
-    });
-
-    // Reload content based on current type
-    if (currentTutorRequestType === 'sessions') {
-        SessionRequestManager.loadRequests(status === 'all' ? null : status);
-    }
-}
 
 // Listen for panel switch events
 window.addEventListener('panelSwitch', (event) => {
@@ -1115,3 +1724,96 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => SessionRequestManager.loadMyStudents(), 500);
     }
 });
+
+// ============================================
+// GLOBAL FUNCTION: openStudentDetails
+// Exposed to window for onclick handlers in student cards
+// ============================================
+async function openStudentDetails(studentId) {
+    console.log('[SessionRequestManager] Opening student details for ID:', studentId);
+
+    // Ensure modal is loaded first
+    if (!document.getElementById('studentDetailsModal')) {
+        console.log('[SessionRequestManager] Student details modal not found, loading...');
+        if (typeof ModalLoader !== 'undefined') {
+            await ModalLoader.load('student-details-modal.html');
+        } else {
+            console.error('[SessionRequestManager] ModalLoader not available');
+            alert('Unable to load student details modal. Please refresh the page.');
+            return;
+        }
+    }
+
+    // Use TutorModalManager if available
+    if (typeof TutorModalManager !== 'undefined') {
+        TutorModalManager.openStudentDetails(studentId);
+    } else {
+        // Fallback: open modal directly
+        const modal = document.getElementById('studentDetailsModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+}
+
+// ============================================
+// GLOBAL FUNCTION: closeStudentDetailsModal
+// ============================================
+function closeStudentDetailsModal() {
+    if (typeof TutorModalManager !== 'undefined') {
+        TutorModalManager.closeStudentDetails();
+    } else {
+        // Fallback: close modal directly
+        const modal = document.getElementById('studentDetailsModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    }
+}
+
+// ============================================
+// GLOBAL FUNCTION: switchSection
+// Switch sections in student details modal
+// ============================================
+function switchSection(section) {
+    // Hide all content sections
+    document.querySelectorAll('.content-section').forEach(sec => {
+        sec.classList.remove('active');
+    });
+
+    // Show selected section
+    const selectedSection = document.getElementById(section);
+    if (selectedSection) {
+        selectedSection.classList.add('active');
+    }
+
+    // Update sidebar menu active state
+    document.querySelectorAll('.sidebar-menu-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    const activeItem = document.querySelector(`.sidebar-menu-item[onclick*="${section}"]`);
+    if (activeItem) {
+        activeItem.classList.add('active');
+    }
+
+    // Load section data when switching to specific sections
+    if (section === 'digital-whiteboard') {
+        if (typeof StudentWhiteboardManager !== 'undefined') {
+            StudentWhiteboardManager.loadSessions();
+        }
+    } else if (section === 'quiz-tests') {
+        if (typeof StudentQuizManager !== 'undefined') {
+            StudentQuizManager.loadQuizzes('active');
+        }
+    }
+}
+
+// Expose to window for HTML onclick handlers
+window.openStudentDetails = openStudentDetails;
+window.closeStudentDetailsModal = closeStudentDetailsModal;
+window.switchSection = switchSection;

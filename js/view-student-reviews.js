@@ -3,7 +3,7 @@
  * Handles loading and displaying student reviews from tutors and parents
  */
 
-const API_BASE_URL = 'https://api.astegni.com';
+const API_BASE_URL = 'http://localhost:8000';
 
 // Color schemes for different review types
 const REVIEW_COLORS = {

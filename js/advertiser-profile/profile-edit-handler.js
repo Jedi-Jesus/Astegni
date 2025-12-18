@@ -25,15 +25,12 @@ const AdvertiserProfileEditHandler = {
                 console.log('✅ Profile header updated with latest data from database');
 
                 // Show success message
-                if (typeof notifications !== 'undefined') {
+                if (typeof showToast === 'function') {
+                    showToast('Profile updated successfully!', 'success');
+                } else if (typeof notifications !== 'undefined') {
                     notifications.show('Profile updated successfully!', 'success');
                 } else {
                     alert('Profile updated successfully!');
-                }
-
-                // Close modal
-                if (typeof closeModal === 'function') {
-                    closeModal('edit-profile-modal');
                 }
 
                 return true;
@@ -55,27 +52,59 @@ const AdvertiserProfileEditHandler = {
 
 // Replace the old saveProfile function
 window.saveAdvertiserProfile = async function() {
-    // Use correct camelCase IDs that match the HTML
-    const companyName = document.getElementById('editCompanyName')?.value;
-    const email = document.getElementById('editEmail')?.value;
-    const phone = document.getElementById('editPhone')?.value;
-    const location = document.getElementById('editLocation')?.value;
-    const industry = document.getElementById('editIndustry')?.value;
-    const bio = document.getElementById('editBio')?.value;
-    const quote = document.getElementById('editQuote')?.value;
+    // Get form values - new schema fields
+    const username = document.getElementById('editUsername')?.value?.trim();
+    const bio = document.getElementById('editBio')?.value?.trim();
+    const quote = document.getElementById('editQuote')?.value?.trim();
+    const locationInput = document.getElementById('editLocation')?.value?.trim();
 
-    // Collect profile data
+    // Get social links
+    const socialWebsite = document.getElementById('editSocialWebsite')?.value?.trim();
+    const socialFacebook = document.getElementById('editSocialFacebook')?.value?.trim();
+    const socialTwitter = document.getElementById('editSocialTwitter')?.value?.trim();
+    const socialLinkedin = document.getElementById('editSocialLinkedin')?.value?.trim();
+    const socialInstagram = document.getElementById('editSocialInstagram')?.value?.trim();
+    const socialYoutube = document.getElementById('editSocialYoutube')?.value?.trim();
+    const socialTiktok = document.getElementById('editSocialTiktok')?.value?.trim();
+
+    // Collect profile data - only include non-empty values
     const profileData = {};
 
-    if (companyName) profileData.company_name = companyName;
-    if (location) profileData.location = location;
-    if (industry) profileData.industry = industry;
+    if (username) profileData.username = username;
     if (bio) profileData.bio = bio;
     if (quote) profileData.quote = quote;
 
-    // Note: email and phone would update the user table, not advertiser profile
-    // For now, we'll skip those or handle separately
+    // Parse location from comma-separated string to array
+    if (locationInput) {
+        profileData.location = locationInput.split(',').map(loc => loc.trim()).filter(loc => loc);
+    } else {
+        profileData.location = [];
+    }
+
+    // Build socials object - only include non-empty URLs
+    const socials = {};
+    if (socialWebsite) socials.website = socialWebsite;
+    if (socialFacebook) socials.facebook = socialFacebook;
+    if (socialTwitter) socials.twitter = socialTwitter;
+    if (socialLinkedin) socials.linkedin = socialLinkedin;
+    if (socialInstagram) socials.instagram = socialInstagram;
+    if (socialYoutube) socials.youtube = socialYoutube;
+    if (socialTiktok) socials.tiktok = socialTiktok;
+
+    // Only include socials if at least one is set
+    if (Object.keys(socials).length > 0) {
+        profileData.socials = socials;
+    }
+
+    console.log('[AdvertiserProfile] Saving profile with data:', profileData);
 
     // Save profile
-    await AdvertiserProfileEditHandler.saveAdvertiserProfile(profileData);
+    const success = await AdvertiserProfileEditHandler.saveAdvertiserProfile(profileData);
+
+    // Close modal on success
+    if (success) {
+        if (typeof closeEditProfileModal === 'function') {
+            closeEditProfileModal();
+        }
+    }
 };

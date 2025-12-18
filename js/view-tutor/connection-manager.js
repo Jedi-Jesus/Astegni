@@ -16,7 +16,7 @@
 
 class ConnectionManager {
     constructor() {
-        this.API_BASE_URL = 'https://api.astegni.com';
+        this.API_BASE_URL = 'http://localhost:8000';
         this.currentConnectionStatus = null;
         this.currentConnectionId = null;
     }
@@ -25,14 +25,14 @@ class ConnectionManager {
      * Get authentication token from localStorage
      */
     getToken() {
-        return localStorage.getItem('token');
+        return localStorage.getItem('token') || localStorage.getItem('access_token');
     }
 
     /**
      * Get current user from localStorage
      */
     getCurrentUser() {
-        const userStr = localStorage.getItem('user');
+        const userStr = localStorage.getItem('currentUser') || localStorage.getItem('user');
         return userStr ? JSON.parse(userStr) : null;
     }
 

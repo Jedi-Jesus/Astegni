@@ -128,7 +128,18 @@ const TutorModalManager = {
     async openStudentDetails(studentId) {
         console.log('Opening student details for ID:', studentId);
 
-        // Open modal first
+        // Ensure modal is loaded first
+        if (!document.getElementById('studentDetailsModal')) {
+            console.log('Student details modal not found, loading...');
+            if (typeof ModalLoader !== 'undefined') {
+                await ModalLoader.load('student-details-modal.html');
+            } else {
+                console.error('ModalLoader not available');
+                return;
+            }
+        }
+
+        // Open modal
         this.open('studentDetailsModal');
 
         // Get the modal header div to update student info
@@ -141,13 +152,18 @@ const TutorModalManager = {
         }
 
         try {
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
             // Fetch student details from new student_details table
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`https://api.astegni.com/api/tutor/student-details/${studentId}`, {
+            const response = await fetch(`http://localhost:8000/api/tutor/student-details/${studentId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

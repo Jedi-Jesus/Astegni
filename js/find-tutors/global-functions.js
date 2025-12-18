@@ -14,7 +14,7 @@ window.viewTutorProfile = function(tutorId) {
     window.open(url, '_blank');
 }
 
-window.connectWithTutor = function(tutorId, tutorName) {
+window.connectWithTutor = async function(tutorProfileId, tutorName) {
     // Check if user is authenticated
     const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     if (!token) {
@@ -27,34 +27,156 @@ window.connectWithTutor = function(tutorId, tutorName) {
         return;
     }
 
+    // Get current user's role
+    const activeRole = localStorage.getItem('active_role') || 'student';
+
+    // tutorProfileId is the tutor's profile ID (tutor_profiles.id)
+    // This is the preferred way to identify a tutor for connections
+    if (!tutorProfileId) {
+        alert('Unable to connect: Tutor information not found. Please refresh the page and try again.');
+        return;
+    }
+
     // Show connection confirmation
     const confirmed = confirm(`Would you like to connect with ${tutorName || 'this tutor'}? This will send them a connection request.`);
     if (!confirmed) return;
 
-    // Make API call to create connection
-    fetch('/api/connections/request', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-            tutor_id: tutorId,
-            message: `Hi ${tutorName || 'there'}, I would like to connect with you for tutoring services.`
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
+    try {
+        // Use the correct API base URL and endpoint
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000/api';
+
+        // Use recipient_profile_id (tutor profile ID) instead of recipient_id (user ID)
+        // The backend will look up the user_id from the tutor_profiles table
+        const response = await fetch(`${API_BASE_URL}/connections`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                recipient_profile_id: tutorProfileId,  // Using profile ID (tutor_profiles.id)
+                recipient_type: 'tutor',
+                requester_type: activeRole
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
             alert(`Connection request sent to ${tutorName || 'tutor'} successfully!`);
+            // Update button state if needed
+            const button = document.querySelector(`[onclick*="connectWithTutor(${tutorProfileId}"]`);
+            if (button) {
+                button.innerHTML = `<span class="flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Pending
+                </span>`;
+                button.disabled = true;
+                button.classList.add('pending-btn');
+                button.classList.remove('connect-btn');
+            }
+        } else if (response.status === 400 && data.detail) {
+            // Connection already exists - check the status and update button
+            const detail = data.detail.toLowerCase();
+            const button = document.querySelector(`[onclick*="connectWithTutor(${tutorProfileId}"]`);
+
+            if (detail.includes('already connected')) {
+                alert(`You are already connected with ${tutorName || 'this tutor'}.`);
+                // Update button to show Connected
+                if (button) {
+                    button.innerHTML = `<span class="flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Connected
+                    </span>`;
+                    button.disabled = true;
+                    button.classList.add('connected-btn');
+                    button.classList.remove('connect-btn');
+                }
+            } else if (detail.includes('pending')) {
+                alert(`You already have a pending connection request with ${tutorName || 'this tutor'}.`);
+                // Update button to show Pending
+                if (button) {
+                    button.innerHTML = `<span class="flex items-center justify-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Pending
+                    </span>`;
+                    button.disabled = true;
+                    button.classList.add('pending-btn');
+                    button.classList.remove('connect-btn');
+                }
+            } else if (detail.includes('rejected')) {
+                alert(`Your previous connection request was rejected.`);
+            } else if (detail.includes('blocked')) {
+                alert(`You cannot connect with this tutor.`);
+                if (button) {
+                    button.disabled = true;
+                    button.classList.add('bg-gray-400');
+                    button.classList.remove('connect-btn');
+                }
+            } else {
+                alert(data.detail);
+            }
         } else {
-            alert(data.message || 'Failed to send connection request');
+            alert(data.detail || 'Failed to send connection request');
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Error connecting with tutor:', error);
         alert('Error sending connection request. Please try again.');
-    });
+    }
+};
+
+window.acceptConnectionRequest = async function(connectionId, tutorName) {
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+    if (!token) {
+        alert('Please log in to accept connection requests');
+        return;
+    }
+
+    const confirmed = confirm(`Accept connection request from ${tutorName || 'this tutor'}?`);
+    if (!confirmed) return;
+
+    try {
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000/api';
+
+        const response = await fetch(`${API_BASE_URL}/connections/${connectionId}/accept`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            alert(`You are now connected with ${tutorName || 'this tutor'}!`);
+            // Update button to show Connected
+            const button = document.querySelector(`[data-connection-id="${connectionId}"]`);
+            if (button) {
+                button.innerHTML = `<span class="flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Connected
+                </span>`;
+                button.disabled = true;
+                button.classList.add('connected-btn');
+                button.classList.remove('accept-btn');
+                button.removeAttribute('onclick');
+            }
+        } else {
+            alert(data.detail || 'Failed to accept connection request');
+        }
+    } catch (error) {
+        console.error('Error accepting connection:', error);
+        alert('Error accepting connection request. Please try again.');
+    }
 };
 
 window.changePage = function(page) {
@@ -169,4 +291,85 @@ window.requestSchool = function() {
         // Here you could make an API call to submit the request
         // submitRequest('school', { searchTerm, message });
     }
+};
+
+// Message a tutor - opens chat modal with the tutor
+window.messageTutor = function(tutorData) {
+    console.log('Opening chat with tutor:', tutorData);
+
+    // Check if user is authenticated
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+    if (!token) {
+        // Open login modal or redirect to login
+        if (window.openAuthModal) {
+            window.openAuthModal('login');
+        } else {
+            alert('Please log in to message tutors');
+        }
+        return;
+    }
+
+    // Handle both object and ID-only calls
+    let tutor = tutorData;
+    if (typeof tutorData === 'number' || typeof tutorData === 'string') {
+        // If just an ID was passed, try to find the tutor in the current list
+        const tutorId = parseInt(tutorData);
+        tutor = FindTutorsState?.tutors?.find(t => t.id === tutorId);
+        if (!tutor) {
+            console.error('Tutor not found in current list');
+            alert('Unable to start chat. Please try again.');
+            return;
+        }
+    }
+
+    // Build the target user object for chat modal
+    // IMPORTANT: profile_id is the tutor's profile ID (tutor_profiles.id)
+    // user_id should ONLY be set if we have a real user_id from the tutor data
+    // DO NOT use profile_id as user_id - they are different!
+    const targetUser = {
+        id: tutor.user_id || null,  // Only set if we have real user_id
+        user_id: tutor.user_id || null,  // Only set if we have real user_id, NOT profile_id
+        profile_id: tutor.id,  // This is the tutor's profile_id (primary identifier for chat)
+        full_name: tutor.full_name || `${tutor.first_name || ''} ${tutor.father_name || ''}`.trim(),
+        name: tutor.full_name || `${tutor.first_name || ''} ${tutor.father_name || ''}`.trim(),
+        profile_picture: tutor.profile_picture || tutor.avatar,
+        avatar: tutor.profile_picture || tutor.avatar,
+        role: 'tutor',
+        profile_type: 'tutor',
+        is_online: tutor.is_online || false
+    };
+
+    console.log('Target user for chat:', targetUser);
+
+    // Open chat modal with the tutor
+    if (typeof openChatModal === 'function') {
+        openChatModal(targetUser);
+        console.log('Chat modal opened for tutor:', targetUser.full_name);
+    } else if (typeof ChatModalManager !== 'undefined') {
+        // Initialize if needed
+        if (typeof ChatModalManager.init === 'function' && !ChatModalManager.state?.isOpen) {
+            ChatModalManager.init();
+        }
+        // Open with the tutor
+        if (typeof ChatModalManager.openChatWithUser === 'function') {
+            ChatModalManager.openChatWithUser(targetUser);
+            console.log('Chat modal opened via ChatModalManager');
+        } else if (typeof ChatModalManager.open === 'function') {
+            ChatModalManager.open();
+            // Select the tutor as a direct message target
+            setTimeout(() => {
+                if (ChatModalManager.selectDirectMessageTarget) {
+                    ChatModalManager.selectDirectMessageTarget(targetUser);
+                }
+            }, 300);
+        }
+    } else {
+        console.error('Chat modal not available');
+        alert('Chat feature is not available. Please refresh the page.');
+    }
+};
+
+// Helper to encode tutor data for onclick handlers
+window.encodeTutorDataForOnclick = function(tutor) {
+    return JSON.stringify(tutor).replace(/"/g, '&quot;');
 };

@@ -183,9 +183,11 @@ async def get_tutor_sessions(
             # Build query with optional filters
             # Join sessions -> enrolled_students -> student_profiles/users to get student name
             # Join enrolled_students -> tutor_profiles -> users to get tutor name
+            # Join with enrolled_courses table (not enrolled_students)
+            # enrolled_courses has: tutor_id, package_id, students_id (array)
             query = """
                 SELECT s.id, s.enrolled_courses_id,
-                       COALESCE(su.first_name || ' ' || COALESCE(su.father_name, ''), 'Unknown') as student_name,
+                       'Student' as student_name,
                        COALESCE(tu.first_name || ' ' || COALESCE(tu.father_name, ''), 'Unknown') as tutor_name,
                        COALESCE(pkg.name, 'Unknown Course') as course_name,
                        s.topics, s.topics_covered,
@@ -197,13 +199,11 @@ async def get_tutor_sessions(
                        s.notification_enabled, s.alarm_enabled, s.alarm_before_minutes, s.is_featured,
                        s.status, s.created_at, s.updated_at
                 FROM sessions s
-                LEFT JOIN enrolled_students es ON s.enrolled_courses_id = es.id
-                LEFT JOIN tutor_packages pkg ON es.package_id = pkg.id
-                LEFT JOIN student_profiles sp ON es.student_id = sp.id
-                LEFT JOIN users su ON sp.user_id = su.id
-                LEFT JOIN tutor_profiles tp ON es.tutor_id = tp.id
+                LEFT JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                LEFT JOIN tutor_packages pkg ON ec.package_id = pkg.id
+                LEFT JOIN tutor_profiles tp ON ec.tutor_id = tp.id
                 LEFT JOIN users tu ON tp.user_id = tu.id
-                WHERE es.tutor_id = %s
+                WHERE ec.tutor_id = %s
             """
             params = [tutor_profile_id]
 
@@ -302,10 +302,10 @@ async def get_session(
                 )
             tutor_profile_id = tutor_row[0]
 
-            # Get session with joined data
+            # Get session with joined data via enrolled_courses
             cur.execute("""
                 SELECT s.id, s.enrolled_courses_id,
-                       COALESCE(su.first_name || ' ' || COALESCE(su.father_name, ''), 'Unknown') as student_name,
+                       'Student' as student_name,
                        COALESCE(tu.first_name || ' ' || COALESCE(tu.father_name, ''), 'Unknown') as tutor_name,
                        COALESCE(pkg.name, 'Unknown Course') as course_name,
                        s.topics, s.topics_covered,
@@ -317,13 +317,11 @@ async def get_session(
                        s.notification_enabled, s.alarm_enabled, s.alarm_before_minutes, s.is_featured,
                        s.status, s.created_at, s.updated_at
                 FROM sessions s
-                LEFT JOIN enrolled_students es ON s.enrolled_courses_id = es.id
-                LEFT JOIN tutor_packages pkg ON es.package_id = pkg.id
-                LEFT JOIN student_profiles sp ON es.student_id = sp.id
-                LEFT JOIN users su ON sp.user_id = su.id
-                LEFT JOIN tutor_profiles tp ON es.tutor_id = tp.id
+                LEFT JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                LEFT JOIN tutor_packages pkg ON ec.package_id = pkg.id
+                LEFT JOIN tutor_profiles tp ON ec.tutor_id = tp.id
                 LEFT JOIN users tu ON tp.user_id = tu.id
-                WHERE s.id = %s AND es.tutor_id = %s
+                WHERE s.id = %s AND ec.tutor_id = %s
             """, (session_id, tutor_profile_id))
 
             row = cur.fetchone()
@@ -412,7 +410,7 @@ async def get_sessions_stats(
 
             tutor_profile_id = tutor_row[0]
 
-            # Query unified sessions table via enrolled_students join
+            # Query unified sessions table via enrolled_courses join
             cur.execute("""
                 SELECT
                     COUNT(*) as total_sessions,
@@ -422,8 +420,8 @@ async def get_sessions_stats(
                     COUNT(CASE WHEN s.status = 'in-progress' THEN 1 END) as in_progress_sessions,
                     COALESCE(SUM(s.duration), 0) as total_minutes
                 FROM sessions s
-                LEFT JOIN enrolled_students es ON s.enrolled_courses_id = es.id
-                WHERE es.tutor_id = %s
+                LEFT JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                WHERE ec.tutor_id = %s
             """, (tutor_profile_id,))
 
             row = cur.fetchone()
@@ -486,11 +484,11 @@ async def toggle_session_notification(
 
             tutor_profile_id = tutor_row[0]
 
-            # Verify the session belongs to the tutor via enrolled_students
+            # Verify the session belongs to the tutor via enrolled_courses
             cur.execute("""
                 SELECT s.id FROM sessions s
-                JOIN enrolled_students es ON s.enrolled_courses_id = es.id
-                WHERE s.id = %s AND es.tutor_id = %s
+                JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                WHERE s.id = %s AND ec.tutor_id = %s
             """, (session_id, tutor_profile_id))
 
             if not cur.fetchone():
@@ -552,11 +550,11 @@ async def toggle_session_alarm(
 
             tutor_profile_id = tutor_row[0]
 
-            # Verify the session belongs to the tutor via enrolled_students
+            # Verify the session belongs to the tutor via enrolled_courses
             cur.execute("""
                 SELECT s.id FROM sessions s
-                JOIN enrolled_students es ON s.enrolled_courses_id = es.id
-                WHERE s.id = %s AND es.tutor_id = %s
+                JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                WHERE s.id = %s AND ec.tutor_id = %s
             """, (session_id, tutor_profile_id))
 
             if not cur.fetchone():
@@ -618,11 +616,11 @@ async def toggle_session_featured(
 
             tutor_profile_id = tutor_row[0]
 
-            # Verify the session belongs to the tutor via enrolled_students
+            # Verify the session belongs to the tutor via enrolled_courses
             cur.execute("""
                 SELECT s.id FROM sessions s
-                JOIN enrolled_students es ON s.enrolled_courses_id = es.id
-                WHERE s.id = %s AND es.tutor_id = %s
+                JOIN enrolled_courses ec ON s.enrolled_courses_id = ec.id
+                WHERE s.id = %s AND ec.tutor_id = %s
             """, (session_id, tutor_profile_id))
 
             if not cur.fetchone():

@@ -633,7 +633,7 @@ loadRelatedVideos(currentVideoId) {
         }
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/tutor/${tutorId}/connection-status`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/connection-status`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 }
@@ -782,7 +782,7 @@ loadRelatedVideos(currentVideoId) {
         }
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/tutor/${tutorId}/connect`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/connect`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -824,7 +824,7 @@ loadRelatedVideos(currentVideoId) {
         }
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/tutor/${tutorId}/disconnect`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/disconnect`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -851,7 +851,7 @@ loadRelatedVideos(currentVideoId) {
     async disconnectFromTutor(tutorId, uniqueId) {
         if (confirm('Are you sure you want to disconnect?')) {
             try {
-                const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/tutor/${tutorId}/disconnect`, {
+                const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/disconnect`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -911,7 +911,7 @@ loadRelatedVideos(currentVideoId) {
         }
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/videos/${videoId}/engage`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/${videoId}/engage`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1048,7 +1048,7 @@ loadRelatedVideos(currentVideoId) {
         }
 
         // Fire and forget with error suppression
-        fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/videos/${videoId}/view`, {
+        fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/${videoId}/view`, {
             method: 'POST',
             headers: headers
         }).catch(err => {
@@ -1071,7 +1071,7 @@ loadRelatedVideos(currentVideoId) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/videos/reels/${videoId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}`, {
                 headers
             });
 
@@ -1098,7 +1098,7 @@ loadRelatedVideos(currentVideoId) {
         if (!tutorId) return;
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/tutor/${tutorId}/connections`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${tutorId}/connections`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token') || ''}`
                 }
@@ -1191,7 +1191,7 @@ loadRelatedVideos(currentVideoId) {
         commentsTab.innerHTML = '<div style="text-align: center; padding: 20px;">Loading comments...</div>';
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/videos/reels/${videoId}/comments`);
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}/comments`);
 
             if (response.ok) {
                 const data = await response.json();
@@ -1545,7 +1545,7 @@ handleCommentKeydown(event, videoId) {
         }
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/videos/reels/${videoId}/comments`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}/comments`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1579,7 +1579,7 @@ handleCommentKeydown(event, videoId) {
         if (!input || !input.value.trim()) return;
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/videos/reels/${videoId}/comments/${commentId}/reply`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}/comments/${commentId}/reply`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1650,7 +1650,7 @@ handleCommentKeydown(event, videoId) {
         if (!newText) return;
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/comments/${commentId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/comments/${commentId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1680,7 +1680,7 @@ handleCommentKeydown(event, videoId) {
         if (!confirm('Are you sure you want to delete this comment?')) return;
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/comments/${commentId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/comments/${commentId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -1708,7 +1708,7 @@ handleCommentKeydown(event, videoId) {
         if (!chaptersTab) return;
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/videos/reels/${videoId}/chapters`);
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/videos/reels/${videoId}/chapters`);
 
             if (response.ok) {
                 const chapters = await response.json();
@@ -2062,7 +2062,7 @@ class ReelsDataAdapter {
         }
 
         try {
-            const response = await fetch(`${window.API_BASE_URL || 'https://api.astegni.com/api'}/tutor/${creatorId}/follow`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000/api'}/tutor/${creatorId}/follow`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`

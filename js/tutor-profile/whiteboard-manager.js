@@ -11,7 +11,7 @@
 
 class WhiteboardManager {
     constructor() {
-        this.API_BASE = 'https://api.astegni.com/api/whiteboard';
+        this.API_BASE = 'http://localhost:8000/api/whiteboard';
         this.currentSession = null;
         this.currentPage = null;
         this.pages = [];
@@ -807,10 +807,10 @@ class WhiteboardManager {
      */
     async loadSessionHistory() {
         try {
-            const token = localStorage.getItem('token');
-            const user = JSON.parse(localStorage.getItem('user'));
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+            const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-            if (!token || !user) return [];
+            if (!token || !user || !user.id) return [];
 
             const userType = (user.roles && user.roles.includes('tutor')) ? 'tutor' : 'student';
             const response = await fetch(
@@ -1361,7 +1361,7 @@ class WhiteboardManager {
      */
     renderChatMessages(messages) {
         const container = document.getElementById('chatMessages');
-        const user = JSON.parse(localStorage.getItem('user'));
+        const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
         container.innerHTML = messages.map(msg => {
             const isSent = msg.sender_id === user.id;

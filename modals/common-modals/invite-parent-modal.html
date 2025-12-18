@@ -94,32 +94,32 @@
                         </select>
                     </div>
 
+                    <input type="hidden" id="selected-user-id" value="">
+
                     <!-- Security Verification -->
-                    <div class="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 mb-4">
-                        <div class="flex items-start gap-3 mb-3">
-                            <span class="text-2xl">🔒</span>
-                            <div>
-                                <h4 class="font-semibold text-yellow-800 dark:text-yellow-300">Security Verification</h4>
-                                <p class="text-sm text-yellow-700 dark:text-yellow-400">To verify this is really your parent, enter THEIR father's and grandfather's name.</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 mb-4">
+                        <h4 class="font-semibold text-amber-700 dark:text-amber-400 mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                            Security Verification
+                        </h4>
+                        <p class="text-sm text-amber-600 dark:text-amber-500 mb-3">To verify your identity, please enter your parent's father and grandfather names.</p>
+                        <div class="grid grid-cols-2 gap-3">
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">Their Father's Name *</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent's Father's Name *</label>
                                 <input type="text" id="security-father-name" required
                                        placeholder="Enter their father's name"
-                                       class="w-full px-3 py-2 rounded-lg border border-yellow-300 dark:border-yellow-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-yellow-500 focus:outline-none">
+                                       class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-amber-500 focus:outline-none transition-all text-sm">
                             </div>
                             <div class="form-group">
-                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">Their Grandfather's Name *</label>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent's Grandfather's Name *</label>
                                 <input type="text" id="security-grandfather-name" required
                                        placeholder="Enter their grandfather's name"
-                                       class="w-full px-3 py-2 rounded-lg border border-yellow-300 dark:border-yellow-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-yellow-500 focus:outline-none">
+                                       class="w-full px-3 py-2 rounded-lg border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-amber-500 focus:outline-none transition-all text-sm">
                             </div>
                         </div>
                     </div>
-
-                    <input type="hidden" id="selected-user-id" value="">
 
                     <div class="flex gap-3 mt-6">
                         <button type="button" onclick="parentPortalManager.backToSearch()"
@@ -218,31 +218,6 @@
                             <option value="Sibling">Older Sibling</option>
                             <option value="Other">Other</option>
                         </select>
-                    </div>
-
-                    <!-- Security Verification -->
-                    <div class="p-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 mb-4">
-                        <div class="flex items-start gap-3 mb-3">
-                            <span class="text-2xl">🔒</span>
-                            <div>
-                                <h4 class="font-semibold text-yellow-800 dark:text-yellow-300">Confirm Parent's Names</h4>
-                                <p class="text-sm text-yellow-700 dark:text-yellow-400">Re-enter your parent's father and grandfather name to confirm (must match above).</p>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="form-group">
-                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">Confirm Father's Name *</label>
-                                <input type="text" id="new-security-father-name" required
-                                       placeholder="Re-enter father's name"
-                                       class="w-full px-3 py-2 rounded-lg border border-yellow-300 dark:border-yellow-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-yellow-500 focus:outline-none">
-                            </div>
-                            <div class="form-group">
-                                <label class="block text-sm font-medium text-yellow-800 dark:text-yellow-300 mb-1">Confirm Grandfather's Name *</label>
-                                <input type="text" id="new-security-grandfather-name" required
-                                       placeholder="Re-enter grandfather's name"
-                                       class="w-full px-3 py-2 rounded-lg border border-yellow-300 dark:border-yellow-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-yellow-500 focus:outline-none">
-                            </div>
-                        </div>
                     </div>
 
                     <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700/50 mb-4">

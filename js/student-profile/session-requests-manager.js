@@ -34,7 +34,7 @@ const StudentSessionRequestsManager = {
                 </div>
             `;
 
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) {
                 container.innerHTML = `
                     <div class="card p-6 text-center text-gray-500">
@@ -45,7 +45,7 @@ const StudentSessionRequestsManager = {
                 return;
             }
 
-            const response = await fetch('https://api.astegni.com/api/session-requests/my-requests', {
+            const response = await fetch('http://localhost:8000/api/session-requests/my-requests', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

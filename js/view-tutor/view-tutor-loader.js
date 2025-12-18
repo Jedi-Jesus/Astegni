@@ -4,7 +4,7 @@
  * Displays "None" for fields that haven't been filled yet
  */
 
-const API_BASE_URL = 'https://api.astegni.com';
+const API_BASE_URL = 'http://localhost:8000';
 
 class ViewTutorLoader {
     constructor() {
@@ -59,6 +59,9 @@ class ViewTutorLoader {
 
             this.tutorData = await response.json();
             console.log('✅ Loaded tutor data:', this.tutorData);
+
+            // Store tutor data globally for message button
+            window.currentTutorData = this.tutorData;
         } catch (error) {
             console.error('❌ Error fetching tutor data:', error);
             throw error;
@@ -163,16 +166,20 @@ class ViewTutorLoader {
         const heroSubtitle = document.getElementById('hero-subtitle');
 
         if (heroTitle) {
-            heroTitle.textContent = data.quote || 'No quote provided yet';
+            // hero_titles is a JSONB array from tutor_profiles - use first title
+            if (data.hero_titles && Array.isArray(data.hero_titles) && data.hero_titles.length > 0) {
+                heroTitle.textContent = data.hero_titles[0];
+            } else {
+                heroTitle.textContent = 'Excellence in Education, Delivered with Passion';
+            }
         }
 
         if (heroSubtitle) {
-            if (data.bio) {
-                // Use first 100 characters of bio as subtitle
-                const shortBio = data.bio.length > 100 ? data.bio.substring(0, 100) + '...' : data.bio;
-                heroSubtitle.textContent = shortBio;
+            // Use hero_subtitle from tutor_profiles
+            if (data.hero_subtitle) {
+                heroSubtitle.textContent = data.hero_subtitle;
             } else {
-                heroSubtitle.textContent = 'No bio provided yet';
+                heroSubtitle.textContent = 'Dedicated to helping students achieve their full potential';
             }
         }
     }

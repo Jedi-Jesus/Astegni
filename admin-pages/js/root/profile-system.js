@@ -1,0 +1,1414 @@
+/* ============================================
+   PROFILE SYSTEM JS - Reusable Component
+   Updated: 2025-10-03 - Removed default-avatar.png (v2)
+   ============================================ */
+// ============================================
+// FALLBACK FUNCTIONS FOR OPTIONAL DEPENDENCIES
+// ============================================
+
+// Check and create showToast if it doesn't exist
+if (typeof window.showToast === 'undefined') {
+    window.showToast = function(message, type) {
+        console.log(`[${type}] ${message}`);
+        
+        // Only show alert for errors to avoid annoying users
+        if (type === 'error') {
+            alert(`Error: ${message}`);
+        }
+    };
+}
+
+// Check and create togglePasswordVisibility if it doesn't exist
+if (typeof window.togglePasswordVisibility === 'undefined') {
+    window.togglePasswordVisibility = function(fieldId) {
+        const field = document.getElementById(fieldId);
+        const button = field?.parentElement?.querySelector('.password-toggle');
+
+        if (!field) return;
+
+        if (field.type === 'password') {
+            field.type = 'text';
+            if (button) {
+                button.innerHTML = `
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                    </svg>
+                `;
+            }
+        } else {
+            field.type = 'password';
+            if (button) {
+                button.innerHTML = `
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="20" height="20">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                `;
+            }
+        }
+    };
+}
+
+// Check and create openModal if it doesn't exist
+if (typeof window.openModal === 'undefined') {
+    window.openModal = function(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            // Generic modal opening - remove hidden, add active
+            modal.classList.remove('hidden');
+            modal.classList.add('active');
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        } else if (modalId === 'register-modal') {
+            if (confirm('To add a new role, please go to the main page. Go there now?')) {
+                window.location.href = '../index.html#register';
+            }
+        } else {
+            console.log(`Modal ${modalId} requested but not found in DOM`);
+        }
+    };
+}
+
+// Check and create closeModal if it doesn't exist
+if (typeof window.closeModal === 'undefined') {
+    window.closeModal = function(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            // Generic modal closing - add hidden, remove active/show
+            modal.classList.add('hidden');
+            modal.classList.remove('active');
+            modal.classList.remove('show');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    };
+}
+
+// Add at the top of profile-system.js if not already defined
+if (typeof UrlHelper === 'undefined') {
+    window.UrlHelper = {
+        isFileProtocol: window.location.protocol === 'file:',
+        
+        getApiBaseUrl() {
+            return this.isFileProtocol 
+                ? 'https://api.astegni.com/api'
+                : '/api';
+        },
+        
+        getAssetUrl(path) {
+            if (!path) return '';
+            
+            // If already a full URL, return as is
+            if (path.startsWith('http://') || path.startsWith('https://')) {
+                return path;
+            }
+            
+            // For file protocol, prepend backend server URL
+            if (this.isFileProtocol) {
+                return `https://api.astegni.com${path}`;
+            }
+            
+            // For http protocol, return as is
+            return path;
+        }
+    };
+}
+
+// Add this helper function in a common JS file
+function navigateToPage(relativePath) {
+    if (window.location.protocol === 'file:') {
+        // For file protocol, use relative navigation
+        window.location.href = relativePath;
+    } else {
+        // For http protocol, use absolute path
+        window.location.href = relativePath;
+    }
+}
+// Profile System Configuration
+const ProfileSystem = (function() {
+    'use strict';
+
+    // Configuration
+    const API_BASE_URL = "https://api.astegni.com";
+    
+    const PROFILE_URLS = {
+        user: "../profile-pages/user-profile.html",
+        tutor: "../profile-pages/tutor-profile.html",
+        student: "../profile-pages/student-profile.html",
+        parent: "../profile-pages/parent-profile.html",
+        bookstore: "../profile-pages/bookstore-profile.html",
+        delivery: "../profile-pages/delivery-profile.html",
+        advertiser: "../profile-pages/advertiser-profile.html",
+        church: "../profile-pages/church-profile.html",
+        author: "../profile-pages/author-profile.html",
+    };
+
+    // Get current page context to determine correct relative path
+    function getProfileUrl(role) {
+        // CRITICAL FIX: Guard against undefined/null role
+        if (!role || role === 'undefined' || role === 'null') {
+            console.warn('[profile-system.getProfileUrl] Invalid role:', role, '- returning to index');
+            return '/index.html';
+        }
+
+        const currentPath = window.location.pathname;
+        const isInProfilePages = currentPath.includes('/profile-pages/');
+        const isInViewProfiles = currentPath.includes('/view-profiles/');
+        const isInBranch = currentPath.includes('/branch/');
+
+        if (isInProfilePages) {
+            // Already in profile-pages, use same directory
+            return `${role}-profile.html`;
+        } else if (isInViewProfiles) {
+            // In view-profiles directory, go up and into profile-pages
+            return `../profile-pages/${role}-profile.html`;
+        } else if (isInBranch) {
+            // In branch directory, go up and into profile-pages
+            return `../profile-pages/${role}-profile.html`;
+        } else {
+            // In root directory
+            return `profile-pages/${role}-profile.html`;
+        }
+    }
+
+    // ROLE_AVATAR_SYSTEM removed - unused dead code with non-existent file paths
+
+    // State
+    let currentUser = null;
+    let userRole = null;
+
+    // Helper function to refresh token
+    async function attemptTokenRefresh() {
+        try {
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (!refreshToken) {
+                console.log('[profile-system] No refresh token available');
+                return false;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/refresh`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ refresh_token: refreshToken })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Update tokens
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+
+                // Update user data if provided
+                if (data.user) {
+                    const formattedUser = {
+                        id: data.user.id,
+                        name: `${data.user.first_name} ${data.user.father_name}`,
+                        first_name: data.user.first_name,
+                        father_name: data.user.father_name,
+                        email: data.user.email,
+                        phone: data.user.phone,
+                        role: data.user.active_role,
+                        roles: data.user.roles,
+                        active_role: data.user.active_role,
+                        profile_picture: data.user.profile_picture
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(formattedUser));
+                }
+
+                console.log('[profile-system] Token refreshed successfully');
+                return true;
+            }
+
+            // Refresh token is also expired or invalid
+            if (response.status === 401) {
+                console.log('[profile-system] Refresh token expired - clearing auth');
+                clearAuthData();
+                // Show a user-friendly message
+                if (typeof showToast === 'function') {
+                    showToast('Your session has expired. Please login again.', 'info');
+                }
+            } else {
+                console.log('[profile-system] Token refresh failed:', response.status);
+            }
+            return false;
+        } catch (error) {
+            console.error('[profile-system] Token refresh error:', error);
+            return false;
+        }
+    }
+
+    // Helper function to clear auth data
+    function clearAuthData() {
+        localStorage.removeItem('token');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('userRole');
+        currentUser = null;
+        userRole = null;
+    }
+
+    // Helper function to update user from API response
+    function updateCurrentUserFromAPI(userData) {
+        currentUser = {
+            id: userData.id,
+            name: `${userData.first_name} ${userData.father_name}`,
+            first_name: userData.first_name,
+            father_name: userData.father_name,
+            email: userData.email,
+            phone: userData.phone,
+            role: userData.active_role,
+            roles: userData.roles,
+            active_role: userData.active_role,
+            profile_picture: userData.profile_picture,
+            created_at: userData.created_at,
+            is_active: userData.is_active,
+            email_verified: userData.email_verified
+        };
+        userRole = userData.active_role;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('userRole', userRole);
+        return true;
+    }
+
+    // API Functions
+    async function fetchCurrentUserData() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // No token, user is not logged in - this is normal, not an error
+                return false;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/me`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // If token expired, DON'T try to refresh or logout
+            if (response.status === 401) {
+                console.log('[profile-system] Token expired, keeping user logged in with cached data');
+                // Don't clear auth, just use cached user data
+                const cachedUser = localStorage.getItem('currentUser');
+                if (cachedUser) {
+                    currentUser = JSON.parse(cachedUser);
+                    return true;
+                }
+                return true; // Return true to keep user logged in
+            }
+
+            if (response.ok) {
+                const userData = await response.json();
+                currentUser = {
+                    id: userData.id,
+                    name: `${userData.first_name} ${userData.father_name}`,
+                    first_name: userData.first_name,
+                    father_name: userData.father_name,
+                    email: userData.email,
+                    phone: userData.phone,
+                    role: userData.role,
+                    profile_picture: userData.profile_picture,
+                    created_at: userData.created_at,
+                    is_active: userData.is_active,
+                    email_verified: userData.email_verified
+                };
+                userRole = userData.role;
+
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                localStorage.setItem('userRole', userData.role);
+
+                await fetchUserRoles();
+                return true;
+            } else if (response.status === 401) {
+                // Token expired or invalid - clear auth silently
+                localStorage.removeItem('token');
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('userRole');
+                return false;
+            }
+            return false;
+        } catch (error) {
+            // Only log unexpected errors, not network errors when not logged in
+            if (localStorage.getItem('token')) {
+                console.error('Error fetching user data:', error);
+            }
+            return false;
+        }
+    }
+
+    async function fetchUserRoles() {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // No token, user is not logged in - this is normal, not an error
+                return [];
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/my-roles`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (currentUser) {
+                    currentUser.roles = data.user_roles || data.roles || [];
+                    userRole = data.active_role || userRole;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    localStorage.setItem('userRole', data.active_role);
+                }
+                return data.user_roles || data.roles || [];
+            } else if (response.status === 401) {
+                // Token expired or invalid - handled silently
+                return [];
+            }
+            return [];
+        } catch (error) {
+            // Only log unexpected errors, not network errors when not logged in
+            if (localStorage.getItem('token')) {
+                console.error('Error fetching user roles:', error);
+            }
+            return [];
+        }
+    }
+
+function updateProfilePictures() {
+    // Use inline SVG placeholder instead of non-existent image
+    const defaultPicture = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E";
+
+    // Get user data from localStorage or global state
+    const userData = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+    // Helper function to fix image URLs
+    const fixImageUrl = (url) => {
+        if (!url) return defaultPicture;
+        
+        // If already a full URL, return as is
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        
+        // Use UrlHelper if available
+        if (typeof UrlHelper !== 'undefined') {
+            return UrlHelper.getAssetUrl(url);
+        }
+        
+        // Fallback for file protocol without UrlHelper
+        if (window.location.protocol === 'file:') {
+            return `https://api.astegni.com${url}`;
+        }
+        
+        return url;
+    };
+    
+    // Update main profile picture in navigation
+    const profilePic = document.getElementById('profile-pic');
+    if (profilePic) {
+        if (userData.profile_picture) {
+            profilePic.src = fixImageUrl(userData.profile_picture);
+            profilePic.onerror = function() {
+                this.src = defaultPicture;
+            };
+        } else {
+            profilePic.src = defaultPicture;
+        }
+    }
+    
+    // Update dropdown profile picture
+    const dropdownProfilePic = document.getElementById('dropdown-profile-pic');
+    if (dropdownProfilePic) {
+        if (userData.profile_picture) {
+            dropdownProfilePic.src = fixImageUrl(userData.profile_picture);
+            dropdownProfilePic.onerror = function() {
+                this.src = defaultPicture;
+            };
+        } else {
+            dropdownProfilePic.src = defaultPicture;
+        }
+    }
+    
+    // Update any other profile pictures on the page
+    document.querySelectorAll('.user-profile-pic, .profile-avatar').forEach(img => {
+        if (img && userData.profile_picture) {
+            img.src = fixImageUrl(userData.profile_picture);
+            img.onerror = function() {
+                this.src = defaultPicture;
+            };
+        } else if (img) {
+            img.src = defaultPicture;
+        }
+    });
+    
+    // Update creator avatars if they exist (for video cards, comments, etc.)
+    document.querySelectorAll('[data-profile-pic]').forEach(element => {
+        const picUrl = element.getAttribute('data-profile-pic');
+        if (picUrl) {
+            if (element.tagName === 'IMG') {
+                element.src = fixImageUrl(picUrl);
+                element.onerror = function() {
+                    this.src = defaultPicture;
+                };
+            } else {
+                // For div backgrounds
+                element.style.backgroundImage = `url('${fixImageUrl(picUrl)}')`;
+            }
+        }
+    });
+}
+
+    // Dropdown Management
+    function toggleProfileDropdown() {
+        const toggle = document.getElementById('profile-dropdown-toggle');
+        const menu = document.getElementById('profile-dropdown-menu');
+
+        if (!toggle || !menu) return;
+
+        const isOpen = menu.classList.contains('show');
+        if (isOpen) {
+            closeProfileDropdown();
+        } else {
+            openProfileDropdown();
+        }
+    }
+
+    function openProfileDropdown() {
+        const toggle = document.getElementById('profile-dropdown-toggle');
+        const menu = document.getElementById('profile-dropdown-menu');
+
+        if (!toggle || !menu) return;
+
+        toggle.classList.add('active');
+        menu.classList.add('show');
+
+        updateProfileDropdown();
+        document.addEventListener('click', handleClickOutside);
+        document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    function closeProfileDropdown() {
+        const toggle = document.getElementById('profile-dropdown-toggle');
+        const menu = document.getElementById('profile-dropdown-menu');
+
+        if (!toggle || !menu) return;
+
+        toggle.classList.remove('active');
+        menu.classList.remove('show');
+
+        document.removeEventListener('click', handleClickOutside);
+        document.removeEventListener('keydown', handleEscapeKey);
+    }
+
+    function handleClickOutside(event) {
+        const container = document.getElementById('profile-container');
+        if (container && !container.contains(event.target)) {
+            closeProfileDropdown();
+        }
+    }
+
+    function handleEscapeKey(event) {
+        if (event.key === 'Escape') {
+            closeProfileDropdown();
+        }
+    }
+
+    async function updateProfileDropdown() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        await fetchCurrentUserData();
+
+        if (!currentUser) return;
+
+        const elements = {
+            name: document.getElementById('dropdown-user-name'),
+            email: document.getElementById('dropdown-user-email'),
+            role: document.getElementById('dropdown-user-role'),
+            profileName: document.getElementById('profile-name')
+        };
+
+        const userName = currentUser.name || `${currentUser.first_name} ${currentUser.father_name}`;
+
+        if (elements.name) elements.name.textContent = userName;
+        // Display masked email or phone based on what user registered with
+        if (elements.email && window.AuthManager) {
+            elements.email.textContent = window.AuthManager.getMaskedContact(currentUser);
+        } else if (elements.email) {
+            elements.email.textContent = currentUser.email || '';
+        }
+        if (elements.role) elements.role.textContent = formatRoleName(userRole);
+        if (elements.profileName) elements.profileName.textContent = userName;
+
+        updateProfilePictures();
+
+        // Make dropdown header link functional
+        const dropdownProfileLink = document.getElementById('dropdown-profile-link');
+        if (dropdownProfileLink) {
+            // CRITICAL FIX: Check if userRole is valid before generating URL
+            if (!userRole || userRole === 'undefined' || userRole === 'null') {
+                console.warn('[profile-system] userRole is invalid, using fallback');
+                dropdownProfileLink.href = '/index.html';
+            } else {
+                const profileUrl = getProfileUrl(userRole);
+                dropdownProfileLink.href = profileUrl;
+            }
+            dropdownProfileLink.onclick = (e) => {
+                closeProfileDropdown();
+            };
+        }
+
+        await setupRoleSwitcher();
+    }
+
+    // Role Switching
+    async function setupRoleSwitcher() {
+        const roleSwitcherSection = document.getElementById('role-switcher-section');
+        const roleOptions = document.getElementById('role-options');
+
+        if (!roleSwitcherSection || !roleOptions) return;
+
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        if (!token) {
+            roleSwitcherSection.classList.add('hidden');
+            return;
+        }
+
+        // Always show the section for logged-in users
+        roleSwitcherSection.classList.remove('hidden');
+        roleOptions.innerHTML = '';
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/my-roles`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                // Silently handle 401 (unauthorized) - don't log errors for expected auth failures
+                if (response.status !== 401) {
+                    console.error('Failed to fetch user roles');
+                }
+                // Still show Add Role option even if fetch fails
+                const addRoleOption = document.createElement('div');
+                addRoleOption.className = 'role-option add-role-option';
+                addRoleOption.innerHTML = `
+                    <span class="add-role-icon">+</span>
+                    <span class="role-name">Add New Role</span>
+                `;
+                addRoleOption.onclick = () => {
+                    closeProfileDropdown();
+                    openAddRoleModal();
+                };
+                roleOptions.appendChild(addRoleOption);
+                return;
+            }
+
+            const data = await response.json();
+            const userRoles = data.user_roles || data.roles || [];
+            const activeRole = data.active_role || userRole;
+
+            if (currentUser) {
+                currentUser.roles = userRoles;
+            }
+            userRole = activeRole;
+            localStorage.setItem('userRole', activeRole);
+
+            // Filter out admin roles - admins should only access through admin-index.html
+            const userFacingRoles = userRoles.filter(role => role !== 'admin');
+
+            if (userFacingRoles.length === 1) {
+                // Single role with Add Role option
+                const currentRoleOption = document.createElement('div');
+                currentRoleOption.className = 'role-option active disabled';
+                currentRoleOption.innerHTML = `
+                    <span class="role-name">${formatRoleName(userFacingRoles[0])}</span>
+                    <span class="role-badge">CURRENT</span>
+                `;
+                roleOptions.appendChild(currentRoleOption);
+            } else if (userFacingRoles.length > 1) {
+                // Multiple roles
+                userFacingRoles.forEach(role => {
+                    const roleOption = document.createElement('div');
+                    roleOption.className = 'role-option';
+
+                    if (role === activeRole) {
+                        roleOption.classList.add('active');
+                    }
+
+                    roleOption.innerHTML = `
+                        <span class="role-name">${formatRoleName(role)}</span>
+                        ${role === activeRole ? '<span class="role-badge">ACTIVE</span>' : ''}
+                    `;
+
+                    roleOption.onclick = () => {
+                        if (role === activeRole) {
+                            // If clicking current role, just navigate to profile page
+                            const profileUrl = getProfileUrl(role);
+                            closeProfileDropdown();
+                            window.location.href = profileUrl;
+                        } else {
+                            // Switch to different role
+                            switchToRole(role);
+                        }
+                    };
+                    roleOptions.appendChild(roleOption);
+                });
+            }
+
+            // Always add "Add Role" option
+            const addRoleOption = document.createElement('div');
+            addRoleOption.className = 'role-option add-role-option';
+            addRoleOption.innerHTML = `
+                <span class="add-role-icon">+</span>
+                <span class="role-name">Add New Role</span>
+            `;
+            addRoleOption.onclick = () => {
+                closeProfileDropdown();
+                openAddRoleModal();
+            };
+            roleOptions.appendChild(addRoleOption);
+
+            const dropdownUserRole = document.getElementById('dropdown-user-role');
+            if (dropdownUserRole) {
+                dropdownUserRole.textContent = formatRoleName(activeRole);
+            }
+
+        } catch (error) {
+            console.error('Error fetching user roles:', error);
+            // Still show Add Role option even on error
+            const addRoleOption = document.createElement('div');
+            addRoleOption.className = 'role-option add-role-option';
+            addRoleOption.innerHTML = `
+                <span class="add-role-icon">+</span>
+                <span class="role-name">Add New Role</span>
+            `;
+            addRoleOption.onclick = () => {
+                closeProfileDropdown();
+                openAddRoleModal();
+            };
+            roleOptions.appendChild(addRoleOption);
+        }
+    }
+
+    // Add Role Modal Management
+    let otpResendTimer = null;
+    let otpResendSeconds = 60;
+    let addRoleData = { role: null, password: null }; // Store data between steps
+
+    // Role icons mapping
+    const roleIcons = {
+        student: '🎓',
+        tutor: '👨‍🏫',
+        parent: '👨‍👩‍👧',
+        advertiser: '📢',
+        user: '👤',
+        admin: '⚙️'
+    };
+
+    async function openAddRoleModal() {
+        // Wait for modal to be loaded if using CommonModalLoader
+        const tryOpenModal = () => {
+            const modal = document.getElementById('add-role-modal');
+            if (!modal) {
+                console.log('[ProfileSystem] Add-role modal not found, waiting for CommonModalLoader...');
+                setTimeout(tryOpenModal, 100);
+                return;
+            }
+            openAddRoleModalInternal();
+        };
+        tryOpenModal();
+    }
+
+    function openAddRoleModalInternal() {
+        const modal = document.getElementById('add-role-modal');
+        if (!modal) return;
+
+        // Reset to step 1
+        const step1 = document.getElementById('add-role-step1');
+        const step2 = document.getElementById('add-role-step2');
+        if (step1) step1.style.display = 'block';
+        if (step2) step2.style.display = 'none';
+
+        // Reset form
+        const form = document.getElementById('add-role-form');
+        if (form) form.reset();
+
+        // Update button text for step 1
+        const btnText = document.querySelector('#add-role-form .btn-text');
+        if (btnText) btnText.textContent = 'Verify & Continue';
+
+        // Clear stored data
+        addRoleData = { role: null, password: null };
+
+        // Populate user info in modal header
+        populateAddRoleUserInfo();
+
+        // Show modal - DON'T send OTP yet, wait for password verification
+        if (window.openModal) {
+            window.openModal('add-role-modal');
+        } else {
+            modal.classList.remove('hidden');
+        }
+    }
+
+    function populateAddRoleUserInfo() {
+        const userInfoSection = document.getElementById('add-role-user-info');
+        const userNameEl = document.getElementById('add-role-user-name');
+        const userRolesEl = document.getElementById('add-role-user-roles');
+        const userContactEl = document.getElementById('add-role-user-contact');
+
+        if (!userInfoSection || !userNameEl || !userRolesEl || !userContactEl) return;
+
+        // Get current user from localStorage
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+        if (!user || !user.first_name) {
+            userInfoSection.style.display = 'none';
+            return;
+        }
+
+        // Show the section
+        userInfoSection.style.display = 'block';
+
+        // Set user name
+        const fullName = [user.first_name, user.father_name, user.grandfather_name]
+            .filter(Boolean)
+            .join(' ');
+        userNameEl.textContent = fullName || user.name || 'User';
+
+        // Set user roles with stars
+        const roles = user.roles || [user.role || user.active_role];
+        userRolesEl.innerHTML = '';
+
+        roles.forEach(role => {
+            if (role && role !== 'admin') {
+                const roleTag = document.createElement('span');
+                roleTag.style.cssText = `
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 4px;
+                    padding: 4px 10px;
+                    background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(168, 85, 247, 0.15));
+                    border: 1px solid rgba(99, 102, 241, 0.3);
+                    border-radius: 20px;
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    color: var(--text-primary);
+                `;
+                const icon = roleIcons[role.toLowerCase()] || '⭐';
+                const formattedRole = role.charAt(0).toUpperCase() + role.slice(1);
+                roleTag.innerHTML = `<span>${icon}</span><span>${formattedRole}</span>`;
+                userRolesEl.appendChild(roleTag);
+            }
+        });
+
+        // Set contact info (email or phone with masking)
+        let contactText = '';
+        if (user.email) {
+            // Mask email: show first 3 chars and domain
+            const [localPart, domain] = user.email.split('@');
+            if (localPart && domain) {
+                const maskedLocal = localPart.length > 3
+                    ? localPart.substring(0, 3) + '***'
+                    : localPart + '***';
+                contactText = `📧 ${maskedLocal}@${domain}`;
+            } else {
+                contactText = `📧 ${user.email}`;
+            }
+        }
+        if (user.phone) {
+            // Mask phone: show last 4 digits
+            const maskedPhone = user.phone.length > 4
+                ? '***' + user.phone.slice(-4)
+                : user.phone;
+            if (contactText) {
+                contactText += `  •  📱 ${maskedPhone}`;
+            } else {
+                contactText = `📱 ${maskedPhone}`;
+            }
+        }
+        userContactEl.textContent = contactText || 'No contact info';
+    }
+
+    function closeAddRoleModal() {
+        const modal = document.getElementById('add-role-modal');
+        if (!modal) return;
+
+        if (window.closeModal) {
+            window.closeModal('add-role-modal');
+        } else {
+            modal.classList.add('hidden');
+            modal.classList.remove('active', 'show');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // Reset form
+        const form = document.getElementById('add-role-form');
+        if (form) form.reset();
+
+        // Clear timer
+        if (otpResendTimer) {
+            clearInterval(otpResendTimer);
+            otpResendTimer = null;
+        }
+
+        // Hide OTP sent message
+        const otpMessage = document.getElementById('otp-sent-message');
+        if (otpMessage) otpMessage.style.display = 'none';
+
+        // Clear stored data
+        addRoleData = { role: null, password: null };
+    }
+
+    async function sendAddRoleOTP() {
+        try {
+            // Backend will automatically determine contact method (email or phone)
+            // No need to specify send_to - it will use user's registered contact
+            const response = await fetch(`${API_BASE_URL}/api/send-otp`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    purpose: 'add_role'
+                    // send_to is optional - backend auto-detects from user's registration
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Show OTP sent message
+                const otpMessage = document.getElementById('otp-sent-message');
+                const otpDestination = document.getElementById('otp-destination');
+
+                if (otpMessage && otpDestination) {
+                    const destText = data.destination === 'email' ? `email (${data.destination_value})` : `phone (${data.destination_value})`;
+                    otpDestination.textContent = destText;
+                    otpMessage.style.display = 'block';
+                }
+
+                // Start resend timer
+                startResendTimer();
+
+                if (window.showToast) {
+                    window.showToast(`OTP sent to your ${data.destination}`, 'success');
+                }
+            } else {
+                if (window.showToast) {
+                    window.showToast(data.detail || 'Failed to send OTP', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error sending OTP:', error);
+            if (window.showToast) {
+                window.showToast('Error sending OTP. Please try again.', 'error');
+            }
+        }
+    }
+
+    // Handle OTP destination change
+    function handleOTPDestinationChange(event) {
+        // User can change destination before sending OTP
+        // Just update the UI, actual send happens on modal open or resend
+    }
+
+    function startResendTimer() {
+        const resendLink = document.getElementById('resend-otp-link');
+        const resendTimer = document.getElementById('resend-timer');
+
+        if (!resendLink || !resendTimer) return;
+
+        // Disable resend link
+        resendLink.style.pointerEvents = 'none';
+        resendLink.style.opacity = '0.5';
+        resendTimer.style.display = 'inline';
+
+        otpResendSeconds = 60;
+
+        otpResendTimer = setInterval(() => {
+            otpResendSeconds--;
+            resendTimer.textContent = `(${otpResendSeconds}s)`;
+
+            if (otpResendSeconds <= 0) {
+                clearInterval(otpResendTimer);
+                resendLink.style.pointerEvents = 'auto';
+                resendLink.style.opacity = '1';
+                resendTimer.style.display = 'none';
+            }
+        }, 1000);
+    }
+
+    async function handleResendOTP(event) {
+        event.preventDefault();
+
+        // Clear existing timer
+        if (otpResendTimer) {
+            clearInterval(otpResendTimer);
+        }
+
+        await sendAddRoleOTP();
+    }
+
+    // Go back to step 1
+    function goBackToStep1(event) {
+        if (event) event.preventDefault();
+        const step1 = document.getElementById('add-role-step1');
+        const step2 = document.getElementById('add-role-step2');
+        if (step1) step1.style.display = 'block';
+        if (step2) step2.style.display = 'none';
+
+        // Update button text for step 1
+        const btnText = document.querySelector('#add-role-form .btn-text');
+        if (btnText) btnText.textContent = 'Verify & Continue';
+
+        // Clear timer
+        if (otpResendTimer) {
+            clearInterval(otpResendTimer);
+            otpResendTimer = null;
+        }
+    }
+
+    async function handleAddRoleSubmit(event) {
+        event.preventDefault();
+
+        const step1 = document.getElementById('add-role-step1');
+        const step2 = document.getElementById('add-role-step2');
+        const isStep1Visible = step1 && step1.style.display !== 'none';
+
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const btnText = submitBtn?.querySelector('.btn-text');
+        const btnLoader = submitBtn?.querySelector('.btn-loader');
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            if (window.showToast) {
+                window.showToast('Please login first', 'error');
+            }
+            return;
+        }
+
+        if (isStep1Visible) {
+            // STEP 1: Verify password and send OTP
+            const role = document.getElementById('add-role-type')?.value;
+            const password = document.getElementById('add-role-password')?.value;
+
+            if (!role) {
+                if (window.showToast) {
+                    window.showToast('Please select a role', 'warning');
+                }
+                return;
+            }
+
+            if (!password) {
+                if (window.showToast) {
+                    window.showToast('Please enter your password', 'warning');
+                }
+                return;
+            }
+
+            // Show loading state
+            if (submitBtn) submitBtn.disabled = true;
+            if (btnText) btnText.style.display = 'none';
+            if (btnLoader) btnLoader.style.display = 'inline-flex';
+
+            try {
+                // Verify password first
+                const verifyResponse = await fetch(`${API_BASE_URL}/api/verify-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ password: password })
+                });
+
+                const verifyData = await verifyResponse.json();
+
+                if (!verifyResponse.ok) {
+                    if (window.showToast) {
+                        window.showToast(verifyData.detail || 'Invalid password', 'error');
+                    }
+                    return;
+                }
+
+                // Password verified, store data and send OTP
+                addRoleData.role = role;
+                addRoleData.password = password;
+
+                // Send OTP
+                await sendAddRoleOTP();
+
+                // Show step 2
+                if (step1) step1.style.display = 'none';
+                if (step2) step2.style.display = 'block';
+
+                // Update button text for step 2
+                if (btnText) btnText.textContent = 'Add Role';
+
+                // Show selected role
+                const roleDisplay = document.getElementById('selected-role-display');
+                if (roleDisplay) {
+                    roleDisplay.textContent = formatRoleName(role);
+                }
+
+            } catch (error) {
+                console.error('Error in step 1:', error);
+                if (window.showToast) {
+                    window.showToast('An error occurred. Please try again.', 'error');
+                }
+            } finally {
+                // Reset loading state
+                if (submitBtn) submitBtn.disabled = false;
+                if (btnText) btnText.style.display = 'inline';
+                if (btnLoader) btnLoader.style.display = 'none';
+            }
+
+        } else {
+            // STEP 2: Verify OTP and add role
+            const otp = document.getElementById('add-role-otp')?.value;
+
+            if (!otp || otp.length !== 6) {
+                if (window.showToast) {
+                    window.showToast('Please enter a valid 6-digit OTP', 'warning');
+                }
+                return;
+            }
+
+            // Show loading state
+            if (submitBtn) submitBtn.disabled = true;
+            if (btnText) btnText.style.display = 'none';
+            if (btnLoader) btnLoader.style.display = 'inline-flex';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/add-role`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        otp: otp,
+                        new_role: addRoleData.role,
+                        password: addRoleData.password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (window.showToast) {
+                        window.showToast(`${formatRoleName(addRoleData.role)} role added successfully!`, 'success');
+                    }
+
+                    // Update current user data
+                    if (currentUser) {
+                        currentUser.roles = data.user_roles || [...(currentUser.roles || []), addRoleData.role];
+                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    }
+
+                    // Close modal
+                    if (window.closeModal) {
+                        window.closeModal('add-role-modal');
+                    } else {
+                        document.getElementById('add-role-modal')?.classList.add('hidden');
+                    }
+
+                    // Refresh role switcher
+                    await setupRoleSwitcher();
+
+                    // Ask user if they want to switch to the new role
+                    setTimeout(() => {
+                        if (confirm(`Switch to your new ${formatRoleName(addRoleData.role)} role now?`)) {
+                            switchToRole(addRoleData.role);
+                        }
+                    }, 500);
+                } else {
+                    if (window.showToast) {
+                        window.showToast(data.detail || 'Failed to add role', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Error adding role:', error);
+                if (window.showToast) {
+                    window.showToast('Error adding role. Please try again.', 'error');
+                }
+            } finally {
+                // Reset loading state
+                if (submitBtn) submitBtn.disabled = false;
+                if (btnText) btnText.style.display = 'inline';
+                if (btnLoader) btnLoader.style.display = 'none';
+            }
+        }
+    }
+
+    async function switchToRole(newRole) {
+        if (newRole === userRole) return;
+
+        closeProfileDropdown();
+        if (window.showToast) {
+            window.showToast(`Switching to ${formatRoleName(newRole)} role...`, 'info');
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/switch-role`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                // CRITICAL: Update tokens with new JWT that has updated role information
+                if (data.access_token) {
+                    localStorage.setItem('token', data.access_token);
+                    localStorage.setItem('access_token', data.access_token);
+                    console.log('[switchToRole] Updated access token with new role');
+                }
+
+                if (data.refresh_token) {
+                    localStorage.setItem('refresh_token', data.refresh_token);
+                    console.log('[switchToRole] Updated refresh token');
+                }
+
+                // Update AuthManager token if available
+                if (window.AuthManager) {
+                    window.AuthManager.token = data.access_token;
+                }
+
+                userRole = data.active_role;
+                localStorage.setItem('userRole', data.active_role);
+
+                if (currentUser) {
+                    currentUser.role = data.active_role;
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
+
+                updateUI();
+                updateProfileDropdown();
+
+                if (window.showToast) {
+                    window.showToast(`Switched to ${formatRoleName(data.active_role)} role`, 'success');
+                }
+
+                setTimeout(() => {
+                    const profileUrl = getProfileUrl(data.active_role);
+                    window.location.href = profileUrl;
+                }, 500);
+            } else {
+                const error = await response.json();
+                if (window.showToast) {
+                    window.showToast(error.detail || 'Failed to switch role', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Role switch error:', error);
+            if (window.showToast) {
+                window.showToast('Error switching role', 'error');
+            }
+        }
+    }
+
+    function formatRoleName(role) {
+        const roleNames = {
+            'user': 'User',
+            'student': 'Student',
+            'tutor': 'Tutor',
+            'parent': 'Parent',
+            'bookstore': 'Bookstore',
+            'delivery': 'Delivery',
+            'advertiser': 'Advertiser',
+            'author': 'Author',
+            'church': 'Church'
+        };
+        return roleNames[role] || role.charAt(0).toUpperCase() + role.slice(1);
+    }
+
+    // Main UI Update Function
+    function updateUI() {
+        // Show profile container
+        const profileContainer = document.getElementById('profile-container');
+        const notificationBell = document.getElementById('notification-bell');
+        
+        if (profileContainer) {
+            profileContainer.classList.remove('hidden');
+            profileContainer.style.display = 'flex';
+            profileContainer.style.visibility = 'visible';
+        }
+        
+        if (notificationBell) {
+            notificationBell.classList.remove('hidden');
+            notificationBell.style.display = 'flex';
+        }
+        
+        // Update profile name
+        const profileName = document.getElementById('profile-name');
+        if (profileName && currentUser) {
+            const userName = currentUser.name || `${currentUser.first_name} ${currentUser.father_name}`;
+            profileName.textContent = userName;
+        }
+        
+        updateProfilePictures();
+    }
+
+    // Check if current page matches user's active role
+    let hasRedirected = false; // Prevent multiple redirects
+    function checkRolePageMismatch() {
+        // Don't check if already redirected
+        if (hasRedirected) return;
+
+        const currentPath = window.location.pathname;
+        const isProfilePage = currentPath.includes('/profile-pages/');
+
+        // CRITICAL FIX: Also check for undefined/null string values
+        if (!isProfilePage || !userRole || userRole === 'undefined' || userRole === 'null' || !currentUser || !localStorage.getItem('token')) {
+            console.log('[profile-system.checkRolePageMismatch] Skipping check - not logged in or invalid role:', userRole);
+            return; // Not on a profile page or no role set or not logged in
+        }
+
+        // Extract current page role from URL (e.g., "tutor-profile.html" -> "tutor")
+        const pageMatch = currentPath.match(/\/([a-z-]+)-profile\.html$/);
+        if (!pageMatch) return;
+
+        const pageRole = pageMatch[1];
+
+        // If page role doesn't match active role, show message and redirect
+        if (pageRole !== userRole) {
+            console.log(`[profile-system] Role mismatch detected: page=${pageRole}, active=${userRole}`);
+            hasRedirected = true; // Mark as redirected
+
+            // Show helpful message using toast if available, otherwise alert
+            const message = `Your active role is ${formatRoleName(userRole)}. To view ${formatRoleName(pageRole)} profile, please use the role switcher in the navigation menu.`;
+
+            if (window.showToast) {
+                window.showToast(message, 'info');
+            } else {
+                // Fallback to subtle notification
+                console.log(`[profile-system] ${message}`);
+            }
+
+            // Redirect to correct profile page
+            console.log(`[profile-system] Redirecting to ${userRole} profile page...`);
+            const correctProfileUrl = getProfileUrl(userRole);
+
+            // Small delay to let the message show
+            setTimeout(() => {
+                window.location.replace(correctProfileUrl); // Use replace to avoid adding to history
+            }, 100);
+        } else {
+            // Page matches role - no redirect needed
+            console.log(`[profile-system] Page role matches active role (${userRole}) - no redirect needed`);
+        }
+    }
+
+    // Initialization
+    async function initialize() {
+        // Check for saved user session
+        const savedUser = localStorage.getItem("currentUser");
+        const savedRole = localStorage.getItem("userRole");
+        const savedToken = localStorage.getItem("token");
+
+        if (savedUser && savedRole && savedToken) {
+            try {
+                currentUser = JSON.parse(savedUser);
+                userRole = savedRole;
+
+                // Check if current page matches active role
+                checkRolePageMismatch();
+
+                updateUI();
+                updateProfileDropdown();
+            } catch (error) {
+                console.error("Session restoration error:", error);
+            }
+        }
+
+        // Setup event listeners
+        document.addEventListener('click', function(event) {
+            const profileContainer = document.getElementById('profile-container');
+            const dropdownMenu = document.getElementById('profile-dropdown-menu');
+            const toggleButton = document.getElementById('profile-dropdown-toggle');
+
+            if (profileContainer && !profileContainer.contains(event.target) && dropdownMenu) {
+                dropdownMenu.classList.remove('show');
+                if (toggleButton) {
+                    toggleButton.classList.remove('active');
+                }
+            }
+        });
+
+        // Setup add role form submission
+        const addRoleForm = document.getElementById('add-role-form');
+        if (addRoleForm) {
+            addRoleForm.addEventListener('submit', handleAddRoleSubmit);
+        }
+    }
+
+    // Public API
+    return {
+        initialize,
+        updateUI,
+        toggleProfileDropdown,
+        openProfileDropdown,
+        closeProfileDropdown,
+        switchToRole,
+        formatRoleName,
+        updateProfileDropdown,
+        fetchCurrentUserData,
+        setupRoleSwitcher,
+        updateProfilePictures,
+        openAddRoleModal,
+        closeAddRoleModal,
+        goBackToStep1,
+        handleResendOTP,
+        handleAddRoleSubmit,
+        handleOTPDestinationChange,
+        getCurrentUser: () => currentUser,
+        getUserRole: () => userRole
+    };
+})();
+
+// Auto-initialize when DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', ProfileSystem.initialize);
+} else {
+    ProfileSystem.initialize();
+}
+
+// Export functions to window for global access
+window.toggleProfileDropdown = ProfileSystem.toggleProfileDropdown;
+window.openProfileDropdown = ProfileSystem.openProfileDropdown;
+window.closeProfileDropdown = ProfileSystem.closeProfileDropdown;
+window.switchToRole = ProfileSystem.switchToRole;
+window.formatRoleName = ProfileSystem.formatRoleName;
+window.updateProfileDropdown = ProfileSystem.updateProfileDropdown;
+window.fetchCurrentUserData = ProfileSystem.fetchCurrentUserData;
+window.setupRoleSwitcher = ProfileSystem.setupRoleSwitcher;
+window.updateProfilePictures = ProfileSystem.updateProfilePictures;
+window.openAddRoleModal = ProfileSystem.openAddRoleModal;
+window.closeAddRoleModal = ProfileSystem.closeAddRoleModal;
+window.goBackToStep1 = ProfileSystem.goBackToStep1;
+window.handleResendOTP = ProfileSystem.handleResendOTP;
+window.handleAddRoleSubmit = ProfileSystem.handleAddRoleSubmit;
+window.handleOTPDestinationChange = ProfileSystem.handleOTPDestinationChange;

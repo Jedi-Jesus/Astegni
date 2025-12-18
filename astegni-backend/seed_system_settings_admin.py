@@ -38,7 +38,7 @@ def seed_system_settings_admin():
         # Hash the password
         password_hash = hash_password("Admin2025!")
 
-        # Insert the system-settings admin
+        # Insert the system-settings admin (is_otp_verified removed - using password_hash presence instead)
         insert_query = text("""
             INSERT INTO admin_profile (
                 email,
@@ -52,7 +52,6 @@ def seed_system_settings_admin():
                 bio,
                 quote,
                 departments,
-                is_otp_verified,
                 created_at
             ) VALUES (
                 :email,
@@ -66,7 +65,6 @@ def seed_system_settings_admin():
                 :bio,
                 :quote,
                 :departments,
-                :is_otp_verified,
                 :created_at
             ) RETURNING id
         """)
@@ -83,7 +81,6 @@ def seed_system_settings_admin():
             "bio": "System Settings Administrator - Manages platform configuration and settings",
             "quote": "Managing the platform for excellence in education",
             "departments": ["manage-system-settings"],
-            "is_otp_verified": True,
             "created_at": datetime.now()
         })
 

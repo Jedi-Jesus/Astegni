@@ -19,7 +19,7 @@
  */
 
 // Use existing API_BASE_URL from window or define if not exists
-const CRED_API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+const CRED_API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 let currentCredentialType = 'achievement'; // Default view
 let allCredentials = []; // Cache all credentials
 
@@ -64,7 +64,7 @@ const initializeDocumentManager = initializeCredentialManager;
  */
 async function loadAllCredentials() {
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             console.warn('No auth token found');
             return;
@@ -377,11 +377,11 @@ function createCredentialCard(document) {
                 <p class="text-sm text-gray-600 mb-3 line-clamp-2">${document.description}</p>
             ` : ''}
 
-            ${document.rejection_reason ? `
+            ${document.status_reason ? `
                 <div class="bg-red-50 border-l-4 border-red-500 p-2 mb-3 rounded">
                     <p class="text-xs text-red-800">
-                        <span class="font-semibold">Rejection reason:</span><br>
-                        ${document.rejection_reason}
+                        <span class="font-semibold">Status reason:</span><br>
+                        ${document.status_reason}
                     </p>
                 </div>
             ` : ''}
@@ -438,7 +438,16 @@ function openUploadCredentialModal() {
         modal.style.display = 'flex';
         // Reset form
         const form = document.getElementById('uploadDocumentForm');
-        if (form) form.reset();
+        if (form) {
+            form.reset();
+            // Set up form handler if not already done (modal loaded dynamically)
+            if (!form.dataset.handlerAttached) {
+                setupCredentialFormHandler();
+                form.dataset.handlerAttached = 'true';
+            }
+        }
+    } else {
+        console.error('❌ Upload document modal not found. Make sure modal-loader has loaded it.');
     }
 }
 
@@ -485,7 +494,8 @@ function closeUploadDocumentModal() {
 function setupCredentialFormHandler() {
     const form = document.getElementById('uploadDocumentForm');
     if (!form) {
-        console.error('Upload document form not found');
+        // Form not in DOM yet - it will be loaded dynamically by modal-loader
+        // Handler will be attached when openUploadCredentialModal is called
         return;
     }
 

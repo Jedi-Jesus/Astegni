@@ -1,5 +1,7 @@
 """
 Verify test admin account for OTP email change testing
+Note: is_otp_verified was removed from admin_profile - verification is now
+determined by whether password_hash is set
 """
 
 import sys
@@ -15,24 +17,15 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 def verify_test_admin():
-    """Mark test1@example.com as verified"""
+    """Check if test1@example.com is verified (has password set)"""
 
     conn = psycopg.connect(DATABASE_URL)
     cursor = conn.cursor()
 
     try:
-        # Update test admin to be verified
+        # Check result - verification is now based on password_hash being set
         cursor.execute("""
-            UPDATE admin_profile
-            SET is_otp_verified = TRUE
-            WHERE email = 'test1@example.com'
-        """)
-
-        conn.commit()
-
-        # Check result
-        cursor.execute("""
-            SELECT id, email, first_name, is_otp_verified, departments
+            SELECT id, email, first_name, password_hash IS NOT NULL as is_verified, departments
             FROM admin_profile
             WHERE email = 'test1@example.com'
         """)
@@ -40,11 +33,11 @@ def verify_test_admin():
         result = cursor.fetchone()
         if result:
             admin_id, email, first_name, is_verified, departments = result
-            print(f"✓ Admin verified:")
+            print(f"✓ Admin status:")
             print(f"  ID: {admin_id}")
             print(f"  Email: {email}")
             print(f"  Name: {first_name}")
-            print(f"  Verified: {is_verified}")
+            print(f"  Verified (has password): {is_verified}")
             print(f"  Departments: {departments}")
         else:
             print("✗ Admin not found")

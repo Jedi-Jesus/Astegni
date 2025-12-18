@@ -42,6 +42,21 @@ class ViewStudentLoader {
                 console.log('✅ Initialized student documents for profile_id:', this.studentData.id);
             }
 
+            // Initialize student credentials with profile_id (for achievements, certifications, extracurricular)
+            // The API endpoint /api/view-student/{profile_id}/credentials expects student_profiles.id
+            // credentials.uploader_id = student_profiles.id (NOT user_id)
+            if (typeof window.initializeStudentCredentials === 'function' && this.studentData.id) {
+                await window.initializeStudentCredentials(this.studentData.id);
+                console.log('✅ Initialized student credentials for profile_id:', this.studentData.id);
+            }
+
+            // Initialize student parents with profile_id (reads from student_profiles.parent_id[])
+            // The API endpoint /api/view-student/{profile_id}/parents expects student_profiles.id
+            if (typeof window.initializeStudentParents === 'function' && this.studentData.id) {
+                await window.initializeStudentParents(this.studentData.id);
+                console.log('✅ Initialized student parents for profile_id:', this.studentData.id);
+            }
+
             // Initialize student blogs with profile_id (student_id)
             if (typeof window.loadStudentBlogs === 'function' && this.studentData.id) {
                 await window.loadStudentBlogs(this.studentData.id);
@@ -72,8 +87,9 @@ class ViewStudentLoader {
                 console.log('✅ Initialized recent feedback for student_id:', this.studentData.id);
             }
 
-            // Store student user_id globally for connect button
+            // Store student data globally for connect and message buttons
             window.currentStudentUserId = this.studentData.user_id;
+            window.currentStudentData = this.studentData;
 
             // Initialize interested ticker widget
             if (typeof window.interestedTickerManager !== 'undefined' && window.interestedTickerManager) {

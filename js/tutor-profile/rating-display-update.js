@@ -11,15 +11,15 @@
                 // Wait a bit for auth system to initialize and set user in localStorage
                 let retries = 0;
                 const maxRetries = 10;
-                let token = localStorage.getItem('token');
-                let user = JSON.parse(localStorage.getItem('user') || '{}');
+                let token = localStorage.getItem('token') || localStorage.getItem('access_token');
+                let user = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
                 // Retry mechanism: wait for user to be set by auth system
                 while ((!token || !user.id) && retries < maxRetries) {
                     console.log(`⏳ [Rating Display] Waiting for auth system... (attempt ${retries + 1}/${maxRetries})`);
                     await new Promise(resolve => setTimeout(resolve, 200));
-                    token = localStorage.getItem('token');
-                    user = JSON.parse(localStorage.getItem('user') || '{}');
+                    token = localStorage.getItem('token') || localStorage.getItem('access_token');
+                    user = JSON.parse(localStorage.getItem('currentUser') || '{}');
                     retries++;
                 }
 
@@ -31,7 +31,7 @@
                 console.log('✅ [Rating Display] User loaded, proceeding with rating update');
 
                 // Get tutor profile to find tutor_id
-                const profileResponse = await fetch('https://api.astegni.com/api/tutor/profile', {
+                const profileResponse = await fetch('http://localhost:8000/api/tutor/profile', {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -49,7 +49,7 @@
                 console.log('✅ Tutor profile ID:', tutorId);
 
                 // Fetch reviews from tutor_reviews table
-                const reviewsResponse = await fetch(`https://api.astegni.com/api/tutor/${tutorId}/reviews`, {
+                const reviewsResponse = await fetch(`http://localhost:8000/api/tutor/${tutorId}/reviews`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,

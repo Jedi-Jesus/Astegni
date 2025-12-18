@@ -19,6 +19,8 @@
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -675,6 +677,12 @@
         .success-ticker-container:hover .subjects-ticker {
             animation-play-state: paused;
         }
+
+        /* Shimmer animation for pricing boxes */
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
     </style>
     <!-- Profile Dropdown Fix - MUST load last -->
     <link rel="stylesheet" href="../css/view-tutor/profile-specific-fix.css">
@@ -766,7 +774,7 @@
 
                         <div class="dropdown-divider"></div>
 
-                        <button class="dropdown-item logout-item" onclick="logout()">
+                        <button class="dropdown-item logout-item" onclick="showLogoutModal()">
                             <svg class="dropdown-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
@@ -1030,39 +1038,14 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
-                                            <!-- Teaching Method & Grade Level (Contact Info Style) -->
-                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div id="teaching-method-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">🎓</span>
-                                                    <div style="flex: 1;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Teaching Method</div>
-                                                        <div id="teaching-methods-inline" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Online, In-person</div>
-                                                    </div>
-                                                </div>
-                                                <div id="grade-level-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📖</span>
-                                                    <div style="flex: 1;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Grade Level</div>
-                                                        <div id="tutor-grade-level" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Grade 9-12</div>
-                                                    </div>
-                                                </div>
-                                            </div>
 
-                                            <!-- Courses & Course Category (Contact Info Style) -->
-                                            <div class="profile-contact-info" id="courses-category-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
-                                                <div id="courses-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📖</span>
+                                            <!-- Gender Card -->
+                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                                                <div id="gender-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">👤</span>
                                                     <div style="flex: 1;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Courses</div>
-                                                        <div id="tutor-courses" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Loading...</div>
-                                                    </div>
-                                                </div>
-                                                <div id="course-category-container" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
-                                                    <span style="font-size: 1.25rem;">📚</span>
-                                                    <div style="flex: 1;">
-                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Course Category</div>
-                                                        <div id="tutor-course-category" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Loading...</div>
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Gender</div>
+                                                        <div id="tutor-gender" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Not specified</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1088,6 +1071,10 @@
                                                 <button onclick="connectTutor()" class="btn-secondary"
                                                     style="flex: 1; min-width: 160px; padding: 0.875rem 1.5rem; font-weight: 600; border-radius: 12px; background: transparent; color: var(--text); border: 2px solid rgba(var(--border-rgb), 0.3); cursor: pointer; transition: all 0.3s ease;">
                                                     🔗 Connect
+                                                </button>
+                                                <button onclick="messageTutor()" class="btn-secondary"
+                                                    style="flex: 1; min-width: 160px; padding: 0.875rem 1.5rem; font-weight: 600; border-radius: 12px; background: transparent; color: var(--text); border: 2px solid rgba(var(--border-rgb), 0.3); cursor: pointer; transition: all 0.3s ease;">
+                                                    💬 Message
                                                 </button>
                                                 <button onclick="shareProfile()" class="btn-secondary"
                                                     style="flex: 1; min-width: 160px; padding: 0.875rem 1.5rem; font-weight: 600; border-radius: 12px; background: transparent; color: var(--text); border: 2px solid rgba(var(--border-rgb), 0.3); cursor: pointer; transition: all 0.3s ease;">
@@ -2512,7 +2499,8 @@
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
-    <script src="../js/admin-pages/shared/sidebar-fix.js"></script>
+    <!-- Sidebar Toggle (shared) -->
+    <script src="../js/shared/sidebar-toggle.js"></script>
     <!-- OLD LOADER REMOVED - Using view-tutor-db-loader.js instead (loaded at bottom) -->
     <!-- <script src="../js/view-tutor/view-tutor-loader.js"></script> -->
 
@@ -2660,23 +2648,17 @@
             // In production, would navigate to the tutor's profile page
         }
 
-        // Hero Section Typewriter Effect
-        const heroTexts = [
-            "Excellence in Education, Delivered with Passion",
-            "Transforming Lives Through Quality Teaching",
-            "Your Success is My Mission",
-            "Building Tomorrow's Leaders Today",
-            "Where Learning Meets Excellence"
-        ];
-
+        // Hero Section Typewriter Effect - uses hero_titles from database
+        let heroTexts = []; // Will be populated from database
         let textIndex = 0;
         let charIndex = 0;
         let isDeleting = false;
         let typeSpeed = 100;
+        let typewriterStarted = false;
 
         function typeWriter() {
             const typedElement = document.getElementById('typedText');
-            if (!typedElement) return;
+            if (!typedElement || heroTexts.length === 0) return;
 
             const currentText = heroTexts[textIndex];
 
@@ -2702,10 +2684,26 @@
             setTimeout(typeWriter, typeSpeed);
         }
 
-        // Start typewriter effect when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(typeWriter, 1000); // Start after 1 second
-        });
+        // Function to start typewriter with tutor's hero_titles from database
+        function startTypewriterWithData(titles) {
+            if (typewriterStarted) return;
+
+            if (titles && Array.isArray(titles) && titles.length > 0) {
+                heroTexts = titles;
+            } else {
+                // Fallback if no titles from database
+                heroTexts = ["Excellence in Education, Delivered with Passion"];
+            }
+
+            typewriterStarted = true;
+            textIndex = 0;
+            charIndex = 0;
+            isDeleting = false;
+            setTimeout(typeWriter, 500);
+        }
+
+        // Expose function globally so view-tutor-db-loader.js can call it
+        window.startTypewriterWithData = startTypewriterWithData;
 
         // Theme toggle
         const themeToggle = document.getElementById('theme-toggle-btn');
@@ -2734,7 +2732,25 @@
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId)?.classList.add('hidden');
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('active');
+                modal.style.display = 'none';
+            }
+            // Restore body scroll
+            document.body.style.overflow = '';
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('active');
+                modal.style.display = 'flex';
+            }
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
         }
 
         function handleNavLinkClick(event, feature) {
@@ -2993,127 +3009,106 @@
         </div>
     </div>
 
-    <!-- Package Details Modal -->
+    <!-- Package Details Modal - Modern Design -->
     <div id="packageDetailsModal" class="modal hidden"
-        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none;">
+        style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999; display: none; align-items: center; justify-content: center;">
         <div class="modal-overlay" onclick="closePackageDetailsModal()"
             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
         <div class="modal-content"
-            style="position: relative; max-width: 800px; margin: 30px auto; background: white; border-radius: 12px; padding: 24px; max-height: 90vh; overflow-y: auto;">
-            <div class="modal-header"
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h2 style="font-size: 1.5rem; font-weight: bold;"><i class="fas fa-box-open"></i> Package Details</h2>
+            style="position: relative; width: 95%; max-width: 700px; margin: 20px auto; background: var(--card-bg); border-radius: 24px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); animation: modalSlideIn 0.3s ease-out;">
+
+            <!-- Modal Header -->
+            <div style="background: var(--primary-color); padding: 24px 28px; position: relative;">
                 <button class="modal-close" onclick="closePackageDetailsModal()"
-                    style="background: none; border: none; font-size: 2rem; cursor: pointer; color: #666;">&times;</button>
+                    style="position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.2); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; color: white; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h2 style="font-size: 1.5rem; font-weight: 700; color: white; margin: 0; display: flex; align-items: center; gap: 12px;">
+                    <i class="fas fa-box-open"></i> Request Package
+                </h2>
+                <p style="color: rgba(255,255,255,0.85); margin: 8px 0 0 0; font-size: 0.9rem;">Review package details and customize your request</p>
             </div>
 
-            <!-- Package Details Display -->
-            <div id="packageDetailsContent" style="margin-bottom: 24px;">
-                <!-- Will be populated by JavaScript -->
-            </div>
+            <!-- Scrollable Content -->
+            <div style="padding: 24px 28px; max-height: calc(90vh - 180px); overflow-y: auto;">
 
-            <!-- Update Package Section -->
-            <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 12px; color: #374151;">
-                    <i class="fas fa-edit"></i> Customize This Package (Optional)
-                </h3>
-                <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 16px;">
-                    You can request modifications to this package. Leave fields empty to use the original values.
-                </p>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Custom Session Price (ETB)</label>
-                        <input type="number" id="customPrice" placeholder="Leave empty for original"
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                    </div>
-
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Sessions Per Week</label>
-                        <input type="number" id="customSessionsPerWeek" min="1" max="7" placeholder="Leave empty for original"
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                    </div>
-
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Duration Per Session (minutes)</label>
-                        <input type="number" id="customDuration" min="30" step="15" placeholder="Leave empty for original"
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                    </div>
-
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Preferred Days</label>
-                        <input type="text" id="customDays" placeholder="e.g., Mon, Wed, Fri"
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                    </div>
+                <!-- Package Details Display -->
+                <div id="packageDetailsContent" style="margin-bottom: 24px;">
+                    <!-- Will be populated by JavaScript -->
                 </div>
 
-                <div style="margin-top: 16px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Additional Requests or Modifications</label>
-                    <textarea id="customNotes" rows="3"
-                        placeholder="Describe any additional changes or requirements..."
-                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; resize: vertical;"></textarea>
-                </div>
-            </div>
+                <!-- Student Information - For Parents Only (with child search) -->
+                <div id="parentChildSelectionSection" class="modal-section" style="background: var(--card-bg); border: 2px solid var(--primary-color); padding: 20px; border-radius: 16px; margin-bottom: 20px; display: none; position: relative; overflow: visible;">
+                    <div style="position: absolute; top: -12px; left: 20px; background: var(--primary-color); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600;">
+                        <i class="fas fa-child"></i> FOR PARENT
+                    </div>
+                    <h3 style="font-size: 1rem; font-weight: 600; margin: 8px 0 16px 0; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-user-graduate" style="color: var(--primary-color);"></i> Select Your Child
+                    </h3>
 
-            <!-- Student Information -->
-            <div style="background: white; border: 2px solid #e5e7eb; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
-                <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 16px; color: #374151;">
-                    <i class="fas fa-user-graduate"></i> Student Information
-                </h3>
+                    <!-- Child Search Input -->
+                    <div style="position: relative; margin-bottom: 16px;">
+                        <div style="position: relative;">
+                            <input type="text" id="childSearchInput"
+                                placeholder="Search your children by name..."
+                                autocomplete="off"
+                                style="width: 100%; padding: 14px 14px 14px 44px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 0.95rem; transition: all 0.2s; background: var(--bg-color); color: var(--text-color);">
+                            <i class="fas fa-search" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1rem;"></i>
+                            <div id="childSearchSpinner" style="display: none; position: absolute; right: 16px; top: 50%; transform: translateY(-50%);">
+                                <i class="fas fa-spinner fa-spin" style="color: var(--primary-color);"></i>
+                            </div>
+                        </div>
 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Student Name *</label>
-                        <input type="text" id="detailsStudentName" required placeholder="Enter student name"
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                        <!-- Search Results Dropdown -->
+                        <div id="childSearchResults"
+                            style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: var(--card-bg); border: 2px solid var(--border-color); border-top: none; border-radius: 0 0 12px 12px; max-height: 220px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
+                        </div>
                     </div>
 
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Grade Level *</label>
-                        <select id="detailsGradeLevel" required
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                            <option value="">-- Select grade level --</option>
-                            <option value="KG">Kindergarten</option>
-                            <option value="Grade 1">Grade 1</option>
-                            <option value="Grade 2">Grade 2</option>
-                            <option value="Grade 3">Grade 3</option>
-                            <option value="Grade 4">Grade 4</option>
-                            <option value="Grade 5">Grade 5</option>
-                            <option value="Grade 6">Grade 6</option>
-                            <option value="Grade 7">Grade 7</option>
-                            <option value="Grade 8">Grade 8</option>
-                            <option value="Grade 9">Grade 9</option>
-                            <option value="Grade 10">Grade 10</option>
-                            <option value="Grade 11">Grade 11</option>
-                            <option value="Grade 12">Grade 12</option>
-                            <option value="University Level">University Level</option>
-                        </select>
+                    <!-- Selected Child Display -->
+                    <div id="selectedChildDisplay" style="display: none; background: rgba(var(--primary-rgb), 0.08); padding: 16px; border-radius: 12px; border: 2px solid var(--primary-color);">
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <img id="selectedChildAvatar" src="" alt="Child"
+                                style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                            <div style="flex: 1;">
+                                <h4 id="selectedChildName" style="font-weight: 600; color: var(--text-color); margin: 0; font-size: 1rem;"></h4>
+                                <p id="selectedChildGrade" style="font-size: 0.85rem; color: var(--text-muted); margin: 4px 0 0 0;"></p>
+                            </div>
+                            <button type="button" onclick="clearSelectedChild()"
+                                style="background: #ef4444; color: white; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-size: 0.85rem; font-weight: 500; display: flex; align-items: center; gap: 6px; transition: transform 0.2s, box-shadow 0.2s;">
+                                <i class="fas fa-sync-alt"></i> Change
+                            </button>
+                        </div>
                     </div>
 
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Contact Phone</label>
-                        <input type="tel" id="detailsContactPhone" placeholder="+251 9..."
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                    </div>
+                    <!-- Hidden inputs -->
+                    <input type="hidden" id="selectedChildId" value="">
+                    <input type="hidden" id="detailsStudentName" value="">
+                    <input type="hidden" id="detailsGradeLevel" value="">
 
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Contact Email</label>
-                        <input type="email" id="detailsContactEmail" placeholder="example@email.com"
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                    <!-- No Children Message -->
+                    <div id="noChildrenMessage" style="display: none; text-align: center; padding: 24px; background: #fef3c7; border-radius: 12px;">
+                        <i class="fas fa-user-plus" style="font-size: 2.5rem; color: #f59e0b; margin-bottom: 12px;"></i>
+                        <p style="font-weight: 600; color: #92400e; margin: 0 0 6px 0; font-size: 1rem;">No Children Added Yet</p>
+                        <p style="font-size: 0.85rem; color: #a16207; margin: 0 0 16px 0;">Add children to your profile to request tutoring</p>
+                        <a href="/profile-pages/parent-profile.html"
+                            style="display: inline-flex; align-items: center; gap: 8px; background: #f59e0b; color: white; padding: 10px 20px; border-radius: 10px; text-decoration: none; font-size: 0.9rem; font-weight: 500; transition: transform 0.2s;">
+                            <i class="fas fa-plus"></i> Add Children
+                        </a>
                     </div>
                 </div>
 
                 <!-- Schedule Preferences Section -->
-                <div style="margin-top: 16px; background: #f0f9ff; padding: 16px; border-radius: 8px; border: 1px solid #bae6fd;">
-                    <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #0369a1;">
-                        <i class="fas fa-calendar-alt"></i> Schedule Preferences
-                    </h4>
+                <div class="modal-section" style="background: var(--card-bg); border: 2px solid var(--border-color); padding: 20px; border-radius: 16px; margin-bottom: 20px;">
+                    <h3 style="font-size: 1rem; font-weight: 600; margin: 0 0 16px 0; color: var(--text-color); display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-calendar-alt" style="color: var(--primary-color);"></i> Schedule Preferences
+                    </h3>
 
                     <!-- Schedule Type -->
                     <div style="margin-bottom: 16px;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Schedule Type *</label>
-                        <select id="scheduleType" required onchange="toggleScheduleFields()"
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 0.875rem; color: var(--text-color);">Schedule Type</label>
+                        <select id="scheduleType" onchange="toggleScheduleFields()"
+                            style="width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; background: var(--bg-color); color: var(--text-color); cursor: pointer; transition: border-color 0.2s;">
                             <option value="">-- Select schedule type --</option>
                             <option value="recurring">Recurring (Weekly schedule)</option>
                             <option value="specific_dates">Specific Dates</option>
@@ -3121,142 +3116,219 @@
                     </div>
 
                     <!-- Recurring Schedule Options -->
-                    <div id="recurringScheduleFields" style="display: none;">
+                    <div id="recurringScheduleFields" style="display: none; animation: fadeIn 0.3s ease;">
                         <!-- Year Range -->
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Year(s)</label>
-                            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                    <input type="checkbox" name="yearRange" value="2024" style="width: 16px; height: 16px;">
-                                    <span>2024</span>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-weight: 500; margin-bottom: 10px; font-size: 0.875rem; color: var(--text-color);">Year(s)</label>
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 16px; border: 2px solid var(--border-color); border-radius: 8px; transition: all 0.2s; background: var(--bg-color);">
+                                    <input type="checkbox" name="yearRange" value="2024" style="width: 18px; height: 18px; accent-color: var(--primary-color);">
+                                    <span style="font-size: 0.9rem; color: var(--text-color);">2024</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                    <input type="checkbox" name="yearRange" value="2025" checked style="width: 16px; height: 16px;">
-                                    <span>2025</span>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 16px; border: 2px solid var(--primary-color); border-radius: 8px; transition: all 0.2s; background: rgba(var(--primary-rgb), 0.1);">
+                                    <input type="checkbox" name="yearRange" value="2025" checked style="width: 18px; height: 18px; accent-color: var(--primary-color);">
+                                    <span style="font-size: 0.9rem; color: var(--text-color); font-weight: 500;">2025</span>
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
-                                    <input type="checkbox" name="yearRange" value="2026" style="width: 16px; height: 16px;">
-                                    <span>2026</span>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px 16px; border: 2px solid var(--border-color); border-radius: 8px; transition: all 0.2s; background: var(--bg-color);">
+                                    <input type="checkbox" name="yearRange" value="2026" style="width: 18px; height: 18px; accent-color: var(--primary-color);">
+                                    <span style="font-size: 0.9rem; color: var(--text-color);">2026</span>
                                 </label>
                             </div>
                         </div>
 
                         <!-- Months -->
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Month(s)</label>
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-weight: 500; margin-bottom: 10px; font-size: 0.875rem; color: var(--text-color);">Month(s)</label>
                             <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="January" style="width: 14px; height: 14px;"> Jan
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="January" style="accent-color: var(--primary-color);"> Jan
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="February" style="width: 14px; height: 14px;"> Feb
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="February" style="accent-color: var(--primary-color);"> Feb
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="March" style="width: 14px; height: 14px;"> Mar
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="March" style="accent-color: var(--primary-color);"> Mar
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="April" style="width: 14px; height: 14px;"> Apr
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="April" style="accent-color: var(--primary-color);"> Apr
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="May" style="width: 14px; height: 14px;"> May
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="May" style="accent-color: var(--primary-color);"> May
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="June" style="width: 14px; height: 14px;"> Jun
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="June" style="accent-color: var(--primary-color);"> Jun
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="July" style="width: 14px; height: 14px;"> Jul
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="July" style="accent-color: var(--primary-color);"> Jul
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="August" style="width: 14px; height: 14px;"> Aug
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="August" style="accent-color: var(--primary-color);"> Aug
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="September" style="width: 14px; height: 14px;"> Sep
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="September" style="accent-color: var(--primary-color);"> Sep
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="October" style="width: 14px; height: 14px;"> Oct
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="October" style="accent-color: var(--primary-color);"> Oct
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="November" style="width: 14px; height: 14px;"> Nov
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="November" style="accent-color: var(--primary-color);"> Nov
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="months" value="December" style="width: 14px; height: 14px;"> Dec
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.85rem; background: var(--bg-color); color: var(--text-color); transition: all 0.2s;">
+                                    <input type="checkbox" name="months" value="December" style="accent-color: var(--primary-color);"> Dec
                                 </label>
                             </div>
                         </div>
 
                         <!-- Days of Week -->
-                        <div style="margin-bottom: 12px;">
-                            <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Day(s) of Week</label>
-                            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="days" value="Monday" style="width: 14px; height: 14px;"> Mon
+                        <div style="margin-bottom: 16px;">
+                            <label style="display: block; font-weight: 500; margin-bottom: 10px; font-size: 0.875rem; color: var(--text-color);">Day(s) of Week</label>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.85rem; font-weight: 500; background: var(--bg-color); color: var(--text-color); transition: all 0.2s; min-width: 50px;">
+                                    <input type="checkbox" name="days" value="Monday" style="display: none;"> Mon
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="days" value="Tuesday" style="width: 14px; height: 14px;"> Tue
+                                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.85rem; font-weight: 500; background: var(--bg-color); color: var(--text-color); transition: all 0.2s; min-width: 50px;">
+                                    <input type="checkbox" name="days" value="Tuesday" style="display: none;"> Tue
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="days" value="Wednesday" style="width: 14px; height: 14px;"> Wed
+                                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.85rem; font-weight: 500; background: var(--bg-color); color: var(--text-color); transition: all 0.2s; min-width: 50px;">
+                                    <input type="checkbox" name="days" value="Wednesday" style="display: none;"> Wed
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="days" value="Thursday" style="width: 14px; height: 14px;"> Thu
+                                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.85rem; font-weight: 500; background: var(--bg-color); color: var(--text-color); transition: all 0.2s; min-width: 50px;">
+                                    <input type="checkbox" name="days" value="Thursday" style="display: none;"> Thu
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="days" value="Friday" style="width: 14px; height: 14px;"> Fri
+                                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.85rem; font-weight: 500; background: var(--bg-color); color: var(--text-color); transition: all 0.2s; min-width: 50px;">
+                                    <input type="checkbox" name="days" value="Friday" style="display: none;"> Fri
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="days" value="Saturday" style="width: 14px; height: 14px;"> Sat
+                                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.85rem; font-weight: 500; background: var(--bg-color); color: var(--text-color); transition: all 0.2s; min-width: 50px;">
+                                    <input type="checkbox" name="days" value="Saturday" style="display: none;"> Sat
                                 </label>
-                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-                                    <input type="checkbox" name="days" value="Sunday" style="width: 14px; height: 14px;"> Sun
+                                <label style="display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 10px 14px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.85rem; font-weight: 500; background: var(--bg-color); color: var(--text-color); transition: all 0.2s; min-width: 50px;">
+                                    <input type="checkbox" name="days" value="Sunday" style="display: none;"> Sun
                                 </label>
                             </div>
                         </div>
                     </div>
 
                     <!-- Specific Dates Option -->
-                    <div id="specificDatesField" style="display: none; margin-bottom: 12px;">
-                        <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Specific Dates</label>
-                        <input type="text" id="specificDates" placeholder="e.g., 2025-01-15, 2025-01-22, 2025-01-29"
-                            style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                        <p style="font-size: 0.75rem; color: #6b7280; margin-top: 4px;">Enter dates separated by commas (YYYY-MM-DD format)</p>
+                    <div id="specificDatesField" style="display: none; margin-bottom: 16px; animation: fadeIn 0.3s ease;">
+                        <label style="display: block; font-weight: 500; margin-bottom: 12px; font-size: 0.875rem; color: var(--text-color);">
+                            <i class="fas fa-calendar-week" style="color: var(--primary-color); margin-right: 6px;"></i> Select Date(s)
+                        </label>
+
+                        <!-- Date Range Picker -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+                            <div>
+                                <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                                    From Date <span style="color: #ef4444;">*</span>
+                                </label>
+                                <input type="date" id="specificDateFrom"
+                                    onchange="handleSpecificDateFromChange()"
+                                    style="width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; background: var(--bg-color); color: var(--text-color);">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">
+                                    To Date <span style="font-size: 0.7rem; font-style: italic;">(Optional)</span>
+                                </label>
+                                <input type="date" id="specificDateTo"
+                                    onchange="handleSpecificDateToChange()"
+                                    style="width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; background: var(--bg-color); color: var(--text-color);">
+                            </div>
+                        </div>
+
+                        <!-- Info Note -->
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 12px; padding: 10px 14px; background: rgba(var(--primary-rgb), 0.08); border-left: 3px solid var(--primary-color); border-radius: 6px;">
+                            <i class="fas fa-lightbulb" style="color: var(--primary-color);"></i>
+                            <strong>Tip:</strong> Select <strong>From Date</strong> to add a single date, then optionally select <strong>To Date</strong> to add a date range.
+                        </p>
+
+                        <!-- Add Another Date Button -->
+                        <button type="button" onclick="addAnotherSpecificDate()"
+                            style="padding: 10px 20px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 500; cursor: pointer; margin-bottom: 12px; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-plus"></i> Add Another Date/Range
+                        </button>
+
+                        <!-- Selected Dates List -->
+                        <div id="selectedDatesList" style="margin-top: 12px;">
+                            <!-- Selected dates will appear here -->
+                        </div>
+
+                        <!-- Hidden input for form submission -->
+                        <input type="hidden" id="specificDates" value="">
                     </div>
 
-                    <!-- Time Range (for both types) -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                    <!-- Time Range -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
                         <div>
-                            <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Start Time</label>
+                            <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 0.875rem; color: var(--text-color);">Preferred Start Time</label>
                             <input type="time" id="startTime" value="09:00"
-                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                                style="width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; background: var(--bg-color); color: var(--text-color);">
                         </div>
                         <div>
-                            <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">End Time</label>
+                            <label style="display: block; font-weight: 500; margin-bottom: 8px; font-size: 0.875rem; color: var(--text-color);">Preferred End Time</label>
                             <input type="time" id="endTime" value="17:00"
-                                style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                                style="width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 10px; font-size: 0.9rem; background: var(--bg-color); color: var(--text-color);">
                         </div>
                     </div>
                 </div>
 
-                <div style="margin-top: 16px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.875rem;">Message to Tutor</label>
-                    <textarea id="detailsMessage" rows="3"
-                        placeholder="Tell the tutor about your goals and expectations..."
-                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem; resize: vertical;"></textarea>
-                </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div style="display: flex; gap: 12px; padding-top: 16px; border-top: 2px solid #e5e7eb;">
+            <!-- Action Buttons - Fixed at bottom -->
+            <div style="padding: 20px 28px; background: var(--card-bg); border-top: 2px solid var(--border-color); display: flex; gap: 12px;">
                 <button onclick="submitPackageRequest()" id="submitPackageBtn"
-                    style="flex: 1; padding: 14px; background: #10b981; color: white; border: none; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer;">
+                    style="flex: 1; padding: 16px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 14px rgba(var(--primary-rgb), 0.4);">
                     <i class="fas fa-paper-plane"></i> Send Request
                 </button>
                 <button type="button" onclick="closePackageDetailsModal()"
-                    style="padding: 14px 24px; background: #E5E7EB; color: #374151; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                    style="padding: 16px 28px; background: var(--bg-color); color: var(--text-color); border: 2px solid var(--border-color); border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
                     Cancel
                 </button>
             </div>
         </div>
     </div>
+
+    <style>
+        /* Modal Animation */
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Modal hover effects */
+        #packageDetailsModal .modal-close:hover {
+            background: rgba(255,255,255,0.3) !important;
+        }
+        #packageDetailsModal input:focus,
+        #packageDetailsModal select:focus,
+        #packageDetailsModal textarea:focus {
+            border-color: var(--primary-color) !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.15);
+        }
+        #packageDetailsModal button:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+        #packageDetailsModal #submitPackageBtn:hover {
+            box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.5) !important;
+        }
+
+        /* Day checkbox toggle styling */
+        #packageDetailsModal input[name="days"]:checked + span,
+        #packageDetailsModal label:has(input[name="days"]:checked) {
+            background: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+    </style>
 
     <!-- Database Loader - Loads all tutor data from API -->
     <script src="../js/view-tutor/view-tutor-db-loader.js?v=3"></script>
@@ -3442,6 +3514,79 @@
                 setInterval(animateGamestoreTitle, 3000);
             }
         })();
+    </script>
+
+    <!-- Chat Modal Container -->
+    <div id="chat-modal-container"></div>
+
+    <!-- Chat Modal Script -->
+    <script src="../js/common-modals/chat-modal.js"></script>
+    <script src="../js/common-modals/view-request-modal.js"></script>
+
+    <!-- Load Chat Modal HTML and Initialize -->
+    <script>
+        // Load chat modal HTML dynamically
+        (function loadChatModal() {
+            fetch('../modals/common-modals/chat-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('chat-modal-container').innerHTML = html;
+                    // Re-initialize chat modal after HTML is loaded
+                    if (typeof ChatModalManager !== 'undefined') {
+                        ChatModalManager.init();
+                    }
+                })
+                .catch(err => console.log('Chat modal will load on demand:', err.message));
+        })();
+
+        // Message tutor function - opens chat modal with the viewed tutor
+        function messageTutor() {
+            // Check if user is authenticated
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            if (!token) {
+                if (window.openAuthModal) {
+                    window.openAuthModal('login');
+                } else {
+                    alert('Please log in to message this tutor');
+                }
+                return;
+            }
+
+            // Get tutor data from the global variable set by view-tutor-db-loader.js
+            const tutorData = window.currentTutorData;
+            if (!tutorData) {
+                console.error('Tutor data not loaded yet');
+                alert('Please wait for the profile to load');
+                return;
+            }
+
+            console.log('Opening chat with tutor:', tutorData);
+
+            // Build target user object for chat modal
+            const targetUser = {
+                id: tutorData.user_id,
+                user_id: tutorData.user_id,
+                profile_id: tutorData.id,
+                full_name: tutorData.full_name || `${tutorData.first_name || ''} ${tutorData.father_name || ''}`.trim(),
+                name: tutorData.full_name || `${tutorData.first_name || ''} ${tutorData.father_name || ''}`.trim(),
+                profile_picture: tutorData.profile_picture,
+                avatar: tutorData.profile_picture,
+                role: 'tutor',
+                profile_type: 'tutor',
+                is_online: tutorData.is_online || false
+            };
+
+            console.log('Target user for chat:', targetUser);
+
+            // Open chat modal with the tutor
+            if (typeof ChatModalManager !== 'undefined' && typeof ChatModalManager.open === 'function') {
+                ChatModalManager.open(targetUser);
+                console.log('Chat modal opened for tutor:', targetUser.full_name);
+            } else {
+                console.error('ChatModalManager not available');
+                alert('Chat feature is not available. Please refresh the page.');
+            }
+        }
     </script>
 </body>
 

@@ -29,7 +29,7 @@ class StudentTutorsManager {
         this.isLoading = true;
 
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) {
                 console.error('No authentication token found');
                 this.showEmptyState('Please log in to view your tutors.');
@@ -404,12 +404,62 @@ class StudentTutorsManager {
     }
 
     /**
-     * Message tutor
+     * Message tutor - opens chat modal with tutor
      */
     messageTutor(tutorId) {
         console.log(`💬 Opening chat with tutor: ${tutorId}`);
-        // TODO: Implement messaging functionality
-        alert('Messaging feature coming soon!');
+
+        // Check if user is authenticated
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token') || localStorage.getItem('access_token');
+        if (!token) {
+            if (window.openAuthModal) {
+                window.openAuthModal('login');
+            } else {
+                alert('Please log in to message tutors');
+            }
+            return;
+        }
+
+        // Find the tutor in our tutors array
+        const tutor = this.tutors.find(t => t.id === tutorId || t.tutor_id === tutorId);
+        if (!tutor) {
+            console.error('Tutor not found in current list');
+            alert('Unable to start chat. Please try again.');
+            return;
+        }
+
+        // Build the target user object for chat modal
+        const targetUser = {
+            id: tutor.tutor_user_id || tutor.user_id || tutor.id,
+            user_id: tutor.tutor_user_id || tutor.user_id || tutor.id,
+            profile_id: tutor.tutor_id || tutor.id,
+            full_name: tutor.full_name || `${tutor.first_name || ''} ${tutor.father_name || ''}`.trim(),
+            name: tutor.full_name || `${tutor.first_name || ''} ${tutor.father_name || ''}`.trim(),
+            profile_picture: tutor.profile_picture || tutor.avatar,
+            avatar: tutor.profile_picture || tutor.avatar,
+            role: 'tutor',
+            profile_type: 'tutor',
+            is_online: tutor.is_online || false
+        };
+
+        console.log('Target tutor for chat:', targetUser);
+
+        // Open chat modal with the tutor
+        if (typeof openChatModal === 'function') {
+            openChatModal(targetUser);
+            console.log('Chat modal opened for tutor:', targetUser.full_name);
+        } else if (typeof ChatModalManager !== 'undefined') {
+            if (typeof ChatModalManager.init === 'function' && !ChatModalManager.state?.isOpen) {
+                ChatModalManager.init();
+            }
+            if (typeof ChatModalManager.open === 'function') {
+                ChatModalManager.open(targetUser);
+                console.log('Chat modal opened via ChatModalManager');
+            }
+        } else {
+            console.error('Chat modal not available');
+            alert('Chat feature is not available. Please refresh the page.');
+        }
     }
 
     /**
@@ -475,8 +525,64 @@ function toggleSave(tutorId) {
 
 function messageTutor(tutorId) {
     console.log(`💬 Opening chat with tutor: ${tutorId}`);
-    // TODO: Implement messaging functionality - open chat modal or navigate to chat page
-    alert('Messaging feature coming soon!');
+
+    // Check if user is authenticated
+    const token = localStorage.getItem('token') || localStorage.getItem('access_token') || localStorage.getItem('access_token');
+    if (!token) {
+        if (window.openAuthModal) {
+            window.openAuthModal('login');
+        } else {
+            alert('Please log in to message tutors');
+        }
+        return;
+    }
+
+    // Find the tutor in the studentTutorsManager's tutors array
+    let tutor = null;
+    if (typeof studentTutorsManager !== 'undefined' && studentTutorsManager.tutors) {
+        tutor = studentTutorsManager.tutors.find(t => t.id === tutorId || t.tutor_id === tutorId);
+    }
+
+    if (!tutor) {
+        console.error('Tutor not found in current list');
+        alert('Unable to start chat. Please try again.');
+        return;
+    }
+
+    // Build the target user object for chat modal
+    const targetUser = {
+        id: tutor.tutor_user_id || tutor.user_id || tutor.id,
+        user_id: tutor.tutor_user_id || tutor.user_id || tutor.id,
+        profile_id: tutor.tutor_id || tutor.id,
+        full_name: tutor.full_name || `${tutor.first_name || ''} ${tutor.father_name || ''}`.trim(),
+        name: tutor.full_name || `${tutor.first_name || ''} ${tutor.father_name || ''}`.trim(),
+        profile_picture: tutor.profile_picture || tutor.avatar,
+        avatar: tutor.profile_picture || tutor.avatar,
+        role: 'tutor',
+        profile_type: 'tutor',
+        is_online: tutor.is_online || false
+    };
+
+    console.log('Target tutor for chat:', targetUser);
+
+    // Open chat modal with the tutor
+    if (typeof openChatModal === 'function') {
+        openChatModal(targetUser);
+        console.log('Chat modal opened for tutor:', targetUser.full_name);
+    } else if (typeof ChatModalManager !== 'undefined') {
+        // Initialize if needed
+        if (typeof ChatModalManager.init === 'function' && !ChatModalManager.state?.isOpen) {
+            ChatModalManager.init();
+        }
+        // Open with the tutor
+        if (typeof ChatModalManager.open === 'function') {
+            ChatModalManager.open(targetUser);
+            console.log('Chat modal opened via ChatModalManager');
+        }
+    } else {
+        console.error('Chat modal not available');
+        alert('Chat feature is not available. Please refresh the page.');
+    }
 }
 
 async function connectWithTutor(tutorId) {
@@ -498,7 +604,7 @@ async function connectWithTutor(tutorId) {
     }
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             alert('Please log in to connect with tutors.');
             return;

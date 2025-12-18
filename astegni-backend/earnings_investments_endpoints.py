@@ -17,7 +17,8 @@ from utils import get_current_user
 
 router = APIRouter()
 
-DATABASE_URL = "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_db"
+import os
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db")
 
 # ============================================================================
 # PYDANTIC MODELS

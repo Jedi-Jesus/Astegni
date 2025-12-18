@@ -17,7 +17,11 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
+# Use ADMIN_DATABASE_URL for admin tables (astegni_admin_db)
+ADMIN_DATABASE_URL = os.getenv(
+    'ADMIN_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
+)
 
 router = APIRouter(prefix="/api/admin-dashboard", tags=["Admin Dashboard"])
 
@@ -73,8 +77,8 @@ class PanelStatistic(BaseModel):
 # ============================================
 
 def get_connection():
-    """Get database connection"""
-    return psycopg.connect(DATABASE_URL)
+    """Get admin database connection (astegni_admin_db)"""
+    return psycopg.connect(ADMIN_DATABASE_URL)
 
 def calculate_admin_stats():
     """Calculate real-time statistics from course management tables"""

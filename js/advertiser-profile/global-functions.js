@@ -255,9 +255,51 @@ function fallbackShare(url) {
 }
 
 // Open Community Modal
-function openCommunityModal() {
-    console.log('Opening community modal...');
-    alert('Community features coming soon!');
+async function openCommunityModal() {
+    console.log('[AdvertiserProfile] Opening community modal...');
+
+    let modal = document.getElementById('communityModal');
+
+    // If modal doesn't exist, load it from common-modals
+    if (!modal) {
+        try {
+            const response = await fetch('../modals/common-modals/community-modal.html');
+            if (response.ok) {
+                const html = await response.text();
+                const container = document.createElement('div');
+                container.innerHTML = html;
+                document.body.appendChild(container.firstElementChild || container);
+                modal = document.getElementById('communityModal');
+                console.log('[AdvertiserProfile] Community modal loaded from file');
+            } else {
+                console.error('[AdvertiserProfile] Failed to load community modal');
+                alert('Community features coming soon!');
+                return;
+            }
+        } catch (error) {
+            console.error('[AdvertiserProfile] Error loading community modal:', error);
+            alert('Community features coming soon!');
+            return;
+        }
+    }
+
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+        console.log('[AdvertiserProfile] Community modal opened');
+    }
+}
+
+// Close Community Modal
+function closeCommunityModal() {
+    const modal = document.getElementById('communityModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+        console.log('[AdvertiserProfile] Community modal closed');
+    }
 }
 
 // Open Ad Analytics Modal
@@ -289,7 +331,8 @@ window.uploadImage = uploadImage;
 window.resetUpload = resetUpload;
 window.shareProfile = shareProfile;
 window.openCommunityModal = openCommunityModal;
+window.closeCommunityModal = closeCommunityModal;
 window.openAdAnalyticsModal = openAdAnalyticsModal;
 window.handleNavLinkClick = handleNavLinkClick;
 
-console.log('✅ Advertiser Profile Global Functions loaded');
+console.log('[AdvertiserProfile] Global Functions loaded');

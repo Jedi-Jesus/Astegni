@@ -425,6 +425,27 @@ async def get_session_history(user_type: str, user_id: int, current_user = Depen
     try:
         field = 'tutor_id' if user_type == 'tutor' else 'student_id'
 
+        # Check if whiteboard tables exist
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_name = 'whiteboard_sessions'
+            )
+        """)
+        whiteboard_table_exists = cursor.fetchone()[0]
+
+        cursor.execute("""
+            SELECT EXISTS (
+                SELECT FROM information_schema.tables
+                WHERE table_name = 'tutor_student_bookings'
+            )
+        """)
+        bookings_table_exists = cursor.fetchone()[0]
+
+        if not whiteboard_table_exists or not bookings_table_exists:
+            # Tables don't exist yet - return empty list gracefully
+            return {"success": True, "sessions": [], "message": "Whiteboard tables not yet created"}
+
         cursor.execute(f"""
             SELECT
                 s.id, s.session_title, s.session_description,
@@ -460,6 +481,11 @@ async def get_session_history(user_type: str, user_id: int, current_user = Depen
             })
 
         return {"success": True, "sessions": sessions}
+
+    except Exception as e:
+        # Handle any database errors gracefully
+        print(f"⚠️ Whiteboard session history error: {e}")
+        return {"success": True, "sessions": [], "message": f"Could not load sessions: {str(e)}"}
 
     finally:
         cursor.close()

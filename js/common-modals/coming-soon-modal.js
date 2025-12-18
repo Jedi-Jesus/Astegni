@@ -39,7 +39,9 @@ function openComingSoonModalInternal(feature, message) {
         'store': 'Our bookstore is being stocked with amazing educational resources. Get ready to explore!',
         'find-jobs': 'Our job portal is being designed to connect talented individuals with great opportunities!',
         'market': 'Our marketplace and trading platform is being developed to provide real-time market insights and trading capabilities!',
-        'gamestore': 'Our gamestore is being developed with exciting educational games to make learning fun and interactive!'
+        'gamestore': 'Our gamestore is being developed with exciting educational games to make learning fun and interactive!',
+        'Create Event': 'Event creation is coming soon! You\'ll be able to create and manage your own educational events.',
+        'Create Club': 'Club creation is coming soon! You\'ll be able to create and manage your own learning clubs.'
     };
 
     message.textContent = messages[feature] || "We're working hard to bring you this feature. Stay tuned!";

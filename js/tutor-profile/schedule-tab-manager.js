@@ -1,9 +1,9 @@
 // ============================================
 // SCHEDULE PANEL TAB MANAGER
-// Manages 3-tab interface: All, Schedules, Sessions
+// Manages 2-tab interface: Schedules, Sessions
 // ============================================
 
-let currentScheduleTab = 'all';
+let currentScheduleTab = 'schedules';
 let allSchedules = [];
 let allSessions = [];
 let sessionStats = null;
@@ -72,7 +72,12 @@ async function loadAllData() {
     if (!container) return;
 
     try {
-        const token = localStorage.getItem('token');
+        // Wait for auth to be ready before checking token
+        if (window.TutorAuthReady) {
+            await window.TutorAuthReady.waitForAuth();
+        }
+
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             container.innerHTML = `
                 <div class="text-center py-8 text-gray-500">
@@ -85,13 +90,13 @@ async function loadAllData() {
 
         // Fetch schedules and sessions in parallel
         const [schedulesResponse, sessionsResponse, statsResponse] = await Promise.all([
-            fetch('https://api.astegni.com/api/tutor/schedules', {
+            fetch('http://localhost:8000/api/tutor/schedules', {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            fetch('https://api.astegni.com/api/tutor/sessions', {
+            fetch('http://localhost:8000/api/tutor/sessions', {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            fetch('https://api.astegni.com/api/tutor/sessions/stats/summary', {
+            fetch('http://localhost:8000/api/tutor/sessions/stats/summary', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
         ]);
@@ -124,10 +129,15 @@ async function loadAllData() {
 
 // Update stats in All tab
 function updateAllStats() {
-    document.getElementById('stat-total-schedules').textContent = allSchedules.length;
-    document.getElementById('stat-active-sessions').textContent = sessionStats ? sessionStats.scheduled_sessions : 0;
-    document.getElementById('stat-total-earnings').textContent = sessionStats ? `${sessionStats.total_hours} hrs` : '0 hrs';
-    document.getElementById('stat-avg-rating').textContent = sessionStats ? sessionStats.completed_sessions : 0;
+    const totalSchedulesEl = document.getElementById('stat-total-schedules');
+    const activeSessionsEl = document.getElementById('stat-active-sessions');
+    const totalEarningsEl = document.getElementById('stat-total-earnings');
+    const avgRatingEl = document.getElementById('stat-avg-rating');
+
+    if (totalSchedulesEl) totalSchedulesEl.textContent = allSchedules.length;
+    if (activeSessionsEl) activeSessionsEl.textContent = sessionStats ? sessionStats.scheduled_sessions : 0;
+    if (totalEarningsEl) totalEarningsEl.textContent = sessionStats ? `${sessionStats.total_hours} hrs` : '0 hrs';
+    if (avgRatingEl) avgRatingEl.textContent = sessionStats ? sessionStats.completed_sessions : 0;
 }
 
 // Display combined schedules and sessions (see full implementation at end of file)
@@ -149,7 +159,12 @@ async function loadSessions(statusFilter = null, page = 1) {
             </div>
         `;
 
-        const token = localStorage.getItem('token');
+        // Wait for auth to be ready before checking token
+        if (window.TutorAuthReady) {
+            await window.TutorAuthReady.waitForAuth();
+        }
+
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             container.innerHTML = `
                 <div class="text-center py-8 text-gray-500">
@@ -160,7 +175,7 @@ async function loadSessions(statusFilter = null, page = 1) {
             return;
         }
 
-        let url = 'https://api.astegni.com/api/tutor/sessions';
+        let url = 'http://localhost:8000/api/tutor/sessions';
         if (statusFilter && statusFilter !== 'all') {
             url += `?status_filter=${statusFilter}`;
         }
@@ -316,7 +331,7 @@ async function loadSessionStats() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await fetch('https://api.astegni.com/api/tutor/sessions/stats/summary', {
+        const response = await fetch('http://localhost:8000/api/tutor/sessions/stats/summary', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -325,11 +340,18 @@ async function loadSessionStats() {
         const stats = await response.json();
         sessionStats = stats;
 
-        // Update session stats UI
-        document.getElementById('session-stat-total').textContent = stats.total_sessions;
-        document.getElementById('session-stat-completed').textContent = stats.completed_sessions;
-        document.getElementById('session-stat-hours').textContent = stats.total_hours;
-        document.getElementById('session-stat-earnings').textContent = `${stats.in_progress_sessions || 0} active`;
+        // Update session stats UI (check if elements exist first)
+        const totalEl = document.getElementById('session-stat-total');
+        const completedEl = document.getElementById('session-stat-completed');
+        const hoursEl = document.getElementById('session-stat-hours');
+        const earningsEl = document.getElementById('session-stat-earnings');
+
+        if (totalEl) totalEl.textContent = stats.total_sessions || 0;
+        if (completedEl) completedEl.textContent = stats.completed_sessions || 0;
+        if (hoursEl) hoursEl.textContent = stats.total_hours || 0;
+        if (earningsEl) earningsEl.textContent = `${stats.in_progress_sessions || 0} active`;
+
+        console.log('✅ Session stats loaded:', stats);
 
     } catch (error) {
         console.error('Error loading session stats:', error);
@@ -1037,7 +1059,7 @@ async function toggleSessionNotification(sessionId, enable) {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/tutor/sessions/${sessionId}/toggle-notification`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/sessions/${sessionId}/toggle-notification`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1069,7 +1091,7 @@ async function toggleSessionAlarm(sessionId, enable) {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/tutor/sessions/${sessionId}/toggle-alarm`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/sessions/${sessionId}/toggle-alarm`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1101,7 +1123,7 @@ async function toggleSessionFeatured(sessionId, feature) {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/tutor/sessions/${sessionId}/toggle-featured`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/sessions/${sessionId}/toggle-featured`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,

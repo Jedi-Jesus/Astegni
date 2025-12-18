@@ -16,18 +16,29 @@ Provides API endpoints for:
 - Performance metrics
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Header
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from datetime import date, datetime, timedelta
 import psycopg
 from dotenv import load_dotenv
 import os
+import json
+import uuid
 
 load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
+
+# Use ADMIN_DATABASE_URL for system settings tables (astegni_admin_db)
+# These tables were migrated from astegni_user_db to astegni_admin_db
+ADMIN_DATABASE_URL = os.getenv(
+    'ADMIN_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
+)
 
 router = APIRouter(prefix="/api/admin/system", tags=["System Settings"])
+
+# Separate router for media endpoints (different prefix)
+media_router = APIRouter(prefix="/api/admin/media", tags=["System Media"])
 
 # ============================================
 # PYDANTIC MODELS
@@ -162,8 +173,72 @@ class BackupHistory(BaseModel):
 # ============================================
 
 def get_connection():
-    """Get database connection"""
-    return psycopg.connect(DATABASE_URL)
+    """Get admin database connection (astegni_admin_db)"""
+    return psycopg.connect(ADMIN_DATABASE_URL)
+
+
+def update_env_file(updates: Dict[str, str]):
+    """
+    Update specific keys in the .env file while preserving other content.
+    """
+    # Get absolute path to .env file in the same directory as this script
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    env_path = os.path.join(script_dir, '.env')
+
+    print(f"[ENV UPDATE] Script directory: {script_dir}")
+    print(f"[ENV UPDATE] .env path: {env_path}")
+    print(f"[ENV UPDATE] Updates to apply: {list(updates.keys())}")
+
+    if not os.path.exists(env_path):
+        raise FileNotFoundError(f".env file not found at {env_path}")
+
+    # Read current .env file
+    with open(env_path, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+
+    print(f"[ENV UPDATE] Read {len(lines)} lines from .env")
+
+    # Track which keys we've updated
+    updated_keys = set()
+    new_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+
+        # Skip empty lines and comments - keep them as is
+        if not stripped or stripped.startswith('#'):
+            new_lines.append(line)
+            continue
+
+        # Check if this line has a key we need to update
+        if '=' in stripped:
+            key = stripped.split('=', 1)[0].strip()
+            if key in updates:
+                # Update this line with new value
+                old_value = stripped.split('=', 1)[1] if '=' in stripped else ''
+                new_lines.append(f"{key}={updates[key]}\n")
+                updated_keys.add(key)
+                print(f"[ENV UPDATE] Updated {key}: '{old_value[:20]}...' -> '{updates[key][:20]}...'")
+            else:
+                new_lines.append(line)
+        else:
+            new_lines.append(line)
+
+    # Add any keys that weren't in the file
+    for key, value in updates.items():
+        if key not in updated_keys:
+            new_lines.append(f"{key}={value}\n")
+            print(f"[ENV UPDATE] Added new key {key}")
+
+    # Write back to .env file
+    with open(env_path, 'w', encoding='utf-8') as f:
+        f.writelines(new_lines)
+
+    print(f"[ENV UPDATE] Successfully wrote {len(new_lines)} lines to .env")
+    print(f"[ENV UPDATE] Keys updated: {updated_keys}")
+
+    # Reload environment variables
+    load_dotenv(env_path, override=True)
 
 # ============================================
 # ENDPOINTS
@@ -383,12 +458,13 @@ async def get_media_settings():
     cursor = conn.cursor()
 
     try:
+        # Note: table uses subscription_plan_id instead of tier_name
         cursor.execute("""
-            SELECT tier_name, max_image_size_mb, max_video_size_mb,
+            SELECT subscription_plan_id, max_image_size_mb, max_video_size_mb,
                    max_document_size_mb, max_audio_size_mb, storage_limit_gb,
                    max_image_storage_mb, max_video_storage_mb
             FROM system_media_settings
-            ORDER BY tier_name
+            ORDER BY subscription_plan_id
         """)
 
         rows = cursor.fetchall()
@@ -450,7 +526,7 @@ async def get_media_settings():
 
 @router.put("/media-settings/{tier_name}")
 async def update_media_settings(tier_name: str, settings: Dict[str, Any]):
-    """Update media settings for a specific tier"""
+    """Update media settings for a specific tier (subscription_plan_id)"""
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -468,13 +544,14 @@ async def update_media_settings(tier_name: str, settings: Dict[str, Any]):
         # Calculate total storage from separate limits
         total_storage_gb = round((max_image_storage_mb + max_video_storage_mb) / 1024)
 
+        # Note: table uses subscription_plan_id instead of tier_name
         cursor.execute("""
             INSERT INTO system_media_settings (
-                tier_name, max_image_size_mb, max_video_size_mb,
+                subscription_plan_id, max_image_size_mb, max_video_size_mb,
                 max_document_size_mb, max_audio_size_mb, storage_limit_gb,
                 max_image_storage_mb, max_video_storage_mb
             ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (tier_name) DO UPDATE SET
+            ON CONFLICT (subscription_plan_id) DO UPDATE SET
                 max_image_size_mb = EXCLUDED.max_image_size_mb,
                 max_video_size_mb = EXCLUDED.max_video_size_mb,
                 max_document_size_mb = EXCLUDED.max_document_size_mb,
@@ -558,7 +635,8 @@ async def get_email_config():
     try:
         cursor.execute("""
             SELECT smtp_host, smtp_port, smtp_username, smtp_encryption,
-                   from_email, from_name, reply_to_email, daily_limit, enabled
+                   from_email, from_name, reply_to_email, daily_limit, enabled,
+                   account_name, provider
             FROM system_email_config
             LIMIT 1
         """)
@@ -575,7 +653,9 @@ async def get_email_config():
                 "from_name": "Astegni",
                 "reply_to_email": "",
                 "daily_limit": 1000,
-                "enabled": False
+                "enabled": False,
+                "account_name": "Primary Email",
+                "provider": "custom"
             }
         else:
             config = {
@@ -587,7 +667,9 @@ async def get_email_config():
                 "from_name": row[5] or "Astegni",
                 "reply_to_email": row[6] or "",
                 "daily_limit": row[7] or 1000,
-                "enabled": row[8] if row[8] is not None else False
+                "enabled": row[8] if row[8] is not None else False,
+                "account_name": row[9] or "Primary Email",
+                "provider": row[10] or "custom"
             }
 
         return {"success": True, "data": config}
@@ -631,7 +713,7 @@ async def get_email_templates():
 
 @router.put("/email-config")
 async def update_email_config(config: Dict[str, Any]):
-    """Update email configuration"""
+    """Update email configuration in both database and .env file"""
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -645,8 +727,8 @@ async def update_email_config(config: Dict[str, Any]):
                 INSERT INTO system_email_config (
                     id, smtp_host, smtp_port, smtp_username, smtp_password,
                     smtp_encryption, from_email, from_name, reply_to_email,
-                    daily_limit, enabled
-                ) VALUES (1, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    daily_limit, enabled, account_name, provider
+                ) VALUES (1, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (id) DO UPDATE SET
                     smtp_host = EXCLUDED.smtp_host,
                     smtp_port = EXCLUDED.smtp_port,
@@ -658,6 +740,8 @@ async def update_email_config(config: Dict[str, Any]):
                     reply_to_email = EXCLUDED.reply_to_email,
                     daily_limit = EXCLUDED.daily_limit,
                     enabled = EXCLUDED.enabled,
+                    account_name = EXCLUDED.account_name,
+                    provider = EXCLUDED.provider,
                     updated_at = CURRENT_TIMESTAMP
             """, (
                 config.get("smtp_host", ""),
@@ -669,7 +753,9 @@ async def update_email_config(config: Dict[str, Any]):
                 config.get("from_name", "Astegni"),
                 config.get("reply_to_email", ""),
                 config.get("daily_limit", 1000),
-                config.get("enabled", False)
+                config.get("enabled", False),
+                config.get("account_name", "Primary Email"),
+                config.get("provider", "custom")
             ))
         else:
             # Don't update password field
@@ -677,8 +763,8 @@ async def update_email_config(config: Dict[str, Any]):
                 INSERT INTO system_email_config (
                     id, smtp_host, smtp_port, smtp_username,
                     smtp_encryption, from_email, from_name, reply_to_email,
-                    daily_limit, enabled
-                ) VALUES (1, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    daily_limit, enabled, account_name, provider
+                ) VALUES (1, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (id) DO UPDATE SET
                     smtp_host = EXCLUDED.smtp_host,
                     smtp_port = EXCLUDED.smtp_port,
@@ -689,6 +775,8 @@ async def update_email_config(config: Dict[str, Any]):
                     reply_to_email = EXCLUDED.reply_to_email,
                     daily_limit = EXCLUDED.daily_limit,
                     enabled = EXCLUDED.enabled,
+                    account_name = EXCLUDED.account_name,
+                    provider = EXCLUDED.provider,
                     updated_at = CURRENT_TIMESTAMP
             """, (
                 config.get("smtp_host", ""),
@@ -699,11 +787,37 @@ async def update_email_config(config: Dict[str, Any]):
                 config.get("from_name", "Astegni"),
                 config.get("reply_to_email", ""),
                 config.get("daily_limit", 1000),
-                config.get("enabled", False)
+                config.get("enabled", False),
+                config.get("account_name", "Primary Email"),
+                config.get("provider", "custom")
             ))
 
         conn.commit()
-        return {"success": True, "message": "Email configuration updated successfully"}
+
+        # Also update .env file with email configuration
+        env_updates = {
+            "SMTP_HOST": config.get("smtp_host", "smtp.gmail.com"),
+            "SMTP_PORT": str(config.get("smtp_port", 587)),
+            "SMTP_USER": config.get("smtp_username", ""),
+            "FROM_EMAIL": config.get("from_email", ""),
+            "FROM_NAME": config.get("from_name", "Astegni"),
+        }
+
+        # Only update password in .env if provided
+        if smtp_password:
+            env_updates["SMTP_PASSWORD"] = smtp_password
+
+        try:
+            update_env_file(env_updates)
+            return {"success": True, "message": "Email configuration updated in database and .env file"}
+        except Exception as env_error:
+            # Database updated successfully, but .env failed
+            print(f"Warning: .env update failed: {env_error}")
+            return {
+                "success": True,
+                "message": "Email configuration updated in database (warning: .env file update failed)",
+                "warning": str(env_error)
+            }
 
     except Exception as e:
         conn.rollback()
@@ -1419,6 +1533,543 @@ async def get_performance_metrics():
 
         return {"success": True, "data": metrics}
 
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# ============================================
+# SYSTEM MEDIA ENDPOINTS (media_router)
+# ============================================
+
+def verify_admin_token(authorization: str):
+    """Verify admin token and return admin_id"""
+    if not authorization or not authorization.startswith('Bearer '):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+
+    token = authorization.replace('Bearer ', '')
+    try:
+        import jwt
+        # Import SECRET_KEY from utils
+        from utils import SECRET_KEY, ALGORITHM
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+
+        # Accept both user tokens (sub) and admin tokens (admin_id)
+        admin_id = payload.get("admin_id") or payload.get("sub")
+        if not admin_id:
+            raise HTTPException(status_code=401, detail="Invalid token format")
+        return admin_id
+    except jwt.PyJWTError as e:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+
+@media_router.get("/system-media")
+async def get_system_media_admin(authorization: str = Header(None)):
+    """Get all system media (images and videos) for admin panel"""
+    verify_admin_token(authorization)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            SELECT id, uploader_id, media_type, title, description, file_url,
+                   thumbnail, category, targets, tags, is_active, download_count,
+                   likes, dislikes, comments, shares, saves, is_favorite,
+                   created_at, updated_at
+            FROM system_media
+            WHERE is_active = true
+            ORDER BY created_at DESC
+        """)
+
+        rows = cursor.fetchall()
+
+        images = []
+        videos = []
+
+        for row in rows:
+            media_item = {
+                "id": row[0],
+                "uploader_id": row[1],
+                "name": row[3],  # title as name for frontend
+                "title": row[3],
+                "description": row[4],
+                "url": row[5],  # file_url as url for frontend
+                "file_url": row[5],
+                "thumbnail": row[6],
+                "type": row[7],  # category as type for frontend
+                "category": row[7],
+                "targets": row[8] if row[8] else [],
+                "tags": row[9] if row[9] else [],
+                "is_active": row[10],
+                "download_count": row[11],
+                "likes": row[12],
+                "dislikes": row[13],
+                "comments": row[14] if row[14] else [],
+                "shares": row[15],
+                "saves": row[16],
+                "is_favorite": row[17],
+                "uploaded_at": row[18].strftime('%Y-%m-%d') if row[18] else None,
+                "created_at": row[18].isoformat() if row[18] else None,
+                "updated_at": row[19].isoformat() if row[19] else None,
+                "size": 0  # We don't store size, frontend uses for display
+            }
+
+            # Sort into images or videos based on media_type
+            if row[2] == 'video':
+                videos.append(media_item)
+            else:
+                images.append(media_item)
+
+        return {
+            "success": True,
+            "images": images,
+            "videos": videos,
+            "total": len(rows)
+        }
+
+    except Exception as e:
+        print(f"Error fetching system media: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@media_router.post("/upload")
+async def upload_system_media(
+    file: UploadFile = File(...),
+    type: str = Form(...),  # 'image' or 'video'
+    name: str = Form(...),
+    category: str = Form(...),
+    authorization: str = Header(None)
+):
+    """Upload system media (image or video)"""
+    admin_id = verify_admin_token(authorization)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Read file content
+        file_content = await file.read()
+        file_size = len(file_content)
+
+        # Generate unique filename
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        unique_id = str(uuid.uuid4())[:8]
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else ''
+        unique_filename = f"system_{type}_{timestamp}_{unique_id}.{file_extension}"
+
+        # Upload to Backblaze B2
+        try:
+            from backblaze_service import get_backblaze_service
+            b2_service = get_backblaze_service()
+
+            # Use 'system' as user_id prefix for system-wide media
+            # This will create paths like: images/posts/user_system/filename.jpg
+            result = b2_service.upload_file(
+                file_data=file_content,
+                file_name=unique_filename,
+                file_type=type,  # 'image' or 'video'
+                content_type=file.content_type,
+                user_id='system'  # System-wide uploads
+            )
+
+            if not result:
+                raise Exception("Upload returned no result")
+
+            file_url = result['url']
+            print(f"Uploaded to Backblaze: {file_url}")
+
+        except Exception as e:
+            print(f"Backblaze upload failed: {e}")
+            # Fallback to local storage
+            local_folder = f"system_{type}s"
+            os.makedirs(local_folder, exist_ok=True)
+            local_path = f"{local_folder}/{unique_filename}"
+            with open(local_path, 'wb') as f:
+                f.write(file_content)
+            file_url = f"/{local_path}"
+
+        # Insert into database
+        cursor.execute("""
+            INSERT INTO system_media (
+                uploader_id, media_type, title, description, file_url,
+                thumbnail, category, targets, tags, is_active, created_at, updated_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id
+        """, (
+            admin_id,
+            type,  # 'image' or 'video'
+            name,
+            '',  # description
+            file_url,
+            file_url if type == 'image' else None,  # thumbnail same as url for images
+            category,
+            json.dumps([]),  # targets
+            json.dumps([])   # tags
+        ))
+
+        new_id = cursor.fetchone()[0]
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "Media uploaded successfully",
+            "id": new_id,
+            "file_url": file_url,
+            "media_type": type,
+            "name": name,
+            "category": category
+        }
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error uploading system media: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@media_router.delete("/{media_type}/{media_id}")
+async def delete_system_media_admin(
+    media_type: str,
+    media_id: int,
+    authorization: str = Header(None)
+):
+    """Delete system media by type and ID"""
+    verify_admin_token(authorization)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        # First get the media record to get file URL for B2 deletion
+        cursor.execute("""
+            SELECT file_url, thumbnail FROM system_media
+            WHERE id = %s AND media_type = %s
+        """, (media_id, media_type))
+
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Media not found")
+
+        file_url, thumbnail_url = row
+
+        # Try to delete from Backblaze B2
+        try:
+            from backblaze_service import get_backblaze_service
+            b2_service = get_backblaze_service()
+
+            # Extract filename from URL and delete
+            if file_url:
+                file_name = file_url.split('/')[-1] if '/' in file_url else file_url
+                b2_service.delete_file(file_name)
+
+            # Delete thumbnail if different from main file
+            if thumbnail_url and thumbnail_url != file_url:
+                thumb_name = thumbnail_url.split('/')[-1] if '/' in thumbnail_url else thumbnail_url
+                b2_service.delete_file(thumb_name)
+
+        except Exception as e:
+            print(f"Warning: Failed to delete file from B2: {e}")
+            # Continue with database deletion even if B2 deletion fails
+
+        # Delete from database
+        cursor.execute("DELETE FROM system_media WHERE id = %s", (media_id,))
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "Media deleted successfully"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"Error deleting system media: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# ============================================
+# UPLOAD LIMITS / STORAGE SETTINGS ENDPOINTS
+# ============================================
+
+@router.get("/upload-limits")
+async def get_upload_limits(authorization: str = Header(None)):
+    """Get all upload/storage limits linked to subscription plans"""
+    verify_admin_token(authorization)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            SELECT
+                sms.id,
+                sms.subscription_plan_id,
+                sp.package_title,
+                sp.package_price,
+                sms.max_image_size_mb,
+                sms.max_video_size_mb,
+                sms.max_document_size_mb,
+                sms.max_audio_size_mb,
+                sms.storage_limit_gb,
+                sms.created_at,
+                sms.updated_at
+            FROM system_media_settings sms
+            LEFT JOIN subscription_plans sp ON sp.id = sms.subscription_plan_id
+            ORDER BY sp.display_order ASC, sms.id ASC
+        """)
+
+        rows = cursor.fetchall()
+
+        settings = []
+        for row in rows:
+            settings.append({
+                "id": row[0],
+                "subscription_plan_id": row[1],
+                "plan_name": row[2] or "Unknown",
+                "price": float(row[3]) if row[3] else 0,
+                "max_image_size_mb": row[4] or 0,
+                "max_video_size_mb": row[5] or 0,
+                "max_document_size_mb": row[6] or 0,
+                "max_audio_size_mb": row[7] or 0,
+                "storage_limit_gb": row[8] or 0,
+                "created_at": row[9].isoformat() if row[9] else None,
+                "updated_at": row[10].isoformat() if row[10] else None
+            })
+
+        return {"success": True, "settings": settings}
+
+    except Exception as e:
+        print(f"Error fetching upload limits: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@router.get("/subscription-plans-search")
+async def search_subscription_plans(
+    q: str = "",
+    authorization: str = Header(None)
+):
+    """Search subscription plans for live search dropdown (by name, returns ID)"""
+    verify_admin_token(authorization)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        if q:
+            cursor.execute("""
+                SELECT id, package_title, package_price, is_active
+                FROM subscription_plans
+                WHERE LOWER(package_title) LIKE LOWER(%s)
+                ORDER BY display_order ASC
+            """, (f"%{q}%",))
+        else:
+            cursor.execute("""
+                SELECT id, package_title, package_price, is_active
+                FROM subscription_plans
+                ORDER BY display_order ASC
+            """)
+
+        rows = cursor.fetchall()
+
+        plans = []
+        for row in rows:
+            plans.append({
+                "id": row[0],
+                "plan_name": row[1],
+                "price": float(row[2]) if row[2] else 0,
+                "is_active": row[3]
+            })
+
+        return {"success": True, "plans": plans}
+
+    except Exception as e:
+        print(f"Error searching subscription plans: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@router.post("/upload-limits")
+async def create_upload_limit(
+    data: Dict[str, Any],
+    authorization: str = Header(None)
+):
+    """Create new upload/storage limit settings for a subscription plan"""
+    verify_admin_token(authorization)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        subscription_plan_id = data.get("subscription_plan_id")
+
+        if not subscription_plan_id:
+            raise HTTPException(status_code=400, detail="subscription_plan_id is required")
+
+        # Ensure it's an integer
+        try:
+            subscription_plan_id = int(subscription_plan_id)
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="subscription_plan_id must be an integer")
+
+        # Check if the subscription plan exists
+        cursor.execute("SELECT id FROM subscription_plans WHERE id = %s", (subscription_plan_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=400, detail=f"Subscription plan with ID {subscription_plan_id} not found")
+
+        # Check if settings already exist for this plan
+        cursor.execute("""
+            SELECT id FROM system_media_settings WHERE subscription_plan_id = %s
+        """, (subscription_plan_id,))
+
+        if cursor.fetchone():
+            raise HTTPException(status_code=400, detail=f"Settings already exist for this subscription plan")
+
+        cursor.execute("""
+            INSERT INTO system_media_settings (
+                subscription_plan_id,
+                max_image_size_mb,
+                max_video_size_mb,
+                max_document_size_mb,
+                max_audio_size_mb,
+                storage_limit_gb,
+                created_at,
+                updated_at
+            ) VALUES (%s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            RETURNING id
+        """, (
+            subscription_plan_id,
+            data.get("max_image_size_mb", 5),
+            data.get("max_video_size_mb", 50),
+            data.get("max_document_size_mb", 10),
+            data.get("max_audio_size_mb", 10),
+            data.get("storage_limit_gb", 5)
+        ))
+
+        new_id = cursor.fetchone()[0]
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": "Storage settings created successfully",
+            "id": new_id
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"Error creating upload limit: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@router.put("/upload-limits/{setting_id}")
+async def update_upload_limit(
+    setting_id: int,
+    data: Dict[str, Any],
+    authorization: str = Header(None)
+):
+    """Update upload/storage limit settings"""
+    verify_admin_token(authorization)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Check if setting exists
+        cursor.execute("SELECT id FROM system_media_settings WHERE id = %s", (setting_id,))
+        if not cursor.fetchone():
+            raise HTTPException(status_code=404, detail="Setting not found")
+
+        cursor.execute("""
+            UPDATE system_media_settings SET
+                max_image_size_mb = %s,
+                max_video_size_mb = %s,
+                max_document_size_mb = %s,
+                max_audio_size_mb = %s,
+                storage_limit_gb = %s,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = %s
+        """, (
+            data.get("max_image_size_mb", 5),
+            data.get("max_video_size_mb", 50),
+            data.get("max_document_size_mb", 10),
+            data.get("max_audio_size_mb", 10),
+            data.get("storage_limit_gb", 5),
+            setting_id
+        ))
+
+        conn.commit()
+
+        return {"success": True, "message": "Storage settings updated successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"Error updating upload limit: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@router.delete("/upload-limits/{setting_id}")
+async def delete_upload_limit(
+    setting_id: int,
+    authorization: str = Header(None)
+):
+    """Delete upload/storage limit settings"""
+    verify_admin_token(authorization)
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        # Check if setting exists and get plan name for message
+        cursor.execute("""
+            SELECT sp.plan_name
+            FROM system_media_settings sms
+            LEFT JOIN subscription_plans sp ON sp.id = sms.subscription_plan_id
+            WHERE sms.id = %s
+        """, (setting_id,))
+        row = cursor.fetchone()
+        if not row:
+            raise HTTPException(status_code=404, detail="Setting not found")
+
+        plan_name = row[0] or "Unknown"
+
+        cursor.execute("DELETE FROM system_media_settings WHERE id = %s", (setting_id,))
+        conn.commit()
+
+        return {
+            "success": True,
+            "message": f"Storage settings for '{plan_name}' deleted successfully"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        print(f"Error deleting upload limit: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         cursor.close()
         conn.close()

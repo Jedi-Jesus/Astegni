@@ -3,7 +3,7 @@
 // ============================================
 
 // Use global API base URL
-const reviewApiUrl = window.API_BASE_URL || 'https://api.astegni.com';
+const reviewApiUrl = window.API_BASE_URL || 'http://localhost:8000';
 
 // Fallback data in case API is unavailable
 const professionalReviewsData = [

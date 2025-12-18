@@ -1,11 +1,10 @@
 /**
  * View Student Credentials Manager
  * Handles fetching and displaying achievements, certifications, and extracurricular credentials
- * Uses the unified /api/view/student/{profile_id}/documents endpoint
+ * Uses the /api/view-student/{student_profile_id}/credentials endpoint
  */
 
 // API_BASE_URL is already defined in view-student-reviews.js
-let currentStudentUserId = null;
 let currentStudentProfileId = null;
 
 // Store fetched credentials
@@ -17,13 +16,15 @@ let studentCredentials = {
 
 /**
  * Fetch student credentials from API
- * Uses the unified /api/view/student/{profile_id}/documents endpoint
+ * Uses the /api/view-student/{student_profile_id}/credentials endpoint
+ * @param {number} studentProfileId - The student_profiles.id (NOT user_id)
+ * @param {string} credentialType - Optional filter: 'achievement', 'academic_certificate', 'extracurricular'
  */
 async function fetchStudentCredentials(studentProfileId, credentialType = null) {
     try {
         const typeParam = credentialType ? `?document_type=${credentialType}` : '';
-        // Use unified view documents endpoint
-        const response = await fetch(`${API_BASE_URL}/api/view/student/${studentProfileId}/documents${typeParam}`);
+        // Use the correct API endpoint with student_profile_id (credentials.uploader_id = student_profiles.id)
+        const response = await fetch(`${API_BASE_URL}/api/view-student/${studentProfileId}/credentials${typeParam}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -473,7 +474,7 @@ async function updateCredentialCounts(studentProfileId) {
 
 /**
  * Initialize credential loading
- * @param {number} studentProfileId - The student profile ID (from student_profiles table)
+ * @param {number} studentProfileId - The student_profiles.id (NOT user_id)
  */
 async function initializeStudentCredentials(studentProfileId) {
     currentStudentProfileId = studentProfileId;

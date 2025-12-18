@@ -1,0 +1,334 @@
+/* ============================================
+   AD PLACEHOLDER & CIRCLES - MERGED STYLES
+   ============================================ */
+
+/* Base Ad Placeholder Section */
+.ad-placeholder-section {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    border-radius: 20px;
+    padding: 60px 40px;
+    margin: 30px 0 2rem 0;
+    text-align: center;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(245, 158, 11, 0.3);
+    animation: slideInUp 0.6s ease;
+}
+
+/* Shimmer animations for background */
+.ad-placeholder-section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: shimmer 3s infinite linear;
+}
+
+.ad-placeholder-section::after {
+    content: '';
+    position: absolute;
+    bottom: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+    animation: shimmer 4s infinite linear reverse;
+}
+
+@keyframes shimmer {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Enhanced Ad Container */
+.ad-container {
+    background: var(--primary-gradient, linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%));
+    min-height: 200px;
+    border-radius: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 15px 40px rgba(var(--button-bg-rgb, 245, 158, 11), 0.25);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.ad-container.premium-ad {
+    min-height: 250px;
+}
+
+/* Shimmer effect for ad container */
+.ad-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    animation: shimmerContainer 3s infinite;
+}
+
+@keyframes shimmerContainer {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+/* Ad Animation Container */
+.ad-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* Pulse Ring Animations */
+.pulse-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100px;
+    height: 100px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: ringExpand 3s infinite;
+}
+
+.pulse-ring:nth-child(2) {
+    animation-delay: 1.5s;
+}
+
+@keyframes ringExpand {
+    0% {
+        width: 100px;
+        height: 100px;
+        opacity: 1;
+    }
+    100% {
+        width: 300px;
+        height: 300px;
+        opacity: 0;
+    }
+}
+
+/* Ad Content */
+.ad-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 2rem;
+}
+
+/* Ad Elements */
+.ad-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.ad-label {
+    display: block;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 0.5rem;
+}
+
+.ad-title {
+    font-size: clamp(1.5rem, 4vw, 2.25rem);
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: white;
+}
+
+.ad-subtitle {
+    font-size: 18px;
+    opacity: 0.95;
+    margin-bottom: 30px;
+    line-height: 1.5;
+}
+
+.ad-text {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.75rem;
+    font-weight: 700;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: opacity 0.5s ease-in-out;
+    display: block;
+    margin-bottom: 1.5rem;
+}
+
+/* Call to Action Button */
+.ad-cta {
+    display: inline-block;
+    padding: 0.75rem 2rem;
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    border-radius: 2rem;
+    font-weight: 600;
+    font-size: 16px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: var(--transition, all 0.3s ease);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.ad-cta:hover {
+    background: rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+/* Ad Visual Elements */
+.ad-visual {
+    position: absolute;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 200px;
+    height: 200px;
+}
+
+.ad-circles {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.circle {
+    position: absolute;
+    border-radius: 50%;
+    animation: floatPattern 6s ease-in-out infinite;
+}
+
+.circle-1 {
+    width: 120px;
+    height: 120px;
+    background: rgba(255, 255, 255, 0.2);
+    top: 10px;
+    left: 10px;
+}
+
+.circle-2 {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.3);
+    top: 60px;
+    right: 20px;
+    animation-delay: 2s;
+}
+
+.circle-3 {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.25);
+    bottom: 20px;
+    left: 40px;
+    animation-delay: 4s;
+}
+
+@keyframes floatPattern {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
+    }
+    50% {
+        transform: translateY(-20px) scale(1.1);
+    }
+}
+
+/* Grid placeholders */
+.ad-placeholder {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
+    min-height: 180px;
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.ad-placeholder .ad-text {
+    color: white;
+    font-size: 1.25rem;
+    font-weight: 600;
+    z-index: 1;
+    position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .ad-placeholder-section {
+        padding: 40px 20px;
+        margin: 20px 0 1.5rem 0;
+    }
+
+    .ad-title {
+        font-size: 1.5rem;
+    }
+
+    .ad-visual {
+        position: relative;
+        right: auto;
+        top: auto;
+        transform: none;
+        width: 150px;
+        height: 150px;
+        margin: 1rem auto 0;
+    }
+
+    .ad-content {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ad-container.premium-ad {
+        min-height: 200px;
+    }
+
+    .pulse-ring {
+        width: 80px;
+        height: 80px;
+    }
+
+    .ad-visual {
+        width: 120px;
+        height: 120px;
+    }
+}

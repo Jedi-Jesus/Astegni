@@ -47,7 +47,6 @@ const ModalLoader = (function() {
         'package-management-modal.html',
         'plan-details-modal.html',
         'story-viewer-modal.html',
-        'student-details-modal.html',
         'switch-subscription-modal.html',
         'unsubscribe-modal1.html',
         'unsubscribe-confirm1-modal.html',
@@ -66,9 +65,11 @@ const ModalLoader = (function() {
 
     // Modals in common-modals folder (shared across profiles)
     const COMMON_MODALS = [
+        'accept-parent-invitation-modal.html',
         'ad-analytics-modal.html',
         'add-role-modal.html',
         'coming-soon-modal.html',
+        'course-request-modal.html',
         'community-modal.html',
         'create-club-modal.html',
         'create-event-modal.html',
@@ -83,6 +84,7 @@ const ModalLoader = (function() {
         'logout-modal.html',
         'payment-method-modal.html',
         'schedule-modal.html',
+        'student-details-modal.html',
         'subscription-modal.html',
         'upload-document-modal.html',
         'universal-upload-modal.html',
@@ -108,7 +110,7 @@ const ModalLoader = (function() {
         'plan-details-modal': { file: 'plan-details-modal.html', path: 'tutor-profile' },
         'storyUploadModal': { file: 'universal-upload-modal.html', path: 'common-modals' },
         'storyViewerModal': { file: 'story-viewer-modal.html', path: 'tutor-profile' },
-        'studentDetailsModal': { file: 'student-details-modal.html', path: 'tutor-profile' },
+        'studentDetailsModal': { file: 'student-details-modal.html', path: 'common-modals' },
         'switchSubscriptionModal': { file: 'switch-subscription-modal.html', path: 'tutor-profile' },
         'unsubscribeModal1': { file: 'unsubscribe-modal1.html', path: 'tutor-profile' },
         'unsubscribeConfirm1': { file: 'unsubscribe-confirm1-modal.html', path: 'tutor-profile' },
@@ -125,9 +127,11 @@ const ModalLoader = (function() {
         'viewScheduleModal': { file: 'view-schedule-modal.html', path: 'tutor-profile' },
 
         // Common modals (shared across profiles)
+        'accept-parent-invitation-modal': { file: 'accept-parent-invitation-modal.html', path: 'common-modals' },
         'adAnalyticsModal': { file: 'ad-analytics-modal.html', path: 'common-modals' },
         'add-role-modal': { file: 'add-role-modal.html', path: 'common-modals' },
         'coming-soon-modal': { file: 'coming-soon-modal.html', path: 'common-modals' },
+        'course-request-modal': { file: 'course-request-modal.html', path: 'common-modals' },
         'logout-modal': { file: 'logout-modal.html', path: 'common-modals' },
         'communityModal': { file: 'community-modal.html', path: 'common-modals' },
         'coverUploadModal': { file: 'cover-upload-modal.html', path: 'common-modals' },
@@ -280,6 +284,18 @@ const ModalLoader = (function() {
             await Promise.all(promises);
             const endTime = performance.now();
             console.log(`[ModalLoader] Preloaded ${allModals.length} modals (${TUTOR_PROFILE_MODALS.length} tutor-profile + ${COMMON_MODALS.length} common) in ${(endTime - startTime).toFixed(2)}ms`);
+
+            // Dispatch custom event to notify that all modals are loaded
+            const event = new CustomEvent('modalsLoaded', {
+                detail: {
+                    tutorProfileModals: TUTOR_PROFILE_MODALS.length,
+                    commonModals: COMMON_MODALS.length,
+                    loadTime: endTime - startTime
+                }
+            });
+            document.dispatchEvent(event);
+            console.log('[ModalLoader] Dispatched "modalsLoaded" event');
+
         } catch (error) {
             console.error('[ModalLoader] Failed to preload some modals:', error);
         }

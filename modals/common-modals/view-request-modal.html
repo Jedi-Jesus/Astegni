@@ -1,0 +1,158 @@
+<!--
+  Modal: view-request-modal
+  Purpose: Display session request details when clicked from chat
+-->
+
+<div id="view-request-modal" class="modal hidden">
+    <div class="modal-content view-request-content">
+        <button class="modal-close-enhanced" onclick="closeViewRequestModal()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <!-- Header -->
+        <div class="view-request-header">
+            <div class="request-icon">
+                <i class="fas fa-paper-plane"></i>
+            </div>
+            <h3 class="modal-title">Session Request</h3>
+            <div id="view-request-status" class="request-status-badge pending">
+                <i class="fas fa-clock"></i>
+                <span>Pending Review</span>
+            </div>
+        </div>
+
+        <!-- Request Details -->
+        <div class="view-request-body">
+            <!-- Package Info -->
+            <div class="request-section">
+                <div class="section-header">
+                    <i class="fas fa-box"></i>
+                    <span>Package</span>
+                </div>
+                <div class="section-content">
+                    <h4 id="view-request-package-name">-</h4>
+                    <p id="view-request-package-desc" class="package-description"></p>
+                </div>
+            </div>
+
+            <!-- Tutor Info -->
+            <div class="request-section">
+                <div class="section-header">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    <span>Tutor</span>
+                </div>
+                <div class="section-content tutor-info">
+                    <img id="view-request-tutor-avatar" src="" alt="Tutor" class="tutor-avatar">
+                    <span id="view-request-tutor-name">-</span>
+                </div>
+            </div>
+
+            <!-- Student Info (who the session is for) -->
+            <div class="request-section" id="view-request-student-section">
+                <div class="section-header">
+                    <i class="fas fa-user-graduate"></i>
+                    <span>Student</span>
+                </div>
+                <div class="section-content tutor-info">
+                    <img id="view-request-student-avatar" src="" alt="Student" class="tutor-avatar">
+                    <span id="view-request-student-name">-</span>
+                </div>
+            </div>
+
+            <!-- Grade Level -->
+            <div class="request-section" id="view-request-grade-section">
+                <div class="section-header">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Grade Level</span>
+                </div>
+                <div class="section-content">
+                    <span id="view-request-grade">-</span>
+                </div>
+            </div>
+
+            <!-- Courses -->
+            <div class="request-section" id="view-request-courses-section">
+                <div class="section-header">
+                    <i class="fas fa-book"></i>
+                    <span>Subjects</span>
+                </div>
+                <div class="section-content">
+                    <div id="view-request-courses" class="courses-list"></div>
+                </div>
+            </div>
+
+            <!-- Session Format -->
+            <div class="request-section" id="view-request-format-section">
+                <div class="section-header">
+                    <i class="fas fa-video"></i>
+                    <span>Format</span>
+                </div>
+                <div class="section-content">
+                    <div id="view-request-format" class="format-badges"></div>
+                </div>
+            </div>
+
+            <!-- Requested Schedule -->
+            <div class="request-section schedule-section" id="view-request-schedule-section">
+                <div class="section-header">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Requested Schedule</span>
+                </div>
+                <div class="section-content">
+                    <div id="view-request-schedule" class="schedule-info"></div>
+                </div>
+            </div>
+
+            <!-- Time -->
+            <div class="request-section" id="view-request-time-section">
+                <div class="section-header">
+                    <i class="fas fa-clock"></i>
+                    <span>Time</span>
+                </div>
+                <div class="section-content">
+                    <span id="view-request-time">-</span>
+                </div>
+            </div>
+
+            <!-- Pricing -->
+            <div class="request-section pricing-section">
+                <div class="section-header">
+                    <i class="fas fa-tag"></i>
+                    <span>Pricing</span>
+                </div>
+                <div class="section-content">
+                    <div class="price-display">
+                        <span class="price-amount" id="view-request-price">-</span>
+                        <span class="price-unit">ETB/hr</span>
+                    </div>
+                    <div id="view-request-payment-freq" class="payment-frequency" style="font-size: 0.7rem; color: white; opacity: 0.9; margin-bottom: 0.5rem;"></div>
+                    <div id="view-request-discounts" class="discounts-row"></div>
+                </div>
+            </div>
+
+            <!-- Request Info -->
+            <div class="request-section request-meta">
+                <div class="meta-item">
+                    <i class="fas fa-user"></i>
+                    <span>Requested by: <strong id="view-request-requester">-</strong></span>
+                </div>
+                <div class="meta-item">
+                    <i class="fas fa-calendar"></i>
+                    <span>Sent: <strong id="view-request-date">-</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions (for tutor responding) -->
+        <div class="view-request-footer" id="view-request-actions" style="display: none;">
+            <button class="btn-reject" onclick="rejectSessionRequest()">
+                <i class="fas fa-times"></i> Decline
+            </button>
+            <button class="btn-accept" onclick="acceptSessionRequest()">
+                <i class="fas fa-check"></i> Accept
+            </button>
+        </div>
+    </div>
+</div>

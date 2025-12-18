@@ -3,7 +3,7 @@
  * Handles loading and displaying student reviews in the behavioral notes panel
  */
 
-const API_BASE_URL = 'https://api.astegni.com';
+const API_BASE_URL = 'http://localhost:8000';
 
 // Global variable to store all reviews for filtering
 let allReviews = [];

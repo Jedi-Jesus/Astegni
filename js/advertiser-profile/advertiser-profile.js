@@ -116,16 +116,17 @@ function updateThemeUI(theme) {
 
 // Profile Dropdown Fix
 function toggleProfileDropdown() {
-    const dropdown = document.getElementById('profile-dropdown');
+    const dropdown = document.getElementById('profile-dropdown-menu');
     const arrow = document.querySelector('.dropdown-arrow');
-    
+
     if (dropdown) {
-        if (dropdown.classList.contains('hidden')) {
-            dropdown.classList.remove('hidden');
-            arrow?.classList.add('rotate-180');
-        } else {
-            dropdown.classList.add('hidden');
+        const isOpen = dropdown.classList.contains('show');
+        if (isOpen) {
+            dropdown.classList.remove('show');
             arrow?.classList.remove('rotate-180');
+        } else {
+            dropdown.classList.add('show');
+            arrow?.classList.add('rotate-180');
         }
     }
 }
@@ -2035,7 +2036,7 @@ function openCreateCampaignModal() {
 }
 
 async function saveCampaign() {
-    const API_BASE_URL = 'https://api.astegni.com';
+    const API_BASE_URL = 'http://localhost:8000';
 
     // Get form values
     const name = document.getElementById('campaignName')?.value;
@@ -2426,19 +2427,22 @@ function closeAllModals() {
 }
 
 function closeAllDropdowns() {
-    document.querySelectorAll('.dropdown:not(.hidden)').forEach(dropdown => {
-        dropdown.classList.add('hidden');
+    document.querySelectorAll('.dropdown.show').forEach(dropdown => {
+        dropdown.classList.remove('show');
     });
-    document.getElementById('profile-dropdown')?.classList.add('hidden');
+    document.getElementById('profile-dropdown-menu')?.classList.remove('show');
+    document.querySelector('.dropdown-arrow')?.classList.remove('rotate-180');
 }
 
 // Click Outside Handler
 function handleClickOutside(e) {
-    const profileDropdown = document.getElementById('profile-dropdown');
-    const profileBtn = document.getElementById('profile-dropdown-btn');
-    
-    if (profileDropdown && !profileDropdown.contains(e.target) && !profileBtn?.contains(e.target)) {
-        profileDropdown.classList.add('hidden');
+    const profileDropdown = document.getElementById('profile-dropdown-menu');
+    const profileBtn = document.getElementById('profile-dropdown-toggle');
+    const profileContainer = document.getElementById('profile-container');
+
+    if (profileDropdown && !profileContainer?.contains(e.target)) {
+        profileDropdown.classList.remove('show');
+        document.querySelector('.dropdown-arrow')?.classList.remove('rotate-180');
     }
 }
 

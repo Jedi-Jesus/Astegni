@@ -3,11 +3,10 @@
 // ============================================
 
 const TutorCardCreator = {
-    createTutorCard(tutor, index = 0) {
+    createTutorCard(tutor) {
         // Ensure tutor has required properties with defaults
         const tutorName = tutor.full_name || `${tutor.first_name || 'Unknown'} ${tutor.father_name || 'Tutor'}`;
         const firstName = tutor.first_name || tutorName.split(' ')[0];
-        const fatherName = tutor.father_name || tutorName.split(' ')[1] || '';
         const profilePicture = tutor.profile_picture || this.getDefaultAvatar(firstName);
         const bio = tutor.bio || 'Experienced educator dedicated to helping students succeed.';
 
@@ -22,15 +21,12 @@ const TutorCardCreator = {
         // Use ACTUAL gender from database
         const gender = tutor.gender || 'Not specified';
 
-        // Course type options - changed from certification to profession
-        const courseTypes = ['Academic', 'Professional', 'Academic & Professional'];
-        const courseType = tutor.courseType || tutor.course_type || tutor.teaching_type || courseTypes[Math.floor(Math.random() * courseTypes.length)];
+        // Use ACTUAL data from credentials table where is_current=true
+        const teachesAt = tutor.teaches_at || 'Not provided';
 
-        // Use ACTUAL data from tutor_profiles table - no random data!
-        const teachesAt = tutor.teaches_at || 'Not specified';
-
-        const experienceYears = tutor.experience || 0;
-        const experience = experienceYears > 0 ? `${experienceYears} years` : 'New tutor';
+        // Experience is now a count of experience credentials from the credentials table
+        const experienceCount = tutor.experience || 0;
+        const totalExperience = experienceCount > 0 ? `${experienceCount} credential${experienceCount > 1 ? 's' : ''}` : 'New tutor';
         const education = tutor.education_level || '';
         const specialization = tutor.specialization || '';
 
@@ -44,7 +40,6 @@ const TutorCardCreator = {
                           ? tutor.grades.join(', ')
                           : 'All levels';
 
-        const availability = tutor.availability_status || 'Available';
         // Use ACTUAL sessionFormat from database
         const sessionFormat = tutor.sessionFormat || 'Not specified';
 
@@ -66,6 +61,9 @@ const TutorCardCreator = {
         const isFavorited = this.isInLocalStorage('favoriteTutors', tutor.id);
         const isSaved = this.isInLocalStorage('savedTutors', tutor.id);
         const isConnected = tutor.is_connected || this.isInLocalStorage('connectedTutors', tutor.id);
+        const isPending = tutor.connection_pending || false;
+        const isIncoming = tutor.connection_incoming || false;
+        const connectionId = tutor.connection_id || null;
 
         // Generate rating stars
         const fullStars = Math.floor(rating);
@@ -95,94 +93,86 @@ const TutorCardCreator = {
         return `
             <article class="tutor-card group relative ${premiumClass}">
 
-                <!-- Header Section -->
-                <div class="tutor-card-header">
-                    <!-- Profile Picture -->
-                    <div class="tutor-avatar-container relative">
-                        <img src="${profilePicture}"
-                             alt="${tutorName}"
-                             class="tutor-avatar w-20 h-20 rounded-full object-cover border-4 border-white dark:border-gray-600 shadow-lg group-hover:scale-110 transition-transform duration-300"
-                             onerror="this.src='${this.getDefaultAvatar(firstName)}'">
+                <!-- Header Section - Stacked Layout -->
+                <div class="tutor-header">
+                    <!-- Row 1: Avatar + Action Buttons -->
+                    <div class="tutor-avatar-row">
+                        <div class="tutor-avatar-container">
+                            <img src="${profilePicture}"
+                                 alt="${tutorName}"
+                                 class="tutor-avatar"
+                                 onerror="this.src='${this.getDefaultAvatar(firstName)}'">
+                        </div>
+                        <div class="tutor-actions-top">
+                            <button class="favorite-btn ${isFavorited ? 'active' : ''}"
+                                    data-id="${tutor.id}"
+                                    onclick="toggleFavorite(${tutor.id})"
+                                    title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
+                                <svg class="w-5 h-5" fill="${isFavorited ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                            </button>
+                            <button class="save-btn ${isSaved ? 'active' : ''}"
+                                    data-id="${tutor.id}"
+                                    onclick="toggleSave(${tutor.id})"
+                                    title="${isSaved ? 'Remove from saved' : 'Save for later'}">
+                                <svg class="w-5 h-5" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Name and Details -->
-                    <div class="tutor-info mt-4">
-                        <div class="mb-2">
-                            <h3 class="tutor-name"
-                                onclick="viewTutorProfile(${tutor.id})">
-                                ${tutorName} ${education && education !== 'Certified Educator' ? `<span class="detail-label">(${education})</span>` : ''}
-                            </h3>
-                            <div class="flex items-center gap-3 mt-1">
-                                <span class="detail-label">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                    ${gender}
-                                </span>
-                                <span class="verified-badge inline-flex items-center px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium rounded-full">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Verified
-                                </span>
-                            </div>
-                        </div>
+                    <!-- Row 2: Name -->
+                    <h3 class="tutor-name" onclick="viewTutorProfile(${tutor.id})">
+                        ${tutorName} ${education && education !== 'Certified Educator' ? `<span class="tutor-education">(${education})</span>` : ''}
+                    </h3>
 
-                        <!-- Location -->
-                        <div class="tutor-location detail-item detail-location">
-                            <svg class="w-4 h-4 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <!-- Row 3: Gender & Location -->
+                    <div class="tutor-meta-row">
+                        <span class="tutor-gender">
+                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            ${gender}
+                        </span>
+                        <span class="tutor-location">
+                            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
                             ${location}
-                        </div>
-
-                        <!-- Rating Section with Interactive Tooltip -->
-                        <div class="tutor-rating-section relative">
-                            <div class="flex items-center gap-3 mb-4">
-                                <div class="rating-display flex items-center" id="rating-${tutor.id}-${index}">
-                                    <div class="stars-tooltip-wrapper relative group/stars">
-                                        <div class="stars text-yellow-500 text-lg font-bold mr-2 cursor-help" title="${rating}/5 stars">${starsHTML}</div>
-                                        <!-- Interactive Rating Tooltip - Only shows on stars hover -->
-                                        <div class="rating-breakdown-tooltip absolute top-full left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-lg opacity-0 invisible group-hover/stars:opacity-100 group-hover/stars:visible transition-all duration-300 z-50 min-w-80"
-                                             style="pointer-events: none;">
-                                            <div class="rating-tooltip-header mb-3">
-                                                <h4 class="text-sm font-semibold text-gray-900 dark:text-white">Rating Breakdown</h4>
-                                            </div>
-                                            <div class="rating-bars space-y-2">
-                                                ${this.createRatingBar('Subject Matter', ratingBreakdown.subject_matter)}
-                                                ${this.createRatingBar('Communication', ratingBreakdown.communication_skills)}
-                                                ${this.createRatingBar('Discipline', ratingBreakdown.discipline)}
-                                                ${this.createRatingBar('Punctuality', ratingBreakdown.punctuality)}
-                                            </div>
-                                            <div class="tooltip-arrow absolute -top-1 left-4 w-2 h-2 bg-white dark:bg-gray-800 border-l border-t border-gray-200 dark:border-gray-700 rotate-45"></div>
-                                        </div>
-                                    </div>
-                                    <span class="rating-number">${rating}</span>
-                                    <span class="rating-count">(${tutor.rating_count || 0})</span>
-                                </div>
-                            </div>
-                        </div>
+                        </span>
                     </div>
 
-                    <!-- Action Buttons (Favorite & Save) -->
-                    <div class="action-buttons absolute top-4 right-4 flex gap-2">
-                        <button class="favorite-btn p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 group/btn ${isFavorited ? 'text-yellow-500' : 'text-gray-400'}"
-                                data-id="${tutor.id}"
-                                onclick="toggleFavorite(${tutor.id})"
-                                title="${isFavorited ? 'Remove from favorites' : 'Add to favorites'}">
-                            <svg class="w-5 h-5 transition-transform duration-200 group-hover/btn:scale-110" fill="${isFavorited ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    <!-- Row 4: Rating & Verified -->
+                    <div class="tutor-rating-row">
+                        <div class="tutor-rating">
+                            <div class="stars-tooltip-wrapper">
+                                <div class="stars">${starsHTML}</div>
+                                <!-- Interactive Rating Tooltip -->
+                                <div class="rating-breakdown-tooltip">
+                                    <div class="rating-tooltip-header">
+                                        <h4>Rating Breakdown</h4>
+                                    </div>
+                                    <div class="rating-bars">
+                                        ${this.createRatingBar('Subject Understanding', ratingBreakdown.subject_matter)}
+                                        ${this.createRatingBar('Communication', ratingBreakdown.communication_skills)}
+                                        ${this.createRatingBar('Discipline', ratingBreakdown.discipline)}
+                                        ${this.createRatingBar('Punctuality', ratingBreakdown.punctuality)}
+                                    </div>
+                                    <div class="tooltip-arrow"></div>
+                                </div>
+                            </div>
+                            <span class="rating-number">${rating}</span>
+                            <span class="rating-count">(${tutor.rating_count || 0})</span>
+                        </div>
+                        <span class="verified-badge">
+                            <svg class="icon-sm" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
-                        </button>
-                        <button class="save-btn p-2 rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 group/btn ${isSaved ? 'text-blue-500' : 'text-gray-400'}"
-                                data-id="${tutor.id}"
-                                onclick="toggleSave(${tutor.id})"
-                                title="${isSaved ? 'Remove from saved' : 'Save for later'}">
-                            <svg class="w-5 h-5 transition-transform duration-200 group-hover/btn:scale-110" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"></path>
-                            </svg>
-                        </button>
+                            Verified
+                        </span>
                     </div>
                 </div>
 
@@ -221,41 +211,8 @@ const TutorCardCreator = {
                         <p class="detail-value">${subjects}</p>
                     </div>
 
-                    <!-- Tutor Details Grid -->
-                    <div class="tutor-details-grid grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <!-- Course Type -->
-                        <div class="detail-item">
-                            <svg class="w-4 h-4 mr-2 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            <div>
-                                <span class="detail-label">Course Type</span>
-                                <span class="detail-value">${courseType}</span>
-                            </div>
-                        </div>
-
-                        <!-- Teaches At -->
-                        <div class="detail-item tutor-teaches-at">
-                            <svg class="w-4 h-4 mr-2 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            <div>
-                                <span class="detail-label">Teaches At</span>
-                                <em>${teachesAt}</em>
-                            </div>
-                        </div>
-
-                        <!-- Experience -->
-                        <div class="detail-item detail-experience">
-                            <svg class="w-4 h-4 mr-2 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <div>
-                                <span class="detail-label">Experience</span>
-                                <span class="detail-value">${experience}</span>
-                            </div>
-                        </div>
-
+                    <!-- Tutor Details Grid (Languages + Grade Level in same row) -->
+                    <div class="tutor-details-grid">
                         <!-- Languages -->
                         <div class="detail-item">
                             <svg class="w-4 h-4 mr-2 text-teal-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -266,45 +223,47 @@ const TutorCardCreator = {
                                 <span class="detail-value">${languages}</span>
                             </div>
                         </div>
+
+                        <!-- Grade Level (in same row with Languages) -->
+                        <div class="detail-item">
+                            <svg class="w-4 h-4 mr-2 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
+                            </svg>
+                            <div>
+                                <span class="detail-label">Grade Level</span>
+                                <span class="detail-value">${gradeLevel}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Additional Details Row -->
-                    <div class="additional-details grid grid-cols-1 gap-2 text-xs">
-                        <!-- Grade Level -->
+                    <!-- Additional Details Row (Total Experience, Session Format, Currently Teaches At) -->
+                    <div class="additional-details">
+                        <!-- Total Experience -->
                         <div class="detail-item">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"></path>
-                                </svg>
-                                <span class="detail-label">Grade Level:</span>
-                            </div>
-                            <span class="detail-value">${gradeLevel}</span>
+                            <svg class="detail-icon text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="detail-label">Total Experience:</span>
+                            <span class="detail-value">${totalExperience}</span>
                         </div>
 
                         <!-- Session Format -->
-                        <div class="detail-item detail-method">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                                <span class="detail-label">Session Format:</span>
-                            </div>
+                        <div class="detail-item">
+                            <svg class="detail-icon text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="detail-label">Session Format:</span>
                             <span class="detail-value">${sessionFormat}</span>
                         </div>
 
-                        <!-- Availability -->
-                        <div class="detail-item">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-2 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="detail-label">Availability:</span>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse"></div>
-                                <span class="detail-value">${availability}</span>
-                            </div>
+                        <!-- Currently Teaches At -->
+                        <div class="detail-item tutor-teaches-at">
+                            <svg class="detail-icon text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <span class="detail-label">Currently Teaches At:</span>
+                            <span class="detail-value">${teachesAt}</span>
                         </div>
                     </div>
 
@@ -356,24 +315,44 @@ const TutorCardCreator = {
                             Message
                         </span>
                     </button>
-                    ${!isConnected ? `
-                    <button class="connect-btn flex-1"
-                            onclick="connectWithTutor(${tutor.id})"
-                            data-tutor-id="${tutor.id}">
-                        <span class="flex items-center justify-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                            </svg>
-                            Connect
-                        </span>
-                    </button>
-                    ` : `
+                    ${isConnected ? `
                     <button class="connected-btn flex-1" disabled>
                         <span class="flex items-center justify-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
                             Connected
+                        </span>
+                    </button>
+                    ` : isIncoming ? `
+                    <button class="accept-btn flex-1"
+                            onclick="acceptConnectionRequest(${connectionId}, '${tutorName.replace(/'/g, "\\'")}')"
+                            data-connection-id="${connectionId}">
+                        <span class="flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Accept Request
+                        </span>
+                    </button>
+                    ` : isPending ? `
+                    <button class="pending-btn flex-1" disabled>
+                        <span class="flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Pending
+                        </span>
+                    </button>
+                    ` : `
+                    <button class="connect-btn flex-1"
+                            onclick="connectWithTutor(${tutor.id}, '${tutorName.replace(/'/g, "\\'")}')"
+                            data-tutor-id="${tutor.id}">
+                        <span class="flex items-center justify-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                            </svg>
+                            Connect
                         </span>
                     </button>
                     `}

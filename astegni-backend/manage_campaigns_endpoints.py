@@ -11,12 +11,25 @@ from fastapi import APIRouter, HTTPException, Depends, Header
 from pydantic import BaseModel
 from typing import Optional, List
 import psycopg
+from psycopg.rows import dict_row
+from psycopg.types.json import Json
 from dotenv import load_dotenv
 import os
 from datetime import datetime
 
 load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
+
+# Use astegni_admin_db for admin profile tables
+ADMIN_DATABASE_URL = os.getenv(
+    'ADMIN_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
+)
+
+# Use astegni_user_db for campaign data
+USER_DATABASE_URL = os.getenv(
+    'DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_user_db'
+)
 
 router = APIRouter(prefix="/api/manage-campaigns", tags=["Manage Campaigns Profile"])
 
@@ -31,40 +44,53 @@ ALLOWED_DEPARTMENTS = ["manage-campaigns", "manage-system-settings"]
 class CampaignProfileResponse(BaseModel):
     # From admin_profile
     id: int
-    email: str
+    email: List[str]  # Array in database
     first_name: str
     father_name: str
     grandfather_name: Optional[str]
-    phone_number: Optional[str]
-    profile_picture: Optional[str]
-    cover_picture: Optional[str]
-    bio: Optional[str]
-    quote: Optional[str]
+    phone_number: List[str]  # Array in database
+    profile_image: Optional[str]  # From manage_campaigns_profile
+    cover_image: Optional[str]  # From manage_campaigns_profile
+    bio: Optional[str]  # From manage_campaigns_profile
+    quote: Optional[str]  # From manage_campaigns_profile
     departments: List[str]
     username: Optional[str]
 
     # From manage_campaigns_profile
-    position: str
-    joined_date: str
-    rating: float
-    total_reviews: int
-    badges: List[dict]
-    campaigns_approved: int
-    campaigns_rejected: int
-    campaigns_suspended: int
-    total_budget_managed: float
-    avg_campaign_performance: float
-    permissions: dict
+    position: Optional[str]
+    joined_date: Optional[str]
+    rating: Optional[float]
+    total_reviews: Optional[int]
+    badges: Optional[List[dict]]
+    campaigns_approved: Optional[int]
+    campaigns_rejected: Optional[int]
+    campaigns_suspended: Optional[int]
+    total_budget_managed: Optional[float]
+    avg_campaign_performance: Optional[float]
+    permissions: Optional[dict]
+    employee_id: Optional[str]
+    location: Optional[List[str]]  # JSONB array
+    languages: Optional[List[str]]
+    hero_title: Optional[List[str]]  # JSONB array
+    hero_subtitle: Optional[str]
+    allow_location: Optional[bool]  # GPS detection permission
+    display_location: Optional[bool]  # Public location visibility
 
 class CampaignProfileUpdate(BaseModel):
     first_name: Optional[str] = None
     father_name: Optional[str] = None
     grandfather_name: Optional[str] = None
-    email: Optional[str] = None
-    phone_number: Optional[str] = None
+    email: Optional[List[str]] = None  # Array of emails
+    phone_number: Optional[List[str]] = None  # Array of phone numbers
     bio: Optional[str] = None
     quote: Optional[str] = None
-    position: Optional[str] = None
+    username: Optional[str] = None
+    location: Optional[List[str]] = None  # Array of locations (JSONB)
+    hero_title: Optional[List[str]] = None  # Array of hero titles (JSONB)
+    hero_subtitle: Optional[str] = None
+    languages: Optional[List[str]] = None  # Array of languages (JSONB)
+    allow_location: Optional[bool] = None  # GPS location detection permission
+    display_location: Optional[bool] = None  # Public location visibility
 
 class CampaignStatsResponse(BaseModel):
     total_campaigns: int
@@ -87,9 +113,13 @@ class CampaignStatsResponse(BaseModel):
 # HELPER FUNCTIONS
 # ============================================
 
-def get_connection():
-    """Get database connection"""
-    return psycopg.connect(DATABASE_URL)
+def get_admin_db():
+    """Get admin database connection with dict_row factory"""
+    return psycopg.connect(ADMIN_DATABASE_URL, row_factory=dict_row)
+
+def get_user_db():
+    """Get user database connection with dict_row factory"""
+    return psycopg.connect(USER_DATABASE_URL, row_factory=dict_row)
 
 def verify_department_access(admin_id: int, allowed_departments: List[str] = ALLOWED_DEPARTMENTS):
     """
@@ -105,38 +135,38 @@ def verify_department_access(admin_id: int, allowed_departments: List[str] = ALL
     Raises:
         HTTPException: If admin not found or access denied
     """
-    conn = get_connection()
-    cursor = conn.cursor()
-
     try:
-        # Get admin's departments
-        cursor.execute("""
-            SELECT departments
-            FROM admin_profile
-            WHERE id = %s
-        """, (admin_id,))
+        with get_admin_db() as conn:
+            with conn.cursor() as cur:
+                # Get admin's departments
+                cur.execute("""
+                    SELECT departments
+                    FROM admin_profile
+                    WHERE id = %s
+                """, (admin_id,))
 
-        row = cursor.fetchone()
+                row = cur.fetchone()
 
-        if not row:
-            raise HTTPException(status_code=404, detail="Admin not found")
+                if not row:
+                    raise HTTPException(status_code=404, detail="Admin not found")
 
-        admin_departments = row[0] or []
+                admin_departments = row['departments'] or []
 
-        # Check if admin has any of the allowed departments
-        has_access = any(dept in allowed_departments for dept in admin_departments)
+                # Check if admin has any of the allowed departments
+                has_access = any(dept in allowed_departments for dept in admin_departments)
 
-        if not has_access:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Access denied. This page is restricted to admins in: {', '.join(allowed_departments)}. Your departments: {', '.join(admin_departments) if admin_departments else 'None'}"
-            )
+                if not has_access:
+                    raise HTTPException(
+                        status_code=403,
+                        detail=f"Access denied. This page is restricted to admins in: {', '.join(allowed_departments)}. Your departments: {', '.join(admin_departments) if admin_departments else 'None'}"
+                    )
 
-        return has_access, admin_departments
+                return has_access, admin_departments
 
-    finally:
-        cursor.close()
-        conn.close()
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to verify access: {str(e)}")
 
 # ============================================
 # ENDPOINTS
@@ -152,70 +182,81 @@ async def get_campaign_admin_profile(admin_id: int, department: str = "Campaign 
     # Verify department access
     verify_department_access(admin_id)
 
-    conn = get_connection()
-    cursor = conn.cursor()
-
     try:
-        # Get combined profile data
-        cursor.execute("""
-            SELECT
-                ap.id, ap.email, ap.first_name, ap.father_name, ap.grandfather_name,
-                ap.phone_number, ap.profile_picture, ap.cover_picture, ap.bio, ap.quote,
-                ap.departments, ap.username,
-                mcp.position, mcp.joined_date, mcp.rating, mcp.total_reviews,
-                mcp.badges, mcp.campaigns_approved, mcp.campaigns_rejected,
-                mcp.campaigns_suspended, mcp.total_budget_managed,
-                mcp.avg_campaign_performance, mcp.permissions
-            FROM admin_profile ap
-            LEFT JOIN manage_campaigns_profile mcp ON ap.id = mcp.admin_id
-            WHERE ap.id = %s
-        """, (admin_id,))
+        with get_admin_db() as conn:
+            with conn.cursor() as cur:
+                # Get combined profile data from both tables
+                cur.execute("""
+                    SELECT
+                        ap.id, ap.email, ap.first_name, ap.father_name, ap.grandfather_name,
+                        ap.phone_number, ap.departments, ap.created_at,
+                        mcp.position, mcp.joined_date, mcp.rating, mcp.total_reviews,
+                        mcp.badges, mcp.campaigns_approved, mcp.campaigns_rejected,
+                        mcp.campaigns_suspended, mcp.total_budget_managed,
+                        mcp.avg_campaign_performance, mcp.permissions, mcp.username,
+                        mcp.employee_id, mcp.bio, mcp.quote, mcp.location,
+                        mcp.cover_image, mcp.profile_image, mcp.languages,
+                        mcp.hero_title, mcp.hero_subtitle,
+                        mcp.allow_location, mcp.display_location
+                    FROM admin_profile ap
+                    LEFT JOIN manage_campaigns_profile mcp ON ap.id = mcp.admin_id
+                    WHERE ap.id = %s
+                """, (admin_id,))
 
-        row = cursor.fetchone()
-        if not row:
-            raise HTTPException(status_code=404, detail="Admin profile not found")
+                row = cur.fetchone()
+                if not row:
+                    raise HTTPException(status_code=404, detail="Admin profile not found")
 
-        profile = {
-            "id": row[0],
-            "email": row[1],
-            "first_name": row[2],
-            "father_name": row[3],
-            "grandfather_name": row[4],
-            "phone_number": row[5],
-            "profile_picture": row[6],
-            "cover_picture": row[7],
-            "bio": row[8],
-            "quote": row[9],
-            "departments": row[10] or [],
-            "username": row[11],
-            "position": row[12] or "Staff",
-            "joined_date": row[13].isoformat() if row[13] else datetime.now().date().isoformat(),
-            "rating": float(row[14]) if row[14] else 0.0,
-            "total_reviews": row[15] or 0,
-            "badges": row[16] or [],
-            "campaigns_approved": row[17] or 0,
-            "campaigns_rejected": row[18] or 0,
-            "campaigns_suspended": row[19] or 0,
-            "total_budget_managed": float(row[20]) if row[20] else 0.0,
-            "avg_campaign_performance": float(row[21]) if row[21] else 0.0,
-            "permissions": row[22] or {
-                "can_approve": False,
-                "can_reject": False,
-                "can_suspend": False,
-                "can_edit_budget": False
-            }
-        }
+                # Generate username from name if not set
+                username = row['username']
+                if not username:
+                    username = f"{row['first_name']}_{row['father_name']}".lower().replace(' ', '_')
 
-        cursor.close()
-        conn.close()
+                profile = {
+                    "id": row['id'],
+                    "email": row['email'] or [],
+                    "first_name": row['first_name'],
+                    "father_name": row['father_name'],
+                    "grandfather_name": row['grandfather_name'],
+                    "phone_number": row['phone_number'] or [],
+                    "departments": row['departments'] or [],
+                    "username": username,
+                    "position": row['position'] or "Staff",
+                    "joined_date": row['joined_date'].isoformat() if row['joined_date'] else (
+                        row['created_at'].date().isoformat() if row['created_at'] else datetime.now().date().isoformat()
+                    ),
+                    "rating": float(row['rating']) if row['rating'] else 0.0,
+                    "total_reviews": row['total_reviews'] or 0,
+                    "badges": row['badges'] or [],
+                    "campaigns_approved": row['campaigns_approved'] or 0,
+                    "campaigns_rejected": row['campaigns_rejected'] or 0,
+                    "campaigns_suspended": row['campaigns_suspended'] or 0,
+                    "total_budget_managed": float(row['total_budget_managed']) if row['total_budget_managed'] else 0.0,
+                    "avg_campaign_performance": float(row['avg_campaign_performance']) if row['avg_campaign_performance'] else 0.0,
+                    "permissions": row['permissions'] or {
+                        "can_approve": False,
+                        "can_reject": False,
+                        "can_suspend": False,
+                        "can_edit_budget": False
+                    },
+                    "employee_id": row['employee_id'] or f"ADM-{row['id']:04d}",
+                    "bio": row['bio'] or "",
+                    "quote": row['quote'] or "",
+                    "location": row['location'] or "Astegni Admin Panel",
+                    "cover_image": row['cover_image'] or "",
+                    "profile_image": row['profile_image'] or "",
+                    "languages": row['languages'] or [],
+                    "hero_title": row['hero_title'] or [],
+                    "hero_subtitle": row['hero_subtitle'] or "",
+                    "allow_location": row['allow_location'] if row['allow_location'] is not None else False,
+                    "display_location": row['display_location'] if row['display_location'] is not None else True
+                }
 
-        return profile
+                return profile
 
     except HTTPException:
         raise
     except Exception as e:
-        cursor.close()
-        conn.close()
         raise HTTPException(status_code=500, detail=f"Failed to fetch profile: {str(e)}")
 
 @router.put("/profile/{admin_id}")
@@ -228,62 +269,106 @@ async def update_campaign_admin_profile(admin_id: int, profile_data: CampaignPro
     # Verify department access
     verify_department_access(admin_id)
 
-    conn = get_connection()
-    cursor = conn.cursor()
-
     try:
-        # Update admin_profile fields
-        admin_updates = []
-        admin_params = []
+        with get_admin_db() as conn:
+            with conn.cursor() as cur:
+                # Update admin_profile fields (name, email, phone are stored here)
+                admin_updates = []
+                admin_params = []
 
-        if profile_data.first_name is not None:
-            admin_updates.append("first_name = %s")
-            admin_params.append(profile_data.first_name)
-        if profile_data.father_name is not None:
-            admin_updates.append("father_name = %s")
-            admin_params.append(profile_data.father_name)
-        if profile_data.grandfather_name is not None:
-            admin_updates.append("grandfather_name = %s")
-            admin_params.append(profile_data.grandfather_name)
-        if profile_data.email is not None:
-            admin_updates.append("email = %s")
-            admin_params.append(profile_data.email)
-        if profile_data.phone_number is not None:
-            admin_updates.append("phone_number = %s")
-            admin_params.append(profile_data.phone_number)
-        if profile_data.bio is not None:
-            admin_updates.append("bio = %s")
-            admin_params.append(profile_data.bio)
-        if profile_data.quote is not None:
-            admin_updates.append("quote = %s")
-            admin_params.append(profile_data.quote)
+                if profile_data.first_name is not None:
+                    admin_updates.append("first_name = %s")
+                    admin_params.append(profile_data.first_name)
+                if profile_data.father_name is not None:
+                    admin_updates.append("father_name = %s")
+                    admin_params.append(profile_data.father_name)
+                if profile_data.grandfather_name is not None:
+                    admin_updates.append("grandfather_name = %s")
+                    admin_params.append(profile_data.grandfather_name)
+                if profile_data.email is not None:
+                    admin_updates.append("email = %s")
+                    admin_params.append(profile_data.email)
+                if profile_data.phone_number is not None:
+                    admin_updates.append("phone_number = %s")
+                    admin_params.append(profile_data.phone_number)
 
-        if admin_updates:
-            admin_params.append(admin_id)
-            cursor.execute(f"""
-                UPDATE admin_profile
-                SET {', '.join(admin_updates)}, updated_at = NOW()
-                WHERE id = %s
-            """, admin_params)
+                if admin_updates:
+                    admin_params.append(admin_id)
+                    cur.execute(f"""
+                        UPDATE admin_profile
+                        SET {', '.join(admin_updates)}, updated_at = NOW()
+                        WHERE id = %s
+                    """, admin_params)
 
-        # Update manage_campaigns_profile fields
-        if profile_data.position is not None:
-            cursor.execute("""
-                UPDATE manage_campaigns_profile
-                SET position = %s, updated_at = NOW()
-                WHERE admin_id = %s
-            """, (profile_data.position, admin_id))
+                # Update manage_campaigns_profile fields (bio, quote, position, etc. stored here)
+                mcp_updates = []
+                mcp_params = []
 
-        conn.commit()
-        cursor.close()
-        conn.close()
+                if profile_data.bio is not None:
+                    mcp_updates.append("bio = %s")
+                    mcp_params.append(profile_data.bio)
+                if profile_data.quote is not None:
+                    mcp_updates.append("quote = %s")
+                    mcp_params.append(profile_data.quote)
+                if profile_data.username is not None:
+                    mcp_updates.append("username = %s")
+                    mcp_params.append(profile_data.username)
+                if profile_data.location is not None:
+                    mcp_updates.append("location = %s")
+                    mcp_params.append(Json(profile_data.location))  # JSONB array
+                if profile_data.hero_title is not None:
+                    mcp_updates.append("hero_title = %s")
+                    mcp_params.append(Json(profile_data.hero_title))  # JSONB array
+                if profile_data.hero_subtitle is not None:
+                    mcp_updates.append("hero_subtitle = %s")
+                    mcp_params.append(profile_data.hero_subtitle)
+                if profile_data.languages is not None:
+                    mcp_updates.append("languages = %s")
+                    mcp_params.append(Json(profile_data.languages))  # JSONB array
+                if profile_data.allow_location is not None:
+                    mcp_updates.append("allow_location = %s")
+                    mcp_params.append(profile_data.allow_location)
+                if profile_data.display_location is not None:
+                    mcp_updates.append("display_location = %s")
+                    mcp_params.append(profile_data.display_location)
 
-        return {"message": "Profile updated successfully"}
+                if mcp_updates:
+                    # First check if record exists
+                    cur.execute("SELECT id FROM manage_campaigns_profile WHERE admin_id = %s", (admin_id,))
+                    exists = cur.fetchone()
+
+                    if exists:
+                        # Update existing record
+                        mcp_params.append(admin_id)
+                        cur.execute(f"""
+                            UPDATE manage_campaigns_profile
+                            SET {', '.join(mcp_updates)}, updated_at = NOW()
+                            WHERE admin_id = %s
+                        """, mcp_params)
+                    else:
+                        # Insert new record
+                        # Build column names and placeholders
+                        columns = ['admin_id']
+                        values = [admin_id]
+
+                        for update in mcp_updates:
+                            col = update.split(' = ')[0]
+                            columns.append(col)
+
+                        values.extend(mcp_params)  # All params - admin_id is added separately above
+
+                        columns_str = ', '.join(columns)
+                        placeholders = ', '.join(['%s'] * len(columns))
+
+                        cur.execute(f"""
+                            INSERT INTO manage_campaigns_profile ({columns_str}, created_at, updated_at)
+                            VALUES ({placeholders}, NOW(), NOW())
+                        """, values)
+
+                conn.commit()
+                return {"message": "Profile updated successfully"}
 
     except Exception as e:
-        conn.rollback()
-        cursor.close()
-        conn.close()
         raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(e)}")
 
 @router.get("/stats/{admin_id}")
@@ -297,7 +382,7 @@ async def get_campaign_stats(admin_id: Optional[int] = None):
     if admin_id:
         verify_department_access(admin_id)
 
-    conn = get_connection()
+    conn = get_user_db()
     cursor = conn.cursor()
 
     try:
@@ -440,7 +525,7 @@ async def get_campaigns(
     if admin_id:
         verify_department_access(admin_id)
 
-    conn = get_connection()
+    conn = get_user_db()
     cursor = conn.cursor()
 
     try:
@@ -610,7 +695,7 @@ async def get_live_campaign_requests(
     if admin_id:
         verify_department_access(admin_id)
 
-    conn = get_connection()
+    conn = get_user_db()
     cursor = conn.cursor()
 
     try:
@@ -684,7 +769,7 @@ async def get_campaign_details(
     if admin_id:
         verify_department_access(admin_id)
 
-    conn = get_connection()
+    conn = get_user_db()
     cursor = conn.cursor()
 
     try:
@@ -806,7 +891,7 @@ async def update_campaign_status(
             detail=f"Reason is required when setting status to {new_status}"
         )
 
-    conn = get_connection()
+    conn = get_user_db()
     cursor = conn.cursor()
 
     try:

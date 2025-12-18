@@ -1,0 +1,1047 @@
+/* ============================================
+   DEPRECATED - DO NOT USE THIS FILE
+   ============================================
+
+   This file is NOT imported anywhere and is NOT being used.
+
+   The actual auth modal styles are in:
+   css/index/auth-modals.css
+
+   This file is kept for reference only.
+
+   ============================================ */
+
+/* ============================================
+   MODERN AUTH MODAL DESIGN SYSTEM
+   Best Practices Implementation
+   ============================================ */
+
+/* ============================================
+   1. MODAL STRUCTURE & LAYOUT
+   ============================================ */
+
+#login-modal .modal-content,
+#register-modal .modal-content,
+#add-role-modal .modal-content {
+    max-width: 440px;
+    background: linear-gradient(145deg,
+        rgba(255, 255, 255, 0.98) 0%,
+        rgba(255, 252, 248, 0.95) 100%);
+    border: 1px solid rgba(245, 158, 11, 0.08);
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.12),
+        0 12px 24px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
+        0 0 120px rgba(245, 158, 11, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Modal Header - Clean & Minimal */
+#login-modal .modal-header,
+#register-modal .modal-header,
+#add-role-modal .modal-header {
+    text-align: center;
+    padding: 40px 40px 24px;
+    border: none;
+    background: transparent;
+}
+
+#login-modal .modal-header h2,
+#register-modal .modal-header h2,
+#add-role-modal .modal-header h2 {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    letter-spacing: -0.5px;
+}
+
+.modal-header .subtitle {
+    color: #6B7280;
+    font-size: 15px;
+    font-weight: 400;
+    margin: 0;
+}
+
+/* Close Button - Minimal */
+#login-modal .modal-close,
+#register-modal .modal-close,
+#add-role-modal .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.04);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+#login-modal .modal-close:hover,
+#register-modal .modal-close:hover,
+#add-role-modal .modal-close:hover {
+    background: rgba(245, 158, 11, 0.1);
+    transform: rotate(90deg);
+}
+
+/* ============================================
+   2. FORM DESIGN - FLOATING LABELS
+   ============================================ */
+
+.modal-body {
+    padding: 0 40px 32px;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 28px;
+}
+
+/* Modern Input Fields */
+.form-input {
+    width: 100%;
+    padding: 18px 16px 8px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    background: #FFFFFF;
+    color: #1F2937;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.form-input:focus {
+    border-color: #F59E0B;
+    box-shadow:
+        0 0 0 4px rgba(245, 158, 11, 0.08),
+        0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Floating Label Effect */
+.form-label {
+    position: absolute;
+    left: 16px;
+    top: 18px;
+    font-size: 16px;
+    color: #9CA3AF;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(to bottom,
+        transparent 0%,
+        transparent 45%,
+        white 45%,
+        white 55%,
+        transparent 55%,
+        transparent 100%);
+    padding: 0 4px;
+}
+
+.form-input:focus ~ .form-label,
+.form-input:not(:placeholder-shown) ~ .form-label {
+    top: -10px;
+    left: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #F59E0B;
+    background: white;
+}
+
+/* Input Icons */
+.input-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9CA3AF;
+    font-size: 18px;
+    transition: color 0.2s ease;
+}
+
+.form-input:focus ~ .input-icon {
+    color: #F59E0B;
+}
+
+/* Password Toggle */
+.password-toggle {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #9CA3AF;
+    cursor: pointer;
+    padding: 4px;
+    transition: all 0.2s ease;
+}
+
+.password-toggle:hover {
+    color: #F59E0B;
+}
+
+/* ============================================
+   3. CHECKBOX & REMEMBER ME
+   ============================================ */
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.checkbox-input {
+    width: 20px;
+    height: 20px;
+    accent-color: #F59E0B;
+    cursor: pointer;
+}
+
+.checkbox-label {
+    font-size: 14px;
+    color: #6B7280;
+    cursor: pointer;
+    user-select: none;
+}
+
+.forgot-link {
+    font-size: 14px;
+    color: #F59E0B;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+    color: #D97706;
+    text-decoration: underline;
+}
+
+/* ============================================
+   4. SUBMIT BUTTON - PREMIUM FEEL
+   ============================================ */
+
+.btn-submit {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 12px 24px rgba(245, 158, 11, 0.25),
+        0 6px 12px rgba(245, 158, 11, 0.15);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+}
+
+/* Ripple Effect */
+.btn-submit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.4);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-submit:hover::before {
+    width: 300%;
+    height: 300%;
+}
+
+/* Loading State */
+.btn-submit.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.btn-submit.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 50%;
+    left: 50%;
+    margin: -10px 0 0 -10px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+/* ============================================
+   5. SOCIAL LOGIN SECTION
+   ============================================ */
+
+.divider {
+    text-align: center;
+    margin: 28px 0;
+    position: relative;
+}
+
+.divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #E5E7EB;
+}
+
+.divider span {
+    background: white;
+    padding: 0 16px;
+    position: relative;
+    color: #9CA3AF;
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.social-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.btn-social {
+    padding: 12px 16px;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4B5563;
+}
+
+.btn-social:hover {
+    border-color: #F59E0B;
+    background: rgba(245, 158, 11, 0.04);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.social-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* ============================================
+   6. FORM SWITCH (Login/Register)
+   ============================================ */
+
+.form-switch {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid #E5E7EB;
+    margin-top: 24px;
+}
+
+.form-switch p {
+    margin: 0;
+    font-size: 14px;
+    color: #6B7280;
+}
+
+.form-switch a {
+    color: #F59E0B;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.form-switch a:hover {
+    color: #D97706;
+    text-decoration: underline;
+}
+
+/* ============================================
+   7. VALIDATION & ERROR STATES
+   ============================================ */
+
+.form-group.error .form-input {
+    border-color: #EF4444;
+}
+
+.form-group.error .form-label {
+    color: #EF4444;
+}
+
+.error-message {
+    display: none;
+    font-size: 12px;
+    color: #EF4444;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+.form-group.error .error-message {
+    display: block;
+}
+
+/* Success State */
+.form-group.success .form-input {
+    border-color: #10B981;
+}
+
+.form-group.success .form-label {
+    color: #10B981;
+}
+
+/* ============================================
+   8. ANIMATION & TRANSITIONS
+   ============================================ */
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.modal.active #login-modal .modal-content,
+.modal.active #register-modal .modal-content {
+    animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-group.error {
+    animation: shake 0.4s;
+}
+
+/* ============================================
+   9. DARK MODE STYLES
+   ============================================ */
+
+[data-theme="dark"] #login-modal .modal-content,
+[data-theme="dark"] #register-modal .modal-content {
+    background: linear-gradient(145deg,
+        rgba(31, 41, 55, 0.98) 0%,
+        rgba(23, 32, 42, 0.95) 100%);
+    border: 1px solid rgba(255, 213, 79, 0.08);
+    box-shadow:
+        0 24px 48px rgba(0, 0, 0, 0.4),
+        0 12px 24px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+[data-theme="dark"] .form-input {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 213, 79, 0.2);
+    color: #F3F4F6;
+}
+
+[data-theme="dark"] .form-input:focus {
+    border-color: #FFD54F;
+    box-shadow:
+        0 0 0 4px rgba(255, 213, 79, 0.1),
+        0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .form-label {
+    color: #9CA3AF;
+}
+
+[data-theme="dark"] .form-input:focus ~ .form-label,
+[data-theme="dark"] .form-input:not(:placeholder-shown) ~ .form-label {
+    color: #FFD54F;
+    background: #1F2937;
+}
+
+[data-theme="dark"] .btn-social {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 213, 79, 0.2);
+    color: #D1D5DB;
+}
+
+[data-theme="dark"] .btn-social:hover {
+    border-color: #FFD54F;
+    background: rgba(255, 213, 79, 0.08);
+}
+
+[data-theme="dark"] .divider::before {
+    background: rgba(255, 213, 79, 0.1);
+}
+
+[data-theme="dark"] .divider span {
+    background: #1F2937;
+    color: #6B7280;
+}
+
+/* ============================================
+   10. RESPONSIVE DESIGN
+   ============================================ */
+
+@media (max-width: 480px) {
+    #login-modal .modal-content,
+    #register-modal .modal-content {
+        max-width: 100%;
+        margin: 16px;
+        border-radius: 20px;
+    }
+
+    #login-modal .modal-header,
+    #register-modal .modal-header {
+        padding: 32px 24px 20px;
+    }
+
+    .modal-body {
+        padding: 0 24px 24px;
+    }
+
+    .social-buttons {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================
+   11. ACCESSIBILITY IMPROVEMENTS
+   ============================================ */
+
+/* Focus Visible */
+.form-input:focus-visible,
+.btn-submit:focus-visible,
+.btn-social:focus-visible {
+    outline: 2px solid #F59E0B;
+    outline-offset: 2px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .modal,
+    .modal-content,
+    .form-input,
+    .form-label,
+    .btn-submit,
+    .btn-social {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* High Contrast */
+@media (prefers-contrast: high) {
+    .form-input {
+        border-width: 3px;
+    }
+
+    .btn-submit {
+        border: 2px solid transparent;
+    }
+}
+
+/* ============================================
+   ADD ROLE MODAL SPECIFIC STYLES
+   Using CSS Variables from theme.css
+   ============================================ */
+
+#add-role-modal {
+    z-index: var(--z-modal);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none !important;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 20px;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#add-role-modal.show {
+    display: flex !important;
+    animation: overlayFadeIn 0.3s ease;
+}
+
+#add-role-modal .modal-content {
+    animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced Modal Content for Add Role */
+#add-role-modal .modal-content.enhanced {
+    max-width: 480px;
+    background: linear-gradient(145deg,
+        rgba(var(--background-rgb), 0.98) 0%,
+        rgba(var(--background-rgb), 0.95) 100%);
+    border: 1px solid rgba(var(--primary-rgb), 0.12);
+    box-shadow: var(--shadow-2xl),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                0 0 80px rgba(var(--primary-rgb), 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-radius: 24px;
+    overflow: hidden;
+}
+
+/* Modal Header Styling */
+#add-role-modal .modal-header {
+    text-align: center;
+    padding: 48px 40px 32px;
+    background: transparent;
+    border: none;
+}
+
+#add-role-modal .modal-title {
+    font-size: 32px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+}
+
+#add-role-modal .modal-subtitle {
+    color: var(--text-muted);
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Close Button - Enhanced */
+#add-role-modal .modal-close-enhanced {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(var(--primary-rgb), 0.08);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-fast);
+    color: var(--text-muted);
+}
+
+#add-role-modal .modal-close-enhanced:hover {
+    background: rgba(var(--primary-rgb), 0.15);
+    transform: rotate(90deg);
+    color: var(--primary-color);
+}
+
+#add-role-modal .modal-close-enhanced svg {
+    width: 24px;
+    height: 24px;
+}
+
+/* Form Container */
+#add-role-modal .auth-form {
+    padding: 0 40px 40px;
+}
+
+/* OTP Input Field */
+#add-role-modal input[type="text"],
+#add-role-modal input[type="password"] {
+    width: 100%;
+    padding: 20px 48px 20px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--modal-input-bg);
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+    outline: none;
+}
+
+#add-role-modal input[type="text"]:focus,
+#add-role-modal input[type="password"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+    background: var(--background);
+}
+
+#add-role-modal input[type="text"]:hover,
+#add-role-modal input[type="password"]:hover {
+    border-color: var(--text-muted);
+}
+
+/* Floating Label for inputs */
+#add-role-modal .form-group {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+#add-role-modal .form-group input:not(:placeholder-shown) ~ label,
+#add-role-modal .form-group input:focus ~ label {
+    top: -10px;
+    left: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary-color);
+    background: var(--background);
+    padding: 0 6px;
+}
+
+#add-role-modal .form-group label {
+    position: absolute;
+    left: 16px;
+    top: 20px;
+    font-size: 15px;
+    color: var(--text-muted);
+    pointer-events: none;
+    transition: var(--transition-fast);
+    background: transparent;
+}
+
+/* Input Icons */
+#add-role-modal .input-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    transition: var(--transition-fast);
+    pointer-events: none;
+}
+
+#add-role-modal input:focus ~ .input-icon {
+    color: var(--primary-color);
+}
+
+/* Toggle Password Button */
+#add-role-modal .toggle-password {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px;
+    transition: var(--transition-fast);
+    z-index: 10;
+}
+
+#add-role-modal .toggle-password:hover {
+    color: var(--primary-color);
+}
+
+#add-role-modal .toggle-password svg {
+    width: 20px;
+    height: 20px;
+}
+
+/* Select Dropdown - Custom Styling */
+#add-role-modal select {
+    width: 100%;
+    padding: 20px 48px 20px 16px;
+    font-size: 16px;
+    font-weight: 500;
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--modal-input-bg);
+    color: var(--text-primary);
+    transition: var(--transition-fast);
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+}
+
+#add-role-modal select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
+    background: var(--background);
+}
+
+#add-role-modal select:hover {
+    border-color: var(--text-muted);
+}
+
+#add-role-modal select option {
+    background: var(--modal-bg);
+    color: var(--text-primary);
+    padding: 12px;
+}
+
+/* Resend OTP Link */
+#add-role-modal .text-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition-fast);
+}
+
+#add-role-modal .text-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+#add-role-modal .text-muted {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+/* Submit Button */
+#add-role-modal .btn-submit {
+    width: 100%;
+    padding: 18px 24px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--button-text);
+    background: linear-gradient(135deg, var(--button-bg) 0%, var(--button-hover) 100%);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+}
+
+#add-role-modal .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(var(--button-bg-rgb), 0.3),
+                0 6px 12px rgba(var(--button-bg-rgb), 0.2);
+}
+
+#add-role-modal .btn-submit:active {
+    transform: translateY(0);
+}
+
+#add-role-modal .btn-submit:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Button Ripple Effect */
+#add-role-modal .btn-submit::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+#add-role-modal .btn-submit:hover::before {
+    width: 300%;
+    height: 300%;
+}
+
+/* Button Text & Loader */
+#add-role-modal .btn-text,
+#add-role-modal .btn-loader {
+    position: relative;
+    z-index: 1;
+}
+
+#add-role-modal .btn-loader {
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+
+#add-role-modal .btn-loader svg {
+    animation: spin 0.8s linear infinite;
+}
+
+/* OTP Sent Message Alert */
+#add-role-modal .alert {
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    animation: fadeInUp 0.3s ease;
+}
+
+#add-role-modal .alert-info {
+    background: rgba(var(--primary-rgb), 0.1);
+    border: 1px solid rgba(var(--primary-rgb), 0.2);
+    color: var(--primary-hover);
+}
+
+#add-role-modal .alert svg {
+    flex-shrink: 0;
+}
+
+/* Utility Classes */
+.text-right {
+    text-align: right;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.ml-2 {
+    margin-left: 0.5rem;
+}
+
+.inline {
+    display: inline;
+}
+
+.mr-2 {
+    margin-right: 0.5rem;
+}
+
+/* ============================================
+   DARK MODE OVERRIDES FOR ADD ROLE MODAL
+   ============================================ */
+
+[data-theme="dark"] #add-role-modal .modal-content.enhanced {
+    background: linear-gradient(145deg,
+        rgba(31, 41, 55, 0.98) 0%,
+        rgba(23, 32, 42, 0.95) 100%);
+    border: 1px solid rgba(255, 213, 79, 0.15);
+    box-shadow: var(--shadow-2xl),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset,
+                0 0 100px rgba(255, 213, 79, 0.12);
+}
+
+[data-theme="dark"] #add-role-modal input,
+[data-theme="dark"] #add-role-modal select {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 213, 79, 0.2);
+    color: var(--text);
+}
+
+[data-theme="dark"] #add-role-modal input:focus,
+[data-theme="dark"] #add-role-modal select:focus {
+    border-color: var(--primary-color);
+    background: rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 0 4px rgba(255, 213, 79, 0.15);
+}
+
+[data-theme="dark"] #add-role-modal .form-group input:not(:placeholder-shown) ~ label,
+[data-theme="dark"] #add-role-modal .form-group input:focus ~ label {
+    background: #1F2937;
+    color: var(--primary-color);
+}
+
+[data-theme="dark"] #add-role-modal .modal-close-enhanced {
+    background: rgba(255, 213, 79, 0.1);
+}
+
+[data-theme="dark"] #add-role-modal .modal-close-enhanced:hover {
+    background: rgba(255, 213, 79, 0.2);
+}
+
+[data-theme="dark"] #add-role-modal .alert-info {
+    background: rgba(255, 213, 79, 0.15);
+    border-color: rgba(255, 213, 79, 0.3);
+    color: var(--primary-color);
+}
+
+/* ============================================
+   RESPONSIVE DESIGN FOR ADD ROLE MODAL
+   ============================================ */
+
+@media (max-width: 480px) {
+    #add-role-modal .modal-content.enhanced {
+        max-width: 100%;
+        margin: 16px;
+        border-radius: 20px;
+    }
+
+    #add-role-modal .modal-header {
+        padding: 36px 24px 24px;
+    }
+
+    #add-role-modal .auth-form {
+        padding: 0 24px 32px;
+    }
+
+    #add-role-modal .modal-title {
+        font-size: 26px;
+    }
+
+    #add-role-modal .modal-subtitle {
+        font-size: 14px;
+    }
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

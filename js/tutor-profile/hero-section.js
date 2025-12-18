@@ -33,13 +33,14 @@ function initializeTutorHeroSection() {
 
     // Only start default animation if database values weren't set
     if (textElement && !typewriterActive && !heroTextsLoadedFromDB) {
-        // Wait a bit for database to load before starting default animation
+        // Wait longer for database to load before starting default animation
+        // This prevents the default texts from briefly showing before DB values load
         setTimeout(() => {
             if (!heroTextsLoadedFromDB && !typewriterActive) {
                 typewriterActive = true;
                 startTypewriterEffect(textElement, tutorHeroTexts, currentTextIndex);
             }
-        }, 500); // 500ms delay to allow database load
+        }, 2000); // 2 second delay to allow database load
     }
 }
 

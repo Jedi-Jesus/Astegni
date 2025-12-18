@@ -5,7 +5,7 @@
 // ============================================
 
 // API Base URL
-const STUDENT_COMMUNITY_API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+const STUDENT_COMMUNITY_API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 // Cached data for searching
 let cachedConnections = [];
@@ -196,7 +196,7 @@ function searchDiscoverClubs(query) {
 
 // Load all connections and display in the panel
 async function loadAllConnectionsPanel() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
   const grid = document.getElementById('all-connections-grid');
 
   if (!grid) return;
@@ -207,9 +207,18 @@ async function loadAllConnectionsPanel() {
 
   grid.innerHTML = '<div class="col-span-3 text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Loading connections...</p></div>';
 
+  // Get active role from JWT token
+  let activeRole = 'student';
   try {
-    // Fetch accepted connections
-    const response = await fetch(`${STUDENT_COMMUNITY_API_BASE_URL}/api/connections?status=accepted`, {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'student';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to student');
+  }
+
+  try {
+    // Fetch accepted connections (filtered by role/profile_id)
+    const response = await fetch(`${STUDENT_COMMUNITY_API_BASE_URL}/api/connections?status=accepted&role=${activeRole}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -291,7 +300,7 @@ function displayConnectionsInGrid(grid, connections, page = 1) {
           </div>
         </div>
         <div class="connection-actions">
-          <button class="action-btn" onclick="event.stopPropagation(); messageConnection(${otherUser.id})">
+          <button class="action-btn" onclick="event.stopPropagation(); messageConnection(JSON.parse(this.dataset.user))" data-user="${encodeUserDataForOnclick(otherUser)}">
             <i class="fas fa-comment"></i>
             Message
           </button>
@@ -446,10 +455,21 @@ let currentEventsFilter = 'joined';
 
 // Load all events
 async function loadEventsPanel() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+  // Get active role from JWT token
+  let activeRole = 'student';
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      activeRole = payload.role || 'student';
+    } catch (e) {
+      console.warn('Could not parse role from token, defaulting to student');
+    }
+  }
 
   try {
-    const response = await fetch(`${STUDENT_COMMUNITY_API_BASE_URL}/api/events`, {
+    const response = await fetch(`${STUDENT_COMMUNITY_API_BASE_URL}/api/events?role=${activeRole}`, {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
 
@@ -720,10 +740,21 @@ let currentClubsFilter = 'joined';
 
 // Load all clubs
 async function loadClubsPanel() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+  // Get active role from JWT token
+  let activeRole = 'student';
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      activeRole = payload.role || 'student';
+    } catch (e) {
+      console.warn('Could not parse role from token, defaulting to student');
+    }
+  }
 
   try {
-    const response = await fetch(`${STUDENT_COMMUNITY_API_BASE_URL}/api/clubs`, {
+    const response = await fetch(`${STUDENT_COMMUNITY_API_BASE_URL}/api/clubs?role=${activeRole}`, {
       headers: token ? { 'Authorization': `Bearer ${token}` } : {}
     });
 
@@ -952,8 +983,8 @@ let currentRequestsFilter = 'received';
 
 // Load requests panel data
 async function loadRequestsPanel() {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
-  const token = localStorage.getItem('token');
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
   const grid = document.getElementById('requests-panel-grid');
 
   if (!token) {
@@ -961,13 +992,22 @@ async function loadRequestsPanel() {
     return;
   }
 
+  // Get active role from JWT token
+  let activeRole = 'student';
   try {
-    // Fetch both sent and received requests in parallel
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'student';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to student');
+  }
+
+  try {
+    // Fetch both sent and received requests in parallel (filtered by role/profile_id)
     const [sentResponse, receivedResponse] = await Promise.all([
-      fetch(`${API_BASE_URL}/api/connections?status=pending&direction=outgoing`, {
+      fetch(`${API_BASE_URL}/api/connections?status=pending&direction=outgoing&role=${activeRole}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       }),
-      fetch(`${API_BASE_URL}/api/connections?status=pending&direction=incoming`, {
+      fetch(`${API_BASE_URL}/api/connections?status=pending&direction=incoming&role=${activeRole}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       })
     ]);
@@ -1108,9 +1148,13 @@ function displayRequestsInGrid(gridId, requests, type, page = 1) {
             </div>
           </div>
           <div class="connection-actions">
+            <button class="action-btn" onclick="messageConnection(JSON.parse(this.dataset.user))" data-user="${encodeUserDataForOnclick(otherUser)}">
+              <i class="fas fa-comment"></i>
+              Message
+            </button>
             <button class="action-btn" onclick="navigateToProfile(${otherUser.profileId}, '${otherUser.profileType}')">
               <i class="fas fa-user"></i>
-              View Profile
+              Profile
             </button>
             <button class="action-btn danger" onclick="cancelConnectionRequest(${request.id})">
               <i class="fas fa-times"></i>
@@ -1147,6 +1191,10 @@ function displayRequestsInGrid(gridId, requests, type, page = 1) {
             </div>
           </div>
           <div class="connection-actions">
+            <button class="action-btn" onclick="messageConnection(JSON.parse(this.dataset.user))" data-user="${encodeUserDataForOnclick(otherUser)}">
+              <i class="fas fa-comment"></i>
+              Message
+            </button>
             <button class="action-btn primary" onclick="acceptConnectionRequest(${request.id})">
               <i class="fas fa-check"></i>
               Accept
@@ -1190,10 +1238,51 @@ function navigateToProfile(profileId, profileType) {
   window.location.href = url;
 }
 
-// Message a connection
-function messageConnection(userId) {
-  console.log('Opening chat with user:', userId);
-  alert('Chat feature coming soon!');
+// Message a connection - opens chat modal
+function messageConnection(user) {
+  console.log('Opening chat with user:', user);
+
+  // Close community panel/modal if open
+  if (typeof closeCommunityModal === 'function') {
+    closeCommunityModal();
+  }
+
+  // Open chat modal with the target user
+  if (typeof openChatModal === 'function') {
+    // Build target user object for chat modal
+    const targetUser = {
+      id: user.id || user.userId,
+      user_id: user.id || user.userId,
+      profile_id: user.profileId,
+      full_name: user.name,
+      name: user.name,
+      profile_picture: user.avatar,
+      avatar: user.avatar,
+      role: user.profileType,
+      profile_type: user.profileType,
+      is_online: user.isOnline || false
+    };
+    openChatModal(targetUser);
+    console.log('Chat modal opened for user:', targetUser);
+  } else if (typeof ChatModalManager !== 'undefined' && ChatModalManager.openChatWithUser) {
+    // Alternative: use ChatModalManager directly
+    ChatModalManager.openChatWithUser({
+      id: user.id || user.userId,
+      profile_id: user.profileId,
+      full_name: user.name,
+      profile_picture: user.avatar,
+      role: user.profileType
+    });
+    console.log('Chat modal opened via ChatModalManager');
+  } else {
+    console.error('Chat modal not available');
+    alert('Chat feature is not available. Please refresh the page.');
+  }
+}
+
+// Helper to encode user data for onclick handlers
+function encodeUserDataForOnclick(user) {
+  return JSON.stringify(user).replace(/"/g, '&quot;');
 }
 
 // View event details
@@ -1204,7 +1293,7 @@ function viewEventDetails(eventId) {
 
 // Join an event
 async function joinEvent(eventId) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
   if (!token) {
     alert('Please log in to join events');
     return;
@@ -1237,7 +1326,7 @@ function viewClubDetails(clubId) {
 
 // Join a club
 async function joinClub(clubId) {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
   if (!token) {
     alert('Please log in to join clubs');
     return;
@@ -1387,17 +1476,26 @@ function filterReceivedRequests(status) {
 
 // Load request counts and update summary cards
 async function loadRequestCounts() {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
-  const token = localStorage.getItem('token');
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
   if (!token) {
     console.log('No token found, cannot load request counts');
     return;
   }
 
+  // Get active role from JWT token
+  let activeRole = 'student';
   try {
-    // Get connection stats
-    const response = await fetch(`${API_BASE_URL}/api/connections/stats`, {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'student';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to student');
+  }
+
+  try {
+    // Get connection stats (filtered by role/profile_id)
+    const response = await fetch(`${API_BASE_URL}/api/connections/stats?role=${activeRole}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -1418,7 +1516,18 @@ async function loadRequestCounts() {
         el.textContent = receivedCount;
       });
 
-      console.log(`✓ Loaded request counts: ${sentCount} sent, ${receivedCount} received`);
+      // Update connections count
+      const connectionsCount = stats.total_connections || 0;
+      document.querySelectorAll('#connections-count, #connections-total-count').forEach(el => {
+        el.textContent = connectionsCount;
+      });
+
+      // Update requests count badge
+      document.querySelectorAll('#requests-count').forEach(el => {
+        el.textContent = receivedCount;
+      });
+
+      console.log(`✓ Loaded request counts for role ${activeRole}: ${sentCount} sent, ${receivedCount} received, ${connectionsCount} connections`);
     }
   } catch (error) {
     console.error('Error loading request counts:', error);
@@ -1427,8 +1536,8 @@ async function loadRequestCounts() {
 
 // Load sent requests
 async function loadSentRequests() {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
-  const token = localStorage.getItem('token');
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
   const listElement = document.getElementById('sent-requests-list');
 
   if (!listElement) return;
@@ -1437,11 +1546,20 @@ async function loadSentRequests() {
     return;
   }
 
+  // Get active role from JWT token
+  let activeRole = 'student';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'student';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to student');
+  }
+
   listElement.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Loading sent requests...</p></div>';
 
   try {
-    // Get outgoing connection requests (status=pending, direction=outgoing)
-    const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=outgoing`, {
+    // Get outgoing connection requests (status=pending, direction=outgoing, filtered by role/profile_id)
+    const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=outgoing&role=${activeRole}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -1467,8 +1585,8 @@ async function loadSentRequests() {
 
 // Load received requests
 async function loadReceivedRequests() {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
-  const token = localStorage.getItem('token');
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
   const listElement = document.getElementById('received-requests-list');
 
   if (!listElement) return;
@@ -1477,11 +1595,20 @@ async function loadReceivedRequests() {
     return;
   }
 
+  // Get active role from JWT token
+  let activeRole = 'student';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'student';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to student');
+  }
+
   listElement.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Loading received requests...</p></div>';
 
   try {
-    // Get incoming connection requests (status=pending, direction=incoming)
-    const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=incoming`, {
+    // Get incoming connection requests (status=pending, direction=incoming, filtered by role/profile_id)
+    const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=incoming&role=${activeRole}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -1611,7 +1738,7 @@ function createRequestCard(request, type) {
 // Helper function to get current user ID from token
 function getCurrentUserId() {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
     if (!token) return null;
     const payload = JSON.parse(atob(token.split('.')[1]));
     return parseInt(payload.sub) || null;
@@ -1642,8 +1769,8 @@ function getTimeAgo(date) {
 
 // Accept connection request
 async function acceptConnectionRequest(connectionId) {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
-  const token = localStorage.getItem('token');
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
   if (!token) {
     alert('Please log in to accept connections');
@@ -1680,8 +1807,8 @@ async function acceptConnectionRequest(connectionId) {
 
 // Reject connection request
 async function rejectConnectionRequest(connectionId) {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
-  const token = localStorage.getItem('token');
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
   if (!token) {
     alert('Please log in to reject connections');
@@ -1714,8 +1841,8 @@ async function rejectConnectionRequest(connectionId) {
 
 // Cancel connection request (for sent requests)
 async function cancelConnectionRequest(connectionId) {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
-  const token = localStorage.getItem('token');
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token') || localStorage.getItem('access_token');
 
   if (!token) {
     alert('Please log in to cancel requests');

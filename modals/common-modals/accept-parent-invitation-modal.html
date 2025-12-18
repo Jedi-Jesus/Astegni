@@ -1,0 +1,124 @@
+<!--
+  Modal: accept-parent-invitation-modal
+  Purpose: OTP verification modal for accepting parent invitation (for existing users)
+-->
+
+<div id="accept-parent-invitation-modal" class="modal hidden">
+    <div class="modal-content enhanced" style="max-width: 480px;">
+        <button class="modal-close-enhanced" onclick="ParentingInvitationManager.closeAcceptModal()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+
+        <div class="modal-header" style="text-align: center; padding: 24px 24px 0;">
+            <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.1)); width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #8B5CF6;">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                </svg>
+            </div>
+            <h3 class="modal-title" style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin-bottom: 8px;">Accept Parent Invitation</h3>
+            <p class="modal-subtitle" style="color: var(--text-secondary); font-size: 0.875rem;">Enter the OTP code sent to your email to verify and accept</p>
+        </div>
+
+        <!-- Student Info Display -->
+        <div id="invitation-student-info" style="padding: 16px 24px; margin: 16px 24px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05), rgba(99, 102, 241, 0.05)); border-radius: 12px; border: 1px solid rgba(139, 92, 246, 0.2);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img id="invitation-student-pic" src="/uploads/system_images/system_profile_pictures/woman-user.jpg"
+                     alt="Student" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid #8B5CF6;">
+                <div>
+                    <p style="font-weight: 600; color: var(--heading); margin: 0;" id="invitation-student-name">Student Name</p>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 4px 0 0;">
+                        Wants you as their <span id="invitation-relationship" style="color: #8B5CF6; font-weight: 600;">Parent</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 0 24px 24px;">
+            <!-- OTP Input -->
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 8px; display: block; font-size: 0.875rem;">
+                    Enter OTP Code
+                </label>
+                <input type="text"
+                       id="parent-invitation-otp-input"
+                       maxlength="6"
+                       placeholder="000000"
+                       style="text-align: center; font-size: 28px; letter-spacing: 10px; padding: 16px; font-weight: 700; width: 100%; border: 2px solid var(--border-color); border-radius: 12px; background: var(--input-bg); color: var(--text-primary); transition: all 0.2s;"
+                       pattern="[0-9]*"
+                       inputmode="numeric"
+                       onfocus="this.style.borderColor='#8B5CF6'"
+                       onblur="this.style.borderColor='var(--border-color)'"
+                       required>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 8px; text-align: center;">
+                    <svg style="display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 4px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Code valid for 7 days from invitation
+                </p>
+            </div>
+
+            <!-- Error Message -->
+            <div id="parent-invitation-otp-error" class="hidden" style="background: #FEE2E2; border: 1px solid #FECACA; color: #DC2626; padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 0.875rem; text-align: center;">
+                Invalid OTP code. Please try again.
+            </div>
+
+            <!-- Submit Button -->
+            <button onclick="ParentingInvitationManager.submitAcceptWithOTP()"
+                    id="accept-invitation-submit-btn"
+                    style="width: 100%; padding: 14px 24px; background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); color: white; font-weight: 600; font-size: 1rem; border: none; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(139, 92, 246, 0.4)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(139, 92, 246, 0.3)'">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Verify & Accept Invitation
+            </button>
+
+            <!-- Help Text -->
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 16px; text-align: center;">
+                Didn't receive the code?
+                <br>
+                <span style="color: #6B7280;">Ask the student to resend the invitation from their profile.</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    #accept-parent-invitation-modal .modal-content {
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    #accept-parent-invitation-modal .modal-close-enhanced {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: var(--bg-secondary);
+        border: none;
+        border-radius: 50%;
+        padding: 8px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        transition: all 0.2s;
+    }
+
+    #accept-parent-invitation-modal .modal-close-enhanced:hover {
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+    }
+
+    #parent-invitation-otp-input::placeholder {
+        color: #CBD5E1;
+    }
+
+    #accept-invitation-submit-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+</style>

@@ -81,7 +81,8 @@ document.addEventListener('DOMContentLoaded', function() {
         initializeApp();
         setupEventListeners();
         loadUserProfile();
-        loadChildren();
+        // Initialize ChildrenManager to load children from database
+        ChildrenManager.init();
         loadUpcomingSessions();
         checkNotifications();
     } catch (error) {
@@ -259,83 +260,249 @@ function setupResizeListener() {
 // User Profile Functions
 // ===========================
 
+// Load connection stats from database
+async function loadConnectionStats() {
+    try {
+        const stats = await ParentProfileAPI.getConnectionStats();
+        console.log('[ParentProfile] Connection stats:', stats);
+
+        // Update all connections count elements (profile section + modal)
+        const connectionsCount = stats.total_connections || 0;
+        document.querySelectorAll('#connections-count, #connections-total-count').forEach(el => {
+            el.textContent = connectionsCount;
+        });
+
+        // Update all requests count elements (profile section + modal)
+        const requestsCount = stats.incoming_requests || 0;
+        document.querySelectorAll('#requests-count').forEach(el => {
+            el.textContent = requestsCount;
+        });
+
+        // Update sent/received request counts
+        const sentCount = stats.outgoing_requests || 0;
+        document.querySelectorAll('#sent-requests-count').forEach(el => {
+            el.textContent = sentCount;
+        });
+
+        document.querySelectorAll('#received-requests-count').forEach(el => {
+            el.textContent = requestsCount;
+        });
+
+    } catch (error) {
+        console.error('[ParentProfile] Error loading connection stats:', error);
+        // Set to 0 on error
+        document.querySelectorAll('#connections-count, #connections-total-count').forEach(el => {
+            el.textContent = '0';
+        });
+        document.querySelectorAll('#requests-count, #sent-requests-count, #received-requests-count').forEach(el => {
+            el.textContent = '0';
+        });
+    }
+}
+
 async function loadUserProfile() {
     try {
         // Load profile from API
         const profile = await ParentProfileAPI.getParentProfile();
+        console.log('[ParentProfile] Loaded profile:', profile);
 
         if (profile) {
-            // Update profile name - Use username from parent_profiles table (role-specific username)
+            // Store profile data globally for edit modal
+            window.parentProfileData = profile;
+
+            // Update profile name - Use full name from users table
             const profileNameEl = document.getElementById('parentName');
             if (profileNameEl) {
-                // Use username from parent_profiles table, ensure it's on one line
-                const displayName = profile.username ? String(profile.username).replace(/[\n\r]/g, ' ').trim() : (profile.name || 'Parent Name');
+                const displayName = profile.name || `${profile.first_name || ''} ${profile.father_name || ''}`.trim() || 'Parent Name';
                 profileNameEl.textContent = displayName;
+            }
+
+            // Update username
+            const usernameEl = document.getElementById('parentUsername');
+            if (usernameEl) {
+                if (profile.username) {
+                    usernameEl.textContent = `@${profile.username}`;
+                    usernameEl.style.display = 'block';
+                } else {
+                    usernameEl.style.display = 'none';
+                }
             }
 
             // Update verification badge
             const verificationBadge = document.getElementById('verification-badge');
             if (verificationBadge) {
-                verificationBadge.style.display = profile.is_verified ? 'block' : 'none';
+                if (profile.is_verified) {
+                    verificationBadge.style.display = 'inline-flex';
+                    verificationBadge.innerHTML = '✔ Verified Parent';
+                } else {
+                    verificationBadge.style.display = 'none';
+                }
             }
 
-            // Update profile images
-            if (profile.profile_picture) {
-                const profileAvatars = document.querySelectorAll('.profile-avatar, .profile-avatar-large');
-                profileAvatars.forEach(avatar => {
-                    avatar.src = profile.profile_picture;
-                });
+            // Update profile avatar
+            const profileAvatar = document.getElementById('profile-avatar');
+            if (profileAvatar && profile.profile_picture) {
+                profileAvatar.src = profile.profile_picture;
             }
 
             // Update cover image
-            if (profile.cover_image) {
-                const coverImages = document.querySelectorAll('.cover-image');
-                coverImages.forEach(cover => {
-                    cover.src = profile.cover_image;
-                });
+            const coverImg = document.getElementById('cover-img');
+            if (coverImg && profile.cover_image) {
+                coverImg.src = profile.cover_image;
+            }
+
+            // Update rating
+            const ratingValue = document.getElementById('parent-rating');
+            if (ratingValue) {
+                const rating = profile.rating || 0;
+                ratingValue.textContent = rating.toFixed(1);
+            }
+
+            // Update rating stars
+            const ratingStars = document.getElementById('rating-stars');
+            if (ratingStars) {
+                const rating = profile.rating || 0;
+                const fullStars = Math.floor(rating);
+                const hasHalfStar = rating - fullStars >= 0.5;
+                let starsHtml = '';
+                for (let i = 0; i < 5; i++) {
+                    if (i < fullStars) {
+                        starsHtml += '★';
+                    } else if (i === fullStars && hasHalfStar) {
+                        starsHtml += '★';
+                    } else {
+                        starsHtml += '☆';
+                    }
+                }
+                ratingStars.textContent = starsHtml;
+            }
+
+            // Update rating count
+            const ratingCount = document.getElementById('rating-count');
+            if (ratingCount) {
+                const count = profile.rating_count || 0;
+                ratingCount.textContent = `(${count} review${count !== 1 ? 's' : ''})`;
+            }
+
+            // Update location
+            const locationEl = document.getElementById('parent-location');
+            if (locationEl) {
+                locationEl.textContent = profile.location || 'Location not set';
+            }
+
+            // Update email
+            const emailEl = document.getElementById('parent-email');
+            if (emailEl) {
+                emailEl.textContent = profile.email || 'Email not set';
+            }
+
+            // Update phone
+            const phoneEl = document.getElementById('parent-phone');
+            if (phoneEl) {
+                phoneEl.textContent = profile.phone || 'Phone not set';
+            }
+
+            // Update relationship type
+            const relationshipEl = document.getElementById('parent-relationship');
+            if (relationshipEl) {
+                relationshipEl.textContent = profile.relationship_type || 'Parent';
+            }
+
+            // Update quote
+            const quoteEl = document.getElementById('parent-quote');
+            if (quoteEl) {
+                quoteEl.textContent = profile.quote ? `"${profile.quote}"` : '"Education is the key to unlocking my children\'s potential."';
+            }
+
+            // Update bio
+            const bioEl = document.getElementById('parent-bio');
+            if (bioEl) {
+                bioEl.textContent = profile.bio || 'Dedicated to supporting my children\'s educational journey.';
+            }
+
+            // Load connection stats from database
+            loadConnectionStats();
+
+            // Update stats
+            const statChildrenEl = document.getElementById('stat-children');
+            if (statChildrenEl) {
+                statChildrenEl.textContent = profile.total_children || 0;
+            }
+
+            // Update occupation if exists
+            const occupationEl = document.getElementById('parent-occupation');
+            if (occupationEl) {
+                occupationEl.textContent = profile.occupation || 'Not specified';
+            }
+
+            // Update rating tooltip metrics if they exist
+            updateRatingTooltip(profile);
+
+            // Initialize reviews manager to load reviews from database
+            if (profile.id) {
+                ParentReviewsManager.init(profile.id);
             }
         }
     } catch (error) {
         console.error('Error loading user profile:', error);
         // Continue anyway - page will show with default/empty values
+
+        // Show error state for reviews since profile failed to load
+        ParentReviewsManager.showDashboardError('Unable to load profile');
+        ParentReviewsManager.showRatingsError('Unable to load profile');
     }
 }
 
-function openEditProfileModal() {
-    const modal = document.getElementById('edit-profile-modal');
-    
-    // Populate form fields
-    document.getElementById('edit-name').value = currentUser.name;
-    document.getElementById('edit-email').value = currentUser.email;
-    document.getElementById('edit-phone').value = currentUser.phone;
-    document.getElementById('edit-location').value = currentUser.location;
-    document.getElementById('edit-bio').value = currentUser.bio;
-    
-    showModal(modal);
+// Helper function to update rating tooltip
+function updateRatingTooltip(profile) {
+    // This would update the rating breakdown tooltip if review stats are available
+    // For now, we'll load them asynchronously if parent profile id is available
+    if (profile.id) {
+        ParentProfileAPI.getParentReviewStats(profile.id)
+            .then(stats => {
+                // Update tooltip metrics
+                const tooltipMetrics = document.querySelectorAll('.rating-tooltip .rating-metric');
+                if (tooltipMetrics.length >= 4 && stats) {
+                    // Engagement with tutor
+                    const metric1 = tooltipMetrics[0];
+                    if (metric1) {
+                        const score1 = metric1.querySelector('.metric-score');
+                        const fill1 = metric1.querySelector('.metric-fill');
+                        if (score1) score1.textContent = (stats.engagement_with_tutor_avg || 0).toFixed(1);
+                        if (fill1) fill1.style.width = `${((stats.engagement_with_tutor_avg || 0) / 5) * 100}%`;
+                    }
+                    // Engagement with child
+                    const metric2 = tooltipMetrics[1];
+                    if (metric2) {
+                        const score2 = metric2.querySelector('.metric-score');
+                        const fill2 = metric2.querySelector('.metric-fill');
+                        if (score2) score2.textContent = (stats.engagement_with_child_avg || 0).toFixed(1);
+                        if (fill2) fill2.style.width = `${((stats.engagement_with_child_avg || 0) / 5) * 100}%`;
+                    }
+                    // Responsiveness
+                    const metric3 = tooltipMetrics[2];
+                    if (metric3) {
+                        const score3 = metric3.querySelector('.metric-score');
+                        const fill3 = metric3.querySelector('.metric-fill');
+                        if (score3) score3.textContent = (stats.responsiveness_avg || 0).toFixed(1);
+                        if (fill3) fill3.style.width = `${((stats.responsiveness_avg || 0) / 5) * 100}%`;
+                    }
+                    // Payment consistency
+                    const metric4 = tooltipMetrics[3];
+                    if (metric4) {
+                        const score4 = metric4.querySelector('.metric-score');
+                        const fill4 = metric4.querySelector('.metric-fill');
+                        if (score4) score4.textContent = (stats.payment_consistency_avg || 0).toFixed(1);
+                        if (fill4) fill4.style.width = `${((stats.payment_consistency_avg || 0) / 5) * 100}%`;
+                    }
+                }
+            })
+            .catch(err => console.log('Could not load review stats:', err));
+    }
 }
 
-function closeEditProfileModal() {
-    const modal = document.getElementById('edit-profile-modal');
-    hideModal(modal);
-}
-
-function saveProfile() {
-    // Get form values
-    currentUser.name = document.getElementById('edit-name').value;
-    currentUser.email = document.getElementById('edit-email').value;
-    currentUser.phone = document.getElementById('edit-phone').value;
-    currentUser.location = document.getElementById('edit-location').value;
-    currentUser.bio = document.getElementById('edit-bio').value;
-    
-    // Update UI
-    loadUserProfile();
-    
-    // Show success message
-    showNotification('Profile updated successfully!', 'success');
-    
-    // Close modal
-    closeEditProfileModal();
-}
+// Note: Edit profile modal functions are defined in parent-profile.html
+// They use ParentProfileAPI.updateParentProfile() to save to database
 
 // ===========================
 // Share Modal Functions
@@ -1214,7 +1381,7 @@ async function loadParentParentingInvitations() {
             return;
         }
 
-        const response = await fetch('https://api.astegni.com/api/parent/pending-invitations', {
+        const response = await fetch('http://localhost:8000/api/parent/pending-invitations', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -1342,7 +1509,7 @@ async function acceptParentInvitation(invitationId) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`https://api.astegni.com/api/parent/respond-invitation/${invitationId}?accept=true`, {
+        const response = await fetch(`http://localhost:8000/api/parent/respond-invitation/${invitationId}?accept=true`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1373,7 +1540,7 @@ async function rejectParentInvitation(invitationId) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`https://api.astegni.com/api/parent/respond-invitation/${invitationId}?accept=false`, {
+        const response = await fetch(`http://localhost:8000/api/parent/respond-invitation/${invitationId}?accept=false`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1451,10 +1618,10 @@ async function loadCoParentingInvitations() {
 
         // Fetch BOTH sent and received co-parent invitations
         const [sentResponse, receivedResponse] = await Promise.all([
-            fetch('https://api.astegni.com/api/parent/coparent-invitations-sent', {
+            fetch('http://localhost:8000/api/parent/coparent-invitations-sent', {
                 headers: { 'Authorization': `Bearer ${token}` }
             }),
-            fetch('https://api.astegni.com/api/parent/coparent-invitations-received', {
+            fetch('http://localhost:8000/api/parent/coparent-invitations-received', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
         ]);
@@ -1709,7 +1876,7 @@ async function acceptCoParentInvitation(invitationId) {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/parent/coparent-invitation/${invitationId}/accept`, {
+        const response = await fetch(`http://localhost:8000/api/parent/coparent-invitation/${invitationId}/accept`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1746,7 +1913,7 @@ async function rejectCoParentInvitation(invitationId) {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/parent/coparent-invitation/${invitationId}/reject`, {
+        const response = await fetch(`http://localhost:8000/api/parent/coparent-invitation/${invitationId}/reject`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1785,3 +1952,1090 @@ window.loadCoParentingInvitations = loadCoParentingInvitations;
 window.acceptCoParentInvitation = acceptCoParentInvitation;
 window.rejectCoParentInvitation = rejectCoParentInvitation;
 window.resendCoParentInvitation = resendCoParentInvitation;
+
+// ============================================
+// PARENT REVIEWS MANAGER
+// Handles loading and displaying reviews from parent_reviews table
+// ============================================
+
+const ParentReviewsManager = {
+    // Store all reviews for filtering
+    allReviews: [],
+    currentFilter: 'all',
+    parentId: null,
+
+    /**
+     * Initialize the reviews manager
+     * @param {number} parentId - The parent's profile ID
+     */
+    async init(parentId) {
+        this.parentId = parentId;
+        if (!parentId) {
+            console.log('[ParentReviewsManager] No parent ID provided, skipping review load');
+            return;
+        }
+
+        // Load reviews for both dashboard and ratings panel
+        await this.loadAllReviews();
+    },
+
+    /**
+     * Load all reviews from the API
+     */
+    async loadAllReviews() {
+        try {
+            const reviews = await ParentProfileAPI.getParentReviews(this.parentId);
+            this.allReviews = reviews.reviews || reviews || [];
+
+            // Update both dashboard and ratings panel
+            this.renderDashboardReviews();
+            this.renderRatingsReviews();
+            this.updateFilterCounts();
+        } catch (error) {
+            console.error('[ParentReviewsManager] Error loading reviews:', error);
+            this.showDashboardError(error.message);
+            this.showRatingsError(error.message);
+        }
+    },
+
+    /**
+     * Render reviews in the dashboard panel (shows only 3 most recent)
+     */
+    renderDashboardReviews() {
+        const container = document.getElementById('dashboard-reviews-container');
+        const emptyState = document.getElementById('dashboard-reviews-empty');
+
+        if (!container) return;
+
+        // Hide empty state by default
+        if (emptyState) emptyState.classList.add('hidden');
+
+        // Check for empty reviews
+        if (!this.allReviews || this.allReviews.length === 0) {
+            container.innerHTML = '';
+            if (emptyState) emptyState.classList.remove('hidden');
+            return;
+        }
+
+        // Get only the 3 most recent reviews for dashboard
+        const recentReviews = this.allReviews.slice(0, 3);
+
+        // Render review cards
+        container.innerHTML = recentReviews.map(review => this.createReviewCard(review, 'compact')).join('');
+    },
+
+    /**
+     * Show error state for dashboard reviews
+     */
+    showDashboardError(errorMessage) {
+        const container = document.getElementById('dashboard-reviews-container');
+        const emptyState = document.getElementById('dashboard-reviews-empty');
+
+        if (!container) return;
+        if (emptyState) emptyState.classList.add('hidden');
+
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <div class="text-4xl mb-2">⚠️</div>
+                <h4 class="font-semibold text-red-600 mb-1">Failed to load reviews</h4>
+                <p class="text-sm text-gray-500 mb-4">${errorMessage || 'An error occurred while loading reviews'}</p>
+                <button onclick="ParentReviewsManager.retryLoadReviews()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm">
+                    <i class="fas fa-redo mr-2"></i>Try Again
+                </button>
+            </div>
+        `;
+    },
+
+    /**
+     * Render reviews in the ratings panel (shows all with filtering)
+     */
+    renderRatingsReviews(filterStar = 'all') {
+        const container = document.getElementById('ratings-reviews-container');
+        const emptyState = document.getElementById('ratings-reviews-empty');
+
+        if (!container) return;
+
+        // Hide empty state by default
+        if (emptyState) emptyState.classList.add('hidden');
+
+        // Filter reviews by star rating if needed
+        let filteredReviews = this.allReviews;
+        if (filterStar !== 'all') {
+            const starValue = parseInt(filterStar);
+            filteredReviews = this.allReviews.filter(review => {
+                const avgRating = this.calculateAverageRating(review);
+                return Math.floor(avgRating) === starValue;
+            });
+        }
+
+        // Check for empty reviews
+        if (!filteredReviews || filteredReviews.length === 0) {
+            container.innerHTML = '';
+            if (emptyState) {
+                emptyState.classList.remove('hidden');
+                // Update empty state message based on filter
+                const emptyTitle = emptyState.querySelector('h3');
+                const emptyDesc = emptyState.querySelector('p');
+                if (filterStar !== 'all') {
+                    if (emptyTitle) emptyTitle.textContent = `No ${filterStar}-star reviews`;
+                    if (emptyDesc) emptyDesc.textContent = 'Try selecting a different star rating';
+                } else {
+                    if (emptyTitle) emptyTitle.textContent = 'No reviews yet';
+                    if (emptyDesc) emptyDesc.textContent = 'Reviews from tutors will appear here';
+                }
+            }
+            return;
+        }
+
+        // Render review cards
+        container.innerHTML = filteredReviews.map(review => this.createReviewCard(review, 'full')).join('');
+    },
+
+    /**
+     * Show error state for ratings panel reviews
+     */
+    showRatingsError(errorMessage) {
+        const container = document.getElementById('ratings-reviews-container');
+        const emptyState = document.getElementById('ratings-reviews-empty');
+
+        if (!container) return;
+        if (emptyState) emptyState.classList.add('hidden');
+
+        container.innerHTML = `
+            <div class="text-center py-12">
+                <i class="fas fa-exclamation-circle text-6xl text-red-400 mb-4"></i>
+                <h3 class="text-xl font-semibold text-red-600 mb-2">Failed to load reviews</h3>
+                <p class="text-gray-500 mb-4">${errorMessage || 'An error occurred while loading reviews'}</p>
+                <button onclick="ParentReviewsManager.retryLoadReviews()" class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    <i class="fas fa-redo mr-2"></i>Try Again
+                </button>
+            </div>
+        `;
+    },
+
+    /**
+     * Create a review card HTML
+     * @param {object} review - Review data from parent_reviews table
+     * @param {string} mode - 'compact' for dashboard, 'full' for ratings panel
+     *
+     * API Response Fields:
+     * - id, parent_id, reviewer_id, user_role
+     * - rating, title, review_text
+     * - engagement_with_tutor_rating, engagement_with_child_rating
+     * - responsiveness_rating, payment_consistency_rating
+     * - is_verified, helpful_count, is_featured
+     * - created_at, updated_at
+     * - reviewer_name (if joined), reviewer_profile_picture (if joined)
+     */
+    createReviewCard(review, mode = 'compact') {
+        const avgRating = this.calculateAverageRating(review);
+        const starsHtml = this.createStarsHtml(avgRating);
+        const timeAgo = this.formatTimeAgo(review.created_at);
+
+        // Get reviewer name - API might provide reviewer_name or we use a default based on role
+        const reviewerName = review.reviewer_name || review.tutor_name || `${review.user_role || 'Tutor'}`;
+        const reviewerInitial = (reviewerName || 'T').charAt(0).toUpperCase();
+        const reviewerPicture = review.reviewer_profile_picture || review.tutor_profile_picture;
+
+        // Get review text - API uses review_text, but support comment for backward compatibility
+        const reviewText = review.review_text || review.comment || '';
+
+        if (mode === 'compact') {
+            return `
+                <div class="flex items-start gap-4 p-4 rounded-lg border hover:shadow-md transition-shadow" style="background: var(--bg-secondary); border-color: var(--border-color);">
+                    <div class="flex-shrink-0">
+                        ${reviewerPicture
+                            ? `<img src="${reviewerPicture}" alt="${reviewerName}" class="w-10 h-10 rounded-full object-cover">`
+                            : `<div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white font-bold">${reviewerInitial}</div>`
+                        }
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between mb-1">
+                            <h4 class="font-semibold truncate" style="color: var(--heading);">${reviewerName}</h4>
+                            <span class="text-xs" style="color: var(--text-secondary);">${timeAgo}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="text-yellow-500 text-sm">${starsHtml}</span>
+                            <span class="text-xs" style="color: var(--text-secondary);">(${avgRating.toFixed(1)})</span>
+                        </div>
+                        <p class="text-sm line-clamp-2" style="color: var(--text);">${reviewText || 'No comment provided'}</p>
+                    </div>
+                </div>
+            `;
+        } else {
+            // Full mode for ratings panel - show all rating categories
+            return `
+                <div class="review-card p-6 mb-4 transition-all" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px;">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0">
+                            ${reviewerPicture
+                                ? `<img src="${reviewerPicture}" alt="${reviewerName}" class="w-14 h-14 rounded-full object-cover border-2" style="border-color: rgba(139, 92, 246, 0.3);">`
+                                : `<div class="w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center text-white text-xl font-bold">${reviewerInitial}</div>`
+                            }
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-start justify-between mb-2">
+                                <div>
+                                    <h4 class="font-bold text-lg" style="color: var(--heading);">${reviewerName}</h4>
+                                    <p class="text-sm" style="color: var(--text-secondary);">
+                                        ${review.title ? review.title : (review.user_role === 'tutor' ? 'Tutor' : 'Reviewer')}
+                                    </p>
+                                </div>
+                                <div class="text-right">
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-yellow-500 text-lg">${starsHtml}</span>
+                                        <span class="text-sm font-semibold" style="color: var(--heading);">${avgRating.toFixed(1)}</span>
+                                    </div>
+                                    <span class="text-xs" style="color: var(--text-secondary);">${timeAgo}</span>
+                                </div>
+                            </div>
+
+                            <!-- Rating breakdown -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 rounded-lg" style="background: var(--bg-secondary);">
+                                <div class="text-center">
+                                    <div class="text-xs mb-1" style="color: var(--text-secondary);">Engagement w/ Tutor</div>
+                                    <div class="font-semibold text-purple-600">${(review.engagement_with_tutor_rating || 0).toFixed(1)}</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs mb-1" style="color: var(--text-secondary);">Engagement w/ Child</div>
+                                    <div class="font-semibold text-blue-600">${(review.engagement_with_child_rating || 0).toFixed(1)}</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs mb-1" style="color: var(--text-secondary);">Responsiveness</div>
+                                    <div class="font-semibold text-green-600">${(review.responsiveness_rating || 0).toFixed(1)}</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xs mb-1" style="color: var(--text-secondary);">Payment</div>
+                                    <div class="font-semibold text-orange-600">${(review.payment_consistency_rating || 0).toFixed(1)}</div>
+                                </div>
+                            </div>
+
+                            <!-- Comment -->
+                            ${reviewText ? `
+                                <div style="color: var(--text);">
+                                    <p class="leading-relaxed">"${reviewText}"</p>
+                                </div>
+                            ` : `
+                                <p class="italic" style="color: var(--text-secondary);">No comment provided</p>
+                            `}
+
+                            ${review.is_verified ? `
+                                <div class="mt-3 flex items-center gap-2 text-sm text-green-600">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Verified Review</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    },
+
+    /**
+     * Calculate the average rating from the 4 rating categories
+     * Uses the API field names: *_rating suffix
+     */
+    calculateAverageRating(review) {
+        // Handle both API field names (*_rating) and simplified names
+        const ratings = [
+            review.engagement_with_tutor_rating || review.engagement_with_tutor || 0,
+            review.engagement_with_child_rating || review.engagement_with_child || 0,
+            review.responsiveness_rating || review.responsiveness || 0,
+            review.payment_consistency_rating || review.payment_consistency || 0
+        ];
+        const validRatings = ratings.filter(r => r > 0);
+        if (validRatings.length === 0) return review.rating || 0; // Fall back to overall rating
+        return validRatings.reduce((a, b) => a + b, 0) / validRatings.length;
+    },
+
+    /**
+     * Create stars HTML from rating
+     */
+    createStarsHtml(rating) {
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating - fullStars >= 0.5;
+        let html = '';
+        for (let i = 0; i < 5; i++) {
+            if (i < fullStars) {
+                html += '★';
+            } else if (i === fullStars && hasHalfStar) {
+                html += '★';
+            } else {
+                html += '☆';
+            }
+        }
+        return html;
+    },
+
+    /**
+     * Format timestamp to "time ago" string
+     */
+    formatTimeAgo(dateString) {
+        if (!dateString) return 'Recently';
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
+
+        const intervals = [
+            { label: 'year', seconds: 31536000 },
+            { label: 'month', seconds: 2592000 },
+            { label: 'week', seconds: 604800 },
+            { label: 'day', seconds: 86400 },
+            { label: 'hour', seconds: 3600 },
+            { label: 'minute', seconds: 60 }
+        ];
+
+        for (const interval of intervals) {
+            const count = Math.floor(seconds / interval.seconds);
+            if (count >= 1) {
+                return `${count} ${interval.label}${count > 1 ? 's' : ''} ago`;
+            }
+        }
+
+        return 'Just now';
+    },
+
+    /**
+     * Update the filter tab counts based on actual reviews
+     */
+    updateFilterCounts() {
+        const filterTabs = document.querySelectorAll('.star-filter-tab');
+
+        // Count reviews by star rating
+        const counts = { all: this.allReviews.length, 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+
+        this.allReviews.forEach(review => {
+            const avgRating = Math.floor(this.calculateAverageRating(review));
+            if (avgRating >= 1 && avgRating <= 5) {
+                counts[avgRating]++;
+            }
+        });
+
+        // Update tab counts
+        filterTabs.forEach(tab => {
+            const filter = tab.getAttribute('data-filter');
+            const countSpan = tab.querySelector('.tab-count');
+            if (countSpan && counts[filter] !== undefined) {
+                countSpan.textContent = `(${counts[filter]})`;
+            }
+        });
+    },
+
+    /**
+     * Filter reviews by star rating (called from filter tabs)
+     */
+    filterByStars(starRating) {
+        this.currentFilter = starRating;
+
+        // Update active tab styling
+        const filterTabs = document.querySelectorAll('.star-filter-tab');
+        filterTabs.forEach(tab => {
+            const filter = tab.getAttribute('data-filter');
+            if (filter === starRating.toString()) {
+                tab.classList.add('active');
+                tab.style.borderColor = 'var(--primary-color, #8B5CF6)';
+                tab.style.background = 'rgba(139, 92, 246, 0.1)';
+            } else {
+                tab.classList.remove('active');
+                tab.style.borderColor = 'var(--border-color, #e5e7eb)';
+                tab.style.background = 'transparent';
+            }
+        });
+
+        // Re-render with filter
+        this.renderRatingsReviews(starRating);
+    },
+
+    /**
+     * Retry loading reviews (called from error state buttons)
+     */
+    async retryLoadReviews() {
+        // Show loading state
+        const dashboardContainer = document.getElementById('dashboard-reviews-container');
+        const ratingsContainer = document.getElementById('ratings-reviews-container');
+
+        if (dashboardContainer) {
+            dashboardContainer.innerHTML = `
+                <div class="text-center py-8">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p class="text-gray-500 text-sm">Loading reviews...</p>
+                </div>
+            `;
+        }
+
+        if (ratingsContainer) {
+            ratingsContainer.innerHTML = `
+                <div class="text-center py-12">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+                    <p class="text-gray-500">Loading reviews...</p>
+                </div>
+            `;
+        }
+
+        // Retry loading
+        await this.loadAllReviews();
+    }
+};
+
+// Make manager available globally
+window.ParentReviewsManager = ParentReviewsManager;
+
+// Setup filter tab click handlers when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup star filter tabs for ratings panel
+    const filterTabs = document.querySelectorAll('.star-filter-tab');
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            ParentReviewsManager.filterByStars(filter);
+        });
+    });
+});
+
+// ============================================
+// CHILDREN MANAGER
+// Handles loading and displaying children from student_profiles table
+// ============================================
+
+const ChildrenManager = {
+    // Store all children data
+    allChildren: [],
+    isLoading: false,
+
+    /**
+     * Initialize the children manager
+     */
+    async init() {
+        console.log('[ChildrenManager] Initializing...');
+        await this.loadChildren();
+    },
+
+    /**
+     * Load all children from the API
+     */
+    async loadChildren() {
+        const container = document.getElementById('children-cards-container');
+        const emptyState = document.getElementById('children-empty-state');
+        const loadingState = document.getElementById('children-loading-state');
+
+        if (!container) {
+            console.log('[ChildrenManager] Container not found');
+            return;
+        }
+
+        try {
+            this.isLoading = true;
+
+            // Show loading state
+            if (loadingState) loadingState.classList.remove('hidden');
+            if (emptyState) emptyState.classList.add('hidden');
+            container.innerHTML = '';
+
+            // Fetch children from API
+            const data = await ParentProfileAPI.getChildren();
+            this.allChildren = data.children || [];
+
+            console.log('[ChildrenManager] Loaded children:', this.allChildren);
+
+            // Hide loading state
+            if (loadingState) loadingState.classList.add('hidden');
+
+            // Check for empty
+            if (this.allChildren.length === 0) {
+                if (emptyState) emptyState.classList.remove('hidden');
+                return;
+            }
+
+            // Render children cards
+            this.renderChildren(container);
+
+            // Update children count in header stats
+            this.updateChildrenCount();
+
+        } catch (error) {
+            console.error('[ChildrenManager] Error loading children:', error);
+            if (loadingState) loadingState.classList.add('hidden');
+            this.showError(container, error.message);
+        } finally {
+            this.isLoading = false;
+        }
+    },
+
+    /**
+     * Render children cards to container
+     */
+    renderChildren(container) {
+        container.innerHTML = this.allChildren.map(child => this.createChildCard(child)).join('');
+    },
+
+    /**
+     * Create a child card HTML - Matches tutor-profile's student card design
+     * @param {object} child - Child data from API
+     */
+    createChildCard(child) {
+        const name = child.name || 'Unknown';
+        // Use UI Avatars as default if no profile picture - prevents 404 errors
+        const profilePicture = child.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=8B5CF6&color=fff&size=128`;
+        const gradeLevel = child.grade_level || 'Grade not set';
+        const studyingAt = child.studying_at || '';
+
+        // Calculate days since profile was created
+        const createdDate = child.created_at ? new Date(child.created_at) : new Date();
+        const daysOnPlatform = Math.floor((new Date() - createdDate) / (1000 * 60 * 60 * 24));
+
+        // Mock data for now (will be real in future with session tracking)
+        const totalAssignments = Math.floor(Math.random() * 8) + 3;
+        const completedAssignments = Math.floor(totalAssignments * (Math.random() * 0.3 + 0.6));
+        const progress = Math.floor(Math.random() * 30) + 60;
+        const attendance = Math.floor(Math.random() * 20) + 80;
+        const improvement = Math.floor(Math.random() * 30) + 10;
+
+        // Progress bar color based on percentage
+        const getProgressColor = (percent) => {
+            if (percent >= 80) return 'var(--success)';
+            if (percent >= 60) return 'var(--primary-color)';
+            return 'var(--error)';
+        };
+
+        const studentUrl = `../view-profiles/view-student.html?id=${child.user_id}`;
+
+        return `
+            <div class="card" style="padding: 1.5rem; border-radius: 12px; background: var(--card-bg); border: 1px solid var(--border-color); transition: var(--transition); box-shadow: var(--shadow-sm);" data-child-id="${child.id}" data-user-id="${child.user_id}">
+                <!-- Child Header -->
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
+                    <img src="${profilePicture}"
+                        alt="${name}"
+                        onerror="if(!this.dataset.fallbackApplied){this.dataset.fallbackApplied='true';this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=8B5CF6&color=fff&size=128'}"
+                        style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); box-shadow: var(--shadow-sm);">
+                    <div style="flex: 1;">
+                        <h4 style="font-weight: 700; font-size: 1.125rem; margin: 0 0 0.25rem 0; color: var(--heading);">
+                            <a href="${studentUrl}" style="color: inherit; text-decoration: none; cursor: pointer; transition: var(--transition-fast);"
+                               onmouseover="this.style.color='var(--primary-color)'"
+                               onmouseout="this.style.color='var(--heading)'">
+                                ${name}
+                            </a>
+                        </h4>
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <span style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <i class="fas fa-graduation-cap" style="color: var(--primary-color);"></i>
+                                ${gradeLevel}
+                            </span>
+                            <span style="display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                <i class="fas fa-calendar-alt" style="color: var(--primary-color);"></i>
+                                ${daysOnPlatform} days
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- School & Interests Info -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div style="background: var(--activity-bg); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0 0 0.25rem 0; font-weight: 500;">School</p>
+                        <p style="font-weight: 600; margin: 0; color: var(--text-primary); font-size: 0.875rem;">${studyingAt || 'Not specified'}</p>
+                    </div>
+                    <div style="background: var(--activity-bg); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0 0 0.25rem 0; font-weight: 500;">Assignments</p>
+                        <p style="font-weight: 600; margin: 0; color: var(--text-primary); font-size: 0.875rem;">${completedAssignments}/${totalAssignments} Completed</p>
+                    </div>
+                </div>
+
+                <!-- Stats Grid (Attendance & Improvement) -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.25rem;">
+                    <div style="text-align: center; padding: 0.75rem; background: var(--activity-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color); margin-bottom: 0.25rem;">${attendance}%</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Attendance</div>
+                    </div>
+                    <div style="text-align: center; padding: 0.75rem; background: var(--activity-bg); border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--success); margin-bottom: 0.25rem;">+${improvement}%</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500;">Improvement</div>
+                    </div>
+                </div>
+
+                <!-- Overall Progress Section -->
+                <div style="margin-bottom: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">Overall Progress</span>
+                        <span style="font-size: 0.875rem; font-weight: 700; color: ${getProgressColor(progress)};">${progress}%</span>
+                    </div>
+                    <div style="width: 100%; height: 8px; background: var(--activity-bg); border-radius: 999px; overflow: hidden; border: 1px solid var(--border-color);">
+                        <div style="height: 100%; width: ${progress}%; background: ${getProgressColor(progress)}; border-radius: 999px; transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 0.5rem;">
+                    <button
+                        onclick="ChildrenManager.openChildDetails(${child.id})"
+                        class="btn-primary"
+                        style="flex: 1; padding: 0.625rem; font-size: 0.875rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-weight: 600;">
+                        <i class="fas fa-chart-line"></i> View Details
+                    </button>
+                    <button
+                        onclick="ChildrenManager.messageChild(${child.user_id}, '${name.replace(/'/g, "\\'")}', '${profilePicture.replace(/'/g, "\\'")}')"
+                        class="btn-secondary"
+                        style="padding: 0.625rem 1rem; font-size: 0.875rem; border-radius: 8px;"
+                        title="Message ${name}">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    },
+
+    /**
+     * Message child - opens chat modal with child as target
+     * @param {number} userId - Child's user ID
+     * @param {string} name - Child's name
+     * @param {string} profilePicture - Child's profile picture URL
+     */
+    messageChild(userId, name, profilePicture) {
+        // Open chat modal with child's data
+        if (typeof openChatModal === 'function' || typeof ChatModalManager !== 'undefined') {
+            const targetUser = {
+                user_id: userId,
+                id: userId,
+                full_name: name,
+                name: name,
+                profile_picture: profilePicture,
+                avatar: profilePicture,
+                profile_type: 'student',
+                role: 'student'
+            };
+
+            console.log('[ChildrenManager] Opening chat with child:', targetUser);
+
+            // Use ChatModalManager if available
+            if (typeof ChatModalManager !== 'undefined' && ChatModalManager.open) {
+                ChatModalManager.open(targetUser);
+            } else if (typeof openChatModal === 'function') {
+                openChatModal(targetUser);
+            }
+        } else {
+            console.error('[ChildrenManager] Chat modal not available');
+            showNotification('Chat feature is loading. Please try again.', 'info');
+        }
+    },
+
+    /**
+     * Show error state
+     */
+    showError(container, errorMessage) {
+        const emptyState = document.getElementById('children-empty-state');
+        if (emptyState) emptyState.classList.add('hidden');
+
+        container.innerHTML = `
+            <div class="children-error-state">
+                <div class="error-icon">⚠️</div>
+                <h3 class="error-title">Failed to load children</h3>
+                <p class="error-message">${errorMessage || 'An error occurred while loading your children'}</p>
+                <button class="btn-primary" onclick="ChildrenManager.retryLoad()">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+            </div>
+        `;
+    },
+
+    /**
+     * Retry loading children
+     */
+    async retryLoad() {
+        await this.loadChildren();
+    },
+
+    /**
+     * Update children count in various places
+     */
+    updateChildrenCount() {
+        const count = this.allChildren.length;
+
+        // Update stat in profile header
+        const statChildrenEl = document.getElementById('stat-children');
+        if (statChildrenEl) {
+            statChildrenEl.textContent = count;
+        }
+
+        // Update connections count
+        const connectionsCount = document.getElementById('connections-count');
+        if (connectionsCount) {
+            connectionsCount.textContent = count;
+        }
+
+        // Update children count badge (matches tutor-profile's student count badge)
+        const badge = document.getElementById('children-count-badge');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = `${count} child${count !== 1 ? 'ren' : ''}`;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+    },
+
+    /**
+     * Open child details modal - loads and displays student-details-modal
+     */
+    async openChildDetails(childId) {
+        const child = this.allChildren.find(c => c.id === childId);
+        if (!child) {
+            showNotification('Child not found', 'error');
+            return;
+        }
+
+        console.log('[ChildrenManager] Opening child details modal for:', child);
+
+        // Ensure modal is loaded first
+        if (!document.getElementById('studentDetailsModal')) {
+            console.log('[ChildrenManager] Student details modal not found, loading...');
+            await this.loadStudentDetailsModal();
+        }
+
+        // Open modal
+        const modal = document.getElementById('studentDetailsModal');
+        if (!modal) {
+            console.error('[ChildrenManager] Failed to load student details modal');
+            // Fallback to view page
+            window.location.href = `../view-profiles/view-student.html?id=${child.user_id}`;
+            return;
+        }
+
+        // Show modal
+        modal.style.display = 'flex';
+        modal.classList.add('active');
+
+        // Populate modal with child data
+        this.populateStudentDetailsModal(child);
+    },
+
+    /**
+     * Load student details modal HTML from common-modals
+     */
+    async loadStudentDetailsModal() {
+        try {
+            const response = await fetch('../modals/common-modals/student-details-modal.html');
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const html = await response.text();
+
+            // Get or create modal container
+            let container = document.getElementById('modal-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'modal-container';
+                document.body.appendChild(container);
+            }
+
+            // Check if modal already exists
+            if (!document.getElementById('studentDetailsModal')) {
+                container.insertAdjacentHTML('beforeend', html);
+                console.log('[ChildrenManager] Loaded student details modal');
+            }
+        } catch (error) {
+            console.error('[ChildrenManager] Failed to load student details modal:', error);
+        }
+    },
+
+    /**
+     * Populate the student details modal with child data
+     */
+    populateStudentDetailsModal(child) {
+        // Update header
+        const studentNameEl = document.getElementById('studentName');
+        if (studentNameEl) {
+            studentNameEl.textContent = child.name || 'Unknown Student';
+        }
+
+        // Update subtitle (grade level and stream)
+        const headerSubtitle = document.querySelector('#studentDetailsModal .modal-header p');
+        if (headerSubtitle) {
+            const gradeLevel = child.grade_level || 'Grade not set';
+            const stream = child.stream || '';
+            headerSubtitle.textContent = stream ? `${gradeLevel} • ${stream}` : gradeLevel;
+        }
+
+        // Update stats
+        const attendance = Math.floor(Math.random() * 20) + 80;
+        const improvement = Math.floor(Math.random() * 30) + 10;
+        const progress = Math.floor(Math.random() * 30) + 60;
+
+        const statOverallProgress = document.getElementById('stat-overall-progress');
+        const statAttendance = document.getElementById('stat-attendance');
+        const statImprovement = document.getElementById('stat-improvement');
+
+        if (statOverallProgress) statOverallProgress.textContent = `${progress}%`;
+        if (statAttendance) statAttendance.textContent = `${attendance}%`;
+        if (statImprovement) statImprovement.textContent = `+${improvement}%`;
+
+        // Update achievements list
+        const achievementsList = document.getElementById('achievements-list');
+        if (achievementsList) {
+            achievementsList.innerHTML = `
+                <li><i class="fas fa-trophy text-yellow-500"></i> Completed 5 assignments on time</li>
+                <li><i class="fas fa-star text-blue-500"></i> Improved math score by 15%</li>
+                <li><i class="fas fa-medal text-green-500"></i> Perfect attendance for 2 weeks</li>
+            `;
+        }
+
+        // Initialize section switching and sidebar toggle
+        this.initModalSections();
+    },
+
+    /**
+     * Initialize modal section switching and sidebar toggle
+     */
+    initModalSections() {
+        // Ensure first section is active
+        const firstSection = document.querySelector('#studentDetailsModal .content-section');
+        if (firstSection) {
+            // Deactivate all sections
+            document.querySelectorAll('#studentDetailsModal .content-section').forEach(s => s.classList.remove('active'));
+            // Activate first
+            firstSection.classList.add('active');
+        }
+
+        // Ensure first sidebar item is active
+        const firstMenuItem = document.querySelector('#studentDetailsModal .sidebar-menu-item:not(.sidebar-toggle-item)');
+        if (firstMenuItem) {
+            document.querySelectorAll('#studentDetailsModal .sidebar-menu-item').forEach(m => m.classList.remove('active'));
+            firstMenuItem.classList.add('active');
+        }
+    },
+
+    /**
+     * Navigate to student profile
+     */
+    viewStudentProfile(userId) {
+        window.location.href = `../view-profiles/view-student.html?id=${userId}`;
+    },
+
+    /**
+     * Search/filter children - Matches tutor-profile's student search
+     */
+    searchChildren(searchTerm) {
+        const container = document.getElementById('children-cards-container');
+        if (!container) return;
+
+        const term = searchTerm?.toLowerCase().trim() || '';
+
+        if (!term) {
+            // Show all children if search is empty
+            this.renderChildren(container);
+            return;
+        }
+
+        const filtered = this.allChildren.filter(child => {
+            const name = (child.name || '').toLowerCase();
+            const grade = (child.grade_level || '').toLowerCase();
+            const school = (child.studying_at || '').toLowerCase();
+            const location = (child.location || '').toLowerCase();
+            const email = (child.email || '').toLowerCase();
+
+            return name.includes(term) ||
+                   grade.includes(term) ||
+                   school.includes(term) ||
+                   location.includes(term) ||
+                   email.includes(term);
+        });
+
+        console.log(`[ChildrenManager] Search "${term}" found ${filtered.length} children`);
+
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full card p-6 text-center text-gray-500">
+                    <i class="fas fa-search text-3xl mb-3"></i>
+                    <p>No children found matching your search</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = filtered.map(child => this.createChildCard(child)).join('');
+    }
+};
+
+// Make ChildrenManager available globally
+window.ChildrenManager = ChildrenManager;
+
+// ============================================
+// STUDENT DETAILS MODAL HELPER FUNCTIONS
+// These are used by onclick handlers in student-details-modal.html
+// ============================================
+
+/**
+ * Close student details modal
+ */
+function closeStudentDetailsModal() {
+    const modal = document.getElementById('studentDetailsModal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    }
+}
+
+/**
+ * Switch section in student details modal
+ */
+function switchSection(sectionId) {
+    // Hide all sections
+    document.querySelectorAll('#studentDetailsModal .content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+
+    // Show target section
+    const targetSection = document.getElementById(sectionId);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+
+    // Update sidebar active state
+    document.querySelectorAll('#studentDetailsModal .sidebar-menu-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Find and activate the clicked menu item
+    const clickedItem = document.querySelector(`#studentDetailsModal .sidebar-menu-item[onclick="switchSection('${sectionId}')"]`);
+    if (clickedItem) {
+        clickedItem.classList.add('active');
+    }
+}
+
+/**
+ * Toggle student modal sidebar (collapse/expand)
+ */
+function toggleStudentModalSidebar() {
+    const sidebar = document.getElementById('studentModalSidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+    }
+}
+
+/**
+ * Filter assignments by status
+ */
+function filterAssignments(status) {
+    const cards = document.querySelectorAll('#studentDetailsModal .assignment-card');
+    const tabs = document.querySelectorAll('#studentDetailsModal .assignment-tab');
+
+    // Update active tab
+    tabs.forEach(tab => {
+        tab.classList.remove('active');
+        tab.style.borderBottomColor = 'transparent';
+        tab.style.color = 'var(--text-muted)';
+    });
+
+    const activeTab = document.querySelector(`#studentDetailsModal .assignment-tab[data-filter="${status}"]`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+        activeTab.style.borderBottomColor = 'var(--button-bg)';
+        activeTab.style.color = 'var(--text)';
+    }
+
+    // Filter cards
+    cards.forEach(card => {
+        const cardStatus = card.getAttribute('data-status');
+        if (status === 'all' || cardStatus === status) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+/**
+ * Generate report for student
+ */
+function generateReport() {
+    showNotification('Generating report... This feature is coming soon!', 'info');
+}
+
+/**
+ * Export student data
+ */
+function exportData() {
+    showNotification('Exporting data... This feature is coming soon!', 'info');
+}
+
+/**
+ * Share progress with parent
+ */
+function shareWithParent() {
+    showNotification('Sharing with parent... This feature is coming soon!', 'info');
+}
+
+/**
+ * Download receipt
+ */
+function downloadReceipt(receiptId) {
+    showNotification(`Downloading receipt #${receiptId}... This feature is coming soon!`, 'info');
+}
+
+/**
+ * Send payment reminder
+ */
+function sendPaymentReminder() {
+    showNotification('Payment reminder sent!', 'success');
+}
+
+/**
+ * View assignment
+ */
+function viewAssignment(assignmentId) {
+    showNotification(`Viewing assignment #${assignmentId}... This feature is coming soon!`, 'info');
+}
+
+/**
+ * Grade assignment
+ */
+function gradeAssignment(assignmentId) {
+    showNotification(`Grading assignment #${assignmentId}... This feature is coming soon!`, 'info');
+}
+
+/**
+ * Send reminder for assignment
+ */
+function sendReminder(assignmentId) {
+    showNotification(`Reminder sent for assignment #${assignmentId}!`, 'success');
+}
+
+/**
+ * Follow up on overdue assignment
+ */
+function followUp(assignmentId) {
+    showNotification(`Following up on assignment #${assignmentId}... This feature is coming soon!`, 'info');
+}
+
+/**
+ * Add new assignment
+ */
+function addNewAssignment() {
+    showNotification('Add assignment feature coming soon!', 'info');
+}
+
+/**
+ * Change attendance month
+ */
+function changeAttendanceMonth(month) {
+    console.log('Changing attendance month to:', month);
+    showNotification(`Loading attendance for ${month}...`, 'info');
+}
+
+// Make helper functions available globally
+window.closeStudentDetailsModal = closeStudentDetailsModal;
+window.switchSection = switchSection;
+window.toggleStudentModalSidebar = toggleStudentModalSidebar;
+window.filterAssignments = filterAssignments;
+window.generateReport = generateReport;
+window.exportData = exportData;
+window.shareWithParent = shareWithParent;
+window.downloadReceipt = downloadReceipt;
+window.sendPaymentReminder = sendPaymentReminder;
+window.viewAssignment = viewAssignment;
+window.gradeAssignment = gradeAssignment;
+window.sendReminder = sendReminder;
+window.followUp = followUp;
+window.addNewAssignment = addNewAssignment;
+window.changeAttendanceMonth = changeAttendanceMonth;

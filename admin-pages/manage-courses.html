@@ -8,10 +8,11 @@
     <!-- TailwindCSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Custom Styles -->
-    <link rel="stylesheet" href="../css/root.css">
-    <link rel="stylesheet" href="../css/admin-profile/admin.css">
-    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
-    <link rel="stylesheet" href="../css/admin-pages/manage-courses.css">
+    <link rel="stylesheet" href="./css/root.css">
+    <link rel="stylesheet" href="./css/admin-profile/admin.css">
+    <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="./css/admin-pages/manage-courses.css">
+    <link rel="stylesheet" href="./css/portfolio-settings-panels.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -35,45 +36,433 @@
 
 <body class="font-sans">
 
+    <!-- Early-load critical functions (must be available before other scripts) -->
+    <script>
+        // ===== SIDEBAR TOGGLE =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            if (sidebar) {
+                sidebar.classList.toggle('active');
+                if (hamburger) hamburger.classList.toggle('active');
+                document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : '';
+            }
+        }
+        window.toggleSidebar = toggleSidebar;
+
+        // ===== PANEL SWITCHING =====
+        function switchPanel(panelName) {
+            console.log('Switching to panel:', panelName);
+
+            // Panel ID mapping - includes all panels
+            const panels = {
+                'dashboard': 'dashboard-panel',
+                'verified': 'verified-panel',
+                'requested': 'requested-panel',
+                'rejected': 'rejected-panel',
+                'suspended': 'suspended-panel',
+                'reviews': 'reviews-panel',
+                'credentials': 'credentials-panel',
+                'portfolio': 'portfolio-panel',
+                'settings': 'settings-panel'
+            };
+
+            // Hide all panels
+            Object.values(panels).forEach(function(panelId) {
+                const panel = document.getElementById(panelId);
+                if (panel) {
+                    panel.classList.add('hidden');
+                    panel.classList.remove('active');
+                }
+            });
+
+            // Show target panel
+            const targetPanelId = panels[panelName];
+            if (targetPanelId) {
+                const targetPanel = document.getElementById(targetPanelId);
+                if (targetPanel) {
+                    targetPanel.classList.remove('hidden');
+                    targetPanel.classList.add('active');
+                    console.log('Panel shown:', panelName);
+                } else {
+                    console.error('Panel element not found:', targetPanelId);
+                }
+            } else {
+                console.error('Unknown panel name:', panelName);
+            }
+
+            // Update sidebar link active state
+            document.querySelectorAll('.sidebar-link').forEach(function(link) {
+                link.classList.remove('active');
+                const onclick = link.getAttribute('onclick') || '';
+                if (onclick.includes("'" + panelName + "'") || onclick.includes('"' + panelName + '"')) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Update URL
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('panel', panelName);
+            window.history.pushState({ panel: panelName }, '', newUrl);
+
+            // Close sidebar after selection
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            if (sidebar) {
+                sidebar.classList.remove('active');
+                if (hamburger) hamburger.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        window.switchPanel = switchPanel;
+
+        // ===== API CONFIG =====
+        // Use global API_BASE_URL set by api-config.js
+        const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+        function getAuthToken() {
+            return localStorage.getItem('token') || localStorage.getItem('access_token');
+        }
+        function extractNumericId(requestId) {
+            if (typeof requestId === 'number') return requestId;
+            const match = requestId.match(/\d+/);
+            return match ? parseInt(match[0], 10) : requestId;
+        }
+
+        // ===== VIEW COURSE REQUEST =====
+        function viewCourseRequest(requestId, status) {
+            const modal = document.getElementById('view-course-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('active');
+            }
+
+            const titleEl = document.getElementById('view-course-title');
+            const idEl = document.getElementById('view-course-id');
+            const statusEl = document.getElementById('view-course-status');
+            const actionsEl = document.getElementById('view-course-actions');
+
+            if (titleEl) titleEl.textContent = 'Course Request ' + requestId;
+            if (idEl) idEl.textContent = 'ID: ' + requestId;
+
+            // Determine status
+            if (!status) {
+                if (requestId.startsWith('REJ-')) status = 'rejected';
+                else if (requestId.startsWith('SUS-')) status = 'suspended';
+                else if (requestId.startsWith('VER-') || requestId.startsWith('CRS-')) status = 'verified';
+                else status = 'pending';
+            }
+
+            // Load data from table row
+            const row = document.querySelector(`[data-request-id="${requestId}"]`) ||
+                        document.querySelector(`button[onclick*="${requestId}"]`)?.closest('tr');
+            if (row) {
+                const cells = row.querySelectorAll('td');
+                if (cells.length > 0) {
+                    const courseName = cells[1]?.textContent?.trim() || 'Unknown Course';
+                    const category = cells[2]?.textContent?.trim() || 'N/A';
+                    const level = cells[3]?.textContent?.trim() || 'N/A';
+                    const requester = cells[4]?.textContent?.trim() || 'Unknown';
+
+                    if (titleEl) titleEl.textContent = courseName;
+                    const categoryEl = document.getElementById('view-course-category');
+                    const levelEl = document.getElementById('view-course-level');
+                    const requesterEl = document.getElementById('view-course-requester');
+                    if (categoryEl) categoryEl.textContent = category;
+                    if (levelEl) levelEl.textContent = level;
+                    if (requesterEl) requesterEl.textContent = requester;
+                }
+            }
+
+            // Status badge
+            if (statusEl) {
+                const badges = {
+                    'pending': '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">Pending Review</span>',
+                    'verified': '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Verified</span>',
+                    'rejected': '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">Rejected</span>',
+                    'suspended': '<span class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-800">Suspended</span>'
+                };
+                statusEl.innerHTML = badges[status] || badges['pending'];
+            }
+
+            // Action buttons
+            if (actionsEl) {
+                let html = '';
+                if (status === 'pending') {
+                    html = `
+                        <button onclick="approveCourseRequest('${requestId}')" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Approve</button>
+                        <button onclick="openRejectModal('${requestId}')" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Reject</button>
+                    `;
+                } else if (status === 'verified') {
+                    html = `
+                        <button onclick="openSuspendModal('${requestId}')" class="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600">Suspend</button>
+                        <button onclick="openRejectModal('${requestId}')" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Reject</button>
+                    `;
+                } else if (status === 'rejected') {
+                    html = `<button onclick="restoreCourseRequest('${requestId}')" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Restore to Pending</button>`;
+                } else if (status === 'suspended') {
+                    html = `
+                        <button onclick="reactivateCourse('${requestId}')" class="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">Reactivate</button>
+                        <button onclick="openRejectModal('${requestId}')" class="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Reject</button>
+                    `;
+                }
+                actionsEl.innerHTML = html;
+            }
+        }
+        window.viewCourseRequest = viewCourseRequest;
+
+        // ===== VIEW COURSE (for verified/suspended courses) =====
+        function viewCourse(courseId, status) {
+            // Reuse viewCourseRequest with appropriate status
+            if (!status) {
+                if (String(courseId).startsWith('SUS-')) status = 'suspended';
+                else status = 'verified';
+            }
+            viewCourseRequest(courseId, status);
+        }
+        window.viewCourse = viewCourse;
+
+        // ===== CLOSE VIEW MODAL =====
+        function closeViewCourseModal() {
+            const modal = document.getElementById('view-course-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('active');
+            }
+        }
+        window.closeViewCourseModal = closeViewCourseModal;
+
+        // ===== APPROVE COURSE =====
+        async function approveCourseRequest(requestId) {
+            if (!confirm('Are you sure you want to verify this course?')) return;
+            const courseId = extractNumericId(requestId);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/courses/${courseId}/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Course verified! Status changed to "verified".');
+                    closeViewCourseModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.detail || 'Failed to verify course'));
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            }
+        }
+        window.approveCourseRequest = approveCourseRequest;
+
+        // ===== REJECT COURSE =====
+        async function openRejectModal(requestId) {
+            const reason = prompt('Please enter the rejection reason:');
+            if (!reason || !reason.trim()) return;
+            const courseId = extractNumericId(requestId);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/courses/${courseId}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+                    body: JSON.stringify({ reason: reason.trim() })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Course rejected! Status changed to "rejected".');
+                    closeViewCourseModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.detail || 'Failed to reject course'));
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            }
+        }
+        window.openRejectModal = openRejectModal;
+
+        // ===== SUSPEND COURSE =====
+        async function openSuspendModal(requestId) {
+            const reason = prompt('Please enter the suspension reason:');
+            if (!reason || !reason.trim()) return;
+            const courseId = extractNumericId(requestId);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/courses/${courseId}/suspend`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` },
+                    body: JSON.stringify({ reason: reason.trim() })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Course suspended! Status changed to "suspended".');
+                    closeViewCourseModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.detail || 'Failed to suspend course'));
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            }
+        }
+        window.openSuspendModal = openSuspendModal;
+
+        // ===== RESTORE COURSE =====
+        async function restoreCourseRequest(requestId) {
+            if (!confirm('Are you sure you want to restore this course to pending?')) return;
+            const courseId = extractNumericId(requestId);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/courses/${courseId}/reconsider`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Course restored to pending!');
+                    closeViewCourseModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.detail || 'Failed to restore course'));
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            }
+        }
+        window.restoreCourseRequest = restoreCourseRequest;
+
+        // ===== REACTIVATE COURSE =====
+        async function reactivateCourse(requestId) {
+            if (!confirm('Are you sure you want to reactivate this course?')) return;
+            const courseId = extractNumericId(requestId);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/courses/${courseId}/reinstate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getAuthToken()}` }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    alert('Course reactivated! Status changed to "verified".');
+                    closeViewCourseModal();
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.detail || 'Failed to reactivate course'));
+                }
+            } catch (error) {
+                alert('Network error. Please try again.');
+            }
+        }
+        window.reactivateCourse = reactivateCourse;
+    </script>
+
     <!-- Navigation -->
-    <nav class="p-4 sticky top-0 z-10" role="navigation" aria-label="Main navigation">
+    <nav class="admin-nav p-4 sticky top-0 z-50" role="navigation" aria-label="Main navigation">
         <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <span class="hamburger" id="hamburger">
+            <!-- Left: Hamburger + Logo -->
+            <div class="nav-left flex items-center gap-4">
+                <span class="hamburger" id="hamburger" onclick="toggleSidebar()">
                     <span></span>
                     <span></span>
                     <span></span>
                 </span>
-                <a href="../admin-pages/manage-courses.html" class="logo-container">
+                <a href="manage-courses.html" class="logo-container">
                     <div class="logo-text">
                         <span class="logo-main">Astegni</span>
-                        <span class="logo-sub">Manage courses</span>
+                        <span class="logo-sub">Manage Courses</span>
                     </div>
                     <span class="logo-badge">Beta</span>
                 </a>
             </div>
 
-            <div class="flex items-center space-x-6">
+            <!-- Center: Live Clock -->
+            <div class="nav-center">
+                <div class="live-clock">
+                    <span id="current-time" class="time">--:--:--</span>
+                    <span id="current-date" class="date">Loading...</span>
+                </div>
+            </div>
 
-                <!-- Notification Icon -->
-                <button class="relative focus:outline-none" aria-label="Notifications">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
-                        </path>
-                    </svg>
-                    <span
-                        class="absolute top-0 right-0 -mt-1 -mr-1 px-2 py-1 text-xs font-bold text-white bg-red-500 rounded-full">3</span>
+            <!-- Right: Home, Notification, Theme, Profile -->
+            <div class="header-right">
+                <!-- Home Icon Link -->
+                <a href="index.html" class="icon-button" title="Go to Admin Home">
+                    <i class="fas fa-home"></i>
+                </a>
+
+                <!-- Theme Toggle (always visible) -->
+                <button id="theme-toggle" class="icon-button" onclick="toggleTheme()">
+                    <span class="theme-icon">
+                        <i class="fas fa-moon" id="moon-icon"></i>
+                        <i class="fas fa-sun" id="sun-icon" style="display: none;"></i>
+                    </span>
                 </button>
 
-                <!-- Theme Toggle -->
-                <button id="theme-toggle-btn" class="focus:outline-none" aria-label="Toggle theme">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
-                        </path>
-                    </svg>
-                </button>
+                <!-- User Controls (hidden by default, shown when logged in) -->
+                <div class="user-controls" id="user-controls" style="display: none;">
+                    <!-- Notification Icon -->
+                    <button class="icon-button notification-button" onclick="openNotificationModal()">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge notification-count-badge">3</span>
+                    </button>
+
+                    <!-- Profile container -->
+                    <div id="profile-container" class="profile-dropdown-container">
+                    <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                        onclick="toggleProfileDropdown()">
+                        <img id="profile-pic" class="profile-pic"
+                             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                             alt="Profile">
+                        <span id="profile-name" class="profile-name">Guest</span>
+                        <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+
+                    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                        <!-- User info header - CLICKABLE to go to department page -->
+                        <a href="javascript:void(0)" id="dropdown-profile-link" class="dropdown-header-link">
+                            <div class="dropdown-header">
+                                <img id="dropdown-profile-pic" class="profile-pic"
+                                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                                     alt="Profile">
+                                <div class="dropdown-user-info">
+                                    <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                    <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                    <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                </div>
+                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <!-- Department switcher (shown if user has multiple departments) -->
+                        <div id="department-switcher-section" class="department-switcher-section hidden">
+                            <div class="dropdown-item-header">Your Departments</div>
+                            <div id="department-options" class="department-options">
+                                <!-- Department options will be dynamically added here -->
+                            </div>
+                            <div class="dropdown-divider"></div>
+                        </div>
+
+                        <!-- Add Department button -->
+                        <button class="dropdown-item" onclick="openAddDepartmentModal()">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Add Department Role</span>
+                        </button>
+
+                        <div class="dropdown-divider"></div>
+
+                        <button class="dropdown-item logout-item" onclick="openLogoutModal()">
+                            <i class="fas fa-sign-out-alt dropdown-icon"></i>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+                </div><!-- /user-controls -->
             </div>
         </div>
     </nav>
@@ -83,13 +472,8 @@
         <div class="sidebar-content">
             <div class="sidebar-nav">
                 <h3>Course Management</h3>
-                <span class="sidebar-close" id="sidebar-close">&times;</span>
+                <span class="sidebar-close" id="sidebar-close" onclick="toggleSidebar()">&times;</span>
 
-                <a href="../admin-pages/index.html" class="sidebar-link">
-                    <span class="sidebar-icon">🏠</span>
-                    <span>Admin Home</span>
-                </a>
-                <hr class="my-2 border-gray-300">
                 <a href="#" onclick="switchPanel('dashboard'); return false;" class="sidebar-link active">
                     <span class="sidebar-icon">📊</span>
                     <span>Dashboard</span>
@@ -100,7 +484,7 @@
                 </a>
                 <a href="#" onclick="switchPanel('verified'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📚</span>
-                    <span>Active Courses</span>
+                    <span>Verified Courses</span>
                 </a>
                 <a href="#" onclick="switchPanel('rejected'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">❌</span>
@@ -115,6 +499,10 @@
                     <i class="fas fa-star"></i>
                     <span>Reviews & Ratings</span>
                 </button>
+                <a href="#" onclick="switchPanel('credentials'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🎓</span>
+                    <span>Credentials</span>
+                </a>
                 <hr class="my-4 border-gray-300">
                 <a href="#" onclick="openCourseReports(); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📊</span>
@@ -127,6 +515,15 @@
                 <a href="#" onclick="openCourseSettings(); return false;" class="sidebar-link">
                     <span class="sidebar-icon">⚙️</span>
                     <span>Course Settings</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="switchPanel('portfolio'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📁</span>
+                    <span>Portfolio</span>
+                </a>
+                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Settings</span>
                 </a>
                 <!-- Logout Button at Bottom -->
                 <div class="mt-auto pt-4 border-t border-gray-300">
@@ -258,35 +655,13 @@
                                 <h1 class="text-3xl font-bold mb-2">Course Management Dashboard</h1>
                                 <p class="text-gray-600">Overview of all course management activities and statistics</p>
                             </div>
-                            <!-- Achievements Section -->
-                            <div class="card p-6 mb-8">
-                                <h3 class="text-xl font-semibold mb-4">Achievements</h3>
-                                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                                    <!-- Achievements loaded from database by manage-courses-dashboard-loader.js -->
-                                </div>
-                            </div>
                             <!-- All Statistics Cards -->
                             <div class="dashboard-grid mb-8">
                                 <!-- Dashboard stats loaded from database by manage-courses-dashboard-loader.js -->
                                 <div class="card p-4">
-                                    <h3 class="text-lg font-semibold">Active Courses</h3>
-                                    <p class="text-2xl font-bold">...</p>
-                                    <span class="text-sm text-gray-500">Currently running</span>
-                                </div>
-                                <div class="card p-4">
                                     <h3 class="text-lg font-semibold">Pending Courses</h3>
                                     <p class="text-2xl font-bold text-yellow-600">...</p>
                                     <span class="text-sm text-gray-500">Awaiting review</span>
-                                </div>
-                                <div class="card p-4">
-                                    <h3 class="text-lg font-semibold">Rejected Courses</h3>
-                                    <p class="text-2xl font-bold text-red-600">...</p>
-                                    <span class="text-sm text-gray-500">Last 30 days</span>
-                                </div>
-                                <div class="card p-4">
-                                    <h3 class="text-lg font-semibold">Suspended Courses</h3>
-                                    <p class="text-2xl font-bold text-orange-600">...</p>
-                                    <span class="text-sm text-gray-500">Under investigation</span>
                                 </div>
                                 <div class="card p-4">
                                     <h3 class="text-lg font-semibold">Approval Rate</h3>
@@ -326,14 +701,14 @@
                     <!-- Verified Courses Panel -->
                     <div id="verified-panel" class="panel-content hidden">
                         <div class="mb-8">
-                            <h1 class="text-3xl font-bold mb-2">Active Courses</h1>
-                            <p class="text-gray-600">Manage all active and running courses</p>
+                            <h1 class="text-3xl font-bold mb-2">Verified Courses</h1>
+                            <p class="text-gray-600">Manage all verified and running courses</p>
                         </div>
 
                         <!-- Statistics Card for this panel only -->
                         <div class="dashboard-grid mb-8">
                             <div class="card p-4">
-                                <h3 class="text-lg font-semibold">Total Active</h3>
+                                <h3 class="text-lg font-semibold">Total Verified</h3>
                                 <p class="text-2xl font-bold">...</p>
                             </div>
                             <div class="card p-4">
@@ -682,6 +1057,472 @@
                                 <!-- Reviews loaded from database by manage-courses-reviews.js -->
                                 <div class="text-center text-gray-400 py-8">
                                     <p>Click "Refresh My Reviews" button above to load your performance reviews</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Credentials Panel -->
+                    <div id="credentials-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h1 class="text-3xl font-bold mb-2">My Credentials</h1>
+                                    <p class="text-gray-600">View and manage your professional achievements and work experience</p>
+                                </div>
+                                <button onclick="openAddCredentialModal()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all font-medium flex items-center gap-2">
+                                    <i class="fas fa-plus"></i>
+                                    Add Credential
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Section Toggle Tabs -->
+                        <div class="card p-4 mb-6">
+                            <div class="flex gap-4">
+                                <button onclick="switchCredentialsSection('achievements')"
+                                    class="credentials-tab active px-6 py-3 rounded-lg font-semibold transition-all bg-blue-500 text-white"
+                                    id="achievements-tab">
+                                    <span class="mr-2">🏆</span> Achievements
+                                </button>
+                                <button onclick="switchCredentialsSection('experience')"
+                                    class="credentials-tab px-6 py-3 rounded-lg font-semibold transition-all bg-gray-100 hover:bg-gray-200"
+                                    id="experience-tab">
+                                    <span class="mr-2">💼</span> Experience
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Achievements Section -->
+                        <div id="credentials-achievements-section" class="credentials-section">
+                            <!-- Achievements Stats -->
+                            <div class="dashboard-grid mb-8">
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Total Achievements</h3>
+                                    <p class="text-3xl font-bold mt-2 text-yellow-500" id="total-achievements">12</p>
+                                    <p class="text-sm text-gray-500 mt-1">Badges & Awards</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Certifications</h3>
+                                    <p class="text-3xl font-bold mt-2 text-blue-500" id="total-certifications">5</p>
+                                    <p class="text-sm text-gray-500 mt-1">Verified credentials</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Recognition Awards</h3>
+                                    <p class="text-3xl font-bold mt-2 text-purple-500" id="total-awards">7</p>
+                                    <p class="text-sm text-gray-500 mt-1">Company honors</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Current Level</h3>
+                                    <p class="text-3xl font-bold mt-2 text-green-500" id="admin-level">Level 8</p>
+                                    <p class="text-sm text-gray-500 mt-1">Senior Admin</p>
+                                </div>
+                            </div>
+
+                            <!-- Achievement Badges Grid -->
+                            <div class="card p-6 mb-6">
+                                <h3 class="text-xl font-semibold mb-4">Achievement Badges</h3>
+                                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="achievements-grid">
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200">
+                                        <div class="text-4xl mb-2">🏆</div>
+                                        <div class="font-semibold text-sm">Top Performer</div>
+                                        <div class="text-xs text-gray-500">Q4 2024</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200">
+                                        <div class="text-4xl mb-2">🥇</div>
+                                        <div class="font-semibold text-sm">Excellence Award</div>
+                                        <div class="text-xs text-gray-500">Annual 2024</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200">
+                                        <div class="text-4xl mb-2">⭐</div>
+                                        <div class="font-semibold text-sm">5-Star Admin</div>
+                                        <div class="text-xs text-gray-500">200+ Reviews</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200">
+                                        <div class="text-4xl mb-2">📚</div>
+                                        <div class="font-semibold text-sm">Course Expert</div>
+                                        <div class="text-xs text-gray-500">1000+ Courses</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-red-50 to-red-100 border-2 border-red-200">
+                                        <div class="text-4xl mb-2">🎯</div>
+                                        <div class="font-semibold text-sm">Goal Achiever</div>
+                                        <div class="text-xs text-gray-500">100% Targets</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 border-2 border-indigo-200">
+                                        <div class="text-4xl mb-2">💎</div>
+                                        <div class="font-semibold text-sm">Premium Admin</div>
+                                        <div class="text-xs text-gray-500">Level 10</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200">
+                                        <div class="text-4xl mb-2">🔥</div>
+                                        <div class="font-semibold text-sm">Fire Streak</div>
+                                        <div class="text-xs text-gray-500">30+ Days</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-teal-50 to-teal-100 border-2 border-teal-200">
+                                        <div class="text-4xl mb-2">🚀</div>
+                                        <div class="font-semibold text-sm">Fast Processor</div>
+                                        <div class="text-xs text-gray-500">&lt; 1hr Avg</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-pink-50 to-pink-100 border-2 border-pink-200">
+                                        <div class="text-4xl mb-2">❤️</div>
+                                        <div class="font-semibold text-sm">Client Favorite</div>
+                                        <div class="text-xs text-gray-500">95% Satisfaction</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-cyan-50 to-cyan-100 border-2 border-cyan-200">
+                                        <div class="text-4xl mb-2">🛡️</div>
+                                        <div class="font-semibold text-sm">Quality Guardian</div>
+                                        <div class="text-xs text-gray-500">Zero Errors</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-lime-50 to-lime-100 border-2 border-lime-200">
+                                        <div class="text-4xl mb-2">🌟</div>
+                                        <div class="font-semibold text-sm">Rising Star</div>
+                                        <div class="text-xs text-gray-500">New Talent</div>
+                                    </div>
+                                    <div class="achievement-badge text-center p-4 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-200">
+                                        <div class="text-4xl mb-2">📈</div>
+                                        <div class="font-semibold text-sm">Growth Driver</div>
+                                        <div class="text-xs text-gray-500">20% Increase</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Certifications -->
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4">Professional Certifications</h3>
+                                <div class="space-y-4" id="certifications-list">
+                                    <div class="flex items-center justify-between p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                                        <div class="flex items-center gap-4">
+                                            <div class="text-3xl">📜</div>
+                                            <div>
+                                                <h4 class="font-semibold">Certified Course Administrator</h4>
+                                                <p class="text-sm text-gray-600">Astegni Education Platform</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Verified</span>
+                                            <p class="text-xs text-gray-500 mt-1">Issued: Jan 2024</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                                        <div class="flex items-center gap-4">
+                                            <div class="text-3xl">🎓</div>
+                                            <div>
+                                                <h4 class="font-semibold">Educational Technology Specialist</h4>
+                                                <p class="text-sm text-gray-600">International EdTech Association</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Verified</span>
+                                            <p class="text-xs text-gray-500 mt-1">Issued: Aug 2023</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                                        <div class="flex items-center gap-4">
+                                            <div class="text-3xl">🏅</div>
+                                            <div>
+                                                <h4 class="font-semibold">Quality Assurance Professional</h4>
+                                                <p class="text-sm text-gray-600">Ethiopian Quality Standards Institute</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">Verified</span>
+                                            <p class="text-xs text-gray-500 mt-1">Issued: Mar 2023</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Experience Section (Hidden by default) -->
+                        <div id="credentials-experience-section" class="credentials-section hidden">
+                            <!-- Experience Stats -->
+                            <div class="dashboard-grid mb-8">
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Total Experience</h3>
+                                    <p class="text-3xl font-bold mt-2 text-blue-500" id="total-experience">4+ Years</p>
+                                    <p class="text-sm text-gray-500 mt-1">In Administration</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Courses Managed</h3>
+                                    <p class="text-3xl font-bold mt-2 text-green-500" id="courses-managed">2,500+</p>
+                                    <p class="text-sm text-gray-500 mt-1">Lifetime total</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Teams Led</h3>
+                                    <p class="text-3xl font-bold mt-2 text-purple-500" id="teams-led">3</p>
+                                    <p class="text-sm text-gray-500 mt-1">Department teams</p>
+                                </div>
+                                <div class="card p-4">
+                                    <h3 class="text-gray-600 text-sm font-semibold">Projects Completed</h3>
+                                    <p class="text-3xl font-bold mt-2 text-orange-500" id="projects-completed">45</p>
+                                    <p class="text-sm text-gray-500 mt-1">Major initiatives</p>
+                                </div>
+                            </div>
+
+                            <!-- Work Experience Timeline -->
+                            <div class="card p-6 mb-6">
+                                <h3 class="text-xl font-semibold mb-6">Work Experience</h3>
+                                <div class="space-y-6" id="experience-timeline">
+                                    <!-- Current Position -->
+                                    <div class="relative pl-8 border-l-4 border-blue-500">
+                                        <div class="absolute -left-3 top-0 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white text-xs">✓</span>
+                                        </div>
+                                        <div class="bg-blue-50 p-4 rounded-lg">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <h4 class="font-bold text-lg">Senior Course Administrator</h4>
+                                                    <p class="text-blue-600 font-semibold">Astegni Education Platform</p>
+                                                </div>
+                                                <span class="px-3 py-1 bg-blue-500 text-white rounded-full text-xs font-semibold">Current</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mb-2">Jan 2023 - Present</p>
+                                            <ul class="text-sm text-gray-700 list-disc list-inside space-y-1">
+                                                <li>Lead course verification and quality assurance processes</li>
+                                                <li>Manage team of 5 junior administrators</li>
+                                                <li>Implemented new course review workflows, improving efficiency by 40%</li>
+                                                <li>Maintained 99% accuracy rate in course approvals</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Previous Position 1 -->
+                                    <div class="relative pl-8 border-l-4 border-green-500">
+                                        <div class="absolute -left-3 top-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white text-xs">✓</span>
+                                        </div>
+                                        <div class="bg-green-50 p-4 rounded-lg">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <h4 class="font-bold text-lg">Course Administrator</h4>
+                                                    <p class="text-green-600 font-semibold">Astegni Education Platform</p>
+                                                </div>
+                                                <span class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-semibold">Completed</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mb-2">Jun 2021 - Dec 2022</p>
+                                            <ul class="text-sm text-gray-700 list-disc list-inside space-y-1">
+                                                <li>Processed 500+ course applications monthly</li>
+                                                <li>Developed quality assessment criteria</li>
+                                                <li>Trained new team members on verification procedures</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <!-- Previous Position 2 -->
+                                    <div class="relative pl-8 border-l-4 border-purple-500">
+                                        <div class="absolute -left-3 top-0 w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center">
+                                            <span class="text-white text-xs">✓</span>
+                                        </div>
+                                        <div class="bg-purple-50 p-4 rounded-lg">
+                                            <div class="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <h4 class="font-bold text-lg">Junior Administrator</h4>
+                                                    <p class="text-purple-600 font-semibold">Astegni Education Platform</p>
+                                                </div>
+                                                <span class="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-semibold">Completed</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mb-2">Jan 2020 - May 2021</p>
+                                            <ul class="text-sm text-gray-700 list-disc list-inside space-y-1">
+                                                <li>Assisted senior administrators with course reviews</li>
+                                                <li>Managed documentation and record keeping</li>
+                                                <li>Learned platform systems and workflows</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Skills & Expertise -->
+                            <div class="card p-6">
+                                <h3 class="text-xl font-semibold mb-4">Skills & Expertise</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 class="font-semibold mb-3 text-gray-700">Technical Skills</h4>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Course Quality Assessment</span>
+                                                    <span class="text-sm font-semibold">95%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 95%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Content Verification</span>
+                                                    <span class="text-sm font-semibold">90%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-green-500 h-2 rounded-full" style="width: 90%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Data Analysis</span>
+                                                    <span class="text-sm font-semibold">85%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-purple-500 h-2 rounded-full" style="width: 85%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Platform Management</span>
+                                                    <span class="text-sm font-semibold">88%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-orange-500 h-2 rounded-full" style="width: 88%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold mb-3 text-gray-700">Soft Skills</h4>
+                                        <div class="space-y-3">
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Communication</span>
+                                                    <span class="text-sm font-semibold">92%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-teal-500 h-2 rounded-full" style="width: 92%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Team Leadership</span>
+                                                    <span class="text-sm font-semibold">87%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-pink-500 h-2 rounded-full" style="width: 87%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Problem Solving</span>
+                                                    <span class="text-sm font-semibold">90%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-indigo-500 h-2 rounded-full" style="width: 90%"></div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="flex justify-between mb-1">
+                                                    <span class="text-sm">Time Management</span>
+                                                    <span class="text-sm font-semibold">94%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                                    <div class="bg-yellow-500 h-2 rounded-full" style="width: 94%"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Portfolio Panel -->
+                    <div id="portfolio-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">My Portfolio</h1>
+                            <p class="text-gray-600">Showcase your work, achievements, and professional accomplishments</p>
+                        </div>
+                        <!-- Coming Soon -->
+                        <div class="flex flex-col items-center justify-center py-20">
+                            <div class="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
+                                <i class="fas fa-folder-open text-white text-5xl"></i>
+                            </div>
+                            <h2 class="text-2xl font-bold text-gray-700 mb-2">Coming Soon</h2>
+                            <p class="text-gray-500 text-center max-w-md">
+                                We're working on an amazing portfolio feature where you can showcase your work, achievements, and professional accomplishments. Stay tuned!
+                            </p>
+                            <div class="mt-6 flex items-center gap-2 text-blue-600">
+                                <i class="fas fa-clock"></i>
+                                <span class="text-sm">Expected: Q2 2025</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Panel -->
+                    <div id="settings-panel" class="panel-content hidden">
+                        <div class="mb-8">
+                            <h1 class="text-3xl font-bold mb-2">Settings</h1>
+                            <p class="text-gray-600">Manage your account preferences and configurations</p>
+                        </div>
+                        <!-- Settings Cards Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Verify Personal Information Card -->
+                            <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openVerifyPersonalInfoModal()">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-user-check text-blue-600 text-2xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-lg mb-1">Verify Personal Information</h3>
+                                        <p class="text-gray-600 text-sm mb-3">Update and verify your personal details, contact information, and identity documents.</p>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+                                                <i class="fas fa-exclamation-circle mr-1"></i> Action Required
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </div>
+                            </div>
+                            <!-- Add Payment Method Card -->
+                            <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openAddPaymentMethodModal()">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-credit-card text-green-600 text-2xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-lg mb-1">Add Payment Method</h3>
+                                        <p class="text-gray-600 text-sm mb-3">Add or manage your payment methods for receiving salary and bonuses.</p>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                                <i class="fas fa-wallet mr-1"></i> 0 Methods Added
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </div>
+                            </div>
+                            <!-- File a Leave Request Card -->
+                            <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openLeaveRequestModal()">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-calendar-minus text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-lg mb-1">File a Leave Request</h3>
+                                        <p class="text-gray-600 text-sm mb-3">Request time off for vacation, sick leave, or personal matters.</p>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
+                                                <i class="fas fa-info-circle mr-1"></i> 15 Days Available
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
+                                </div>
+                            </div>
+                            <!-- Resign Card -->
+                            <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer border-red-100" onclick="openResignModal()">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-sign-out-alt text-red-600 text-2xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="font-bold text-lg mb-1 text-red-700">Resign</h3>
+                                        <p class="text-gray-600 text-sm mb-3">Submit your resignation and begin the offboarding process.</p>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-red-50 text-red-600 text-xs rounded-full">
+                                                <i class="fas fa-exclamation-triangle mr-1"></i> Irreversible Action
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-gray-400"></i>
                                 </div>
                             </div>
                         </div>
@@ -1157,24 +1998,364 @@ Astegni Team</textarea>
     </footer>
 
     <!-- Scripts -->
-    <script src="../js/root/app.js"></script>
-    <script src="../js/root/auth.js"></script>
+    <script src="./js/api-config.js"></script>
+    <script src="./js/auth.js"></script>
+
+    <!-- Admin DB Service - reads from astegni_admin_db -->
+    <script src="./js/admin-pages/shared/admin-api-service.js"></script>
+    <script src="./js/admin-pages/shared/array-field-utils.js"></script>
+    <script src="./js/admin-pages/shared/geolocation-utils.js"></script>
 
     <!-- Standalone Script - All Navigation & Panel Management -->
-    <script src="../js/admin-pages/manage-courses-standalone.js"></script>
+    <script src="./js/admin-pages/manage-courses-standalone.js"></script>
 
     <!-- Data Loading Scripts (keep for database integration) -->
-    <script src="../js/admin-pages/manage-courses-db-loader.js"></script>
-    <script src="../js/admin-pages/manage-courses-search-filter.js"></script>
-    <script src="../js/admin-pages/manage-courses-live-widget.js"></script>
-    <script src="../js/admin-pages/manage-courses-reviews.js"></script>
-    <script src="../js/admin-pages/manage-courses-dashboard-loader.js"></script>
-    <script src="../js/admin-pages/manage-courses-stat-filters.js"></script>
-    <script src="../js/admin-pages/manage-courses-profile-edit.js"></script>
-    <script src="../js/admin-pages/admin-email-otp-verification.js"></script>
+    <script src="./js/admin-pages/manage-courses-db-loader.js"></script>
+    <script src="./js/admin-pages/manage-courses-search-filter.js"></script>
+    <script src="./js/admin-pages/manage-courses-live-widget.js"></script>
+    <script src="./js/admin-pages/manage-courses-reviews.js"></script>
+    <script src="./js/admin-pages/manage-courses-dashboard-loader.js"></script>
+    <script src="./js/admin-pages/manage-courses-stat-filters.js"></script>
+    <script src="./js/admin-pages/manage-courses-profile-edit.js"></script>
+    <script src="./js/admin-pages/admin-email-otp-verification.js"></script>
+    <script src="./js/admin-pages/shared/admin-credentials-manager.js"></script>
+
+    <!-- Nav Clock and Profile Dropdown -->
+    <script>
+        // ===== SIDEBAR TOGGLE (Global Function) =====
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            if (sidebar) {
+                sidebar.classList.toggle('active');
+                if (hamburger) {
+                    hamburger.classList.toggle('active');
+                }
+                // Prevent background scroll when sidebar is open
+                if (sidebar.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+                console.log('Sidebar toggled:', sidebar.classList.contains('active') ? 'OPEN' : 'CLOSED');
+            } else {
+                console.error('Sidebar element not found!');
+            }
+        }
+
+        // Close sidebar when clicking outside
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const hamburger = document.getElementById('hamburger');
+            if (sidebar && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(e.target) && !hamburger.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                    hamburger.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+
+        // Close sidebar on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                const hamburger = document.getElementById('hamburger');
+                if (sidebar && sidebar.classList.contains('active')) {
+                    sidebar.classList.remove('active');
+                    if (hamburger) hamburger.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            }
+        });
+
+        // ===== LIVE CLOCK =====
+        function updateClock() {
+            const now = new Date();
+            const timeEl = document.getElementById('current-time');
+            const dateEl = document.getElementById('current-date');
+
+            if (timeEl) {
+                timeEl.textContent = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            }
+
+            if (dateEl) {
+                dateEl.textContent = now.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            }
+        }
+
+        // Start clock
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // ===== PROFILE DROPDOWN =====
+        function toggleProfileDropdown() {
+            const menu = document.getElementById('profile-dropdown-menu');
+            const toggle = document.getElementById('profile-dropdown-toggle');
+
+            if (menu) {
+                menu.classList.toggle('hidden');
+                toggle?.setAttribute('aria-expanded', !menu.classList.contains('hidden'));
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const container = document.getElementById('profile-container');
+            const menu = document.getElementById('profile-dropdown-menu');
+
+            if (container && menu && !container.contains(event.target)) {
+                menu.classList.add('hidden');
+                document.getElementById('profile-dropdown-toggle')?.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // ===== NAV PROFILE LOADER =====
+        async function loadNavProfile() {
+            // Use global API_BASE_URL set by api-config.js
+            const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+
+            // Get user email from auth/localStorage
+            let userEmail = null;
+
+            // Try authManager
+            if (typeof authManager !== 'undefined' && authManager?.getCurrentUser) {
+                const user = authManager.getCurrentUser();
+                if (user?.email) userEmail = user.email;
+            }
+
+            // Try localStorage currentUser
+            if (!userEmail) {
+                const storedUser = localStorage.getItem('currentUser');
+                if (storedUser) {
+                    try {
+                        const user = JSON.parse(storedUser);
+                        if (user.email) userEmail = user.email;
+                    } catch (e) {}
+                }
+            }
+
+            // Try JWT token
+            if (!userEmail) {
+                const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+                if (token) {
+                    try {
+                        const base64Url = token.split('.')[1];
+                        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                        const payload = JSON.parse(atob(base64));
+                        if (payload.email) userEmail = payload.email;
+                    } catch (e) {}
+                }
+            }
+
+            if (!userEmail) {
+                console.log('No user email found for nav profile');
+                return;
+            }
+
+            try {
+                // Fetch profile from admin_profile database via API
+                const response = await fetch(`${API_BASE_URL}/api/admin/courses/profile/by-email/${encodeURIComponent(userEmail)}`);
+
+                if (!response.ok) {
+                    console.error('Failed to fetch admin profile for nav');
+                    return;
+                }
+
+                const profileData = await response.json();
+                console.log('Nav profile data loaded:', profileData);
+
+                // Update nav profile elements
+                const navName = document.getElementById('profile-name');
+                const navPic = document.getElementById('profile-pic');
+                const dropdownName = document.getElementById('dropdown-user-name');
+                const dropdownEmail = document.getElementById('dropdown-user-email');
+                const dropdownRole = document.getElementById('dropdown-user-role');
+                const dropdownPic = document.getElementById('dropdown-profile-pic');
+
+                // Build display name from admin_profile (Ethiopian naming: first_name + father_name)
+                const firstName = profileData.first_name || '';
+                const fatherName = profileData.father_name || '';
+                const username = profileData.username;
+                const displayName = username || `${firstName} ${fatherName}`.trim() ||
+                    (profileData.email?.[0] ? profileData.email[0].split('@')[0] : 'Admin');
+
+                // Update nav toggle
+                if (navName) navName.textContent = displayName;
+
+                // Update dropdown header
+                if (dropdownName) dropdownName.textContent = `${firstName} ${fatherName}`.trim() || displayName;
+                if (dropdownEmail) dropdownEmail.textContent = profileData.email?.[0] || '';
+                if (dropdownRole) {
+                    // Show current department name from localStorage (preserve system-settings)
+                    const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+                    const currentDept = adminUser.department || 'manage-courses';
+                    dropdownRole.textContent = formatDepartmentName(currentDept);
+                }
+
+                // Profile picture from database
+                const profileImage = profileData.courses_profile?.profile_image || profileData.profile_image;
+                if (profileImage) {
+                    if (navPic) navPic.src = profileImage;
+                    if (dropdownPic) dropdownPic.src = profileImage;
+                } else {
+                    // Generate avatar with initials
+                    const initials = (firstName?.[0] || 'A').toUpperCase();
+                    const avatarSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3E${initials}%3C/text%3E%3C/svg%3E`;
+                    if (navPic) navPic.src = avatarSvg;
+                    if (dropdownPic) dropdownPic.src = avatarSvg;
+                }
+
+                // Load departments from admin_profile.departments array
+                loadDepartmentSwitcher(profileData);
+
+                // Show user controls (profile container)
+                const userControls = document.getElementById('user-controls');
+                if (userControls) {
+                    userControls.style.display = 'flex';
+                }
+
+            } catch (error) {
+                console.error('Error loading nav profile:', error);
+            }
+        }
+
+        // ===== DEPARTMENT SWITCHER =====
+        function loadDepartmentSwitcher(profileData) {
+            const switcher = document.getElementById('department-switcher-section');
+            const options = document.getElementById('department-options');
+
+            if (!switcher || !options) return;
+
+            // Get departments from admin_profile.departments (TEXT[] array from database)
+            let departments = profileData?.departments || [];
+
+            // If departments is not an array or empty, hide switcher
+            if (!Array.isArray(departments) || departments.length === 0) {
+                switcher.classList.add('hidden');
+                return;
+            }
+
+            // Get current department from localStorage (do NOT modify it)
+            const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+            const currentDept = adminUser.department;
+
+            // Check if user is from system-settings department (has access to all departments)
+            const isSystemSettings = currentDept === 'manage-system-settings' ||
+                                     departments.includes('manage-system-settings');
+
+            // System-settings users have full access - hide the department switcher
+            if (isSystemSettings) {
+                switcher.classList.add('hidden');
+                return;
+            }
+
+            // Show department switcher only if user has multiple departments
+            if (departments.length > 1) {
+                switcher.classList.remove('hidden');
+
+                options.innerHTML = departments.map(dept => {
+                    const isActive = dept === currentDept;
+                    const icon = getDepartmentIcon(dept);
+                    const label = formatDepartmentName(dept);
+
+                    return `
+                        <a href="${getDepartmentLink(dept)}" class="department-option ${isActive ? 'active' : ''}">
+                            <i class="fas ${icon}"></i>
+                            <span>${label}</span>
+                            ${isActive ? '<i class="fas fa-check ml-auto text-green-500"></i>' : ''}
+                        </a>
+                    `;
+                }).join('');
+            } else {
+                // Single department, hide switcher
+                switcher.classList.add('hidden');
+            }
+        }
+
+        function getDepartmentIcon(dept) {
+            const icons = {
+                'manage-courses': 'fa-graduation-cap',
+                'manage-schools': 'fa-school',
+                'manage-campaigns': 'fa-bullhorn',
+                'manage-credentials': 'fa-certificate',
+                'manage-contents': 'fa-photo-video',
+                'manage-customers': 'fa-users',
+                'manage-system-settings': 'fa-cog'
+            };
+            return icons[dept] || 'fa-folder';
+        }
+
+        function formatDepartmentName(dept) {
+            // Format as "Manage Courses", "Manage Schools", etc.
+            return dept.split('-').map(
+                word => word.charAt(0).toUpperCase() + word.slice(1)
+            ).join(' ');
+        }
+
+        function getDepartmentLink(dept) {
+            return `${dept}.html`;
+        }
+
+        // ===== LOGOUT =====
+        function handleLogout() {
+            if (typeof authManager !== 'undefined' && authManager) {
+                authManager.logout();
+            } else {
+                localStorage.removeItem('token');
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('currentUser');
+            }
+            window.location.href = 'admin-index.html';
+        }
+
+        // Initialize nav profile on load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(loadNavProfile, 500);
+        });
+    </script>
 
     <!-- Fix theme background -->
     <script>
+        // Switch between Achievements and Experience sections in Credentials panel
+        function switchCredentialsSection(section) {
+            const achievementsTab = document.getElementById('achievements-tab');
+            const experienceTab = document.getElementById('experience-tab');
+            const achievementsSection = document.getElementById('credentials-achievements-section');
+            const experienceSection = document.getElementById('credentials-experience-section');
+
+            if (section === 'achievements') {
+                // Show achievements, hide experience
+                achievementsSection.classList.remove('hidden');
+                experienceSection.classList.add('hidden');
+                // Update tab styles
+                achievementsTab.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                achievementsTab.classList.add('bg-blue-500', 'text-white');
+                experienceTab.classList.remove('bg-blue-500', 'text-white');
+                experienceTab.classList.add('bg-gray-100', 'hover:bg-gray-200');
+            } else if (section === 'experience') {
+                // Show experience, hide achievements
+                experienceSection.classList.remove('hidden');
+                achievementsSection.classList.add('hidden');
+                // Update tab styles
+                experienceTab.classList.remove('bg-gray-100', 'hover:bg-gray-200');
+                experienceTab.classList.add('bg-blue-500', 'text-white');
+                achievementsTab.classList.remove('bg-blue-500', 'text-white');
+                achievementsTab.classList.add('bg-gray-100', 'hover:bg-gray-200');
+            }
+        }
+
         // Logout function for admin pages - redirects to admin index
         function logout() {
             // Check if authManager is available
@@ -1233,75 +2414,50 @@ Astegni Team</textarea>
     </script>
 
             <!-- Edit Profile Modal -->
-    <!-- This modal ONLY edits admin_profile table fields (personal information) -->
-    <!-- admin_profile_stats fields (employee_id, access_level, etc.) are managed by super admin or system -->
+    <!-- This modal edits manage_courses_profile table fields only -->
     <div id="edit-profile-modal" class="modal hidden">
         <div class="modal-overlay" onclick="closeEditProfileModal()"></div>
         <div class="modal-content" style="max-width: 600px;">
             <div class="modal-header">
                 <h2 class="text-xl font-bold">Edit Profile</h2>
-                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+                <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
-                    <!-- Ethiopian Naming Convention -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">First Name *</label>
-                            <input type="text" id="firstNameInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="e.g., Abebe" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">Father's Name *</label>
-                            <input type="text" id="fatherNameInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="e.g., Kebede" required>
-                        </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">Grandfather's Name *</label>
-                            <input type="text" id="grandfatherNameInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="e.g., Tesfa" required>
-                        </div>
-                    </div>
-
                     <!-- Username (Display Name) -->
                     <div class="form-group mb-4">
-                        <label class="block text-sm font-medium mb-1">Username (Display Name) *</label>
-                        <input type="text" id="adminUsernameInput"
+                        <label class="block text-sm font-medium mb-1">Username (Display Name) <span class="text-red-500">*</span></label>
+                        <input type="text" id="editUsername"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="e.g., abebe_kebede" required>
                         <p class="text-xs text-gray-500 mt-1">This will be displayed as your admin username</p>
                     </div>
 
-                    <!-- Contact Information -->
-                    <div class="mb-4">
-                        <div class="form-group mb-4">
-                            <label class="block text-sm font-medium mb-1">Email</label>
-                            <div class="flex gap-2">
-                                <input type="email" id="emailInput"
-                                    class="flex-1 px-3 py-2 border rounded-lg bg-gray-100 cursor-not-allowed"
-                                    placeholder="admin@astegni.et" readonly>
-                                <button type="button" onclick="openChangeEmailModal()"
-                                    class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 whitespace-nowrap">
-                                    Change Email
-                                </button>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1">Email changes require OTP verification</p>
+                    <!-- Hero Titles (Array) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Hero Titles</label>
+                        <div id="heroTitleContainer" class="space-y-2">
+                            <!-- Dynamic hero title inputs will be added here -->
                         </div>
-                        <div class="form-group">
-                            <label class="block text-sm font-medium mb-1">Phone Number</label>
-                            <input type="tel" id="phoneNumberInput"
-                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="+251911234567">
-                        </div>
+                        <button type="button" onclick="addHeroTitleField()"
+                            class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            <i class="fas fa-plus"></i> Add Hero Title
+                        </button>
+                        <p class="text-xs text-gray-500 mt-1">Add multiple titles (e.g., Course Manager, Content Lead)</p>
+                    </div>
+
+                    <!-- Hero Subtitle -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Hero Subtitle</label>
+                        <input type="text" id="editHeroSubtitle"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., Astegni Admin Panel">
                     </div>
 
                     <!-- Bio -->
                     <div class="form-group mb-4">
                         <label class="block text-sm font-medium mb-1">Bio</label>
-                        <textarea id="bioInput" rows="3"
+                        <textarea id="editBio" rows="3"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Tell us about yourself..."></textarea>
                     </div>
@@ -1309,15 +2465,65 @@ Astegni Team</textarea>
                     <!-- Quote -->
                     <div class="form-group mb-4">
                         <label class="block text-sm font-medium mb-1">Quote</label>
-                        <input type="text" id="quoteInput"
+                        <input type="text" id="editQuote"
                             class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Your personal quote or motto">
+                    </div>
+
+                    <!-- Locations (Array) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Locations</label>
+                        <div id="locationContainer" class="space-y-2">
+                            <!-- Dynamic location inputs will be added here -->
+                        </div>
+                        <button type="button" onclick="addLocationField()"
+                            class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            <i class="fas fa-plus"></i> Add Location
+                        </button>
+                        <p class="text-xs text-gray-500 mt-1">Add multiple locations (e.g., Addis Ababa, Bahir Dar)</p>
+
+                        <!-- Allow Location Checkbox with GPS Detection -->
+                        <div class="flex items-center mt-3">
+                            <input type="checkbox" id="editAllowLocation"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                onchange="handleAllowLocationChange(this)">
+                            <label for="editAllowLocation" class="ml-2 text-sm font-medium text-gray-700">
+                                Allow system to detect my location (GPS)
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Uses GPS/WiFi positioning to detect your physical location (not affected by VPN)</p>
+
+                        <!-- Detect Location Button (shown when checkbox is checked) -->
+                        <button type="button" id="detectLocationBtn" onclick="detectCurrentLocation()"
+                            class="hidden mt-2 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 flex items-center gap-1">
+                            <i class="fas fa-location-arrow mr-1"></i> Detect Location
+                        </button>
+                        <p id="locationStatus" class="hidden text-xs mt-1"></p>
+
+                        <!-- Display Location Checkbox -->
+                        <div class="flex items-center mt-3">
+                            <input type="checkbox" id="editDisplayLocation"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <label for="editDisplayLocation" class="ml-2 text-sm font-medium text-gray-700">
+                                Display location on my public profile
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">When enabled, your location will be visible to others on your profile</p>
+                    </div>
+
+                    <!-- Languages -->
+                    <div class="form-group mb-6">
+                        <label class="block text-sm font-medium mb-1">Languages</label>
+                        <input type="text" id="editLanguages"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., English, Amharic, Oromo">
+                        <p class="text-xs text-gray-500 mt-1">Separate multiple languages with commas</p>
                     </div>
 
                     <div class="modal-footer">
                         <button type="button" class="btn-secondary px-4 py-2 border rounded-lg hover:bg-gray-100"
                             onclick="closeEditProfileModal()">Cancel</button>
-                        <button type="submit"
+                        <button type="submit" id="editProfileSubmitBtn"
                             class="btn-primary px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">Update
                             Profile</button>
                     </div>
@@ -1504,6 +2710,222 @@ Astegni Team</textarea>
         </div>
     </div>
 
+    <!-- Add Credential Modal -->
+    <div id="add-credential-modal" class="modal hidden fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50">
+        <div class="modal-overlay absolute inset-0" onclick="closeAddCredentialModal()"></div>
+        <div class="modal-content relative bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="modal-header flex justify-between items-center p-6 border-b sticky top-0 bg-white rounded-t-xl">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Add New Credential</h2>
+                    <p class="text-sm text-gray-500 mt-1">Add your achievements, certifications, or work experience</p>
+                </div>
+                <button class="modal-close text-3xl text-gray-400 hover:text-gray-600 transition-colors" onclick="closeAddCredentialModal()">&times;</button>
+            </div>
+            <div class="modal-body p-6">
+                <form id="addCredentialForm" onsubmit="handleCredentialSubmit(event)">
+                    <!-- Credential Type -->
+                    <div class="form-group mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Credential Type *</label>
+                        <select id="credentialType" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                            <option value="">Select type...</option>
+                            <optgroup label="Achievements">
+                                <option value="certification">Certification</option>
+                                <option value="degree">Degree / Diploma</option>
+                                <option value="award">Award / Recognition</option>
+                                <option value="license">Professional License</option>
+                                <option value="course">Course Completion</option>
+                            </optgroup>
+                            <optgroup label="Experience">
+                                <option value="work_experience">Work Experience</option>
+                                <option value="project">Project</option>
+                                <option value="volunteer">Volunteer Work</option>
+                                <option value="teaching">Teaching Experience</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="form-group mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
+                        <input type="text" id="credentialTitle" required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="e.g., AWS Certified Solutions Architect">
+                    </div>
+
+                    <!-- Issued By -->
+                    <div class="form-group mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Issued By / Organization</label>
+                        <input type="text" id="credentialIssuedBy"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="e.g., Amazon Web Services, Addis Ababa University">
+                    </div>
+
+                    <!-- Dates Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Date of Issue</label>
+                            <input type="date" id="credentialDateOfIssue"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                        <div class="form-group">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Expiry Date (if applicable)</label>
+                            <input type="date" id="credentialExpiryDate"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-group mb-5">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                        <textarea id="credentialDescription" rows="4"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                            placeholder="Describe your achievement, responsibilities, or what you learned..."></textarea>
+                    </div>
+
+                    <!-- Document Upload -->
+                    <div class="form-group mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Document (Optional)</label>
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                            <input type="file" id="credentialDocument" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                                onchange="previewCredentialDocument(event)">
+                            <label for="credentialDocument" class="cursor-pointer">
+                                <div class="flex flex-col items-center">
+                                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-3"></i>
+                                    <p class="text-gray-600 font-medium">Click to upload or drag and drop</p>
+                                    <p class="text-gray-400 text-sm mt-1">PDF, JPG, PNG, DOC up to 10MB</p>
+                                </div>
+                            </label>
+                            <!-- Document Preview -->
+                            <div id="credentialDocumentPreview" class="hidden mt-4 p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-file-alt text-2xl text-blue-500"></i>
+                                        <div class="text-left">
+                                            <p id="credentialDocumentName" class="text-sm font-medium text-gray-700"></p>
+                                            <p id="credentialDocumentSize" class="text-xs text-gray-500"></p>
+                                        </div>
+                                    </div>
+                                    <button type="button" onclick="removeCredentialDocument()" class="text-red-500 hover:text-red-700">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex justify-end gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeAddCredentialModal()"
+                            class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2">
+                            <i class="fas fa-save"></i>
+                            Save Credential
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Department Role Modal (loaded from common-modals) -->
+    <div id="add-department-modal-container"></div>
+
+    <!-- Load Add Department Modal from common-modals -->
+    <script>
+        // Define placeholder functions immediately (before component loads)
+        // These will be overwritten when the component loads
+        window._addDeptModalLoaded = false;
+        window._addDeptModalQueue = [];
+
+        if (typeof window.openAddDepartmentModal !== 'function') {
+            window.openAddDepartmentModal = function() {
+                if (window._addDeptModalLoaded) {
+                    const modal = document.getElementById('add-department-modal');
+                    if (modal) modal.classList.add('active');
+                } else {
+                    console.log('Add Department Modal not loaded yet, queuing request...');
+                    window._addDeptModalQueue.push('open');
+                }
+            };
+        }
+
+        if (typeof window.closeAddDepartmentModal !== 'function') {
+            window.closeAddDepartmentModal = function() {
+                const modal = document.getElementById('add-department-modal');
+                if (modal) modal.classList.remove('active');
+            };
+        }
+
+        // Load add department modal component
+        fetch('common-modals/add-department-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('add-department-modal-container').innerHTML = html;
+                // Execute any script tags in the loaded HTML
+                const scripts = document.getElementById('add-department-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+
+                // Mark as loaded and process any queued requests
+                window._addDeptModalLoaded = true;
+                if (window._addDeptModalQueue.length > 0) {
+                    window._addDeptModalQueue.forEach(action => {
+                        if (action === 'open') {
+                            // Directly open the modal instead of calling the function
+                            const modal = document.getElementById('add-department-modal');
+                            if (modal) modal.classList.add('active');
+                        }
+                    });
+                    window._addDeptModalQueue = [];
+                }
+
+                console.log('Add Department Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading add department modal:', error));
+    </script>
+
+    <!-- Notification Modal (loaded from common-modals) -->
+    <div id="notification-modal-container"></div>
+    <script>
+        fetch('common-modals/notification-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('notification-modal-container').innerHTML = html;
+                const scripts = document.getElementById('notification-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+                console.log('Notification Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading notification modal:', error));
+    </script>
+
+    <!-- Logout Modal (loaded from common-modals) -->
+    <div id="logout-modal-container"></div>
+    <script>
+        fetch('common-modals/logout-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('logout-modal-container').innerHTML = html;
+                const scripts = document.getElementById('logout-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+                console.log('Logout Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading logout modal:', error));
+    </script>
 
 </body>
 

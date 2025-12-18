@@ -43,7 +43,7 @@ const TutorProfileEditHandler = {
         this.isEditing = true;
 
         // Save original data (from localStorage user object)
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
         this.originalData = { ...user };
 
         // Make fields editable

@@ -20,6 +20,8 @@
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
     <link rel="stylesheet" href="../css/find-tutors/request-modals.css">
+    <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
 
 </head>
 
@@ -469,18 +471,18 @@
                     <span id="typedText"></span>
                     <span id="cursor" class="cursor-blink">|</span>
                 </h2>
-                <p class="hero-subtitle">Connect with expert educators and top-rated training centers</p>
+                <p class="hero-subtitle">Connect with expert educators and explore quality courses</p>
                 <div class="hero-stats">
                     <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
-                        <span class="stat-number" data-target="500" data-suffix="+">0</span>
+                        <span class="stat-number" id="stat-tutors" data-target="0" data-suffix="+">0</span>
                         <span class="stat-label">Expert Tutors</span>
                     </div>
                     <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
-                        <span class="stat-number" data-target="50" data-suffix="+">0</span>
-                        <span class="stat-label">Training Centers</span>
+                        <span class="stat-number" id="stat-courses" data-target="0" data-suffix="+">0</span>
+                        <span class="stat-label">Courses</span>
                     </div>
                     <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
-                        <span class="stat-number" data-target="4.5" data-suffix="★" data-decimal="1">0</span>
+                        <span class="stat-number" id="stat-rating" data-target="0" data-suffix="★" data-decimal="1">0</span>
                         <span class="stat-label">Average Rating</span>
                     </div>
                 </div>
@@ -537,62 +539,8 @@
         </div>
     </main>
 
-    <!-- Request Course Modal -->
-    <div id="requestCourseModal" class="modal-overlay hidden">
-        <div class="modal-content animate__animated animate__zoomIn">
-            <div class="modal-header">
-                <h3 class="modal-title">Request a New Course</h3>
-                <button class="modal-close" id="closeCourseModal">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
-                        </path>
-                    </svg>
-                </button>
-            </div>
-            <form id="requestCourseForm" class="modal-form">
-                <div class="form-group">
-                    <label class="form-label">Course Title *</label>
-                    <input type="text" id="courseTitle" placeholder="e.g., Advanced Mathematics" class="modal-input"
-                        required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Category *</label>
-                    <select id="courseCategory" class="modal-input" required>
-                        <option value="">Select a category</option>
-                        <option value="Academic">Academic</option>
-                        <option value="Professional">Professional</option>
-                        <option value="Technical">Technical</option>
-                        <option value="Arts">Arts</option>
-                        <option value="Language">Language</option>
-                        <option value="Science">Science</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Level *</label>
-                    <select id="courseLevel" class="modal-input" required>
-                        <option value="">Select a level</option>
-                        <option value="KG">Kindergarten</option>
-                        <option value="Grade 1-6">Elementary (Grade 1-6)</option>
-                        <option value="Grade 7-8">Junior Secondary (Grade 7-8)</option>
-                        <option value="Grade 9-10">Secondary (Grade 9-10)</option>
-                        <option value="Grade 11-12">Preparatory (Grade 11-12)</option>
-                        <option value="University">University</option>
-                        <option value="Professional">Professional</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Description</label>
-                    <textarea id="courseDescription" placeholder="Describe the course requirements and what you'd like to learn..."
-                        class="modal-input" rows="4"></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" id="cancelCourseBtn" class="modal-btn-cancel">Cancel</button>
-                    <button type="submit" id="submitCourseBtn" class="modal-btn-submit">Submit Request</button>
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- Course Request Modal Container - modal loaded dynamically from common-modals/course-request-modal.html -->
+    <div id="modal-container"></div>
 
     <!-- Request School Modal -->
     <div id="requestSchoolModal" class="modal-overlay hidden">
@@ -1039,6 +987,8 @@
     <div id="toast-container" class="toast-container"></div>
     <!-- Updated Frontend Code for Profile Picture Integration -->
 
+    <!-- Chat Modal Container -->
+    <div id="chat-modal-container"></div>
 
     <!-- Load core modules first (following four-tier architecture) -->
     <!-- Authentication Scripts -->
@@ -1075,6 +1025,56 @@
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
+
+    <!-- Chat Modal Scripts -->
+    <script src="../js/common-modals/chat-modal.js"></script>
+    <script src="../js/common-modals/view-request-modal.js"></script>
+    <script>
+        // Load and initialize chat modal
+        document.addEventListener('DOMContentLoaded', function() {
+            fetch('../modals/common-modals/chat-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('chat-modal-container').innerHTML = html;
+                    console.log('✅ Chat Modal loaded');
+                    // Initialize ChatModalManager after DOM is ready
+                    if (typeof ChatModalManager !== 'undefined') {
+                        ChatModalManager.init();
+                        console.log('✅ ChatModalManager initialized');
+                    }
+                })
+                .catch(error => console.error('Failed to load chat-modal:', error));
+        });
+
+        // Global function to open chat modal with a specific user
+        window.openChatModal = function(targetUser) {
+            if (typeof ChatModalManager !== 'undefined') {
+                // If a target user was specified, build the user object first
+                if (targetUser) {
+                    // Build the user object in the format expected by openConversationWith
+                    const userForChat = {
+                        profile_id: targetUser.profile_id || targetUser.id,  // tutor profile ID
+                        user_id: targetUser.user_id,  // user ID (for matching existing conversations)
+                        full_name: targetUser.full_name || targetUser.name,
+                        profile_picture: targetUser.profile_picture || targetUser.avatar,
+                        profile_type: targetUser.profile_type || targetUser.role || 'tutor',
+                        is_online: targetUser.is_online || false
+                    };
+
+                    console.log('Find Tutors: Opening chat with user:', userForChat);
+
+                    // Pass targetUser to open() - it will wait for conversations to load
+                    // before calling openConversationWith internally
+                    ChatModalManager.open(userForChat);
+                } else {
+                    // No target user, just open the modal
+                    ChatModalManager.open();
+                }
+            } else {
+                console.error('ChatModalManager not available');
+            }
+        };
+    </script>
 
     <script>
         // Add Role Modal Functions

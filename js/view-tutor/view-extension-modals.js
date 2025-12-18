@@ -3,7 +3,7 @@
  * Handles viewing achievements, certifications, and experience in detail modals
  */
 
-const API_BASE_URL = 'https://api.astegni.com';
+const API_BASE_URL = 'http://localhost:8000';
 
 // Store data globally for modal access
 window.viewTutorExtensionsData = {

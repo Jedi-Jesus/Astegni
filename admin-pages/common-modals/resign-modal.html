@@ -1,0 +1,809 @@
+<!-- Resign Modal - Admin Account Deletion/Resignation -->
+<style>
+#resign-modal.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+#resign-modal.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#resign-modal .modal-content {
+    background: var(--card-bg, #ffffff);
+    border-radius: 20px;
+    padding: 0;
+    max-width: 550px;
+    width: 95%;
+    max-height: 90vh;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#resign-modal.modal-overlay.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+/* Modal Header with Profile */
+#resign-modal .modal-header {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+    padding: 1.5rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+#resign-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+#resign-modal .profile-avatar-wrapper {
+    position: relative;
+    z-index: 1;
+}
+
+#resign-modal .profile-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.9);
+    object-fit: cover;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#resign-modal .profile-info {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+}
+
+#resign-modal .profile-name {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.2rem;
+}
+
+#resign-modal .profile-email {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+#resign-modal .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+#resign-modal .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Modal Body */
+#resign-modal .modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Warning Section */
+#resign-modal .warning-section {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+#resign-modal .warning-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+#resign-modal .warning-icon i {
+    font-size: 1.75rem;
+    color: #dc2626;
+}
+
+#resign-modal .warning-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary, #1f2937);
+    margin-bottom: 0.5rem;
+}
+
+#resign-modal .warning-subtitle {
+    font-size: 0.95rem;
+    color: var(--text-secondary, #6b7280);
+    margin-bottom: 0;
+}
+
+/* Impact List */
+#resign-modal .impact-section {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+#resign-modal .impact-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #991b1b;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#resign-modal .impact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#resign-modal .impact-list li {
+    font-size: 0.85rem;
+    color: #b91c1c;
+    padding: 0.4rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+#resign-modal .impact-list li i {
+    color: #ef4444;
+    margin-top: 0.1rem;
+}
+
+/* Form Section */
+#resign-modal .form-section {
+    margin-bottom: 1.5rem;
+}
+
+#resign-modal .form-section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+    margin-bottom: 0.75rem;
+}
+
+#resign-modal .form-group {
+    margin-bottom: 1rem;
+}
+
+#resign-modal .form-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+    margin-bottom: 0.4rem;
+    display: block;
+}
+
+#resign-modal .form-input,
+#resign-modal .form-select,
+#resign-modal .form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-primary, #1f2937);
+    background: var(--input-bg, #ffffff);
+    transition: all 0.2s ease;
+}
+
+#resign-modal .form-input:focus,
+#resign-modal .form-select:focus,
+#resign-modal .form-textarea:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+#resign-modal .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Resignation Reasons */
+#resign-modal .reason-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#resign-modal .reason-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--hover-bg, #f9fafb);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#resign-modal .reason-option:hover {
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
+#resign-modal .reason-option.selected {
+    border-color: #dc2626;
+    background: #fee2e2;
+}
+
+#resign-modal .reason-option input {
+    display: none;
+}
+
+#resign-modal .reason-radio {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-color, #d1d5db);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#resign-modal .reason-option.selected .reason-radio {
+    border-color: #dc2626;
+}
+
+#resign-modal .reason-option.selected .reason-radio::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    background: #dc2626;
+    border-radius: 50%;
+}
+
+#resign-modal .reason-text {
+    font-size: 0.9rem;
+    color: var(--text-primary, #374151);
+}
+
+/* Confirmation Input */
+#resign-modal .confirmation-section {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 1rem;
+}
+
+#resign-modal .confirmation-label {
+    font-size: 0.85rem;
+    color: #991b1b;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+#resign-modal .confirmation-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #fca5a5;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    background: white;
+    color: #dc2626;
+    letter-spacing: 1px;
+}
+
+#resign-modal .confirmation-input:focus {
+    outline: none;
+    border-color: #dc2626;
+}
+
+#resign-modal .confirmation-input::placeholder {
+    font-weight: 400;
+    color: #d1d5db;
+}
+
+/* Modal Footer */
+#resign-modal .modal-footer {
+    padding: 1.25rem 1.5rem;
+    background: var(--card-bg, #ffffff);
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+#resign-modal .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+}
+
+#resign-modal .btn-secondary {
+    background: var(--hover-bg, #f3f4f6);
+    color: var(--text-primary, #374151);
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+#resign-modal .btn-secondary:hover {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-color: #6366f1;
+}
+
+#resign-modal .btn-danger {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+#resign-modal .btn-danger:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+}
+
+#resign-modal .btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Loading Spinner */
+#resign-modal .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Dark mode */
+[data-theme="dark"] #resign-modal .modal-content {
+    background: var(--dark-card-bg, #1f2937);
+}
+
+[data-theme="dark"] #resign-modal .modal-header {
+    background: linear-gradient(135deg, #b91c1c 0%, #991b1b 50%, #7f1d1d 100%);
+}
+
+[data-theme="dark"] #resign-modal .warning-title {
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #resign-modal .warning-subtitle {
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+[data-theme="dark"] #resign-modal .warning-icon {
+    background: linear-gradient(135deg, #450a0a, #7f1d1d);
+}
+
+[data-theme="dark"] #resign-modal .impact-section {
+    background: linear-gradient(135deg, #450a0a, #7f1d1d40);
+    border-color: #7f1d1d;
+}
+
+[data-theme="dark"] #resign-modal .impact-title {
+    color: #fca5a5;
+}
+
+[data-theme="dark"] #resign-modal .impact-list li {
+    color: #fecaca;
+}
+
+[data-theme="dark"] #resign-modal .form-section-title {
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #resign-modal .form-label {
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+[data-theme="dark"] #resign-modal .form-input,
+[data-theme="dark"] #resign-modal .form-select,
+[data-theme="dark"] #resign-modal .form-textarea {
+    background: var(--dark-input-bg, #374151);
+    border-color: var(--dark-border, #4b5563);
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #resign-modal .reason-option {
+    background: var(--dark-hover-bg, #374151);
+    border-color: var(--dark-border, #4b5563);
+}
+
+[data-theme="dark"] #resign-modal .reason-option:hover {
+    background: #7f1d1d30;
+    border-color: #dc2626;
+}
+
+[data-theme="dark"] #resign-modal .reason-option.selected {
+    background: #7f1d1d40;
+    border-color: #dc2626;
+}
+
+[data-theme="dark"] #resign-modal .reason-text {
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #resign-modal .confirmation-section {
+    background: #7f1d1d30;
+    border-color: #7f1d1d;
+}
+
+[data-theme="dark"] #resign-modal .confirmation-label {
+    color: #fca5a5;
+}
+
+[data-theme="dark"] #resign-modal .confirmation-input {
+    background: var(--dark-input-bg, #374151);
+    border-color: #dc2626;
+    color: #fca5a5;
+}
+
+[data-theme="dark"] #resign-modal .modal-footer {
+    background: var(--dark-card-bg, #1f2937);
+    border-color: var(--dark-border, #374151);
+}
+
+[data-theme="dark"] #resign-modal .btn-secondary {
+    background: var(--dark-hover-bg, #374151);
+    color: var(--dark-text-primary, #e5e7eb);
+    border-color: var(--dark-border, #4b5563);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    #resign-modal .modal-header {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    #resign-modal .modal-footer {
+        flex-direction: column;
+    }
+
+    #resign-modal .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<div id="resign-modal" class="modal-overlay">
+    <div class="modal-content">
+        <!-- Header with Profile -->
+        <div class="modal-header">
+            <div class="profile-avatar-wrapper">
+                <img id="resign-profile-avatar" class="profile-avatar"
+                     src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23dc2626'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                     alt="Profile">
+            </div>
+            <div class="profile-info">
+                <h3 id="resign-profile-name" class="profile-name">Admin User</h3>
+                <p id="resign-profile-email" class="profile-email">admin@astegni.com</p>
+            </div>
+            <button class="close-btn" onclick="closeResignModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <!-- Warning Section -->
+            <div class="warning-section">
+                <div class="warning-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2 class="warning-title">Are you sure you want to resign?</h2>
+                <p class="warning-subtitle">This action will begin the offboarding process and cannot be easily reversed.</p>
+            </div>
+
+            <!-- Impact Section -->
+            <div class="impact-section">
+                <h4 class="impact-title">
+                    <i class="fas fa-info-circle"></i>
+                    What happens when you resign:
+                </h4>
+                <ul class="impact-list">
+                    <li>
+                        <i class="fas fa-times-circle"></i>
+                        <span>Your admin access will be revoked after approval</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-times-circle"></i>
+                        <span>You will lose access to all admin dashboards and tools</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-times-circle"></i>
+                        <span>Your department assignments will be removed</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-times-circle"></i>
+                        <span>Your admin activity history will be archived</span>
+                    </li>
+                    <li>
+                        <i class="fas fa-times-circle"></i>
+                        <span>Pending tasks will be reassigned to other admins</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Resignation Reason -->
+            <div class="form-section">
+                <h4 class="form-section-title">Why are you leaving? (Required)</h4>
+                <div class="reason-options">
+                    <label class="reason-option" onclick="selectResignReason(this, 'career')">
+                        <input type="radio" name="resign-reason" value="career">
+                        <span class="reason-radio"></span>
+                        <span class="reason-text">Career advancement opportunity</span>
+                    </label>
+                    <label class="reason-option" onclick="selectResignReason(this, 'personal')">
+                        <input type="radio" name="resign-reason" value="personal">
+                        <span class="reason-radio"></span>
+                        <span class="reason-text">Personal reasons</span>
+                    </label>
+                    <label class="reason-option" onclick="selectResignReason(this, 'relocation')">
+                        <input type="radio" name="resign-reason" value="relocation">
+                        <span class="reason-radio"></span>
+                        <span class="reason-text">Relocation</span>
+                    </label>
+                    <label class="reason-option" onclick="selectResignReason(this, 'dissatisfied')">
+                        <input type="radio" name="resign-reason" value="dissatisfied">
+                        <span class="reason-radio"></span>
+                        <span class="reason-text">Dissatisfied with role</span>
+                    </label>
+                    <label class="reason-option" onclick="selectResignReason(this, 'health')">
+                        <input type="radio" name="resign-reason" value="health">
+                        <span class="reason-radio"></span>
+                        <span class="reason-text">Health reasons</span>
+                    </label>
+                    <label class="reason-option" onclick="selectResignReason(this, 'other')">
+                        <input type="radio" name="resign-reason" value="other">
+                        <span class="reason-radio"></span>
+                        <span class="reason-text">Other reason</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Additional Comments -->
+            <div class="form-section">
+                <div class="form-group">
+                    <label class="form-label">Additional comments (Optional)</label>
+                    <textarea id="resign-comments" class="form-textarea" rows="3" placeholder="Share any feedback that could help us improve..."></textarea>
+                </div>
+            </div>
+
+            <!-- Confirmation -->
+            <div class="confirmation-section">
+                <label class="confirmation-label">
+                    <i class="fas fa-keyboard"></i>
+                    Type <strong>RESIGN</strong> to confirm your resignation
+                </label>
+                <input type="text" id="resign-confirmation" class="confirmation-input" placeholder="Type RESIGN here" oninput="checkResignConfirmation()">
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeResignModal()">
+                <i class="fas fa-arrow-left"></i>
+                I'll Stay
+            </button>
+            <button id="confirm-resign-btn" class="btn btn-danger" onclick="confirmResignation()" disabled>
+                <i class="fas fa-sign-out-alt"></i>
+                Submit Resignation
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let selectedReason = null;
+    let currentAdminId = null;
+
+    // Populate modal with admin data
+    function populateResignModal() {
+        const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        currentAdminId = adminUser.id;
+
+        // Update profile avatar
+        const avatar = document.getElementById('resign-profile-avatar');
+        if (avatar && adminUser.profile_picture) {
+            avatar.src = adminUser.profile_picture;
+            avatar.onerror = function() {
+                this.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23dc2626'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E";
+            };
+        }
+
+        // Update profile name and email
+        document.getElementById('resign-profile-name').textContent = adminUser.name || 'Admin User';
+        document.getElementById('resign-profile-email').textContent = adminUser.email || 'admin@astegni.com';
+    }
+
+    // Select resignation reason
+    window.selectResignReason = function(element, reason) {
+        document.querySelectorAll('#resign-modal .reason-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        element.classList.add('selected');
+        element.querySelector('input').checked = true;
+        selectedReason = reason;
+        checkResignConfirmation();
+    };
+
+    // Check confirmation input
+    window.checkResignConfirmation = function() {
+        const input = document.getElementById('resign-confirmation').value.trim().toUpperCase();
+        const confirmBtn = document.getElementById('confirm-resign-btn');
+        confirmBtn.disabled = !(input === 'RESIGN' && selectedReason);
+    };
+
+    // Confirm resignation
+    window.confirmResignation = async function() {
+        if (!selectedReason) {
+            alert('Please select a reason for your resignation');
+            return;
+        }
+
+        const confirmation = document.getElementById('resign-confirmation').value.trim().toUpperCase();
+        if (confirmation !== 'RESIGN') {
+            alert('Please type RESIGN to confirm');
+            return;
+        }
+
+        const confirmBtn = document.getElementById('confirm-resign-btn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="loading-spinner"></span> Processing...';
+
+        const comments = document.getElementById('resign-comments').value.trim();
+
+        try {
+            // In a real implementation, this would call an API to process the resignation
+            // For now, we'll simulate the process
+            const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+
+            // Store resignation request (in a real app, this would be sent to the backend)
+            const resignationData = {
+                admin_id: currentAdminId,
+                admin_name: adminUser.name,
+                admin_email: adminUser.email,
+                reason: selectedReason,
+                comments: comments,
+                submitted_at: new Date().toISOString(),
+                status: 'pending'
+            };
+
+            // Store locally for demo purposes
+            const resignations = JSON.parse(localStorage.getItem('adminResignations') || '[]');
+            resignations.push(resignationData);
+            localStorage.setItem('adminResignations', JSON.stringify(resignations));
+
+            // Show success message
+            alert('Your resignation request has been submitted successfully.\n\nYour manager will review your request and contact you regarding the offboarding process.\n\nThank you for your service to Astegni!');
+
+            // Close modal
+            closeResignModal();
+
+            // Clear admin session
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminUser');
+            localStorage.removeItem('adminSession');
+
+            // Redirect to login
+            window.location.href = 'index.html';
+
+        } catch (error) {
+            console.error('Error submitting resignation:', error);
+            alert('Failed to submit resignation. Please try again or contact support.');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Submit Resignation';
+        }
+    };
+
+    // Open modal
+    window.openResignModal = function() {
+        populateResignModal();
+        // Reset form
+        selectedReason = null;
+        document.querySelectorAll('#resign-modal .reason-option').forEach(opt => {
+            opt.classList.remove('selected');
+            opt.querySelector('input').checked = false;
+        });
+        document.getElementById('resign-comments').value = '';
+        document.getElementById('resign-confirmation').value = '';
+        document.getElementById('confirm-resign-btn').disabled = true;
+        document.getElementById('confirm-resign-btn').innerHTML = '<i class="fas fa-sign-out-alt"></i> Submit Resignation';
+
+        const modal = document.getElementById('resign-modal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    };
+
+    // Close modal
+    window.closeResignModal = function() {
+        const modal = document.getElementById('resign-modal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    };
+
+    // Close on backdrop click
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('resign-modal');
+        if (modal && e.target === modal) {
+            closeResignModal();
+        }
+    });
+
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('resign-modal');
+            if (modal && modal.classList.contains('active')) {
+                closeResignModal();
+            }
+        }
+    });
+
+    console.log('Resign Modal component loaded');
+})();
+</script>

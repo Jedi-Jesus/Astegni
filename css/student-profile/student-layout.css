@@ -96,3 +96,89 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ============================================
+   SCHEDULE PANEL CARDS
+   (Matching my-requests-panel style)
+   ============================================ */
+
+.schedule-type-cards {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.schedule-type-card {
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.schedule-type-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.schedule-type-card.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color-light, rgba(102, 126, 234, 0.1));
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.schedule-type-card.active h3 {
+    color: var(--primary-color);
+}
+
+/* Status Tabs for Schedule Panel */
+#schedule-status-tabs {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+#schedule-status-tabs .status-tab {
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+#schedule-status-tabs .status-tab:hover {
+    color: var(--primary-color);
+}
+
+#schedule-status-tabs .status-tab.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+}
+
+/* Schedule Section Back Button */
+.schedule-section button[onclick*="switchScheduleSection('cards')"] {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: color 0.2s ease;
+}
+
+.schedule-section button[onclick*="switchScheduleSection('cards')"]:hover {
+    color: var(--primary-color);
+}
+
+/* Responsive Schedule Cards */
+@media (max-width: 768px) {
+    .schedule-type-cards {
+        grid-template-columns: 1fr;
+    }
+}

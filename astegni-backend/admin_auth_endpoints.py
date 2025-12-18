@@ -22,7 +22,11 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from utils import verify_password, create_access_token
 
 load_dotenv()
-DATABASE_URL = os.getenv('DATABASE_URL')
+# Use ADMIN_DATABASE_URL for admin tables (astegni_admin_db)
+ADMIN_DATABASE_URL = os.getenv(
+    'ADMIN_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
+)
 SECRET_KEY = os.getenv('SECRET_KEY', 'your_secret_key_here')
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv('ACCESS_TOKEN_EXPIRE_MINUTES', 30))
 
@@ -39,6 +43,8 @@ DEPARTMENT_ACCESS = {
     "manage-tutor-documents": ["manage-tutor-documents.html"],
     "manage-customers": ["manage-customers.html"],
     "manage-contents": ["manage-contents.html"],
+    "manage-credentials": ["manage-credentials.html"],
+    "manage-advertisers": ["manage-advertisers.html"],
     "manage-system-settings": [  # Full access
         "manage-campaigns.html",
         "manage-schools.html",
@@ -46,6 +52,8 @@ DEPARTMENT_ACCESS = {
         "manage-tutor-documents.html",
         "manage-customers.html",
         "manage-contents.html",
+        "manage-credentials.html",
+        "manage-advertisers.html",
         "manage-system-settings.html"
     ]
 }
@@ -71,8 +79,46 @@ class AccessCheckResponse(BaseModel):
 # ============================================
 
 def get_connection():
-    """Get database connection"""
-    return psycopg.connect(DATABASE_URL)
+    """Get admin database connection (astegni_admin_db)"""
+    return psycopg.connect(ADMIN_DATABASE_URL)
+
+def save_otp_to_table(cursor, admin_id: int, contact: str, otp_code: str, purpose: str, expires_at):
+    """Save OTP to otps table"""
+    from datetime import datetime
+    # First, mark any existing unused OTPs for this contact and purpose as used
+    cursor.execute("""
+        UPDATE otps SET is_used = TRUE
+        WHERE contact = %s AND purpose = %s AND is_used = FALSE
+    """, (contact, purpose))
+
+    # Insert new OTP
+    cursor.execute("""
+        INSERT INTO otps (user_id, contact, otp_code, purpose, expires_at, is_used, created_at)
+        VALUES (%s, %s, %s, %s, %s, FALSE, %s)
+    """, (admin_id, contact, otp_code, purpose, expires_at, datetime.now()))
+
+def verify_otp_from_table(cursor, contact: str, otp_code: str, purpose: str):
+    """Verify OTP from otps table. Returns True if valid, raises HTTPException if invalid."""
+    from datetime import datetime
+    cursor.execute("""
+        SELECT id, expires_at FROM otps
+        WHERE contact = %s AND otp_code = %s AND purpose = %s AND is_used = FALSE
+        ORDER BY created_at DESC LIMIT 1
+    """, (contact, otp_code, purpose))
+
+    otp_record = cursor.fetchone()
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="Invalid OTP code")
+
+    otp_id, expires_at = otp_record
+
+    if expires_at and datetime.now() > expires_at:
+        raise HTTPException(status_code=400, detail="OTP has expired. Please request a new one.")
+
+    # Mark OTP as used
+    cursor.execute("UPDATE otps SET is_used = TRUE WHERE id = %s", (otp_id,))
+
+    return True
 
 def get_admin_id_from_token(authorization: str):
     """Extract admin_id from JWT token"""
@@ -152,38 +198,49 @@ def get_current_admin(authorization: str = Header(None, alias="Authorization")):
 async def admin_login(request: AdminLoginRequest):
     """
     Admin login - returns access token with ALL departments
+
+    NOTE: email is now a TEXT[] array in admin_profile table
+    We use %s = ANY(email) to check if the login email exists in the array
     """
     conn = None
     try:
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Find admin by email
+        # Find admin by email (email is now an array - check if login email is in the array)
         cursor.execute("""
-            SELECT id, first_name, father_name, email, password_hash, departments, is_otp_verified
+            SELECT id, first_name, father_name, email, password_hash, departments
             FROM admin_profile
-            WHERE email = %s
+            WHERE %s = ANY(email)
         """, (request.email,))
 
         admin = cursor.fetchone()
         if not admin:
             raise HTTPException(status_code=401, detail="Invalid email or password")
 
-        admin_id, first_name, father_name, email, password_hash, departments, is_verified = admin
+        admin_id, first_name, father_name, email_array, password_hash, departments = admin
+        # Get the primary email (first in array) for token
+        email = email_array[0] if email_array else request.email
 
-        # Check if verified
-        if not is_verified:
+        # Check if verified (password_hash being set indicates registration was completed)
+        if not password_hash:
             raise HTTPException(status_code=403, detail="Account not verified. Please complete registration first.")
 
         # Verify password
         if not password_hash or not verify_password(request.password, password_hash):
             raise HTTPException(status_code=401, detail="Invalid email or password")
 
-        # Update last_login
+        # Update last_login in all department profile tables
         from datetime import datetime
-        cursor.execute("""
-            UPDATE admin_profile SET last_login = %s WHERE id = %s
-        """, (datetime.now(), admin_id))
+        now = datetime.now()
+        for dept in (departments or []):
+            try:
+                dept_table = dept.replace('-', '_') + '_profile'
+                cursor.execute(f"""
+                    UPDATE {dept_table} SET last_login = %s WHERE admin_id = %s
+                """, (now, admin_id))
+            except Exception as e:
+                print(f"Could not update last_login in {dept_table}: {e}")
         conn.commit()
 
         # Generate access token with ALL departments (30 minutes expiration)
@@ -417,7 +474,7 @@ async def send_otp_current_email(
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Verify that current_email matches admin's actual email
+        # Verify that current_email is in admin's email array
         cursor.execute("""
             SELECT email FROM admin_profile WHERE id = %s
         """, (admin_id,))
@@ -426,8 +483,8 @@ async def send_otp_current_email(
         if not result:
             raise HTTPException(status_code=404, detail="Admin not found")
 
-        actual_email = result[0]
-        if actual_email != current_email:
+        email_array = result[0] or []
+        if current_email not in email_array:
             raise HTTPException(
                 status_code=400,
                 detail="Current email does not match your account email"
@@ -439,12 +496,8 @@ async def send_otp_current_email(
         # Set expiration (5 minutes from now)
         expires_at = datetime.now() + timedelta(minutes=5)
 
-        # Store OTP in admin_profile table
-        cursor.execute("""
-            UPDATE admin_profile
-            SET otp_code = %s, otp_expires_at = %s, updated_at = %s
-            WHERE id = %s
-        """, (otp_code, expires_at, datetime.now(), admin_id))
+        # Save OTP to otps table
+        save_otp_to_table(cursor, admin_id, current_email, otp_code, 'email_verification', expires_at)
 
         conn.commit()
 
@@ -511,37 +564,23 @@ async def verify_otp_current_email(
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Get stored OTP and check validity
+        # Verify admin exists and current email is in their email array
         cursor.execute("""
-            SELECT otp_code, otp_expires_at, email
-            FROM admin_profile
-            WHERE id = %s
+            SELECT email FROM admin_profile WHERE id = %s
         """, (admin_id,))
 
         result = cursor.fetchone()
         if not result:
             raise HTTPException(status_code=404, detail="Admin not found")
 
-        stored_otp, expires_at, email = result
+        email_array = result[0] or []
 
-        # Verify current email matches
-        if email != current_email:
+        # Verify current email is in the email array
+        if current_email not in email_array:
             raise HTTPException(status_code=400, detail="Email mismatch")
 
-        # Check if OTP matches
-        if stored_otp != otp_code:
-            raise HTTPException(status_code=400, detail="Invalid OTP code")
-
-        # Check if OTP has expired
-        if expires_at and datetime.now() > expires_at:
-            raise HTTPException(status_code=400, detail="OTP has expired. Please request a new one.")
-
-        # OTP is valid - clear it so it can't be reused
-        cursor.execute("""
-            UPDATE admin_profile
-            SET otp_code = NULL, otp_expires_at = NULL, updated_at = %s
-            WHERE id = %s
-        """, (datetime.now(), admin_id))
+        # Verify OTP from otps table
+        verify_otp_from_table(cursor, current_email, otp_code, 'email_verification')
 
         conn.commit()
 
@@ -588,10 +627,10 @@ async def send_admin_email_change_otp(
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Check if email is already in use by another admin
+        # Check if email is already in use by another admin (email is now an array)
         cursor.execute("""
             SELECT id FROM admin_profile
-            WHERE email = %s AND id != %s
+            WHERE %s = ANY(email) AND id != %s
         """, (new_email, admin_id))
 
         existing_admin = cursor.fetchone()
@@ -607,12 +646,8 @@ async def send_admin_email_change_otp(
         # Set expiration (5 minutes from now)
         expires_at = datetime.now() + timedelta(minutes=5)
 
-        # Store OTP in admin_profile table
-        cursor.execute("""
-            UPDATE admin_profile
-            SET otp_code = %s, otp_expires_at = %s, updated_at = %s
-            WHERE id = %s
-        """, (otp_code, expires_at, datetime.now(), admin_id))
+        # Save OTP to otps table
+        save_otp_to_table(cursor, admin_id, new_email, otp_code, 'email_change', expires_at)
 
         conn.commit()
 
@@ -678,33 +713,14 @@ async def verify_admin_email_change_otp(
         conn = get_connection()
         cursor = conn.cursor()
 
-        # Get stored OTP and check validity
-        cursor.execute("""
-            SELECT otp_code, otp_expires_at
-            FROM admin_profile
-            WHERE id = %s
-        """, (admin_id,))
-
+        # Verify admin exists
+        cursor.execute("SELECT id FROM admin_profile WHERE id = %s", (admin_id,))
         result = cursor.fetchone()
         if not result:
             raise HTTPException(status_code=404, detail="Admin not found")
 
-        stored_otp, expires_at = result
-
-        # Check if OTP matches
-        if stored_otp != otp_code:
-            raise HTTPException(status_code=400, detail="Invalid OTP code")
-
-        # Check if OTP has expired
-        if expires_at and datetime.now() > expires_at:
-            raise HTTPException(status_code=400, detail="OTP has expired. Please request a new one.")
-
-        # OTP is valid - clear it so it can't be reused
-        cursor.execute("""
-            UPDATE admin_profile
-            SET otp_code = NULL, otp_expires_at = NULL, updated_at = %s
-            WHERE id = %s
-        """, (datetime.now(), admin_id))
+        # Verify OTP from otps table
+        verify_otp_from_table(cursor, new_email, otp_code, 'email_change')
 
         conn.commit()
 

@@ -113,6 +113,30 @@ function switchPanel(panelName) {
             console.warn('⚠️ parentPortalManager not found');
         }
     }
+
+    // Initialize schedule panel when switched to
+    if (panelName === 'schedule') {
+        if (typeof window.initializeSchedulePanel === 'function') {
+            console.log('📅 Initializing schedule panel...');
+            window.initializeSchedulePanel();
+        } else if (typeof window.loadStudentSchedules === 'function') {
+            // Fallback to old behavior
+            console.log('📅 Initializing schedule panel (fallback)...');
+            window.loadStudentSchedules();
+        } else {
+            console.warn('⚠️ initializeSchedulePanel function not found');
+        }
+    }
+
+    // Initialize my-requests panel when switched to
+    if (panelName === 'my-requests') {
+        if (typeof window.loadStudentRequestCounts === 'function') {
+            console.log('📋 Initializing my-requests panel...');
+            window.loadStudentRequestCounts();
+        } else {
+            console.warn('⚠️ loadStudentRequestCounts function not found');
+        }
+    }
 }
 
 /**

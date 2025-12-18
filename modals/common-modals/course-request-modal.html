@@ -1,0 +1,203 @@
+<!--
+  Modal: course-request-modal
+  Purpose: Request a new course to be added to the platform
+-->
+
+<div id="course-request-modal" class="modal-overlay hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 10001;">
+    <div class="modal-content" style="background: var(--bg-primary, #fff); border-radius: 16px; width: 95%; max-width: 700px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);">
+        <!-- Modal Header -->
+        <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 1.5rem 2rem; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem;">
+                    <i class="fas fa-plus-circle"></i> Request New Course
+                </h2>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.9;">Submit a course for admin approval</p>
+            </div>
+            <button onclick="closeCourseRequestModal()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 1.25rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body" style="padding: 2rem; overflow-y: auto; max-height: calc(90vh - 180px);">
+            <form id="courseRequestForm">
+                <!-- Thumbnail Upload Section -->
+                <div class="form-section" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        <i class="fas fa-image" style="color: #3b82f6; margin-right: 0.5rem;"></i> Course Thumbnail
+                    </label>
+                    <div id="courseRequestThumbnailUploader" onclick="triggerCourseRequestThumbnailUpload()"
+                         style="border: 2px dashed var(--border-color, #e5e7eb); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg-secondary, #f9fafb);">
+                        <input type="file" id="courseRequestThumbnailInput" accept="image/*" style="display: none;" onchange="handleCourseRequestThumbnailUpload(event)">
+                        <input type="hidden" id="courseRequestThumbnail" value="">
+                        <div id="courseRequestThumbnailPreview">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 2.5rem; color: #9ca3af; margin-bottom: 0.5rem;"></i>
+                            <p style="margin: 0; color: #6b7280; font-weight: 500;">Click to upload thumbnail</p>
+                            <span style="font-size: 0.8rem; color: #9ca3af;">PNG, JPG, GIF up to 5MB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Name & Category Row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-heading" style="color: #3b82f6; margin-right: 0.5rem;"></i> Course Name *
+                        </label>
+                        <input type="text" id="courseRequestName" required placeholder="e.g., Mathematics Grade 10"
+                               style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; transition: all 0.2s;">
+                    </div>
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-folder" style="color: #3b82f6; margin-right: 0.5rem;"></i> Category *
+                        </label>
+                        <select id="courseRequestCategory" required onchange="toggleCourseRequestCustomCategory()"
+                                style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; background: var(--bg-primary, #fff);">
+                            <option value="">Select Category</option>
+                            <option value="Academic">Academic</option>
+                            <option value="Business">Business</option>
+                            <option value="Technology">Technology</option>
+                            <option value="Art & Design">Art & Design</option>
+                            <option value="Music">Music</option>
+                            <option value="Language">Language</option>
+                            <option value="Health & Fitness">Health & Fitness</option>
+                            <option value="Lifestyle">Lifestyle</option>
+                            <option value="Test Prep">Test Prep</option>
+                            <option value="Professional">Professional</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <input type="text" id="courseRequestCustomCategory" placeholder="Enter custom category"
+                               style="display: none; width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; margin-top: 0.5rem;">
+                    </div>
+                </div>
+
+                <!-- Grade Level & Duration Row -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-graduation-cap" style="color: #3b82f6; margin-right: 0.5rem;"></i> Grade Level *
+                        </label>
+                        <select id="courseRequestLevel" required
+                                style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; background: var(--bg-primary, #fff);">
+                            <option value="">Select Grade Level</option>
+                            <option value="KG">Kindergarten (KG)</option>
+                            <option value="Elementary">Elementary (Grade 1-6)</option>
+                            <option value="Grade 7-8">Grade 7-8</option>
+                            <option value="Grade 9-10">Grade 9-10</option>
+                            <option value="Grade 11-12">Grade 11-12</option>
+                            <option value="University Level">University Level</option>
+                            <option value="Professional">Professional/Adult Education</option>
+                            <option value="All Levels">All Levels</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-clock" style="color: #3b82f6; margin-right: 0.5rem;"></i> Duration (hours)
+                        </label>
+                        <input type="number" id="courseRequestDuration" min="1" placeholder="e.g., 20"
+                               style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
+                    </div>
+                </div>
+
+                <!-- Number of Lessons -->
+                <div style="margin-bottom: 1.5rem;">
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-list-ol" style="color: #3b82f6; margin-right: 0.5rem;"></i> Number of Lessons
+                        </label>
+                        <input type="number" id="courseRequestLessons" min="1" placeholder="e.g., 12" oninput="updateCourseRequestLessonTitles()"
+                               style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div style="margin-bottom: 1.5rem;">
+                    <div class="form-field">
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            <i class="fas fa-align-left" style="color: #3b82f6; margin-right: 0.5rem;"></i> Description
+                        </label>
+                        <textarea id="courseRequestDescription" rows="3" placeholder="Brief description of what this course covers..."
+                                  style="width: 100%; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; resize: vertical;"></textarea>
+                    </div>
+                </div>
+
+                <!-- Languages Section -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        <i class="fas fa-language" style="color: #3b82f6; margin-right: 0.5rem;"></i> Languages Taught
+                    </label>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <input type="text" id="courseRequestLanguageInput" placeholder="Type a language and press Enter"
+                               onkeypress="handleCourseRequestLanguageKeypress(event)"
+                               style="flex: 1; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
+                        <button type="button" onclick="addCourseRequestLanguageTag()"
+                                style="padding: 0.75rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <span style="font-size: 0.85rem; color: #6b7280;">Suggestions:</span>
+                        <button type="button" onclick="addCourseRequestLanguageSuggestion('English')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">English</button>
+                        <button type="button" onclick="addCourseRequestLanguageSuggestion('Amharic')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Amharic</button>
+                        <button type="button" onclick="addCourseRequestLanguageSuggestion('Oromo')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Oromo</button>
+                        <button type="button" onclick="addCourseRequestLanguageSuggestion('Tigrinya')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">Tigrinya</button>
+                        <button type="button" onclick="addCourseRequestLanguageSuggestion('French')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">French</button>
+                    </div>
+                    <div id="courseRequestLanguageTagsContainer" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <!-- Language tags will be added here -->
+                    </div>
+                </div>
+
+                <!-- Tags Section -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        <i class="fas fa-tags" style="color: #10b981; margin-right: 0.5rem;"></i> Course Tags
+                    </label>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                        <input type="text" id="courseRequestTagInput" placeholder="Type a tag and press Enter"
+                               onkeypress="handleCourseRequestTagKeypress(event)"
+                               style="flex: 1; padding: 0.75rem 1rem; border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem;">
+                        <button type="button" onclick="addCourseRequestTag()"
+                                style="padding: 0.75rem 1rem; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                        <span style="font-size: 0.85rem; color: #6b7280;">Suggestions:</span>
+                        <button type="button" onclick="addCourseRequestTagSuggestion('beginner')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">beginner</button>
+                        <button type="button" onclick="addCourseRequestTagSuggestion('advanced')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">advanced</button>
+                        <button type="button" onclick="addCourseRequestTagSuggestion('exam-prep')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">exam-prep</button>
+                        <button type="button" onclick="addCourseRequestTagSuggestion('practical')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">practical</button>
+                        <button type="button" onclick="addCourseRequestTagSuggestion('theory')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">theory</button>
+                        <button type="button" onclick="addCourseRequestTagSuggestion('online')" style="padding: 0.25rem 0.75rem; background: var(--bg-secondary, #f3f4f6); border: 1px solid var(--border-color, #e5e7eb); border-radius: 20px; font-size: 0.8rem; cursor: pointer;">online</button>
+                    </div>
+                    <div id="courseRequestTagsContainer" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <!-- Tags will be added here -->
+                    </div>
+                </div>
+
+                <!-- Lesson Titles Section -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">
+                        <i class="fas fa-list" style="color: #3b82f6; margin-right: 0.5rem;"></i> Lesson Titles
+                    </label>
+                    <div id="courseRequestLessonTitlesContainer" style="background: var(--bg-secondary, #f9fafb); border-radius: 8px; padding: 1rem;">
+                        <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Enter number of lessons above to add lesson titles</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer" style="padding: 1.5rem 2rem; background: var(--bg-secondary, #f9fafb); border-top: 1px solid var(--border-color, #e5e7eb); display: flex; justify-content: flex-end; gap: 1rem;">
+            <button type="button" onclick="closeCourseRequestModal()"
+                    style="padding: 0.75rem 1.5rem; background: var(--bg-primary, #fff); border: 2px solid var(--border-color, #e5e7eb); border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-primary);">
+                Cancel
+            </button>
+            <button type="button" onclick="submitCourseRequest()" id="submitCourseRequestBtn"
+                    style="padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; color: white; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-paper-plane"></i> Submit for Approval
+            </button>
+        </div>
+    </div>
+</div>

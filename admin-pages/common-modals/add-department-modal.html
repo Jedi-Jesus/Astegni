@@ -1,0 +1,686 @@
+<!-- Add Department Role Modal Component -->
+<!-- Include this file in any admin page that needs the add department functionality -->
+
+<div id="add-department-modal" class="modal-overlay">
+    <div class="modal-content glass">
+        <button class="modal-close" onclick="closeAddDepartmentModal()">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="auth-container">
+            <div class="auth-form active">
+                <h2 class="gradient-text">Add Department Role</h2>
+                <p class="text-muted">Request access to an additional department</p>
+
+                <form onsubmit="handleAddDepartment(event)">
+                    <div class="form-group">
+                        <label for="add-dept-department">Select Department</label>
+                        <select id="add-dept-department" name="department" required>
+                            <option value="">Choose a department</option>
+                            <option value="manage-admins">Manage Admins</option>
+                            <option value="manage-advertisers">Manage Advertisers</option>
+                            <option value="manage-contents">Manage Contents</option>
+                            <option value="manage-courses">Manage Courses</option>
+                            <option value="manage-credentials">Manage Credentials</option>
+                            <option value="manage-customers">Manage Customers</option>
+                            <option value="manage-schools">Manage Schools</option>
+                            <option value="manage-system-settings">System Settings (Full Access)</option>
+                        </select>
+                        <span class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="add-dept-position">Position</label>
+                        <input type="text" id="add-dept-position" name="position" required
+                               placeholder="e.g., Manager, Staff, Coordinator" value="Staff">
+                        <span class="error-text"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="add-dept-otp">OTP Code</label>
+                        <input type="text" id="add-dept-otp" name="otp" required maxlength="6"
+                               placeholder="Enter 6-digit OTP from email">
+                        <span class="error-text"></span>
+                        <small class="form-hint">An OTP will be sent to your registered email</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="add-dept-password">Confirm Your Password</label>
+                        <div class="password-input">
+                            <input type="password" id="add-dept-password" name="password" required
+                                   placeholder="Enter your current password">
+                            <button type="button" class="toggle-password" onclick="togglePassword('add-dept-password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        <span class="error-text"></span>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="cta-button secondary" onclick="requestDepartmentOTP()">
+                            <span>Request OTP</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                        <button type="submit" class="cta-button">
+                            <span>Add Department</span>
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Add Department Modal Styles */
+#add-department-modal.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+#add-department-modal.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#add-department-modal .modal-content {
+    background: var(--card-bg, #ffffff);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 450px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+[data-theme="dark"] #add-department-modal .modal-content {
+    background: var(--dark-card-bg, #1f2937);
+    border-color: var(--dark-border-color, #374151);
+}
+
+#add-department-modal .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--hover-bg, #f3f4f6);
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary, #6b7280);
+    transition: all 0.2s ease;
+}
+
+#add-department-modal .modal-close:hover {
+    background: #ef4444;
+    color: white;
+}
+
+[data-theme="dark"] #add-department-modal .modal-close {
+    background: var(--dark-hover-bg, #374151);
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+#add-department-modal .auth-container {
+    text-align: center;
+}
+
+#add-department-modal .gradient-text {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+#add-department-modal .text-muted {
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+[data-theme="dark"] #add-department-modal .text-muted {
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+#add-department-modal .form-group {
+    margin-bottom: 1rem;
+    text-align: left;
+}
+
+#add-department-modal .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary, #1f2937);
+    font-size: 0.875rem;
+}
+
+[data-theme="dark"] #add-department-modal .form-group label {
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+#add-department-modal .form-group input,
+#add-department-modal .form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: var(--card-bg, #ffffff);
+    color: var(--text-primary, #1f2937);
+    transition: all 0.2s ease;
+}
+
+[data-theme="dark"] #add-department-modal .form-group input,
+[data-theme="dark"] #add-department-modal .form-group select {
+    background: var(--dark-card-bg, #1f2937);
+    border-color: var(--dark-border-color, #374151);
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+#add-department-modal .form-group input:focus,
+#add-department-modal .form-group select:focus {
+    outline: none;
+    border-color: var(--primary-color, #6366f1);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+#add-department-modal .password-input {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#add-department-modal .password-input input {
+    padding-right: 3rem;
+}
+
+#add-department-modal .toggle-password {
+    position: absolute;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--text-secondary, #6b7280);
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+#add-department-modal .toggle-password:hover {
+    color: var(--primary-color, #6366f1);
+}
+
+#add-department-modal .error-text {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+#add-department-modal .error-text.visible {
+    display: block;
+}
+
+#add-department-modal .form-hint {
+    display: block;
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+[data-theme="dark"] #add-department-modal .form-hint {
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+#add-department-modal .modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+#add-department-modal .cta-button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#add-department-modal .cta-button:not(.secondary) {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+}
+
+#add-department-modal .cta-button:not(.secondary):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+#add-department-modal .cta-button.secondary {
+    background: var(--hover-bg, #f3f4f6);
+    color: var(--text-primary, #1f2937);
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+[data-theme="dark"] #add-department-modal .cta-button.secondary {
+    background: var(--dark-hover-bg, #374151);
+    color: var(--dark-text-primary, #f9fafb);
+    border-color: var(--dark-border-color, #4b5563);
+}
+
+#add-department-modal .cta-button.secondary:hover {
+    background: var(--primary-color, #6366f1);
+    color: white;
+    border-color: var(--primary-color, #6366f1);
+}
+
+#add-department-modal .cta-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+</style>
+
+<script>
+/**
+ * Add Department Modal - JavaScript Functions
+ * This script provides all functionality for adding department roles
+ */
+
+(function() {
+    'use strict';
+
+    // Use global API_BASE_URL set by api-config.js
+    const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+
+    // Open add department modal
+    window.openAddDepartmentModal = function() {
+        const modal = document.getElementById('add-department-modal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+        // Close profile dropdown if open
+        const dropdown = document.getElementById('profile-dropdown-menu');
+        if (dropdown) {
+            dropdown.classList.add('hidden');
+        }
+    };
+
+    // Close add department modal
+    window.closeAddDepartmentModal = function() {
+        const modal = document.getElementById('add-department-modal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+        // Clear form
+        const form = modal?.querySelector('form');
+        if (form) {
+            form.reset();
+            clearAddDeptFormErrors();
+        }
+    };
+
+    // Request OTP for adding department
+    window.requestDepartmentOTP = async function() {
+        // Get admin user from localStorage
+        const adminUser = JSON.parse(localStorage.getItem('adminUser') || localStorage.getItem('adminSession') || '{}');
+        const email = adminUser.email;
+
+        if (!email) {
+            showAddDeptNotification('No email found. Please login again.', 'warning');
+            return;
+        }
+
+        const department = document.getElementById('add-dept-department').value;
+        if (!department) {
+            showAddDeptFieldError('add-dept-department', 'Please select a department first');
+            return;
+        }
+
+        // Check if already has this department
+        const currentDepts = adminUser.departments || [];
+        if (currentDepts.includes(department)) {
+            showAddDeptNotification('You already have access to this department.', 'warning');
+            return;
+        }
+
+        const requestBtn = document.querySelector('#add-department-modal .cta-button.secondary');
+        const originalText = requestBtn.innerHTML;
+        requestBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Sending...</span>';
+        requestBtn.disabled = true;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/request-department-otp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify({
+                    email: email,
+                    department: department
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to send OTP');
+            }
+
+            const data = await response.json();
+
+            // Show success with OTP in dev mode if available
+            if (data.otp) {
+                showAddDeptNotification(`OTP sent! [DEV: ${data.otp}]`, 'success');
+            } else {
+                showAddDeptNotification('OTP sent to your email!', 'success');
+            }
+
+            // Focus OTP field
+            document.getElementById('add-dept-otp').focus();
+
+        } catch (error) {
+            console.error('Request OTP error:', error);
+            showAddDeptNotification(error.message || 'Failed to send OTP', 'warning');
+        } finally {
+            requestBtn.innerHTML = originalText;
+            requestBtn.disabled = false;
+        }
+    };
+
+    // Handle add department form submission
+    window.handleAddDepartment = async function(event) {
+        event.preventDefault();
+
+        const form = event.target;
+        const department = form.department.value;
+        const position = form.position.value.trim();
+        const otp = form.otp.value.trim();
+        const password = form.password.value;
+
+        // Clear previous errors
+        clearAddDeptFormErrors();
+
+        // Validate
+        let hasError = false;
+
+        if (!department) {
+            showAddDeptFieldError('add-dept-department', 'Please select a department');
+            hasError = true;
+        }
+
+        if (!position) {
+            showAddDeptFieldError('add-dept-position', 'Please enter your position');
+            hasError = true;
+        }
+
+        if (!otp || otp.length !== 6) {
+            showAddDeptFieldError('add-dept-otp', 'Please enter the 6-digit OTP');
+            hasError = true;
+        }
+
+        if (!password) {
+            showAddDeptFieldError('add-dept-password', 'Please confirm your password');
+            hasError = true;
+        }
+
+        if (hasError) {
+            shakeAddDeptForm(form);
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span>Adding department...</span>';
+        submitBtn.disabled = true;
+
+        try {
+            const adminUser = JSON.parse(localStorage.getItem('adminUser') || localStorage.getItem('adminSession') || '{}');
+
+            const response = await fetch(`${API_BASE_URL}/api/admin/add-department`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify({
+                    email: adminUser.email,
+                    department: department,
+                    position: position,
+                    otp_code: otp,
+                    password: password
+                })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to add department');
+            }
+
+            const data = await response.json();
+
+            // Update local admin user data
+            const updatedAdminUser = {
+                ...adminUser,
+                departments: data.departments || [...(adminUser.departments || []), department]
+            };
+            localStorage.setItem('adminUser', JSON.stringify(updatedAdminUser));
+
+            // Also update adminSession if it exists
+            const adminSession = JSON.parse(localStorage.getItem('adminSession') || '{}');
+            if (adminSession.email) {
+                adminSession.departments = updatedAdminUser.departments;
+                localStorage.setItem('adminSession', JSON.stringify(adminSession));
+            }
+
+            // Close modal
+            closeAddDepartmentModal();
+
+            // Update dropdown UI if function exists
+            if (typeof updateDepartmentSwitcher === 'function') {
+                updateDepartmentSwitcher(updatedAdminUser);
+            }
+
+            // Show success message
+            showAddDeptNotification('Department added successfully!', 'success');
+
+            // Reload page to reflect changes after short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+
+        } catch (error) {
+            console.error('Add department error:', error);
+            showAddDeptFieldError('add-dept-otp', error.message || 'Failed to add department');
+            shakeAddDeptForm(form);
+        } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    };
+
+    // Toggle password visibility
+    window.togglePassword = window.togglePassword || function(fieldId) {
+        const field = document.getElementById(fieldId);
+        const button = field?.parentElement?.querySelector('.toggle-password');
+        const icon = button?.querySelector('i');
+
+        if (field && field.type === 'password') {
+            field.type = 'text';
+            if (icon) {
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        } else if (field) {
+            field.type = 'password';
+            if (icon) {
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    };
+
+    // Show field error
+    function showAddDeptFieldError(fieldId, message) {
+        const field = document.getElementById(fieldId);
+        if (!field) return;
+
+        const errorText = field.parentElement?.querySelector('.error-text');
+        if (errorText) {
+            errorText.textContent = message;
+            errorText.classList.add('visible');
+            errorText.style.display = 'block';
+        }
+        field.style.borderColor = '#ef4444';
+    }
+
+    // Clear form errors
+    function clearAddDeptFormErrors() {
+        const modal = document.getElementById('add-department-modal');
+        if (!modal) return;
+
+        const errorTexts = modal.querySelectorAll('.error-text');
+        const inputs = modal.querySelectorAll('input, select');
+
+        errorTexts.forEach(error => {
+            error.textContent = '';
+            error.classList.remove('visible');
+            error.style.display = 'none';
+        });
+
+        inputs.forEach(input => {
+            input.style.borderColor = '';
+        });
+    }
+
+    // Shake form animation
+    function shakeAddDeptForm(form) {
+        form.style.animation = 'shake 0.5s';
+        setTimeout(() => {
+            form.style.animation = '';
+        }, 500);
+    }
+
+    // Show notification
+    function showAddDeptNotification(message, type = 'info') {
+        // Check if global showNotification exists
+        if (typeof showNotification === 'function') {
+            showNotification(message, type);
+            return;
+        }
+
+        // Create our own notification
+        const notification = document.createElement('div');
+        notification.className = `add-dept-notification add-dept-notification-${type}`;
+        notification.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+            <span>${message}</span>
+        `;
+
+        // Add styles if not exists
+        if (!document.getElementById('add-dept-notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'add-dept-notification-styles';
+            style.textContent = `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+                .add-dept-notification {
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    padding: 1rem 1.5rem;
+                    background: var(--card-bg, #ffffff);
+                    border: 1px solid var(--border-color, #e5e7eb);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.75rem;
+                    z-index: 10001;
+                    transform: translateX(400px);
+                    transition: transform 0.3s ease;
+                    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+                }
+                .add-dept-notification.show {
+                    transform: translateX(0);
+                }
+                .add-dept-notification-success {
+                    border-left: 3px solid #10b981;
+                    color: #10b981;
+                }
+                .add-dept-notification-warning {
+                    border-left: 3px solid #f59e0b;
+                    color: #f59e0b;
+                }
+                .add-dept-notification-info {
+                    border-left: 3px solid #6366f1;
+                    color: #6366f1;
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => notification.classList.add('show'), 10);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
+        }, 3000);
+    }
+
+    // Close modal on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeAddDepartmentModal();
+        }
+    });
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('add-department-modal');
+        if (modal && e.target === modal) {
+            closeAddDepartmentModal();
+        }
+    });
+
+    console.log('Add Department Modal component loaded');
+})();
+</script>

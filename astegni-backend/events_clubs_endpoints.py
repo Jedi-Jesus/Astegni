@@ -160,47 +160,69 @@ async def get_events(
     status_filter: Optional[str] = None,
     type_filter: Optional[str] = None,
     search: Optional[str] = None,
+    role: Optional[str] = None,
     limit: int = 20,
     offset: int = 0,
     authorization: Optional[str] = Header(None)
 ):
-    """Get events - current tutor's events, system events, or joined events"""
+    """Get events - current user's events, system events, or joined events
+
+    Query parameters:
+    - role: Filter by specific role (tutor, student, parent, advertiser).
+            When provided, uses the corresponding profile_id for filtering.
+    """
     conn = psycopg.connect(DATABASE_URL)
     cur = conn.cursor()
 
     # Try to get current user from token (optional)
     current_user_id = None
+    current_role = None
     if authorization and authorization.startswith('Bearer '):
         try:
             from utils import verify_token
             token = authorization.split(' ')[1]
             payload = verify_token(token)
             current_user_id = payload.get('id')
+            current_role = role or payload.get('role')  # Use provided role or from token
         except:
             pass  # Token invalid, just show system events
 
     try:
-        # Build base query - check tutor_profiles and admin_profile
+        # Build base query based on role
         if current_user_id:
-            # Get current tutor's tutor_profile ID
-            cur.execute("""
-                SELECT id FROM tutor_profiles WHERE user_id = %s
-            """, (current_user_id,))
-            tutor_result = cur.fetchone()
-            tutor_id = tutor_result[0] if tutor_result else None
+            profile_id = None
+            profile_type = current_role or 'tutor'  # Default to tutor for backward compatibility
 
-            # Logged in: show tutor's events + system events + joined events
+            # Get profile ID based on role
+            if profile_type == 'tutor':
+                cur.execute("SELECT id FROM tutor_profiles WHERE user_id = %s", (current_user_id,))
+                result = cur.fetchone()
+                profile_id = result[0] if result else None
+            elif profile_type == 'student':
+                cur.execute("SELECT id FROM student_profiles WHERE user_id = %s", (current_user_id,))
+                result = cur.fetchone()
+                profile_id = result[0] if result else None
+            elif profile_type == 'parent':
+                cur.execute("SELECT id FROM parent_profiles WHERE user_id = %s", (current_user_id,))
+                result = cur.fetchone()
+                profile_id = result[0] if result else None
+            elif profile_type == 'advertiser':
+                cur.execute("SELECT id FROM advertiser_profiles WHERE user_id = %s", (current_user_id,))
+                result = cur.fetchone()
+                profile_id = result[0] if result else None
+
+            # Logged in: show user's events + system events + joined events
             query = """
                 SELECT DISTINCT e.*,
                        CASE WHEN e.creator_type = 'admin' THEN true ELSE false END as is_system
                 FROM events e
                 WHERE (
-                    (e.creator_type = 'tutor' AND e.created_by = %s)  -- Current tutor's events
+                    (e.creator_type = %s AND e.created_by = %s)  -- Current user's events by role
                     OR e.creator_type = 'admin'  -- System events (admin_profile.id in created_by)
                     OR e.joined_status = true  -- Joined events
                 )
             """
-            params = [tutor_id] if tutor_id else []
+            params = [profile_type, profile_id] if profile_id else [profile_type, -1]
         else:
             # Not logged in: show only system events
             query = """
@@ -662,47 +684,69 @@ async def get_clubs(
     status_filter: Optional[str] = None,
     category_filter: Optional[str] = None,
     search: Optional[str] = None,
+    role: Optional[str] = None,
     limit: int = 20,
     offset: int = 0,
     authorization: Optional[str] = Header(None)
 ):
-    """Get clubs - current tutor's clubs, system clubs, or joined clubs"""
+    """Get clubs - current user's clubs, system clubs, or joined clubs
+
+    Query parameters:
+    - role: Filter by specific role (tutor, student, parent, advertiser).
+            When provided, uses the corresponding profile_id for filtering.
+    """
     conn = psycopg.connect(DATABASE_URL)
     cur = conn.cursor()
 
     # Try to get current user from token (optional)
     current_user_id = None
+    current_role = None
     if authorization and authorization.startswith('Bearer '):
         try:
             from utils import verify_token
             token = authorization.split(' ')[1]
             payload = verify_token(token)
             current_user_id = payload.get('id')
+            current_role = role or payload.get('role')  # Use provided role or from token
         except:
             pass  # Token invalid, just show system clubs
 
     try:
-        # Build base query - check tutor_profiles and manage_uploads
+        # Build base query based on role
         if current_user_id:
-            # Get current tutor's tutor_profile ID
-            cur.execute("""
-                SELECT id FROM tutor_profiles WHERE user_id = %s
-            """, (current_user_id,))
-            tutor_result = cur.fetchone()
-            tutor_id = tutor_result[0] if tutor_result else None
+            profile_id = None
+            profile_type = current_role or 'tutor'  # Default to tutor for backward compatibility
 
-            # Logged in: show tutor's clubs + system clubs + joined clubs
+            # Get profile ID based on role
+            if profile_type == 'tutor':
+                cur.execute("SELECT id FROM tutor_profiles WHERE user_id = %s", (current_user_id,))
+                result = cur.fetchone()
+                profile_id = result[0] if result else None
+            elif profile_type == 'student':
+                cur.execute("SELECT id FROM student_profiles WHERE user_id = %s", (current_user_id,))
+                result = cur.fetchone()
+                profile_id = result[0] if result else None
+            elif profile_type == 'parent':
+                cur.execute("SELECT id FROM parent_profiles WHERE user_id = %s", (current_user_id,))
+                result = cur.fetchone()
+                profile_id = result[0] if result else None
+            elif profile_type == 'advertiser':
+                cur.execute("SELECT id FROM advertiser_profiles WHERE user_id = %s", (current_user_id,))
+                result = cur.fetchone()
+                profile_id = result[0] if result else None
+
+            # Logged in: show user's clubs + system clubs + joined clubs
             query = """
                 SELECT DISTINCT c.*,
                        CASE WHEN c.creator_type = 'admin' THEN true ELSE false END as is_system
                 FROM clubs c
                 WHERE (
-                    (c.creator_type = 'tutor' AND c.created_by = %s)  -- Current tutor's clubs
+                    (c.creator_type = %s AND c.created_by = %s)  -- Current user's clubs by role
                     OR c.creator_type = 'admin'  -- System clubs
                     OR c.joined_status = true  -- Joined clubs
                 )
             """
-            params = [tutor_id] if tutor_id else []
+            params = [profile_type, profile_id] if profile_id else [profile_type, -1]
         else:
             # Not logged in: show only system clubs
             query = """

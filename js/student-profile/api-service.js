@@ -4,11 +4,12 @@
 // ============================================
 
 const StudentProfileAPI = {
-    baseURL: 'https://api.astegni.com',
+    baseURL: 'http://localhost:8000',
 
     // Get auth token from localStorage
     getAuthToken() {
-        return localStorage.getItem('token');
+        // Check both 'token' and 'access_token' for compatibility
+        return localStorage.getItem('token') || localStorage.getItem('access_token');
     },
 
     // Get current logged-in user

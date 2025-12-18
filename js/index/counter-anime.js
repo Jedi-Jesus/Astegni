@@ -4,7 +4,7 @@
 // ============================================
 
 // Use global API base URL
-const counterApiUrl = window.API_BASE_URL || 'https://api.astegni.com';
+const counterApiUrl = window.API_BASE_URL || 'http://localhost:8000';
 
 async function fetchStatistics() {
     try {

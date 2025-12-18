@@ -11,14 +11,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
     <!-- Custom Styles -->
     <link rel="stylesheet" href="../css/root.css">
-    <link rel="stylesheet" href="../css/admin-profile/admin.css">
-    <link rel="stylesheet" href="../css/admin-pages/shared/admin-layout-fix.css">
     <link rel="stylesheet" href="../css/advertiser-profile/advertiser-profile.css">
     <link rel="stylesheet" href="../css/find-tutors/hero-section.css">
     <!-- Shared Modal Styles -->
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -62,27 +62,35 @@
             0% {
                 transform: translateY(0);
             }
+
             20% {
                 transform: translateY(0);
             }
+
             25% {
                 transform: translateY(-95px);
             }
+
             45% {
                 transform: translateY(-95px);
             }
+
             50% {
                 transform: translateY(-190px);
             }
+
             70% {
                 transform: translateY(-190px);
             }
+
             75% {
                 transform: translateY(-285px);
             }
+
             95% {
                 transform: translateY(-285px);
             }
+
             100% {
                 transform: translateY(0);
             }
@@ -248,9 +256,8 @@
             right: 0;
             bottom: 0;
             background: linear-gradient(180deg,
-                rgba(0, 0, 0, 0.1) 0%,
-                rgba(0, 0, 0, 0.3) 100%
-            );
+                    rgba(0, 0, 0, 0.1) 0%,
+                    rgba(0, 0, 0, 0.3) 100%);
             pointer-events: none;
         }
 
@@ -330,8 +337,15 @@
         }
 
         @keyframes pulse-indicator {
-            0%, 100% { box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4); }
-            50% { box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8); }
+
+            0%,
+            100% {
+                box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+            }
+
+            50% {
+                box-shadow: 0 2px 16px rgba(34, 197, 94, 0.8);
+            }
         }
 
         .avatar-upload-btn {
@@ -823,33 +837,43 @@
             0% {
                 transform: translateY(0);
             }
+
             16.66% {
                 transform: translateY(0);
             }
+
             20% {
                 transform: translateY(-95px);
             }
+
             36.66% {
                 transform: translateY(-95px);
             }
+
             40% {
                 transform: translateY(-190px);
             }
+
             56.66% {
                 transform: translateY(-190px);
             }
+
             60% {
                 transform: translateY(-285px);
             }
+
             76.66% {
                 transform: translateY(-285px);
             }
+
             80% {
                 transform: translateY(-380px);
             }
+
             96.66% {
                 transform: translateY(-380px);
             }
+
             100% {
                 transform: translateY(-475px);
             }
@@ -931,6 +955,7 @@
             0% {
                 stroke-dashoffset: 0;
             }
+
             100% {
                 stroke-dashoffset: -30;
             }
@@ -941,9 +966,12 @@
         }
 
         @keyframes sidebarWavePulse {
-            0%, 100% {
+
+            0%,
+            100% {
                 opacity: 0.6;
             }
+
             50% {
                 opacity: 0.8;
             }
@@ -1193,7 +1221,7 @@
                         </svg>
                     </button>
 
-                    <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                    <div id="profile-dropdown-menu" class="profile-dropdown-menu">
                         <!-- User info header - CLICKABLE to go to profile page -->
                         <a href="#" id="dropdown-profile-link" class="dropdown-header-link">
                             <div class="dropdown-header">
@@ -1203,8 +1231,11 @@
                                     <span id="dropdown-user-email" class="dropdown-user-email"></span>
                                     <span id="dropdown-user-role" class="dropdown-user-role"></span>
                                 </div>
-                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor"
+                                    viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                                        clip-rule="evenodd"></path>
                                 </svg>
                             </div>
                         </a>
@@ -1286,29 +1317,38 @@
                     <span class="sidebar-icon">🏠</span>
                     <span>Dashboard</span>
                 </a>
-                <a href="#" onclick="switchPanel('ai-insights'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🤖</span>
-                    <span>AI Insights</span>
-                    <span class="badge-new">Live</span>
-                </a>
-                <a href="#" onclick="switchPanel('campaigns'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">📢</span>
-                    <span>Campaigns</span>
-                    <span class="badge-count">15</span>
-                </a>
                 <a href="#" onclick="switchPanel('ad-analytics'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📈</span>
                     <span>Analytics</span>
                     <span class="badge-new">New</span>
                 </a>
-                <a href="#" onclick="switchPanel('creative-hub'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🎨</span>
-                    <span>Creative Hub</span>
+                <a href="#" onclick="switchPanel('activity'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚡</span>
+                    <span>Activity Feed</span>
                 </a>
                 <a href="#" onclick="switchPanel('templates'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📋</span>
                     <span>Templates</span>
                     <span class="badge-count">23</span>
+                </a>
+                <a href="#" onclick="switchPanel('ratings-and-reviews'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⭐</span>
+                    <span>Ratings & Reviews</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="switchPanel('campaigns'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📢</span>
+                    <span>Campaigns</span>
+                    <span class="badge-count">15</span>
+                </a>
+                <a href="#" onclick="switchPanel('ai-insights'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🤖</span>
+                    <span>AI Insights</span>
+                    <span class="badge-new">Live</span>
+                </a>
+                <a href="#" onclick="switchPanel('creative-hub'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🎨</span>
+                    <span>Creative Hub</span>
                 </a>
                 <a href="#" onclick="switchPanel('audiences'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">🎯</span>
@@ -1323,28 +1363,11 @@
                     <span>Team</span>
                     <span class="badge-count">8</span>
                 </a>
-                <a href="#" onclick="switchPanel('activity'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">⚡</span>
-                    <span>Activity Feed</span>
-                </a>
-                <a href="#" onclick="switchPanel('share'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🔗</span>
-                    <span>Share</span>
-                </a>
-                <a href="#" onclick="switchPanel('ratings-and-reviews'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">⭐</span>
-                    <span>Ratings & Reviews</span>
-                </a>
                 <hr class="my-4 border-gray-300">
                 <a href="#" onclick="switchPanel('jobs'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">💼</span>
                     <span>Job Board</span>
                     <span class="badge-count">3</span>
-                </a>
-                <a href="#" onclick="switchPanel('classes'); return false;" class="sidebar-link">
-                    <span class="sidebar-icon">🎓</span>
-                    <span>My Classes</span>
-                    <span class="badge-count">5</span>
                 </a>
                 <a href="#" onclick="switchPanel('blog'); return false;" class="sidebar-link">
                     <span class="sidebar-icon">📝</span>
@@ -1366,7 +1389,8 @@
                 </a>
                 <!-- Sidebar Footer with Wave Animation -->
                 <div class="sidebar-footer" style="margin-top: 2rem; position: relative; padding-top: 2rem;">
-                    <div class="sidebar-wave" aria-hidden="true" style="position: absolute; top: 0; left: -20px; right: -20px; height: 60px; overflow: hidden;">
+                    <div class="sidebar-wave" aria-hidden="true"
+                        style="position: absolute; top: 0; left: -20px; right: -20px; height: 60px; overflow: hidden;">
                         <svg viewBox="0 0 1440 120" preserveAspectRatio="none" style="width: 100%; height: 100%;">
                             <defs>
                                 <linearGradient id="sidebar-wave-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -1376,15 +1400,11 @@
                                 </linearGradient>
                             </defs>
                             <!-- Wave fill -->
-                            <path class="sidebar-wave-fill"
-                                fill="url(#sidebar-wave-gradient)"
+                            <path class="sidebar-wave-fill" fill="url(#sidebar-wave-gradient)"
                                 d="M0,32L48,37.3C96,43,192,53,288,48C384,43,480,21,576,16C672,11,768,21,864,26.7C960,32,1056,32,1152,26.7C1248,21,1344,11,1392,5.3L1440,0L1440,120L1392,120C1344,120,1248,120,1152,120C1056,120,960,120,864,120C768,120,672,120,576,120C480,120,384,120,288,120C192,120,96,120,48,120L0,120Z">
                             </path>
                             <!-- Animated wave line -->
-                            <path class="sidebar-wave-line"
-                                stroke="var(--button-bg)"
-                                stroke-width="2"
-                                fill="none"
+                            <path class="sidebar-wave-line" stroke="var(--button-bg)" stroke-width="2" fill="none"
                                 opacity="0.8"
                                 d="M0,32L48,37.3C96,43,192,53,288,48C384,43,480,21,576,16C672,11,768,21,864,26.7C960,32,1056,32,1152,26.7C1248,21,1344,11,1392,5.3L1440,0">
                             </path>
@@ -1411,36 +1431,43 @@
                     <div class="panels-container">
                         <!-- Dashboard Panel (Default) -->
                         <div id="dashboard-panel" class="panel-content active">
-                            
-                            
-            <!-- Hero Section -->
-            <section class="hero-section animate__animated animate__fadeIn">
-                <h2 class="hero-title">
-                    <span id="typedText">Empowering Education Through Strategic Advertising</span>
-                    <span id="cursor" class="cursor-blink">|</span>
-                </h2>
-                <p id="hero-subtitle" class="hero-subtitle">Driving engagement and delivering results for educational institutions</p>
-                <div class="hero-stats">
-                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
-                        <span class="stat-number" data-target="7" data-suffix="+">0</span>
-                        <span class="stat-label">Active Campaigns</span>
-                    </div>
-                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
-                        <span class="stat-number" data-target="2.4" data-suffix="M" data-decimal="1">0</span>
-                        <span class="stat-label">Total Impressions</span>
-                    </div>
-                    <div class="stat-item animate__animated animate__fadeInUp" style="animation-delay: 0.4s">
-                        <span class="stat-number" data-target="8.7" data-suffix="%" data-decimal="1">0</span>
-                        <span class="stat-label">Click-Through Rate</span>
-                    </div>
-                </div>
-            </section>
+
+
+                            <!-- Hero Section -->
+                            <section class="hero-section animate__animated animate__fadeIn">
+                                <h2 class="hero-title">
+                                    <span id="typedText">Empowering Education Through Strategic Advertising</span>
+                                    <span id="cursor" class="cursor-blink">|</span>
+                                </h2>
+                                <p id="hero-subtitle" class="hero-subtitle">Driving engagement and delivering results
+                                    for educational institutions</p>
+                                <div class="hero-stats">
+                                    <div class="stat-item animate__animated animate__fadeInUp"
+                                        style="animation-delay: 0.2s">
+                                        <span class="stat-number" data-target="7" data-suffix="+">0</span>
+                                        <span class="stat-label">Active Campaigns</span>
+                                    </div>
+                                    <div class="stat-item animate__animated animate__fadeInUp"
+                                        style="animation-delay: 0.3s">
+                                        <span class="stat-number" data-target="2.4" data-suffix="M"
+                                            data-decimal="1">0</span>
+                                        <span class="stat-label">Total Impressions</span>
+                                    </div>
+                                    <div class="stat-item animate__animated animate__fadeInUp"
+                                        style="animation-delay: 0.4s">
+                                        <span class="stat-number" data-target="8.7" data-suffix="%"
+                                            data-decimal="1">0</span>
+                                        <span class="stat-label">Click-Through Rate</span>
+                                    </div>
+                                </div>
+                            </section>
 
                             <!-- Profile Header Section (Only visible in Dashboard) -->
                             <section class="profile-header-section mb-8">
                                 <div class="cover-image-container relative">
-                                    <img id="cover-img" src="../uploads/system_images/system_cover_pictures/ad cover.jpeg"
-                                        alt="Cover" class="cover-img">
+                                    <img id="cover-img"
+                                        src="../uploads/system_images/system_cover_pictures/ad cover.jpeg" alt="Cover"
+                                        class="cover-img">
                                     <div class="cover-overlay"></div>
                                     <!-- Cover Upload Button -->
                                     <button onclick="openCoverUploadModal()" class="cover-upload-btn">
@@ -1457,7 +1484,8 @@
                                 <div class="profile-main-info">
                                     <div class="profile-info-wrapper">
                                         <div class="profile-avatar-container">
-                                            <img id="profile-avatar" src="../uploads/system_images/system_profile_pictures/ad-profile-1.jpeg"
+                                            <img id="profile-avatar"
+                                                src="../uploads/system_images/system_profile_pictures/ad-profile-1.jpeg"
                                                 alt="Advertiser Profile" class="profile-avatar">
                                             <span class="online-indicator"></span>
                                             <!-- Profile Picture Upload Button -->
@@ -1474,151 +1502,139 @@
                                             </button>
                                         </div>
 
-                                        <div class="profile-details-section">
-                                            <div class="profile-name-row">
-                                                <h1 class="profile-name" id="advertiserName">EduAds Inc.</h1>
-                                                <div class="badges-row">
-                                                    <span class="profile-badge verified" id="verification-badge">✔
-                                                        Verified Advertiser</span>
-                                                    <span class="profile-badge premium" id="subject-badge">⭐
-                                                        Premium Partner</span>
-                                                    <span class="profile-badge active">🟢 Active Campaigns: 7</span>
+                                        <div class="profile-details-section" style="flex: 1; padding-top: 1.5rem;">
+                                            <div class="profile-name-row" style="margin-bottom: 1.25rem;">
+                                                <h1 class="profile-name" id="advertiserName" style="margin-bottom: 0.5rem; white-space: nowrap !important; word-break: keep-all !important; max-width: none !important; width: auto !important; display: inline-block !important;">No username yet</h1>
+                                                <!-- Hero Title under name -->
+                                                <div id="advertiser-hero-title" style="font-size: 0.95rem; color: var(--text-muted); font-weight: 500; margin-bottom: 1rem;">
+                                                    No title yet
+                                                </div>
+                                                <div class="badges-row" style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; margin-top: 1rem;">
+                                                    <span class="profile-badge verified" id="verification-badge" style="display: none;">✅ Verified</span>
+                                                    <span class="profile-badge active">📢 Active Advertiser</span>
                                                 </div>
                                             </div>
 
-                                            <div class="rating-section">
-                                                <div class="rating-wrapper" id="rating-hover-trigger">
-                                                    <div class="rating-stars" id="rating-stars">★★★★½</div>
-                                                    <span class="rating-value" id="advertiser-rating">4.8</span>
-                                                    <span class="rating-count" id="rating-count">(567 reviews)</span>
-
-                                                    <!-- Rating Tooltip -->
-                                                    <div class="rating-tooltip" id="rating-tooltip">
-                                                        <h4
-                                                            style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600; color: var(--heading);">
-                                                            Rating Breakdown</h4>
-
-                                                        <div class="rating-metric">
-                                                            <div class="metric-header">
-                                                                <span class="metric-label">Campaign Quality</span>
-                                                                <span class="metric-score">4.9</span>
+                                            <!-- Rating Section -->
+                                            <div class="rating-section" style="margin-bottom: 1rem;">
+                                                <div class="rating-wrapper" style="display: flex; align-items: center; gap: 0.75rem;">
+                                                    <div class="rating-tooltip-container">
+                                                        <div class="rating-stars" id="rating-stars" style="color: #f59e0b; font-size: 1.5rem; letter-spacing: 2px;">★★★★★</div>
+                                                        <div class="rating-tooltip" id="rating-tooltip">
+                                                            <h4 style="margin: 0 0 1rem 0; font-size: 0.9rem; font-weight: 600; color: var(--heading);">Rating Breakdown</h4>
+                                                            <div class="rating-metric">
+                                                                <div class="metric-header">
+                                                                    <span class="metric-label">Campaign Quality</span>
+                                                                    <span class="metric-score">4.9</span>
+                                                                </div>
+                                                                <div class="metric-bar">
+                                                                    <div class="metric-fill" style="width: 98%"></div>
+                                                                </div>
                                                             </div>
-                                                            <div class="metric-bar">
-                                                                <div class="metric-fill" style="width: 98%"></div>
+                                                            <div class="rating-metric">
+                                                                <div class="metric-header">
+                                                                    <span class="metric-label">Response Time</span>
+                                                                    <span class="metric-score">4.8</span>
+                                                                </div>
+                                                                <div class="metric-bar">
+                                                                    <div class="metric-fill" style="width: 96%"></div>
+                                                                </div>
                                                             </div>
-                                                        </div>
-
-                                                        <div class="rating-metric">
-                                                            <div class="metric-header">
-                                                                <span class="metric-label">Delivery Time</span>
-                                                                <span class="metric-score">4.8</span>
+                                                            <div class="rating-metric">
+                                                                <div class="metric-header">
+                                                                    <span class="metric-label">Professionalism</span>
+                                                                    <span class="metric-score">4.9</span>
+                                                                </div>
+                                                                <div class="metric-bar">
+                                                                    <div class="metric-fill" style="width: 98%"></div>
+                                                                </div>
                                                             </div>
-                                                            <div class="metric-bar">
-                                                                <div class="metric-fill" style="width: 96%"></div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="rating-metric">
-                                                            <div class="metric-header">
-                                                                <span class="metric-label">Client Support</span>
-                                                                <span class="metric-score">4.7</span>
-                                                            </div>
-                                                            <div class="metric-bar">
-                                                                <div class="metric-fill" style="width: 94%"></div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="rating-metric">
-                                                            <div class="metric-header">
-                                                                <span class="metric-label">Communication</span>
-                                                                <span class="metric-score">4.9</span>
-                                                            </div>
-                                                            <div class="metric-bar">
-                                                                <div class="metric-fill" style="width: 98%"></div>
+                                                            <div class="rating-metric">
+                                                                <div class="metric-header">
+                                                                    <span class="metric-label">Value for Money</span>
+                                                                    <span class="metric-score">4.7</span>
+                                                                </div>
+                                                                <div class="metric-bar">
+                                                                    <div class="metric-fill" style="width: 94%"></div>
+                                                                </div>
                                                             </div>
                                                         </div>
+                                                    </div>
+                                                    <span class="rating-value" id="advertiser-rating" style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">4.8</span>
+                                                    <span class="rating-count" id="rating-count" style="color: var(--text-secondary); font-size: 0.95rem; font-weight: 500;">(24 reviews)</span>
+                                                </div>
+                                            </div>
 
-                                                        <div class="rating-metric">
-                                                            <div class="metric-header">
-                                                                <span class="metric-label">ROI Performance</span>
-                                                                <span class="metric-score">4.8</span>
-                                                            </div>
-                                                            <div class="metric-bar">
-                                                                <div class="metric-fill" style="width: 96%"></div>
-                                                            </div>
-                                                        </div>
+                                            <!-- Location -->
+                                            <div class="profile-location" style="margin-bottom: 0.75rem;">
+                                                <span class="location-icon">📍</span>
+                                                <span id="advertiser-location">No location yet</span>
+                                            </div>
+
+                                            <!-- Contact Information (Email & Phone) - Card Style -->
+                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">📧</span>
+                                                    <div style="flex: 1; overflow: hidden;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Email</div>
+                                                        <div id="advertiser-email" style="color: var(--text); font-size: 0.875rem; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">No email yet</div>
+                                                    </div>
+                                                </div>
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">📱</span>
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Phone</div>
+                                                        <div id="advertiser-phone" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">No phone yet</div>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <!-- Contact & Social Links Section -->
-                                            <div class="contact-info-section" style="display: flex; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap;">
-                                                <div class="contact-item" style="display: flex; align-items: center; gap: 0.5rem;">
-                                                    <span style="color: var(--button-bg);">📧</span>
-                                                    <a href="mailto:info@eduads.com" id="advertiserEmail" style="color: var(--text); text-decoration: none;">info@eduads.com</a>
+                                            <!-- Industry & Member Since (Card Style) -->
+                                            <div class="profile-contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem;">
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">🏢</span>
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Industry</div>
+                                                        <div id="advertiser-industry" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">Education</div>
+                                                    </div>
                                                 </div>
-                                                <div class="contact-item" style="display: flex; align-items: center; gap: 0.5rem;">
-                                                    <span style="color: var(--button-bg);">📱</span>
-                                                    <a href="tel:+251911234567" id="advertiserPhone" style="color: var(--text); text-decoration: none;">+251 911 234 567</a>
+                                                <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: 12px;">
+                                                    <span style="font-size: 1.25rem;">📅</span>
+                                                    <div style="flex: 1;">
+                                                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.125rem;">Member Since</div>
+                                                        <div id="advertiser-joined" style="color: var(--text); font-size: 0.875rem; font-weight: 500;">No join date yet</div>
+                                                    </div>
                                                 </div>
                                             </div>
 
-                                            <!-- Social Links Section -->
-                                            <div class="social-links-section" style="display: flex; gap: 1rem; margin-top: 1rem;">
-                                                <a href="#" id="socialFacebook" class="social-link" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--highlight-bg); color: var(--text); text-decoration: none; transition: all 0.3s;">
+                                            <!-- Bio/Quote -->
+                                            <div class="profile-quote" style="margin-top: 0.75rem;">
+                                                <span id="advertiser-quote">"No quote yet"</span>
+                                            </div>
+
+                                            <!-- Social Links Section - hidden by default -->
+                                            <div id="social-links-section" class="social-links-section" style="display: none; gap: 0.75rem; margin-top: 1rem;">
+                                                <a href="#" id="socialWebsite" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="Website">
+                                                    <i class="fas fa-globe"></i>
+                                                </a>
+                                                <a href="#" id="socialFacebook" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="Facebook">
                                                     <i class="fab fa-facebook-f"></i>
                                                 </a>
-                                                <a href="#" id="socialTwitter" class="social-link" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--highlight-bg); color: var(--text); text-decoration: none; transition: all 0.3s;">
+                                                <a href="#" id="socialTwitter" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="Twitter">
                                                     <i class="fab fa-twitter"></i>
                                                 </a>
-                                                <a href="#" id="socialLinkedin" class="social-link" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--highlight-bg); color: var(--text); text-decoration: none; transition: all 0.3s;">
+                                                <a href="#" id="socialLinkedin" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="LinkedIn">
                                                     <i class="fab fa-linkedin-in"></i>
                                                 </a>
-                                                <a href="#" id="socialInstagram" class="social-link" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--highlight-bg); color: var(--text); text-decoration: none; transition: all 0.3s;">
+                                                <a href="#" id="socialInstagram" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="Instagram">
                                                     <i class="fab fa-instagram"></i>
                                                 </a>
-                                            </div>
-
-                                            <div class="profile-location">
-                                                <span class="location-icon">📍</span>
-                                                <span id="advertiser-location">Addis Ababa, Ethiopia | Educational Marketing</span>
-                                            </div>
-
-                                            <!-- Industry -->
-                                            <div class="profile-location" id="industry-container" style="display: none;">
-                                                <span class="location-icon">🏢</span>
-                                                <span id="advertiser-industry">Educational Marketing</span>
-                                            </div>
-
-                                            <!-- Email -->
-                                            <div class="profile-location" id="email-container" style="display: none;">
-                                                <span class="location-icon">✉️</span>
-                                                <span id="advertiser-email">info@eduads.com</span>
-                                            </div>
-
-                                            <!-- Phone -->
-                                            <div class="profile-location" id="phone-container" style="display: none;">
-                                                <span class="location-icon">📞</span>
-                                                <span id="advertiser-phone">+251 911 234 567</span>
-                                            </div>
-
-                                            <!-- About Info -->
-                                            <div class="profile-info-grid">
-                                                <div class="info-item">
-                                                    <span class="info-label">Industry:</span>
-                                                    <span class="info-value" id="advertiser-industry-info">Educational Marketing</span>
-                                                </div>
-                                                <div class="info-item">
-                                                    <span class="info-label">Member Since:</span>
-                                                    <span class="info-value" id="advertiser-joined">January 2020</span>
-                                                </div>
-                                                <div class="info-description">
-                                                    <p id="advertiser-bio">EduAds Inc. is a premier advertising agency specializing in educational marketing and strategic brand positioning. With over 10 years of experience in the education sector, we've helped hundreds of institutions reach their target audiences effectively.</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="profile-quote">
-                                                <span id="advertiser-quote">"Empowering Education Through Strategic Advertising"</span>
+                                                <a href="#" id="socialYoutube" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="YouTube">
+                                                    <i class="fab fa-youtube"></i>
+                                                </a>
+                                                <a href="#" id="socialTiktok" class="social-link" style="display: none; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: rgba(var(--button-bg-rgb), 0.1); color: var(--text); text-decoration: none; transition: all 0.3s;" title="TikTok">
+                                                    <i class="fab fa-tiktok"></i>
+                                                </a>
                                             </div>
 
                                             <!-- Connections Section -->
@@ -1627,7 +1643,7 @@
                                                     style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                                                     <h4
                                                         style="font-weight: 600; font-size: 0.95rem; color: var(--heading);">
-                                                        <span style="margin-right: 0.5rem;">📊</span>Network Stats
+                                                        <span style="margin-right: 0.5rem;">🤝</span>Community
                                                     </h4>
                                                     <button onclick="openCommunityModal()" class="btn-sm"
                                                         style="font-size: 0.75rem; padding: 0.25rem 0.75rem;">
@@ -1635,30 +1651,26 @@
                                                     </button>
                                                 </div>
                                                 <div class="connections-stats"
-                                                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
-                                                    <div class="stat-box"
-                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md);">
+                                                    style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; text-align: center;">
+                                                    <div class="stat-box" onclick="openCommunityModal()"
+                                                        style="cursor: pointer; padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); transition: all 0.3s;"
+                                                        onmouseover="this.style.background='rgba(var(--button-bg-rgb), 0.1)'"
+                                                        onmouseout="this.style.background='rgba(var(--button-bg-rgb), 0.05)'">
                                                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
-                                                            id="connections-count">45.2K</div>
+                                                            id="connections-count">0</div>
                                                         <div
                                                             style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                                            Followers</div>
+                                                            Connections</div>
                                                     </div>
-                                                    <div class="stat-box"
-                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md);">
+                                                    <div class="stat-box" onclick="openCommunityModal()"
+                                                        style="cursor: pointer; padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md); transition: all 0.3s;"
+                                                        onmouseover="this.style.background='rgba(var(--button-bg-rgb), 0.1)'"
+                                                        onmouseout="this.style.background='rgba(var(--button-bg-rgb), 0.05)'">
                                                         <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
-                                                            id="classmates-count">234</div>
+                                                            id="requests-count">0</div>
                                                         <div
                                                             style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                                            Following</div>
-                                                    </div>
-                                                    <div class="stat-box"
-                                                        style="padding: 0.75rem; background: rgba(var(--button-bg-rgb), 0.05); border-radius: var(--radius-md);">
-                                                        <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading);"
-                                                            id="tutors-count">150</div>
-                                                        <div
-                                                            style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                                            Partners</div>
+                                                            Requests</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1667,6 +1679,10 @@
                                                 <button onclick="openEditProfileModal()" class="btn-primary">
                                                     <span class="mr-2">✏️</span>
                                                     Edit Profile
+                                                </button>
+                                                <button onclick="openChatModal()" class="btn-secondary ml-2">
+                                                    <span class="mr-2">💬</span>
+                                                    Message
                                                 </button>
                                                 <button onclick="shareProfile()" class="btn-secondary ml-2">
                                                     <span class="mr-2">🔗</span>
@@ -1681,60 +1697,14 @@
                             <!-- Page Header -->
                             <div class="mb-8 animate-fadeIn">
                                 <h1 class="text-3xl font-bold mb-2">Advertiser Dashboard</h1>
-                                <p class="text-gray-600">Overview of your advertising campaigns, analytics, and performance metrics
+                                <p class="text-gray-600">Overview of your advertising campaigns, analytics, and
+                                    performance metrics
                                 </p>
                             </div>
 
-                            <!-- Achievements Section -->
-                            <div class="card p-6 mb-8">
-                                <h3 class="text-xl font-semibold mb-4">Awards & Recognitions</h3>
-                                <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">🏆</div>
-                                        <div class="text-sm">Top Advertiser</div>
-                                        <div class="text-xs text-gray-500">Q4 2024</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">🥇</div>
-                                        <div class="text-sm">Excellence Award</div>
-                                        <div class="text-xs text-gray-500">Annual 2023</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">⭐</div>
-                                        <div class="text-sm">Premium Partner</div>
-                                        <div class="text-xs text-gray-500">100+ Campaigns</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">📊</div>
-                                        <div class="text-sm">High ROI</div>
-                                        <div class="text-xs text-gray-500">98.5% Success</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">🎯</div>
-                                        <div class="text-sm">Target Expert</div>
-                                        <div class="text-xs text-gray-500">95% Precision</div>
-                                    </div>
-                                    <div class="text-center">
-                                        <div class="text-3xl mb-2">💎</div>
-                                        <div class="text-sm">Platinum Tier</div>
-                                        <div class="text-xs text-gray-500">Level 10</div>
-                                    </div>
-                                </div>
-                            </div>
 
-
-                            <!-- All Statistics Cards -->
-                            <div class="dashboard-grid mb-8">
-                                <!-- Campaign Statistics -->
-                                <div class="card p-4">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <span class="text-3xl">📢</span>
-                                        <h3 class="text-lg font-semibold">Total Campaigns</h3>
-                                    </div>
-                                    <p class="text-2xl font-bold" id="stat-total-campaigns">152</p>
-                                    <span class="text-sm text-gray-500">All time</span>
-                                </div>
-
+                            <!-- All Statistics Cards - 4 per row -->
+                            <div class="dashboard-grid dashboard-grid-4 mb-8">
                                 <div class="card p-4">
                                     <div class="flex items-center gap-3 mb-2">
                                         <span class="text-3xl">🟢</span>
@@ -1742,25 +1712,6 @@
                                     </div>
                                     <p class="text-2xl font-bold text-blue-600" id="stat-active-campaigns">7</p>
                                     <span class="text-sm text-gray-500">Currently running</span>
-                                </div>
-                                
-                                <div class="card p-4">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <span class="text-3xl">🎨</span>
-                                        <h3 class="text-lg font-semibold">Total Creatives</h3>
-                                    </div>
-                                    <p class="text-2xl font-bold text-green-600"><span
-                                            id="stat-creatives">324</span></p>
-                                    <span class="text-sm text-gray-500">Design assets</span>
-                                </div>
-
-                                <div class="card p-4">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <span class="text-3xl">🎯</span>
-                                        <h3 class="text-lg font-semibold">Success Rate</h3>
-                                    </div>
-                                    <p class="text-2xl font-bold text-green-600" id="stat-completion-rate">98.5%</p>
-                                    <span class="text-sm text-gray-500">Campaign success</span>
                                 </div>
 
                                 <div class="card p-4">
@@ -1780,22 +1731,14 @@
                                     <p class="text-2xl font-bold text-purple-600" id="stat-ctr">8.7%</p>
                                     <span class="text-sm text-gray-500">Above average</span>
                                 </div>
-                                
-                                <div class="card p-4">
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <span class="text-3xl">💰</span>
-                                        <h3 class="text-lg font-semibold">Cost Per Impression</h3>
-                                    </div>
-                                    <p class="text-2xl font-bold text-yellow-600" id="stat-avg-performance">$0.25</p>
-                                    <span class="text-sm text-gray-500">-12% optimized</span>
-                                </div>
 
                                 <div class="card p-4">
                                     <div class="flex items-center gap-3 mb-2">
                                         <span class="text-3xl">📈</span>
                                         <h3 class="text-lg font-semibold">Conversion Rate</h3>
                                     </div>
-                                    <p class="text-2xl font-bold text-orange-600"><span id="stat-conversion">12.4</span>%
+                                    <p class="text-2xl font-bold text-orange-600"><span
+                                            id="stat-conversion">12.4</span>%
                                     </p>
                                     <span class="text-sm text-gray-500">+3.8% growth</span>
                                 </div>
@@ -1816,7 +1759,9 @@
                                                 <span class="text-yellow-400">★★★★★</span>
                                             </div>
                                         </div>
-                                        <p class="text-gray-700">"Exceptional advertising strategy that increased our enrollment by 45%. Professional team and excellent communication throughout."</p>
+                                        <p class="text-gray-700">"Exceptional advertising strategy that increased our
+                                            enrollment by 45%. Professional team and excellent communication
+                                            throughout."</p>
                                         <p class="text-xs text-gray-500 mt-2">3 days ago</p>
                                     </div>
 
@@ -1830,7 +1775,9 @@
                                                 <span class="text-yellow-400">★★★★★</span>
                                             </div>
                                         </div>
-                                        <p class="text-gray-700">"Creative campaigns that perfectly targeted our audience. Impressed with their data-driven approach and measurable results."</p>
+                                        <p class="text-gray-700">"Creative campaigns that perfectly targeted our
+                                            audience. Impressed with their data-driven approach and measurable results."
+                                        </p>
                                         <p class="text-xs text-gray-500 mt-2">5 days ago</p>
                                     </div>
 
@@ -1844,7 +1791,8 @@
                                                 <span class="text-yellow-400">★★★★★</span>
                                             </div>
                                         </div>
-                                        <p class="text-gray-700">"Professional service from start to finish. Their expertise in educational marketing is unmatched in Ethiopia."</p>
+                                        <p class="text-gray-700">"Professional service from start to finish. Their
+                                            expertise in educational marketing is unmatched in Ethiopia."</p>
                                         <p class="text-xs text-gray-500 mt-2">1 week ago</p>
                                     </div>
                                 </div>
@@ -1853,80 +1801,132 @@
 
                         <!-- AI Insights Panel -->
                         <div id="ai-insights-panel" class="panel-content">
-                            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--heading);">🤖 AI-Powered Campaign Insights</h2>
+                            <h2
+                                style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--heading);">
+                                🤖 AI-Powered Campaign Insights</h2>
 
                             <!-- AI Insights Stats Grid -->
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                                <div class="stat-card" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
+                            <div
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                                <div class="stat-card"
+                                    style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
                                     <div style="position: relative; z-index: 2;">
-                                        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">AI Score</div>
-                                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">87/100</div>
+                                        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">AI Score
+                                        </div>
+                                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">87/100
+                                        </div>
                                         <div style="font-size: 0.75rem; opacity: 0.9;">Campaign Optimization</div>
                                     </div>
-                                    <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+                                    <div
+                                        style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;">
+                                    </div>
                                 </div>
-                                <div class="stat-card" style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
+                                <div class="stat-card"
+                                    style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
                                     <div style="position: relative; z-index: 2;">
-                                        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Predicted ROI</div>
-                                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">+42%</div>
+                                        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Predicted
+                                            ROI</div>
+                                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">+42%
+                                        </div>
                                         <div style="font-size: 0.75rem; opacity: 0.9;">Next 30 Days</div>
                                     </div>
-                                    <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+                                    <div
+                                        style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;">
+                                    </div>
                                 </div>
-                                <div class="stat-card" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
+                                <div class="stat-card"
+                                    style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
                                     <div style="position: relative; z-index: 2;">
-                                        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Recommendations</div>
-                                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">12 New</div>
+                                        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">
+                                            Recommendations</div>
+                                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">12 New
+                                        </div>
                                         <div style="font-size: 0.75rem; opacity: 0.9;">Ready to Apply</div>
                                     </div>
-                                    <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+                                    <div
+                                        style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;">
+                                    </div>
                                 </div>
-                                <div class="stat-card" style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
+                                <div class="stat-card"
+                                    style="background: linear-gradient(135deg, #fa709a, #fee140); color: white; padding: 1.5rem; border-radius: 12px; position: relative; overflow: hidden;">
                                     <div style="position: relative; z-index: 2;">
-                                        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">Auto-Optimized</div>
-                                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">8 Ads</div>
+                                        <div style="font-size: 0.875rem; opacity: 0.9; margin-bottom: 0.5rem;">
+                                            Auto-Optimized</div>
+                                        <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem;">8 Ads
+                                        </div>
                                         <div style="font-size: 0.75rem; opacity: 0.9;">Last 24 Hours</div>
                                     </div>
-                                    <div style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+                                    <div
+                                        style="position: absolute; top: -10px; right: -10px; width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;">
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Main Content Grid -->
-                            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+                            <div
+                                style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
                                 <!-- Predictive Analytics Section -->
                                 <div class="card" style="padding: 1.5rem;">
-                                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">📈 Predictive Analytics</h3>
+                                    <h3
+                                        style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                                        📈 Predictive Analytics</h3>
 
                                     <!-- Forecast Chart Placeholder -->
-                                    <div style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                            <span style="font-weight: 600; color: var(--heading);">Impressions Forecast</span>
-                                            <span style="font-size: 0.875rem; color: var(--text-muted);">Next 7 Days</span>
+                                    <div
+                                        style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <span style="font-weight: 600; color: var(--heading);">Impressions
+                                                Forecast</span>
+                                            <span style="font-size: 0.875rem; color: var(--text-muted);">Next 7
+                                                Days</span>
                                         </div>
-                                        <div style="height: 200px; display: flex; align-items: flex-end; gap: 8px; padding: 1rem 0;">
-                                            <div style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 60%;"></div>
-                                            <div style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 75%;"></div>
-                                            <div style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 85%;"></div>
-                                            <div style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.8), rgba(102, 126, 234, 0.4)); border-radius: 4px; height: 95%; position: relative;">
-                                                <div style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: #667eea; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; white-space: nowrap;">Peak Day</div>
+                                        <div
+                                            style="height: 200px; display: flex; align-items: flex-end; gap: 8px; padding: 1rem 0;">
+                                            <div
+                                                style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 60%;">
                                             </div>
-                                            <div style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 70%;"></div>
-                                            <div style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 65%;"></div>
-                                            <div style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 80%;"></div>
+                                            <div
+                                                style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 75%;">
+                                            </div>
+                                            <div
+                                                style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 85%;">
+                                            </div>
+                                            <div
+                                                style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.8), rgba(102, 126, 234, 0.4)); border-radius: 4px; height: 95%; position: relative;">
+                                                <div
+                                                    style="position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: #667eea; color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; white-space: nowrap;">
+                                                    Peak Day</div>
+                                            </div>
+                                            <div
+                                                style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 70%;">
+                                            </div>
+                                            <div
+                                                style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 65%;">
+                                            </div>
+                                            <div
+                                                style="flex: 1; background: linear-gradient(180deg, rgba(102, 126, 234, 0.5), rgba(102, 126, 234, 0.2)); border-radius: 4px; height: 80%;">
+                                            </div>
                                         </div>
                                     </div>
 
                                     <!-- CTR Trend -->
                                     <div style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem;">
-                                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                                            <span style="font-weight: 600; color: var(--heading);">CTR Trend Analysis</span>
-                                            <span style="background: #22c55e; color: white; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem;">Improving</span>
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                            <span style="font-weight: 600; color: var(--heading);">CTR Trend
+                                                Analysis</span>
+                                            <span
+                                                style="background: #22c55e; color: white; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem;">Improving</span>
                                         </div>
                                         <div style="display: flex; align-items: center; gap: 1rem;">
-                                            <div style="font-size: 2rem; font-weight: 700; color: var(--heading);">9.4%</div>
-                                            <div style="flex: 1; height: 60px; background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2)); border-radius: 8px; position: relative;">
+                                            <div style="font-size: 2rem; font-weight: 700; color: var(--heading);">9.4%
+                                            </div>
+                                            <div
+                                                style="flex: 1; height: 60px; background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.2)); border-radius: 8px; position: relative;">
                                                 <svg viewBox="0 0 200 60" style="width: 100%; height: 100%;">
-                                                    <polyline points="0,45 40,40 80,35 120,28 160,22 200,15" fill="none" stroke="#667eea" stroke-width="3"></polyline>
+                                                    <polyline points="0,45 40,40 80,35 120,28 160,22 200,15" fill="none"
+                                                        stroke="#667eea" stroke-width="3"></polyline>
                                                 </svg>
                                             </div>
                                             <span style="color: #22c55e; font-weight: 600;">+2.1%</span>
@@ -1936,36 +1936,52 @@
 
                                 <!-- Audience Insights Section -->
                                 <div class="card" style="padding: 1.5rem;">
-                                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">👥 Audience Insights</h3>
+                                    <h3
+                                        style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                                        👥 Audience Insights</h3>
 
                                     <!-- Demographics -->
                                     <div style="margin-bottom: 1.5rem;">
-                                        <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--heading);">Top Demographics</div>
+                                        <div
+                                            style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--heading);">
+                                            Top Demographics</div>
                                         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                                             <div>
-                                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                                    <span style="font-size: 0.75rem; color: var(--text-muted);">18-24 Years</span>
-                                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--heading);">42%</span>
+                                                <div
+                                                    style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                                    <span style="font-size: 0.75rem; color: var(--text-muted);">18-24
+                                                        Years</span>
+                                                    <span
+                                                        style="font-size: 0.75rem; font-weight: 600; color: var(--heading);">42%</span>
                                                 </div>
-                                                <div style="background: var(--highlight-bg); height: 6px; border-radius: 10px; overflow: hidden;">
+                                                <div
+                                                    style="background: var(--highlight-bg); height: 6px; border-radius: 10px; overflow: hidden;">
                                                     <div style="background: #667eea; width: 42%; height: 100%;"></div>
                                                 </div>
                                             </div>
                                             <div>
-                                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                                    <span style="font-size: 0.75rem; color: var(--text-muted);">25-34 Years</span>
-                                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--heading);">35%</span>
+                                                <div
+                                                    style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                                    <span style="font-size: 0.75rem; color: var(--text-muted);">25-34
+                                                        Years</span>
+                                                    <span
+                                                        style="font-size: 0.75rem; font-weight: 600; color: var(--heading);">35%</span>
                                                 </div>
-                                                <div style="background: var(--highlight-bg); height: 6px; border-radius: 10px; overflow: hidden;">
+                                                <div
+                                                    style="background: var(--highlight-bg); height: 6px; border-radius: 10px; overflow: hidden;">
                                                     <div style="background: #f093fb; width: 35%; height: 100%;"></div>
                                                 </div>
                                             </div>
                                             <div>
-                                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
-                                                    <span style="font-size: 0.75rem; color: var(--text-muted);">35+ Years</span>
-                                                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--heading);">23%</span>
+                                                <div
+                                                    style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                                                    <span style="font-size: 0.75rem; color: var(--text-muted);">35+
+                                                        Years</span>
+                                                    <span
+                                                        style="font-size: 0.75rem; font-weight: 600; color: var(--heading);">23%</span>
                                                 </div>
-                                                <div style="background: var(--highlight-bg); height: 6px; border-radius: 10px; overflow: hidden;">
+                                                <div
+                                                    style="background: var(--highlight-bg); height: 6px; border-radius: 10px; overflow: hidden;">
                                                     <div style="background: #4facfe; width: 23%; height: 100%;"></div>
                                                 </div>
                                             </div>
@@ -1974,18 +1990,26 @@
 
                                     <!-- Location -->
                                     <div style="margin-bottom: 1.5rem;">
-                                        <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--heading);">Top Locations</div>
+                                        <div
+                                            style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--heading);">
+                                            Top Locations</div>
                                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-                                            <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--highlight-bg); border-radius: 6px;">
-                                                <span style="font-size: 0.875rem; color: var(--text);">🏙️ Addis Ababa</span>
+                                            <div
+                                                style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--highlight-bg); border-radius: 6px;">
+                                                <span style="font-size: 0.875rem; color: var(--text);">🏙️ Addis
+                                                    Ababa</span>
                                                 <span style="font-weight: 600; color: var(--heading);">58%</span>
                                             </div>
-                                            <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--highlight-bg); border-radius: 6px;">
-                                                <span style="font-size: 0.875rem; color: var(--text);">🏙️ Bahir Dar</span>
+                                            <div
+                                                style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--highlight-bg); border-radius: 6px;">
+                                                <span style="font-size: 0.875rem; color: var(--text);">🏙️ Bahir
+                                                    Dar</span>
                                                 <span style="font-weight: 600; color: var(--heading);">18%</span>
                                             </div>
-                                            <div style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--highlight-bg); border-radius: 6px;">
-                                                <span style="font-size: 0.875rem; color: var(--text);">🏙️ Hawassa</span>
+                                            <div
+                                                style="display: flex; justify-content: space-between; padding: 0.5rem; background: var(--highlight-bg); border-radius: 6px;">
+                                                <span style="font-size: 0.875rem; color: var(--text);">🏙️
+                                                    Hawassa</span>
                                                 <span style="font-weight: 600; color: var(--heading);">12%</span>
                                             </div>
                                         </div>
@@ -1993,10 +2017,16 @@
 
                                     <!-- Engagement Time -->
                                     <div>
-                                        <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--heading);">Peak Engagement</div>
-                                        <div style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 1rem; border-radius: 8px; text-align: center;">
-                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin-bottom: 0.25rem;">8-10 AM</div>
-                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Ethiopian Time (EAT)</div>
+                                        <div
+                                            style="font-size: 0.875rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--heading);">
+                                            Peak Engagement</div>
+                                        <div
+                                            style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); padding: 1rem; border-radius: 8px; text-align: center;">
+                                            <div
+                                                style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin-bottom: 0.25rem;">
+                                                8-10 AM</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Ethiopian Time
+                                                (EAT)</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2004,35 +2034,65 @@
 
                             <!-- AI Recommendations Section -->
                             <div class="card" style="padding: 1.5rem; margin-bottom: 2rem;">
-                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">💡 AI Recommendations</h3>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
-                                    <div style="padding: 1rem; border: 2px solid #667eea; border-radius: 12px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));">
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                                    💡 AI Recommendations</h3>
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                                    <div
+                                        style="padding: 1rem; border: 2px solid #667eea; border-radius: 12px; background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));">
                                         <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem;">🎯</div>
+                                            <div
+                                                style="width: 40px; height: 40px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem;">
+                                                🎯</div>
                                             <div style="flex: 1;">
-                                                <div style="font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">Optimize Ad Schedule</div>
-                                                <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">Shift 30% of budget to 8-10 AM slots for +23% CTR increase</div>
-                                                <button onclick="openComingSoonModal('apply-recommendation')" style="padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Apply Now</button>
+                                                <div
+                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">
+                                                    Optimize Ad Schedule</div>
+                                                <div
+                                                    style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                                                    Shift 30% of budget to 8-10 AM slots for +23% CTR increase</div>
+                                                <button onclick="openComingSoonModal('apply-recommendation')"
+                                                    style="padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Apply
+                                                    Now</button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div style="padding: 1rem; border: 2px solid #22c55e; border-radius: 12px; background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.1));">
+                                    <div
+                                        style="padding: 1rem; border: 2px solid #22c55e; border-radius: 12px; background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.1));">
                                         <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem;">📱</div>
+                                            <div
+                                                style="width: 40px; height: 40px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem;">
+                                                📱</div>
                                             <div style="flex: 1;">
-                                                <div style="font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">Mobile-First Creatives</div>
-                                                <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">78% of your audience uses mobile. Create vertical ad formats</div>
-                                                <button onclick="openComingSoonModal('apply-recommendation')" style="padding: 0.5rem 1rem; background: #22c55e; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Apply Now</button>
+                                                <div
+                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">
+                                                    Mobile-First Creatives</div>
+                                                <div
+                                                    style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                                                    78% of your audience uses mobile. Create vertical ad formats</div>
+                                                <button onclick="openComingSoonModal('apply-recommendation')"
+                                                    style="padding: 0.5rem 1rem; background: #22c55e; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Apply
+                                                    Now</button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div style="padding: 1rem; border: 2px solid #f59e0b; border-radius: 12px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.1));">
+                                    <div
+                                        style="padding: 1rem; border: 2px solid #f59e0b; border-radius: 12px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.1));">
                                         <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem;">🌐</div>
+                                            <div
+                                                style="width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem;">
+                                                🌐</div>
                                             <div style="flex: 1;">
-                                                <div style="font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">Localize Content</div>
-                                                <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">Add Amharic captions for +18% engagement in Addis Ababa</div>
-                                                <button onclick="openComingSoonModal('apply-recommendation')" style="padding: 0.5rem 1rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Apply Now</button>
+                                                <div
+                                                    style="font-weight: 600; color: var(--heading); margin-bottom: 0.5rem;">
+                                                    Localize Content</div>
+                                                <div
+                                                    style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                                                    Add Amharic captions for +18% engagement in Addis Ababa</div>
+                                                <button onclick="openComingSoonModal('apply-recommendation')"
+                                                    style="padding: 0.5rem 1rem; background: #f59e0b; color: white; border: none; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer;">Apply
+                                                    Now</button>
                                             </div>
                                         </div>
                                     </div>
@@ -2041,25 +2101,40 @@
 
                             <!-- Competitor Analysis Section -->
                             <div class="card" style="padding: 1.5rem;">
-                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">🔍 Competitor Analysis</h3>
+                                <h3
+                                    style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                                    🔍 Competitor Analysis</h3>
                                 <div style="background: var(--highlight-bg); border-radius: 12px; padding: 1.5rem;">
-                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
+                                    <div
+                                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
                                         <div style="text-align: center;">
-                                            <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Your Average CTR</div>
+                                            <div
+                                                style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                                Your Average CTR</div>
                                             <div style="font-size: 2rem; font-weight: 700; color: #667eea;">9.4%</div>
                                         </div>
                                         <div style="text-align: center;">
-                                            <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Industry Average</div>
-                                            <div style="font-size: 2rem; font-weight: 700; color: var(--heading);">7.2%</div>
+                                            <div
+                                                style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                                Industry Average</div>
+                                            <div style="font-size: 2rem; font-weight: 700; color: var(--heading);">7.2%
+                                            </div>
                                         </div>
                                         <div style="text-align: center;">
-                                            <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Your Ranking</div>
-                                            <div style="font-size: 2rem; font-weight: 700; color: #22c55e;">Top 15%</div>
+                                            <div
+                                                style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                                Your Ranking</div>
+                                            <div style="font-size: 2rem; font-weight: 700; color: #22c55e;">Top 15%
+                                            </div>
                                         </div>
                                     </div>
-                                    <div style="padding: 1rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 8px;">
-                                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Key Insight</div>
-                                        <div style="font-size: 0.875rem; color: var(--text);">Your ads outperform competitors by 30% in Addis Ababa. Consider expanding budget in this region for maximum ROI.</div>
+                                    <div
+                                        style="padding: 1rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 8px;">
+                                        <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Key
+                                            Insight</div>
+                                        <div style="font-size: 0.875rem; color: var(--text);">Your ads outperform
+                                            competitors by 30% in Addis Ababa. Consider expanding budget in this region
+                                            for maximum ROI.</div>
                                     </div>
                                 </div>
                             </div>
@@ -2067,12 +2142,15 @@
 
                         <!-- Campaigns Panel -->
                         <div id="campaigns-panel" class="panel-content">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                                 <div>
                                     <h2 style="margin: 0;">Campaign Management</h2>
-                                    <p style="margin: 0.5rem 0 0 0; color: var(--text-muted);">Create, manage, and monitor your advertising campaigns</p>
+                                    <p style="margin: 0.5rem 0 0 0; color: var(--text-muted);">Create, manage, and
+                                        monitor your advertising campaigns</p>
                                 </div>
-                                <button class="btn-primary" onclick="openCreateCampaignModal()" style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="btn-primary" onclick="openCreateCampaignModal()"
+                                    style="display: flex; align-items: center; gap: 0.5rem;">
                                     <span style="font-size: 1.25rem;">+</span>
                                     <span>Create Campaign</span>
                                 </button>
@@ -2080,19 +2158,24 @@
 
                             <!-- Campaign Filters -->
                             <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-                                <button class="campaign-filter-btn active" data-status="all" onclick="filterCampaigns('all')">
+                                <button class="campaign-filter-btn active" data-status="all"
+                                    onclick="filterCampaigns('all')">
                                     All Campaigns
                                 </button>
-                                <button class="campaign-filter-btn" data-status="active" onclick="filterCampaigns('active')">
+                                <button class="campaign-filter-btn" data-status="active"
+                                    onclick="filterCampaigns('active')">
                                     Active
                                 </button>
-                                <button class="campaign-filter-btn" data-status="paused" onclick="filterCampaigns('paused')">
+                                <button class="campaign-filter-btn" data-status="paused"
+                                    onclick="filterCampaigns('paused')">
                                     Paused
                                 </button>
-                                <button class="campaign-filter-btn" data-status="completed" onclick="filterCampaigns('completed')">
+                                <button class="campaign-filter-btn" data-status="completed"
+                                    onclick="filterCampaigns('completed')">
                                     Completed
                                 </button>
-                                <button class="campaign-filter-btn" data-status="draft" onclick="filterCampaigns('draft')">
+                                <button class="campaign-filter-btn" data-status="draft"
+                                    onclick="filterCampaigns('draft')">
                                     Drafts
                                 </button>
                             </div>
@@ -2195,10 +2278,11 @@
 
                 <!-- Right Sidebar -->
                 <div class="right-sidebar-content" style="width: 320px; flex-shrink: 0;">
-                    
+
                     <!-- Ad Performance Tips Ticker Widget (REDESIGNED) -->
                     <div class="sidebar-widget tips-widget card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-                        <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div class="widget-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">💡 Ad Performance Tips</h3>
                         </div>
                         <div class="activity-ticker-container">
@@ -2206,137 +2290,217 @@
                                 <div class="activity-item">
                                     <span class="text-blue-500" style="font-size: 1.5rem;">🎯</span>
                                     <div class="flex-1 text-sm">
-                                        <p style="color: var(--heading); font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">Target Peak Hours</p>
-                                        <p style="color: var(--text-muted); font-size: 0.75rem;">Run ads 8-10 AM EAT when Ethiopian students are most active</p>
+                                        <p
+                                            style="color: var(--heading); font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">
+                                            Target Peak Hours</p>
+                                        <p style="color: var(--text-muted); font-size: 0.75rem;">Run ads 8-10 AM EAT
+                                            when Ethiopian students are most active</p>
                                     </div>
                                 </div>
                                 <div class="activity-item">
                                     <span class="text-green-500" style="font-size: 1.5rem;">📱</span>
                                     <div class="flex-1 text-sm">
-                                        <p style="color: var(--heading); font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">Mobile-First Design</p>
-                                        <p style="color: var(--text-muted); font-size: 0.75rem;">78% of users access from mobile, optimize for small screens</p>
+                                        <p
+                                            style="color: var(--heading); font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">
+                                            Mobile-First Design</p>
+                                        <p style="color: var(--text-muted); font-size: 0.75rem;">78% of users access
+                                            from mobile, optimize for small screens</p>
                                     </div>
                                 </div>
                                 <div class="activity-item">
                                     <span class="text-purple-500" style="font-size: 1.5rem;">🌍</span>
                                     <div class="flex-1 text-sm">
-                                        <p style="color: var(--heading); font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">Localize Content</p>
-                                        <p style="color: var(--text-muted); font-size: 0.75rem;">Use Amharic captions to increase engagement by 18%</p>
+                                        <p
+                                            style="color: var(--heading); font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">
+                                            Localize Content</p>
+                                        <p style="color: var(--text-muted); font-size: 0.75rem;">Use Amharic captions to
+                                            increase engagement by 18%</p>
                                     </div>
                                 </div>
                                 <div class="activity-item">
                                     <span class="text-orange-500" style="font-size: 1.5rem;">💰</span>
                                     <div class="flex-1 text-sm">
-                                        <p style="color: var(--heading); font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">Smart Budgeting</p>
-                                        <p style="color: var(--text-muted); font-size: 0.75rem;">Allocate 60% budget to top-performing campaigns</p>
+                                        <p
+                                            style="color: var(--heading); font-weight: 600; margin-bottom: 0.25rem; font-size: 0.875rem;">
+                                            Smart Budgeting</p>
+                                        <p style="color: var(--text-muted); font-size: 0.75rem;">Allocate 60% budget to
+                                            top-performing campaigns</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Today's Impressions Widget -->
-                    <div class="sidebar-widget impressions-widget card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
-                        <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 2;">
+                    <div class="sidebar-widget impressions-widget card"
+                        style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
+                        <div class="widget-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 2;">
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">📊 Today's Impressions</h3>
                             <span style="font-size: 0.875rem; opacity: 0.9;">Live</span>
                         </div>
                         <div style="position: relative; z-index: 2;">
                             <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">847,392</div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                                <span style="background: rgba(34, 197, 94, 0.3); color: #22c55e; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">↑ 12.5%</span>
+                                <span
+                                    style="background: rgba(34, 197, 94, 0.3); color: #22c55e; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">↑
+                                    12.5%</span>
                                 <span style="opacity: 0.9; font-size: 0.875rem;">vs yesterday</span>
                             </div>
                             <!-- Sparkline Chart Placeholder -->
-                            <div style="height: 60px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-top: 1rem; display: flex; align-items: flex-end; padding: 0.5rem; gap: 2px;">
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 40%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 55%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 45%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 70%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 60%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 85%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.8); border-radius: 2px; height: 100%;"></div>
+                            <div
+                                style="height: 60px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-top: 1rem; display: flex; align-items: flex-end; padding: 0.5rem; gap: 2px;">
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 40%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 55%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 45%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 70%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 60%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 85%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.8); border-radius: 2px; height: 100%;">
+                                </div>
                             </div>
                         </div>
                         <!-- Background decoration -->
-                        <div style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+                        <div
+                            style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;">
+                        </div>
                     </div>
 
                     <!-- CTR/Day Widget (NEW) -->
-                    <div class="sidebar-widget ctr-widget card" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
-                        <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 2;">
+                    <div class="sidebar-widget ctr-widget card"
+                        style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); color: white; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
+                        <div class="widget-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 2;">
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">📊 CTR Today</h3>
                             <span style="font-size: 0.875rem; opacity: 0.9;">Live</span>
                         </div>
                         <div style="position: relative; z-index: 2;">
                             <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">9.4%</div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                                <span style="background: rgba(255, 255, 255, 0.3); color: #fff; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">↑ 0.3%</span>
+                                <span
+                                    style="background: rgba(255, 255, 255, 0.3); color: #fff; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">↑
+                                    0.3%</span>
                                 <span style="opacity: 0.9; font-size: 0.875rem;">vs yesterday</span>
                             </div>
                             <!-- Sparkline Chart Placeholder -->
-                            <div style="height: 40px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: flex-end; padding: 0.5rem; gap: 2px;">
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 50%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 65%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 55%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 75%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 85%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.8); border-radius: 2px; height: 100%;"></div>
+                            <div
+                                style="height: 40px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: flex-end; padding: 0.5rem; gap: 2px;">
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 50%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 65%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 55%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 75%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 85%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.8); border-radius: 2px; height: 100%;">
+                                </div>
                             </div>
                             <!-- Target Progress -->
                             <div style="margin-top: 1rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
                                     <span style="opacity: 0.9;">Target CTR</span>
                                     <span style="font-weight: 600;">10%</span>
                                 </div>
-                                <div style="background: rgba(255,255,255,0.2); height: 8px; border-radius: 10px; overflow: hidden;">
-                                    <div style="background: rgba(255,255,255,0.9); width: 94%; height: 100%; border-radius: 10px;"></div>
+                                <div
+                                    style="background: rgba(255,255,255,0.2); height: 8px; border-radius: 10px; overflow: hidden;">
+                                    <div
+                                        style="background: rgba(255,255,255,0.9); width: 94%; height: 100%; border-radius: 10px;">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <!-- Background decoration -->
-                        <div style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+                        <div
+                            style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;">
+                        </div>
                     </div>
 
                     <!-- Conversion Rate/Day Widget (NEW) -->
-                    <div class="sidebar-widget conversion-widget card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
-                        <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 2;">
+                    <div class="sidebar-widget conversion-widget card"
+                        style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 1.5rem; margin-bottom: 1.5rem; position: relative; overflow: hidden;">
+                        <div class="widget-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; position: relative; z-index: 2;">
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">🎯 Conversion Rate Today</h3>
                             <span style="font-size: 0.875rem; opacity: 0.9;">Live</span>
                         </div>
                         <div style="position: relative; z-index: 2;">
                             <div style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem;">4.2%</div>
                             <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
-                                <span style="background: rgba(255, 255, 255, 0.3); color: #fff; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">↑ 0.5%</span>
+                                <span
+                                    style="background: rgba(255, 255, 255, 0.3); color: #fff; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">↑
+                                    0.5%</span>
                                 <span style="opacity: 0.9; font-size: 0.875rem;">vs yesterday</span>
                             </div>
                             <!-- Sparkline Chart Placeholder -->
-                            <div style="height: 40px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: flex-end; padding: 0.5rem; gap: 2px;">
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 45%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 60%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 70%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 65%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 90%;"></div>
-                                <div style="flex: 1; background: rgba(255,255,255,0.8); border-radius: 2px; height: 100%;"></div>
+                            <div
+                                style="height: 40px; background: rgba(255,255,255,0.1); border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: flex-end; padding: 0.5rem; gap: 2px;">
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 45%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 60%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 70%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 65%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.5); border-radius: 2px; height: 90%;">
+                                </div>
+                                <div
+                                    style="flex: 1; background: rgba(255,255,255,0.8); border-radius: 2px; height: 100%;">
+                                </div>
                             </div>
                             <!-- Target Progress -->
                             <div style="margin-top: 1rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
                                     <span style="opacity: 0.9;">Target Rate</span>
                                     <span style="font-weight: 600;">5%</span>
                                 </div>
-                                <div style="background: rgba(255,255,255,0.2); height: 8px; border-radius: 10px; overflow: hidden;">
-                                    <div style="background: rgba(255,255,255,0.9); width: 84%; height: 100%; border-radius: 10px;"></div>
+                                <div
+                                    style="background: rgba(255,255,255,0.2); height: 8px; border-radius: 10px; overflow: hidden;">
+                                    <div
+                                        style="background: rgba(255,255,255,0.9); width: 84%; height: 100%; border-radius: 10px;">
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <!-- Background decoration -->
-                        <div style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;"></div>
+                        <div
+                            style="position: absolute; top: -20px; right: -20px; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; z-index: 1;">
+                        </div>
                     </div>
 
                     <!-- Budget Status Widget -->
                     <div class="sidebar-widget budget-widget card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-                        <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div class="widget-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">💰 Budget Status</h3>
                             <span style="font-size: 0.875rem; color: var(--text-muted);">This Month</span>
                         </div>
@@ -2350,43 +2514,71 @@
                                 <span style="font-weight: 600; color: var(--heading);">75,000 ETB</span>
                             </div>
                             <!-- Progress Bar -->
-                            <div style="background: var(--highlight-bg); height: 8px; border-radius: 10px; overflow: hidden;">
-                                <div style="background: linear-gradient(90deg, #667eea, #764ba2); width: 61%; height: 100%; border-radius: 10px;"></div>
+                            <div
+                                style="background: var(--highlight-bg); height: 8px; border-radius: 10px; overflow: hidden;">
+                                <div
+                                    style="background: linear-gradient(90deg, #667eea, #764ba2); width: 61%; height: 100%; border-radius: 10px;">
+                                </div>
                             </div>
-                            <div style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">61% used • 29,250 ETB remaining</div>
+                            <div
+                                style="text-align: center; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                                61% used • 29,250 ETB remaining</div>
                         </div>
-                        <div style="padding: 0.75rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 8px;">
-                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Cost Per Impression (CPM)</div>
+                        <div
+                            style="padding: 0.75rem; background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)); border-radius: 8px;">
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">Cost Per
+                                Impression (CPM)</div>
                             <div style="font-weight: 600; color: var(--heading);">0.45 ETB</div>
                         </div>
                     </div>
 
                     <!-- Top Performing Ads Widget -->
                     <div class="sidebar-widget top-ads-widget card" style="padding: 1.5rem; margin-bottom: 1.5rem;">
-                        <div class="widget-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div class="widget-header"
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                             <h3 style="font-size: 1.25rem; font-weight: 600; margin: 0;">🏆 Top Ads</h3>
-                            <a href="#" onclick="switchPanel('ad-analytics'); return false;" style="color: var(--button-bg); text-decoration: none; font-size: 0.875rem;">View All</a>
+                            <a href="#" onclick="switchPanel('ad-analytics'); return false;"
+                                style="color: var(--button-bg); text-decoration: none; font-size: 0.875rem;">View
+                                All</a>
                         </div>
                         <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                            <div style="display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
-                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">1</div>
+                            <div
+                                style="display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
+                                <div
+                                    style="width: 50px; height: 50px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                    1</div>
                                 <div style="flex: 1; min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Math Tutoring Special</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">CTR: 12.4% • 45K impressions</div>
+                                    <div
+                                        style="font-weight: 600; font-size: 0.875rem; color: var(--heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        Math Tutoring Special</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">CTR: 12.4% • 45K
+                                        impressions</div>
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
-                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">2</div>
+                            <div
+                                style="display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
+                                <div
+                                    style="width: 50px; height: 50px; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                    2</div>
                                 <div style="flex: 1; min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Chemistry Course Promo</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">CTR: 10.8% • 38K impressions</div>
+                                    <div
+                                        style="font-weight: 600; font-size: 0.875rem; color: var(--heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        Chemistry Course Promo</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">CTR: 10.8% • 38K
+                                        impressions</div>
                                 </div>
                             </div>
-                            <div style="display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
-                                <div style="width: 50px; height: 50px; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">3</div>
+                            <div
+                                style="display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--highlight-bg); border-radius: 8px;">
+                                <div
+                                    style="width: 50px; height: 50px; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 8px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">
+                                    3</div>
                                 <div style="flex: 1; min-width: 0;">
-                                    <div style="font-weight: 600; font-size: 0.875rem; color: var(--heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">University Prep Package</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">CTR: 9.2% • 32K impressions</div>
+                                    <div
+                                        style="font-weight: 600; font-size: 0.875rem; color: var(--heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                        University Prep Package</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">CTR: 9.2% • 32K
+                                        impressions</div>
                                 </div>
                             </div>
                         </div>
@@ -2397,7 +2589,8 @@
     </section>
 
     <!-- Bottom Widgets Section -->
-    <section style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; padding: 0 2rem;">
+    <section
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; padding: 0 2rem;">
         <!-- News Widget -->
         <div class="sidebar-widget news-widget card" onclick="openComingSoonModal('news')"
             style="cursor: pointer; padding: 1.5rem; background: var(--card-bg); border-radius: 16px; transition: transform 0.3s ease, box-shadow 0.3s ease;"
@@ -2487,7 +2680,8 @@
                         <div class="news-card-header"
                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
                             <span class="news-category-badge"
-                                style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Study Tips</span>
+                                style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Study
+                                Tips</span>
                             <span class="news-time" style="color: var(--text-muted); font-size: 0.875rem;">1d
                                 ago</span>
                         </div>
@@ -2538,8 +2732,7 @@
             <div class="bookstore-content">
                 <div class="bookstore-main" style="text-align: center; margin-bottom: 1.5rem;">
                     <div class="bookstore-icon" style="font-size: 4rem; margin-bottom: 0.5rem;">📖</div>
-                    <div class="bookstore-title-animated"
-                        style="position: relative; height: 2.5rem; overflow: hidden;">
+                    <div class="bookstore-title-animated" style="position: relative; height: 2.5rem; overflow: hidden;">
                         <div class="bookstore-title"
                             style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--heading); position: absolute; width: 100%; opacity: 1; transition: opacity 0.6s ease, transform 0.6s ease;">
                             Educational Books</div>
@@ -2591,8 +2784,7 @@
             <div class="gamestore-content">
                 <div class="gamestore-main" style="text-align: center; margin-bottom: 1.5rem;">
                     <div class="gamestore-icon" style="font-size: 4rem; margin-bottom: 0.5rem;">🎮</div>
-                    <div class="gamestore-title-animated"
-                        style="position: relative; height: 2.5rem; overflow: hidden;">
+                    <div class="gamestore-title-animated" style="position: relative; height: 2.5rem; overflow: hidden;">
                         <div class="gamestore-title"
                             style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: var(--heading); position: absolute; width: 100%; opacity: 1; transition: opacity 0.6s ease, transform 0.6s ease;">
                             Educational Games</div>
@@ -2632,6 +2824,11 @@
     </section>
 
     <!-- ============================================ -->
+    <!-- CHAT MODAL CONTAINER -->
+    <!-- ============================================ -->
+    <div id="chat-modal-container"></div>
+
+    <!-- ============================================ -->
     <!-- EDIT PROFILE MODAL -->
     <!-- ============================================ -->
     <div id="edit-profile-modal" class="modal hidden">
@@ -2639,53 +2836,67 @@
         <div class="modal-content enhanced-modal">
             <div class="modal-header">
                 <h2>Edit Profile</h2>
-                <button class="modal-close" onclick="closeEditProfileModal()">×</button>
+                <button class="modal-close" onclick="closeEditProfileModal()">&times;</button>
             </div>
             <div class="modal-body">
                 <form id="editAdvertiserProfileForm">
                     <div class="form-group">
-                        <label>Company Name *</label>
-                        <input type="text" id="editCompanyName" class="form-input" required>
+                        <label>Username *</label>
+                        <input type="text" id="editUsername" class="form-input" required
+                            placeholder="Your display name">
                     </div>
 
                     <div class="form-group">
-                        <label>Industry</label>
-                        <input type="text" id="editIndustry" class="form-input" placeholder="e.g., Educational Marketing">
-                    </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Email</label>
-                            <input type="email" id="editEmail" class="form-input" placeholder="info@company.com">
-                        </div>
-                        <div class="form-group">
-                            <label>Phone Number</label>
-                            <input type="tel" id="editPhone" class="form-input" placeholder="+251 911 234 567">
-                        </div>
+                        <label>Bio</label>
+                        <textarea id="editBio" class="form-input" rows="4"
+                            placeholder="Tell us about yourself..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" id="editLocation" class="form-input" placeholder="e.g., Addis Ababa">
+                        <label>Quote / Tagline</label>
+                        <input type="text" id="editQuote" class="form-input" placeholder="Your motto or tagline">
                     </div>
 
                     <div class="form-group">
-                        <label>About Company</label>
-                        <textarea id="editBio" class="form-input" rows="4" placeholder="Tell us about your company..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Company Tagline</label>
-                        <input type="text" id="editQuote" class="form-input" placeholder="Your company's motto or tagline">
+                        <label>Location(s)</label>
+                        <input type="text" id="editLocation" class="form-input"
+                            placeholder="e.g., Addis Ababa, Ethiopia (comma-separated for multiple)">
+                        <small style="color: var(--text-muted); font-size: 0.75rem;">Separate multiple locations with
+                            commas</small>
                     </div>
 
                     <div class="form-group">
                         <label>Social Media Links</label>
                         <div style="display: grid; gap: 0.75rem;">
-                            <input type="url" id="editFacebook" class="form-input" placeholder="Facebook URL">
-                            <input type="url" id="editTwitter" class="form-input" placeholder="Twitter URL">
-                            <input type="url" id="editLinkedin" class="form-input" placeholder="LinkedIn URL">
-                            <input type="url" id="editInstagram" class="form-input" placeholder="Instagram URL">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-globe" style="width: 20px; color: var(--text-muted);"></i>
+                                <input type="url" id="editSocialWebsite" class="form-input" placeholder="Website URL">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fab fa-facebook-f" style="width: 20px; color: var(--text-muted);"></i>
+                                <input type="url" id="editSocialFacebook" class="form-input" placeholder="Facebook URL">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fab fa-twitter" style="width: 20px; color: var(--text-muted);"></i>
+                                <input type="url" id="editSocialTwitter" class="form-input" placeholder="Twitter URL">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fab fa-linkedin-in" style="width: 20px; color: var(--text-muted);"></i>
+                                <input type="url" id="editSocialLinkedin" class="form-input" placeholder="LinkedIn URL">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fab fa-instagram" style="width: 20px; color: var(--text-muted);"></i>
+                                <input type="url" id="editSocialInstagram" class="form-input"
+                                    placeholder="Instagram URL">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fab fa-youtube" style="width: 20px; color: var(--text-muted);"></i>
+                                <input type="url" id="editSocialYoutube" class="form-input" placeholder="YouTube URL">
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fab fa-tiktok" style="width: 20px; color: var(--text-muted);"></i>
+                                <input type="url" id="editSocialTiktok" class="form-input" placeholder="TikTok URL">
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -2701,9 +2912,14 @@
     <div id="coverUploadModal" class="upload-cover-modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-inner">
-                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin: 0;">Upload Cover Photo</h3>
-                    <button onclick="closeCoverUploadModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s ease;" onmouseover="this.style.color='var(--heading)'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+                <div class="modal-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin: 0;">Upload Cover
+                        Photo</h3>
+                    <button onclick="closeCoverUploadModal()"
+                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s ease;"
+                        onmouseover="this.style.color='var(--heading)'"
+                        onmouseout="this.style.color='var(--text-muted)'">&times;</button>
                 </div>
 
                 <!-- Upload Area -->
@@ -2711,7 +2927,8 @@
                     <span class="upload-icon">📸</span>
                     <p class="upload-text">Click to upload cover photo</p>
                     <p class="upload-hint">Recommended size: 1920x400px (Max: 5MB)</p>
-                    <input type="file" id="coverInput" class="upload-input" accept="image/*" onchange="handleImageSelect(event, 'cover')">
+                    <input type="file" id="coverInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'cover')">
                 </div>
 
                 <!-- Preview Container -->
@@ -2755,9 +2972,14 @@
     <div id="profileUploadModal" class="upload-profile-modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-inner">
-                <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin: 0;">Upload Profile Picture</h3>
-                    <button onclick="closeProfileUploadModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s ease;" onmouseover="this.style.color='var(--heading)'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+                <div class="modal-header"
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--heading); margin: 0;">Upload Profile
+                        Picture</h3>
+                    <button onclick="closeProfileUploadModal()"
+                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-muted); transition: color 0.3s ease;"
+                        onmouseover="this.style.color='var(--heading)'"
+                        onmouseout="this.style.color='var(--text-muted)'">&times;</button>
                 </div>
 
                 <!-- Upload Area -->
@@ -2765,12 +2987,14 @@
                     <span class="upload-icon">👤</span>
                     <p class="upload-text">Click to upload profile picture</p>
                     <p class="upload-hint">Recommended size: 400x400px (Max: 2MB)</p>
-                    <input type="file" id="profileInput" class="upload-input" accept="image/*" onchange="handleImageSelect(event, 'profile')">
+                    <input type="file" id="profileInput" class="upload-input" accept="image/*"
+                        onchange="handleImageSelect(event, 'profile')">
                 </div>
 
                 <!-- Preview Container -->
                 <div id="profilePreview" class="preview-container" style="display: none;">
-                    <img id="profilePreviewImage" src="" alt="Profile Preview" class="preview-image" style="max-height: 400px; object-fit: contain;">
+                    <img id="profilePreviewImage" src="" alt="Profile Preview" class="preview-image"
+                        style="max-height: 400px; object-fit: contain;">
                     <div class="preview-info">
                         <div class="file-info">
                             <span>File Name:</span>
@@ -2819,11 +3043,13 @@
                 <form id="createCampaignForm">
                     <!-- Basic Information -->
                     <div class="form-section">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">Basic Information</h3>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                            Basic Information</h3>
 
                         <div class="form-group">
                             <label>Campaign Name *</label>
-                            <input type="text" id="campaignName" class="form-input" required placeholder="e.g., Back to School 2024">
+                            <input type="text" id="campaignName" class="form-input" required
+                                placeholder="e.g., Back to School 2024">
                         </div>
 
                         <div class="form-group">
@@ -2837,13 +3063,15 @@
 
                         <div class="form-group">
                             <label>Description</label>
-                            <textarea id="campaignDescription" class="form-input" rows="3" placeholder="Brief description of your campaign..."></textarea>
+                            <textarea id="campaignDescription" class="form-input" rows="3"
+                                placeholder="Brief description of your campaign..."></textarea>
                         </div>
                     </div>
 
                     <!-- Campaign Schedule -->
                     <div class="form-section" style="margin-top: 1.5rem;">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">Campaign Schedule</h3>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                            Campaign Schedule</h3>
 
                         <div class="form-row">
                             <div class="form-group">
@@ -2859,7 +3087,8 @@
 
                     <!-- Targeting -->
                     <div class="form-section" style="margin-top: 1.5rem;">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">Targeting</h3>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                            Targeting</h3>
 
                         <div class="form-row">
                             <div class="form-group">
@@ -2871,7 +3100,8 @@
                                     <option value="tutors">Tutors</option>
                                     <option value="institutes">Educational Institutes</option>
                                 </select>
-                                <small style="color: var(--text-muted); font-size: 0.875rem;">Hold Ctrl/Cmd to select multiple</small>
+                                <small style="color: var(--text-muted); font-size: 0.875rem;">Hold Ctrl/Cmd to select
+                                    multiple</small>
                             </div>
                             <div class="form-group">
                                 <label>Target Regions</label>
@@ -2885,14 +3115,16 @@
                                     <option value="jimma">Jimma</option>
                                     <option value="all">All Ethiopia</option>
                                 </select>
-                                <small style="color: var(--text-muted); font-size: 0.875rem;">Hold Ctrl/Cmd to select multiple</small>
+                                <small style="color: var(--text-muted); font-size: 0.875rem;">Hold Ctrl/Cmd to select
+                                    multiple</small>
                             </div>
                         </div>
                     </div>
 
                     <!-- Campaign Goals -->
                     <div class="form-section" style="margin-top: 1.5rem;">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">Campaign Goals</h3>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                            Campaign Goals</h3>
 
                         <div class="form-row">
                             <div class="form-group">
@@ -2908,23 +3140,27 @@
                             </div>
                             <div class="form-group">
                                 <label>Target CTR (%)</label>
-                                <input type="number" id="campaignTargetCTR" class="form-input" placeholder="5.0" min="0" max="100" step="0.1">
+                                <input type="number" id="campaignTargetCTR" class="form-input" placeholder="5.0" min="0"
+                                    max="100" step="0.1">
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label>Campaign URL</label>
-                            <input type="url" id="campaignURL" class="form-input" placeholder="https://yourwebsite.com/campaign">
+                            <input type="url" id="campaignURL" class="form-input"
+                                placeholder="https://yourwebsite.com/campaign">
                         </div>
                     </div>
 
                     <!-- Upload Campaign Media -->
                     <div class="form-section" style="margin-top: 1.5rem;">
-                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">Campaign Media</h3>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; color: var(--heading);">
+                            Campaign Media</h3>
 
                         <div class="form-group">
                             <label>Upload Media (Image/Video) *</label>
-                            <input type="file" id="campaignMediaFile" class="form-input" accept="image/*,video/*" required>
+                            <input type="file" id="campaignMediaFile" class="form-input" accept="image/*,video/*"
+                                required>
                             <small style="color: var(--text-muted); font-size: 0.875rem;">
                                 Supported formats: JPG, PNG, MP4, WebM | Max size: Images 5MB, Videos 200MB
                             </small>
@@ -2932,7 +3168,8 @@
 
                         <div class="form-group">
                             <label>Media Preview</label>
-                            <div id="mediaPreview" style="min-height: 100px; border: 2px dashed var(--border); border-radius: 8px; padding: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
+                            <div id="mediaPreview"
+                                style="min-height: 100px; border: 2px dashed var(--border); border-radius: 8px; padding: 1rem; display: flex; align-items: center; justify-content: center; color: var(--text-muted);">
                                 No media selected
                             </div>
                         </div>
@@ -3151,12 +3388,14 @@
         <div class="modal-content enhanced" style="max-width: 420px;">
             <button class="modal-close-enhanced" onclick="closeModal('logout-modal')">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
                 </svg>
             </button>
 
             <div class="modal-header" style="text-align: center; padding: 32px 32px 16px;">
-                <div style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
+                <div
+                    style="width: 72px; height: 72px; background: rgba(239, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;">
                     <svg width="36" height="36" fill="none" stroke="#EF4444" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
@@ -3169,24 +3408,33 @@
 
             <div style="padding: 24px 32px 32px;">
                 <!-- Session info -->
-                <div id="logout-session-info" style="background: var(--bg-secondary); border-radius: 12px; padding: 16px; margin-bottom: 24px; display: none;">
+                <div id="logout-session-info"
+                    style="background: var(--bg-secondary); border-radius: 12px; padding: 16px; margin-bottom: 24px; display: none;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div id="logout-user-avatar" style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0;">
+                        <div id="logout-user-avatar"
+                            style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-color), var(--accent-hover)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; flex-shrink: 0;">
                         </div>
                         <div style="flex: 1; min-width: 0;">
-                            <p id="logout-user-name" style="margin: 0; font-weight: 600; color: var(--text-primary); font-size: 15px;"></p>
-                            <p id="logout-user-email" style="margin: 4px 0 0; font-size: 13px; color: var(--text-muted);"></p>
-                            <div id="logout-user-roles" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
+                            <p id="logout-user-name"
+                                style="margin: 0; font-weight: 600; color: var(--text-primary); font-size: 15px;"></p>
+                            <p id="logout-user-email"
+                                style="margin: 4px 0 0; font-size: 13px; color: var(--text-muted);"></p>
+                            <div id="logout-user-roles"
+                                style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px;">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Warning message -->
-                <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; padding: 14px; margin-bottom: 24px;">
+                <div
+                    style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 10px; padding: 14px; margin-bottom: 24px;">
                     <div style="display: flex; align-items: start; gap: 10px;">
-                        <svg style="width: 20px; height: 20px; color: #F59E0B; flex-shrink: 0; margin-top: 1px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        <svg style="width: 20px; height: 20px; color: #F59E0B; flex-shrink: 0; margin-top: 1px;"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                            </path>
                         </svg>
                         <p style="margin: 0; font-size: 13px; color: var(--text-secondary); line-height: 1.5;">
                             You will need to sign in again to access your account and continue your learning journey.
@@ -3196,12 +3444,16 @@
 
                 <!-- Action buttons -->
                 <div style="display: flex; gap: 12px;">
-                    <button onclick="closeModal('logout-modal')" class="submit-btn" style="flex: 1; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">
+                    <button onclick="closeModal('logout-modal')" class="submit-btn"
+                        style="flex: 1; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color);">
                         Stay Logged In
                     </button>
-                    <button onclick="confirmLogout()" class="submit-btn" style="flex: 1; background: #EF4444; border-color: #EF4444;">
-                        <svg style="width: 18px; height: 18px; margin-right: 6px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7"></path>
+                    <button onclick="confirmLogout()" class="submit-btn"
+                        style="flex: 1; background: #EF4444; border-color: #EF4444;">
+                        <svg style="width: 18px; height: 18px; margin-right: 6px;" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 16l4-4m0 0l-4-4m4 4H7"></path>
                         </svg>
                         Log Out
                     </button>
@@ -3209,8 +3461,10 @@
 
                 <!-- Remember me option -->
                 <div style="margin-top: 20px; text-align: center;">
-                    <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-muted);">
-                        <input type="checkbox" id="logout-all-devices" style="width: 16px; height: 16px; accent-color: var(--accent-color);">
+                    <label
+                        style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-muted);">
+                        <input type="checkbox" id="logout-all-devices"
+                            style="width: 16px; height: 16px; accent-color: var(--accent-color);">
                         <span>Log out from all devices</span>
                     </label>
                 </div>
@@ -3371,7 +3625,7 @@
     <!-- NOTE: Many of these manager files don't exist and cause 404 errors, which can break script loading -->
     <!-- Commenting out missing files to prevent script loading errors -->
     <!-- <script src="../js/page-structure/loadingManager.js"></script> -->
-    <script src="../js/admin-pages/shared/sidebar-fix.js"></script>
+    <script src="../js/shared/sidebar-toggle.js"></script>
     <!-- <script src="../js/page-structure/adManager.js"></script> -->
     <!-- <script src="../js/page-structure/footerManager.js"></script> -->
     <!-- <script src="../js/page-structure/settingsManager.js"></script> -->
@@ -3395,11 +3649,16 @@
     <!-- Profile System -->
     <script src="../js/root/profile-system.js?v=20251003"></script>
 
+    <!-- Common Modal Loader - loads add-role-modal, logout-modal, etc. -->
+    <script src="../modals/common-modals/common-modal-loader.js"></script>
+
     <!-- Common Modals -->
     <script src="../js/index/init-modals.js"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
     <script src="../js/common-modals/ad-modal.js"></script>
     <script src="../js/common-modals/logout-modal.js"></script>
+    <script src="../js/common-modals/chat-modal.js"></script>
+    <script src="../js/common-modals/view-request-modal.js"></script>
 
     <!-- Stats Counter for Hero Section -->
     <script src="../js/find-tutors/stats-counter.js"></script>
@@ -3433,14 +3692,30 @@
     <!-- Initialize Profile Data Loader -->
     <script>
         // Initialize advertiser profile data loader after DOM is ready
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Wait a bit for other scripts to initialize
-            setTimeout(function() {
+            setTimeout(function () {
                 if (typeof AdvertiserProfileDataLoader !== 'undefined') {
                     AdvertiserProfileDataLoader.init();
                 }
             }, 500);
         });
+    </script>
+
+    <!-- Load Chat Modal -->
+    <script>
+        fetch('../modals/common-modals/chat-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('chat-modal-container').innerHTML = html;
+                console.log('✅ Chat Modal loaded');
+                // Initialize ChatModalManager after DOM is ready
+                if (typeof ChatModalManager !== 'undefined') {
+                    ChatModalManager.init();
+                    console.log('✅ ChatModalManager initialized');
+                }
+            })
+            .catch(error => console.error('Failed to load chat-modal:', error));
     </script>
 
     <!-- Floating Action Button (FAB) for Quick Actions -->
@@ -3452,12 +3727,15 @@
         </button>
 
         <!-- FAB Menu Items -->
-        <div class="fab-menu" id="fabMenu" style="position: absolute; bottom: 70px; right: 0; display: none; flex-direction: column; gap: 1rem;">
+        <div class="fab-menu" id="fabMenu"
+            style="position: absolute; bottom: 70px; right: 0; display: none; flex-direction: column; gap: 1rem;">
             <!-- Analytics -->
             <div class="fab-item" onclick="navigateToContent('ad-analytics')"
                 style="display: flex; align-items: center; gap: 1rem; cursor: pointer; animation: fadeInUp 0.3s ease;">
-                <span style="background: white; color: #667eea; padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); white-space: nowrap;">Analytics</span>
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
+                <span
+                    style="background: white; color: #667eea; padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); white-space: nowrap;">Analytics</span>
+                <div
+                    style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);">
                     📊
                 </div>
             </div>
@@ -3465,8 +3743,10 @@
             <!-- Campaigns -->
             <div class="fab-item" onclick="navigateToContent('campaigns')"
                 style="display: flex; align-items: center; gap: 1rem; cursor: pointer; animation: fadeInUp 0.3s ease 0.1s; animation-fill-mode: both; opacity: 0;">
-                <span style="background: white; color: #667eea; padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); white-space: nowrap;">Campaigns</span>
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);">
+                <span
+                    style="background: white; color: #667eea; padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); white-space: nowrap;">Campaigns</span>
+                <div
+                    style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);">
                     📢
                 </div>
             </div>
@@ -3474,8 +3754,10 @@
             <!-- Creative Hub -->
             <div class="fab-item" onclick="navigateToContent('creative-hub')"
                 style="display: flex; align-items: center; gap: 1rem; cursor: pointer; animation: fadeInUp 0.3s ease 0.2s; animation-fill-mode: both; opacity: 0;">
-                <span style="background: white; color: #667eea; padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); white-space: nowrap;">Creative</span>
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
+                <span
+                    style="background: white; color: #667eea; padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); white-space: nowrap;">Creative</span>
+                <div
+                    style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
                     🎨
                 </div>
             </div>
@@ -3483,8 +3765,11 @@
             <!-- Billing and Payment -->
             <div class="fab-item" onclick="navigateToContent('finances')"
                 style="display: flex; align-items: center; gap: 1rem; cursor: pointer; animation: fadeInUp 0.3s ease 0.3s; animation-fill-mode: both; opacity: 0;">
-                <span style="background: white; color: #667eea; padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); white-space: nowrap;">Billing & Payment</span>
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
+                <span
+                    style="background: white; color: #667eea; padding: 0.5rem; border-radius: 8px; font-size: 0.875rem; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.1); white-space: nowrap;">Billing
+                    & Payment</span>
+                <div
+                    style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
                     💳
                 </div>
             </div>
@@ -3497,6 +3782,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -3543,7 +3829,7 @@
         }
 
         // Close FAB menu when clicking outside
-        document.addEventListener('click', function(event) {
+        document.addEventListener('click', function (event) {
             const fabContainer = document.querySelector('.fab-container');
             if (fabOpen && !fabContainer.contains(event.target)) {
                 toggleFabMenu();
@@ -3552,8 +3838,8 @@
     </script>
 
     <script>
-        // API Configuration
-        const API_BASE_URL = 'https://api.astegni.com';
+        // API Configuration - use localhost for development
+        const API_BASE_URL = 'http://localhost:8000';
 
         // Load advertiser profile from database on page load
         async function loadAdvertiserProfile() {
@@ -3652,7 +3938,7 @@
         function openEditProfileModal() {
             const modal = document.getElementById('edit-profile-modal');
 
-            console.log('📝 Opening edit profile modal...');
+            console.log('[AdvertiserProfile] Opening edit profile modal...');
 
             // initializationManager.js sets inline style="display: none" on all modals
             // So we need to change style.display, not just remove the 'hidden' class
@@ -3665,36 +3951,42 @@
 
             if (typeof AdvertiserProfileDataLoader !== 'undefined' && AdvertiserProfileDataLoader.profileData) {
                 data = AdvertiserProfileDataLoader.profileData;
-                console.log('✅ Populating modal with DATABASE data:', data);
+                console.log('[AdvertiserProfile] Populating modal with DATABASE data:', data);
             } else {
-                console.warn('⚠️ AdvertiserProfileDataLoader not available, falling back to AppState');
-                // Fallback to AppState if available
-                if (typeof AppState !== 'undefined' && AppState.user) {
-                    data = {
-                        company_name: AppState.user.name,
-                        email: AppState.user.email,
-                        phone: AppState.user.phone,
-                        location: AppState.user.location,
-                        website: AppState.user.website,
-                        bio: AppState.user.bio
-                    };
-                }
+                console.warn('[AdvertiserProfile] AdvertiserProfileDataLoader not available');
             }
 
             // Populate form with real database data
             if (data) {
-                // Use correct camelCase IDs that match the HTML
-                document.getElementById('editCompanyName').value = data.company_name || '';
-                document.getElementById('editIndustry').value = data.industry || '';
-                document.getElementById('editEmail').value = data.email || '';
-                document.getElementById('editPhone').value = data.phone || '';
-                document.getElementById('editLocation').value = data.location || '';
+                // Username
+                document.getElementById('editUsername').value = data.username || '';
+
+                // Bio
                 document.getElementById('editBio').value = data.bio || '';
+
+                // Quote
                 document.getElementById('editQuote').value = data.quote || '';
 
-                console.log('✅ Modal populated with profile data');
+                // Location (array - join with comma for input)
+                if (data.location && Array.isArray(data.location)) {
+                    document.getElementById('editLocation').value = data.location.join(', ');
+                } else {
+                    document.getElementById('editLocation').value = '';
+                }
+
+                // Social links (from socials JSONB)
+                const socials = data.socials || {};
+                document.getElementById('editSocialWebsite').value = socials.website || '';
+                document.getElementById('editSocialFacebook').value = socials.facebook || '';
+                document.getElementById('editSocialTwitter').value = socials.twitter || '';
+                document.getElementById('editSocialLinkedin').value = socials.linkedin || '';
+                document.getElementById('editSocialInstagram').value = socials.instagram || '';
+                document.getElementById('editSocialYoutube').value = socials.youtube || '';
+                document.getElementById('editSocialTiktok').value = socials.tiktok || '';
+
+                console.log('[AdvertiserProfile] Modal populated with profile data');
             } else {
-                console.error('❌ No profile data available to populate modal');
+                console.error('[AdvertiserProfile] No profile data available to populate modal');
             }
         }
 
@@ -3716,7 +4008,7 @@
         // window.saveAdvertiserProfile is already exposed by profile-edit-handler.js
 
         // Load profile on page load
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             loadAdvertiserProfile();
         });
     </script>
@@ -3750,4 +4042,5 @@
     <div id="toast-container" class="toast-container"></div>
 
 </body>
+
 </html>

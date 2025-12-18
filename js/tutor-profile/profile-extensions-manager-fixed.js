@@ -6,7 +6,7 @@
 // Ensure API_BASE_URL is defined (fallback if not)
 if (typeof API_BASE_URL === 'undefined') {
     console.warn('⚠️ API_BASE_URL not defined, using default');
-    window.API_BASE_URL = 'https://api.astegni.com';
+    window.API_BASE_URL = 'http://localhost:8000';
 }
 
 console.log('🔧 [FIXED] Starting profile extensions manager...');

@@ -19,8 +19,17 @@
  * 7. Global Functions - Export functions for HTML onclick handlers
  */
 
+// Guard to prevent multiple initializations
+let _tutorProfileInitialized = false;
+
 // Auto-initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
+    if (_tutorProfileInitialized) {
+        console.log('⚠️ Tutor Profile init.js already initialized, skipping...');
+        return;
+    }
+    _tutorProfileInitialized = true;
+
     console.log('🚀 INITIALIZING TUTOR PROFILE PAGE');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 

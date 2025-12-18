@@ -27,3 +27,6 @@ twilio==9.0.4
 
 # Rate limiting
 slowapi==0.1.9
+
+# Encryption
+cryptography==41.0.7

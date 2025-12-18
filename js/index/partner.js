@@ -3,7 +3,7 @@
 // ============================================
 
 // Use global API base URL
-const partnerApiUrl = window.API_BASE_URL || 'https://api.astegni.com';
+const partnerApiUrl = window.API_BASE_URL || 'http://localhost:8000';
 
 // Default partners data
 const defaultPartners = [

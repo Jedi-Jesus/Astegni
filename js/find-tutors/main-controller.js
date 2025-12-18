@@ -4,11 +4,18 @@
 // ============================================
 
 const FindTutorsController = {
+    // Cache for user's connections
+    userConnections: [],
+    connectionsLoaded: false,
+
     async init() {
         console.log('🔍 Initializing Find Tutors page...');
 
         // Initialize UI
         FindTutorsUI.init();
+
+        // Load user's connections first (if logged in)
+        await this.loadUserConnections();
 
         // Load initial data
         await this.loadTutors();
@@ -17,6 +24,63 @@ const FindTutorsController = {
         this.initWebSocket();
 
         console.log('✅ Find Tutors page initialized');
+    },
+
+    async loadUserConnections() {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (!token) {
+            console.log('User not logged in, skipping connection load');
+            return;
+        }
+
+        try {
+            const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000/api';
+            const response = await fetch(`${API_BASE_URL}/connections?status=accepted&status=pending`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (response.ok) {
+                this.userConnections = await response.json();
+                this.connectionsLoaded = true;
+                console.log(`Loaded ${this.userConnections.length} user connections:`);
+                // Debug: log all connections with their profile IDs
+                this.userConnections.forEach(conn => {
+                    console.log(`  Connection ${conn.id}: requester_profile_id=${conn.requester_profile_id} (${conn.requester_type}), recipient_profile_id=${conn.recipient_profile_id} (${conn.recipient_type}), status=${conn.status}`);
+                });
+            } else {
+                console.error('Failed to load connections:', response.status, await response.text());
+            }
+        } catch (error) {
+            console.error('Failed to load user connections:', error);
+        }
+    },
+
+    getConnectionStatus(tutorProfileId) {
+        // Find if there's a connection with this tutor using profile IDs
+        const connection = this.userConnections.find(conn => {
+            // Check if tutor is the recipient (we sent request to them)
+            if (conn.recipient_type === 'tutor' && conn.recipient_profile_id === tutorProfileId) {
+                return true;
+            }
+            // Check if tutor is the requester (they sent request to us)
+            if (conn.requester_type === 'tutor' && conn.requester_profile_id === tutorProfileId) {
+                return true;
+            }
+            return false;
+        });
+
+        if (!connection) return null;
+
+        // Determine if this is an outgoing request (we sent it) or incoming (they sent it)
+        const isOutgoing = connection.recipient_profile_id === tutorProfileId;
+
+        return {
+            status: connection.status,
+            isOutgoing: isOutgoing,
+            connectionId: connection.id
+        };
     },
 
     async loadTutors() {
@@ -42,6 +106,25 @@ const FindTutorsController = {
             console.log('API response:', response);
 
             let tutors = response.tutors || [];
+
+            // Merge connection status with tutors
+            if (this.connectionsLoaded && this.userConnections.length > 0) {
+                tutors = tutors.map(tutor => {
+                    // Use tutor.id (profile ID) to match against recipient_profile_id/requester_profile_id
+                    const connectionStatus = this.getConnectionStatus(tutor.id);
+                    if (connectionStatus) {
+                        tutor.is_connected = connectionStatus.status === 'accepted';
+                        tutor.connection_pending = connectionStatus.status === 'pending' && connectionStatus.isOutgoing;
+                        tutor.connection_incoming = connectionStatus.status === 'pending' && !connectionStatus.isOutgoing;
+                        tutor.connection_status = connectionStatus.status;
+                        tutor.connection_id = connectionStatus.connectionId;
+                        tutor.is_outgoing = connectionStatus.isOutgoing;
+                        console.log(`Tutor ${tutor.id} (${tutor.first_name}): ${connectionStatus.status}, outgoing=${connectionStatus.isOutgoing}`);
+                    }
+                    return tutor;
+                });
+                console.log('Merged connection status with tutors');
+            }
 
             // Apply CLIENT-SIDE preference filters AFTER getting backend results
             if (params.favorite === true) {

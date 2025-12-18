@@ -6,11 +6,18 @@
 const ReviewsPanelManager = {
     allReviews: [],
     currentFilter: 'all',
+    _initialized: false,
 
     /**
      * Initialize reviews panel
      */
     async init() {
+        if (this._initialized) {
+            console.log('⚠️ ReviewsPanelManager already initialized, skipping...');
+            return;
+        }
+        this._initialized = true;
+
         console.log('🌟 Initializing Reviews Panel Manager...');
         await this.loadReviews();
         this.setupEventListeners();
@@ -56,7 +63,7 @@ const ReviewsPanelManager = {
             console.log('📥 Loading reviews for tutor ID:', tutorId);
 
             // Fetch from API
-            const response = await fetch(`https://api.astegni.com/api/tutor/${tutorId}/reviews`);
+            const response = await fetch(`http://localhost:8000/api/tutor/${tutorId}/reviews`);
             if (!response.ok) {
                 throw new Error(`API error: ${response.status}`);
             }

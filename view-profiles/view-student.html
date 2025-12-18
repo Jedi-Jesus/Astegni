@@ -21,6 +21,8 @@
     <link rel="stylesheet" href="../css/common-modals/add-role-modal.css">
     <link rel="stylesheet" href="../css/common-modals/coming-soon-modal.css">
     <link rel="stylesheet" href="../css/common-modals/ad-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/chat-modal.css">
+    <link rel="stylesheet" href="../css/common-modals/view-request-modal.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
@@ -2138,175 +2140,15 @@
                                     <span>👨‍👩‍👧</span> Parents & Guardians
                                 </h2>
 
-                                <!-- Parents Grid -->
-                                <div
+                                <!-- Parents Grid (Dynamic - Loaded from student_profiles.parent_id[]) -->
+                                <div id="parents-cards-container"
                                     style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                                    <!-- Father Card -->
-                                    <div
-                                        style="background: var(--card-bg); border-radius: 16px; padding: 2rem; border: 2px solid rgba(245, 158, 11, 0.2); position: relative; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease;">
-                                        <div
-                                            style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; box-shadow: 0 2px 8px rgba(245,158,11,0.3);">
-                                            Primary</div>
-
-                                        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
-                                            <div style="flex-shrink: 0;">
-                                                <img src="../uploads/system_images/system_profile_pictures/Dad-profile.jpg"
-                                                    alt="Father"
-                                                    style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
-                                            </div>
-                                            <div style="flex: 1;">
-                                                <a href="../view-profiles/view-parent.html?id=1"
-                                                    style="text-decoration: none; color: inherit;">
-                                                    <h3 style="font-size: 1.5rem; font-weight: 600; color: var(--heading); margin-bottom: 0.5rem; cursor: pointer; transition: color 0.3s;"
-                                                        onmouseover="this.style.color='var(--primary-color)'"
-                                                        onmouseout="this.style.color='var(--heading)'">Tesfaye Kebede
-                                                    </h3>
-                                                </a>
-                                                <p
-                                                    style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.75rem;">
-                                                    Father • Primary Guardian</p>
-                                                <div style="display: flex; gap: 0.5rem;">
-                                                    <span
-                                                        style="background: rgba(245, 158, 11, 0.15); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Active</span>
-                                                    <span
-                                                        style="background: rgba(34, 197, 94, 0.15); color: #059669; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Verified</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            style="background: rgba(245, 158, 11, 0.05); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.1);">
-                                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 1.25rem;">📧</span>
-                                                    <div>
-                                                        <p
-                                                            style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
-                                                            Email</p>
-                                                        <p
-                                                            style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">
-                                                            tesfaye.kebede@email.com</p>
-                                                    </div>
-                                                </div>
-                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 1.25rem;">📱</span>
-                                                    <div>
-                                                        <p
-                                                            style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
-                                                            Phone</p>
-                                                        <p
-                                                            style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">
-                                                            +251 911 234 567</p>
-                                                    </div>
-                                                </div>
-                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 1.25rem;">💼</span>
-                                                    <div>
-                                                        <p
-                                                            style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
-                                                            Occupation</p>
-                                                        <p
-                                                            style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">
-                                                            Civil Engineer</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="display: flex; justify-content: center;">
-                                            <a href="../view-profiles/view-parent.html?id=1"
-                                                style="width: 100%; padding: 0.75rem; background: var(--card-bg); color: var(--primary-color); border: 2px solid var(--primary-color); border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none;">
-                                                <span>👁️</span> View Profile
-                                            </a>
-                                        </div>
-                                    </div>
-
-                                    <!-- Mother Card -->
-                                    <div
-                                        style="background: var(--card-bg); border-radius: 16px; padding: 2rem; border: 2px solid rgba(245, 158, 11, 0.2); position: relative; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: transform 0.3s ease, box-shadow 0.3s ease;">
-                                        <div
-                                            style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; box-shadow: 0 2px 8px rgba(245,158,11,0.3);">
-                                            Co-Guardian</div>
-
-                                        <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem;">
-                                            <div style="flex-shrink: 0;">
-                                                <img src="../uploads/system_images/system_profile_pictures/Mom-profile.jpg"
-                                                    alt="Mother"
-                                                    style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid var(--primary-color); box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">
-                                            </div>
-                                            <div style="flex: 1;">
-                                                <a href="../view-profiles/view-parent.html?id=2"
-                                                    style="text-decoration: none; color: inherit;">
-                                                    <h3 style="font-size: 1.5rem; font-weight: 600; color: var(--heading); margin-bottom: 0.5rem; cursor: pointer; transition: color 0.3s;"
-                                                        onmouseover="this.style.color='var(--primary-color)'"
-                                                        onmouseout="this.style.color='var(--heading)'">Almaz Tadesse
-                                                    </h3>
-                                                </a>
-                                                <p
-                                                    style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 0.75rem;">
-                                                    Mother • Co-Guardian</p>
-                                                <div style="display: flex; gap: 0.5rem;">
-                                                    <span
-                                                        style="background: rgba(245, 158, 11, 0.15); color: var(--primary-color); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Active</span>
-                                                    <span
-                                                        style="background: rgba(34, 197, 94, 0.15); color: #059669; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">Verified</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div
-                                            style="background: rgba(245, 158, 11, 0.05); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid rgba(245, 158, 11, 0.1);">
-                                            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 1.25rem;">📧</span>
-                                                    <div>
-                                                        <p
-                                                            style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
-                                                            Email</p>
-                                                        <p
-                                                            style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">
-                                                            almaz.tadesse@email.com</p>
-                                                    </div>
-                                                </div>
-                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 1.25rem;">📱</span>
-                                                    <div>
-                                                        <p
-                                                            style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
-                                                            Phone</p>
-                                                        <p
-                                                            style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">
-                                                            +251 911 345 678</p>
-                                                    </div>
-                                                </div>
-                                                <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                                    <span style="font-size: 1.25rem;">💼</span>
-                                                    <div>
-                                                        <p
-                                                            style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">
-                                                            Occupation</p>
-                                                        <p
-                                                            style="font-size: 0.95rem; color: var(--text); margin: 0; font-weight: 500;">
-                                                            Medical Doctor</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="display: flex; justify-content: center;">
-                                            <a href="../view-profiles/view-parent.html?id=2"
-                                                style="width: 100%; padding: 0.75rem; background: var(--card-bg); color: var(--primary-color); border: 2px solid var(--primary-color); border-radius: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none;">
-                                                <span>👁️</span> View Profile
-                                            </a>
-                                        </div>
+                                    <!-- Loading state - will be replaced by JS -->
+                                    <div style="text-align: center; padding: 2rem; grid-column: 1 / -1;">
+                                        <div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                                        <p style="color: var(--text-secondary);">Loading parents...</p>
                                     </div>
                                 </div>
-
-                                <!-- Overall Rating Section Removed - Moved to Behavioral Notes Panel -->
-
-                                <!-- Parent Stats Section Removed -->
-
-                                <!-- Parent Reviews Section Removed -->
                             </section>
                         </div>
 
@@ -2800,9 +2642,10 @@
     <!-- Scripts -->
     <script src="../js/root/app.js"></script>
     <script src="../js/root/auth.js"></script>
+    <script src="../js/root/default-avatar.js"></script>
     <script src="../js/root/profile-system.js"></script>
-    <script src="../js/root/theme.js"></script>
-    <script src="../js/student-profile/student-profile.js"></script>
+    <script src="../js/root/theme-toggle.js"></script>
+    <!-- Note: student-profile.js removed - it's for editing own profile, not viewing others -->
     <!-- Common Modal Loader for add-role, logout, coming-soon modals -->
     <script src="../modals/common-modals/common-modal-loader.js"></script>
     <script src="../js/common-modals/coming-soon-modal.js"></script>
@@ -2816,6 +2659,8 @@
     <script src="../js/view-student/view-student-loader.js"></script>
     <!-- View Student Credentials Manager - Handles credential section switching -->
     <script src="../js/view-student/view-student-credentials.js"></script>
+    <!-- View Student Parents Manager - Loads parents from student_profiles.parent_id[] -->
+    <script src="../js/view-student/view-student-parents.js"></script>
     <!-- View Student Blogs Manager - Loads and displays blog posts from database -->
     <script src="../js/view-student/view-student-blogs.js"></script>
     <!-- View Student Clubs Manager - Loads and displays clubs from database -->
@@ -2837,66 +2682,9 @@
             // Load student data (placeholder for now)
             loadStudentData();
 
-            // Initialize parents panel with combined data
-            initializeParentsPanel();
-
             // Initialize animations
             animateStats();
         });
-
-        // Initialize parents panel with combined/default data
-        function initializeParentsPanel() {
-            // Show combined parent data initially
-            const combinedData = {
-                name: 'Both Parents',
-                rating: 4.8,
-                reviewCount: 45,
-                breakdown: { 5: 37, 4: 6, 3: 2, 2: 0, 1: 0 }
-            };
-
-            // Update overall rating with combined data
-            document.getElementById('overall-rating-label').textContent = 'Overall Parent Rating';
-            document.getElementById('overall-rating-value').textContent = combinedData.rating.toFixed(1);
-
-            const fullStars = Math.floor(combinedData.rating);
-            const hasHalfStar = combinedData.rating % 1 >= 0.5;
-            let starsHTML = '★'.repeat(fullStars);
-            if (hasHalfStar && fullStars < 5) starsHTML += '☆';
-            const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-            starsHTML += '☆'.repeat(emptyStars);
-            document.getElementById('overall-rating-stars').textContent = starsHTML;
-
-            document.getElementById('overall-rating-count').textContent = `Based on ${combinedData.reviewCount} tutor reviews`;
-
-            // Update rating breakdown
-            const total = combinedData.reviewCount;
-            for (let i = 1; i <= 5; i++) {
-                const count = combinedData.breakdown[i];
-                const percentage = total > 0 ? (count / total * 100) : 0;
-                document.getElementById(`rating-bar-${i}`).style.width = `${percentage}%`;
-                document.getElementById(`rating-count-${i}`).textContent = count;
-            }
-
-            // Show combined stats
-            document.getElementById('parent-stats-title').innerHTML = '<span>📊</span> Parent Statistics';
-            document.getElementById('stat-engagement-tutor').textContent = '4.9';
-            document.getElementById('stat-engagement-child').textContent = '5.0';
-            document.getElementById('stat-responsiveness').textContent = '4.8';
-            document.getElementById('stat-payment').textContent = '5.0';
-
-            // Show message to select a parent
-            document.getElementById('reviews-title').innerHTML = '<span>⭐</span> Reviews from Tutors';
-            document.getElementById('reviews-subtitle').textContent = 'Click "View Reviews" on a parent card to see their specific reviews';
-
-            const container = document.getElementById('reviews-container');
-            container.innerHTML = `
-                <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.05)); border-radius: 16px; padding: 3rem; text-align: center; border: 2px dashed rgba(59, 130, 246, 0.3);">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">👨‍👩‍👧</div>
-                    <h4 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--heading);">Select a Parent to View Reviews</h4>
-                    <p style="color: var(--text-secondary); font-size: 1rem;">Click the "View Reviews" button on either parent card above to see their specific reviews from tutors.</p>
-                </div>
-            `;
-        }
 
         // Load student data
         function loadStudentData() {
@@ -3063,57 +2851,50 @@
 
         // Message student function
         async function messageStudent() {
-            if (!window.currentStudentUserId) {
-                console.error('Student user ID not available');
-                alert('Unable to message: Student information not loaded');
-                return;
-            }
-
-            console.log('Opening message with student user ID:', window.currentStudentUserId);
-
             // Check if user is authenticated
-            if (!authManager || !authManager.isAuthenticated()) {
-                console.log('User not authenticated, showing auth modal');
-                if (typeof openAuthModal === 'function') {
-                    openAuthModal();
+            const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+            if (!token) {
+                if (window.openAuthModal) {
+                    window.openAuthModal('login');
                 } else {
                     alert('Please log in to message this student');
                 }
                 return;
             }
 
-            // Get the button element
-            const button = event.target.closest('button');
-            if (button) {
-                button.disabled = true;
-                button.innerHTML = '⏳ Opening...';
+            // Get student data from the global variable set by view-student-loader.js
+            const studentData = window.currentStudentData;
+            if (!studentData) {
+                console.error('Student data not loaded yet');
+                alert('Please wait for the profile to load');
+                return;
             }
 
-            try {
-                // Check if chat modal exists and open it
-                if (typeof openChatModal === 'function') {
-                    openChatModal(window.currentStudentUserId);
-                } else {
-                    // Fallback: redirect to chat page
-                    window.location.href = `/plug-ins/Chat.html?userId=${window.currentStudentUserId}`;
-                }
+            console.log('Opening chat with student:', studentData);
 
-                // Reset button after a short delay
-                setTimeout(() => {
-                    if (button) {
-                        button.disabled = false;
-                        button.innerHTML = '<span>💬</span> Message';
-                    }
-                }, 1000);
-            } catch (error) {
-                console.error('Message error:', error);
-                alert('Failed to open chat');
+            // Build target user object for chat modal
+            const targetUser = {
+                id: studentData.user_id,
+                user_id: studentData.user_id,
+                profile_id: studentData.id,
+                full_name: studentData.full_name || `${studentData.first_name || ''} ${studentData.father_name || ''}`.trim(),
+                name: studentData.full_name || `${studentData.first_name || ''} ${studentData.father_name || ''}`.trim(),
+                profile_picture: studentData.profile_picture,
+                avatar: studentData.profile_picture,
+                role: 'student',
+                profile_type: 'student',
+                is_online: studentData.is_online || false
+            };
 
-                // Reset button
-                if (button) {
-                    button.disabled = false;
-                    button.innerHTML = '<span>💬</span> Message';
-                }
+            console.log('Target user for chat:', targetUser);
+
+            // Open chat modal with the student
+            if (typeof ChatModalManager !== 'undefined' && typeof ChatModalManager.open === 'function') {
+                ChatModalManager.open(targetUser);
+                console.log('Chat modal opened for student:', targetUser.full_name);
+            } else {
+                console.error('ChatModalManager not available');
+                alert('Chat feature is not available. Please refresh the page.');
             }
         }
 
@@ -3601,6 +3382,30 @@
         // Replace the old interestedTickerManager with single display version
         window.interestedTickerManager = new InterestedSingleDisplayManager();
         console.log('✅ Interested Single Display Manager loaded');
+    </script>
+
+    <!-- Chat Modal Container -->
+    <div id="chat-modal-container"></div>
+
+    <!-- Chat Modal Script -->
+    <script src="../js/common-modals/chat-modal.js"></script>
+    <script src="../js/common-modals/view-request-modal.js"></script>
+
+    <!-- Load Chat Modal HTML and Initialize -->
+    <script>
+        // Load chat modal HTML dynamically
+        (function loadChatModal() {
+            fetch('../modals/common-modals/chat-modal.html')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('chat-modal-container').innerHTML = html;
+                    // Re-initialize chat modal after HTML is loaded
+                    if (typeof ChatModalManager !== 'undefined') {
+                        ChatModalManager.init();
+                    }
+                })
+                .catch(err => console.log('Chat modal will load on demand:', err.message));
+        })();
     </script>
 </body>
 

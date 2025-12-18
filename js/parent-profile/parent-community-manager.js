@@ -5,15 +5,20 @@
 
 class ParentCommunityManager {
   constructor() {
-    this.API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+    this.API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
     this.currentSection = 'main'; // main, connections, events, clubs
     this.currentConnectionTab = 'all'; // all, requested, tutors, students, parents
-    this.currentEventTab = 'joined'; // joined, past, upcoming
-    this.currentClubTab = 'discover'; // discover, joined
+    this.currentEventTab = 'all'; // all, scheduled, joined
+    this.currentClubTab = 'all'; // all, mine, discover, joined
     this.allConnections = [];
     this.requestedConnections = [];
     this.allEvents = [];
     this.allClubs = [];
+    // Pagination settings
+    this.eventsPage = 1;
+    this.eventsPerPage = 6;
+    this.clubsPage = 1;
+    this.clubsPerPage = 6;
     this.init();
   }
 
@@ -33,8 +38,17 @@ class ParentCommunityManager {
         return;
       }
 
-      // Fetch connections count
-      const connectionsResponse = await fetch(`${this.API_BASE_URL}/api/connections?status=connected`, {
+      // Get active role from JWT token (e.g., 'parent')
+      let activeRole = 'parent'; // Default to parent for this manager
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        activeRole = payload.role || 'parent';
+      } catch (e) {
+        console.warn('Could not parse role from token, defaulting to parent');
+      }
+
+      // Fetch connections count (status=accepted is the new schema, filtered by role/profile_id)
+      const connectionsResponse = await fetch(`${this.API_BASE_URL}/api/connections?status=accepted&role=${activeRole}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -42,23 +56,31 @@ class ParentCommunityManager {
         const connections = await connectionsResponse.json();
         this.allConnections = connections;
         const connectionsCount = connections.length;
-        document.getElementById('connections-total-count').textContent = connectionsCount;
-        console.log(`✓ Loaded ${connectionsCount} connections`);
+        // Update all connection count elements
+        document.querySelectorAll('#connections-count, #connections-total-count').forEach(el => {
+          el.textContent = connectionsCount;
+        });
+        console.log(`✓ Loaded ${connectionsCount} connections for role: ${activeRole}`);
       }
 
-      // Fetch requested connections count (status=connecting, direction=incoming)
-      const requestedResponse = await fetch(`${this.API_BASE_URL}/api/connections?status=connecting&direction=incoming`, {
+      // Fetch requested connections count (status=pending, direction=incoming - new schema, filtered by role/profile_id)
+      const requestedResponse = await fetch(`${this.API_BASE_URL}/api/connections?status=pending&direction=incoming&role=${activeRole}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
       if (requestedResponse.ok) {
         const requested = await requestedResponse.json();
         this.requestedConnections = requested;
-        console.log(`✓ Loaded ${requested.length} requested connections`);
+        const requestsCount = requested.length;
+        // Update all requests count elements
+        document.querySelectorAll('#requests-count, #received-requests-count').forEach(el => {
+          el.textContent = requestsCount;
+        });
+        console.log(`✓ Loaded ${requestsCount} requested connections`);
       }
 
-      // Fetch events count
-      const eventsResponse = await fetch(`${this.API_BASE_URL}/api/events`, {
+      // Fetch events count (filtered by role/profile_id)
+      const eventsResponse = await fetch(`${this.API_BASE_URL}/api/events?role=${activeRole}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -66,12 +88,14 @@ class ParentCommunityManager {
         const eventsData = await eventsResponse.json();
         this.allEvents = eventsData.events || [];
         const eventsCount = this.allEvents.length;
-        document.getElementById('events-total-count').textContent = eventsCount;
-        console.log(`✓ Loaded ${eventsCount} events`);
+        document.querySelectorAll('#events-count, #events-total-count').forEach(el => {
+          el.textContent = eventsCount;
+        });
+        console.log(`✓ Loaded ${eventsCount} events for role: ${activeRole}`);
       }
 
-      // Fetch clubs count
-      const clubsResponse = await fetch(`${this.API_BASE_URL}/api/clubs`, {
+      // Fetch clubs count (filtered by role/profile_id)
+      const clubsResponse = await fetch(`${this.API_BASE_URL}/api/clubs?role=${activeRole}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -79,8 +103,10 @@ class ParentCommunityManager {
         const clubsData = await clubsResponse.json();
         this.allClubs = clubsData.clubs || [];
         const clubsCount = this.allClubs.length;
-        document.getElementById('clubs-total-count').textContent = clubsCount;
-        console.log(`✓ Loaded ${clubsCount} clubs`);
+        document.querySelectorAll('#clubs-count, #clubs-total-count').forEach(el => {
+          el.textContent = clubsCount;
+        });
+        console.log(`✓ Loaded ${clubsCount} clubs for role: ${activeRole}`);
       }
 
     } catch (error) {
@@ -214,7 +240,17 @@ class ParentCommunityManager {
         return;
       }
 
-      const response = await fetch(`${this.API_BASE_URL}/api/connections?status=connected`, {
+      // Get active role from JWT token (e.g., 'parent')
+      let activeRole = 'parent';
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        activeRole = payload.role || 'parent';
+      } catch (e) {
+        console.warn('Could not parse role from token, defaulting to parent');
+      }
+
+      // Use status=accepted (new schema), filtered by role/profile_id
+      const response = await fetch(`${this.API_BASE_URL}/api/connections?status=accepted&role=${activeRole}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -341,7 +377,7 @@ class ParentCommunityManager {
           <button onclick="parentCommunityManager.navigateToProfile(${otherUser.profileId}, '${otherUser.profileType || ''}')" style="flex: 1; padding: 0.625rem; background: transparent; color: var(--button-bg, #3b82f6); border: 1px solid var(--button-bg, #3b82f6); border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: all 0.2s ease;" onmouseover="this.style.background='var(--button-bg, #3b82f6)'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='var(--button-bg, #3b82f6)'">
             <i class="fas fa-user" style="margin-right: 0.25rem;"></i> View Profile
           </button>
-          <button onclick="parentCommunityManager.messageUser(${otherUser.id})" style="flex: 1; padding: 0.625rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+          <button onclick="parentCommunityManager.messageUser(JSON.parse(this.dataset.user))" data-user="${this.encodeUserDataForOnclick(otherUser)}" style="flex: 1; padding: 0.625rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
             <i class="fas fa-comment" style="margin-right: 0.25rem;"></i> Message
           </button>
         </div>
@@ -392,6 +428,9 @@ class ParentCommunityManager {
           ` : ''}
         </div>
         <div style="display: flex; gap: 0.5rem;">
+          <button onclick="parentCommunityManager.messageUser(JSON.parse(this.dataset.user))" data-user="${this.encodeUserDataForOnclick(otherUser)}" style="padding: 0.625rem 1rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+            <i class="fas fa-comment" style="margin-right: 0.25rem;"></i> Message
+          </button>
           <button onclick="parentCommunityManager.acceptConnection(${conn.id})" style="flex: 1; padding: 0.625rem; background: #10b981; color: white; border: none; border-radius: 8px; font-size: 0.85rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
             <i class="fas fa-check" style="margin-right: 0.25rem;"></i> Accept
           </button>
@@ -479,7 +518,19 @@ class ParentCommunityManager {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${this.API_BASE_URL}/api/events`, {
+
+      // Get active role from JWT token
+      let activeRole = 'parent';
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          activeRole = payload.role || 'parent';
+        } catch (e) {
+          console.warn('Could not parse role from token, defaulting to parent');
+        }
+      }
+
+      const response = await fetch(`${this.API_BASE_URL}/api/events?role=${activeRole}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
 
@@ -495,29 +546,139 @@ class ParentCommunityManager {
     }
   }
 
-  // Display events based on selected tab
+  // Display events based on selected tab with pagination
   displayEvents(tab) {
     const grid = document.getElementById('events-grid');
     if (!grid) return;
 
+    // Get current user ID for "mine" filtering
+    const token = localStorage.getItem('token');
+    let currentUserId = null;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        currentUserId = parseInt(payload.sub);
+      } catch (e) {}
+    }
+
     let filteredEvents = this.allEvents;
+    const now = new Date();
 
     if (tab === 'joined') {
       filteredEvents = this.allEvents.filter(event => event.joined_status === true);
-    } else if (tab === 'past') {
-      const now = new Date();
-      filteredEvents = this.allEvents.filter(event => new Date(event.end_datetime) < now);
-    } else if (tab === 'upcoming') {
-      const now = new Date();
+    } else if (tab === 'mine') {
+      // Events created by the current user
+      filteredEvents = this.allEvents.filter(event => event.created_by === currentUserId);
+    } else if (tab === 'scheduled') {
+      // Upcoming events (not past)
       filteredEvents = this.allEvents.filter(event => new Date(event.start_datetime) > now);
     }
+    // 'all' tab shows all events (no filtering needed)
+
+    // Update tab button styles
+    this.updateEventTabStyles(tab);
 
     if (filteredEvents.length === 0) {
-      grid.innerHTML = this.getEmptyState('events', `No ${tab} events yet`);
+      const messages = {
+        'all': 'No events available',
+        'mine': 'You haven\'t created any events yet',
+        'scheduled': 'No scheduled events',
+        'joined': 'No joined events yet'
+      };
+      grid.innerHTML = this.getEmptyState('events', messages[tab] || 'No events available');
+      this.renderEventsPagination(0);
       return;
     }
 
-    grid.innerHTML = filteredEvents.map(event => this.createEventCard(event)).join('');
+    // Apply pagination
+    const totalPages = Math.ceil(filteredEvents.length / this.eventsPerPage);
+    if (this.eventsPage > totalPages) this.eventsPage = 1;
+
+    const startIndex = (this.eventsPage - 1) * this.eventsPerPage;
+    const paginatedEvents = filteredEvents.slice(startIndex, startIndex + this.eventsPerPage);
+
+    grid.innerHTML = paginatedEvents.map(event => this.createEventCard(event)).join('');
+    this.renderEventsPagination(filteredEvents.length);
+  }
+
+  // Update event tab button styles
+  updateEventTabStyles(activeTab) {
+    const tabs = ['all', 'mine', 'scheduled', 'joined'];
+    tabs.forEach(tab => {
+      const btn = document.getElementById(`events-tab-${tab}`);
+      if (btn) {
+        if (tab === activeTab) {
+          btn.className = 'px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white transition-all';
+        } else {
+          btn.className = 'px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all';
+        }
+      }
+    });
+  }
+
+  // Render events pagination
+  renderEventsPagination(totalItems) {
+    const paginationDiv = document.getElementById('events-pagination');
+    if (!paginationDiv) return;
+
+    const totalPages = Math.ceil(totalItems / this.eventsPerPage);
+
+    if (totalPages <= 1) {
+      paginationDiv.innerHTML = '';
+      return;
+    }
+
+    let html = `
+      <button onclick="parentCommunityManager.goToEventsPage(${this.eventsPage - 1})"
+              class="px-3 py-1 rounded-lg ${this.eventsPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
+              ${this.eventsPage === 1 ? 'disabled' : ''}>
+        Previous
+      </button>
+      <span class="text-sm text-gray-600">Page ${this.eventsPage} of ${totalPages}</span>
+      <button onclick="parentCommunityManager.goToEventsPage(${this.eventsPage + 1})"
+              class="px-3 py-1 rounded-lg ${this.eventsPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
+              ${this.eventsPage === totalPages ? 'disabled' : ''}>
+        Next
+      </button>
+    `;
+    paginationDiv.innerHTML = html;
+  }
+
+  // Go to specific events page
+  goToEventsPage(page) {
+    const totalPages = Math.ceil(this.getFilteredEvents().length / this.eventsPerPage);
+    if (page < 1 || page > totalPages) return;
+    this.eventsPage = page;
+    this.displayEvents(this.currentEventTab);
+  }
+
+  // Get filtered events based on current tab
+  getFilteredEvents() {
+    const token = localStorage.getItem('token');
+    let currentUserId = null;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        currentUserId = parseInt(payload.sub);
+      } catch (e) {}
+    }
+
+    const now = new Date();
+    if (this.currentEventTab === 'joined') {
+      return this.allEvents.filter(event => event.joined_status === true);
+    } else if (this.currentEventTab === 'mine') {
+      return this.allEvents.filter(event => event.created_by === currentUserId);
+    } else if (this.currentEventTab === 'scheduled') {
+      return this.allEvents.filter(event => new Date(event.start_datetime) > now);
+    }
+    return this.allEvents;
+  }
+
+  // Filter events by tab (called from HTML)
+  filterEventsByTab(tab) {
+    this.currentEventTab = tab;
+    this.eventsPage = 1; // Reset to first page
+    this.displayEvents(tab);
   }
 
   // Create event card HTML
@@ -577,7 +738,19 @@ class ParentCommunityManager {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${this.API_BASE_URL}/api/clubs`, {
+
+      // Get active role from JWT token
+      let activeRole = 'parent';
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          activeRole = payload.role || 'parent';
+        } catch (e) {
+          console.warn('Could not parse role from token, defaulting to parent');
+        }
+      }
+
+      const response = await fetch(`${this.API_BASE_URL}/api/clubs?role=${activeRole}`, {
         headers: token ? { 'Authorization': `Bearer ${token}` } : {}
       });
 
@@ -593,25 +766,137 @@ class ParentCommunityManager {
     }
   }
 
-  // Display clubs based on selected tab
+  // Display clubs based on selected tab with pagination
   displayClubs(tab) {
     const grid = document.getElementById('clubs-grid');
     if (!grid) return;
+
+    // Get current user ID for "mine" filtering
+    const token = localStorage.getItem('token');
+    let currentUserId = null;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        currentUserId = parseInt(payload.sub);
+      } catch (e) {}
+    }
 
     let filteredClubs = this.allClubs;
 
     if (tab === 'joined') {
       filteredClubs = this.allClubs.filter(club => club.joined_status === true);
+    } else if (tab === 'mine') {
+      // Clubs created by the current user
+      filteredClubs = this.allClubs.filter(club => club.created_by === currentUserId);
     } else if (tab === 'discover') {
-      filteredClubs = this.allClubs; // All clubs for discovery
+      // Clubs not joined yet (excluding mine)
+      filteredClubs = this.allClubs.filter(club => !club.joined_status && club.created_by !== currentUserId);
     }
+    // 'all' tab shows all clubs (no filtering needed)
+
+    // Update tab button styles
+    this.updateClubTabStyles(tab);
 
     if (filteredClubs.length === 0) {
-      grid.innerHTML = this.getEmptyState('clubs', tab === 'joined' ? 'No clubs joined yet' : 'No clubs available');
+      const messages = {
+        'all': 'No clubs available',
+        'mine': 'You haven\'t created any clubs yet',
+        'discover': 'No new clubs to discover',
+        'joined': 'No clubs joined yet'
+      };
+      grid.innerHTML = this.getEmptyState('clubs', messages[tab] || 'No clubs available');
+      this.renderClubsPagination(0);
       return;
     }
 
-    grid.innerHTML = filteredClubs.map(club => this.createClubCard(club)).join('');
+    // Apply pagination
+    const totalPages = Math.ceil(filteredClubs.length / this.clubsPerPage);
+    if (this.clubsPage > totalPages) this.clubsPage = 1;
+
+    const startIndex = (this.clubsPage - 1) * this.clubsPerPage;
+    const paginatedClubs = filteredClubs.slice(startIndex, startIndex + this.clubsPerPage);
+
+    grid.innerHTML = paginatedClubs.map(club => this.createClubCard(club)).join('');
+    this.renderClubsPagination(filteredClubs.length);
+  }
+
+  // Update club tab button styles
+  updateClubTabStyles(activeTab) {
+    const tabs = ['all', 'mine', 'discover', 'joined'];
+    tabs.forEach(tab => {
+      const btn = document.getElementById(`clubs-tab-${tab}`);
+      if (btn) {
+        if (tab === activeTab) {
+          btn.className = 'px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white transition-all';
+        } else {
+          btn.className = 'px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all';
+        }
+      }
+    });
+  }
+
+  // Render clubs pagination
+  renderClubsPagination(totalItems) {
+    const paginationDiv = document.getElementById('clubs-pagination');
+    if (!paginationDiv) return;
+
+    const totalPages = Math.ceil(totalItems / this.clubsPerPage);
+
+    if (totalPages <= 1) {
+      paginationDiv.innerHTML = '';
+      return;
+    }
+
+    let html = `
+      <button onclick="parentCommunityManager.goToClubsPage(${this.clubsPage - 1})"
+              class="px-3 py-1 rounded-lg ${this.clubsPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
+              ${this.clubsPage === 1 ? 'disabled' : ''}>
+        Previous
+      </button>
+      <span class="text-sm text-gray-600">Page ${this.clubsPage} of ${totalPages}</span>
+      <button onclick="parentCommunityManager.goToClubsPage(${this.clubsPage + 1})"
+              class="px-3 py-1 rounded-lg ${this.clubsPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}"
+              ${this.clubsPage === totalPages ? 'disabled' : ''}>
+        Next
+      </button>
+    `;
+    paginationDiv.innerHTML = html;
+  }
+
+  // Go to specific clubs page
+  goToClubsPage(page) {
+    const totalPages = Math.ceil(this.getFilteredClubs().length / this.clubsPerPage);
+    if (page < 1 || page > totalPages) return;
+    this.clubsPage = page;
+    this.displayClubs(this.currentClubTab);
+  }
+
+  // Get filtered clubs based on current tab
+  getFilteredClubs() {
+    const token = localStorage.getItem('token');
+    let currentUserId = null;
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        currentUserId = parseInt(payload.sub);
+      } catch (e) {}
+    }
+
+    if (this.currentClubTab === 'joined') {
+      return this.allClubs.filter(club => club.joined_status === true);
+    } else if (this.currentClubTab === 'mine') {
+      return this.allClubs.filter(club => club.created_by === currentUserId);
+    } else if (this.currentClubTab === 'discover') {
+      return this.allClubs.filter(club => !club.joined_status && club.created_by !== currentUserId);
+    }
+    return this.allClubs;
+  }
+
+  // Filter clubs by tab (called from HTML)
+  filterClubsByTab(tab) {
+    this.currentClubTab = tab;
+    this.clubsPage = 1; // Reset to first page
+    this.displayClubs(tab);
   }
 
   // Create club card HTML
@@ -729,26 +1014,31 @@ class ParentCommunityManager {
   getOtherUser(connection) {
     const currentUserId = this.getCurrentUserId();
 
-    if (connection.user_id_1 === currentUserId) {
+    // New API schema uses: requested_by, recipient_id, requester_name, recipient_name, etc.
+    const isRequester = connection.requested_by === currentUserId;
+
+    if (isRequester) {
+      // Current user is the requester, show the recipient
       return {
-        id: connection.user_id_2,
-        name: connection.user_2_name || 'Unknown User',
-        email: connection.user_2_email || '',
-        avatar: connection.user_2_profile_picture || null,
-        roles: connection.user_2_roles || [],
-        profileType: connection.profile_type_2 || null,
-        profileId: connection.profile_id_2 || null,
+        id: connection.recipient_id,
+        name: connection.recipient_name || 'Unknown User',
+        email: connection.recipient_email || '',
+        avatar: connection.recipient_profile_picture || null,
+        roles: connection.recipient_roles || [],
+        profileType: connection.recipient_type || null,
+        profileId: connection.recipient_profile_id || null,
         isOnline: false
       };
     } else {
+      // Current user is the recipient, show the requester
       return {
-        id: connection.user_id_1,
-        name: connection.user_1_name || 'Unknown User',
-        email: connection.user_1_email || '',
-        avatar: connection.user_1_profile_picture || null,
-        roles: connection.user_1_roles || [],
-        profileType: connection.profile_type_1 || null,
-        profileId: connection.profile_id_1 || null,
+        id: connection.requested_by,
+        name: connection.requester_name || 'Unknown User',
+        email: connection.requester_email || '',
+        avatar: connection.requester_profile_picture || null,
+        roles: connection.requester_roles || [],
+        profileType: connection.requester_type || null,
+        profileId: connection.requester_profile_id || null,
         isOnline: false
       };
     }
@@ -799,9 +1089,50 @@ class ParentCommunityManager {
     window.location.href = profileUrl;
   }
 
-  messageUser(userId) {
-    alert('💬 Messaging feature coming soon!\nYou will be able to chat with connections directly.');
-    console.log('Message user:', userId);
+  messageUser(user) {
+    console.log('Opening chat with user:', user);
+
+    // Close community panel/modal if open
+    if (typeof closeCommunityModal === 'function') {
+      closeCommunityModal();
+    }
+
+    // Open chat modal with the target user
+    if (typeof openChatModal === 'function') {
+      // Build target user object for chat modal
+      const targetUser = {
+        id: user.id || user.userId,
+        user_id: user.id || user.userId,
+        profile_id: user.profileId,
+        full_name: user.name,
+        name: user.name,
+        profile_picture: user.avatar,
+        avatar: user.avatar,
+        role: user.profileType,
+        profile_type: user.profileType,
+        is_online: user.isOnline || false
+      };
+      openChatModal(targetUser);
+      console.log('Chat modal opened for user:', targetUser);
+    } else if (typeof ChatModalManager !== 'undefined' && ChatModalManager.openChatWithUser) {
+      // Alternative: use ChatModalManager directly
+      ChatModalManager.openChatWithUser({
+        id: user.id || user.userId,
+        profile_id: user.profileId,
+        full_name: user.name,
+        profile_picture: user.avatar,
+        role: user.profileType
+      });
+      console.log('Chat modal opened via ChatModalManager');
+    } else {
+      console.error('Chat modal not available');
+      alert('Chat feature is not available. Please refresh the page.');
+    }
+  }
+
+  // Helper to encode user data for onclick handlers
+  encodeUserDataForOnclick(user) {
+    return JSON.stringify(user).replace(/"/g, '&quot;');
   }
 }
 
@@ -850,6 +1181,20 @@ function searchClubs(query) {
   }
 }
 
+// Filter events by tab (called from HTML buttons)
+function filterEventsByTab(tab) {
+  if (window.parentCommunityManager) {
+    window.parentCommunityManager.filterEventsByTab(tab);
+  }
+}
+
+// Filter clubs by tab (called from HTML buttons)
+function filterClubsByTab(tab) {
+  if (window.parentCommunityManager) {
+    window.parentCommunityManager.filterClubsByTab(tab);
+  }
+}
+
 // ============================================
 // PARENT-COMMUNITY-PANEL FUNCTIONS (Card-based layout in panel)
 // ============================================
@@ -885,6 +1230,15 @@ function switchCommunityMainTab(section) {
     activeCard.classList.add('active-community-card');
     activeCard.style.transform = 'translateY(-4px)';
     activeCard.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+  }
+
+  // Load data for the section
+  if (window.parentCommunityManager) {
+    if (section === 'events') {
+      window.parentCommunityManager.loadEvents();
+    } else if (section === 'clubs') {
+      window.parentCommunityManager.loadClubs();
+    }
   }
 }
 
@@ -1141,7 +1495,7 @@ function filterReceivedRequests(status) {
 
 // Load request counts and update summary cards
 async function loadRequestCounts() {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
   const token = localStorage.getItem('token');
 
   if (!token) {
@@ -1149,9 +1503,18 @@ async function loadRequestCounts() {
     return;
   }
 
+  // Get active role from JWT token (e.g., 'parent')
+  let activeRole = 'parent';
   try {
-    // Get connection stats
-    const response = await fetch(`${API_BASE_URL}/api/connections/stats`, {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'parent';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to parent');
+  }
+
+  try {
+    // Get connection stats filtered by role/profile_id
+    const response = await fetch(`${API_BASE_URL}/api/connections/stats?role=${activeRole}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -1172,7 +1535,20 @@ async function loadRequestCounts() {
         el.textContent = receivedCount;
       });
 
-      console.log(`✓ Loaded request counts: ${sentCount} sent, ${receivedCount} received`);
+      // Update total connections count
+      const connectionsCount = stats.total_connections || 0;
+      const connectionsCountElements = document.querySelectorAll('#connections-count, #connections-total-count');
+      connectionsCountElements.forEach(el => {
+        el.textContent = connectionsCount;
+      });
+
+      // Update total requests count (incoming only for the badge)
+      const requestsCountElements = document.querySelectorAll('#requests-count');
+      requestsCountElements.forEach(el => {
+        el.textContent = receivedCount;
+      });
+
+      console.log(`✓ Loaded request counts for role ${activeRole}: ${sentCount} sent, ${receivedCount} received, ${connectionsCount} connections`);
     }
   } catch (error) {
     console.error('Error loading request counts:', error);
@@ -1181,7 +1557,7 @@ async function loadRequestCounts() {
 
 // Load sent requests
 async function loadSentRequests() {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
   const token = localStorage.getItem('token');
   const listElement = document.getElementById('sent-requests-list');
 
@@ -1191,11 +1567,20 @@ async function loadSentRequests() {
     return;
   }
 
+  // Get active role from JWT token
+  let activeRole = 'parent';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'parent';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to parent');
+  }
+
   listElement.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Loading sent requests...</p></div>';
 
   try {
-    // Get outgoing connection requests (status=connecting, direction=outgoing)
-    const response = await fetch(`${API_BASE_URL}/api/connections?status=connecting&direction=outgoing`, {
+    // Get outgoing connection requests (status=pending, direction=outgoing - new schema, filtered by role)
+    const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=outgoing&role=${activeRole}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -1221,7 +1606,7 @@ async function loadSentRequests() {
 
 // Load received requests
 async function loadReceivedRequests() {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
   const token = localStorage.getItem('token');
   const listElement = document.getElementById('received-requests-list');
 
@@ -1231,11 +1616,20 @@ async function loadReceivedRequests() {
     return;
   }
 
+  // Get active role from JWT token
+  let activeRole = 'parent';
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    activeRole = payload.role || 'parent';
+  } catch (e) {
+    console.warn('Could not parse role from token, defaulting to parent');
+  }
+
   listElement.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner fa-spin text-2xl text-gray-400"></i><p class="text-gray-500 mt-2">Loading received requests...</p></div>';
 
   try {
-    // Get incoming connection requests (status=connecting, direction=incoming)
-    const response = await fetch(`${API_BASE_URL}/api/connections?status=connecting&direction=incoming`, {
+    // Get incoming connection requests (status=pending, direction=incoming - new schema, filtered by role)
+    const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=incoming&role=${activeRole}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
@@ -1259,21 +1653,66 @@ async function loadReceivedRequests() {
   }
 }
 
+// Helper to encode user data for onclick handlers (standalone function)
+function encodeUserDataForOnclickStandalone(user) {
+  return JSON.stringify(user).replace(/"/g, '&quot;');
+}
+
+// Message user from request card (standalone function)
+function messageUserFromRequest(user) {
+  console.log('Opening chat with user from request card:', user);
+
+  // Open chat modal with the target user
+  if (typeof openChatModal === 'function') {
+    const targetUser = {
+      id: user.id || user.userId,
+      user_id: user.id || user.userId,
+      profile_id: user.profileId,
+      full_name: user.name,
+      name: user.name,
+      profile_picture: user.avatar,
+      avatar: user.avatar,
+      role: user.profileType,
+      profile_type: user.profileType,
+      is_online: false
+    };
+    openChatModal(targetUser);
+    console.log('Chat modal opened for user:', targetUser);
+  } else if (typeof ChatModalManager !== 'undefined' && ChatModalManager.openChatWithUser) {
+    ChatModalManager.openChatWithUser({
+      id: user.id || user.userId,
+      profile_id: user.profileId,
+      full_name: user.name,
+      profile_picture: user.avatar,
+      role: user.profileType
+    });
+    console.log('Chat modal opened via ChatModalManager');
+  } else {
+    console.error('Chat modal not available');
+    alert('Chat feature is not available. Please refresh the page.');
+  }
+}
+
 // Create request card HTML
 function createRequestCard(request, type) {
   // Determine which user to display (the "other" user)
+  // New API schema uses: requested_by, recipient_id, requester_name, recipient_name, etc.
   const currentUserId = getCurrentUserId();
-  const isUser1 = request.user_id_1 === currentUserId;
+  const isRequester = request.requested_by === currentUserId;
 
+  // For sent requests (type='sent'), we show the recipient
+  // For received requests (type='received'), we show the requester
   const otherUser = {
-    name: isUser1 ? request.user_2_name : request.user_1_name,
-    email: isUser1 ? request.user_2_email : request.user_1_email,
-    avatar: isUser1 ? request.user_2_profile_picture : request.user_1_profile_picture,
-    profileType: isUser1 ? request.profile_type_2 : request.profile_type_1,
-    profileId: isUser1 ? request.profile_id_2 : request.profile_id_1
+    id: isRequester ? request.recipient_id : request.requested_by,
+    name: isRequester ? request.recipient_name : request.requester_name,
+    email: isRequester ? request.recipient_email : request.requester_email,
+    avatar: isRequester ? request.recipient_profile_picture : request.requester_profile_picture,
+    profileType: isRequester ? request.recipient_type : request.requester_type,
+    profileId: isRequester ? request.recipient_profile_id : request.requester_profile_id,
+    roles: isRequester ? request.recipient_roles : request.requester_roles
   };
 
-  const createdDate = request.created_at ? new Date(request.created_at) : null;
+  const createdDate = request.requested_at ? new Date(request.requested_at) : null;
   const timeAgo = createdDate ? getTimeAgo(createdDate) : 'Recently';
 
   // Status for filtering
@@ -1301,6 +1740,10 @@ function createRequestCard(request, type) {
           </div>
           <div class="flex flex-col gap-2">
             <span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">Pending</span>
+            <button onclick="messageUserFromRequest(JSON.parse(this.dataset.user))" data-user="${encodeUserDataForOnclickStandalone(otherUser)}"
+                    class="px-3 py-1 bg-blue-500 text-white text-xs font-medium rounded hover:bg-blue-600 transition-all">
+              <i class="fas fa-comment mr-1"></i> Message
+            </button>
             <button onclick="cancelConnectionRequest(${request.id})"
                     class="px-3 py-1 bg-red-50 text-red-600 text-xs font-medium rounded hover:bg-red-100 transition-all">
               Cancel
@@ -1326,6 +1769,10 @@ function createRequestCard(request, type) {
             </div>
           </div>
           <div class="flex gap-2">
+            <button onclick="messageUserFromRequest(JSON.parse(this.dataset.user))" data-user="${encodeUserDataForOnclickStandalone(otherUser)}"
+                    class="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded hover:bg-blue-600 transition-all">
+              <i class="fas fa-comment mr-1"></i> Message
+            </button>
             <button onclick="acceptConnectionRequest(${request.id})"
                     class="px-4 py-2 bg-green-500 text-white text-sm font-medium rounded hover:bg-green-600 transition-all">
               <i class="fas fa-check mr-1"></i> Accept
@@ -1375,7 +1822,7 @@ function getTimeAgo(date) {
 
 // Accept connection request
 async function acceptConnectionRequest(connectionId) {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
   const token = localStorage.getItem('token');
 
   if (!token) {
@@ -1409,7 +1856,7 @@ async function acceptConnectionRequest(connectionId) {
 
 // Reject connection request
 async function rejectConnectionRequest(connectionId) {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
   const token = localStorage.getItem('token');
 
   if (!token) {
@@ -1443,7 +1890,7 @@ async function rejectConnectionRequest(connectionId) {
 
 // Cancel connection request (for sent requests)
 async function cancelConnectionRequest(connectionId) {
-  const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+  const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
   const token = localStorage.getItem('token');
 
   if (!token) {

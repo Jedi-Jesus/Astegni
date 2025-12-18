@@ -142,7 +142,7 @@ async function sendEmailOTP() {
     sendOtpBtn.textContent = 'Sending...';
 
     try {
-        const response = await fetch('https://api.astegni.com/api/send-otp-email-change', {
+        const response = await fetch('http://localhost:8000/api/send-otp-email-change', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -217,7 +217,7 @@ async function verifyEmailOTP() {
     }
 
     try {
-        const response = await fetch('https://api.astegni.com/api/verify-otp-email-change', {
+        const response = await fetch('http://localhost:8000/api/verify-otp-email-change', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -294,7 +294,7 @@ async function saveUserProfile() {
     if (window.AuthManager && window.AuthManager.getToken()) {
         try {
             // Call backend API to update profile
-            const response = await fetch('https://api.astegni.com/api/update-profile', {
+            const response = await fetch('http://localhost:8000/api/update-profile', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

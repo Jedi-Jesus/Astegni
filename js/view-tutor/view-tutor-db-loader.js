@@ -9,6 +9,10 @@
 // Global variable to store current package for modal
 window.currentPackageData = null;
 
+// Global variable to store parent's children for search
+window.parentChildrenCache = null;
+window.selectedChildData = null;
+
 class ViewTutorDBLoader {
     constructor(tutorId, byUserId = false) {
         this.tutorId = tutorId;
@@ -244,16 +248,11 @@ class ViewTutorDBLoader {
         const profile = this.data.profile;
         if (!profile) return;
 
-        const heroTitleEl = document.querySelector('.hero-title #typedText');
         const heroSubtitleEl = document.getElementById('hero-subtitle');
 
-        // hero_titles is now a JSONB array - use first title or default
-        if (heroTitleEl) {
-            if (profile.hero_titles && Array.isArray(profile.hero_titles) && profile.hero_titles.length > 0) {
-                heroTitleEl.textContent = profile.hero_titles[0];
-            } else {
-                heroTitleEl.textContent = 'Excellence in Education, Delivered with Passion';
-            }
+        // Start typewriter effect with hero_titles from database
+        if (window.startTypewriterWithData) {
+            window.startTypewriterWithData(profile.hero_titles);
         }
 
         if (heroSubtitleEl && profile.hero_subtitle) {
@@ -521,35 +520,6 @@ class ViewTutorDBLoader {
      * Update profile info grid
      */
     updateProfileInfoGrid(profile) {
-        // Update Teaching Method - target value only, preserve label
-        const teachingMethodValue = document.getElementById('teaching-methods-inline');
-        if (teachingMethodValue) {
-            const sessionFormat = (profile.session_format || '').toLowerCase();
-            let teachingMethodsDisplay = 'Not specified';
-            if (sessionFormat === 'both') {
-                teachingMethodsDisplay = 'Online & In-person';
-            } else if (sessionFormat === 'online') {
-                teachingMethodsDisplay = 'Online';
-            } else if (sessionFormat === 'in-person' || sessionFormat === 'in person') {
-                teachingMethodsDisplay = 'In-person';
-            } else if (sessionFormat) {
-                teachingMethodsDisplay = sessionFormat.charAt(0).toUpperCase() + sessionFormat.slice(1);
-            }
-            teachingMethodValue.textContent = teachingMethodsDisplay;
-        }
-
-        // Update Grade Level - target value only, preserve label
-        const gradeLevelValue = document.getElementById('tutor-grade-level');
-        if (gradeLevelValue) {
-            const grades = profile.grades || profile.grade_level || [];
-            const gradeArray = Array.isArray(grades) ? grades : (grades ? [grades] : []);
-            if (gradeArray.length > 0) {
-                gradeLevelValue.textContent = gradeArray.join(', ');
-            } else {
-                gradeLevelValue.textContent = 'Not specified';
-            }
-        }
-
         // Update Teaches At - target value only, preserve label
         const teachesAtValue = document.getElementById('tutor-teaches-at-field');
         if (teachesAtValue) {
@@ -565,6 +535,18 @@ class ViewTutorDBLoader {
                 languagesValue.textContent = languageArray.join(', ');
             } else {
                 languagesValue.textContent = 'Not specified';
+            }
+        }
+
+        // Update Gender
+        const genderValue = document.getElementById('tutor-gender');
+        if (genderValue) {
+            const gender = profile.gender || '';
+            if (gender) {
+                // Capitalize first letter
+                genderValue.textContent = gender.charAt(0).toUpperCase() + gender.slice(1).toLowerCase();
+            } else {
+                genderValue.textContent = 'Not specified';
             }
         }
 
@@ -1227,6 +1209,7 @@ class ViewTutorDBLoader {
     /**
      * Populate Packages Panel
      * Loads packages from tutor_packages table dynamically
+     * Beautiful card design matching tutor-profile.html
      */
     populatePackagesPanel() {
         const packages = this.data.packages;
@@ -1248,133 +1231,150 @@ class ViewTutorDBLoader {
         }
 
         packagesContainer.innerHTML = packages.map((pkg, index) => {
-            // Calculate features based on package data
-            const features = [];
+            // Get courses array
+            const courses = pkg.courses
+                ? (typeof pkg.courses === 'string' ? pkg.courses.split(',').map(c => c.trim()) : pkg.courses)
+                : [];
 
-            // 1. COURSES (Subjects taught)
-            if (pkg.courses) {
-                const coursesText = typeof pkg.courses === 'string'
-                    ? pkg.courses
-                    : (Array.isArray(pkg.courses) ? pkg.courses.join(', ') : '');
-                if (coursesText) {
-                    features.push(`<strong>📚 Courses:</strong> ${coursesText}`);
+            // Get session format array
+            const sessionFormats = pkg.session_format
+                ? (typeof pkg.session_format === 'string'
+                    ? (pkg.session_format.toLowerCase() === 'both' ? ['Online', 'In-person'] : [pkg.session_format])
+                    : pkg.session_format)
+                : [];
+
+            // Build schedule info
+            let scheduleInfo = 'Not specified';
+            if (pkg.schedule_type === 'recurring') {
+                const days = pkg.recurring_days && pkg.recurring_days.length > 0
+                    ? pkg.recurring_days.join(', ')
+                    : `${pkg.days_per_week || 0} days/week`;
+                scheduleInfo = days;
+                if (pkg.start_time && pkg.end_time) {
+                    const startTime = pkg.start_time.substring(0, 5);
+                    const endTime = pkg.end_time.substring(0, 5);
+                    scheduleInfo += ` • ${startTime} - ${endTime}`;
                 }
+            } else if (pkg.schedule_type === 'flexible') {
+                scheduleInfo = 'Flexible Schedule';
+            } else if (pkg.days_per_week) {
+                scheduleInfo = `${pkg.days_per_week} days/week`;
             }
 
-            // 2. Session duration
-            if (pkg.duration_minutes || pkg.hours_per_day) {
-                const hours = pkg.hours_per_day || Math.floor(pkg.duration_minutes / 60);
-                const mins = pkg.duration_minutes ? pkg.duration_minutes % 60 : 0;
-                const durationText = hours > 0
-                    ? `${hours} hour${hours > 1 ? 's' : ''}${mins > 0 ? ` ${mins} min` : ''}`
-                    : `${mins} minutes`;
-                features.push(`✔ ${durationText} per session`);
-            }
+            // Payment frequency
+            const paymentFrequency = pkg.payment_frequency === '2-weeks' ? 'Bi-weekly' : 'Monthly';
 
-            // 3. SCHEDULE TYPE with days and times
-            if (pkg.schedule_type || pkg.recurring_days || pkg.start_time) {
-                let scheduleText = '';
-
-                if (pkg.schedule_type === 'recurring') {
-                    const days = pkg.recurring_days && pkg.recurring_days.length > 0
-                        ? pkg.recurring_days.join(', ')
-                        : `${pkg.days_per_week || 0} days/week`;
-
-                    scheduleText = `<strong>📅 Schedule:</strong> ${days}`;
-
-                    // Add time range if available
-                    if (pkg.start_time && pkg.end_time) {
-                        const startTime = pkg.start_time.substring(0, 5); // HH:MM
-                        const endTime = pkg.end_time.substring(0, 5);
-                        scheduleText += ` (${startTime} - ${endTime})`;
-                    }
-                } else if (pkg.schedule_type === 'flexible') {
-                    scheduleText = '<strong>📅 Schedule:</strong> Flexible';
-                } else if (pkg.days_per_week) {
-                    scheduleText = `<strong>📅 Schedule:</strong> ${pkg.days_per_week} days/week`;
-                }
-
-                if (scheduleText) {
-                    features.push(scheduleText);
-                }
-            }
-
-            // 4. Total sessions (if applicable)
-            if (pkg.total_sessions) {
-                features.push(`✔ ${pkg.total_sessions} sessions/month`);
-            }
-
-            // 5. Session format
-            if (pkg.session_format) {
-                const formatText = pkg.session_format.toLowerCase() === 'both'
-                    ? 'Online & In-person'
-                    : pkg.session_format.charAt(0).toUpperCase() + pkg.session_format.slice(1);
-                features.push(`✔ ${formatText}`);
-            }
-
-            // 6. Grade level
-            if (pkg.grade_level) {
-                features.push(`✔ ${pkg.grade_level}`);
-            }
-
-            // 7. PAYMENT FREQUENCY
-            if (pkg.payment_frequency) {
-                const paymentText = pkg.payment_frequency === '2-weeks'
-                    ? 'Bi-weekly'
-                    : pkg.payment_frequency.charAt(0).toUpperCase() + pkg.payment_frequency.slice(1);
-                features.push(`<strong>💳 Payment:</strong> ${paymentText}`);
-            }
-
-            // Price display - use session_price for cleaner display
+            // Price
             const price = pkg.session_price || pkg.package_price || 0;
             const priceText = Math.round(price);
 
-            // Build discount badges
-            const discounts = [];
-            if (pkg.discount_1_month > 0) {
-                discounts.push({ period: '1 Month', discount: pkg.discount_1_month, color: '#10b981' });
-            }
-            if (pkg.discount_6_month > 0) {
-                discounts.push({ period: '6 Months', discount: pkg.discount_6_month, color: '#3b82f6' });
-            }
-            if (pkg.discount_12_month > 0) {
-                discounts.push({ period: '1 Year', discount: pkg.discount_12_month, color: '#8b5cf6' });
-            }
+            // Count active discounts - always show all 3 discount cards
+            const discounts = [
+                { period: '3 Months', discount: pkg.discount_3_month || 0 },
+                { period: '6 Months', discount: pkg.discount_6_month || 0 },
+                { period: 'Yearly', discount: pkg.yearly_discount || 0 }
+            ];
 
-            const discountBadgesHTML = discounts.length > 0
-                ? `<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 0.75rem; margin-bottom: 0.75rem;">
-                    ${discounts.map(d => `
-                        <span style="background: ${d.color}; color: white; padding: 0.375rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem;">
-                            🎁 ${d.discount}% OFF - ${d.period}
-                        </span>
-                    `).join('')}
-                   </div>`
-                : '';
+            // Grade level badge
+            const gradeLevel = pkg.grade_level || 'All Levels';
 
             return `
-                <div class="border rounded-lg p-6 hover:shadow-xl transition-all duration-300" style="background: var(--card-bg); border: 2px solid var(--border-color, #e5e7eb); position: relative; overflow: hidden;">
-                    ${discounts.length > 0 ? '<div style="position: absolute; top: 0; right: 0; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; padding: 0.25rem 0.75rem; font-size: 0.75rem; font-weight: 700; border-bottom-left-radius: 8px;">🔥 DISCOUNTS</div>' : ''}
-
-                    <h4 class="font-semibold text-lg mb-2" style="color: var(--heading); margin-top: ${discounts.length > 0 ? '1.5rem' : '0'};">${pkg.name || 'Package ' + (index + 1)}</h4>
-                    <p class="text-2xl font-bold mb-2" style="color: #3b82f6;">ETB ${priceText}/session</p>
-
-                    ${discountBadgesHTML}
-
-                    ${pkg.description ? `<p class="text-sm mb-4" style="color: var(--text-muted); line-height: 1.6;">${pkg.description}</p>` : ''}
-
-                    <ul class="space-y-2 mb-6" style="color: var(--text); line-height: 1.8;">
-                        ${features.map(feature => `<li class="text-sm">${feature}</li>`).join('')}
-                        ${features.length === 0 ? '<li class="text-sm" style="font-style: italic; color: var(--text-muted);">No details available</li>' : ''}
-                    </ul>
-
-                    <button onclick="openPackageDetailsModal(${pkg.id}, '${pkg.name || 'Package ' + (index + 1)}'); return false;"
-                        class="w-full py-2 rounded-lg transition-all duration-300"
-                        style="background: #3b82f6; color: white; border: none; font-weight: 600; cursor: pointer;"
-                        onmouseover="this.style.background='#2563eb'"
-                        onmouseout="this.style.background='#3b82f6'">
-                        <i class="fas fa-info-circle"></i> View Details
-                    </button>
+            <div class="card" style="padding: 0; overflow: hidden; border-radius: 12px; transition: all 0.3s; border: 2px solid var(--border-color);">
+                <!-- Package Header - Amber/Yellow Theme -->
+                <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 1.5rem; color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: white;">${pkg.name || 'Package ' + (index + 1)}</h3>
+                        <span style="background: rgba(255,255,255,0.25); backdrop-filter: blur(10px); color: white; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 20px;">
+                            ${gradeLevel}
+                        </span>
+                    </div>
+                    <p style="font-size: 0.875rem; opacity: 0.95; margin: 0; color: white;">
+                        <i class="fas fa-calendar-alt"></i> ${paymentFrequency} Package
+                    </p>
                 </div>
+
+                <!-- Package Body -->
+                <div style="padding: 1.5rem; background: var(--card-bg); color: var(--text-primary);">
+                    <!-- Courses -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                            <i class="fas fa-book" style="color: #f59e0b; margin-right: 0.5rem;"></i>
+                            <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">Courses</span>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            ${courses.length > 0
+                                ? courses.map(course =>
+                                    `<span style="background: rgba(245, 158, 11, 0.1); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500;">${typeof course === 'object' ? course.course_name : course}</span>`
+                                  ).join('')
+                                : `<span style="color: var(--text-secondary); font-size: 0.875rem;">No courses specified</span>`
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Session Format -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                            <i class="fas fa-video" style="color: #f59e0b; margin-right: 0.5rem;"></i>
+                            <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">Format</span>
+                        </div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            ${sessionFormats.length > 0
+                                ? sessionFormats.map(format =>
+                                    `<span style="background: rgba(245, 158, 11, 0.1); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; text-transform: capitalize;">${format}</span>`
+                                  ).join('')
+                                : `<span style="color: var(--text-secondary); font-size: 0.875rem;">Not specified</span>`
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Schedule -->
+                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: var(--hover-bg, rgba(245, 158, 11, 0.05)); border-radius: 8px; border-left: 3px solid #f59e0b;">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.25rem;">
+                            <i class="fas fa-clock" style="color: #f59e0b; margin-right: 0.5rem; font-size: 0.875rem;"></i>
+                            <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-primary); text-transform: uppercase;">Schedule</span>
+                        </div>
+                        <p style="margin: 0; font-size: 0.875rem; color: var(--text-primary);">${scheduleInfo}</p>
+                    </div>
+
+                    <!-- Pricing Box - Amber Theme -->
+                    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 1rem; border-radius: 8px; margin-bottom: 1rem; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.15), transparent); animation: shimmer 3s infinite; pointer-events: none;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1;">
+                            <div>
+                                <p style="margin: 0; font-size: 0.75rem; color: rgba(255,255,255,0.9); text-transform: uppercase; letter-spacing: 0.5px;">Per Session</p>
+                                <p style="margin: 0; font-size: 2rem; font-weight: 700; color: white;">${priceText} <span style="font-size: 1rem; font-weight: 500;">ETB</span></p>
+                            </div>
+                            <div style="text-align: right;">
+                                <i class="fas fa-money-bill-wave" style="font-size: 2.5rem; color: rgba(255,255,255,0.3);"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Discounts - Always show all 3 in one row -->
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                            <i class="fas fa-percent" style="color: #10b981; margin-right: 0.5rem;"></i>
+                            <span style="font-size: 0.875rem; font-weight: 600; color: var(--text-primary);">Discounts</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">
+                            ${discounts.map(d => `
+                                <div style="background: var(--hover-bg, rgba(16, 185, 129, 0.05)); border: 1px solid var(--border-color); padding: 0.5rem 0.75rem; border-radius: 6px; text-align: center;">
+                                    <p style="margin: 0; font-size: 0.75rem; color: var(--text-secondary);">${d.period}</p>
+                                    <p style="margin: 0; font-size: 1.25rem; font-weight: 700; color: ${d.discount > 0 ? '#10b981' : 'var(--text-secondary)'};">${d.discount > 0 ? '-' + d.discount + '%' : '0%'}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- View Details Button - Amber Theme -->
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <button onclick="openPackageDetailsModal(${pkg.id}, '${(pkg.name || 'Package ' + (index + 1)).replace(/'/g, "\\'")}'); return false;"
+                            style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem; width: 100%; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.875rem;">
+                            <i class="fas fa-info-circle"></i> View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
             `;
         }).join('');
     }
@@ -1774,16 +1774,43 @@ window.openPackageDetailsModal = async function(packageId, packageName) {
         return;
     }
 
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
+    // Check if user is logged in - try multiple token storage keys
+    let token = localStorage.getItem('token') || localStorage.getItem('access_token');
+
+    // Also try getting from AuthManager if available
+    if (!token && window.AuthManager && window.AuthManager.token) {
+        token = window.AuthManager.token;
+    }
+
+    console.log('Package Modal - Token check:', {
+        token: !!localStorage.getItem('token'),
+        access_token: !!localStorage.getItem('access_token'),
+        AuthManager: !!(window.AuthManager && window.AuthManager.token)
+    });
+
     if (!token) {
         alert('⚠️ Please log in to request a session.\n\nYou need to be logged in as a student or parent to request tutoring sessions.');
         return;
     }
 
-    // Check if user is a student or parent
-    const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
-    if (!userRoles.includes('student') && !userRoles.includes('parent')) {
+    // Check if user is a student or parent - check multiple sources
+    const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+    const userRolesFromStorage = JSON.parse(localStorage.getItem('userRoles') || '[]');
+    const userRolesFromUser = user.roles || [];
+    const activeRole = localStorage.getItem('currentRole') || localStorage.getItem('activeRole') || localStorage.getItem('userRole') || user.active_role || '';
+
+    // Combine all role sources
+    const allRoles = [...new Set([...userRolesFromStorage, ...userRolesFromUser])];
+
+    const isStudent = allRoles.includes('student') || activeRole === 'student';
+    const isParent = allRoles.includes('parent') || activeRole === 'parent';
+
+    console.log('Package Modal - User roles from storage:', userRolesFromStorage);
+    console.log('Package Modal - User roles from user object:', userRolesFromUser);
+    console.log('Package Modal - Active role:', activeRole);
+    console.log('Package Modal - Is student:', isStudent, 'Is parent:', isParent);
+
+    if (!isStudent && !isParent) {
         alert('⚠️ Only students and parents can request tutoring sessions.');
         return;
     }
@@ -1831,30 +1858,20 @@ function populatePackageDetails(pkg) {
     const detailsContent = document.getElementById('packageDetailsContent');
     if (!detailsContent) return;
 
-    // Build features list
+    // Build features array - mark ones with long content for full-width display
     const features = [];
 
-    // Courses
+    // Courses/Subjects (likely long - full width)
     if (pkg.courses) {
         const coursesText = typeof pkg.courses === 'string'
             ? pkg.courses
             : (Array.isArray(pkg.courses) ? pkg.courses.join(', ') : '');
         if (coursesText) {
-            features.push(`<strong>📚 Subjects:</strong> ${coursesText}`);
+            features.push({ icon: 'fa-book', label: 'Subjects', value: coursesText, fullWidth: true });
         }
     }
 
-    // Duration
-    if (pkg.duration_minutes || pkg.hours_per_day) {
-        const hours = pkg.hours_per_day || Math.floor(pkg.duration_minutes / 60);
-        const mins = pkg.duration_minutes ? pkg.duration_minutes % 60 : 0;
-        const durationText = hours > 0
-            ? `${hours} hour${hours > 1 ? 's' : ''}${mins > 0 ? ` ${mins} min` : ''}`
-            : `${mins} minutes`;
-        features.push(`<strong>⏱️ Duration:</strong> ${durationText} per session`);
-    }
-
-    // Schedule
+    // Schedule (likely long - full width)
     if (pkg.schedule_type || pkg.recurring_days || pkg.start_time) {
         let scheduleText = '';
         if (pkg.schedule_type === 'recurring') {
@@ -1871,62 +1888,127 @@ function populatePackageDetails(pkg) {
             scheduleText = `${pkg.days_per_week} days/week`;
         }
         if (scheduleText) {
-            features.push(`<strong>📅 Schedule:</strong> ${scheduleText}`);
+            features.push({ icon: 'fa-calendar-alt', label: 'Schedule', value: scheduleText, fullWidth: true });
         }
     }
 
-    // Total sessions
-    if (pkg.total_sessions) {
-        features.push(`<strong>📊 Total Sessions:</strong> ${pkg.total_sessions} sessions/month`);
+    // Duration (short)
+    if (pkg.duration_minutes || pkg.hours_per_day) {
+        const hours = pkg.hours_per_day || Math.floor(pkg.duration_minutes / 60);
+        const mins = pkg.duration_minutes ? pkg.duration_minutes % 60 : 0;
+        const durationText = hours > 0
+            ? `${hours} hour${hours > 1 ? 's' : ''}${mins > 0 ? ` ${mins} min` : ''}`
+            : `${mins} minutes`;
+        features.push({ icon: 'fa-clock', label: 'Duration', value: `${durationText} per session`, fullWidth: false });
     }
 
-    // Session format
+    // Total sessions (short)
+    if (pkg.total_sessions) {
+        features.push({ icon: 'fa-list-check', label: 'Total Sessions', value: `${pkg.total_sessions} sessions/month`, fullWidth: false });
+    }
+
+    // Session format (short)
     if (pkg.session_format) {
         const formatText = pkg.session_format.toLowerCase() === 'both'
             ? 'Online & In-person'
             : pkg.session_format.charAt(0).toUpperCase() + pkg.session_format.slice(1);
-        features.push(`<strong>🌐 Format:</strong> ${formatText}`);
+        const formatIcon = pkg.session_format.toLowerCase() === 'online' ? 'fa-video' :
+                          pkg.session_format.toLowerCase() === 'in-person' ? 'fa-users' : 'fa-globe';
+        features.push({ icon: formatIcon, label: 'Format', value: formatText, fullWidth: false });
     }
 
-    // Grade level
+    // Grade level (short)
     if (pkg.grade_level) {
-        features.push(`<strong>🎓 Grade Level:</strong> ${pkg.grade_level}`);
+        features.push({ icon: 'fa-graduation-cap', label: 'Grade Level', value: pkg.grade_level, fullWidth: false });
     }
 
-    // Payment frequency
+    // Payment frequency (short)
     if (pkg.payment_frequency) {
         const paymentText = pkg.payment_frequency === '2-weeks'
             ? 'Bi-weekly'
             : pkg.payment_frequency.charAt(0).toUpperCase() + pkg.payment_frequency.slice(1);
-        features.push(`<strong>💳 Payment:</strong> ${paymentText}`);
+        features.push({ icon: 'fa-credit-card', label: 'Payment', value: paymentText, fullWidth: false });
     }
 
     const price = pkg.session_price || pkg.package_price || 0;
+    const hasDiscounts = pkg.discount_1_month || pkg.discount_6_month || pkg.discount_12_month;
+
+    // Separate full-width and half-width features
+    const fullWidthFeatures = features.filter(f => f.fullWidth);
+    const halfWidthFeatures = features.filter(f => !f.fullWidth);
 
     detailsContent.innerHTML = `
-        <div style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); padding: 20px; border-radius: 12px; color: white; margin-bottom: 20px;">
-            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 8px;">${pkg.name}</h3>
-            <p style="font-size: 2rem; font-weight: 800; margin: 12px 0;">ETB ${Math.round(price)}<span style="font-size: 1rem; font-weight: 400; opacity: 0.9;">/session</span></p>
-            ${pkg.description ? `<p style="font-size: 0.95rem; opacity: 0.95; margin-top: 12px;">${pkg.description}</p>` : ''}
+        <!-- Package Header Card with Price and Discounts -->
+        <div style="background: rgba(var(--primary-rgb, 59, 130, 246), 0.06); border: 1px solid var(--border-color, #e5e7eb); border-radius: 16px; padding: 24px; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+                <div style="flex: 1; min-width: 200px;">
+                    <h3 style="font-size: 1.35rem; font-weight: 700; color: var(--text-color, #1f2937); margin: 0 0 8px 0;">${pkg.name}</h3>
+                    ${pkg.description ? `<p style="font-size: 0.9rem; color: var(--text-secondary, #6b7280); margin: 0 0 12px 0; line-height: 1.5;">${pkg.description}</p>` : ''}
+
+                    <!-- Discounts inline with package info -->
+                    ${hasDiscounts ? `
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px;">
+                            ${pkg.discount_1_month ? `
+                                <span style="display: inline-flex; align-items: center; gap: 4px; background: #10b981; color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
+                                    <i class="fas fa-tag" style="font-size: 0.65rem;"></i>
+                                    ${pkg.discount_1_month}% OFF - 1 Month
+                                </span>
+                            ` : ''}
+                            ${pkg.discount_6_month ? `
+                                <span style="display: inline-flex; align-items: center; gap: 4px; background: var(--primary-color, #3b82f6); color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
+                                    <i class="fas fa-tag" style="font-size: 0.65rem;"></i>
+                                    ${pkg.discount_6_month}% OFF - 6 Months
+                                </span>
+                            ` : ''}
+                            ${pkg.discount_12_month ? `
+                                <span style="display: inline-flex; align-items: center; gap: 4px; background: #7c3aed; color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600;">
+                                    <i class="fas fa-tag" style="font-size: 0.65rem;"></i>
+                                    ${pkg.discount_12_month}% OFF - 1 Year
+                                </span>
+                            ` : ''}
+                        </div>
+                    ` : ''}
+                </div>
+                <div style="text-align: right;">
+                    <div style="background: var(--primary-color, #3b82f6); color: white; padding: 12px 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(var(--primary-rgb, 59, 130, 246), 0.3);">
+                        <div style="font-size: 1.75rem; font-weight: 800; line-height: 1;">ETB ${Math.round(price)}</div>
+                        <div style="font-size: 0.75rem; opacity: 0.9; margin-top: 2px;">per session</div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        ${features.length > 0 ? `
-            <div style="background: #f9fafb; padding: 16px; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #374151;">📋 Package Includes:</h4>
-                <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-                    ${features.map(f => `<li style="font-size: 0.9rem; color: #4b5563;">${f}</li>`).join('')}
-                </ul>
+        <!-- Full-width Features (Subjects, Schedule) -->
+        ${fullWidthFeatures.length > 0 ? `
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px;">
+                ${fullWidthFeatures.map(f => `
+                    <div style="display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e5e7eb); border-radius: 12px;">
+                        <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(var(--primary-rgb, 59, 130, 246), 0.1); border-radius: 10px; flex-shrink: 0;">
+                            <i class="fas ${f.icon}" style="color: var(--primary-color, #3b82f6); font-size: 1rem;"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary, #6b7280); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">${f.label}</div>
+                            <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-color, #1f2937); line-height: 1.4;">${f.value}</div>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         ` : ''}
 
-        ${pkg.discount_1_month || pkg.discount_6_month || pkg.discount_12_month ? `
-            <div style="margin-top: 16px; background: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 12px; color: #92400e;">🎁 Available Discounts:</h4>
-                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                    ${pkg.discount_1_month ? `<span style="background: #10b981; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">${pkg.discount_1_month}% OFF - 1 Month</span>` : ''}
-                    ${pkg.discount_6_month ? `<span style="background: #3b82f6; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">${pkg.discount_6_month}% OFF - 6 Months</span>` : ''}
-                    ${pkg.discount_12_month ? `<span style="background: #8b5cf6; color: white; padding: 6px 12px; border-radius: 6px; font-size: 0.875rem; font-weight: 600;">${pkg.discount_12_month}% OFF - 1 Year</span>` : ''}
-                </div>
+        <!-- Half-width Features Grid -->
+        ${halfWidthFeatures.length > 0 ? `
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px;">
+                ${halfWidthFeatures.map(f => `
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--card-bg, #ffffff); border: 1px solid var(--border-color, #e5e7eb); border-radius: 12px;">
+                        <div style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(var(--primary-rgb, 59, 130, 246), 0.1); border-radius: 8px; flex-shrink: 0;">
+                            <i class="fas ${f.icon}" style="color: var(--primary-color, #3b82f6); font-size: 0.9rem;"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-secondary, #6b7280); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px;">${f.label}</div>
+                            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-color, #1f2937);">${f.value}</div>
+                        </div>
+                    </div>
+                `).join('')}
             </div>
         ` : ''}
     `;
@@ -1934,34 +2016,321 @@ function populatePackageDetails(pkg) {
 
 /**
  * Pre-fill user information in package modal
+ * Handles different UI for parents (child search) vs students (auto-fill)
  */
-function prefillPackageModalUserInfo() {
+async function prefillPackageModalUserInfo() {
     try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
+        const userRolesFromStorage = JSON.parse(localStorage.getItem('userRoles') || '[]');
+        const userRolesFromUser = user.roles || [];
+        const activeRole = localStorage.getItem('currentRole') || localStorage.getItem('activeRole') || localStorage.getItem('userRole') || user.active_role || '';
 
-        // Pre-fill student name if user is a student
+        // Combine all role sources
+        const allRoles = [...new Set([...userRolesFromStorage, ...userRolesFromUser])];
+
+        const parentChildSection = document.getElementById('parentChildSelectionSection');
         const studentNameInput = document.getElementById('detailsStudentName');
-        if (studentNameInput && user.username) {
-            const userRoles = JSON.parse(localStorage.getItem('userRoles') || '[]');
-            if (userRoles.includes('student')) {
-                studentNameInput.value = user.username;
+        const gradeLevelInput = document.getElementById('detailsGradeLevel');
+
+        // Debug logging
+        console.log('prefillPackageModal - All roles:', allRoles);
+        console.log('prefillPackageModal - Active role:', activeRole);
+
+        // Check if user is currently acting as a parent (active role is 'parent')
+        const isParent = activeRole === 'parent';
+
+        console.log('prefillPackageModal - Is Parent:', isParent);
+
+        if (isParent) {
+            // Show parent child selection section
+            if (parentChildSection) {
+                parentChildSection.style.display = 'block';
+            }
+
+            // Initialize child search for parents
+            await initializeChildSearch();
+        } else {
+            // Hide parent child selection section for students
+            if (parentChildSection) {
+                parentChildSection.style.display = 'none';
+            }
+
+            // Auto-fill student info for students
+            if (allRoles.includes('student') || activeRole === 'student') {
+                // Get student profile data
+                const studentProfile = await fetchStudentProfile();
+                if (studentProfile) {
+                    if (studentNameInput) {
+                        const fullName = [
+                            studentProfile.first_name || user.first_name,
+                            studentProfile.father_name || user.father_name,
+                            studentProfile.grandfather_name || user.grandfather_name
+                        ].filter(Boolean).join(' ') || studentProfile.username || user.username;
+                        studentNameInput.value = fullName;
+                    }
+                    if (gradeLevelInput && studentProfile.grade_level) {
+                        gradeLevelInput.value = studentProfile.grade_level;
+                    }
+                    // Store student profile ID
+                    const selectedChildIdInput = document.getElementById('selectedChildId');
+                    if (selectedChildIdInput) {
+                        selectedChildIdInput.value = studentProfile.id || '';
+                    }
+                }
             }
         }
 
-        // Pre-fill contact info
-        const contactEmail = document.getElementById('detailsContactEmail');
-        if (contactEmail && user.email) {
-            contactEmail.value = user.email;
-        }
-
-        const contactPhone = document.getElementById('detailsContactPhone');
-        if (contactPhone && user.phone) {
-            contactPhone.value = user.phone;
-        }
     } catch (error) {
         console.error('Error pre-filling user info:', error);
     }
 }
+
+/**
+ * Fetch current student's profile
+ */
+async function fetchStudentProfile() {
+    try {
+        const token = localStorage.getItem('token');
+        if (!token) return null;
+
+        const response = await fetch(`${API_BASE_URL}/api/student/profile`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) return null;
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching student profile:', error);
+        return null;
+    }
+}
+
+/**
+ * Initialize child search functionality for parents
+ */
+async function initializeChildSearch() {
+    const searchInput = document.getElementById('childSearchInput');
+    const searchResults = document.getElementById('childSearchResults');
+    const spinner = document.getElementById('childSearchSpinner');
+    const noChildrenMessage = document.getElementById('noChildrenMessage');
+
+    if (!searchInput || !searchResults) return;
+
+    // Fetch children if not cached
+    if (!window.parentChildrenCache) {
+        try {
+            if (spinner) spinner.style.display = 'block';
+
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/api/parent/children`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                window.parentChildrenCache = data.children || [];
+                console.log(`✓ Loaded ${window.parentChildrenCache.length} children for parent`);
+            } else {
+                window.parentChildrenCache = [];
+            }
+        } catch (error) {
+            console.error('Error fetching children:', error);
+            window.parentChildrenCache = [];
+        } finally {
+            if (spinner) spinner.style.display = 'none';
+        }
+    }
+
+    // Show no children message if empty
+    if (window.parentChildrenCache.length === 0) {
+        if (noChildrenMessage) noChildrenMessage.style.display = 'block';
+        searchInput.style.display = 'none';
+        return;
+    }
+
+    // Hide no children message and show search
+    if (noChildrenMessage) noChildrenMessage.style.display = 'none';
+    searchInput.style.display = 'block';
+
+    // Setup search input event listener
+    searchInput.removeEventListener('input', handleChildSearch);
+    searchInput.addEventListener('input', handleChildSearch);
+
+    // Setup focus to show all children
+    searchInput.removeEventListener('focus', handleChildSearchFocus);
+    searchInput.addEventListener('focus', handleChildSearchFocus);
+
+    // Setup click outside to close dropdown
+    document.removeEventListener('click', handleClickOutsideChildSearch);
+    document.addEventListener('click', handleClickOutsideChildSearch);
+}
+
+/**
+ * Handle child search input
+ */
+function handleChildSearch(e) {
+    const query = e.target.value.toLowerCase().trim();
+    const searchResults = document.getElementById('childSearchResults');
+
+    if (!window.parentChildrenCache || window.parentChildrenCache.length === 0) {
+        searchResults.style.display = 'none';
+        return;
+    }
+
+    // Filter children based on search query
+    const filtered = query === ''
+        ? window.parentChildrenCache
+        : window.parentChildrenCache.filter(child =>
+            (child.name && child.name.toLowerCase().includes(query)) ||
+            (child.first_name && child.first_name.toLowerCase().includes(query)) ||
+            (child.username && child.username.toLowerCase().includes(query)) ||
+            (child.grade_level && child.grade_level.toLowerCase().includes(query))
+        );
+
+    renderChildSearchResults(filtered);
+}
+
+/**
+ * Handle focus on search input - show all children
+ */
+function handleChildSearchFocus() {
+    if (window.parentChildrenCache && window.parentChildrenCache.length > 0) {
+        renderChildSearchResults(window.parentChildrenCache);
+    }
+}
+
+/**
+ * Handle click outside child search dropdown
+ */
+function handleClickOutsideChildSearch(e) {
+    const searchInput = document.getElementById('childSearchInput');
+    const searchResults = document.getElementById('childSearchResults');
+
+    if (searchInput && searchResults &&
+        !searchInput.contains(e.target) &&
+        !searchResults.contains(e.target)) {
+        searchResults.style.display = 'none';
+    }
+}
+
+/**
+ * Render child search results
+ */
+function renderChildSearchResults(children) {
+    const searchResults = document.getElementById('childSearchResults');
+    if (!searchResults) return;
+
+    if (children.length === 0) {
+        searchResults.innerHTML = `
+            <div style="padding: 16px; text-align: center; color: #6b7280;">
+                <i class="fas fa-search" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
+                <p style="margin: 0;">No children found matching your search</p>
+            </div>
+        `;
+        searchResults.style.display = 'block';
+        return;
+    }
+
+    searchResults.innerHTML = children.map(child => {
+        const avatar = child.profile_picture || '/system_images/default-avatar.png';
+        const name = child.name || child.first_name || child.username || 'Unknown';
+        const grade = child.grade_level || 'Grade not set';
+
+        return `
+            <div class="child-search-result" onclick="selectChild(${child.id})"
+                style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #f3f4f6; transition: background 0.2s;"
+                onmouseover="this.style.background='#f0f9ff'"
+                onmouseout="this.style.background='white'">
+                <img src="${avatar}" alt="${name}"
+                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #e5e7eb;"
+                    onerror="this.src='/system_images/default-avatar.png'">
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; color: #1f2937;">${name}</div>
+                    <div style="font-size: 0.8rem; color: #6b7280;">${grade}</div>
+                </div>
+                <i class="fas fa-chevron-right" style="color: #9ca3af;"></i>
+            </div>
+        `;
+    }).join('');
+
+    searchResults.style.display = 'block';
+}
+
+/**
+ * Select a child from search results
+ */
+window.selectChild = function(childId) {
+    const child = window.parentChildrenCache.find(c => c.id === childId);
+    if (!child) return;
+
+    // Store selected child data
+    window.selectedChildData = child;
+
+    // Update hidden inputs
+    const selectedChildIdInput = document.getElementById('selectedChildId');
+    const studentNameInput = document.getElementById('detailsStudentName');
+    const gradeLevelInput = document.getElementById('detailsGradeLevel');
+
+    if (selectedChildIdInput) selectedChildIdInput.value = child.id;
+    if (studentNameInput) studentNameInput.value = child.name || child.first_name || child.username || '';
+    if (gradeLevelInput) gradeLevelInput.value = child.grade_level || '';
+
+    // Update selected child display
+    const selectedDisplay = document.getElementById('selectedChildDisplay');
+    const searchInput = document.getElementById('childSearchInput');
+    const searchResults = document.getElementById('childSearchResults');
+
+    if (selectedDisplay) {
+        const avatar = document.getElementById('selectedChildAvatar');
+        const name = document.getElementById('selectedChildName');
+        const grade = document.getElementById('selectedChildGrade');
+
+        if (avatar) {
+            avatar.src = child.profile_picture || '/system_images/default-avatar.png';
+            avatar.onerror = function() { this.src = '/system_images/default-avatar.png'; };
+        }
+        if (name) name.textContent = child.name || child.first_name || child.username || 'Unknown';
+        if (grade) grade.textContent = child.grade_level || 'Grade not set';
+
+        selectedDisplay.style.display = 'block';
+    }
+
+    // Hide search input and results
+    if (searchInput) searchInput.parentElement.style.display = 'none';
+    if (searchResults) searchResults.style.display = 'none';
+
+    console.log(`✓ Selected child: ${child.name} (ID: ${child.id})`);
+};
+
+/**
+ * Clear selected child and show search again
+ */
+window.clearSelectedChild = function() {
+    window.selectedChildData = null;
+
+    // Clear hidden inputs
+    const selectedChildIdInput = document.getElementById('selectedChildId');
+    const studentNameInput = document.getElementById('detailsStudentName');
+    const gradeLevelInput = document.getElementById('detailsGradeLevel');
+
+    if (selectedChildIdInput) selectedChildIdInput.value = '';
+    if (studentNameInput) studentNameInput.value = '';
+    if (gradeLevelInput) gradeLevelInput.value = '';
+
+    // Hide selected display
+    const selectedDisplay = document.getElementById('selectedChildDisplay');
+    if (selectedDisplay) selectedDisplay.style.display = 'none';
+
+    // Show search input again
+    const searchInput = document.getElementById('childSearchInput');
+    if (searchInput) {
+        searchInput.parentElement.style.display = 'block';
+        searchInput.value = '';
+        searchInput.focus();
+    }
+
+    console.log('✓ Cleared selected child');
+};
 
 /**
  * Close package details modal
@@ -1973,20 +2342,240 @@ window.closePackageDetailsModal = function() {
         modal.classList.add('hidden');
     }
 
-    // Reset customization fields
-    const fields = [
-        'customPrice', 'customSessionsPerWeek', 'customDuration',
-        'customDays', 'customNotes', 'detailsStudentName', 'detailsGradeLevel',
-        'detailsContactPhone', 'detailsContactEmail', 'detailsPreferredSchedule', 'detailsMessage'
-    ];
-
-    fields.forEach(fieldId => {
+    // Reset text/hidden fields
+    const textFields = ['detailsStudentName', 'detailsGradeLevel', 'selectedChildId', 'childSearchInput', 'specificDates'];
+    textFields.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) field.value = '';
     });
 
+    // Reset schedule type dropdown
+    const scheduleType = document.getElementById('scheduleType');
+    if (scheduleType) scheduleType.value = '';
+
+    // Reset time inputs to defaults
+    const startTime = document.getElementById('startTime');
+    const endTime = document.getElementById('endTime');
+    if (startTime) startTime.value = '09:00';
+    if (endTime) endTime.value = '17:00';
+
+    // Reset all checkboxes (years, months, days)
+    document.querySelectorAll('#packageDetailsModal input[type="checkbox"]').forEach(cb => {
+        cb.checked = cb.value === '2025'; // Keep 2025 checked by default
+    });
+
+    // Hide recurring and specific date fields
+    const recurringFields = document.getElementById('recurringScheduleFields');
+    const specificDatesField = document.getElementById('specificDatesField');
+    if (recurringFields) recurringFields.style.display = 'none';
+    if (specificDatesField) specificDatesField.style.display = 'none';
+
+    // Reset specific dates
+    window.selectedSpecificDates = [];
+    const selectedDatesList = document.getElementById('selectedDatesList');
+    if (selectedDatesList) selectedDatesList.innerHTML = '';
+    const specificDateFrom = document.getElementById('specificDateFrom');
+    const specificDateTo = document.getElementById('specificDateTo');
+    if (specificDateFrom) specificDateFrom.value = '';
+    if (specificDateTo) specificDateTo.value = '';
+    const specificDatesHidden = document.getElementById('specificDates');
+    if (specificDatesHidden) specificDatesHidden.value = '';
+
+    // Reset child search state for parents
+    window.selectedChildData = null;
+    const selectedChildDisplay = document.getElementById('selectedChildDisplay');
+    if (selectedChildDisplay) selectedChildDisplay.style.display = 'none';
+
+    const searchInputContainer = document.getElementById('childSearchInput');
+    if (searchInputContainer && searchInputContainer.parentElement) {
+        searchInputContainer.parentElement.style.display = 'block';
+    }
+
+    const searchResults = document.getElementById('childSearchResults');
+    if (searchResults) searchResults.style.display = 'none';
+
     window.currentPackageData = null;
 };
+
+// Initialize selected specific dates array
+window.selectedSpecificDates = [];
+
+/**
+ * Handle From Date selection for specific dates
+ */
+window.handleSpecificDateFromChange = function() {
+    const fromDate = document.getElementById('specificDateFrom').value;
+    const toDateInput = document.getElementById('specificDateTo');
+
+    if (!fromDate) return;
+
+    // Set minimum date for "To Date" to be the same or after "From Date"
+    if (toDateInput) {
+        toDateInput.min = fromDate;
+    }
+
+    // If no "To Date" selected, add the single date immediately
+    if (!toDateInput.value) {
+        addSpecificDateToList(fromDate, null);
+    }
+};
+
+/**
+ * Handle To Date selection for specific dates
+ */
+window.handleSpecificDateToChange = function() {
+    const fromDate = document.getElementById('specificDateFrom').value;
+    const toDate = document.getElementById('specificDateTo').value;
+
+    if (!fromDate) {
+        alert('Please select a "From Date" first.');
+        document.getElementById('specificDateTo').value = '';
+        return;
+    }
+
+    if (toDate && toDate < fromDate) {
+        alert('"To Date" cannot be before "From Date".');
+        document.getElementById('specificDateTo').value = '';
+        return;
+    }
+
+    // Add the date range
+    addSpecificDateToList(fromDate, toDate);
+};
+
+/**
+ * Add a specific date or date range to the selected list
+ */
+function addSpecificDateToList(fromDate, toDate) {
+    if (!fromDate) return;
+
+    // Check for duplicates
+    const dateKey = toDate ? `${fromDate}_${toDate}` : fromDate;
+    if (window.selectedSpecificDates.some(d => d.key === dateKey)) {
+        return; // Already added
+    }
+
+    // Create date entry object
+    const dateEntry = {
+        key: dateKey,
+        from: fromDate,
+        to: toDate,
+        display: toDate ? `${formatDateDisplay(fromDate)} - ${formatDateDisplay(toDate)}` : formatDateDisplay(fromDate)
+    };
+
+    window.selectedSpecificDates.push(dateEntry);
+    renderSelectedDatesList();
+    updateSpecificDatesHiddenInput();
+
+    // Clear inputs for next entry
+    document.getElementById('specificDateFrom').value = '';
+    document.getElementById('specificDateTo').value = '';
+}
+
+/**
+ * Add another date/range (button click handler)
+ */
+window.addAnotherSpecificDate = function() {
+    const fromDate = document.getElementById('specificDateFrom').value;
+    const toDate = document.getElementById('specificDateTo').value;
+
+    if (!fromDate) {
+        alert('Please select a "From Date" first.');
+        document.getElementById('specificDateFrom').focus();
+        return;
+    }
+
+    addSpecificDateToList(fromDate, toDate || null);
+};
+
+/**
+ * Remove a specific date from the list
+ */
+window.removeSpecificDate = function(key) {
+    window.selectedSpecificDates = window.selectedSpecificDates.filter(d => d.key !== key);
+    renderSelectedDatesList();
+    updateSpecificDatesHiddenInput();
+};
+
+/**
+ * Render the selected dates list
+ */
+function renderSelectedDatesList() {
+    const container = document.getElementById('selectedDatesList');
+    if (!container) return;
+
+    if (window.selectedSpecificDates.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = `
+        <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+                <i class="fas fa-calendar-check" style="color: var(--primary-color);"></i> Selected Dates (${window.selectedSpecificDates.length})
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                ${window.selectedSpecificDates.map(date => `
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(var(--primary-rgb), 0.1); border: 1px solid var(--primary-color); padding: 8px 12px; border-radius: 8px;">
+                        <i class="fas fa-calendar-day" style="color: var(--primary-color); font-size: 0.85rem;"></i>
+                        <span style="font-size: 0.85rem; font-weight: 500; color: var(--text-color);">${date.display}</span>
+                        <button type="button" onclick="removeSpecificDate('${date.key}')"
+                            style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 2px; display: flex; align-items: center; justify-content: center;"
+                            title="Remove this date">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+/**
+ * Update the hidden input with all selected dates
+ */
+function updateSpecificDatesHiddenInput() {
+    const hiddenInput = document.getElementById('specificDates');
+    if (!hiddenInput) return;
+
+    // Format as comma-separated dates/ranges
+    const datesArray = [];
+    window.selectedSpecificDates.forEach(d => {
+        if (d.to) {
+            // For ranges, add all dates in the range
+            const dates = getDatesBetween(d.from, d.to);
+            datesArray.push(...dates);
+        } else {
+            datesArray.push(d.from);
+        }
+    });
+
+    hiddenInput.value = datesArray.join(', ');
+}
+
+/**
+ * Get all dates between two dates (inclusive)
+ */
+function getDatesBetween(startDate, endDate) {
+    const dates = [];
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    while (start <= end) {
+        dates.push(start.toISOString().split('T')[0]);
+        start.setDate(start.getDate() + 1);
+    }
+
+    return dates;
+}
+
+/**
+ * Format date for display (e.g., "Jan 15, 2025")
+ */
+function formatDateDisplay(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
 
 /**
  * Submit package request with customizations
@@ -2004,55 +2593,76 @@ window.submitPackageRequest = async function() {
         return;
     }
 
-    // Get required student info
-    const studentName = document.getElementById('detailsStudentName').value.trim();
-    const gradeLevel = document.getElementById('detailsGradeLevel').value;
+    // Get student info from hidden inputs (populated by selectChild or auto-fill for students)
+    let studentName = document.getElementById('detailsStudentName')?.value.trim() || '';
+    let studentProfileId = document.getElementById('selectedChildId')?.value || null;
 
-    if (!studentName || !gradeLevel) {
-        alert('⚠️ Please fill in student name and grade level.');
+    // Also check window.selectedChildData as backup (populated by selectChild)
+    if (!studentName && window.selectedChildData) {
+        studentName = window.selectedChildData.name || window.selectedChildData.first_name || window.selectedChildData.username || '';
+        studentProfileId = window.selectedChildData.id;
+    }
+
+    // Validation: Must have a student selected (either self for students, or child for parents)
+    if (!studentProfileId && !studentName) {
+        alert('⚠️ Please select a student for this tutoring request.');
+        const searchInput = document.getElementById('childSearchInput');
+        if (searchInput) searchInput.focus();
         return;
     }
 
-    // Get contact info
-    const contactPhone = document.getElementById('detailsContactPhone').value.trim();
-    const contactEmail = document.getElementById('detailsContactEmail').value.trim();
-    const preferredSchedule = document.getElementById('detailsPreferredSchedule').value.trim();
-    const message = document.getElementById('detailsMessage').value.trim();
+    // Build schedule data from UI elements
+    const scheduleType = document.getElementById('scheduleType')?.value || '';
+    const startTime = document.getElementById('startTime')?.value || '';
+    const endTime = document.getElementById('endTime')?.value || '';
 
-    // Get customization data
-    const customPrice = document.getElementById('customPrice').value.trim();
-    const customSessionsPerWeek = document.getElementById('customSessionsPerWeek').value.trim();
-    const customDuration = document.getElementById('customDuration').value.trim();
-    const customDays = document.getElementById('customDays').value.trim();
-    const customNotes = document.getElementById('customNotes').value.trim();
+    // Structured schedule fields
+    let yearRange = [];
+    let months = [];
+    let days = [];
+    let specificDates = [];
+    let preferredSchedule = '';
 
-    // Build customization message
-    let fullMessage = message;
-    const customizations = [];
+    if (scheduleType === 'recurring') {
+        // Get selected years
+        yearRange = Array.from(document.querySelectorAll('input[name="yearRange"]:checked')).map(cb => parseInt(cb.value));
+        // Get selected months
+        months = Array.from(document.querySelectorAll('input[name="months"]:checked')).map(cb => cb.value);
+        // Get selected days
+        days = Array.from(document.querySelectorAll('input[name="days"]:checked')).map(cb => cb.value);
 
-    if (customPrice) customizations.push(`Requested Price: ETB ${customPrice}/session`);
-    if (customSessionsPerWeek) customizations.push(`Sessions per week: ${customSessionsPerWeek}`);
-    if (customDuration) customizations.push(`Duration: ${customDuration} minutes`);
-    if (customDays) customizations.push(`Preferred days: ${customDays}`);
-    if (customNotes) customizations.push(`Additional requests: ${customNotes}`);
+        // Build legacy preferred_schedule string as backup
+        const scheduleParts = [];
+        if (yearRange.length > 0) scheduleParts.push(`Years: ${yearRange.join(', ')}`);
+        if (months.length > 0) scheduleParts.push(`Months: ${months.join(', ')}`);
+        if (days.length > 0) scheduleParts.push(`Days: ${days.join(', ')}`);
+        if (startTime && endTime) scheduleParts.push(`Time: ${startTime} - ${endTime}`);
+        preferredSchedule = scheduleParts.join(' | ');
 
-    if (customizations.length > 0) {
-        fullMessage = (fullMessage ? fullMessage + '\n\n' : '') +
-                     '📝 PACKAGE CUSTOMIZATION REQUESTED:\n' +
-                     customizations.join('\n');
+    } else if (scheduleType === 'specific_dates') {
+        const specificDatesStr = document.getElementById('specificDates')?.value.trim() || '';
+        if (specificDatesStr) {
+            specificDates = specificDatesStr.split(',').map(d => d.trim()).filter(d => d);
+            preferredSchedule = `Specific Dates: ${specificDatesStr}`;
+            if (startTime && endTime) preferredSchedule += ` | Time: ${startTime} - ${endTime}`;
+        }
     }
 
-    // Prepare request data
+    // Prepare request data with structured schedule fields
     const requestData = {
         tutor_id: parseInt(window.currentTutorId),
         package_id: window.currentPackageData.id,
-        package_name: window.currentPackageData.name,
-        student_name: studentName,
-        student_grade: gradeLevel,
-        contact_phone: contactPhone || null,
-        contact_email: contactEmail || null,
         preferred_schedule: preferredSchedule || null,
-        message: fullMessage || null
+        // Student the session is for (self for students, selected child for parents)
+        requested_to_id: studentProfileId ? parseInt(studentProfileId) : null,
+        // Structured schedule fields
+        schedule_type: scheduleType || null,
+        year_range: yearRange.length > 0 ? yearRange : null,
+        months: months.length > 0 ? months : null,
+        days: days.length > 0 ? days : null,
+        specific_dates: specificDates.length > 0 ? specificDates : null,
+        start_time: startTime || null,
+        end_time: endTime || null
     };
 
     // Show loading state
@@ -2079,8 +2689,7 @@ window.submitPackageRequest = async function() {
         const result = await response.json();
 
         // Show success message
-        const hasCustomizations = customizations.length > 0;
-        alert(`✅ Session request sent successfully!${hasCustomizations ? '\n\n📝 Your package customization requests have been included.' : ''}\n\nThe tutor will review your request and respond soon. You can check the status in your profile.`);
+        alert(`✅ Session request sent successfully!\n\nThe tutor will review your request and respond soon. You can check the status in your profile.`);
 
         // Close modal
         window.closePackageDetailsModal();

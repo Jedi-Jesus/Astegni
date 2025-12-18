@@ -7,8 +7,8 @@ console.log('🚀 Loading consolidated script...');
 
 // Global Configuration
 const CONFIG = {
-    API_URL: "https://api.astegni.com",
-    API_BASE_URL: "https://api.astegni.com",
+    API_URL: "http://localhost:8000",
+    API_BASE_URL: "http://localhost:8000",
     ANIMATION_DURATION: 300,
     SCROLL_THRESHOLD: 100,
     TYPING_SPEED: 80,

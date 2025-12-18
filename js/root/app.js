@@ -6,8 +6,8 @@ let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
 // Initialize session, theme, and notifications on page load
 function initializeApp() {
     // Restore authentication
-    const storedToken = localStorage.getItem('token');
-    const storedUser = localStorage.getItem('user');
+    const storedToken = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const storedUser = localStorage.getItem('currentUser') || localStorage.getItem('user');
     if (storedToken && storedUser) {
         try {
             token = storedToken;

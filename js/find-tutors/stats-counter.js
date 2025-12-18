@@ -1,10 +1,62 @@
 // ============================================
 // STATS COUNTER ANIMATION MODULE
+// Fetches platform stats from database API
 // ============================================
 
 const StatsCounter = {
-    init() {
+    // Default fallback values if API fails
+    defaultStats: {
+        tutors_count: 500,
+        courses_count: 50,
+        average_rating: 4.5
+    },
+
+    async init() {
+        // First fetch stats from API, then initialize counter animation
+        await this.fetchPlatformStats();
         this.initializeStatsCounter();
+    },
+
+    async fetchPlatformStats() {
+        try {
+            // Use the global API_BASE_URL if available, otherwise default to localhost
+            const baseUrl = window.API_BASE_URL || 'http://localhost:8000/api';
+            const response = await fetch(`${baseUrl}/platform-stats`);
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            const stats = await response.json();
+            console.log('Platform stats loaded from database:', stats);
+
+            // Update the data-target attributes with real values from database
+            this.updateStatTargets(stats);
+        } catch (error) {
+            console.warn('Failed to fetch platform stats, using defaults:', error);
+            // Use default values if API fails
+            this.updateStatTargets(this.defaultStats);
+        }
+    },
+
+    updateStatTargets(stats) {
+        // Update tutors count
+        const tutorsEl = document.getElementById('stat-tutors');
+        if (tutorsEl) {
+            tutorsEl.setAttribute('data-target', stats.tutors_count || this.defaultStats.tutors_count);
+        }
+
+        // Update courses count
+        const coursesEl = document.getElementById('stat-courses');
+        if (coursesEl) {
+            coursesEl.setAttribute('data-target', stats.courses_count || this.defaultStats.courses_count);
+        }
+
+        // Update average rating
+        const ratingEl = document.getElementById('stat-rating');
+        if (ratingEl) {
+            ratingEl.setAttribute('data-target', stats.average_rating || this.defaultStats.average_rating);
+        }
     },
 
     initializeStatsCounter() {

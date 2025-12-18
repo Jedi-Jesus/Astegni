@@ -3,7 +3,7 @@
  * Handles course and school request modals functionality
  */
 
-const API_BASE_URL = 'https://api.astegni.com';
+const API_BASE_URL = 'http://localhost:8000';
 
 class RequestModalsManager {
     constructor() {
@@ -441,17 +441,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Global functions for opening modals (callable from HTML onclick)
 function openRequestCourseModal() {
-    console.log('openRequestCourseModal called, manager:', requestModalsManager);
-    if (requestModalsManager) {
-        requestModalsManager.openCourseModal();
+    console.log('openRequestCourseModal called - using course-request-modal');
+    // Use the new course-request-modal from common-modals
+    if (typeof openCourseRequestModal === 'function') {
+        openCourseRequestModal();
     } else {
-        console.error('RequestModalsManager not initialized yet');
-        // Try to open modal directly as fallback
-        const modal = document.getElementById('requestCourseModal');
-        if (modal) {
-            modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
+        // Load the modal dynamically if function not available
+        loadAndOpenCourseRequestModal();
+    }
+}
+
+// Helper function to load and open course request modal
+async function loadAndOpenCourseRequestModal() {
+    let modal = document.getElementById('course-request-modal');
+
+    // If modal not in DOM, fetch it
+    if (!modal) {
+        try {
+            const response = await fetch('../modals/common-modals/course-request-modal.html');
+            if (response.ok) {
+                const html = await response.text();
+                const container = document.getElementById('modal-container') || document.body;
+                container.insertAdjacentHTML('beforeend', html);
+                modal = document.getElementById('course-request-modal');
+
+                // Also load the course-request-manager.js if not loaded
+                if (typeof openCourseRequestModal !== 'function') {
+                    const script = document.createElement('script');
+                    script.src = '../js/tutor-profile/course-request-manager.js';
+                    document.head.appendChild(script);
+                    // Wait a bit for script to load
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+            }
+        } catch (e) {
+            console.error('[RequestModals] Failed to fetch course-request-modal:', e);
         }
+    }
+
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+        modal.style.visibility = 'visible';
+        modal.style.opacity = '1';
+        document.body.style.overflow = 'hidden';
+    } else {
+        console.error('[RequestModals] Course request modal not found');
+        alert('Failed to load course request modal. Please refresh the page.');
     }
 }
 

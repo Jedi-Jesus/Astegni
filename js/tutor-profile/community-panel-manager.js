@@ -13,7 +13,151 @@
 
     console.log('🚀 Tutor Community Panel Manager (FIXED) loading...');
 
-    const API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+    const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
+
+    // Helper function to safely encode user data for onclick handlers
+    function encodeUserDataForOnclick(user) {
+        const safeUser = {
+            id: user.id || null,
+            profileId: user.profileId || null,
+            name: (user.name || 'Unknown User'),
+            avatar: (user.avatar || ''),
+            profileType: (user.profileType || ''),
+            isOnline: user.isOnline || false
+        };
+        // Use HTML entity encoding for the JSON string to safely embed in onclick
+        return JSON.stringify(safeUser).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+    }
+
+    // ============================================
+    // PAGINATION CONFIGURATION & STATE
+    // ============================================
+    const ITEMS_PER_PAGE = 9; // 3x3 grid
+
+    // Pagination state for each section
+    const paginationState = {
+        // Connections
+        'all-connections': { currentPage: 1, totalPages: 1, data: [] },
+        'students-connections': { currentPage: 1, totalPages: 1, data: [] },
+        'parents-connections': { currentPage: 1, totalPages: 1, data: [] },
+        'tutors-connections': { currentPage: 1, totalPages: 1, data: [] },
+        // Events
+        'all-events': { currentPage: 1, totalPages: 1, data: [] },
+        'my-events': { currentPage: 1, totalPages: 1, data: [] },
+        'discover-events': { currentPage: 1, totalPages: 1, data: [] },
+        'joined-events': { currentPage: 1, totalPages: 1, data: [] },
+        'upcoming-events': { currentPage: 1, totalPages: 1, data: [] },
+        // Clubs
+        'all-clubs': { currentPage: 1, totalPages: 1, data: [] },
+        'my-clubs': { currentPage: 1, totalPages: 1, data: [] },
+        'discover-clubs': { currentPage: 1, totalPages: 1, data: [] },
+        'joined-clubs': { currentPage: 1, totalPages: 1, data: [] },
+        'upcoming-clubs': { currentPage: 1, totalPages: 1, data: [] },
+        // Requests
+        'sent-requests': { currentPage: 1, totalPages: 1, data: [] },
+        'received-requests': { currentPage: 1, totalPages: 1, data: [] }
+    };
+
+    /**
+     * Get paginated slice of data
+     * @param {string} sectionKey - Key in paginationState
+     * @param {number} page - Page number (1-indexed)
+     * @returns {Array} - Slice of data for the page
+     */
+    function getPaginatedData(sectionKey, page = 1) {
+        const state = paginationState[sectionKey];
+        if (!state || !state.data) return [];
+
+        const startIndex = (page - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return state.data.slice(startIndex, endIndex);
+    }
+
+    /**
+     * Update pagination state with new data
+     * @param {string} sectionKey - Key in paginationState
+     * @param {Array} data - Full data array
+     */
+    function updatePaginationState(sectionKey, data) {
+        if (!paginationState[sectionKey]) {
+            paginationState[sectionKey] = { currentPage: 1, totalPages: 1, data: [] };
+        }
+        paginationState[sectionKey].data = data;
+        paginationState[sectionKey].totalPages = Math.ceil(data.length / ITEMS_PER_PAGE) || 1;
+        paginationState[sectionKey].currentPage = 1;
+    }
+
+    /**
+     * Render pagination controls
+     * @param {string} sectionKey - Key in paginationState
+     * @param {string} gridId - ID of the grid container
+     * @param {Function} renderFunction - Function to render items
+     * @returns {string} - HTML for pagination controls
+     */
+    function renderPaginationControls(sectionKey, gridId, renderFunction) {
+        const state = paginationState[sectionKey];
+        if (!state || state.totalPages <= 1) return '';
+
+        const { currentPage, totalPages } = state;
+
+        return `
+            <div class="col-span-full flex items-center justify-center gap-2 mt-6 pt-4 border-t border-gray-200">
+                <button
+                    onclick="communityGoToPage('${sectionKey}', ${currentPage - 1}, '${gridId}')"
+                    class="px-3 py-2 rounded-lg ${currentPage === 1 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'} transition-colors"
+                    ${currentPage === 1 ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <span class="px-4 py-2 text-sm text-gray-600">
+                    Page <span class="font-semibold">${currentPage}</span> of <span class="font-semibold">${totalPages}</span>
+                </span>
+                <button
+                    onclick="communityGoToPage('${sectionKey}', ${currentPage + 1}, '${gridId}')"
+                    class="px-3 py-2 rounded-lg ${currentPage === totalPages ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'} transition-colors"
+                    ${currentPage === totalPages ? 'disabled' : ''}>
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+    }
+
+    /**
+     * Navigate to a specific page
+     * @param {string} sectionKey - Key in paginationState
+     * @param {number} page - Page number
+     * @param {string} gridId - ID of the grid container
+     */
+    window.communityGoToPage = function(sectionKey, page, gridId) {
+        const state = paginationState[sectionKey];
+        if (!state) return;
+
+        // Validate page number
+        if (page < 1 || page > state.totalPages) return;
+
+        state.currentPage = page;
+
+        // Re-render based on section type
+        const grid = document.getElementById(gridId);
+        if (!grid) return;
+
+        // Determine which render function to use based on sectionKey
+        if (sectionKey.includes('connections')) {
+            const paginatedData = getPaginatedData(sectionKey, page);
+            renderConnectionCards(grid, paginatedData, sectionKey);
+        } else if (sectionKey.includes('events')) {
+            const paginatedData = getPaginatedData(sectionKey, page);
+            renderEventCards(grid, paginatedData, sectionKey);
+        } else if (sectionKey.includes('clubs')) {
+            const paginatedData = getPaginatedData(sectionKey, page);
+            renderClubCards(grid, paginatedData, sectionKey);
+        } else if (sectionKey.includes('requests')) {
+            const paginatedData = getPaginatedData(sectionKey, page);
+            renderRequestCards(grid, paginatedData, sectionKey);
+        }
+
+        // Scroll to top of grid
+        grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
 
     // ============================================
     // MAIN TAB SWITCHING (Connections, Requests, Events, Clubs)
@@ -167,7 +311,12 @@
         `;
 
         try {
-            const token = localStorage.getItem('token');
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) {
                 grid.innerHTML = `
                     <div class="col-span-full text-center p-8">
@@ -177,8 +326,17 @@
                 return;
             }
 
-            // Fetch connections from API
-            const response = await fetch(`${API_BASE_URL}/api/connections?status=accepted`, {
+            // Get active role from JWT token
+            let activeRole = 'tutor';
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                activeRole = payload.role || 'tutor';
+            } catch (e) {
+                console.warn('Could not parse role from token, defaulting to tutor');
+            }
+
+            // Fetch connections from API (filtered by role/profile_id)
+            const response = await fetch(`${API_BASE_URL}/api/connections?status=accepted&role=${activeRole}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -207,7 +365,7 @@
                 console.log(`🔍 [Tutor Panel] Filtered to ${connections.length} ${subsection}`);
             }
 
-            // Display connections
+            // Display connections with pagination
             if (connections.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full text-center p-12">
@@ -217,7 +375,11 @@
                     </div>
                 `;
             } else {
-                renderConnectionCards(grid, connections);
+                // Update pagination state and render first page
+                const sectionKey = `${subsection}-connections`;
+                updatePaginationState(sectionKey, connections);
+                const paginatedData = getPaginatedData(sectionKey, 1);
+                renderConnectionCards(grid, paginatedData, sectionKey);
             }
 
         } catch (error) {
@@ -240,11 +402,12 @@
      * Render connection cards (FIXED - matches community modal exactly)
      * @param {HTMLElement} grid - Grid container
      * @param {Array} connections - Array of connection objects
+     * @param {string} sectionKey - Section key for pagination (optional)
      */
-    function renderConnectionCards(grid, connections) {
+    function renderConnectionCards(grid, connections, sectionKey = null) {
         console.log('🔍 [DEBUG] renderConnectionCards - Total connections:', connections.length);
 
-        grid.innerHTML = connections.map((conn, index) => {
+        const cardsHtml = connections.map((conn, index) => {
             console.log(`🔍 [DEBUG] Connection ${index + 1}:`, {
                 id: conn.id,
                 requested_by: conn.requested_by,
@@ -311,7 +474,7 @@
                         ` : ''}
                     </div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-                        <button onclick="sendMessage(${otherUser.id})"
+                        <button onclick="sendMessage(JSON.parse(this.dataset.user))" data-user="${encodeUserDataForOnclick(otherUser)}"
                                 style="flex: 1; padding: 0.5rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;"
                                 onmouseover="this.style.opacity='0.8'"
                                 onmouseout="this.style.opacity='1'">
@@ -321,6 +484,10 @@
                 </div>
             `;
         }).join('');
+
+        // Add pagination controls if sectionKey is provided
+        const paginationHtml = sectionKey ? renderPaginationControls(sectionKey, grid.id) : '';
+        grid.innerHTML = cardsHtml + paginationHtml;
 
         console.log(`✅ [Tutor Panel] Rendered ${connections.length} connection cards`);
     }
@@ -447,7 +614,12 @@
         `;
 
         try {
-            const token = localStorage.getItem('token');
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             if (!token) {
                 list.innerHTML = `
                     <div class="text-center p-8">
@@ -457,8 +629,17 @@
                 return;
             }
 
+            // Get active role from JWT token
+            let activeRole = 'tutor';
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                activeRole = payload.role || 'tutor';
+            } catch (e) {
+                console.warn('Could not parse role from token, defaulting to tutor');
+            }
+
             const direction = type === 'sent' ? 'outgoing' : 'incoming';
-            const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=${direction}`, {
+            const response = await fetch(`${API_BASE_URL}/api/connections?status=pending&direction=${direction}&role=${activeRole}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -478,7 +659,7 @@
                 countElement.textContent = requests.length;
             }
 
-            // Display requests
+            // Display requests with pagination
             if (requests.length === 0) {
                 const emoji = type === 'sent' ? '📤' : '📥';
                 const message = type === 'sent'
@@ -493,7 +674,11 @@
                     </div>
                 `;
             } else {
-                renderRequestCards(list, requests, type);
+                // Update pagination state and render first page
+                const sectionKey = `${type}-requests`;
+                updatePaginationState(sectionKey, requests);
+                const paginatedData = getPaginatedData(sectionKey, 1);
+                renderRequestCards(list, paginatedData, sectionKey);
             }
 
         } catch (error) {
@@ -516,12 +701,14 @@
      * Render request cards (FIXED - matches community modal exactly)
      * @param {HTMLElement} container - Container element
      * @param {Array} requests - Array of request objects
-     * @param {string} type - 'sent' or 'received'
+     * @param {string} sectionKey - Section key for pagination
      */
-    function renderRequestCards(container, requests, type) {
+    function renderRequestCards(container, requests, sectionKey = null) {
+        // Extract type from sectionKey (e.g., 'sent-requests' -> 'sent', 'received-requests' -> 'received')
+        const type = sectionKey ? sectionKey.replace('-requests', '') : 'sent';
         console.log(`🔍 [DEBUG] renderRequestCards - Type: ${type}, Total requests:`, requests.length);
 
-        container.innerHTML = requests.map((req, index) => {
+        const cardsHtml = requests.map((req, index) => {
             console.log(`🔍 [DEBUG] Request ${index + 1}:`, {
                 id: req.id,
                 requested_by: req.requested_by,
@@ -590,8 +777,22 @@
                                 Decline
                             </button>
                         </div>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                            <button onclick="sendMessage(JSON.parse(this.dataset.user))" data-user="${encodeUserDataForOnclick(otherUser)}"
+                                    style="flex: 1; padding: 0.5rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;"
+                                    onmouseover="this.style.opacity='0.8'"
+                                    onmouseout="this.style.opacity='1'">
+                                <i class="fas fa-comment" style="margin-right: 0.25rem;"></i> Message
+                            </button>
+                        </div>
                     ` : `
                         <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+                            <button onclick="sendMessage(JSON.parse(this.dataset.user))" data-user="${encodeUserDataForOnclick(otherUser)}"
+                                    style="flex: 1; padding: 0.5rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;"
+                                    onmouseover="this.style.opacity='0.8'"
+                                    onmouseout="this.style.opacity='1'">
+                                <i class="fas fa-comment" style="margin-right: 0.25rem;"></i> Message
+                            </button>
                             <button onclick="cancelSentRequest(${req.id})"
                                     style="flex: 1; padding: 0.5rem; background: transparent; color: var(--text-muted); border: 1px solid rgba(var(--border-rgb, 229, 231, 235), 0.3); border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: all 0.2s;"
                                     onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444'; this.style.borderColor='#ef4444'"
@@ -603,6 +804,10 @@
                 </div>
             `;
         }).join('');
+
+        // Add pagination controls if sectionKey is provided
+        const paginationHtml = sectionKey ? renderPaginationControls(sectionKey, container.id) : '';
+        container.innerHTML = cardsHtml + paginationHtml;
 
         console.log(`✅ [Tutor Panel] Rendered ${requests.length} ${type} request cards`);
     }
@@ -677,7 +882,12 @@
         `;
 
         try {
-            const token = localStorage.getItem('token');
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const user = getCurrentUser();
             const currentUserId = user?.user_id || user?.id;
 
@@ -690,8 +900,17 @@
                 return;
             }
 
-            // Fetch events from API
-            const response = await fetch(`${API_BASE_URL}/api/events`, {
+            // Get active role from JWT token
+            let activeRole = 'tutor';
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                activeRole = payload.role || 'tutor';
+            } catch (e) {
+                console.warn('Could not parse role from token, defaulting to tutor');
+            }
+
+            // Fetch events from API (filtered by role/profile_id)
+            const response = await fetch(`${API_BASE_URL}/api/events?role=${activeRole}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -733,7 +952,7 @@
             }
             // 'all' shows all events (no filtering)
 
-            // Display events
+            // Display events with pagination
             if (events.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full text-center p-12">
@@ -749,7 +968,11 @@
                     </div>
                 `;
             } else {
-                renderEventCards(grid, events, subsection);
+                // Update pagination state and render first page
+                const sectionKey = `${subsection}-events`;
+                updatePaginationState(sectionKey, events);
+                const paginatedData = getPaginatedData(sectionKey, 1);
+                renderEventCards(grid, paginatedData, sectionKey);
             }
 
         } catch (error) {
@@ -772,13 +995,13 @@
      * Render event cards (matching communityManager.js pattern)
      * @param {HTMLElement} grid - Grid container
      * @param {Array} events - Array of event objects
-     * @param {string} subsection - Current subsection
+     * @param {string} sectionKey - Section key for pagination
      */
-    function renderEventCards(grid, events, subsection) {
+    function renderEventCards(grid, events, sectionKey = null) {
         const user = getCurrentUser();
         const currentUserId = user?.user_id || user?.id;
 
-        grid.innerHTML = events.map(event => {
+        const cardsHtml = events.map(event => {
             const startDate = new Date(event.start_datetime || event.date);
             const isOnline = event.is_online || (event.location && event.location.toLowerCase() === 'online');
 
@@ -848,6 +1071,10 @@
                 </div>
             `;
         }).join('');
+
+        // Add pagination controls if sectionKey is provided
+        const paginationHtml = sectionKey ? renderPaginationControls(sectionKey, grid.id) : '';
+        grid.innerHTML = cardsHtml + paginationHtml;
 
         console.log(`✅ [Tutor Panel] Rendered ${events.length} event cards`);
     }
@@ -922,7 +1149,12 @@
         `;
 
         try {
-            const token = localStorage.getItem('token');
+            // Wait for auth to be ready before checking token
+            if (window.TutorAuthReady) {
+                await window.TutorAuthReady.waitForAuth();
+            }
+
+            const token = localStorage.getItem('token') || localStorage.getItem('access_token');
             const user = getCurrentUser();
             const currentUserId = user?.user_id || user?.id;
 
@@ -935,8 +1167,17 @@
                 return;
             }
 
-            // Fetch clubs from API
-            const response = await fetch(`${API_BASE_URL}/api/clubs`, {
+            // Get active role from JWT token
+            let activeRole = 'tutor';
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                activeRole = payload.role || 'tutor';
+            } catch (e) {
+                console.warn('Could not parse role from token, defaulting to tutor');
+            }
+
+            // Fetch clubs from API (filtered by role/profile_id)
+            const response = await fetch(`${API_BASE_URL}/api/clubs?role=${activeRole}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -980,7 +1221,7 @@
             }
             // 'all' shows all clubs (no filtering)
 
-            // Display clubs
+            // Display clubs with pagination
             if (clubs.length === 0) {
                 grid.innerHTML = `
                     <div class="col-span-full text-center p-12">
@@ -996,7 +1237,11 @@
                     </div>
                 `;
             } else {
-                renderClubCards(grid, clubs, subsection);
+                // Update pagination state and render first page
+                const sectionKey = `${subsection}-clubs`;
+                updatePaginationState(sectionKey, clubs);
+                const paginatedData = getPaginatedData(sectionKey, 1);
+                renderClubCards(grid, paginatedData, sectionKey);
             }
 
         } catch (error) {
@@ -1019,13 +1264,13 @@
      * Render club cards (matching communityManager.js pattern)
      * @param {HTMLElement} grid - Grid container
      * @param {Array} clubs - Array of club objects
-     * @param {string} subsection - Current subsection
+     * @param {string} sectionKey - Section key for pagination
      */
-    function renderClubCards(grid, clubs, subsection) {
+    function renderClubCards(grid, clubs, sectionKey = null) {
         const user = getCurrentUser();
         const currentUserId = user?.user_id || user?.id;
 
-        grid.innerHTML = clubs.map(club => {
+        const cardsHtml = clubs.map(club => {
             // Determine badge text based on backend response
             const isSystemClub = club.is_system;
             const isOwnClub = club.created_by === currentUserId;
@@ -1084,6 +1329,10 @@
                 </div>
             `;
         }).join('');
+
+        // Add pagination controls if sectionKey is provided
+        const paginationHtml = sectionKey ? renderPaginationControls(sectionKey, grid.id) : '';
+        grid.innerHTML = cardsHtml + paginationHtml;
 
         console.log(`✅ [Tutor Panel] Rendered ${clubs.length} club cards`);
     }
@@ -1176,8 +1425,38 @@
     // ACTION FUNCTIONS (Placeholders)
     // ============================================
 
-    window.sendMessage = function(userId) {
-        alert(`Send message to user ${userId} - Feature coming soon!`);
+    window.sendMessage = function(user) {
+        // Close the community modal
+        if (typeof closeCommunityModal === 'function') {
+            closeCommunityModal();
+        } else {
+            // Fallback: manually close the modal
+            const communityModal = document.getElementById('communityModal');
+            if (communityModal) {
+                communityModal.classList.add('hidden');
+                communityModal.style.display = 'none';
+            }
+        }
+
+        // Open chat modal with the target user
+        if (typeof openChatModal === 'function') {
+            // Format user data for chat modal
+            const targetUser = {
+                id: user.id,
+                user_id: user.id,
+                profile_id: user.profileId,
+                full_name: user.name,
+                name: user.name,
+                profile_picture: user.avatar,
+                avatar: user.avatar,
+                role: user.profileType,
+                profile_type: user.profileType,
+                is_online: user.isOnline
+            };
+            openChatModal(targetUser);
+        } else {
+            console.error('openChatModal function not found');
+        }
     };
 
     /**

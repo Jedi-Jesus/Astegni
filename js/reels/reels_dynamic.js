@@ -11,7 +11,7 @@ const UrlHelper = {
 
     getApiBaseUrl() {
         return this.isFileProtocol
-            ? 'https://api.astegni.com/api'
+            ? 'http://localhost:8000/api'
             : '/api';
     },
 
@@ -27,7 +27,7 @@ const UrlHelper = {
         if (this.isFileProtocol) {
             // Remove leading slash if present
             const cleanPath = path.startsWith('/') ? path : '/' + path;
-            return `https://api.astegni.com${cleanPath}`;
+            return `http://localhost:8000${cleanPath}`;
         }
         
         return path;

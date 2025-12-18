@@ -13,7 +13,7 @@ class CourseworkManager {
         this.selectedStudentId = null;
         this.questionEditors = {}; // Store Quill instances for questions
         this.answerEditors = {}; // Store Quill instances for answers
-        this.API_BASE_URL = 'https://api.astegni.com';
+        this.API_BASE_URL = 'http://localhost:8000';
 
         // Sample data - using real student IDs from database
         this.students = [
@@ -35,7 +35,7 @@ class CourseworkManager {
     // ========== API HELPER METHODS ==========
 
     async getAuthToken() {
-        return localStorage.getItem('token');
+        return localStorage.getItem('token') || localStorage.getItem('access_token');
     }
 
     async apiRequest(endpoint, method = 'GET', body = null) {

@@ -11,7 +11,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr, validator, model_validator
 from config import DATABASE_URL
 
 # ============================================
@@ -213,6 +213,9 @@ class ParentProfile(Base):
     # Children References (NEW - Array of student profile IDs)
     children_ids = Column(ARRAY(Integer), default=[])  # Array of student_profile.id (not user.id) for better performance
 
+    # Co-Parent References (Array of co-parent user IDs)
+    coparent_ids = Column(ARRAY(Integer), default=[])  # Array of co-parent user.id - allows adding co-parents without children
+
     # Children Statistics
     total_children = Column(Integer, default=0)
 
@@ -244,49 +247,7 @@ class ParentProfile(Base):
 
     # Relationships
     user = relationship("User", back_populates="parent_profile")
-    children = relationship("ChildProfile", back_populates="parent", cascade="all, delete-orphan")
     reviews = relationship("ParentReview", back_populates="parent")
-
-class ChildProfile(Base):
-    __tablename__ = "child_profiles"
-
-    id = Column(Integer, primary_key=True, index=True)
-    parent_id = Column(Integer, ForeignKey("parent_profiles.id"), nullable=False)
-
-    # Basic Info
-    name = Column(String, nullable=False)
-    date_of_birth = Column(Date)
-    gender = Column(String)
-    grade = Column(Integer)
-
-    # Academic Info
-    school_name = Column(String)
-    courses = Column(JSON, default=[])  # List of subjects
-    progress = Column(Float, default=0.0)  # Overall progress percentage
-
-    # Tutor Assignment
-    current_tutor_id = Column(Integer, ForeignKey("tutor_profiles.id"))
-    next_session = Column(DateTime)
-
-    # Learning Stats
-    total_sessions = Column(Integer, default=0)
-    completed_sessions = Column(Integer, default=0)
-    total_hours = Column(Float, default=0.0)
-    attendance_rate = Column(Float, default=0.0)
-
-    # Media
-    profile_picture = Column(String)
-
-    # Status
-    is_active = Column(Boolean, default=True)
-
-    # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relationships
-    parent = relationship("ParentProfile", back_populates="children")
-    current_tutor = relationship("TutorProfile", foreign_keys=[current_tutor_id])
 
 class AdvertiserProfile(Base):
     __tablename__ = "advertiser_profiles"
@@ -296,166 +257,32 @@ class AdvertiserProfile(Base):
 
     # Basic Info
     username = Column(String, unique=True, index=True)  # Role-specific username
-    company_name = Column(String, nullable=False)  # Company/Organization name
     bio = Column(Text)
     quote = Column(Text)
 
-    # Contact & Location
-    location = Column(String)
-    website = Column(String)
-    industry = Column(String)  # Education, Technology, Services, etc.
-    company_size = Column(String)  # Small, Medium, Large, Enterprise
+    # Location (array of locations)
+    location = Column(ARRAY(String), default=[])
+
+    # Social links (JSONB for flexible social media URLs)
+    socials = Column(JSON, default={})  # {"website": "", "facebook": "", "twitter": "", etc.}
 
     # Media
     profile_picture = Column(String)
     cover_image = Column(String)
-    logo = Column(String)
 
-    # Analytics & Stats
-    total_campaigns = Column(Integer, default=0)
-    active_campaigns = Column(Integer, default=0)
-    total_impressions = Column(Integer, default=0)
-    total_clicks = Column(Integer, default=0)
-    total_conversions = Column(Integer, default=0)
-    total_likes = Column(Integer, default=0)
-    total_followers = Column(Integer, default=0)
-    total_spent = Column(Float, default=0.0)
-
-    # Performance Metrics
-    average_ctr = Column(Float, default=0.0)  # Click-through rate
-    average_conversion_rate = Column(Float, default=0.0)
-    success_rate = Column(Float, default=0.0)  # Campaign success rate
-
-    # Rating & Reviews
-    rating = Column(Float, default=0.0)
-    rating_count = Column(Integer, default=0)
+    # Hero section content (arrays for multiple lines)
+    hero_title = Column(ARRAY(String), default=[])  # ["Title Line 1", "Title Line 2"]
+    hero_subtitle = Column(ARRAY(String), default=[])  # ["Subtitle Line 1", "Subtitle Line 2"]
 
     # Status & Verification
     is_verified = Column(Boolean, default=False)
-    is_basic = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
-    profile_complete = Column(Boolean, default=False)
-    profile_completion = Column(Float, default=0.0)
 
-    # Billing & Budget
-    total_budget = Column(Float, default=0.0)
-    available_budget = Column(Float, default=0.0)
-    currency = Column(String, default="ETB")
-
-    # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    # Membership date
+    joined_in = Column(Date)
 
     # Relationships
     user = relationship("User", backref="advertiser_profile")
-    campaigns = relationship("AdCampaign", back_populates="advertiser", cascade="all, delete-orphan")
-
-class AdCampaign(Base):
-    __tablename__ = "ad_campaigns"
-
-    id = Column(Integer, primary_key=True, index=True)
-    advertiser_id = Column(Integer, ForeignKey("advertiser_profiles.id"), nullable=False)
-
-    # Campaign Details
-    name = Column(String, nullable=False)
-    description = Column(Text)
-    objective = Column(String)  # brand_awareness, lead_generation, conversions, engagement
-
-    # Verification Status
-    is_verified = Column(Boolean, default=False)
-    verification_status = Column(String, default="pending")  # pending, verified, rejected, suspended
-
-    # Budget & Spend (kept for tracking after approval)
-    budget = Column(Float, default=0.0)
-    spent = Column(Float, default=0.0)
-    daily_budget = Column(Float)
-    currency = Column(String, default="ETB")
-
-    # Dates
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
-
-    # Status Tracking Dates
-    submitted_date = Column(DateTime)  # When campaign was submitted for review
-    rejected_date = Column(DateTime)  # When campaign was rejected
-    suspended_date = Column(DateTime)  # When campaign was suspended
-
-    # Rejection & Suspension Reasons
-    rejected_reason = Column(Text)  # Reason for rejection
-    suspended_reason = Column(Text)  # Reason for suspension
-
-    # Targeting
-    target_audience = Column(JSON, default={})  # Demographics, interests, locations
-    age_range = Column(JSON, default={})  # {"min": 18, "max": 65}
-    locations = Column(JSON, default=[])  # List of target locations
-
-    # Performance Metrics
-    impressions = Column(Integer, default=0)
-    clicks = Column(Integer, default=0)
-    conversions = Column(Integer, default=0)
-    likes = Column(Integer, default=0)
-    shares = Column(Integer, default=0)
-    comments = Column(Integer, default=0)
-    followers = Column(Integer, default=0)
-
-    # Calculated Metrics
-    ctr = Column(Float, default=0.0)  # Click-through rate
-    conversion_rate = Column(Float, default=0.0)
-    cost_per_click = Column(Float, default=0.0)
-    cost_per_conversion = Column(Float, default=0.0)
-    engagement_rate = Column(Float, default=0.0)
-
-    # Creative Assets
-    ad_type = Column(String)  # video, image, carousel, text
-    creative_urls = Column(JSON, default=[])  # List of image/video URLs (Backblaze B2)
-    ad_copy = Column(Text)  # Main ad text
-    call_to_action = Column(String)  # Learn More, Sign Up, Buy Now, etc.
-    landing_page_url = Column(String)
-
-    # Campaign Social Media Links
-    campaign_socials = Column(JSON, default={})  # {"facebook": "url", "twitter": "url", etc.}
-
-    # Performance Grade
-    performance = Column(String, default="pending")  # excellent, good, average, poor, pending
-
-    # Platform Distribution
-    platforms = Column(JSON, default=[])  # web, mobile, social_media, etc.
-
-    # Timestamps
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    last_activity = Column(DateTime)
-
-    # Relationships
-    advertiser = relationship("AdvertiserProfile", back_populates="campaigns")
-
-# TutorStudentEnrollment and TutoringSession classes removed
-# These tables were conflicting with the whiteboard system
-# The whiteboard system uses:
-# - tutor_students table (for enrollments)
-# - whiteboard_sessions table (for actual sessions)
-
-class BlogPost(Base):
-    __tablename__ = "blog_posts"
-
-    id = Column(Integer, primary_key=True, index=True)
-    author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-
-    title = Column(String, nullable=False)
-    description = Column(Text)
-    content = Column(Text, nullable=False)
-    thumbnail_url = Column(String)
-    category = Column(String)
-
-    status = Column(String, default="draft")  # draft, published, under_review
-    views = Column(Integer, default=0)
-    likes = Column(Integer, default=0)
-
-    published_at = Column(DateTime)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    author = relationship("User")
 
 class VideoReel(Base):
     __tablename__ = "video_reels"
@@ -541,49 +368,9 @@ class VideoChapter(Base):
     video = relationship("VideoReel", back_populates="chapters")
 
 
-class SystemMedia(Base):
-    """
-    System-wide media files (images, videos) for platform use
-    Uploaded by admins for logos, covers, ads, alerts, etc.
-    """
-    __tablename__ = "system_media"
-
-    id = Column(Integer, primary_key=True, index=True)
-
-    # Media Type and Classification
-    media_type = Column(String, nullable=False)  # 'image' or 'video'
-    file_type = Column(String, nullable=False)  # For images: 'profile', 'cover', 'logo', 'favicon', 'system'
-                                                  # For videos: 'ad' or 'alert'
-
-    # For ads: classification (tutorial, course, success-story, tips-tricks, entertainment, news)
-    # For alerts: null
-    classification = Column(String, nullable=True)
-
-    # Target pages/profiles (JSON array: ['homepage', 'tutor', 'student', 'parent', etc.])
-    targets = Column(JSON, nullable=False)
-
-    # Media URLs
-    file_url = Column(String, nullable=False)  # Main file URL from B2
-    thumbnail_url = Column(String, nullable=True)  # For videos
-
-    # Metadata
-    title = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
-
-    # File info
-    file_name = Column(String, nullable=False)
-    file_size = Column(Integer, nullable=True)  # in bytes
-
-    # Status and visibility
-    is_active = Column(Boolean, default=True)
-
-    # Timestamps
-    uploaded_by = Column(Integer, ForeignKey('users.id'), nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Relationships
-    uploader = relationship("User", foreign_keys=[uploaded_by])
+# NOTE: SystemMedia table has been moved to astegni_admin_db
+# It is created via migrate_system_media_admin_db.py migration script
+# Access it through admin database endpoints, not SQLAlchemy models
 
 class Connection(Base):
     """
@@ -981,11 +768,16 @@ class ConnectionCreate(BaseModel):
     Create a new connection request - Simplified
 
     Fields:
-    - recipient_id: User ID to send connection request to (references users.id)
+    - recipient_id: User ID to send connection request to (references users.id) - DEPRECATED, use recipient_profile_id
+    - recipient_profile_id: Profile ID of the recipient (e.g., tutor profile ID) - PREFERRED
     - recipient_type: Role of the recipient ('tutor', 'student', 'parent', 'advertiser')
     - requester_type: Role the requester is connecting as (optional - auto-determined if not provided)
+
+    Note: Either recipient_id OR recipient_profile_id must be provided.
+    If recipient_profile_id is provided, the user_id will be looked up from the profile.
     """
-    recipient_id: int  # User ID to connect with
+    recipient_id: Optional[int] = None  # User ID to connect with (DEPRECATED)
+    recipient_profile_id: Optional[int] = None  # Profile ID (tutor_profiles.id, student_profiles.id, etc.) - PREFERRED
     recipient_type: str  # Role: 'tutor', 'student', 'parent', 'advertiser'
     requester_type: Optional[str] = None  # Role requester is connecting as (optional)
 
@@ -1003,6 +795,12 @@ class ConnectionCreate(BaseModel):
             if v not in allowed_types:
                 raise ValueError(f'requester_type must be one of {allowed_types}')
         return v
+
+    @model_validator(mode='after')
+    def check_recipient(self):
+        if not self.recipient_id and not self.recipient_profile_id:
+            raise ValueError('Either recipient_id or recipient_profile_id must be provided')
+        return self
 
 class ConnectionUpdate(BaseModel):
     """
@@ -1194,6 +992,7 @@ class ParentProfileUpdate(BaseModel):
     relationship_type: Optional[str] = None
     location: Optional[str] = None
     children_ids: Optional[List[int]] = None  # Array of student_profile.id
+    coparent_ids: Optional[List[int]] = None  # Array of co-parent user.id
     email: Optional[str] = None
     phone: Optional[str] = None
     profile_picture: Optional[str] = None
@@ -1211,62 +1010,19 @@ class ParentProfileResponse(BaseModel):
     relationship_type: Optional[str] = None
     location: Optional[str] = None
     children_ids: List[int] = []  # Array of student_profile.id
+    coparent_ids: List[int] = []  # Array of co-parent user.id
     email: Optional[str] = None
     phone: Optional[str] = None
-    total_children: int = 0
-    rating: float = 0.0
-    rating_count: int = 0
-    is_verified: bool = False
+    total_children: Optional[int] = 0
+    rating: Optional[float] = 0.0
+    rating_count: Optional[int] = 0
+    is_verified: Optional[bool] = False
     profile_picture: Optional[str] = None
     cover_image: Optional[str] = None
     hero_title: List[str] = []  # Array of hero title lines
     hero_subtitle: Optional[str] = None  # Single hero subtitle
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-
-class ChildProfileCreate(BaseModel):
-    name: str
-    date_of_birth: Optional[date] = None
-    gender: Optional[str] = None
-    grade: Optional[int] = None
-    school_name: Optional[str] = None
-    courses: Optional[List[str]] = []
-    profile_picture: Optional[str] = None
-
-class ChildProfileUpdate(BaseModel):
-    name: Optional[str] = None
-    date_of_birth: Optional[date] = None
-    gender: Optional[str] = None
-    grade: Optional[int] = None
-    school_name: Optional[str] = None
-    courses: Optional[List[str]] = None
-    progress: Optional[float] = None
-    current_tutor_id: Optional[int] = None
-    profile_picture: Optional[str] = None
-
-class ChildProfileResponse(BaseModel):
-    id: int
-    parent_id: int
-    name: str
-    date_of_birth: Optional[date] = None
-    gender: Optional[str] = None
-    grade: Optional[int] = None
-    school_name: Optional[str] = None
-    courses: List[str] = []
-    progress: float = 0.0
-    current_tutor_id: Optional[int] = None
-    next_session: Optional[datetime] = None
-    total_sessions: int = 0
-    completed_sessions: int = 0
-    total_hours: float = 0.0
-    attendance_rate: float = 0.0
-    profile_picture: Optional[str] = None
-    is_active: bool = True
-    created_at: datetime
-    updated_at: datetime
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -1326,52 +1082,30 @@ class ParentReviewResponse(BaseModel):
 
 class AdvertiserProfileUpdate(BaseModel):
     username: Optional[str] = None
-    company_name: Optional[str] = None
     bio: Optional[str] = None
     quote: Optional[str] = None
-    location: Optional[str] = None
-    website: Optional[str] = None
-    industry: Optional[str] = None
-    company_size: Optional[str] = None
+    location: Optional[List[str]] = None  # Array of locations
+    socials: Optional[dict] = None  # {"website": "", "facebook": "", "twitter": "", etc.}
     profile_picture: Optional[str] = None
     cover_image: Optional[str] = None
-    logo: Optional[str] = None
+    hero_title: Optional[List[str]] = None  # Array for multi-line hero title
+    hero_subtitle: Optional[List[str]] = None  # Array for multi-line hero subtitle
 
 class AdvertiserProfileResponse(BaseModel):
     id: int
     user_id: int
     username: Optional[str] = None
-    company_name: str
     bio: Optional[str] = None
     quote: Optional[str] = None
-    location: Optional[str] = None
-    website: Optional[str] = None
-    industry: Optional[str] = None
-    company_size: Optional[str] = None
+    location: Optional[List[str]] = []  # Array of locations
+    socials: Optional[dict] = {}  # Social links JSON
     profile_picture: Optional[str] = None
     cover_image: Optional[str] = None
-    logo: Optional[str] = None
-    total_campaigns: int = 0
-    active_campaigns: int = 0
-    total_impressions: int = 0
-    total_clicks: int = 0
-    total_conversions: int = 0
-    total_likes: int = 0
-    total_followers: int = 0
-    total_spent: float = 0.0
-    average_ctr: float = 0.0
-    average_conversion_rate: float = 0.0
-    success_rate: float = 0.0
-    rating: float = 0.0
-    rating_count: int = 0
+    hero_title: Optional[List[str]] = []  # Hero section title lines
+    hero_subtitle: Optional[List[str]] = []  # Hero section subtitle lines
     is_verified: bool = False
-    is_basic: bool = False
     is_active: bool = True
-    total_budget: float = 0.0
-    available_budget: float = 0.0
-    currency: str = "ETB"
-    created_at: datetime
-    updated_at: datetime
+    joined_in: Optional[date] = None
 
     class Config:
         from_attributes = True
@@ -1497,47 +1231,6 @@ class AdvertiserAnalyticsResponse(BaseModel):
 # SCHOOL MANAGEMENT MODELS
 # ============================================
 
-class RequestedSchool(Base):
-    """Schools awaiting approval"""
-    __tablename__ = 'requested_schools'
-
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, nullable=False)  # User who submitted the request
-    school_name = Column(String(255), nullable=False)
-    school_type = Column(String(100), nullable=False)  # Private, Government, International, Religious
-    level = Column(String(100), nullable=False)  # Elementary, High School, College, University (renamed from school_level)
-    location = Column(String(255))
-    school_email = Column(String(255))  # Renamed from email
-    school_phone = Column(String(50))  # Renamed from phone
-    status = Column(String(50), default='pending')  # pending, under_review
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-    # Properties for backward compatibility
-    @property
-    def school_level(self):
-        return self.level
-
-    @property
-    def email(self):
-        return self.school_email
-
-    @property
-    def phone(self):
-        return self.school_phone
-
-    @property
-    def submitted_date(self):
-        return self.created_at
-
-    @property
-    def documents(self):
-        return []  # Empty for now, can be added later
-
-    @property
-    def students_count(self):
-        return 0  # Default value
-
 class School(Base):
     """Verified/approved schools"""
     __tablename__ = 'schools'
@@ -1559,48 +1252,6 @@ class School(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-class RejectedSchool(Base):
-    """Schools that were rejected"""
-    __tablename__ = 'rejected_schools'
-
-    id = Column(Integer, primary_key=True, index=True)
-    school_name = Column(String(255), nullable=False)
-    school_type = Column(String(100), nullable=False)
-    school_level = Column(String(100), nullable=False)
-    location = Column(String(255), nullable=False)
-    email = Column(String(255), nullable=False)
-    phone = Column(String(50), nullable=False)
-    students_count = Column(Integer, default=0)
-    documents = Column(JSON)
-    rejection_reason = Column(Text, nullable=False)
-    rejected_date = Column(DateTime, default=datetime.utcnow)
-    original_request_id = Column(Integer)  # Reference to original request
-    status = Column(String(50), default='Rejected')
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-
-class SuspendedSchool(Base):
-    """Schools that are suspended"""
-    __tablename__ = 'suspended_schools'
-
-    id = Column(Integer, primary_key=True, index=True)
-    school_name = Column(String(255), nullable=False)
-    school_type = Column(String(100), nullable=False)
-    school_level = Column(String(100), nullable=False)
-    location = Column(String(255), nullable=False)
-    email = Column(String(255), nullable=False)
-    phone = Column(String(50), nullable=False)
-    students_count = Column(Integer, default=0)
-    rating = Column(Float, default=0.0)
-    established_year = Column(Integer)
-    principal = Column(String(255))
-    documents = Column(JSON)
-    suspension_reason = Column(Text, nullable=False)
-    suspended_date = Column(DateTime, default=datetime.utcnow)
-    original_school_id = Column(Integer)  # Reference to original school
-    status = Column(String(50), default='Suspended')
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
 # ============================================
 # PYDANTIC SCHEMAS FOR SCHOOLS
@@ -1614,19 +1265,6 @@ class SchoolBase(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     students_count: Optional[int] = 0
-
-class RequestedSchoolCreate(SchoolBase):
-    documents: Optional[List[Dict[str, Any]]] = []
-
-class RequestedSchoolResponse(SchoolBase):
-    id: int
-    documents: Optional[List[Dict[str, Any]]] = []
-    submitted_date: datetime
-    status: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class SchoolCreate(SchoolBase):
     rating: Optional[float] = 0.0
@@ -1659,30 +1297,6 @@ class SchoolResponse(SchoolBase):
     class Config:
         from_attributes = True
 
-class RejectedSchoolResponse(SchoolBase):
-    id: int
-    documents: Optional[List[Dict[str, Any]]] = []
-    rejection_reason: str
-    rejected_date: datetime
-    status: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-class SuspendedSchoolResponse(SchoolBase):
-    id: int
-    rating: float
-    established_year: Optional[int] = None
-    principal: Optional[str] = None
-    documents: Optional[List[Dict[str, Any]]] = []
-    suspension_reason: str
-    suspended_date: datetime
-    status: str
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class SchoolActionRequest(BaseModel):
     reason: Optional[str] = None
@@ -2400,11 +2014,11 @@ class StudentReview(Base):
     student_id = Column(Integer, ForeignKey('student_profiles.id'))
     reviewer_id = Column(Integer, ForeignKey('users.id'))
     reviewer_role = Column(String(50))
-    subject_matter_expertise = Column(Float)
+    subject_understanding = Column(Float)  # Matches DB column name
     communication_skills = Column(Float)
     discipline = Column(Float)
     punctuality = Column(Float)
-    class_activity = Column(Float)  # NEW: 5th behavioral category
+    class_activity = Column(Float)  # 5th behavioral category
     rating = Column(Float)  # Calculated as average of 5 categories
     review_title = Column(String(200))
     review_text = Column(Text)

@@ -2293,7 +2293,7 @@ async function fetchConnectionsFromAPI() {
             return getConnectionsData();
         }
 
-        const response = await fetch('https://api.astegni.com/api/connections/my', {
+        const response = await fetch('http://localhost:8000/api/connections/my', {
             headers: {
                 'Authorization': 'Bearer ' + token
             }
@@ -2699,7 +2699,7 @@ async function searchEvents(query) {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-        const response = await fetch('https://api.astegni.com/api/events?status_filter=upcoming', {
+        const response = await fetch('http://localhost:8000/api/events?status_filter=upcoming', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -2803,7 +2803,7 @@ async function searchClubs(query) {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-        const response = await fetch('https://api.astegni.com/api/clubs?status_filter=active', {
+        const response = await fetch('http://localhost:8000/api/clubs?status_filter=active', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -3041,7 +3041,7 @@ async function loadEventsSection() {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-        const response = await fetch('https://api.astegni.com/api/events?status_filter=upcoming', {
+        const response = await fetch('http://localhost:8000/api/events?status_filter=upcoming', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -3143,7 +3143,7 @@ async function loadClubsSection() {
         const token = localStorage.getItem('token');
         const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
-        const response = await fetch('https://api.astegni.com/api/clubs?status_filter=active', {
+        const response = await fetch('http://localhost:8000/api/clubs?status_filter=active', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -4383,8 +4383,8 @@ console.log('=== END DEBUG ===');
         }
 
         const url = isEdit
-            ? `https://api.astegni.com/api/tutor/schedules/${scheduleId}`
-            : 'https://api.astegni.com/api/tutor/schedules';
+            ? `http://localhost:8000/api/tutor/schedules/${scheduleId}`
+            : 'http://localhost:8000/api/tutor/schedules';
 
         const method = isEdit ? 'PUT' : 'POST';
 
@@ -5190,7 +5190,12 @@ async function loadSchedules(page = 1) {
             </div>
         `;
 
-        const token = localStorage.getItem('token');
+        // Wait for auth to be ready before checking token
+        if (window.TutorAuthReady) {
+            await window.TutorAuthReady.waitForAuth();
+        }
+
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             container.innerHTML = `
                 <div class="text-center py-8 text-gray-500">
@@ -5201,7 +5206,7 @@ async function loadSchedules(page = 1) {
             return;
         }
 
-        const response = await fetch('https://api.astegni.com/api/tutor/schedules', {
+        const response = await fetch('http://localhost:8000/api/tutor/schedules', {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -5438,7 +5443,7 @@ async function viewSchedule(scheduleId) {
             throw new Error('Please log in to view schedule details');
         }
 
-        const response = await fetch(`https://api.astegni.com/api/schedules/${scheduleId}`, {
+        const response = await fetch(`http://localhost:8000/api/schedules/${scheduleId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -5597,13 +5602,18 @@ async function viewSession(sessionId) {
     // For now, show an alert with session details
     // TODO: Create a proper view session modal similar to viewScheduleModal
     try {
-        const token = localStorage.getItem('token');
+        // Wait for auth to be ready before checking token
+        if (window.TutorAuthReady) {
+            await window.TutorAuthReady.waitForAuth();
+        }
+
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             alert('Please log in to view session details');
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/tutor/sessions/${sessionId}`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/sessions/${sessionId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -5676,7 +5686,7 @@ async function editScheduleFromView() {
         console.log('📡 Fetching schedule details...');
 
         // Fetch the schedule details again to ensure we have the latest data
-        const response = await fetch(`https://api.astegni.com/api/tutor/schedules/${scheduleIdToEdit}`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${scheduleIdToEdit}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -5846,7 +5856,7 @@ async function deleteScheduleFromView() {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/tutor/schedules/${currentViewingScheduleId}`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${currentViewingScheduleId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -6059,7 +6069,7 @@ async function toggleScheduleNotification(scheduleId, enable) {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/tutor/schedules/${scheduleId}/toggle-notification`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${scheduleId}/toggle-notification`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -6093,7 +6103,7 @@ async function toggleScheduleAlarm(scheduleId, enable) {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/tutor/schedules/${scheduleId}/toggle-alarm`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${scheduleId}/toggle-alarm`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -6127,7 +6137,7 @@ async function toggleScheduleFeatured(scheduleId, feature) {
             return;
         }
 
-        const response = await fetch(`https://api.astegni.com/api/tutor/schedules/${scheduleId}/toggle-featured`, {
+        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${scheduleId}/toggle-featured`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -6177,7 +6187,7 @@ async function loadStudentReviews(studentProfileId) {
         }
 
         // Fetch review stats
-        const statsResponse = await fetch(`https://api.astegni.com/api/student/reviews/${studentProfileId}/stats`, {
+        const statsResponse = await fetch(`http://localhost:8000/api/student/reviews/${studentProfileId}/stats`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -6213,7 +6223,7 @@ async function loadStudentReviews(studentProfileId) {
         }
 
         // Fetch reviews
-        const reviewsResponse = await fetch(`https://api.astegni.com/api/student/reviews/${studentProfileId}?limit=20`, {
+        const reviewsResponse = await fetch(`http://localhost:8000/api/student/reviews/${studentProfileId}?limit=20`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -6449,7 +6459,7 @@ async function submitStudentReview() {
 
         console.log('Submitting review:', reviewData);
 
-        const response = await fetch(`https://api.astegni.com/api/student/reviews/${currentStudentForReview.student_profile_id}`, {
+        const response = await fetch(`http://localhost:8000/api/student/reviews/${currentStudentForReview.student_profile_id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -6504,38 +6514,131 @@ window.viewParentProfile = viewParentProfile;
 // ============================================
 
 // Current filter state for tutor requests
-let currentTutorRequestType = 'schools';
+let currentTutorRequestType = 'courses';
 let currentTutorRequestStatus = 'all';
 
-// Filter by request type (schools, tutors)
+// Filter by request type (courses, schools, sessions, parenting)
 function filterTutorRequestType(type) {
     currentTutorRequestType = type;
 
-    // Update card active states
-    const cards = document.querySelectorAll('#requested-sessions-panel .request-type-card');
+    // Update card active states - check both panels
+    const cards = document.querySelectorAll('#requests-panel .request-type-card, #requested-sessions-panel .request-type-card');
     cards.forEach(card => {
         card.classList.remove('active');
+        card.style.borderColor = 'var(--border-color)';
+        card.style.background = 'var(--card-bg)';
         if (card.dataset.type === type) {
             card.classList.add('active');
+            card.style.borderColor = 'var(--primary-color)';
+            card.style.background = 'rgba(139, 92, 246, 0.05)';
         }
     });
+
+    // Get tab elements
+    const statusTabs = document.querySelector('.status-tabs');
+    const parentingTabs = document.getElementById('parenting-direction-tabs');
+
+    // Handle parenting invitations separately
+    if (type === 'parenting') {
+        // Hide status tabs and show parenting direction tabs
+        if (statusTabs) statusTabs.style.display = 'none';
+        if (parentingTabs) {
+            parentingTabs.classList.remove('hidden');
+            parentingTabs.style.display = 'flex';
+        }
+
+        // Use ParentingInvitationManager if available
+        if (typeof ParentingInvitationManager !== 'undefined' && ParentingInvitationManager.loadParentingInvitations) {
+            // Default to 'invited' tab
+            currentParentingDirection = 'invited';
+            ParentingInvitationManager.loadParentingInvitations();
+
+            // Update both tab badge counts
+            ParentingInvitationManager.updateInvitationCount();
+        } else {
+            const container = document.getElementById('tutor-requests-list');
+            if (container) {
+                container.innerHTML = `
+                    <div class="card p-6 text-center text-gray-500">
+                        <i class="fas fa-users text-3xl mb-3"></i>
+                        <p>Parenting invitations will appear here</p>
+                        <p class="text-sm mt-2">When students invite you as their parent, you'll see the requests here</p>
+                    </div>
+                `;
+            }
+        }
+        return;
+    }
+
+    // Show status tabs and hide parenting tabs for other types
+    if (statusTabs) statusTabs.style.display = 'flex';
+    if (parentingTabs) {
+        parentingTabs.classList.add('hidden');
+        parentingTabs.style.display = 'none';
+    }
 
     // Load requests based on type and status
     loadTutorRequests();
 }
 
+// Track current parenting direction (invited or invites)
+let currentParentingDirection = 'invited';
+
+// Filter parenting invitations by direction (invited = received, invites = sent)
+function filterParentingDirection(direction) {
+    currentParentingDirection = direction;
+
+    // Update tab active states
+    const tabs = document.querySelectorAll('.parenting-tab');
+    tabs.forEach(tab => {
+        if (tab.dataset.direction === direction) {
+            tab.style.color = 'var(--primary-color)';
+            tab.style.fontWeight = '500';
+            tab.style.borderBottom = '2px solid var(--primary-color)';
+        } else {
+            tab.style.color = 'var(--text-secondary)';
+            tab.style.fontWeight = '400';
+            tab.style.borderBottom = '2px solid transparent';
+        }
+    });
+
+    // Load appropriate invitations
+    if (typeof ParentingInvitationManager !== 'undefined') {
+        if (direction === 'invited') {
+            ParentingInvitationManager.loadParentingInvitations();
+        } else {
+            ParentingInvitationManager.loadSentInvitations();
+        }
+    }
+}
+
+// Make function globally accessible
+window.filterParentingDirection = filterParentingDirection;
+
 // Filter by request status (all, pending, accepted, rejected)
 function filterTutorRequestStatus(status) {
     currentTutorRequestStatus = status;
 
-    // Update tab active states
-    const tabs = document.querySelectorAll('#requested-sessions-panel .status-tab');
+    // Update tab active states - check both panels
+    const tabs = document.querySelectorAll('#requests-panel .status-tab, #requested-sessions-panel .status-tab');
     tabs.forEach(tab => {
         tab.classList.remove('active');
+        tab.style.color = 'var(--text-secondary)';
+        tab.style.fontWeight = '400';
+        tab.style.borderBottom = 'none';
         if (tab.dataset.status === status) {
             tab.classList.add('active');
+            tab.style.color = 'var(--primary-color)';
+            tab.style.fontWeight = '600';
+            tab.style.borderBottom = '2px solid var(--primary-color)';
         }
     });
+
+    // For sessions, use SessionRequestManager if available
+    if (currentTutorRequestType === 'sessions' && typeof SessionRequestManager !== 'undefined') {
+        SessionRequestManager.loadRequests(status === 'all' ? null : status);
+        return;
+    }
 
     // Load requests based on type and status
     loadTutorRequests();
@@ -6554,7 +6657,12 @@ async function loadTutorRequests() {
     `;
 
     try {
-        const token = localStorage.getItem('token');
+        // Wait for auth to be ready before checking token
+        if (window.TutorAuthReady) {
+            await window.TutorAuthReady.waitForAuth();
+        }
+
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             container.innerHTML = `
                 <div class="card p-8 text-center">
@@ -6565,10 +6673,20 @@ async function loadTutorRequests() {
             return;
         }
 
-        // TODO: Replace with actual API endpoint when backend is ready
-        // For now, show sample data
-        const sampleRequests = getSampleTutorRequests(currentTutorRequestType, currentTutorRequestStatus);
-        renderTutorRequests(sampleRequests);
+        // For courses, fetch from API
+        if (currentTutorRequestType === 'courses') {
+            await loadTutorCourseRequests(token);
+        } else if (currentTutorRequestType === 'schools') {
+            // For schools, fetch from API
+            await loadTutorSchoolRequests(token);
+        } else if (currentTutorRequestType === 'sessions' && typeof SessionRequestManager !== 'undefined') {
+            // For sessions, use SessionRequestManager
+            SessionRequestManager.loadRequests(currentTutorRequestStatus === 'all' ? null : currentTutorRequestStatus);
+        } else {
+            // For other types, use sample data for now
+            const sampleRequests = getSampleTutorRequests(currentTutorRequestType, currentTutorRequestStatus);
+            renderTutorRequests(sampleRequests);
+        }
 
     } catch (error) {
         console.error('Error loading tutor requests:', error);
@@ -6576,6 +6694,129 @@ async function loadTutorRequests() {
             <div class="card p-8 text-center">
                 <i class="fas fa-exclamation-triangle text-5xl text-red-300 mb-4"></i>
                 <p class="text-gray-600">Failed to load requests. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+// Load course requests from API
+async function loadTutorCourseRequests(token) {
+    const container = document.getElementById('tutor-requests-list');
+    const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:8000';
+
+    try {
+        const response = await fetch(`${API_BASE}/api/tutor/packages/course-requests`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        let courses = data.courses || [];
+
+        // Filter by status if not 'all'
+        if (currentTutorRequestStatus !== 'all') {
+            // Map 'accepted' tab to 'verified' status in database
+            const statusToFilter = currentTutorRequestStatus === 'accepted' ? 'verified' : currentTutorRequestStatus;
+            courses = courses.filter(c => c.status === statusToFilter);
+        }
+
+        // Transform to display format
+        const courseRequests = courses.map(course => ({
+            id: course.id,
+            name: course.course_name,
+            type: `${course.course_category} • ${course.course_level || 'All Levels'}`,
+            status: course.status === 'verified' ? 'accepted' : course.status,
+            date: course.created_at ? new Date(course.created_at).toLocaleDateString() : 'N/A',
+            icon: '📚',
+            description: course.course_description,
+            duration: course.duration,
+            lessons: course.lessons,
+            thumbnail: course.thumbnail,
+            languages: course.language || ['English'],
+            statusReason: course.status_reason,
+            requestId: course.request_id
+        }));
+
+        renderTutorRequests(courseRequests);
+
+    } catch (error) {
+        console.error('Error loading course requests:', error);
+        container.innerHTML = `
+            <div class="card p-8 text-center">
+                <i class="fas fa-exclamation-triangle text-5xl text-red-300 mb-4"></i>
+                <p class="text-gray-600">Failed to load course requests. Please try again.</p>
+                <p class="text-xs text-gray-400 mt-2">${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// Load school requests from API
+async function loadTutorSchoolRequests(token) {
+    const container = document.getElementById('tutor-requests-list');
+    const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:8000';
+
+    try {
+        // Map frontend status to database status
+        let statusParam = '';
+        if (currentTutorRequestStatus !== 'all') {
+            // Map 'accepted' tab to 'verified' status in database
+            statusParam = currentTutorRequestStatus === 'accepted' ? 'verified' : currentTutorRequestStatus;
+        }
+
+        const url = statusParam
+            ? `${API_BASE}/api/tutor/schools?status=${statusParam}`
+            : `${API_BASE}/api/tutor/schools`;
+
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        let schools = data.schools || [];
+
+        // Transform to display format
+        const schoolRequests = schools.map(school => ({
+            id: school.id,
+            name: school.name || school.school_name,
+            type: `${school.type || school.school_type || 'School'} • ${school.level || school.school_level || 'All Levels'}`,
+            status: school.status === 'verified' ? 'accepted' : school.status,
+            date: school.created_at ? new Date(school.created_at).toLocaleDateString() : 'N/A',
+            icon: '🏫',
+            location: school.location || 'N/A',
+            email: school.email || '',
+            phone: school.phone || '',
+            rating: school.rating || 0,
+            student_count: school.student_count || 0,
+            established_year: school.established_year,
+            principal: school.principal || '',
+            statusReason: school.status_reason
+        }));
+
+        renderTutorRequests(schoolRequests);
+
+    } catch (error) {
+        console.error('Error loading school requests:', error);
+        container.innerHTML = `
+            <div class="card p-8 text-center">
+                <i class="fas fa-exclamation-triangle text-5xl text-red-300 mb-4"></i>
+                <p class="text-gray-600">Failed to load school requests. Please try again.</p>
+                <p class="text-xs text-gray-400 mt-2">${error.message}</p>
             </div>
         `;
     }
@@ -6609,12 +6850,31 @@ function renderTutorRequests(requests) {
     if (!container) return;
 
     if (requests.length === 0) {
+        const emptyMessage = currentTutorRequestType === 'courses'
+            ? `<p class="text-gray-600 mb-4">No course requests found</p>
+               <button onclick="openCourseRequestModal()" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+                   <i class="fas fa-plus mr-2"></i>Request New Course
+               </button>`
+            : `<p class="text-gray-600">No ${currentTutorRequestType} requests found</p>`;
+
         container.innerHTML = `
             <div class="card p-8 text-center">
                 <i class="fas fa-inbox text-5xl text-gray-300 mb-4"></i>
-                <p class="text-gray-600">No ${currentTutorRequestType} requests found</p>
+                ${emptyMessage}
             </div>
         `;
+        return;
+    }
+
+    // For courses, use enhanced card layout
+    if (currentTutorRequestType === 'courses') {
+        renderCourseRequests(requests);
+        return;
+    }
+
+    // For schools, use enhanced card layout with location and details
+    if (currentTutorRequestType === 'schools') {
+        renderSchoolRequests(requests);
         return;
     }
 
@@ -6660,6 +6920,199 @@ function renderTutorRequests(requests) {
 
     container.innerHTML = requestsHtml;
 }
+
+// Render school requests with enhanced card layout
+function renderSchoolRequests(schools) {
+    const container = document.getElementById('tutor-requests-list');
+
+    const schoolsHtml = schools.map(school => {
+        // Status-specific styles and icons
+        const statusConfig = {
+            pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300', icon: '⏳' },
+            accepted: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300', icon: '✅' },
+            verified: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300', icon: '✅' },
+            rejected: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-300', icon: '❌' },
+            suspended: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-300', icon: '⚠️' }
+        };
+        const status = statusConfig[school.status] || statusConfig.pending;
+
+        // Rating display
+        const ratingHtml = school.rating > 0
+            ? `<div class="flex items-center gap-1 text-yellow-500">
+                   <i class="fas fa-star"></i>
+                   <span class="text-sm font-medium">${school.rating.toFixed(1)}</span>
+               </div>`
+            : '';
+
+        // Student count
+        const studentCountHtml = school.student_count > 0
+            ? `<span class="text-xs text-gray-500"><i class="fas fa-users mr-1"></i>${school.student_count} students</span>`
+            : '';
+
+        // Status reason (for rejected schools)
+        const statusReasonHtml = school.status === 'rejected' && school.statusReason
+            ? `<p class="text-xs text-red-600 mt-2"><i class="fas fa-info-circle mr-1"></i>${school.statusReason}</p>`
+            : '';
+
+        return `
+            <div class="card p-4 mb-4 hover:shadow-md transition border-l-4 ${status.border}" style="border-left-width: 4px;">
+                <div class="flex items-start gap-4">
+                    <div class="text-4xl">${school.icon}</div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1 flex-wrap">
+                            <h4 class="font-bold text-lg">${school.name}</h4>
+                            ${ratingHtml}
+                        </div>
+                        <p class="text-sm text-gray-600 mb-1">${school.type}</p>
+                        ${school.location && school.location !== 'N/A' ? `
+                            <p class="text-sm text-gray-500 mb-1">
+                                <i class="fas fa-map-marker-alt mr-1 text-red-400"></i>${school.location}
+                            </p>
+                        ` : ''}
+                        <div class="flex items-center gap-3 flex-wrap text-xs text-gray-500 mt-2">
+                            ${studentCountHtml}
+                            ${school.established_year ? `<span><i class="fas fa-calendar mr-1"></i>Est. ${school.established_year}</span>` : ''}
+                            ${school.principal ? `<span><i class="fas fa-user-tie mr-1"></i>${school.principal}</span>` : ''}
+                        </div>
+                        ${statusReasonHtml}
+                        <p class="text-xs text-gray-400 mt-2">Added: ${school.date}</p>
+                    </div>
+                    <div class="flex flex-col items-end gap-2">
+                        <span class="px-3 py-1 rounded-full text-sm font-medium ${status.bg} ${status.text}">
+                            ${status.icon} ${school.status.charAt(0).toUpperCase() + school.status.slice(1)}
+                        </span>
+                        <button onclick="viewSchoolDetails(${school.id})"
+                            class="px-3 py-1 bg-blue-500 text-white rounded-lg text-xs font-medium hover:bg-blue-600 transition">
+                            <i class="fas fa-eye mr-1"></i>View
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = schoolsHtml;
+}
+
+// View school details modal
+function viewSchoolDetails(schoolId) {
+    // TODO: Implement school details modal
+    console.log('View school details:', schoolId);
+    alert(`School details for ID: ${schoolId}\n\nThis feature will show detailed school information in a modal.`);
+}
+
+// Make school functions globally accessible
+window.viewSchoolDetails = viewSchoolDetails;
+
+// Render course requests with enhanced card layout
+function renderCourseRequests(courses) {
+    const container = document.getElementById('tutor-requests-list');
+
+    const coursesHtml = courses.map(course => {
+        // Status-specific styles and icons
+        const statusConfig = {
+            pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300', icon: '⏳' },
+            accepted: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300', icon: '✅' },
+            verified: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300', icon: '✅' },
+            rejected: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-300', icon: '❌' }
+        };
+        const status = statusConfig[course.status] || statusConfig.pending;
+
+        // Thumbnail or placeholder
+        const thumbnailHtml = course.thumbnail
+            ? `<img src="${course.thumbnail}" alt="${course.name}" class="w-full h-32 object-cover rounded-t-lg">`
+            : `<div class="w-full h-32 bg-gradient-to-br from-blue-400 to-blue-600 rounded-t-lg flex items-center justify-center">
+                   <i class="fas fa-book-open text-white text-4xl opacity-50"></i>
+               </div>`;
+
+        // Languages display
+        const languagesHtml = (course.languages || ['English']).map(lang =>
+            `<span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">${lang}</span>`
+        ).join('');
+
+        // Status reason (for rejected courses)
+        const statusReasonHtml = course.status === 'rejected' && course.statusReason
+            ? `<p class="text-xs text-red-600 mt-2"><i class="fas fa-info-circle mr-1"></i>${course.statusReason}</p>`
+            : '';
+
+        // Delete button for pending courses
+        const deleteButton = course.status === 'pending'
+            ? `<button onclick="deleteCourseRequest(${course.id})"
+                       class="text-red-500 hover:text-red-700 p-1" title="Delete request">
+                   <i class="fas fa-trash-alt"></i>
+               </button>`
+            : '';
+
+        return `
+            <div class="card overflow-hidden hover:shadow-lg transition-shadow duration-300 border ${status.border}" style="border-width: 2px;">
+                ${thumbnailHtml}
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-lg text-gray-800 line-clamp-1">${course.name}</h4>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-1 rounded-full text-xs font-semibold ${status.bg} ${status.text}">
+                                ${status.icon} ${course.status.charAt(0).toUpperCase() + course.status.slice(1)}
+                            </span>
+                            ${deleteButton}
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-2">${course.type}</p>
+                    ${course.description ? `<p class="text-xs text-gray-500 line-clamp-2 mb-2">${course.description}</p>` : ''}
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        ${languagesHtml}
+                    </div>
+                    <div class="flex items-center justify-between text-xs text-gray-500">
+                        <span><i class="fas fa-clock mr-1"></i>${course.duration || 0}h • ${course.lessons || 0} lessons</span>
+                        <span><i class="fas fa-calendar mr-1"></i>${course.date}</span>
+                    </div>
+                    ${statusReasonHtml}
+                    ${course.requestId ? `<p class="text-xs text-gray-400 mt-2">ID: ${course.requestId}</p>` : ''}
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Wrap in a grid
+    container.innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            ${coursesHtml}
+        </div>
+    `;
+}
+
+// Delete course request
+async function deleteCourseRequest(courseId) {
+    if (!confirm('Are you sure you want to delete this course request? This action cannot be undone.')) {
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem('token');
+        const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:8000';
+
+        const response = await fetch(`${API_BASE}/api/tutor/packages/course-request/${courseId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            alert('Course request deleted successfully');
+            loadTutorRequests(); // Refresh the list
+        } else {
+            const error = await response.json();
+            alert(`Failed to delete: ${error.detail || 'Unknown error'}`);
+        }
+    } catch (error) {
+        console.error('Error deleting course request:', error);
+        alert('Failed to delete course request. Please try again.');
+    }
+}
+
+// Make delete function globally accessible
+window.deleteCourseRequest = deleteCourseRequest;
 
 // View session request details - opens the modal with accept/reject options
 function viewSessionRequestDetails(requestId) {
@@ -6854,10 +7307,23 @@ function getTutorStatusClass(status) {
 
 // Initialize tutor requests panel on load
 document.addEventListener('DOMContentLoaded', function() {
-    // Check if requested-sessions-panel exists
+    // Check for requests-panel (main requests panel in tutor-profile)
+    const mainRequestsPanel = document.getElementById('requests-panel');
+    if (mainRequestsPanel) {
+        // Load initial requests when panel becomes visible
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (!mainRequestsPanel.classList.contains('hidden')) {
+                    loadTutorRequests();
+                }
+            });
+        });
+        observer.observe(mainRequestsPanel, { attributes: true, attributeFilter: ['class'] });
+    }
+
+    // Also check for requested-sessions-panel (legacy support)
     const requestsPanel = document.getElementById('requested-sessions-panel');
     if (requestsPanel) {
-        // Load initial requests when panel becomes visible
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (!requestsPanel.classList.contains('hidden')) {

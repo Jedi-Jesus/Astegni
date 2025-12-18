@@ -13,6 +13,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Use ADMIN_DATABASE_URL for admin tables (astegni_admin_db)
+ADMIN_DATABASE_URL = os.getenv(
+    'ADMIN_DATABASE_URL',
+    'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db'
+)
+
 # Create router
 router = APIRouter(prefix="/api/admin-reviews", tags=["admin-reviews"])
 
@@ -59,8 +65,8 @@ class AdminStatsResponse(BaseModel):
 # ============================================
 
 def get_db_connection():
-    """Get database connection"""
-    database_url = os.getenv("DATABASE_URL", "postgresql://astegni_user:Astegni2025@localhost:5432/astegni_db")
+    """Get admin database connection (astegni_admin_db)"""
+    database_url = ADMIN_DATABASE_URL
 
     if database_url.startswith("postgresql://"):
         database_url = database_url.replace("postgresql://", "")

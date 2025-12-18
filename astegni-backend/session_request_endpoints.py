@@ -101,6 +101,8 @@ class SessionRequestCreate(BaseModel):
     package_id: Optional[int] = None
     message: Optional[str] = None
     preferred_schedule: Optional[str] = None  # Legacy text field
+    # Student the request is for (when parent requests on behalf of child)
+    requested_to_id: Optional[int] = None  # student_profiles.id when parent requests for child
     # New schedule fields
     schedule_type: Optional[Literal['recurring', 'specific_dates']] = None
     year_range: Optional[List[int]] = None  # e.g. [2024, 2025]
@@ -118,6 +120,8 @@ class SessionRequestResponse(BaseModel):
     requester_type: str
     requester_name: Optional[str] = None
     requester_profile_picture: Optional[str] = None
+    requested_to_id: Optional[int] = None  # student_profiles.id when parent requests for child
+    requested_to_name: Optional[str] = None  # Student name when parent requests for child
     package_id: Optional[int] = None
     package_name: Optional[str] = None  # Fetched via JOIN from tutor_packages
     status: str
@@ -150,7 +154,8 @@ class SessionRequestUpdate(BaseModel):
 
 class MyStudent(BaseModel):
     id: int
-    student_id: int
+    student_id: int  # student_profiles.id
+    student_user_id: int  # users.id for chat/messaging
     student_name: str
     student_grade: str
     profile_picture: Optional[str] = None
@@ -170,6 +175,7 @@ async def create_session_request(
 ):
     """
     Create a new session request (for students/parents requesting tutoring)
+    Also creates a chat conversation and sends a session_request message with package card
     """
     conn = psycopg.connect(DATABASE_URL)
     cur = conn.cursor()
@@ -178,58 +184,209 @@ async def create_session_request(
         # Get active role and role-specific IDs from JWT
         active_role = current_user.get('active_role')
         role_ids = current_user.get('role_ids', {})
+        user_id = current_user.get('id')
 
         # Determine requester type and get role-specific ID
+        # Also determine requested_to_id (the student the session is for)
+        requested_to_id = request.requested_to_id  # From request body (parent specifies child)
+
         if active_role == 'student':
             requester_type = 'student'
             requester_id = role_ids.get('student')
             if not requester_id:
                 raise HTTPException(status_code=400, detail="Student profile not found. Please complete your student profile first.")
+            # Student requests for themselves - set requested_to_id to their own profile
+            requester_id = int(requester_id) if isinstance(requester_id, str) else requester_id
+            requested_to_id = requester_id  # Student is requesting for themselves
         elif active_role == 'parent':
             requester_type = 'parent'
             requester_id = role_ids.get('parent')
             if not requester_id:
                 raise HTTPException(status_code=400, detail="Parent profile not found. Please complete your parent profile first.")
+            # Parent must specify which child the session is for
+            requester_id = int(requester_id) if isinstance(requester_id, str) else requester_id
+            if requested_to_id:
+                requested_to_id = int(requested_to_id) if isinstance(requested_to_id, str) else requested_to_id
         else:
             raise HTTPException(status_code=403, detail="Only students and parents can request tutoring sessions")
 
-        # Convert requester_id to integer (JWT stores as string)
-        requester_id = int(requester_id) if isinstance(requester_id, str) else requester_id
+        # Get tutor's user_id for chat conversation
+        cur.execute("""
+            SELECT user_id FROM tutor_profiles WHERE id = %s
+        """, (request.tutor_id,))
+        tutor_row = cur.fetchone()
+        if not tutor_row:
+            raise HTTPException(status_code=404, detail="Tutor not found")
+        tutor_user_id = tutor_row[0]
+
+        # If package_id is provided and schedule fields are not filled, use package defaults
+        package_schedule_type = request.schedule_type
+        package_days = request.days
+        package_start_time = request.start_time
+        package_end_time = request.end_time
+
+        if request.package_id:
+            # Fetch package schedule details
+            cur.execute("""
+                SELECT schedule_type, schedule_days, start_time, end_time
+                FROM tutor_packages WHERE id = %s
+            """, (request.package_id,))
+            pkg_row = cur.fetchone()
+
+            if pkg_row:
+                # Use package defaults if user didn't provide schedule preferences
+                if not package_schedule_type and pkg_row[0]:
+                    package_schedule_type = pkg_row[0]
+
+                if not package_days and pkg_row[1]:
+                    # schedule_days could be JSON string, comma-separated, or array
+                    pkg_days = pkg_row[1]
+                    if isinstance(pkg_days, str):
+                        try:
+                            package_days = json.loads(pkg_days) if pkg_days.startswith('[') else pkg_days.split(',')
+                        except:
+                            package_days = [pkg_days] if pkg_days else None
+                    elif isinstance(pkg_days, list):
+                        package_days = pkg_days
+
+                if not package_start_time and pkg_row[2]:
+                    package_start_time = str(pkg_row[2])[:5] if pkg_row[2] else None
+
+                if not package_end_time and pkg_row[3]:
+                    package_end_time = str(pkg_row[3])[:5] if pkg_row[3] else None
 
         # Convert JSON fields for PostgreSQL
         year_range_json = json.dumps(request.year_range) if request.year_range else None
         months_json = json.dumps(request.months) if request.months else None
-        days_json = json.dumps(request.days) if request.days else None
+        days_json = json.dumps(package_days) if package_days else None
         specific_dates_json = json.dumps(request.specific_dates) if request.specific_dates else None
 
         # Insert session request with role-specific ID and schedule fields
+        # Uses package defaults if user didn't provide schedule preferences
+        # requested_to_id is the student profile ID (self for students, child for parents)
         cur.execute("""
             INSERT INTO requested_sessions (
                 tutor_id, requester_id, requester_type, package_id,
-                message, preferred_schedule, status,
+                message, preferred_schedule, status, requested_to_id,
                 schedule_type, year_range, months, days, specific_dates,
                 start_time, end_time
             ) VALUES (
-                %s, %s, %s, %s, %s, %s, 'pending',
+                %s, %s, %s, %s, %s, %s, 'pending', %s,
                 %s, %s, %s, %s, %s, %s, %s
             ) RETURNING id, created_at
         """, (
             request.tutor_id, requester_id, requester_type,
             request.package_id, request.message, request.preferred_schedule,
-            request.schedule_type, year_range_json, months_json, days_json,
-            specific_dates_json, request.start_time, request.end_time
+            requested_to_id,  # Use local variable (auto-set for students, from request for parents)
+            package_schedule_type, year_range_json, months_json, days_json,
+            specific_dates_json, package_start_time, package_end_time
         ))
 
-        result = cur.fetchone()
+        session_result = cur.fetchone()
+        session_request_id = session_result[0]
+        created_at = session_result[1]
+
+        # =============================================
+        # CREATE OR GET CHAT CONVERSATION
+        # =============================================
+
+        # Check if a direct conversation already exists between requester and tutor
+        cur.execute("""
+            SELECT c.id FROM conversations c
+            JOIN conversation_participants cp1 ON c.id = cp1.conversation_id
+            JOIN conversation_participants cp2 ON c.id = cp2.conversation_id
+            WHERE c.type = 'direct'
+            AND cp1.profile_id = %s AND cp1.profile_type = %s
+            AND cp2.profile_id = %s AND cp2.profile_type = 'tutor'
+            LIMIT 1
+        """, (requester_id, requester_type, request.tutor_id))
+
+        existing_conv = cur.fetchone()
+
+        if existing_conv:
+            conversation_id = existing_conv[0]
+        else:
+            # Create new conversation
+            cur.execute("""
+                INSERT INTO conversations (
+                    type, created_by_profile_id, created_by_profile_type, created_at, updated_at
+                ) VALUES ('direct', %s, %s, NOW(), NOW())
+                RETURNING id
+            """, (requester_id, requester_type))
+            conversation_id = cur.fetchone()[0]
+
+            # Add requester as participant
+            cur.execute("""
+                INSERT INTO conversation_participants (
+                    conversation_id, profile_id, profile_type, user_id, role, is_active, joined_at, created_at, updated_at
+                ) VALUES (%s, %s, %s, %s, 'member', true, NOW(), NOW(), NOW())
+            """, (conversation_id, requester_id, requester_type, user_id))
+
+            # Add tutor as participant
+            cur.execute("""
+                INSERT INTO conversation_participants (
+                    conversation_id, profile_id, profile_type, user_id, role, is_active, joined_at, created_at, updated_at
+                ) VALUES (%s, %s, 'tutor', %s, 'member', true, NOW(), NOW(), NOW())
+            """, (conversation_id, request.tutor_id, tutor_user_id))
+
+        # =============================================
+        # CREATE SESSION REQUEST MESSAGE WITH PACKAGE CARD
+        # =============================================
+
+        # Build message metadata with session request and package info
+        # Uses package defaults if user didn't provide schedule preferences
+        message_metadata = {
+            "session_request_id": session_request_id,
+            "package_id": request.package_id,
+            "tutor_id": request.tutor_id,
+            "requester_type": requester_type,
+            "status": "pending",
+            "schedule_type": package_schedule_type,
+            "year_range": request.year_range,
+            "months": request.months,
+            "days": package_days,
+            "specific_dates": request.specific_dates,
+            "start_time": package_start_time,
+            "end_time": package_end_time
+        }
+
+        # The content will be the optional message from the user (or empty)
+        message_content = request.message or ""
+
+        # Insert session_request message
+        cur.execute("""
+            INSERT INTO chat_messages (
+                conversation_id, sender_profile_id, sender_profile_type, sender_user_id,
+                message_type, content, media_metadata, created_at, updated_at
+            ) VALUES (%s, %s, %s, %s, 'session_request', %s, %s, NOW(), NOW())
+            RETURNING id
+        """, (
+            conversation_id, requester_id, requester_type, user_id,
+            message_content, json.dumps(message_metadata)
+        ))
+
+        message_id = cur.fetchone()[0]
+
+        # Update conversation's last_message_at
+        cur.execute("""
+            UPDATE conversations SET last_message_at = NOW(), updated_at = NOW()
+            WHERE id = %s
+        """, (conversation_id,))
+
         conn.commit()
 
         return {
             "success": True,
             "message": "Session request sent successfully",
-            "request_id": result[0],
-            "created_at": result[1].isoformat()
+            "request_id": session_request_id,
+            "conversation_id": conversation_id,
+            "message_id": message_id,
+            "created_at": created_at.isoformat()
         }
 
+    except HTTPException:
+        conn.rollback()
+        raise
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create session request: {str(e)}")
@@ -336,7 +493,13 @@ async def get_tutor_session_requests(
                 sr.rejected_reason, sr.rejected_at,
                 -- Schedule fields
                 sr.schedule_type, sr.year_range, sr.months, sr.days,
-                sr.specific_dates, sr.start_time, sr.end_time
+                sr.specific_dates, sr.start_time, sr.end_time,
+                -- Requested to (student) when parent requests for child
+                sr.requested_to_id,
+                (SELECT CONCAT(u.first_name, ' ', u.father_name)
+                 FROM student_profiles sp
+                 JOIN users u ON sp.user_id = u.id
+                 WHERE sp.id = sr.requested_to_id) as requested_to_name
             FROM requested_sessions sr
             WHERE sr.tutor_id = %s
         """
@@ -382,7 +545,10 @@ async def get_tutor_session_requests(
                 "days": row[23],
                 "specific_dates": row[24],
                 "start_time": str(row[25]) if row[25] else None,
-                "end_time": str(row[26]) if row[26] else None
+                "end_time": str(row[26]) if row[26] else None,
+                # Requested to (student when parent requests for child)
+                "requested_to_id": row[27],
+                "requested_to_name": row[28]
             })
 
         return requests
@@ -425,6 +591,7 @@ async def get_my_students(
             SELECT
                 es.id,
                 sp.user_id as student_user_id,
+                sp.id as student_profile_id,
                 CONCAT(u.first_name, ' ', u.father_name, ' ', u.grandfather_name) as student_name,
                 sp.grade_level as student_grade,
                 sp.profile_picture,
@@ -447,15 +614,16 @@ async def get_my_students(
         for row in rows:
             students.append({
                 "id": row[0],
-                "student_id": row[1],  # This is student's user_id for frontend routing
-                "student_name": row[2] if row[2] else "Unknown Student",
-                "student_grade": row[3] if row[3] else "N/A",
-                "profile_picture": row[4] if row[4] else "/uploads/system_images/system_profile_pictures/boy-user-image.jpg",
-                "package_name": row[5] if row[5] else "N/A",
-                "contact_phone": row[6],
-                "contact_email": row[7],
-                "accepted_at": row[8].isoformat() if row[8] else None,
-                "requester_type": row[9] if row[9] else "student"
+                "student_id": row[2],  # student_profiles.id for frontend routing
+                "student_user_id": row[1],  # users.id for chat/messaging
+                "student_name": row[3] if row[3] else "Unknown Student",
+                "student_grade": row[4] if row[4] else "N/A",
+                "profile_picture": row[5] if row[5] else "/uploads/system_images/system_profile_pictures/boy-user-image.jpg",
+                "package_name": row[6] if row[6] else "N/A",
+                "contact_phone": row[7],
+                "contact_email": row[8],
+                "accepted_at": row[9].isoformat() if row[9] else None,
+                "requester_type": row[10] if row[10] else "student"
             })
 
         return students
@@ -562,7 +730,13 @@ async def get_session_request_detail(
                 sr.rejected_reason, sr.rejected_at,
                 -- Schedule fields
                 sr.schedule_type, sr.year_range, sr.months, sr.days,
-                sr.specific_dates, sr.start_time, sr.end_time
+                sr.specific_dates, sr.start_time, sr.end_time,
+                -- Requested to (student) when parent requests for child
+                sr.requested_to_id,
+                (SELECT CONCAT(u.first_name, ' ', u.father_name)
+                 FROM student_profiles sp
+                 JOIN users u ON sp.user_id = u.id
+                 WHERE sp.id = sr.requested_to_id) as requested_to_name
             FROM requested_sessions sr
             WHERE sr.id = %s AND sr.tutor_id = %s
         """, (request_id, tutor_id))
@@ -600,7 +774,10 @@ async def get_session_request_detail(
             "days": row[23],
             "specific_dates": row[24],
             "start_time": str(row[25]) if row[25] else None,
-            "end_time": str(row[26]) if row[26] else None
+            "end_time": str(row[26]) if row[26] else None,
+            # Requested to (student when parent requests for child)
+            "requested_to_id": row[27],
+            "requested_to_name": row[28]
         }
 
     except HTTPException:
@@ -698,15 +875,14 @@ async def update_session_request_status(
             if not existing:
                 cur.execute("""
                     INSERT INTO enrolled_students (
-                        tutor_id, student_id, package_id, session_request_id, enrolled_at
+                        tutor_id, student_id, package_id, enrolled_at
                     ) VALUES (
-                        %s, %s, %s, %s, CURRENT_TIMESTAMP
+                        %s, %s, %s, CURRENT_TIMESTAMP
                     )
                 """, (
                     tutor_id,
                     student_profile_id,
-                    package_id,
-                    request_data['id']
+                    package_id
                 ))
 
             # Delete the accepted request from requested_sessions table
@@ -811,7 +987,13 @@ async def get_my_session_requests(
                 sr.rejected_reason, sr.rejected_at,
                 -- Schedule fields
                 sr.schedule_type, sr.year_range, sr.months, sr.days,
-                sr.specific_dates, sr.start_time, sr.end_time
+                sr.specific_dates, sr.start_time, sr.end_time,
+                -- Requested to (student) when parent requests for child
+                sr.requested_to_id,
+                (SELECT CONCAT(u3.first_name, ' ', u3.father_name)
+                 FROM student_profiles sp3
+                 JOIN users u3 ON sp3.user_id = u3.id
+                 WHERE sp3.id = sr.requested_to_id) as requested_to_name
             FROM requested_sessions sr
             LEFT JOIN tutor_profiles tp ON sr.tutor_id = tp.id
             LEFT JOIN users u ON tp.user_id = u.id
@@ -851,7 +1033,10 @@ async def get_my_session_requests(
                 "days": row[23],
                 "specific_dates": row[24],
                 "start_time": str(row[25]) if row[25] else None,
-                "end_time": str(row[26]) if row[26] else None
+                "end_time": str(row[26]) if row[26] else None,
+                # Requested to (student when parent requests for child)
+                "requested_to_id": row[27],
+                "requested_to_name": row[28]
             })
 
         return requests

@@ -1,6 +1,6 @@
 class AuthenticationManager {
     constructor() {
-        this.API_BASE_URL = 'https://api.astegni.com';
+        this.API_BASE_URL = 'http://localhost:8000';
         this.token = null;
         this.user = null;
         this.isFetchingUserData = false; // Guard to prevent multiple fetches
@@ -60,7 +60,8 @@ class AuthenticationManager {
     //   SESSION MANAGEMENT
     // ============================================
     async restoreSession() {
-        const token = localStorage.getItem('token');
+        // Check both 'token' and 'access_token' for compatibility
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         const user = localStorage.getItem('currentUser');
 
         if (token && user) {
@@ -197,8 +198,9 @@ class AuthenticationManager {
                     response = await fetch(`${this.API_BASE_URL}${endpoint}`, config);
                     console.log('[AuthManager.apiCall] Retry response status:', response.status);
                 } else {
-                    console.log('[AuthManager.apiCall] Token refresh failed, redirecting to login');
-                    this.logout(true);
+                    // Don't auto-logout on refresh failure - might be a network error
+                    // The refreshAccessToken method already handles 401 logout internally
+                    console.warn('[AuthManager.apiCall] Token refresh failed, but keeping token for retry');
                 }
             }
 
@@ -214,11 +216,18 @@ class AuthenticationManager {
     //   USE THIS FOR ALL AUTHENTICATED API CALLS
     // ============================================
     async authenticatedFetch(url, options = {}) {
-        // Check if user is logged in
+        // Check if user is logged in - also check localStorage as fallback
         if (!this.token) {
-            console.warn('[AuthManager.authenticatedFetch] No token available, redirecting to login');
-            this.logout(true);
-            throw new Error('Not authenticated');
+            // Try to get token from localStorage
+            const storedToken = localStorage.getItem('token') || localStorage.getItem('access_token');
+            if (storedToken) {
+                console.log('[AuthManager.authenticatedFetch] Token found in localStorage, restoring...');
+                this.token = storedToken;
+            } else {
+                console.warn('[AuthManager.authenticatedFetch] No token available, redirecting to login');
+                this.logout(true);
+                throw new Error('Not authenticated');
+            }
         }
 
         // Add authorization header
@@ -253,8 +262,9 @@ class AuthenticationManager {
                         this.logout(true);
                     }
                 } else {
-                    console.log('[AuthManager.authenticatedFetch] Token refresh failed, redirecting to login');
-                    this.logout(true);
+                    // Don't auto-logout on refresh failure - might be a network error
+                    // The refreshAccessToken method already handles 401 logout internally
+                    console.warn('[AuthManager.authenticatedFetch] Token refresh failed, but keeping token for retry');
                 }
             }
 
@@ -328,7 +338,10 @@ async login(email, password) {
         localStorage.setItem('access_token', data.access_token);
         localStorage.setItem('refresh_token', data.refresh_token);
         localStorage.setItem('currentUser', JSON.stringify(formattedUser));
-        localStorage.setItem('userRole', data.user.active_role);
+        // Only store userRole if it has a valid value (prevent storing "undefined" string)
+        if (data.user.active_role) {
+            localStorage.setItem('userRole', data.user.active_role);
+        }
 
         console.log('[AuthManager.login] Tokens saved to localStorage');
 
@@ -412,13 +425,16 @@ async login(email, password) {
             localStorage.setItem('access_token', data.access_token);
             localStorage.setItem('refresh_token', data.refresh_token);
             localStorage.setItem('currentUser', JSON.stringify(formattedUser));
-            localStorage.setItem('userRole', data.user.active_role);
+            // Only store userRole if it has a valid value (prevent storing "undefined" string)
+            if (data.user.active_role) {
+                localStorage.setItem('userRole', data.user.active_role);
+            }
 
             // Update global state
             if (window.APP_STATE) {
                 window.APP_STATE.isLoggedIn = true;
                 window.APP_STATE.currentUser = formattedUser;
-                window.APP_STATE.userRole = data.user.active_role;
+                window.APP_STATE.userRole = data.user.active_role || null;
             }
 
             return { success: true, user: formattedUser };
@@ -602,17 +618,23 @@ async login(email, password) {
         if (!this.user) return null;
 
         // FIX: Prioritize active_role first (most reliable)
-        if (this.user.active_role) return this.user.active_role;
+        // Also check it's not the string "undefined"
+        if (this.user.active_role && this.user.active_role !== 'undefined') {
+            return this.user.active_role;
+        }
 
         // Fallback to localStorage userRole (in case user object is corrupted)
+        // Also validate it's not the string "undefined" or "null"
         const storedUserRole = localStorage.getItem('userRole');
-        if (storedUserRole) {
+        if (storedUserRole && storedUserRole !== 'undefined' && storedUserRole !== 'null') {
             console.log('[AuthManager.getUserRole] Using stored userRole:', storedUserRole);
             return storedUserRole;
         }
 
         // Check for single role property
-        if (this.user.role) return this.user.role;
+        if (this.user.role && this.user.role !== 'undefined') {
+            return this.user.role;
+        }
 
         // If user has roles array but no active role, return first role
         if (this.user.roles && Array.isArray(this.user.roles) && this.user.roles.length > 0) {

@@ -1,0 +1,1631 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASTEGNI - Manage Admins</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="./css/root.css">
+    <link rel="stylesheet" href="./css/admin-profile/admin.css">
+    <link rel="stylesheet" href="./css/admin-pages/shared/admin-layout-fix.css">
+    <link rel="stylesheet" href="./css/admin-pages/manage-admins.css">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+</head>
+
+<body class="font-sans">
+
+    <!-- Navigation -->
+    <nav class="admin-nav p-4 sticky top-0 z-50" role="navigation" aria-label="Main navigation">
+        <div class="container mx-auto flex justify-between items-center">
+            <!-- Left: Hamburger + Logo -->
+            <div class="nav-left flex items-center gap-4">
+                <span class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <a href="manage-admins.html" class="logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Manage Admins</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <!-- Center: Live Clock -->
+            <div class="nav-center">
+                <div class="live-clock">
+                    <span id="current-time" class="time">--:--:--</span>
+                    <span id="current-date" class="date">Loading...</span>
+                </div>
+            </div>
+
+            <!-- Right: Home, Theme, User Controls -->
+            <div class="header-right">
+                <!-- Home Icon Link -->
+                <a href="index.html" class="icon-button" title="Go to Admin Home">
+                    <i class="fas fa-home"></i>
+                </a>
+
+                <!-- Theme Toggle (always visible) -->
+                <button id="theme-toggle" class="icon-button" onclick="toggleTheme()">
+                    <span class="theme-icon">
+                        <i class="fas fa-moon" id="moon-icon"></i>
+                        <i class="fas fa-sun" id="sun-icon" style="display: none;"></i>
+                    </span>
+                </button>
+
+                <!-- User Controls (hidden by default, shown when logged in) -->
+                <div class="user-controls" id="user-controls" style="display: none;">
+                    <!-- Notification Icon -->
+                    <button class="icon-button notification-button" onclick="openNotificationModal()">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge notification-count-badge">3</span>
+                    </button>
+
+                    <!-- Profile container -->
+                    <div id="profile-container" class="profile-dropdown-container">
+                        <button id="profile-dropdown-toggle" class="profile-dropdown-toggle"
+                            onclick="toggleProfileDropdown()">
+                            <img id="profile-pic" class="profile-pic"
+                                 src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                                 alt="Profile">
+                            <span id="profile-name" class="profile-name">Guest</span>
+                            <svg class="dropdown-arrow" width="12" height="12" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                        </button>
+
+                        <div id="profile-dropdown-menu" class="profile-dropdown-menu hidden">
+                            <!-- User info header -->
+                            <a href="javascript:void(0)" id="dropdown-profile-link" class="dropdown-header-link">
+                                <div class="dropdown-header">
+                                    <img id="dropdown-profile-pic" class="profile-pic"
+                                         src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%234F46E5'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' fill='white' font-size='40' font-family='Arial'%3EA%3C/text%3E%3C/svg%3E"
+                                         alt="Profile">
+                                    <div class="dropdown-user-info">
+                                        <span id="dropdown-user-name" class="dropdown-user-name"></span>
+                                        <span id="dropdown-user-email" class="dropdown-user-email"></span>
+                                        <span id="dropdown-user-role" class="dropdown-user-role"></span>
+                                    </div>
+                                    <svg class="dropdown-header-arrow" width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </a>
+
+                            <div class="dropdown-divider"></div>
+
+                            <!-- Department switcher -->
+                            <div id="department-switcher-section" class="department-switcher-section hidden">
+                                <div class="dropdown-item-header">Your Departments</div>
+                                <div id="department-options" class="department-options"></div>
+                                <div class="dropdown-divider"></div>
+                            </div>
+
+                            <!-- Add Department button -->
+                            <button class="dropdown-item" onclick="openAddDepartmentModal()">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Add Department Role</span>
+                            </button>
+
+                            <div class="dropdown-divider"></div>
+
+                            <button class="dropdown-item logout-item" onclick="openLogoutModal()">
+                                <i class="fas fa-sign-out-alt dropdown-icon"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div><!-- /user-controls -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar-container">
+        <div class="sidebar-content">
+            <div class="sidebar-nav">
+                <h3>Admins Management</h3>
+                <span class="sidebar-close" id="sidebar-close">&times;</span>
+
+                <a href="#" onclick="switchPanel('dashboard'); return false;" class="sidebar-link active">
+                    <span class="sidebar-icon">🏠</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" onclick="switchPanel('active'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">✅</span>
+                    <span>Active Admins</span>
+                </a>
+                <a href="#" onclick="switchPanel('invite'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📧</span>
+                    <span>Invite Admins</span>
+                </a>
+                <a href="#" onclick="switchPanel('pending'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⏳</span>
+                    <span>Pending Invitations</span>
+                </a>
+                <a href="#" onclick="switchPanel('rejected'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">❌</span>
+                    <span>Rejected Admins</span>
+                </a>
+                <a href="#" onclick="switchPanel('suspended'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚠️</span>
+                    <span>Suspended Admins</span>
+                </a>
+                <a href="#" onclick="switchPanel('reviews'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⭐</span>
+                    <span>My Reviews</span>
+                </a>
+                <a href="#" onclick="switchPanel('activity'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📋</span>
+                    <span>Activity Log</span>
+                </a>
+                <hr class="my-4 border-gray-300">
+                <a href="#" onclick="switchPanel('roles'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">🔐</span>
+                    <span>Roles & Permissions</span>
+                </a>
+                <a href="#" onclick="switchPanel('portfolio'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">📁</span>
+                    <span>Portfolio</span>
+                </a>
+                <a href="#" onclick="switchPanel('settings'); return false;" class="sidebar-link">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Settings</span>
+                </a>
+
+                <!-- Quick Home Link at Bottom -->
+                <div class="mt-auto pt-4 border-t border-gray-300">
+                    <a href="index.html" class="sidebar-link text-blue-500 hover:bg-blue-50">
+                        <span class="sidebar-icon">🏠</span>
+                        <span>Back to Home</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="container mx-auto px-4">
+            <!-- Main Content with Widgets -->
+            <div class="flex gap-6">
+                <!-- Left Content Area -->
+                <div class="flex-1">
+                    <!-- Panels Section -->
+                    <div class="panels-container">
+                        <!-- Dashboard Panel (Default) -->
+                        <div id="dashboard-panel" class="panel-content active">
+
+                        <!-- Profile Header Section (Only visible in Dashboard) -->
+                        <section class="profile-header-section mb-8">
+                            <div class="cover-image-container relative">
+                                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='300'%3E%3Crect width='1200' height='300' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='20'%3E1200x300%3C/text%3E%3C/svg%3E"
+                                    alt="Cover" class="cover-img">
+                                <div class="cover-overlay"></div>
+                                <!-- Cover Upload Button -->
+                                <button onclick="openUploadCoverModal()" class="cover-upload-btn">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                        </path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div class="profile-main-info">
+                                <div class="profile-info-wrapper">
+                                    <div class="profile-avatar-container">
+                                        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Crect width='150' height='150' fill='%23e5e7eb'/%3E%3Ctext x='50%25' y='50%25' text-anchor='middle' dy='.3em' fill='%239ca3af' font-family='sans-serif' font-size='16'%3E150x150%3C/text%3E%3C/svg%3E"
+                                            alt="Admin Profile" class="profile-avatar">
+                                        <span class="online-indicator"></span>
+                                        <!-- Profile Picture Upload Button -->
+                                        <button onclick="openUploadProfileModal()" class="avatar-upload-btn">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z">
+                                                </path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <div class="profile-details-section">
+                                        <div class="profile-name-row">
+                                            <h1 class="profile-name" id="adminUsername">admin_username</h1>
+                                            <div class="badges-row">
+                                                <span class="profile-badge verified">✔ System Administrator</span>
+                                                <span class="profile-badge school">🛡️ Admin Management</span>
+                                                <span class="profile-badge expert">👥 Team Lead</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="rating-section">
+                                            <div class="rating-wrapper">
+                                                <span class="rating-value">4.8</span>
+                                                <div class="rating-stars">★★★★★</div>
+                                                <span class="rating-count">(89 reviews)</span>
+                                                <div class="rating-label">Performance Rating</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="profile-location">
+                                            <span class="location-icon">📍</span>
+                                            <span>Astegni Admin Panel | Admin Management & Oversight</span>
+                                        </div>
+
+                                        <div class="profile-quote">
+                                            <span>"Building a trusted team of administrators for educational excellence."</span>
+                                        </div>
+
+                                        <div class="profile-actions">
+                                            <button onclick="openEditProfileModal()" class="btn-primary">
+                                                <span class="mr-2">✏️</span>
+                                                Edit Profile
+                                            </button>
+                                        </div>
+
+                                        <!-- About Me Info -->
+                                        <div class="profile-info-grid">
+                                            <div class="info-item">
+                                                <span class="info-label">Department:</span>
+                                                <span class="info-value">Admin Management</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Employee ID:</span>
+                                                <span class="info-value">ADM-2024-001</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Email:</span>
+                                                <span class="info-value" id="profileEmail">-</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Phone:</span>
+                                                <span class="info-value" id="profilePhone">-</span>
+                                            </div>
+                                            <div class="info-item">
+                                                <span class="info-label">Joined:</span>
+                                                <span class="info-value">January 2024</span>
+                                            </div>
+                                            <div class="info-description">
+                                                <p>Senior Administrator responsible for team management, onboarding new admins, and ensuring platform security standards.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Page Header -->
+                        <div class="mb-8 animate-fadeIn">
+                            <h1 class="text-3xl font-bold mb-2">Admin Management Dashboard</h1>
+                            <p class="text-gray-600">Overview of all admin activities and team statistics</p>
+                        </div>
+
+                        <!-- All Statistics Cards -->
+                        <div class="dashboard-grid mb-8">
+                            <!-- Admin Stats -->
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Pending Requests</h3>
+                                <p class="text-2xl font-bold text-yellow-600" id="stat-pending-invites">0</p>
+                                <span class="text-sm text-gray-500">Awaiting review</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Approval Rate</h3>
+                                <p class="text-2xl font-bold text-green-600" id="stat-acceptance-rate">0%</p>
+                                <span class="text-sm text-gray-500">Overall rate</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Avg Processing</h3>
+                                <p class="text-2xl font-bold text-blue-600">&lt; 24hrs</p>
+                                <span class="text-sm text-gray-500">Response time</span>
+                            </div>
+                            <div class="card p-4">
+                                <h3 class="text-lg font-semibold">Client Satisfaction</h3>
+                                <p class="text-2xl font-bold text-purple-600">0%</p>
+                                <span class="text-sm text-gray-500">User feedback</span>
+                            </div>
+                        </div>
+
+                        <!-- Reviews Section -->
+                        <div class="card p-6 mb-8">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold">Recent Reviews</h3>
+                                <a href="#" onclick="switchPanel('reviews'); return false;" class="text-blue-500 hover:text-blue-700 text-sm font-medium flex items-center gap-1">
+                                    View All
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                            <div id="dashboard-reviews-list" class="space-y-4">
+                                <!-- Dynamic reviews will be loaded here -->
+                                <div class="text-center py-8 text-gray-500">
+                                    <p>Loading reviews...</p>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                        <!-- End of Dashboard Panel -->
+
+                        <!-- Active Admins Panel -->
+            <div id="active-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Active Admins</h1>
+                    <p class="text-gray-600">Manage all active administrator accounts</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8" id="active-panel-stats">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Active</h3>
+                        <p class="text-2xl font-bold" id="active-total">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Online Now</h3>
+                        <p class="text-2xl font-bold text-green-600" id="active-online">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Super Admins</h3>
+                        <p class="text-2xl font-bold text-purple-600" id="active-super">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Last Login Today</h3>
+                        <p class="text-2xl font-bold text-blue-600" id="active-today">0</p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="card p-6 mb-6">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        <div class="flex-1 min-w-[300px]">
+                            <div class="relative">
+                                <input type="text" id="active-search-input" class="w-full p-3 pl-10 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="Search admins by name, email, or department...">
+                                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <select id="active-department-filter" class="p-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Departments</option>
+                            <option value="manage-system-settings">System Settings</option>
+                            <option value="manage-admins">Admin Management</option>
+                            <option value="manage-courses">Courses</option>
+                            <option value="manage-schools">Schools</option>
+                            <option value="manage-credentials">Credentials</option>
+                            <option value="manage-customers">Customers</option>
+                        </select>
+                        <select id="active-status-filter" class="p-3 border-2 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">All Status</option>
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                        <button onclick="clearActiveFilters()" class="px-4 py-3 border-2 border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Admins Table -->
+                <div class="card overflow-hidden">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">Admin</th>
+                                <th class="p-4 text-left">Department</th>
+                                <th class="p-4 text-left">Role</th>
+                                <th class="p-4 text-left">Status</th>
+                                <th class="p-4 text-left">Last Active</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="active-admins-tbody">
+                            <!-- Dynamic data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Invite Admins Panel -->
+            <div id="invite-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Invite New Admin</h1>
+                    <p class="text-gray-600">Send OTP invitations to new administrators</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Invite Form -->
+                    <div class="card p-6">
+                        <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                            <i class="fas fa-user-plus text-blue-500"></i>
+                            Invite New Admin
+                        </h3>
+                        <form onsubmit="handleAdminInvitation(event)" class="space-y-4">
+                            <!-- Name Fields -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">First Name <span class="text-red-500">*</span></label>
+                                    <input type="text" id="invite-admin-first-name" required
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="First name">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Father's Name <span class="text-red-500">*</span></label>
+                                    <input type="text" id="invite-admin-father-name" required
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="Father's name">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Grandfather's Name</label>
+                                <input type="text" id="invite-admin-grandfather-name"
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Grandfather's name (optional)">
+                            </div>
+
+                            <!-- Contact Fields -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Email Address <span class="text-red-500">*</span></label>
+                                    <input type="email" id="invite-admin-email" required
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="email@example.com">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Phone Number</label>
+                                    <input type="tel" id="invite-admin-phone"
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="+251 9XX XXX XXX">
+                                </div>
+                            </div>
+
+                            <!-- Department & Position -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Department <span class="text-red-500">*</span></label>
+                                    <select id="invite-admin-department" required
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        <option value="">Select department</option>
+                                        <option value="manage-admins">Manage Admins</option>
+                                        <option value="manage-advertisers">Manage Advertisers</option>
+                                        <option value="manage-contents">Manage Contents</option>
+                                        <option value="manage-courses">Manage Courses</option>
+                                        <option value="manage-credentials">Manage Credentials</option>
+                                        <option value="manage-customers">Manage Customers</option>
+                                        <option value="manage-schools">Manage Schools</option>
+                                        <option value="manage-system-settings">System Settings</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Position <span class="text-red-500">*</span></label>
+                                    <input type="text" id="invite-admin-position" required
+                                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                        placeholder="e.g., Manager, Staff">
+                                </div>
+                            </div>
+
+                            <!-- Employee ID -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Employee ID</label>
+                                <input type="text" id="invite-admin-employee-id"
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Employee ID (optional)">
+                            </div>
+
+                            <!-- Welcome Message -->
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Welcome Message (Optional)</label>
+                                <textarea id="invite-admin-message" rows="3"
+                                    class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Add a personal welcome message..."></textarea>
+                            </div>
+
+                            <!-- OTP Info -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-info-circle text-blue-600 mt-0.5"></i>
+                                    <div class="text-sm text-blue-800">
+                                        <p class="font-semibold">How it works:</p>
+                                        <p>An OTP (One-Time Password) will be sent to the admin's email. They will use this OTP to complete their registration. The OTP is valid for 7 days.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="invite-admin-submit-btn"
+                                class="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+                                <i class="fas fa-paper-plane"></i>
+                                Send OTP Invitation
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="card p-6">
+                        <h3 class="text-xl font-semibold mb-6 flex items-center gap-2">
+                            <i class="fas fa-history text-purple-500"></i>
+                            Recent Invitation Activity
+                        </h3>
+                        <div id="invite-recent-activity" class="space-y-4">
+                            <!-- Dynamic activity will be loaded here -->
+                            <div class="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-check text-green-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">Invitation accepted</p>
+                                    <p class="text-xs text-gray-500">John Doe joined as Course Manager</p>
+                                    <p class="text-xs text-gray-400">2 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                                <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-paper-plane text-blue-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">Invitation sent</p>
+                                    <p class="text-xs text-gray-500">OTP sent to jane@example.com</p>
+                                    <p class="text-xs text-gray-400">5 hours ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
+                                <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-clock text-yellow-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">Invitation pending</p>
+                                    <p class="text-xs text-gray-500">Awaiting response from mike@example.com</p>
+                                    <p class="text-xs text-gray-400">1 day ago</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
+                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-times text-red-600 text-sm"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium">Invitation expired</p>
+                                    <p class="text-xs text-gray-500">OTP expired for sarah@example.com</p>
+                                    <p class="text-xs text-gray-400">3 days ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Invitations Panel -->
+            <div id="pending-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Pending Invitations</h1>
+                    <p class="text-gray-600">Track and manage pending admin invitations</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Pending</h3>
+                        <p class="text-2xl font-bold text-yellow-600" id="pending-total">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Sent Today</h3>
+                        <p class="text-2xl font-bold" id="pending-today">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Expiring Soon</h3>
+                        <p class="text-2xl font-bold text-orange-600" id="pending-expiring">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Avg Wait Time</h3>
+                        <p class="text-2xl font-bold" id="pending-avg-wait">-</p>
+                    </div>
+                </div>
+
+                <!-- Pending Invitations Table -->
+                <div class="card overflow-hidden">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">Invitee</th>
+                                <th class="p-4 text-left">Email</th>
+                                <th class="p-4 text-left">Department</th>
+                                <th class="p-4 text-left">Sent Date</th>
+                                <th class="p-4 text-left">Expires</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pending-invitations-tbody">
+                            <!-- Dynamic data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Rejected Admins Panel -->
+            <div id="rejected-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Rejected Admins</h1>
+                    <p class="text-gray-600">View rejected admin applications and expired invitations</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Rejected</h3>
+                        <p class="text-2xl font-bold text-red-600" id="rejected-total">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">This Month</h3>
+                        <p class="text-2xl font-bold" id="rejected-month">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Expired OTPs</h3>
+                        <p class="text-2xl font-bold text-orange-600" id="rejected-expired">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Reconsidered</h3>
+                        <p class="text-2xl font-bold text-green-600" id="rejected-reconsidered">0</p>
+                    </div>
+                </div>
+
+                <!-- Rejected Table -->
+                <div class="card overflow-hidden">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">Name</th>
+                                <th class="p-4 text-left">Email</th>
+                                <th class="p-4 text-left">Reason</th>
+                                <th class="p-4 text-left">Rejected Date</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rejected-admins-tbody">
+                            <!-- Dynamic data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Suspended Admins Panel -->
+            <div id="suspended-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Suspended Admins</h1>
+                    <p class="text-gray-600">Manage suspended administrator accounts</p>
+                </div>
+
+                <!-- Statistics Card for this panel only -->
+                <div class="dashboard-grid mb-8">
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Total Suspended</h3>
+                        <p class="text-2xl font-bold text-orange-600" id="suspended-total">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">This Month</h3>
+                        <p class="text-2xl font-bold" id="suspended-month">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Reactivated</h3>
+                        <p class="text-2xl font-bold text-green-600" id="suspended-reactivated">0</p>
+                    </div>
+                    <div class="card p-4">
+                        <h3 class="text-lg font-semibold">Permanent Bans</h3>
+                        <p class="text-2xl font-bold text-red-600" id="suspended-permanent">0</p>
+                    </div>
+                </div>
+
+                <!-- Suspended Table -->
+                <div class="card overflow-hidden">
+                    <table class="w-full">
+                        <thead>
+                            <tr>
+                                <th class="p-4 text-left">Admin</th>
+                                <th class="p-4 text-left">Department</th>
+                                <th class="p-4 text-left">Reason</th>
+                                <th class="p-4 text-left">Suspended Date</th>
+                                <th class="p-4 text-left">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="suspended-admins-tbody">
+                            <!-- Dynamic data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Reviews Panel -->
+            <div id="reviews-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">My Reviews</h1>
+                    <p class="text-gray-600">View and manage reviews about your admin performance</p>
+                </div>
+
+                <div class="card p-6">
+                    <div id="reviews-list" class="space-y-4">
+                        <!-- Dynamic reviews will be loaded here -->
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-star text-4xl mb-4 opacity-50"></i>
+                            <p>No reviews yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log Panel -->
+            <div id="activity-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h1 class="text-3xl font-bold mb-2">Activity Log</h1>
+                            <p class="text-gray-600">Track all admin activities and system events</p>
+                        </div>
+                        <button onclick="exportActivityLog()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                            <i class="fas fa-download"></i>
+                            Export Log
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <div id="activity-log-list" class="space-y-4">
+                        <!-- Dynamic activity will be loaded here -->
+                        <div class="flex items-start gap-4 p-4 border-b">
+                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-plus text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">New admin invited</p>
+                                <p class="text-sm text-gray-500">John Doe was invited to join as Course Manager</p>
+                                <p class="text-xs text-gray-400 mt-1">Today at 10:30 AM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 border-b">
+                            <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-check text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">Admin activated</p>
+                                <p class="text-sm text-gray-500">Sarah Smith completed registration</p>
+                                <p class="text-xs text-gray-400 mt-1">Yesterday at 3:45 PM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4 p-4 border-b">
+                            <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-edit text-yellow-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium">Role changed</p>
+                                <p class="text-sm text-gray-500">Mike Johnson's role changed to Super Admin</p>
+                                <p class="text-xs text-gray-400 mt-1">2 days ago at 9:15 AM</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roles & Permissions Panel -->
+            <div id="roles-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h1 class="text-3xl font-bold mb-2">Roles & Permissions</h1>
+                            <p class="text-gray-600">Manage admin roles and their access permissions</p>
+                        </div>
+                        <button onclick="openCreateRoleModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                            <i class="fas fa-plus"></i>
+                            Create Role
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Super Admin Role -->
+                    <div class="card p-6 role-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-crown text-purple-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">Super Admin</h3>
+                                <span class="text-sm text-gray-500">Full system access</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="permission-item permission-granted">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>All permissions granted</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Role -->
+                    <div class="card p-6 role-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-shield text-blue-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">Admin</h3>
+                                <span class="text-sm text-gray-500">Department management</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="permission-item permission-granted">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>Manage department users</span>
+                            </div>
+                            <div class="permission-item permission-granted">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>View reports</span>
+                            </div>
+                            <div class="permission-item permission-denied">
+                                <i class="fas fa-times-circle text-red-500"></i>
+                                <span>System settings</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Moderator Role -->
+                    <div class="card p-6 role-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user-check text-indigo-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">Moderator</h3>
+                                <span class="text-sm text-gray-500">Content moderation</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="permission-item permission-granted">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>Review content</span>
+                            </div>
+                            <div class="permission-item permission-granted">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>Manage flags</span>
+                            </div>
+                            <div class="permission-item permission-denied">
+                                <i class="fas fa-times-circle text-red-500"></i>
+                                <span>User management</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Support Role -->
+                    <div class="card p-6 role-card">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-headset text-green-600 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">Support</h3>
+                                <span class="text-sm text-gray-500">Customer support</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2 text-sm">
+                            <div class="permission-item permission-granted">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>View user profiles</span>
+                            </div>
+                            <div class="permission-item permission-granted">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>Respond to tickets</span>
+                            </div>
+                            <div class="permission-item permission-denied">
+                                <i class="fas fa-times-circle text-red-500"></i>
+                                <span>Edit user data</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Portfolio Panel -->
+            <div id="portfolio-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">My Portfolio</h1>
+                    <p class="text-gray-600">Showcase your work, achievements, and professional accomplishments</p>
+                </div>
+
+                <!-- Coming Soon -->
+                <div class="flex flex-col items-center justify-center py-20">
+                    <div class="w-32 h-32 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mb-6">
+                        <i class="fas fa-folder-open text-white text-5xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-700 mb-2">Coming Soon</h2>
+                    <p class="text-gray-500 text-center max-w-md">
+                        We're working on an amazing portfolio feature where you can showcase your work, achievements, and professional accomplishments. Stay tuned!
+                    </p>
+                    <div class="mt-6 flex items-center gap-2 text-blue-600">
+                        <i class="fas fa-clock"></i>
+                        <span class="text-sm">Expected: Q2 2025</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Panel -->
+            <div id="settings-panel" class="panel-content hidden">
+                <div class="mb-8">
+                    <h1 class="text-3xl font-bold mb-2">Settings</h1>
+                    <p class="text-gray-600">Manage your account preferences and configurations</p>
+                </div>
+
+                <!-- Settings Cards Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Verify Personal Information Card -->
+                    <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openVerifyPersonalInfoModal()">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-user-check text-blue-600 text-2xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg mb-1">Verify Personal Information</h3>
+                                <p class="text-gray-600 text-sm mb-3">Update and verify your personal details, contact information, and identity documents.</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> Action Required
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- Add Payment Method Card -->
+                    <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openAddPaymentMethodModal()">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-credit-card text-green-600 text-2xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg mb-1">Add Payment Method</h3>
+                                <p class="text-gray-600 text-sm mb-3">Add or manage your payment methods for receiving salary and bonuses.</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                        <i class="fas fa-wallet mr-1"></i> 0 Methods Added
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- File a Leave Request Card -->
+                    <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="openLeaveRequestModal()">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-calendar-minus text-purple-600 text-2xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg mb-1">File a Leave Request</h3>
+                                <p class="text-gray-600 text-sm mb-3">Request time off for vacation, sick leave, or personal matters.</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-600 text-xs rounded-full">
+                                        <i class="fas fa-info-circle mr-1"></i> 15 Days Available
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- Resign Card -->
+                    <div class="card p-6 hover:shadow-lg transition-shadow cursor-pointer border-red-100" onclick="openResignModal()">
+                        <div class="flex items-start gap-4">
+                            <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-sign-out-alt text-red-600 text-2xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-lg mb-1 text-red-700">Resign</h3>
+                                <p class="text-gray-600 text-sm mb-3">Submit your resignation and begin the offboarding process.</p>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-1 bg-red-50 text-red-600 text-xs rounded-full">
+                                        <i class="fas fa-exclamation-triangle mr-1"></i> Irreversible Action
+                                    </span>
+                                </div>
+                            </div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                    </div>
+                    <!-- End of panels-container -->
+                </div>
+                <!-- End of flex-1 content area -->
+
+                <!-- Right Sidebar Widgets (Persistent across all panels) -->
+                <div class="admin-right-widgets">
+                    <!-- Live Admin Requests Widget -->
+                    <div class="admin-widget-card school-requests-widget">
+                        <h3 class="text-lg font-semibold mb-4">
+                            👥 Live Admin Requests
+                            <span class="live-indicator ml-2 text-xs text-green-500">
+                                <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                Live
+                            </span>
+                        </h3>
+                        <div class="school-requests-container">
+                            <div class="school-requests-scroll" id="live-admin-requests-scroll">
+                                <!-- Dynamic admin request items will be loaded here -->
+                                <div class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <span class="text-sm font-bold text-blue-600">JD</span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium truncate">John Doe</p>
+                                            <p class="text-xs text-gray-500">Courses Dept</p>
+                                        </div>
+                                        <span class="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded">Pending</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                            <span class="text-sm font-bold text-green-600">SS</span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium truncate">Sarah Smith</p>
+                                            <p class="text-xs text-gray-500">Schools Dept</p>
+                                        </div>
+                                        <span class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">Accepted</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <span class="text-sm font-bold text-purple-600">MJ</span>
+                                        </div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium truncate">Mike Johnson</p>
+                                            <p class="text-xs text-gray-500">Credentials Dept</p>
+                                        </div>
+                                        <span class="text-xs text-yellow-600 bg-yellow-100 px-2 py-1 rounded">Pending</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="school-requests-fade-top"></div>
+                        <div class="school-requests-fade-bottom"></div>
+                    </div>
+
+                    <!-- Daily Quota Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">Daily Quota</h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Invitations Sent</span>
+                                <span class="font-semibold">8/10</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-500 h-2 rounded-full" style="width: 80%"></div>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Accepted</span>
+                                <span class="font-semibold">5/8</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 62.5%"></div>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Pending</span>
+                                <span class="font-semibold">2/8</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 25%"></div>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Expired</span>
+                                <span class="font-semibold">1/8</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-red-500 h-2 rounded-full" style="width: 12.5%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fire Streak Widget -->
+                    <div class="admin-widget-card">
+                        <h3 class="text-lg font-semibold mb-4">🔥 Fire Streak</h3>
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-orange-500">12</div>
+                            <div class="text-sm text-gray-600">Days</div>
+                            <div class="mt-4 grid grid-cols-7 gap-1">
+                                <span class="text-xs">🔥</span>
+                                <span class="text-xs">🔥</span>
+                                <span class="text-xs">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                                <span class="text-xs opacity-30">🔥</span>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-2">Keep going!</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End of admin-right-widgets -->
+
+            </div>
+            <!-- End of flex gap-6 container -->
+
+        </div>
+        <!-- End of container mx-auto px-4 -->
+    </section>
+
+    <!-- Modals Container (loaded from common-modals) -->
+    <div id="notification-modal-container"></div>
+    <div id="add-department-modal-container"></div>
+    <div id="logout-modal-container"></div>
+
+    <!-- Admin Details Modal -->
+    <div id="admin-details-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Admin Details</h2>
+                    <button onclick="closeAdminDetailsModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="admin-details-content" class="p-6">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Suspend Admin Modal -->
+    <div id="suspend-admin-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user-slash text-orange-600 text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">Suspend Admin</h2>
+                <p class="text-gray-600 mt-2">This will temporarily revoke the admin's access</p>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Reason for Suspension <span class="text-red-500">*</span></label>
+                <textarea id="suspend-reason" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+                    placeholder="Enter the reason for suspension..."></textarea>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="closeSuspendAdminModal()" class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button onclick="confirmSuspendAdmin()" class="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700">
+                    Suspend Admin
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div id="edit-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b sticky top-0 bg-white z-10">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-2xl font-bold">Edit Profile</h2>
+                    <button onclick="closeEditProfileModal()" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <form id="editProfileForm" onsubmit="handleProfileUpdate(event)">
+                    <!-- Username (Display Name) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Username (Display Name) <span class="text-red-500">*</span></label>
+                        <input type="text" id="editUsername"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., abebe_kebede" required>
+                        <p class="text-xs text-gray-500 mt-1">This will be displayed as your admin username</p>
+                    </div>
+
+                    <!-- Hero Titles (Array) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Hero Titles</label>
+                        <div id="heroTitleContainer" class="space-y-2">
+                            <!-- Dynamic hero title inputs will be added here -->
+                        </div>
+                        <button type="button" onclick="addHeroTitleField()"
+                            class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            <i class="fas fa-plus"></i> Add Hero Title
+                        </button>
+                        <p class="text-xs text-gray-500 mt-1">Add multiple titles (e.g., Admin Manager, Team Lead)</p>
+                    </div>
+
+                    <!-- Hero Subtitle -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Hero Subtitle</label>
+                        <input type="text" id="editHeroSubtitle"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., Astegni Admin Panel">
+                    </div>
+
+                    <!-- Bio -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Bio</label>
+                        <textarea id="editBio" rows="3"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Tell us about yourself..."></textarea>
+                    </div>
+
+                    <!-- Quote -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Quote</label>
+                        <input type="text" id="editQuote"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Your personal quote or motto">
+                    </div>
+
+                    <!-- Locations (Array) -->
+                    <div class="form-group mb-4">
+                        <label class="block text-sm font-medium mb-1">Locations</label>
+                        <div id="locationContainer" class="space-y-2">
+                            <!-- Dynamic location inputs will be added here -->
+                        </div>
+                        <button type="button" onclick="addLocationField()"
+                            class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1">
+                            <i class="fas fa-plus"></i> Add Location
+                        </button>
+                        <p class="text-xs text-gray-500 mt-1">Add multiple locations (e.g., Addis Ababa, Bahir Dar)</p>
+
+                        <!-- Allow Location Checkbox with GPS Detection -->
+                        <div class="flex items-center mt-3">
+                            <input type="checkbox" id="editAllowLocation"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                onchange="handleAllowLocationChange(this)">
+                            <label for="editAllowLocation" class="ml-2 text-sm font-medium text-gray-700">
+                                Allow system to detect my location (GPS)
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Uses GPS/WiFi positioning to detect your physical location (not affected by VPN)</p>
+
+                        <!-- Detect Location Button (shown when checkbox is checked) -->
+                        <button type="button" id="detectLocationBtn" onclick="detectCurrentLocation()"
+                            class="hidden mt-2 text-sm bg-green-500 text-white px-3 py-1.5 rounded-lg hover:bg-green-600 flex items-center gap-1">
+                            <i class="fas fa-location-arrow mr-1"></i> Detect Location
+                        </button>
+                        <p id="locationStatus" class="hidden text-xs mt-1"></p>
+
+                        <!-- Display Location Checkbox -->
+                        <div class="flex items-center mt-3">
+                            <input type="checkbox" id="editDisplayLocation"
+                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2">
+                            <label for="editDisplayLocation" class="ml-2 text-sm font-medium text-gray-700">
+                                Display location on my public profile
+                            </label>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">When enabled, your location will be visible to others on your profile</p>
+                    </div>
+
+                    <!-- Languages -->
+                    <div class="form-group mb-6">
+                        <label class="block text-sm font-medium mb-1">Languages</label>
+                        <input type="text" id="editLanguages"
+                            class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="e.g., English, Amharic, Oromo">
+                        <p class="text-xs text-gray-500 mt-1">Separate multiple languages with commas</p>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button type="button" onclick="closeEditProfileModal()"
+                            class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit" id="editProfileSubmitBtn"
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2">
+                            <i class="fas fa-save"></i>
+                            Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Profile Picture Modal -->
+    <div id="upload-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Upload Profile Picture</h2>
+                <button onclick="closeUploadProfileModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="flex justify-center mb-4">
+                    <div class="w-32 h-32 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300">
+                        <img id="profilePreviewImg" src="" alt="Preview" class="w-full h-full object-cover hidden">
+                        <i id="profilePreviewIcon" class="fas fa-user text-4xl text-gray-400"></i>
+                    </div>
+                </div>
+                <input type="file" id="profilePictureInput" accept="image/*" class="hidden" onchange="previewProfilePicture(event)">
+                <button type="button" onclick="document.getElementById('profilePictureInput').click()"
+                    class="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 flex items-center justify-center gap-2">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Choose Image
+                </button>
+                <p class="text-xs text-gray-500 mt-2 text-center">JPG, PNG, GIF up to 5MB</p>
+            </div>
+            <div class="flex gap-4">
+                <button type="button" onclick="closeUploadProfileModal()"
+                    class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="button" onclick="uploadProfilePicture()" id="uploadProfileBtn"
+                    class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Upload
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Cover Picture Modal -->
+    <div id="upload-cover-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg mx-4 p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Upload Cover Image</h2>
+                <button onclick="closeUploadCoverModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <div class="w-full h-40 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300 mb-4">
+                    <img id="coverPreviewImg" src="" alt="Preview" class="w-full h-full object-cover hidden">
+                    <i id="coverPreviewIcon" class="fas fa-image text-4xl text-gray-400"></i>
+                </div>
+                <input type="file" id="coverPictureInput" accept="image/*" class="hidden" onchange="previewCoverPicture(event)">
+                <button type="button" onclick="document.getElementById('coverPictureInput').click()"
+                    class="w-full px-4 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 flex items-center justify-center gap-2">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    Choose Cover Image
+                </button>
+                <p class="text-xs text-gray-500 mt-2 text-center">Recommended size: 1200x300 pixels. JPG, PNG up to 10MB</p>
+            </div>
+            <div class="flex gap-4">
+                <button type="button" onclick="closeUploadCoverModal()"
+                    class="flex-1 px-4 py-2 border rounded-lg hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button type="button" onclick="uploadCoverPicture()" id="uploadCoverBtn"
+                    class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Footer -->
+    <footer class="footer-section mt-16">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center">
+                <p>&copy; 2025 Astegni. All rights reserved. | Admin Panel</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="./js/api-config.js"></script>
+    <script src="./js/auth.js"></script>
+
+    <!-- Access Control - Restricts page to system-settings and manage-admins departments -->
+    <script src="./js/admin-pages/admin-access-control.js"></script>
+
+    <!-- Admin DB Service -->
+    <script src="./js/admin-pages/shared/admin-api-service.js"></script>
+
+    <!-- Array Field Utils for hero_title and location arrays -->
+    <script src="./js/admin-pages/shared/array-field-utils.js"></script>
+    <!-- Geolocation Utils for GPS detection -->
+    <script src="./js/admin-pages/shared/geolocation-utils.js"></script>
+
+    <!-- Standalone Script - All Navigation & Panel Management -->
+    <script src="./js/admin-pages/manage-admins-standalone.js"></script>
+
+    <!-- Profile Loader - Loads profile data from admin_profile and admin_reviews tables -->
+    <script src="./js/admin-pages/manage-admins-profile-loader.js"></script>
+
+    <!-- Admin Management Functions -->
+    <script src="./js/admin-pages/admin-management-functions.js"></script>
+
+    <!-- Load Common Modals -->
+    <script>
+        // Load notification modal component
+        fetch('common-modals/notification-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('notification-modal-container').innerHTML = html;
+                const scripts = document.getElementById('notification-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+                console.log('Notification Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading notification modal:', error));
+
+        // Load add department modal component
+        fetch('common-modals/add-department-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('add-department-modal-container').innerHTML = html;
+                const scripts = document.getElementById('add-department-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+                console.log('Add Department Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading add department modal:', error));
+
+        // Load logout modal component
+        fetch('common-modals/logout-modal.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('logout-modal-container').innerHTML = html;
+                const scripts = document.getElementById('logout-modal-container').querySelectorAll('script');
+                scripts.forEach(script => {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    document.body.appendChild(newScript);
+                });
+                console.log('Logout Modal loaded from common-modals');
+            })
+            .catch(error => console.error('Error loading logout modal:', error));
+    </script>
+
+    <!-- Fix theme background -->
+    <script>
+        // Ensure dark theme background is applied correctly
+        document.addEventListener('DOMContentLoaded', function() {
+            // Force background color application
+            function applyThemeBackground() {
+                const theme = document.documentElement.getAttribute('data-theme');
+                if (theme === 'dark') {
+                    document.body.style.backgroundColor = '#1E1E1E';
+                    document.documentElement.style.backgroundColor = '#1E1E1E';
+                } else {
+                    document.body.style.backgroundColor = '#ffffff';
+                    document.documentElement.style.backgroundColor = '#ffffff';
+                }
+            }
+
+            // Apply immediately
+            applyThemeBackground();
+
+            // Watch for theme changes
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.attributeName === 'data-theme') {
+                        applyThemeBackground();
+                    }
+                });
+            });
+
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['data-theme']
+            });
+        });
+    </script>
+
+    <!-- Live Clock Script -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const timeEl = document.getElementById('current-time');
+            const dateEl = document.getElementById('current-date');
+
+            if (timeEl) {
+                timeEl.textContent = now.toLocaleTimeString('en-US', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+            }
+
+            if (dateEl) {
+                dateEl.textContent = now.toLocaleDateString('en-US', {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+            }
+        }
+
+        // Update clock immediately and every second
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+
+    <!-- Placeholder functions for modals and features -->
+    <script>
+        function openNotificationModal() {
+            const modal = document.getElementById('notification-modal');
+            if (modal) {
+                modal.classList.add('active');
+            } else {
+                console.log('Notification modal not loaded yet');
+            }
+        }
+
+        function openAddDepartmentModal() {
+            const modal = document.getElementById('add-department-modal');
+            if (modal) {
+                modal.classList.add('active');
+            }
+        }
+
+        function openLogoutModal() {
+            const modal = document.getElementById('logout-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+        }
+
+        function closeLogoutModal() {
+            const modal = document.getElementById('logout-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('refreshToken');
+            localStorage.removeItem('adminUser');
+            localStorage.removeItem('adminAuth');
+            window.location.href = 'index.html';
+        }
+
+        function openAdminSettings() {
+            alert('Admin settings coming soon!');
+        }
+
+        function openCreateRoleModal() {
+            alert('Create role modal coming soon!');
+        }
+
+        function exportActivityLog() {
+            alert('Exporting activity log...');
+        }
+
+        // Note: openUploadCoverModal, openUploadProfileModal, openEditProfileModal,
+        // and related profile functions are now defined in manage-admins-profile-loader.js
+
+        function clearActiveFilters() {
+            document.getElementById('active-search-input').value = '';
+            document.getElementById('active-department-filter').value = '';
+            document.getElementById('active-status-filter').value = '';
+        }
+    </script>
+
+</body>
+</html>

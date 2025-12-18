@@ -1,5 +1,6 @@
 // Authentication System for Admin Dashboard
-const API_BASE_URL = 'https://api.astegni.com';
+// API_BASE_URL is set globally by api-config.js (loaded first)
+// This file should NOT redeclare it
 
 // Initialize dashboard without requiring authentication
 document.addEventListener('DOMContentLoaded', async function() {
@@ -16,15 +17,21 @@ document.addEventListener('DOMContentLoaded', async function() {
             // Check if user has admin role
             if (user.roles && user.roles.includes('admin')) {
                 isAuthenticated = true;
-                adminUser = user;
-                // Sync with admin auth storage
+                // Sync with admin auth storage, preserving existing department info
                 localStorage.setItem('adminAuth', 'true');
-                localStorage.setItem('adminUser', JSON.stringify({
+                const existingAdminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+                const mergedAdminUser = {
                     email: user.email || user.phone,
                     name: user.name || `${user.first_name} ${user.father_name}`,
                     role: 'admin',
-                    loginTime: new Date().toISOString()
-                }));
+                    loginTime: new Date().toISOString(),
+                    // Preserve existing department info if available
+                    department: existingAdminUser.department || user.department,
+                    departments: existingAdminUser.departments || user.departments || []
+                };
+                localStorage.setItem('adminUser', JSON.stringify(mergedAdminUser));
+                // Use the merged admin user with preserved department info
+                adminUser = mergedAdminUser;
             }
         } catch (e) {
             console.error('Error parsing user data:', e);
@@ -283,8 +290,11 @@ async function handleLogin(event) {
         }
 
         // Save authentication data
+        // Store token in multiple keys for compatibility across admin pages
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('adminToken', data.access_token);  // Primary admin token key
+        localStorage.setItem('admin_access_token', data.access_token);  // Fallback
         localStorage.setItem('adminAuth', 'true');
 
         // Store admin_id for profile lookups
@@ -309,6 +319,17 @@ async function handleLogin(event) {
             console.warn('⚠️ Could not load admin profile, using basic data:', profileError);
         }
 
+        // Determine the default department - prioritize manage-system-settings if user has it
+        const userDepartments = data.departments || [];
+        let defaultDepartment = 'manage-system-settings';
+        if (userDepartments.length > 0) {
+            // If user has manage-system-settings, use it (full access)
+            // Otherwise, use the first department in the list
+            defaultDepartment = userDepartments.includes('manage-system-settings')
+                ? 'manage-system-settings'
+                : userDepartments[0];
+        }
+
         const adminUser = {
             id: data.admin_id,
             email: data.email,
@@ -317,8 +338,8 @@ async function handleLogin(event) {
                       .filter(n => n).join(' ') :
                   'Admin User'),
             role: 'admin',
-            departments: data.departments || [],
-            department: (data.departments && data.departments[0]) || 'manage-system-settings',
+            departments: userDepartments,
+            department: defaultDepartment,
             loginTime: new Date().toISOString(),
             admin_username: adminProfileData?.admin_username || data.email.split('@')[0]
         };
@@ -364,7 +385,9 @@ async function handleRegister(event) {
     event.preventDefault();
 
     const form = event.target;
-    const fullName = form.name.value.trim();
+    const firstName = form.first_name.value.trim();
+    const fatherName = form.father_name.value.trim();
+    const grandfatherName = form.grandfather_name.value.trim();
     const email = form.email.value.trim();
     const password = form.password.value;
     const confirm = form.confirm.value;
@@ -377,10 +400,17 @@ async function handleRegister(event) {
     // Validate
     let hasError = false;
 
-    if (!fullName || fullName.length < 2) {
-        showFieldError('register-name', 'Please enter your full name');
+    if (!firstName || firstName.length < 2) {
+        showFieldError('register-first-name', 'Please enter your first name');
         hasError = true;
     }
+
+    if (!fatherName || fatherName.length < 2) {
+        showFieldError('register-father-name', 'Please enter your father\'s name');
+        hasError = true;
+    }
+
+    // Grandfather name is optional, no validation needed
 
     if (!validateEmail(email)) {
         showFieldError('register-email', 'Please enter a valid email address');
@@ -426,6 +456,9 @@ async function handleRegister(event) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
+                first_name: firstName,
+                father_name: fatherName,
+                grandfather_name: grandfatherName,
                 email: email,
                 password: password,
                 otp_code: code,
@@ -446,18 +479,36 @@ async function handleRegister(event) {
         }
 
         // Save authentication data
+        // Store token in multiple keys for compatibility across admin pages
         localStorage.setItem('token', data.access_token);
         localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('adminToken', data.access_token);  // Primary admin token key
+        localStorage.setItem('admin_access_token', data.access_token);  // Fallback
         localStorage.setItem('adminAuth', 'true');
         localStorage.setItem('adminId', data.admin_id);
+
+        // Build full name from response or use the form values
+        const fullName = data.name || `${firstName} ${fatherName}${grandfatherName ? ' ' + grandfatherName : ''}`;
+
+        // Determine the default department - prioritize manage-system-settings if user has it
+        const regDepartments = data.departments || [department];
+        let regDefaultDepartment = department;
+        if (regDepartments.includes('manage-system-settings')) {
+            regDefaultDepartment = 'manage-system-settings';
+        } else if (regDepartments.length > 0) {
+            regDefaultDepartment = regDepartments[0];
+        }
 
         const adminUser = {
             id: data.admin_id,
             email: data.email,
-            name: data.name,
+            name: fullName,
+            first_name: firstName,
+            father_name: fatherName,
+            grandfather_name: grandfatherName,
             role: 'admin',
-            departments: data.departments || [department],
-            department: (data.departments && data.departments[0]) || department,
+            departments: regDepartments,
+            department: regDefaultDepartment,
             createdAt: new Date().toISOString()
         };
 
@@ -468,7 +519,10 @@ async function handleRegister(event) {
             id: data.admin_id,
             email: data.email,
             username: data.email.split('@')[0],
-            name: data.name,
+            name: fullName,
+            first_name: firstName,
+            father_name: fatherName,
+            grandfather_name: grandfatherName,
             department: adminUser.department,
             departments: data.departments || [department]
         };
@@ -661,10 +715,15 @@ async function handleLogout() {
         console.error('Logout error:', error);
     }
 
-    // Clear all session data
+    // Clear all session data (including admin-specific tokens)
     localStorage.removeItem('adminAuth');
     localStorage.removeItem('adminUser');
     localStorage.removeItem('adminSession');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('admin_access_token');
+    localStorage.removeItem('adminId');
+    localStorage.removeItem('adminEmail');
+    localStorage.removeItem('adminProfile');
     localStorage.removeItem('rememberAdmin');
     localStorage.removeItem('token');
     localStorage.removeItem('access_token');
@@ -698,20 +757,25 @@ function requireAuth(page) {
     const department = adminUser.department || 'manage-system-settings';
 
     // Department access mapping
+    // NOTE: 'manage-system-settings' has FULL ACCESS to all pages (super admin)
     const departmentAccess = {
-        'manage-campaigns': ['manage-campaigns.html'],
+        'manage-advertisers': ['manage-advertisers.html'],
         'manage-schools': ['manage-schools.html'],
         'manage-courses': ['manage-courses.html'],
-        'manage-tutor-documents': ['manage-tutor-documents.html'],
+        'manage-credentials': ['manage-credentials.html'],
         'manage-customers': ['manage-customers.html'],
         'manage-contents': ['manage-contents.html'],
-        'manage-system-settings': [  // Full access
-            'manage-campaigns.html',
+        'manage-campaigns': ['manage-campaigns.html'],
+        'manage-admins': ['manage-admins.html'],
+        'manage-system-settings': [  // Full access (super admin)
+            'manage-advertisers.html',
             'manage-schools.html',
             'manage-courses.html',
-            'manage-tutor-documents.html',
+            'manage-credentials.html',
             'manage-customers.html',
             'manage-contents.html',
+            'manage-campaigns.html',
+            'manage-admins.html',
             'manage-system-settings.html'
         ]
     };
@@ -921,13 +985,25 @@ function updateDepartmentSwitcher(adminUser) {
     const switcherSection = document.getElementById('department-switcher-section');
     const departmentOptions = document.getElementById('department-options');
 
+    if (!switcherSection || !departmentOptions) return;
+
     if (!adminUser.departments || adminUser.departments.length <= 1) {
         // Hide switcher if only one department
         switcherSection.classList.add('hidden');
         return;
     }
 
-    // Show switcher
+    // Check if user is from system-settings department (has access to all departments)
+    const isSystemSettings = adminUser.department === 'manage-system-settings' ||
+                             adminUser.departments.includes('manage-system-settings');
+
+    // Hide switcher for system-settings users - they have full access to all departments
+    if (isSystemSettings) {
+        switcherSection.classList.add('hidden');
+        return;
+    }
+
+    // Show switcher for users with multiple departments (but not system-settings)
     switcherSection.classList.remove('hidden');
 
     // Clear existing options
@@ -941,11 +1017,10 @@ function updateDepartmentSwitcher(adminUser) {
             option.classList.add('active');
         }
 
+        const icon = getDepartmentIcon(dept);
         option.innerHTML = `
-            <div class="department-option-label">
-                <span class="department-name">${formatDepartmentName(dept)}</span>
-                <span class="department-position">Staff</span>
-            </div>
+            <i class="fas ${icon} department-icon"></i>
+            <span class="department-name">${formatDepartmentName(dept)}</span>
             ${dept === adminUser.department ? '<i class="fas fa-check department-check"></i>' : ''}
         `;
 
@@ -960,6 +1035,20 @@ function formatDepartmentName(dept) {
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
+}
+
+// Get department icon
+function getDepartmentIcon(dept) {
+    const icons = {
+        'manage-courses': 'fa-graduation-cap',
+        'manage-schools': 'fa-school',
+        'manage-campaigns': 'fa-bullhorn',
+        'manage-credentials': 'fa-certificate',
+        'manage-contents': 'fa-photo-video',
+        'manage-customers': 'fa-users',
+        'manage-system-settings': 'fa-cog'
+    };
+    return icons[dept] || 'fa-folder';
 }
 
 // Switch active department

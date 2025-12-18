@@ -2,10 +2,28 @@
 // COMMUNITY MANAGER - Database Integration
 // ============================================
 
+// Helper function to get token from localStorage (checks both 'token' and 'access_token')
+function getAuthToken() {
+  return localStorage.getItem('token') || localStorage.getItem('access_token');
+}
+
+// Helper function to safely encode user data for onclick handlers
+function encodeUserForOnclick(user) {
+  const safeUser = {
+    id: user.id || null,
+    profileId: user.profileId || null,
+    name: (user.name || 'Unknown User'),
+    avatar: (user.avatar || ''),
+    profileType: (user.profileType || '')
+  };
+  // Use HTML entity encoding for the JSON string to safely embed in onclick
+  return JSON.stringify(safeUser).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+}
+
 class CommunityManager {
   constructor() {
     // Use global API_BASE_URL or fallback to localhost
-    this.API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+    this.API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
     this.modal = null;
     this.currentTab = "followers";
     this.followers = [];
@@ -65,16 +83,31 @@ class CommunityManager {
     }
   }
 
+  // Get role from JWT token
+  getActiveRole() {
+    const token = getAuthToken();
+    if (!token) return 'student';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.role || 'student';
+    } catch (e) {
+      console.warn('Could not parse role from token, defaulting to student');
+      return 'student';
+    }
+  }
+
   async loadBadgeCounts() {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         console.log('No token found, badge counts will remain at 0');
         return;
       }
 
-      // Fetch connection stats
-      const statsResponse = await fetch(`${this.API_BASE_URL}/api/connections/stats`, {
+      const activeRole = this.getActiveRole();
+
+      // Fetch connection stats with role parameter
+      const statsResponse = await fetch(`${this.API_BASE_URL}/api/connections/stats?role=${activeRole}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -87,8 +120,8 @@ class CommunityManager {
 
       this.stats = await statsResponse.json();
 
-      // Fetch events count
-      const eventsResponse = await fetch(`${this.API_BASE_URL}/api/events`, {
+      // Fetch events count with role parameter
+      const eventsResponse = await fetch(`${this.API_BASE_URL}/api/events?role=${activeRole}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -97,8 +130,8 @@ class CommunityManager {
       const eventsData = eventsResponse.ok ? await eventsResponse.json() : { count: 0 };
       const eventsCount = eventsData.count || 0;
 
-      // Fetch clubs count
-      const clubsResponse = await fetch(`${this.API_BASE_URL}/api/clubs`, {
+      // Fetch clubs count with role parameter
+      const clubsResponse = await fetch(`${this.API_BASE_URL}/api/clubs?role=${activeRole}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -402,7 +435,7 @@ class CommunityManager {
     grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading from database...</div>';
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Please log in to view connections</div>';
         return;
@@ -441,7 +474,7 @@ class CommunityManager {
   }
 
   async loadConnectionsGrid(section, category, grid) {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
 
     let status = '';
     let direction = '';
@@ -458,10 +491,21 @@ class CommunityManager {
       direction = 'all';
     }
 
+    // Get current user's active role from JWT token
+    let activeRole = null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      activeRole = payload.role; // e.g., 'parent', 'student', 'tutor'
+    } catch (e) {
+      console.warn('Could not parse role from token');
+    }
+
     // Build query parameters
     let queryParams = new URLSearchParams();
     if (status) queryParams.append('status', status);
     if (direction) queryParams.append('direction', direction);
+    // Add role parameter to filter by profile_id instead of user_id
+    if (activeRole) queryParams.append('role', activeRole);
 
     const response = await fetch(`${this.API_BASE_URL}/api/connections?${queryParams}`, {
       headers: {
@@ -484,7 +528,8 @@ class CommunityManager {
         const roles = otherUser.roles || [];
 
         // Map category to role check
-        if (category === 'students' || category === 'student') {
+        // Note: 'children' is used in parent profile as alias for 'student'
+        if (category === 'students' || category === 'student' || category === 'children') {
           return roles.includes('student');
         } else if (category === 'parents' || category === 'parent') {
           return roles.includes('parent');
@@ -529,7 +574,7 @@ class CommunityManager {
     grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading from database...</div>';
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Please log in to view requests</div>';
         return;
@@ -538,10 +583,21 @@ class CommunityManager {
       // Determine direction based on tab
       const direction = tab === 'received' ? 'incoming' : 'outgoing';
 
+      // Get current user's active role from JWT token
+      let activeRole = null;
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        activeRole = payload.role; // e.g., 'parent', 'student', 'tutor'
+      } catch (e) {
+        console.warn('Could not parse role from token');
+      }
+
       // Build query parameters
       let queryParams = new URLSearchParams();
       queryParams.append('status', 'pending');  // NEW: was 'connecting'
       queryParams.append('direction', direction);
+      // Add role parameter to filter by profile_id instead of user_id
+      if (activeRole) queryParams.append('role', activeRole);
 
       const response = await fetch(`${this.API_BASE_URL}/api/connections?${queryParams}`, {
         headers: {
@@ -562,11 +618,12 @@ class CommunityManager {
           const otherUser = this.getOtherUser(conn);
           const roles = otherUser.roles || [];
 
-          if (category === 'students') {
+          // Note: 'children' is used in parent profile as alias for 'student'
+          if (category === 'students' || category === 'student' || category === 'children') {
             return roles.includes('student');
-          } else if (category === 'parents') {
+          } else if (category === 'parents' || category === 'parent') {
             return roles.includes('parent');
-          } else if (category === 'tutors') {
+          } else if (category === 'tutors' || category === 'tutor') {
             return roles.includes('tutor');
           }
           return true;
@@ -612,16 +669,26 @@ class CommunityManager {
     });
 
     // Update filter count badges
-    const contentId = tab === 'received' ? 'received-content' : 'sent-content';
-    const contentElement = document.getElementById(contentId);
+    // Try both possible ID formats (different pages use different naming)
+    const possibleIds = tab === 'received'
+      ? ['received-content', 'received-requests-content']
+      : ['sent-content', 'sent-requests-content'];
+
+    let contentElement = null;
+    for (const id of possibleIds) {
+      contentElement = document.getElementById(id);
+      if (contentElement) break;
+    }
+
     if (contentElement) {
       const filterCounts = contentElement.querySelectorAll('.filter-count[data-role]');
       filterCounts.forEach(countElement => {
         const role = countElement.getAttribute('data-role');
 
+        // Note: 'children' is used in parent profile for students
         if (role === 'all') {
           countElement.textContent = counts.all;
-        } else if (role === 'students') {
+        } else if (role === 'students' || role === 'children') {
           countElement.textContent = counts.students;
         } else if (role === 'parents') {
           countElement.textContent = counts.parents;
@@ -700,8 +767,22 @@ class CommunityManager {
                 Decline
               </button>
             </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+              <button onclick="window.communityManager.messageUser(JSON.parse(this.dataset.user))" data-user="${encodeUserForOnclick(otherUser)}"
+                      style="flex: 1; padding: 0.5rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;"
+                      onmouseover="this.style.opacity='0.8'"
+                      onmouseout="this.style.opacity='1'">
+                <i class="fas fa-comment" style="margin-right: 0.25rem;"></i> Message
+              </button>
+            </div>
           ` : `
             <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+              <button onclick="window.communityManager.messageUser(JSON.parse(this.dataset.user))" data-user="${encodeUserForOnclick(otherUser)}"
+                      style="flex: 1; padding: 0.5rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;"
+                      onmouseover="this.style.opacity='0.8'"
+                      onmouseout="this.style.opacity='1'">
+                <i class="fas fa-comment" style="margin-right: 0.25rem;"></i> Message
+              </button>
               <button onclick="window.communityManager.cancelSentRequest(${conn.id})"
                       style="flex: 1; padding: 0.5rem; background: transparent; color: var(--text-muted); border: 1px solid rgba(var(--border-rgb, 229, 231, 235), 0.3); border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: all 0.2s;"
                       onmouseover="this.style.background='rgba(239, 68, 68, 0.1)'; this.style.color='#ef4444'; this.style.borderColor='#ef4444'"
@@ -719,7 +800,7 @@ class CommunityManager {
     if (!confirm("Are you sure you want to cancel this connection request?")) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await fetch(`${this.API_BASE_URL}/api/connections/${connectionId}`, {
         method: 'DELETE',
         headers: {
@@ -749,7 +830,7 @@ class CommunityManager {
     if (!grid) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Please log in to search requests</div>';
         return;
@@ -819,10 +900,11 @@ class CommunityManager {
   }
 
   async loadEventsGrid(grid) {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     const currentUserId = this.getCurrentUserId();
+    const activeRole = this.getActiveRole();
 
-    const response = await fetch(`${this.API_BASE_URL}/api/events`, {
+    const response = await fetch(`${this.API_BASE_URL}/api/events?role=${activeRole}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -900,10 +982,11 @@ class CommunityManager {
   }
 
   async loadClubsGrid(grid) {
-    const token = localStorage.getItem('token');
+    const token = getAuthToken();
     const currentUserId = this.getCurrentUserId();
+    const activeRole = this.getActiveRole();
 
-    const response = await fetch(`${this.API_BASE_URL}/api/clubs`, {
+    const response = await fetch(`${this.API_BASE_URL}/api/clubs?role=${activeRole}`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -985,8 +1068,8 @@ class CommunityManager {
       const otherUser = this.getOtherUser(conn);
       const isPending = section === 'requests';
 
-      // Calculate connection duration
-      const connectedDate = conn.created_at ? new Date(conn.created_at) : null;
+      // Calculate connection duration (API returns connected_at for accepted connections)
+      const connectedDate = conn.connected_at ? new Date(conn.connected_at) : null;
       const connectedDays = connectedDate ? Math.floor((new Date() - connectedDate) / (1000 * 60 * 60 * 24)) : 0;
       const connectedText = connectedDays === 0 ? 'Connected today' :
                            connectedDays === 1 ? 'Connected yesterday' :
@@ -1054,7 +1137,7 @@ class CommunityManager {
             </div>
           ` : `
             <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
-              <button onclick="window.communityManager.messageUser(${otherUser.id})"
+              <button onclick="window.communityManager.messageUser(JSON.parse(this.dataset.user))" data-user="${encodeUserForOnclick(otherUser)}"
                       style="flex: 1; padding: 0.5rem; background: var(--button-bg, #3b82f6); color: white; border: none; border-radius: 6px; font-size: 0.8rem; cursor: pointer; font-weight: 500; transition: opacity 0.2s;"
                       onmouseover="this.style.opacity='0.8'"
                       onmouseout="this.style.opacity='1'">
@@ -1108,9 +1191,10 @@ class CommunityManager {
         const role = countElement.getAttribute('data-role');
 
         // Set the count based on the role
+        // Note: 'children' is used in parent profile for students
         if (role === 'all') {
           countElement.textContent = counts.all;
-        } else if (role === 'students') {
+        } else if (role === 'students' || role === 'children') {
           countElement.textContent = counts.students;
         } else if (role === 'parents') {
           countElement.textContent = counts.parents;
@@ -1123,7 +1207,7 @@ class CommunityManager {
 
   async loadFollowers(container) {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         container.innerHTML = '<div class="empty-state">Please log in to view connections</div>';
         return;
@@ -1184,7 +1268,7 @@ class CommunityManager {
 
   async loadFollowing(container) {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         container.innerHTML = '<div class="empty-state">Please log in to view connections</div>';
         return;
@@ -1229,7 +1313,7 @@ class CommunityManager {
                 <button class="btn-disconnect" onclick="window.communityManager.disconnectUser(${conn.id})">
                   Disconnect
                 </button>
-                <button class="btn-connect" onclick="window.communityManager.messageUser(${otherUser.id})">
+                <button class="btn-connect" onclick="window.communityManager.messageUser(JSON.parse(this.dataset.user))" data-user="${encodeUserForOnclick(otherUser)}">
                   Message
                 </button>
               </div>
@@ -1246,10 +1330,11 @@ class CommunityManager {
   async loadGroups(container) {
     // Groups functionality - using events from database
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const currentUserId = this.getCurrentUserId();
+      const activeRole = this.getActiveRole();
 
-      const response = await fetch(`${this.API_BASE_URL}/api/events`, {
+      const response = await fetch(`${this.API_BASE_URL}/api/events?role=${activeRole}`, {
         headers: token ? {
           'Authorization': `Bearer ${token}`
         } : {}
@@ -1332,7 +1417,7 @@ class CommunityManager {
 
   async loadClubs(container) {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const currentUserId = this.getCurrentUserId();
 
       const response = await fetch(`${this.API_BASE_URL}/api/clubs`, {
@@ -1454,7 +1539,7 @@ class CommunityManager {
 
   getCurrentUserId() {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) return null;
 
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -1468,7 +1553,7 @@ class CommunityManager {
 
   async acceptConnection(connectionId) {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await fetch(`${this.API_BASE_URL}/api/connections/${connectionId}`, {
         method: 'PUT',
         headers: {
@@ -1494,7 +1579,7 @@ class CommunityManager {
 
   async rejectConnection(connectionId) {
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await fetch(`${this.API_BASE_URL}/api/connections/${connectionId}`, {
         method: 'PUT',
         headers: {
@@ -1522,7 +1607,7 @@ class CommunityManager {
     if (!confirm("Are you sure you want to disconnect from this user?")) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       const response = await fetch(`${this.API_BASE_URL}/api/connections/${connectionId}`, {
         method: 'PUT',
         headers: {
@@ -1546,10 +1631,60 @@ class CommunityManager {
     }
   }
 
-  messageUser(userId) {
-    this.showToast("🔗 Opening chat...", "success");
-    // TODO: Implement chat functionality
-    console.log('Message user:', userId);
+  messageUser(userIdOrObject, userName = null, userAvatar = null, userProfileId = null, userProfileType = null) {
+    // Support both object and individual parameters for backward compatibility
+    let userId, name, avatar, profileId, profileType;
+
+    if (typeof userIdOrObject === 'object' && userIdOrObject !== null) {
+      // Called with a single object
+      userId = userIdOrObject.id;
+      name = userIdOrObject.name;
+      avatar = userIdOrObject.avatar;
+      profileId = userIdOrObject.profileId;
+      profileType = userIdOrObject.profileType;
+    } else {
+      // Called with individual parameters
+      userId = userIdOrObject;
+      name = userName;
+      avatar = userAvatar;
+      profileId = userProfileId;
+      profileType = userProfileType;
+    }
+
+    console.log('Message user:', userId, name, avatar, profileId, profileType);
+
+    // Close the community modal
+    if (typeof closeCommunityModal === 'function') {
+      closeCommunityModal();
+    } else {
+      // Fallback: manually close the modal
+      const communityModal = document.getElementById('communityModal');
+      if (communityModal) {
+        communityModal.classList.add('hidden');
+        communityModal.style.display = 'none';
+        document.body.style.overflow = '';
+      }
+    }
+
+    // Open chat modal with the target user
+    if (typeof openChatModal === 'function') {
+      const targetUser = {
+        id: userId,
+        user_id: userId,
+        profile_id: profileId,
+        full_name: name,
+        name: name,
+        profile_picture: avatar,
+        avatar: avatar,
+        role: profileType,
+        profile_type: profileType,
+        is_online: false
+      };
+      openChatModal(targetUser);
+    } else {
+      console.error('openChatModal function not found');
+      this.showToast("Chat feature not available", "error");
+    }
   }
 
   async joinEvent(eventId) {
@@ -1572,7 +1707,7 @@ class CommunityManager {
     if (!grid) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = getAuthToken();
       if (!token) {
         grid.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--text-muted);">Please log in to search connections</div>';
         return;

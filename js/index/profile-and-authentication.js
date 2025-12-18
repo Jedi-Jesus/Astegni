@@ -69,13 +69,13 @@ async function switchRole(newRole) {
     console.log('[switchRole] Attempting to switch to role:', newRole);
 
     try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             showToast('Please login to switch roles', 'error');
             return;
         }
 
-        const response = await fetch('https://api.astegni.com/api/switch-role', {
+        const response = await fetch('http://localhost:8000/api/switch-role', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -125,7 +125,10 @@ async function switchRole(newRole) {
             APP_STATE.userRole = newRole;
 
             // Update localStorage
-            localStorage.setItem('userRole', newRole);
+            // Only store userRole if it has a valid value (prevent storing "undefined" string)
+            if (newRole && newRole !== 'undefined') {
+                localStorage.setItem('userRole', newRole);
+            }
             localStorage.setItem('currentUser', JSON.stringify(APP_STATE.currentUser));
 
             // Show success message
@@ -498,7 +501,7 @@ window.sendOTP = async function() {
 
     try {
         // Step 1: Send registration OTP (does NOT create account yet)
-        const response = await fetch('https://api.astegni.com/api/send-registration-otp', {
+        const response = await fetch('http://localhost:8000/api/send-registration-otp', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -572,7 +575,7 @@ window.verifyRegistrationOTP = async function() {
 
     try {
         // Step 2: Verify OTP and create account
-        const response = await fetch('https://api.astegni.com/api/verify-registration-otp', {
+        const response = await fetch('http://localhost:8000/api/verify-registration-otp', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -622,12 +625,15 @@ window.verifyRegistrationOTP = async function() {
 
             // Update localStorage
             localStorage.setItem('currentUser', JSON.stringify(formattedUser));
-            localStorage.setItem('userRole', data.user.active_role);
+            // Only store userRole if it has a valid value (prevent storing "undefined" string)
+            if (data.user.active_role && data.user.active_role !== 'undefined') {
+                localStorage.setItem('userRole', data.user.active_role);
+            }
 
             // Update APP_STATE
             APP_STATE.isLoggedIn = true;
             APP_STATE.currentUser = formattedUser;
-            APP_STATE.userRole = data.user.active_role;
+            APP_STATE.userRole = data.user.active_role || null;
 
             // Update AuthManager
             if (window.AuthManager) {
@@ -680,7 +686,7 @@ window.resendRegistrationOTP = async function() {
     }
 
     try {
-        const response = await fetch('https://api.astegni.com/api/send-registration-otp', {
+        const response = await fetch('http://localhost:8000/api/send-registration-otp', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -754,9 +760,9 @@ function logout() {
     }
     
     // Call backend logout
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
     if (token) {
-        fetch('https://api.astegni.com/api/logout', {
+        fetch('http://localhost:8000/api/logout', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -830,7 +836,7 @@ async function handleForgotPassword(e) {
     submitBtn.textContent = 'Sending OTP...';
 
     try {
-        const response = await fetch('https://api.astegni.com/api/forgot-password', {
+        const response = await fetch('http://localhost:8000/api/forgot-password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -932,7 +938,7 @@ async function handleResetPassword(e) {
     submitBtn.textContent = 'Resetting Password...';
 
     try {
-        const response = await fetch('https://api.astegni.com/api/reset-password', {
+        const response = await fetch('http://localhost:8000/api/reset-password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -961,11 +967,14 @@ async function handleResetPassword(e) {
             // Update APP_STATE with user data
             APP_STATE.isLoggedIn = true;
             APP_STATE.currentUser = data.user;
-            APP_STATE.userRole = data.user.role;
+            APP_STATE.userRole = data.user.role || null;
 
             // Store in localStorage
             localStorage.setItem('currentUser', JSON.stringify(data.user));
-            localStorage.setItem('userRole', data.user.role);
+            // Only store userRole if it has a valid value (prevent storing "undefined" string)
+            if (data.user.role && data.user.role !== 'undefined') {
+                localStorage.setItem('userRole', data.user.role);
+            }
 
             // Clear form
             document.getElementById('reset-otp').value = '';
@@ -1005,7 +1014,7 @@ async function resendPasswordResetOTP(event) {
     }
 
     try {
-        const response = await fetch('https://api.astegni.com/api/forgot-password', {
+        const response = await fetch('http://localhost:8000/api/forgot-password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1273,3 +1282,360 @@ window.handleComingSoonNotification = function(e) {
     }
     return false;
 };
+
+// ============================================
+//   PARENT INVITATION FROM URL HANDLER
+// ============================================
+
+/**
+ * Handle parent invitation registration from URL parameters.
+ * When a new parent clicks the invitation link in their email,
+ * the URL will contain: ?action=parent-register&token=xxx
+ *
+ * This function:
+ * 1. Checks for the action=parent-register URL parameter
+ * 2. Extracts the invitation token
+ * 3. Fetches invitation details from the backend
+ * 4. Opens a special parent registration modal with prefilled data
+ */
+async function handleParentInvitationFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    const token = urlParams.get('token');
+
+    // Only process parent registration invitations
+    if (action !== 'parent-register' || !token) {
+        return;
+    }
+
+    console.log('[Parent Invitation] Processing invitation with token:', token.substring(0, 10) + '...');
+
+    try {
+        // Fetch invitation details from backend
+        const response = await fetch(`${API_BASE_URL}/api/parent/invitation/${token}`);
+
+        if (!response.ok) {
+            if (response.status === 404) {
+                showToast('Invitation not found or has expired', 'error');
+            } else if (response.status === 400) {
+                showToast('This invitation has already been accepted', 'warning');
+            } else {
+                showToast('Error loading invitation. Please try again.', 'error');
+            }
+            // Clear URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+        }
+
+        const invitation = await response.json();
+        console.log('[Parent Invitation] Invitation details:', invitation);
+
+        // Store invitation data for the registration form
+        window.parentInvitationData = {
+            token: token,
+            email: invitation.email,
+            phone: invitation.phone,
+            first_name: invitation.first_name,
+            father_name: invitation.father_name,
+            grandfather_name: invitation.grandfather_name,
+            gender: invitation.gender,
+            relationship_type: invitation.relationship_type,
+            student_name: invitation.student_name
+        };
+
+        // Open the parent registration modal
+        openParentInvitationModal(invitation);
+
+    } catch (error) {
+        console.error('[Parent Invitation] Error:', error);
+        showToast('Network error. Please check your connection.', 'error');
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+}
+
+/**
+ * Open a special registration modal for invited parents
+ * Pre-fills their data from the invitation and asks only for password + OTP
+ */
+function openParentInvitationModal(invitation) {
+    // Check if parent-invitation-modal exists, otherwise create it
+    let modal = document.getElementById('parent-invitation-modal');
+
+    if (!modal) {
+        modal = createParentInvitationModal();
+        document.body.appendChild(modal);
+    }
+
+    // Fill in the invitation details
+    const studentNameEl = modal.querySelector('#invitation-student-name');
+    const parentNameEl = modal.querySelector('#invitation-parent-name');
+    const relationshipEl = modal.querySelector('#invitation-relationship');
+    const emailEl = modal.querySelector('#invitation-email');
+
+    if (studentNameEl) studentNameEl.textContent = invitation.student_name || 'Your child';
+    if (parentNameEl) parentNameEl.textContent = `${invitation.first_name} ${invitation.father_name}` || 'Parent';
+    if (relationshipEl) relationshipEl.textContent = invitation.relationship_type || 'Parent';
+    if (emailEl) emailEl.textContent = invitation.email || invitation.phone || '';
+
+    // Open the modal
+    openModal('parent-invitation-modal');
+}
+
+/**
+ * Create the parent invitation modal dynamically
+ */
+function createParentInvitationModal() {
+    const modal = document.createElement('div');
+    modal.id = 'parent-invitation-modal';
+    modal.className = 'modal fixed inset-0 z-50 flex items-center justify-center hidden';
+    modal.innerHTML = `
+        <div class="modal-overlay fixed inset-0 bg-black/50 backdrop-blur-sm" onclick="closeModal('parent-invitation-modal')"></div>
+        <div class="modal-content relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-modal-in">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-purple-500 to-pink-500 px-6 py-5 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold">Welcome to Astegni!</h2>
+                        <p class="text-purple-100 text-sm">Complete your parent registration</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6">
+                <!-- Invitation Info -->
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 mb-5 border border-purple-200 dark:border-purple-700/50">
+                    <p class="text-sm text-purple-700 dark:text-purple-300 mb-2">
+                        <span id="invitation-student-name" class="font-semibold">Your child</span> has invited you as their <span id="invitation-relationship" class="font-semibold">parent</span>
+                    </p>
+                    <p class="text-xs text-purple-600 dark:text-purple-400">
+                        Hello, <span id="invitation-parent-name" class="font-medium">Parent</span> (<span id="invitation-email" class="font-medium">email</span>)
+                    </p>
+                </div>
+
+                <!-- Registration Form -->
+                <form id="parent-invitation-form" onsubmit="handleParentInvitationSubmit(event)">
+                    <!-- OTP Input -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Enter the 6-digit OTP from your email
+                        </label>
+                        <input type="text" id="parent-invitation-otp" required
+                               maxlength="6" pattern="[0-9]{6}"
+                               placeholder="Enter 6-digit OTP"
+                               class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all text-center text-2xl font-mono tracking-widest">
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Create your password
+                        </label>
+                        <input type="password" id="parent-invitation-password" required
+                               minlength="6"
+                               placeholder="Create a password (min 6 characters)"
+                               class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                        <div id="parent-password-strength" class="mt-1"></div>
+                    </div>
+
+                    <!-- Confirm Password -->
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Confirm your password
+                        </label>
+                        <input type="password" id="parent-invitation-confirm-password" required
+                               minlength="6"
+                               placeholder="Confirm your password"
+                               class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:border-purple-500 focus:outline-none transition-all">
+                        <div id="parent-password-match" class="mt-1 text-sm"></div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit" id="parent-invitation-submit"
+                            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Complete Registration
+                    </button>
+                </form>
+            </div>
+
+            <!-- Close Button -->
+            <button onclick="closeModal('parent-invitation-modal')" class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+    `;
+
+    // Add password validation listeners
+    setTimeout(() => {
+        const password = document.getElementById('parent-invitation-password');
+        const confirmPassword = document.getElementById('parent-invitation-confirm-password');
+        const strengthEl = document.getElementById('parent-password-strength');
+        const matchEl = document.getElementById('parent-password-match');
+
+        if (password) {
+            password.addEventListener('input', () => {
+                if (strengthEl && typeof calculatePasswordStrengthForElement === 'function') {
+                    calculatePasswordStrengthForElement(password.value, strengthEl);
+                }
+                validateParentPasswordMatch();
+            });
+        }
+
+        if (confirmPassword) {
+            confirmPassword.addEventListener('input', validateParentPasswordMatch);
+        }
+    }, 100);
+
+    return modal;
+}
+
+function validateParentPasswordMatch() {
+    const password = document.getElementById('parent-invitation-password');
+    const confirmPassword = document.getElementById('parent-invitation-confirm-password');
+    const matchEl = document.getElementById('parent-password-match');
+
+    if (!password || !confirmPassword || !matchEl) return;
+
+    if (confirmPassword.value === '') {
+        matchEl.textContent = '';
+        matchEl.className = 'mt-1 text-sm';
+        return;
+    }
+
+    if (password.value === confirmPassword.value) {
+        matchEl.textContent = '✓ Passwords match';
+        matchEl.className = 'mt-1 text-sm text-green-500';
+    } else {
+        matchEl.textContent = '✗ Passwords do not match';
+        matchEl.className = 'mt-1 text-sm text-red-500';
+    }
+}
+
+/**
+ * Handle parent invitation form submission
+ * Calls the OTP login endpoint to create the user and accept the invitation
+ */
+async function handleParentInvitationSubmit(event) {
+    event.preventDefault();
+
+    const otp = document.getElementById('parent-invitation-otp')?.value;
+    const password = document.getElementById('parent-invitation-password')?.value;
+    const confirmPassword = document.getElementById('parent-invitation-confirm-password')?.value;
+    const submitBtn = document.getElementById('parent-invitation-submit');
+
+    // Validation
+    if (!otp || otp.length !== 6) {
+        showToast('Please enter the 6-digit OTP from your email', 'error');
+        return;
+    }
+
+    if (!password || password.length < 6) {
+        showToast('Password must be at least 6 characters', 'error');
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showToast('Passwords do not match', 'error');
+        return;
+    }
+
+    if (!window.parentInvitationData) {
+        showToast('Invitation data not found. Please use the link from your email.', 'error');
+        return;
+    }
+
+    // Show loading state
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <svg class="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Creating your account...
+        `;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/parent/otp-login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: window.parentInvitationData.email,
+                phone: window.parentInvitationData.phone,
+                otp_code: otp,
+                new_password: password
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.detail || 'Registration failed');
+        }
+
+        // Success! Store tokens and user data
+        localStorage.setItem('token', data.access_token);
+        localStorage.setItem('refreshToken', data.refresh_token);
+        localStorage.setItem('userRole', 'parent');
+
+        // Fetch user data
+        const userResponse = await fetch(`${API_BASE_URL}/api/me`, {
+            headers: {
+                'Authorization': `Bearer ${data.access_token}`
+            }
+        });
+
+        if (userResponse.ok) {
+            const userData = await userResponse.json();
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            APP_STATE.currentUser = userData;
+        }
+
+        APP_STATE.isLoggedIn = true;
+        APP_STATE.userRole = 'parent';
+
+        // Close modal and clear URL
+        closeModal('parent-invitation-modal');
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Show success message
+        showToast('🎉 Welcome to Astegni! Your account has been created.', 'success');
+
+        // Redirect to parent profile after a delay
+        setTimeout(() => {
+            window.location.href = 'profile-pages/parent-profile.html';
+        }, 1500);
+
+    } catch (error) {
+        console.error('[Parent Registration] Error:', error);
+        showToast(error.message || 'Registration failed. Please try again.', 'error');
+
+        // Reset button
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Complete Registration
+            `;
+        }
+    }
+}
+
+// Export functions
+window.handleParentInvitationFromURL = handleParentInvitationFromURL;
+window.handleParentInvitationSubmit = handleParentInvitationSubmit;

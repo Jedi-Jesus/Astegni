@@ -24,10 +24,11 @@ class EmailService:
     def _load_config(self):
         """Load email configuration from database or .env file"""
         try:
-            # Try to load from database first
-            DATABASE_URL = os.getenv('DATABASE_URL')
-            if DATABASE_URL:
-                conn = psycopg.connect(DATABASE_URL)
+            # Try to load from admin database first (system_email_config is in astegni_admin_db)
+            ADMIN_DATABASE_URL = os.getenv('ADMIN_DATABASE_URL',
+                'postgresql://astegni_user:Astegni2025@localhost:5432/astegni_admin_db')
+            if ADMIN_DATABASE_URL:
+                conn = psycopg.connect(ADMIN_DATABASE_URL)
                 cursor = conn.cursor()
 
                 cursor.execute("""
@@ -489,6 +490,403 @@ Astegni Team
         except Exception as e:
             print(f"[EMAIL ERROR] Failed to send parent invitation to {to_email}: {str(e)}")
             print(f"[EMAIL FALLBACK] Temp password for {to_email}: {temp_password}")
+            return False
+
+    def send_parent_invitation_link_email(self, to_email: str, parent_name: str, student_name: str, otp_code: str, invitation_link: str, relationship_type: str) -> bool:
+        """Send parent invitation email with link and OTP code (for NEW users)"""
+        if not self.is_configured:
+            print(f"[EMAIL] Email not configured. OTP for {to_email}: {otp_code}, Link: {invitation_link}")
+            return False
+
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"Astegni - {student_name} has invited you as their {relationship_type}"
+            msg['From'] = f"{self.from_name} <{self.from_email}>"
+            msg['To'] = to_email
+
+            text = f"""
+Hello {parent_name},
+
+{student_name} has invited you to join Astegni as their {relationship_type}.
+
+Astegni is Ethiopia's leading educational platform connecting students with tutors and parents.
+
+TO COMPLETE YOUR REGISTRATION:
+------------------------------
+1. Click this link: {invitation_link}
+2. Enter your OTP code: {otp_code}
+3. Set your password and complete registration
+
+This invitation expires in 7 days.
+
+Once registered, you can:
+- View your child's academic progress
+- Track tutoring sessions
+- Communicate with tutors
+- Monitor learning activities
+
+If you did not expect this invitation, please ignore this email.
+
+Best regards,
+Astegni Team
+            """
+
+            html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .cta-button {{ display: inline-block; background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); color: white; padding: 15px 40px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 18px; margin: 20px 0; }}
+        .otp-box {{ background: white; border: 2px solid #8B5CF6; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }}
+        .otp-code {{ background: #EDE9FE; border: 2px dashed #8B5CF6; border-radius: 5px; padding: 15px; font-size: 32px; font-weight: bold; letter-spacing: 8px; margin: 10px 0; color: #6366F1; font-family: monospace; }}
+        .validity {{ color: #059669; font-weight: bold; font-size: 14px; margin-top: 10px; }}
+        .steps {{ background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }}
+        .step {{ display: flex; align-items: center; margin: 10px 0; }}
+        .step-number {{ background: #8B5CF6; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; flex-shrink: 0; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+        .relationship {{ display: inline-block; background: #EDE9FE; color: #6366F1; padding: 5px 15px; border-radius: 20px; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>You're Invited to Astegni!</h1>
+            <p>{student_name} wants you as their <span class="relationship">{relationship_type}</span></p>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{parent_name}</strong>,</p>
+            <p><strong>{student_name}</strong> has invited you to join Astegni, Ethiopia's leading educational platform.</p>
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="{invitation_link}" class="cta-button">Accept Invitation</a>
+            </div>
+
+            <div class="otp-box">
+                <h3 style="color: #8B5CF6; margin-top: 0;">Your Verification Code</h3>
+                <p>Enter this code when you click the link above:</p>
+                <div class="otp-code">{otp_code}</div>
+                <div class="validity">✓ Valid for 7 days</div>
+            </div>
+
+            <div class="steps">
+                <h3 style="color: #8B5CF6; margin-top: 0;">How to Complete Registration</h3>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Click the "Accept Invitation" button above</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>Enter the verification code: <strong>{otp_code}</strong></div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>Set your password and complete your profile</div>
+                </div>
+            </div>
+
+            <p style="font-size: 14px; color: #666;">If you did not expect this invitation, please ignore this email.</p>
+
+            <div class="footer">
+                <p>&copy; 2024 Astegni - Ethiopian Educational Platform</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            """
+
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.set_debuglevel(0)
+                server.starttls()
+                print(f"[EMAIL] Sending parent invitation link to {to_email}...")
+                server.login(self.smtp_user, self.smtp_password)
+                server.send_message(msg)
+
+            print(f"[EMAIL] Parent invitation link sent successfully to {to_email}")
+            return True
+
+        except Exception as e:
+            print(f"[EMAIL ERROR] Failed to send parent invitation link to {to_email}: {str(e)}")
+            print(f"[EMAIL FALLBACK] OTP for {to_email}: {otp_code}, Link: {invitation_link}")
+            return False
+
+    def send_existing_parent_otp_email(self, to_email: str, parent_name: str, student_name: str, otp_code: str, relationship_type: str) -> bool:
+        """Send OTP email to existing user for parent invitation verification"""
+        if not self.is_configured:
+            print(f"[EMAIL] Email not configured. OTP for {to_email}: {otp_code}")
+            return False
+
+        try:
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"Astegni - {student_name} wants to add you as their {relationship_type}"
+            msg['From'] = f"{self.from_name} <{self.from_email}>"
+            msg['To'] = to_email
+
+            text = f"""
+Hello {parent_name},
+
+{student_name} has sent you a parent invitation on Astegni.
+
+They want to add you as their {relationship_type}.
+
+YOUR VERIFICATION CODE
+----------------------
+OTP: {otp_code}
+Valid for: 7 days
+
+TO ACCEPT THIS INVITATION:
+--------------------------
+1. Log in to your Astegni account
+2. Go to your Parent Profile
+3. Find the pending invitation from {student_name}
+4. Enter the OTP code above to accept
+
+Once accepted, you can:
+- View {student_name}'s academic progress
+- Track their tutoring sessions
+- Communicate with their tutors
+- Monitor their learning activities
+
+If you did not expect this invitation, you can ignore it or reject it in your account.
+
+Best regards,
+Astegni Team
+            """
+
+            html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .otp-box {{ background: white; border: 2px solid #10B981; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }}
+        .otp-code {{ background: #D1FAE5; border: 2px dashed #10B981; border-radius: 5px; padding: 20px; font-size: 36px; font-weight: bold; letter-spacing: 8px; margin: 15px 0; color: #059669; font-family: monospace; }}
+        .validity {{ color: #059669; font-weight: bold; font-size: 14px; margin-top: 10px; }}
+        .steps {{ background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }}
+        .step {{ display: flex; align-items: center; margin: 10px 0; }}
+        .step-number {{ background: #10B981; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; flex-shrink: 0; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+        .relationship {{ display: inline-block; background: #D1FAE5; color: #059669; padding: 5px 15px; border-radius: 20px; font-weight: bold; }}
+        .student-name {{ font-size: 24px; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Parent Invitation</h1>
+            <p class="student-name">{student_name}</p>
+            <p>wants you as their <span class="relationship">{relationship_type}</span></p>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{parent_name}</strong>,</p>
+            <p>You have received a parent invitation from <strong>{student_name}</strong> on Astegni.</p>
+
+            <div class="otp-box">
+                <h3 style="color: #059669; margin-top: 0;">Your Verification Code</h3>
+                <p>Use this code to accept the invitation:</p>
+                <div class="otp-code">{otp_code}</div>
+                <div class="validity">✓ Valid for 7 days</div>
+            </div>
+
+            <div class="steps">
+                <h3 style="color: #059669; margin-top: 0;">How to Accept</h3>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Log in to your Astegni account</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>Go to Parent Profile → Pending Invitations</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>Find the invitation from {student_name}</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>Enter OTP: <strong>{otp_code}</strong> to accept</div>
+                </div>
+            </div>
+
+            <p style="font-size: 14px; color: #666;">If you did not expect this invitation, you can ignore it or reject it in your account.</p>
+
+            <div class="footer">
+                <p>&copy; 2024 Astegni - Ethiopian Educational Platform</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            """
+
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.set_debuglevel(0)
+                server.starttls()
+                print(f"[EMAIL] Sending existing parent OTP to {to_email}...")
+                server.login(self.smtp_user, self.smtp_password)
+                server.send_message(msg)
+
+            print(f"[EMAIL] Existing parent OTP sent successfully to {to_email}")
+            return True
+
+        except Exception as e:
+            print(f"[EMAIL ERROR] Failed to send existing parent OTP to {to_email}: {str(e)}")
+            print(f"[EMAIL FALLBACK] OTP for {to_email}: {otp_code}")
+            return False
+
+    def send_parent_invitation_otp_email(self, to_email: str, parent_name: str, student_name: str, otp_code: str, relationship_type: str) -> bool:
+        """Send parent invitation email with OTP code (DEPRECATED - use send_parent_invitation_link_email or send_existing_parent_otp_email)"""
+        if not self.is_configured:
+            print(f"[EMAIL] Email not configured. OTP for {to_email}: {otp_code}")
+            return False
+
+        try:
+            # Create message
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = f"Astegni - You've been invited as a {relationship_type} (OTP: {otp_code})"
+            msg['From'] = f"{self.from_name} <{self.from_email}>"
+            msg['To'] = to_email
+
+            # Plain text version
+            text = f"""
+Hello {parent_name},
+
+You have been invited to join Astegni as a {relationship_type} by {student_name}.
+
+Astegni is Ethiopia's leading educational platform connecting students with tutors and parents.
+
+YOUR ONE-TIME PASSWORD (OTP)
+----------------------------
+OTP Code: {otp_code}
+Valid for: 30 minutes
+
+Please use this OTP to verify your identity and complete your registration.
+
+Once logged in, you can:
+- View your child's academic progress
+- Track tutoring sessions
+- Communicate with tutors
+- Monitor learning activities
+
+NEXT STEPS
+----------
+1. Go to Astegni website/app
+2. Enter your email and the OTP code above
+3. Complete your registration
+4. Start monitoring your child's education
+
+If you did not expect this invitation, please ignore this email.
+
+Best regards,
+Astegni Team
+            """
+
+            # HTML version
+            html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); color: white; padding: 30px 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .otp-box {{ background: white; border: 2px solid #8B5CF6; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }}
+        .otp-code {{ background: #EDE9FE; border: 2px dashed #8B5CF6; border-radius: 5px; padding: 20px; font-size: 36px; font-weight: bold; letter-spacing: 8px; margin: 15px 0; color: #6366F1; font-family: monospace; }}
+        .validity {{ color: #DC2626; font-weight: bold; font-size: 16px; margin-top: 10px; }}
+        .steps {{ background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }}
+        .step {{ display: flex; align-items: center; margin: 10px 0; }}
+        .step-number {{ background: #8B5CF6; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-weight: bold; }}
+        .footer {{ text-align: center; margin-top: 20px; color: #666; font-size: 12px; }}
+        .relationship {{ display: inline-block; background: #EDE9FE; color: #6366F1; padding: 5px 15px; border-radius: 20px; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Welcome to Astegni!</h1>
+            <p>You've been invited as a <span class="relationship">{relationship_type}</span></p>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{parent_name}</strong>,</p>
+            <p>You have been invited to join Astegni by <strong>{student_name}</strong>.</p>
+            <p>Astegni is Ethiopia's leading educational platform connecting students with tutors and parents.</p>
+
+            <div class="otp-box">
+                <h3 style="color: #8B5CF6; margin-top: 0;">Your One-Time Password (OTP)</h3>
+                <p>Use this code to verify your identity:</p>
+                <div class="otp-code">{otp_code}</div>
+                <div class="validity">⏰ Valid for 30 minutes</div>
+            </div>
+
+            <div class="steps">
+                <h3 style="color: #8B5CF6; margin-top: 0;">Next Steps</h3>
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div>Go to Astegni website/app</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div>Enter your email and the OTP code above</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div>Complete your registration</div>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div>Start monitoring your child's education</div>
+                </div>
+            </div>
+
+            <p style="font-size: 14px; color: #666;">If you did not expect this invitation, please ignore this email.</p>
+
+            <div class="footer">
+                <p>&copy; 2024 Astegni - Ethiopian Educational Platform</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+            """
+
+            # Attach both versions
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+
+            # Send email using SMTP
+            with smtplib.SMTP(self.smtp_host, self.smtp_port) as server:
+                server.set_debuglevel(0)
+                server.starttls()
+                print(f"[EMAIL] Sending parent invitation OTP to {to_email}...")
+                server.login(self.smtp_user, self.smtp_password)
+                server.send_message(msg)
+
+            print(f"[EMAIL] Parent invitation OTP sent successfully to {to_email}")
+            return True
+
+        except Exception as e:
+            print(f"[EMAIL ERROR] Failed to send parent invitation OTP to {to_email}: {str(e)}")
+            print(f"[EMAIL FALLBACK] OTP for {to_email}: {otp_code}")
             return False
 
     def send_coparent_invitation_email(self, to_email: str, inviter_name: str, temp_password: str, relationship_type: str) -> bool:

@@ -3,7 +3,7 @@
  * Handles comprehensive profile editing with database integration
  */
 
-const API_BASE_URL = 'https://api.astegni.com';
+const API_BASE_URL = 'http://localhost:8000';
 
 /**
  * Get current user ID from AuthManager
@@ -186,7 +186,7 @@ async function loadCurrentProfileData() {
             throw new Error('User ID not available');
         }
 
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             throw new Error('Not authenticated');
         }
@@ -385,7 +385,7 @@ async function saveStudentProfile() {
         }
 
         // Get authentication token
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             throw new Error('Not authenticated');
         }
@@ -450,7 +450,7 @@ async function reloadProfileHeader() {
             throw new Error('User ID not available');
         }
 
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) {
             throw new Error('Not authenticated');
         }

@@ -3,7 +3,7 @@
 // ============================================
 
 // Set global API base URL for compatibility with other modules
-window.API_BASE_URL = 'https://api.astegni.com/api';
+window.API_BASE_URL = 'http://localhost:8000/api';
 
 const FindTutorsAPI = {
     baseUrl: window.API_BASE_URL,
@@ -15,6 +15,38 @@ const FindTutorsAPI = {
             headers['Authorization'] = `Bearer ${token}`;
         }
         return headers;
+    },
+
+    // Get current user's ID from localStorage or JWT token
+    getCurrentUserId() {
+        // Try to get from stored user data
+        const possibleKeys = ['userData', 'user', 'currentUser', 'userProfile', 'authUser'];
+        for (const key of possibleKeys) {
+            const stored = localStorage.getItem(key);
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (parsed && parsed.user_id) return parsed.user_id;
+                    if (parsed && parsed.id) return parsed.id;
+                } catch (e) {}
+            }
+        }
+
+        // Try to get from JWT token
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (token) {
+            try {
+                const tokenParts = token.split('.');
+                if (tokenParts.length === 3) {
+                    const payload = JSON.parse(atob(tokenParts[1]));
+                    // JWT token has 'sub' field for user_id
+                    if (payload.sub) return parseInt(payload.sub);
+                    if (payload.user_id) return parseInt(payload.user_id);
+                }
+            } catch (e) {}
+        }
+
+        return null;
     },
 
     async fetch(endpoint, options = {}) {
@@ -62,6 +94,12 @@ const FindTutorsAPI = {
             backendParams.search_history_ids = searchHistoryIds.join(',');
         }
 
+        // Exclude current user from results (tutor should not see their own card)
+        const currentUserId = this.getCurrentUserId();
+        if (currentUserId) {
+            backendParams.exclude_user_id = currentUserId;
+        }
+
         const queryString = new URLSearchParams(backendParams).toString();
         console.log('API call params:', backendParams);
 
@@ -70,6 +108,28 @@ const FindTutorsAPI = {
             // Normalize tutor data to handle redundant fields
             if (response.tutors && Array.isArray(response.tutors)) {
                 response.tutors = response.tutors.map(tutor => this.normalizeTutorForFiltering({...tutor}));
+
+                // Fetch connection status for all tutors if user is logged in
+                const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+                if (token && response.tutors.length > 0) {
+                    const connectionStatuses = await this.getConnectionStatusBatch(
+                        response.tutors.map(t => t.id),
+                        'tutor'
+                    );
+
+                    // Merge connection status into tutor objects
+                    response.tutors = response.tutors.map(tutor => {
+                        const connStatus = connectionStatuses[tutor.id];
+                        if (connStatus) {
+                            tutor.is_connected = connStatus.is_connected;
+                            tutor.connection_status = connStatus.status;
+                            tutor.connection_pending = connStatus.status === 'pending' && connStatus.direction === 'outgoing';
+                            tutor.connection_incoming = connStatus.status === 'pending' && connStatus.direction === 'incoming';
+                            tutor.connection_id = connStatus.connection_id;
+                        }
+                        return tutor;
+                    });
+                }
             }
             return response;
         } catch (error) {
@@ -77,6 +137,37 @@ const FindTutorsAPI = {
             console.warn('API not available or search failed, using sample data:', error.message);
             return this.getSampleTutors(params);
         }
+    },
+
+    // Get connection status for multiple profile IDs (batch)
+    async getConnectionStatusBatch(profileIds, targetType = 'tutor') {
+        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
+        if (!token || !profileIds || profileIds.length === 0) {
+            return {};
+        }
+
+        try {
+            const response = await fetch(`${this.baseUrl}/connections/check-batch`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    target_profile_ids: profileIds,
+                    target_type: targetType
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                return data.connections || {};
+            }
+        } catch (error) {
+            console.warn('Failed to fetch connection statuses:', error.message);
+        }
+
+        return {};
     },
 
     // Helper function to normalize redundant fields

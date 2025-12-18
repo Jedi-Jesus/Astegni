@@ -293,7 +293,7 @@
 
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('https://api.astegni.com/api/change-password', {
+                const response = await fetch('http://localhost:8000/api/change-password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -447,7 +447,7 @@
 
                 if (token) {
                     try {
-                        const response = await fetch('https://api.astegni.com/api/me', {
+                        const response = await fetch('http://localhost:8000/api/me', {
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
@@ -465,7 +465,7 @@
 
                 // Fallback to localStorage
                 if (!user) {
-                    user = JSON.parse(localStorage.getItem('user') || '{}');
+                    user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
                     console.log('📦 User data from localStorage:', user);
                 }
 
@@ -565,7 +565,7 @@
                 return;
             }
 
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}');
 
             // Check what has changed
             const nameChanged = firstName !== user.first_name || fatherName !== user.father_name || grandfatherName !== user.grandfather_name;
@@ -609,7 +609,7 @@
 
                 // Save names and gender (immediate update to users table)
                 if (Object.keys(updateData).length > 0) {
-                    const response = await fetch('https://api.astegni.com/api/user/profile', {
+                    const response = await fetch('http://localhost:8000/api/user/profile', {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',

@@ -15,7 +15,7 @@ window.addEventListener("error", (e) => {
 });
 
 // API Configuration
-const API_BASE_URL = "https://api.astegni.com";
+const API_BASE_URL = "http://localhost:8000";
 
 // Helper function for API calls
 async function apiCall(endpoint, method = "GET", body = null, token = null) {

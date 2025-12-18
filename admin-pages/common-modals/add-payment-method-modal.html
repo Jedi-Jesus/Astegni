@@ -1,0 +1,493 @@
+<!-- Add Payment Method Modal - Coming Soon -->
+<style>
+#add-payment-method-modal.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+#add-payment-method-modal.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#add-payment-method-modal .modal-content {
+    background: var(--card-bg, #ffffff);
+    border-radius: 24px;
+    padding: 0;
+    max-width: 500px;
+    width: 95%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+#add-payment-method-modal.modal-overlay.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+/* Header */
+#add-payment-method-modal .modal-header {
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+    padding: 2rem;
+    position: relative;
+    text-align: center;
+}
+
+#add-payment-method-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+#add-payment-method-modal .close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 1;
+}
+
+#add-payment-method-modal .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+#add-payment-method-modal .header-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    position: relative;
+    z-index: 1;
+}
+
+#add-payment-method-modal .header-icon i {
+    font-size: 2.5rem;
+    color: white;
+}
+
+#add-payment-method-modal .header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: white;
+    margin: 0 0 0.5rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+#add-payment-method-modal .header-subtitle {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.85);
+    position: relative;
+    z-index: 1;
+}
+
+/* Body */
+#add-payment-method-modal .modal-body {
+    padding: 2rem;
+    text-align: center;
+}
+
+#add-payment-method-modal .coming-soon-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #92400e;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+#add-payment-method-modal .coming-soon-badge i {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+#add-payment-method-modal .feature-description {
+    font-size: 1rem;
+    color: var(--text-secondary, #6b7280);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+/* Payment Methods Preview */
+#add-payment-method-modal .payment-methods-preview {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+#add-payment-method-modal .payment-method-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    background: var(--hover-bg, #f9fafb);
+    border: 2px dashed var(--border-color, #e5e7eb);
+    border-radius: 16px;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+}
+
+#add-payment-method-modal .payment-method-card:hover {
+    opacity: 0.8;
+    border-color: #10b981;
+}
+
+#add-payment-method-modal .payment-method-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#add-payment-method-modal .payment-method-icon i {
+    font-size: 1.5rem;
+    color: #4f46e5;
+}
+
+#add-payment-method-modal .payment-method-icon.telebirr i { color: #2563eb; }
+#add-payment-method-modal .payment-method-icon.cbe i { color: #7c3aed; }
+#add-payment-method-modal .payment-method-icon.bank i { color: #059669; }
+#add-payment-method-modal .payment-method-icon.card i { color: #f59e0b; }
+
+#add-payment-method-modal .payment-method-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary, #374151);
+}
+
+#add-payment-method-modal .payment-method-status {
+    font-size: 0.75rem;
+    color: var(--text-tertiary, #9ca3af);
+}
+
+/* Timeline */
+#add-payment-method-modal .timeline {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border-radius: 16px;
+    padding: 1.25rem;
+    text-align: left;
+}
+
+#add-payment-method-modal .timeline-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #1e40af;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#add-payment-method-modal .timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    color: #3b82f6;
+    padding: 0.5rem 0;
+}
+
+#add-payment-method-modal .timeline-item i {
+    width: 20px;
+    text-align: center;
+}
+
+/* Footer */
+#add-payment-method-modal .modal-footer {
+    padding: 1.25rem 2rem 2rem;
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+#add-payment-method-modal .btn {
+    padding: 0.85rem 2rem;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+}
+
+#add-payment-method-modal .btn-primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+#add-payment-method-modal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
+#add-payment-method-modal .btn-secondary {
+    background: var(--hover-bg, #f3f4f6);
+    color: var(--text-primary, #374151);
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+#add-payment-method-modal .btn-secondary:hover {
+    background: var(--border-color, #e5e7eb);
+}
+
+/* Dark mode */
+[data-theme="dark"] #add-payment-method-modal .modal-content {
+    background: var(--dark-card-bg, #1f2937);
+}
+
+[data-theme="dark"] #add-payment-method-modal .modal-header {
+    background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+}
+
+[data-theme="dark"] #add-payment-method-modal .feature-description {
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+[data-theme="dark"] #add-payment-method-modal .payment-method-card {
+    background: var(--dark-hover-bg, #374151);
+    border-color: var(--dark-border, #4b5563);
+}
+
+[data-theme="dark"] #add-payment-method-modal .payment-method-name {
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #add-payment-method-modal .payment-method-status {
+    color: var(--dark-text-tertiary, #6b7280);
+}
+
+[data-theme="dark"] #add-payment-method-modal .timeline {
+    background: linear-gradient(135deg, #1e3a5f, #1e40af30);
+}
+
+[data-theme="dark"] #add-payment-method-modal .timeline-title {
+    color: #93c5fd;
+}
+
+[data-theme="dark"] #add-payment-method-modal .timeline-item {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] #add-payment-method-modal .btn-secondary {
+    background: var(--dark-hover-bg, #374151);
+    color: var(--dark-text-primary, #e5e7eb);
+    border-color: var(--dark-border, #4b5563);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    #add-payment-method-modal .payment-methods-preview {
+        grid-template-columns: 1fr;
+    }
+
+    #add-payment-method-modal .modal-footer {
+        flex-direction: column;
+    }
+
+    #add-payment-method-modal .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<div id="add-payment-method-modal" class="modal-overlay">
+    <div class="modal-content">
+        <!-- Header -->
+        <div class="modal-header">
+            <button class="close-btn" onclick="closeAddPaymentMethodModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="header-icon">
+                <i class="fas fa-credit-card"></i>
+            </div>
+            <h2 class="header-title">Payment Methods</h2>
+            <p class="header-subtitle">Manage your payment options for transactions</p>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <div class="coming-soon-badge">
+                <i class="fas fa-clock"></i>
+                Coming Soon
+            </div>
+
+            <p class="feature-description">
+                We're working hard to bring you seamless payment integration. Soon you'll be able to
+                receive payments and manage your earnings directly through the platform.
+            </p>
+
+            <!-- Payment Methods Preview -->
+            <div class="payment-methods-preview">
+                <div class="payment-method-card">
+                    <div class="payment-method-icon telebirr">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <span class="payment-method-name">TeleBirr</span>
+                    <span class="payment-method-status">Coming Soon</span>
+                </div>
+                <div class="payment-method-card">
+                    <div class="payment-method-icon cbe">
+                        <i class="fas fa-university"></i>
+                    </div>
+                    <span class="payment-method-name">CBE Birr</span>
+                    <span class="payment-method-status">Coming Soon</span>
+                </div>
+                <div class="payment-method-card">
+                    <div class="payment-method-icon bank">
+                        <i class="fas fa-building-columns"></i>
+                    </div>
+                    <span class="payment-method-name">Bank Transfer</span>
+                    <span class="payment-method-status">Coming Soon</span>
+                </div>
+                <div class="payment-method-card">
+                    <div class="payment-method-icon card">
+                        <i class="fas fa-credit-card"></i>
+                    </div>
+                    <span class="payment-method-name">Debit/Credit Card</span>
+                    <span class="payment-method-status">Coming Soon</span>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline">
+                <h4 class="timeline-title">
+                    <i class="fas fa-calendar-alt"></i>
+                    Expected Timeline
+                </h4>
+                <div class="timeline-item">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Q1 2025 - Mobile Money Integration (TeleBirr, CBE Birr)</span>
+                </div>
+                <div class="timeline-item">
+                    <i class="fas fa-spinner"></i>
+                    <span>Q2 2025 - Bank Transfer Support</span>
+                </div>
+                <div class="timeline-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Q3 2025 - International Cards</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeAddPaymentMethodModal()">
+                <i class="fas fa-times"></i>
+                Close
+            </button>
+            <button class="btn btn-primary" onclick="notifyWhenAvailable()">
+                <i class="fas fa-bell"></i>
+                Notify Me
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    // Open modal
+    window.openAddPaymentMethodModal = function() {
+        const modal = document.getElementById('add-payment-method-modal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    };
+
+    // Close modal
+    window.closeAddPaymentMethodModal = function() {
+        const modal = document.getElementById('add-payment-method-modal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    };
+
+    // Notify when available
+    window.notifyWhenAvailable = function() {
+        const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        const email = adminUser.email || 'your email';
+
+        // Store notification preference
+        const notifyPrefs = JSON.parse(localStorage.getItem('paymentNotifyPrefs') || '[]');
+        if (!notifyPrefs.includes(email)) {
+            notifyPrefs.push(email);
+            localStorage.setItem('paymentNotifyPrefs', JSON.stringify(notifyPrefs));
+        }
+
+        alert(`Great! We'll notify ${email} when payment methods become available.`);
+        closeAddPaymentMethodModal();
+    };
+
+    // Close on backdrop click
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('add-payment-method-modal');
+        if (modal && e.target === modal) {
+            closeAddPaymentMethodModal();
+        }
+    });
+
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('add-payment-method-modal');
+            if (modal && modal.classList.contains('active')) {
+                closeAddPaymentMethodModal();
+            }
+        }
+    });
+
+    console.log('Add Payment Method Modal component loaded');
+})();
+</script>

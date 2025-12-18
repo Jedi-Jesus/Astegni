@@ -1,0 +1,1281 @@
+<!-- File a Leave Request Modal -->
+<style>
+#file-leave-request-modal.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+#file-leave-request-modal.modal-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#file-leave-request-modal .modal-content {
+    background: var(--card-bg, #ffffff);
+    border-radius: 20px;
+    padding: 0;
+    max-width: 650px;
+    width: 95%;
+    max-height: 90vh;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: scale(0.9) translateY(20px);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#file-leave-request-modal.modal-overlay.active .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+/* Modal Header */
+#file-leave-request-modal .modal-header {
+    background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 50%, #c084fc 100%);
+    padding: 1.5rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#file-leave-request-modal .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
+}
+
+#file-leave-request-modal .header-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+
+#file-leave-request-modal .header-title i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+#file-leave-request-modal .header-title h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+}
+
+#file-leave-request-modal .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+}
+
+#file-leave-request-modal .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+/* Leave Balance Section */
+#file-leave-request-modal .leave-balance-section {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+}
+
+#file-leave-request-modal .balance-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+#file-leave-request-modal .balance-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+#file-leave-request-modal .balance-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #7c3aed;
+}
+
+#file-leave-request-modal .balance-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #6b7280);
+    text-align: center;
+}
+
+/* Modal Body */
+#file-leave-request-modal .modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Tabs */
+#file-leave-request-modal .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    padding-bottom: 0.5rem;
+}
+
+#file-leave-request-modal .tab {
+    padding: 0.6rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#file-leave-request-modal .tab:hover {
+    background: var(--hover-bg, #f3f4f6);
+}
+
+#file-leave-request-modal .tab.active {
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    color: white;
+}
+
+#file-leave-request-modal .tab-count {
+    font-size: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.15rem 0.5rem;
+    border-radius: 10px;
+}
+
+#file-leave-request-modal .tab:not(.active) .tab-count {
+    background: var(--border-color, #e5e7eb);
+}
+
+/* Tab Content */
+#file-leave-request-modal .tab-content {
+    display: none;
+}
+
+#file-leave-request-modal .tab-content.active {
+    display: block;
+}
+
+/* Form Section */
+#file-leave-request-modal .form-section {
+    margin-bottom: 1.5rem;
+}
+
+#file-leave-request-modal .form-section-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary, #1f2937);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+#file-leave-request-modal .form-section-title i {
+    color: #8b5cf6;
+}
+
+#file-leave-request-modal .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+#file-leave-request-modal .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+#file-leave-request-modal .form-group.full-width {
+    grid-column: span 2;
+}
+
+#file-leave-request-modal .form-label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-secondary, #6b7280);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+#file-leave-request-modal .form-label .required {
+    color: #ef4444;
+}
+
+#file-leave-request-modal .form-input,
+#file-leave-request-modal .form-select,
+#file-leave-request-modal .form-textarea {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-primary, #1f2937);
+    background: var(--input-bg, #ffffff);
+    transition: all 0.2s ease;
+}
+
+#file-leave-request-modal .form-input:focus,
+#file-leave-request-modal .form-select:focus,
+#file-leave-request-modal .form-textarea:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+
+#file-leave-request-modal .form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Leave Type Options */
+#file-leave-request-modal .leave-type-options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+#file-leave-request-modal .leave-type-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--hover-bg, #f9fafb);
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#file-leave-request-modal .leave-type-option:hover {
+    border-color: #c4b5fd;
+}
+
+#file-leave-request-modal .leave-type-option.selected {
+    border-color: #8b5cf6;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+}
+
+#file-leave-request-modal .leave-type-option input {
+    display: none;
+}
+
+#file-leave-request-modal .leave-type-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+#file-leave-request-modal .leave-type-option[data-type="annual"] .leave-type-icon {
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+    color: #2563eb;
+}
+
+#file-leave-request-modal .leave-type-option[data-type="sick"] .leave-type-icon {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #dc2626;
+}
+
+#file-leave-request-modal .leave-type-option[data-type="personal"] .leave-type-icon {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #16a34a;
+}
+
+#file-leave-request-modal .leave-type-option[data-type="unpaid"] .leave-type-icon {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #d97706;
+}
+
+#file-leave-request-modal .leave-type-option[data-type="maternity"] .leave-type-icon {
+    background: linear-gradient(135deg, #fce7f3, #fbcfe8);
+    color: #db2777;
+}
+
+#file-leave-request-modal .leave-type-option[data-type="bereavement"] .leave-type-icon {
+    background: linear-gradient(135deg, #e5e7eb, #d1d5db);
+    color: #4b5563;
+}
+
+#file-leave-request-modal .leave-type-info {
+    flex: 1;
+}
+
+#file-leave-request-modal .leave-type-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary, #374151);
+}
+
+#file-leave-request-modal .leave-type-balance {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+/* Date Summary */
+#file-leave-request-modal .date-summary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+    border-radius: 10px;
+    margin-top: 0.5rem;
+}
+
+#file-leave-request-modal .date-summary-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #7c3aed;
+}
+
+#file-leave-request-modal .date-summary-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+/* Request History */
+#file-leave-request-modal .request-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+#file-leave-request-modal .request-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--hover-bg, #f9fafb);
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+#file-leave-request-modal .request-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+#file-leave-request-modal .request-icon.pending {
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    color: #d97706;
+}
+
+#file-leave-request-modal .request-icon.approved {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #16a34a;
+}
+
+#file-leave-request-modal .request-icon.rejected {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #dc2626;
+}
+
+#file-leave-request-modal .request-details {
+    flex: 1;
+}
+
+#file-leave-request-modal .request-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.35rem;
+}
+
+#file-leave-request-modal .request-type {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary, #374151);
+}
+
+#file-leave-request-modal .request-status {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+}
+
+#file-leave-request-modal .request-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+#file-leave-request-modal .request-status.approved {
+    background: #dcfce7;
+    color: #166534;
+}
+
+#file-leave-request-modal .request-status.rejected {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+#file-leave-request-modal .request-dates {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #6b7280);
+    margin-bottom: 0.25rem;
+}
+
+#file-leave-request-modal .request-reason {
+    font-size: 0.8rem;
+    color: var(--text-tertiary, #9ca3af);
+}
+
+#file-leave-request-modal .request-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+#file-leave-request-modal .request-action-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+#file-leave-request-modal .request-action-btn.cancel {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+#file-leave-request-modal .request-action-btn.cancel:hover {
+    background: #fecaca;
+}
+
+/* Empty State */
+#file-leave-request-modal .empty-state {
+    text-align: center;
+    padding: 2rem;
+}
+
+#file-leave-request-modal .empty-state-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+#file-leave-request-modal .empty-state-icon i {
+    font-size: 1.5rem;
+    color: #9ca3af;
+}
+
+#file-leave-request-modal .empty-state h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #374151);
+    margin-bottom: 0.25rem;
+}
+
+#file-leave-request-modal .empty-state p {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #6b7280);
+}
+
+/* Modal Footer */
+#file-leave-request-modal .modal-footer {
+    padding: 1.25rem 1.5rem;
+    background: var(--card-bg, #ffffff);
+    border-top: 1px solid var(--border-color, #e5e7eb);
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+}
+
+#file-leave-request-modal .btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+}
+
+#file-leave-request-modal .btn-secondary {
+    background: var(--hover-bg, #f3f4f6);
+    color: var(--text-primary, #374151);
+    border: 1px solid var(--border-color, #e5e7eb);
+}
+
+#file-leave-request-modal .btn-secondary:hover {
+    background: var(--border-color, #e5e7eb);
+}
+
+#file-leave-request-modal .btn-primary {
+    background: linear-gradient(135deg, #8b5cf6, #a855f7);
+    color: white;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+#file-leave-request-modal .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+#file-leave-request-modal .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Loading Spinner */
+#file-leave-request-modal .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Dark mode */
+[data-theme="dark"] #file-leave-request-modal .modal-content {
+    background: var(--dark-card-bg, #1f2937);
+}
+
+[data-theme="dark"] #file-leave-request-modal .modal-header {
+    background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #a855f7 100%);
+}
+
+[data-theme="dark"] #file-leave-request-modal .leave-balance-section {
+    background: linear-gradient(135deg, #2e1065, #3b0764);
+    border-color: var(--dark-border, #374151);
+}
+
+[data-theme="dark"] #file-leave-request-modal .balance-card {
+    background: var(--dark-hover-bg, #374151);
+}
+
+[data-theme="dark"] #file-leave-request-modal .balance-value {
+    color: #c4b5fd;
+}
+
+[data-theme="dark"] #file-leave-request-modal .balance-label {
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+[data-theme="dark"] #file-leave-request-modal .tabs {
+    border-color: var(--dark-border, #374151);
+}
+
+[data-theme="dark"] #file-leave-request-modal .tab {
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+[data-theme="dark"] #file-leave-request-modal .tab:hover {
+    background: var(--dark-hover-bg, #374151);
+}
+
+[data-theme="dark"] #file-leave-request-modal .form-section-title {
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #file-leave-request-modal .form-label {
+    color: var(--dark-text-secondary, #9ca3af);
+}
+
+[data-theme="dark"] #file-leave-request-modal .form-input,
+[data-theme="dark"] #file-leave-request-modal .form-select,
+[data-theme="dark"] #file-leave-request-modal .form-textarea {
+    background: var(--dark-input-bg, #374151);
+    border-color: var(--dark-border, #4b5563);
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #file-leave-request-modal .leave-type-option {
+    background: var(--dark-hover-bg, #374151);
+    border-color: var(--dark-border, #4b5563);
+}
+
+[data-theme="dark"] #file-leave-request-modal .leave-type-option.selected {
+    background: linear-gradient(135deg, #3b0764, #4c1d95);
+    border-color: #8b5cf6;
+}
+
+[data-theme="dark"] #file-leave-request-modal .leave-type-name {
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #file-leave-request-modal .date-summary {
+    background: linear-gradient(135deg, #3b0764, #4c1d95);
+}
+
+[data-theme="dark"] #file-leave-request-modal .request-item {
+    background: var(--dark-hover-bg, #374151);
+    border-color: var(--dark-border, #4b5563);
+}
+
+[data-theme="dark"] #file-leave-request-modal .request-type {
+    color: var(--dark-text-primary, #f9fafb);
+}
+
+[data-theme="dark"] #file-leave-request-modal .modal-footer {
+    background: var(--dark-card-bg, #1f2937);
+    border-color: var(--dark-border, #374151);
+}
+
+[data-theme="dark"] #file-leave-request-modal .btn-secondary {
+    background: var(--dark-hover-bg, #374151);
+    color: var(--dark-text-primary, #e5e7eb);
+    border-color: var(--dark-border, #4b5563);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    #file-leave-request-modal .balance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #file-leave-request-modal .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #file-leave-request-modal .form-group.full-width {
+        grid-column: span 1;
+    }
+
+    #file-leave-request-modal .leave-type-options {
+        grid-template-columns: 1fr;
+    }
+
+    #file-leave-request-modal .tabs {
+        flex-wrap: wrap;
+    }
+
+    #file-leave-request-modal .modal-footer {
+        flex-direction: column;
+    }
+
+    #file-leave-request-modal .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
+
+<div id="file-leave-request-modal" class="modal-overlay">
+    <div class="modal-content">
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="header-title">
+                <i class="fas fa-calendar-minus"></i>
+                <h2>Leave Request</h2>
+            </div>
+            <button class="close-btn" onclick="closeLeaveRequestModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Leave Balance -->
+        <div class="leave-balance-section">
+            <div class="balance-grid">
+                <div class="balance-card">
+                    <span id="annual-balance" class="balance-value">20</span>
+                    <span class="balance-label">Annual Leave</span>
+                </div>
+                <div class="balance-card">
+                    <span id="sick-balance" class="balance-value">10</span>
+                    <span class="balance-label">Sick Leave</span>
+                </div>
+                <div class="balance-card">
+                    <span id="personal-balance" class="balance-value">5</span>
+                    <span class="balance-label">Personal Leave</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab active" data-tab="new-request" onclick="switchLeaveTab('new-request')">
+                    <i class="fas fa-plus"></i>
+                    New Request
+                </button>
+                <button class="tab" data-tab="my-requests" onclick="switchLeaveTab('my-requests')">
+                    <i class="fas fa-list"></i>
+                    My Requests
+                    <span id="requests-count" class="tab-count">0</span>
+                </button>
+            </div>
+
+            <!-- New Request Tab -->
+            <div id="new-request-tab" class="tab-content active">
+                <!-- Leave Type -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-tag"></i>
+                        Leave Type
+                    </h3>
+                    <div class="leave-type-options">
+                        <label class="leave-type-option" data-type="annual">
+                            <input type="radio" name="leave-type" value="annual" checked>
+                            <div class="leave-type-icon">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div class="leave-type-info">
+                                <span class="leave-type-name">Annual Leave</span>
+                                <span class="leave-type-balance">Balance: <span id="annual-type-balance">20</span> days</span>
+                            </div>
+                        </label>
+                        <label class="leave-type-option" data-type="sick">
+                            <input type="radio" name="leave-type" value="sick">
+                            <div class="leave-type-icon">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                            <div class="leave-type-info">
+                                <span class="leave-type-name">Sick Leave</span>
+                                <span class="leave-type-balance">Balance: <span id="sick-type-balance">10</span> days</span>
+                            </div>
+                        </label>
+                        <label class="leave-type-option" data-type="personal">
+                            <input type="radio" name="leave-type" value="personal">
+                            <div class="leave-type-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="leave-type-info">
+                                <span class="leave-type-name">Personal Leave</span>
+                                <span class="leave-type-balance">Balance: <span id="personal-type-balance">5</span> days</span>
+                            </div>
+                        </label>
+                        <label class="leave-type-option" data-type="unpaid">
+                            <input type="radio" name="leave-type" value="unpaid">
+                            <div class="leave-type-icon">
+                                <i class="fas fa-pause-circle"></i>
+                            </div>
+                            <div class="leave-type-info">
+                                <span class="leave-type-name">Unpaid Leave</span>
+                                <span class="leave-type-balance">No limit</span>
+                            </div>
+                        </label>
+                        <label class="leave-type-option" data-type="maternity">
+                            <input type="radio" name="leave-type" value="maternity">
+                            <div class="leave-type-icon">
+                                <i class="fas fa-baby"></i>
+                            </div>
+                            <div class="leave-type-info">
+                                <span class="leave-type-name">Maternity/Paternity</span>
+                                <span class="leave-type-balance">Policy-based</span>
+                            </div>
+                        </label>
+                        <label class="leave-type-option" data-type="bereavement">
+                            <input type="radio" name="leave-type" value="bereavement">
+                            <div class="leave-type-icon">
+                                <i class="fas fa-heart-broken"></i>
+                            </div>
+                            <div class="leave-type-info">
+                                <span class="leave-type-name">Bereavement</span>
+                                <span class="leave-type-balance">Up to 5 days</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Dates -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-calendar"></i>
+                        Leave Duration
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">
+                                Start Date <span class="required">*</span>
+                            </label>
+                            <input type="date" id="leave-start-date" class="form-input" onchange="calculateLeaveDays()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">
+                                End Date <span class="required">*</span>
+                            </label>
+                            <input type="date" id="leave-end-date" class="form-input" onchange="calculateLeaveDays()">
+                        </div>
+                    </div>
+                    <div id="date-summary" class="date-summary" style="display: none;">
+                        <span class="date-summary-value" id="days-count">0</span>
+                        <span class="date-summary-label">days requested</span>
+                    </div>
+                </div>
+
+                <!-- Reason -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-comment-alt"></i>
+                        Request Details
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label class="form-label">
+                                Reason <span class="required">*</span>
+                            </label>
+                            <textarea id="leave-reason" class="form-textarea" rows="3" placeholder="Please explain the reason for your leave request..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Emergency Contact -->
+                <div class="form-section">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-phone-alt"></i>
+                        Emergency Contact (Optional)
+                    </h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Contact Name</label>
+                            <input type="text" id="emergency-contact-name" class="form-input" placeholder="Emergency contact name">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Contact Phone</label>
+                            <input type="tel" id="emergency-contact-phone" class="form-input" placeholder="+251 900 000 000">
+                        </div>
+                        <div class="form-group full-width">
+                            <label class="form-label">Handover Notes</label>
+                            <textarea id="handover-notes" class="form-textarea" rows="2" placeholder="Any tasks or responsibilities to be covered during your absence..."></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Requests Tab -->
+            <div id="my-requests-tab" class="tab-content">
+                <div id="requests-list" class="request-list">
+                    <!-- Requests will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer" id="new-request-footer">
+            <button class="btn btn-secondary" onclick="closeLeaveRequestModal()">
+                <i class="fas fa-times"></i>
+                Cancel
+            </button>
+            <button id="submit-leave-btn" class="btn btn-primary" onclick="submitLeaveRequest()">
+                <i class="fas fa-paper-plane"></i>
+                Submit Request
+            </button>
+        </div>
+        <div class="modal-footer" id="my-requests-footer" style="display: none;">
+            <button class="btn btn-secondary" onclick="closeLeaveRequestModal()">
+                <i class="fas fa-times"></i>
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    let currentAdminId = null;
+    let leaveBalance = {
+        annual: 20,
+        sick: 10,
+        personal: 5
+    };
+    let leaveRequests = [];
+
+    // Initialize
+    async function initLeaveModal() {
+        const adminUser = JSON.parse(localStorage.getItem('adminUser') || '{}');
+        currentAdminId = adminUser.id;
+
+        if (!currentAdminId) {
+            console.error('No admin ID found');
+            return;
+        }
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('leave-start-date').min = today;
+        document.getElementById('leave-end-date').min = today;
+
+        // Load balance and requests
+        await loadLeaveBalance();
+        await loadLeaveRequests();
+        setupLeaveTypeOptions();
+    }
+
+    // Load leave balance
+    async function loadLeaveBalance() {
+        try {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const apiBase = window.API_BASE_URL || 'http://localhost:8001';
+            const response = await fetch(`${apiBase}/api/admin/leave/balance/${currentAdminId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                leaveBalance.annual = data.annual_leave_balance;
+                leaveBalance.sick = data.sick_leave_balance;
+                leaveBalance.personal = data.personal_leave_balance;
+                updateBalanceDisplay();
+            }
+        } catch (error) {
+            console.error('Error loading leave balance:', error);
+        }
+    }
+
+    // Update balance display
+    function updateBalanceDisplay() {
+        document.getElementById('annual-balance').textContent = leaveBalance.annual;
+        document.getElementById('sick-balance').textContent = leaveBalance.sick;
+        document.getElementById('personal-balance').textContent = leaveBalance.personal;
+        document.getElementById('annual-type-balance').textContent = leaveBalance.annual;
+        document.getElementById('sick-type-balance').textContent = leaveBalance.sick;
+        document.getElementById('personal-type-balance').textContent = leaveBalance.personal;
+    }
+
+    // Load leave requests
+    async function loadLeaveRequests() {
+        try {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const apiBase = window.API_BASE_URL || 'http://localhost:8001';
+            const response = await fetch(`${apiBase}/api/admin/leave/requests/${currentAdminId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                leaveRequests = data.requests || [];
+                renderRequests();
+                document.getElementById('requests-count').textContent = leaveRequests.length;
+            }
+        } catch (error) {
+            console.error('Error loading leave requests:', error);
+        }
+    }
+
+    // Render requests list
+    function renderRequests() {
+        const container = document.getElementById('requests-list');
+
+        if (leaveRequests.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h4>No Leave Requests</h4>
+                    <p>You haven't submitted any leave requests yet.</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = leaveRequests.map(request => {
+            const statusIcon = {
+                'pending': 'fa-clock',
+                'approved': 'fa-check-circle',
+                'rejected': 'fa-times-circle'
+            }[request.status] || 'fa-question-circle';
+
+            const typeLabel = request.leave_type.charAt(0).toUpperCase() + request.leave_type.slice(1) + ' Leave';
+
+            return `
+                <div class="request-item">
+                    <div class="request-icon ${request.status}">
+                        <i class="fas ${statusIcon}"></i>
+                    </div>
+                    <div class="request-details">
+                        <div class="request-header">
+                            <span class="request-type">${typeLabel}</span>
+                            <span class="request-status ${request.status}">${request.status.charAt(0).toUpperCase() + request.status.slice(1)}</span>
+                        </div>
+                        <div class="request-dates">
+                            <i class="fas fa-calendar-alt"></i>
+                            ${formatDate(request.start_date)} - ${formatDate(request.end_date)} (${request.days} days)
+                        </div>
+                        <div class="request-reason">${request.reason}</div>
+                        ${request.status === 'pending' ? `
+                            <div class="request-actions">
+                                <button class="request-action-btn cancel" onclick="cancelLeaveRequest(${request.id})">
+                                    <i class="fas fa-times"></i> Cancel Request
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Format date
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    }
+
+    // Setup leave type options
+    function setupLeaveTypeOptions() {
+        const options = document.querySelectorAll('.leave-type-option');
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                options.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                this.querySelector('input').checked = true;
+            });
+        });
+        // Select first option by default
+        options[0].classList.add('selected');
+    }
+
+    // Switch tabs
+    window.switchLeaveTab = function(tab) {
+        document.querySelectorAll('#file-leave-request-modal .tab').forEach(t => {
+            t.classList.toggle('active', t.dataset.tab === tab);
+        });
+        document.querySelectorAll('#file-leave-request-modal .tab-content').forEach(c => {
+            c.classList.toggle('active', c.id === `${tab}-tab`);
+        });
+
+        // Show/hide footers
+        document.getElementById('new-request-footer').style.display = tab === 'new-request' ? 'flex' : 'none';
+        document.getElementById('my-requests-footer').style.display = tab === 'my-requests' ? 'flex' : 'none';
+    };
+
+    // Calculate leave days
+    window.calculateLeaveDays = function() {
+        const startDate = document.getElementById('leave-start-date').value;
+        const endDate = document.getElementById('leave-end-date').value;
+        const summary = document.getElementById('date-summary');
+        const daysCount = document.getElementById('days-count');
+
+        if (startDate && endDate) {
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+
+            if (days > 0) {
+                daysCount.textContent = days;
+                summary.style.display = 'flex';
+            } else {
+                summary.style.display = 'none';
+            }
+        } else {
+            summary.style.display = 'none';
+        }
+    };
+
+    // Submit leave request
+    window.submitLeaveRequest = async function() {
+        const submitBtn = document.getElementById('submit-leave-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="loading-spinner"></span> Submitting...';
+
+        const leaveType = document.querySelector('input[name="leave-type"]:checked').value;
+        const startDate = document.getElementById('leave-start-date').value;
+        const endDate = document.getElementById('leave-end-date').value;
+        const reason = document.getElementById('leave-reason').value.trim();
+        const emergencyName = document.getElementById('emergency-contact-name').value.trim();
+        const emergencyPhone = document.getElementById('emergency-contact-phone').value.trim();
+        const handoverNotes = document.getElementById('handover-notes').value.trim();
+
+        // Validation
+        if (!startDate || !endDate) {
+            alert('Please select start and end dates');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+            return;
+        }
+
+        if (!reason) {
+            alert('Please provide a reason for your leave request');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const apiBase = window.API_BASE_URL || 'http://localhost:8001';
+            const response = await fetch(`${apiBase}/api/admin/leave/requests/${currentAdminId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    leave_type: leaveType,
+                    start_date: startDate,
+                    end_date: endDate,
+                    reason: reason,
+                    emergency_contact_name: emergencyName || null,
+                    emergency_contact_phone: emergencyPhone || null,
+                    handover_notes: handoverNotes || null
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                alert(`Leave request submitted successfully! ${data.days_requested} days requested.`);
+
+                // Reset form
+                document.getElementById('leave-start-date').value = '';
+                document.getElementById('leave-end-date').value = '';
+                document.getElementById('leave-reason').value = '';
+                document.getElementById('emergency-contact-name').value = '';
+                document.getElementById('emergency-contact-phone').value = '';
+                document.getElementById('handover-notes').value = '';
+                document.getElementById('date-summary').style.display = 'none';
+
+                // Reload requests
+                await loadLeaveRequests();
+                switchLeaveTab('my-requests');
+            } else {
+                const error = await response.json();
+                alert(error.detail || 'Failed to submit leave request');
+            }
+        } catch (error) {
+            console.error('Error submitting leave request:', error);
+            alert('Failed to submit leave request. Please try again.');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Request';
+        }
+    };
+
+    // Cancel leave request
+    window.cancelLeaveRequest = async function(requestId) {
+        if (!confirm('Are you sure you want to cancel this leave request?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+            const apiBase = window.API_BASE_URL || 'http://localhost:8001';
+            const response = await fetch(`${apiBase}/api/admin/leave/request/${requestId}?admin_id=${currentAdminId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                alert('Leave request cancelled successfully');
+                await loadLeaveRequests();
+            } else {
+                const error = await response.json();
+                alert(error.detail || 'Failed to cancel leave request');
+            }
+        } catch (error) {
+            console.error('Error cancelling leave request:', error);
+            alert('Failed to cancel leave request. Please try again.');
+        }
+    };
+
+    // Open modal
+    window.openLeaveRequestModal = function() {
+        initLeaveModal();
+        const modal = document.getElementById('file-leave-request-modal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    };
+
+    // Close modal
+    window.closeLeaveRequestModal = function() {
+        const modal = document.getElementById('file-leave-request-modal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    };
+
+    // Close on backdrop click
+    document.addEventListener('click', function(e) {
+        const modal = document.getElementById('file-leave-request-modal');
+        if (modal && e.target === modal) {
+            closeLeaveRequestModal();
+        }
+    });
+
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('file-leave-request-modal');
+            if (modal && modal.classList.contains('active')) {
+                closeLeaveRequestModal();
+            }
+        }
+    });
+
+    console.log('File Leave Request Modal component loaded');
+})();
+</script>

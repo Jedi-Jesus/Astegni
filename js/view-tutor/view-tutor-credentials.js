@@ -10,7 +10,7 @@
  * - Display credentials in a read-only grid (no edit/delete for viewers)
  */
 
-const VIEW_CRED_API_BASE_URL = window.API_BASE_URL || 'https://api.astegni.com';
+const VIEW_CRED_API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 let viewCredCurrentType = 'achievement';
 let viewCredAllCredentials = [];
 
