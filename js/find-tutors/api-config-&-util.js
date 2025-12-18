@@ -3,7 +3,7 @@
 // ============================================
 
 // Set global API base URL for compatibility with other modules
-window.API_BASE_URL = 'http://localhost:8000/api';
+// API_BASE_URL is set by config.js
 
 const FindTutorsAPI = {
     baseUrl: window.API_BASE_URL,

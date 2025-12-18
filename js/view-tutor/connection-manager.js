@@ -16,7 +16,7 @@
 
 class ConnectionManager {
     constructor() {
-        this.API_BASE_URL = 'http://localhost:8000';
+        this.API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
         this.currentConnectionStatus = null;
         this.currentConnectionId = null;
     }

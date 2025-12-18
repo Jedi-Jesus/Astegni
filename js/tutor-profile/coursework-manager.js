@@ -13,7 +13,7 @@ class CourseworkManager {
         this.selectedStudentId = null;
         this.questionEditors = {}; // Store Quill instances for questions
         this.answerEditors = {}; // Store Quill instances for answers
-        this.API_BASE_URL = 'http://localhost:8000';
+        this.API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
         // Sample data - using real student IDs from database
         this.students = [

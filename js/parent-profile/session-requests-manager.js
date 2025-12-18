@@ -673,7 +673,7 @@ const ParentRequestsManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/parent/respond-invitation/${invitationId}?accept=true`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/respond-invitation/${invitationId}?accept=true`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -698,7 +698,7 @@ const ParentRequestsManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/parent/respond-invitation/${invitationId}?accept=false`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/respond-invitation/${invitationId}?accept=false`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

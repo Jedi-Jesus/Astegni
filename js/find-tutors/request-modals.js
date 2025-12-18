@@ -3,7 +3,7 @@
  * Handles course and school request modals functionality
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 class RequestModalsManager {
     constructor() {

@@ -163,7 +163,7 @@ const TutorModalManager = {
                 throw new Error('Not authenticated');
             }
 
-            const response = await fetch(`http://localhost:8000/api/tutor/student-details/${studentId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/student-details/${studentId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

@@ -21,7 +21,7 @@ window.addEventListener("error", (e) => {
 });
 
 // API Configuration
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 // Helper function for API calls
 async function apiCall(endpoint, method = "GET", body = null, token = null) {
@@ -72,7 +72,7 @@ const PROFILE_URLS = {
 };
 
 const CONFIG = {
-    API_URL: "http://localhost:8000",
+    API_URL: window.API_BASE_URL || 'http://localhost:8000',
     ANIMATION_DURATION: 300,
     SCROLL_THRESHOLD: 100,
     TYPING_SPEED: 100,

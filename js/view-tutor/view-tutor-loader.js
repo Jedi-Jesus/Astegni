@@ -4,7 +4,7 @@
  * Displays "None" for fields that haven't been filled yet
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 class ViewTutorLoader {
     constructor() {

@@ -4,7 +4,7 @@
  */
 
 const TestimonialsWidget = {
-    API_BASE_URL: 'http://localhost:8000',
+    API_BASE_URL: window.API_BASE_URL || 'http://localhost:8000',
     currentIndex: 0,
     testimonials: [],
     autoRotateInterval: null,

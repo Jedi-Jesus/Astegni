@@ -6,7 +6,7 @@
  */
 
 // Use existing API_BASE_URL if available, otherwise define it
-const COURSE_REQUEST_API_URL = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:8000';
+const COURSE_REQUEST_API_URL = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : (window.API_BASE_URL || 'http://localhost:8000');
 
 // State for course request
 let courseRequestLanguages = [];

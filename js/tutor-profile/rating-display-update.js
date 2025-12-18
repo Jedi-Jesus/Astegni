@@ -49,7 +49,7 @@
                 console.log('✅ Tutor profile ID:', tutorId);
 
                 // Fetch reviews from tutor_reviews table
-                const reviewsResponse = await fetch(`http://localhost:8000/api/tutor/${tutorId}/reviews`, {
+                const reviewsResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/${tutorId}/reviews`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,

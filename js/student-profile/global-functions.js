@@ -782,7 +782,7 @@ async function acceptStudentParentInvitation(invitationId) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/parent/invitation/${invitationId}/accept`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/invitation/${invitationId}/accept`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -819,7 +819,7 @@ async function rejectStudentParentInvitation(invitationId) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/parent/invitation/${invitationId}/reject`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/invitation/${invitationId}/reject`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -873,7 +873,7 @@ async function loadStudentCourseRequests() {
         }
 
         // Build API URL with status filter
-        let apiUrl = 'http://localhost:8000/api/student/my-course-requests';
+        let apiUrl = (window.API_BASE_URL || 'http://localhost:8000')/api/student/my-course-requests;
         if (currentStudentRequestStatus && currentStudentRequestStatus !== 'all') {
             apiUrl += `?status=${currentStudentRequestStatus}`;
         }
@@ -1023,7 +1023,7 @@ async function loadStudentSchoolRequests() {
         }
 
         // Build API URL with status filter
-        let apiUrl = 'http://localhost:8000/api/student/my-school-requests';
+        let apiUrl = (window.API_BASE_URL || 'http://localhost:8000')/api/student/my-school-requests;
         if (currentStudentRequestStatus && currentStudentRequestStatus !== 'all') {
             apiUrl += `?status=${currentStudentRequestStatus}`;
         }
@@ -1414,7 +1414,7 @@ async function loadStudentSchedules(statusFilter = 'all', typeFilter = 'all') {
         }
 
         // Build URL with filters
-        let url = 'http://localhost:8000/api/student/my-schedules';
+        let url = (window.API_BASE_URL || 'http://localhost:8000')/api/student/my-schedules;
         const params = new URLSearchParams();
         if (statusFilter && statusFilter !== 'all') params.append('status', statusFilter);
         if (typeFilter && typeFilter !== 'all') params.append('schedule_type', typeFilter);
@@ -1656,7 +1656,7 @@ async function markScheduleComplete(scheduleId) {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return;
 
-        const response = await fetch(`http://localhost:8000/api/student/schedules/${scheduleId}/status?status=completed`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedules/${scheduleId}/status?status=completed`, {
             method: 'PATCH',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1684,7 +1684,7 @@ async function confirmDeleteSchedule(scheduleId) {
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         if (!token) return;
 
-        const response = await fetch(`http://localhost:8000/api/student/schedules/${scheduleId}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedules/${scheduleId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -1786,7 +1786,7 @@ async function openEditScheduleModal(scheduleId) {
     try {
         // Fetch schedule details
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
-        const response = await fetch(`http://localhost:8000/api/student/my-schedules/${scheduleId}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/my-schedules/${scheduleId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -1970,8 +1970,8 @@ async function saveSchedule() {
 
         // Send to backend
         const url = isEditing
-            ? `http://localhost:8000/api/student/schedules/${editingId}`
-            : 'http://localhost:8000/api/student/schedules';
+            ? `${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedules/${editingId}`
+            : `${window.API_BASE_URL || 'http://localhost:8000'}/api/student/schedules`;
 
         const response = await fetch(url, {
             method: isEditing ? 'PUT' : 'POST',
@@ -2540,7 +2540,7 @@ async function loadStudentSessions(statusFilter = 'all') {
         }
 
         // Build URL with filters
-        let url = 'http://localhost:8000/api/student/my-sessions';
+        let url = (window.API_BASE_URL || 'http://localhost:8000')/api/student/my-sessions;
         if (statusFilter && statusFilter !== 'all') {
             url += `?status=${statusFilter}`;
         }

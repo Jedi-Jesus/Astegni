@@ -11,7 +11,7 @@ const UrlHelper = {
 
     getApiBaseUrl() {
         return this.isFileProtocol
-            ? 'http://localhost:8000/api'
+            ? (window.API_BASE_URL || 'http://localhost:8000')/api
             : '/api';
     },
 
@@ -27,7 +27,7 @@ const UrlHelper = {
         if (this.isFileProtocol) {
             // Remove leading slash if present
             const cleanPath = path.startsWith('/') ? path : '/' + path;
-            return `http://localhost:8000${cleanPath}`;
+            return `${window.API_BASE_URL || 'http://localhost:8000'}${cleanPath}`;
         }
         
         return path;

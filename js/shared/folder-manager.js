@@ -259,7 +259,7 @@ async function loadFolderDocuments(folderId) {
         const role = folderManagerRole;
 
         // Fetch documents filtered by folder
-        const response = await fetch(`http://localhost:8000/api/teaching-documents?uploader_role=${role}&folder=${folderId}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/teaching-documents?uploader_role=${role}&folder=${folderId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 

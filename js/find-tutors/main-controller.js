@@ -204,7 +204,9 @@ const FindTutorsController = {
         // Optional WebSocket initialization for real-time updates
         if (window.WebSocket && window.location.protocol !== 'file:') {
             try {
-                const wsUrl = `ws://localhost:8000/ws`;
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsHost = window.API_BASE_URL ? new URL(window.API_BASE_URL).host : 'localhost:8000';
+                const wsUrl = `${wsProtocol}//${wsHost}/ws`;
                 const ws = new WebSocket(wsUrl);
 
                 ws.onmessage = (event) => {

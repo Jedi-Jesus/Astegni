@@ -3,7 +3,7 @@
  * Handles comprehensive profile editing with database integration
  */
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 /**
  * Get current user ID from AuthManager

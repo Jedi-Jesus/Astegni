@@ -43,8 +43,8 @@ const SessionRequestManager = {
             }
 
             const url = status
-                ? `http://localhost:8000/api/session-requests/tutor?status=${status}`
-                : 'http://localhost:8000/api/session-requests/tutor';
+                ? `${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor?status=${status}`
+                : `${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor`;
 
             const response = await fetch(url, {
                 headers: {
@@ -193,7 +193,7 @@ const SessionRequestManager = {
             modal.classList.remove('hidden');
 
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/session-requests/tutor/${requestId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${requestId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -455,7 +455,7 @@ const SessionRequestManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/session-requests/tutor/${this.currentRequestId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${this.currentRequestId}`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -506,7 +506,7 @@ const SessionRequestManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/session-requests/tutor/${this.currentRequestId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/session-requests/tutor/${this.currentRequestId}`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -1366,7 +1366,7 @@ const ParentingInvitationManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/parent/respond-invitation/${invitationId}?accept=false`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/respond-invitation/${invitationId}?accept=false`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -1598,7 +1598,7 @@ const ParentingInvitationManager = {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:8000/api/parent/cancel-invitation/${invitationId}`, {
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/cancel-invitation/${invitationId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

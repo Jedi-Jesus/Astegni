@@ -4,7 +4,7 @@
  * Reads from parent_profiles table via /api/parent/coparents endpoint
  */
 
-const COPARENT_API_BASE_URL = 'http://localhost:8000';
+const COPARENT_API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
 // ============================================
 // COPARENTS MANAGER CLASS

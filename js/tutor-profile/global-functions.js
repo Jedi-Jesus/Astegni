@@ -4383,8 +4383,8 @@ console.log('=== END DEBUG ===');
         }
 
         const url = isEdit
-            ? `http://localhost:8000/api/tutor/schedules/${scheduleId}`
-            : 'http://localhost:8000/api/tutor/schedules';
+            ? `${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleId}`
+            : `${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules`;
 
         const method = isEdit ? 'PUT' : 'POST';
 
@@ -5443,7 +5443,7 @@ async function viewSchedule(scheduleId) {
             throw new Error('Please log in to view schedule details');
         }
 
-        const response = await fetch(`http://localhost:8000/api/schedules/${scheduleId}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/schedules/${scheduleId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -5613,7 +5613,7 @@ async function viewSession(sessionId) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/tutor/sessions/${sessionId}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/sessions/${sessionId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -5686,7 +5686,7 @@ async function editScheduleFromView() {
         console.log('📡 Fetching schedule details...');
 
         // Fetch the schedule details again to ensure we have the latest data
-        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${scheduleIdToEdit}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleIdToEdit}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -5856,7 +5856,7 @@ async function deleteScheduleFromView() {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${currentViewingScheduleId}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${currentViewingScheduleId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -6069,7 +6069,7 @@ async function toggleScheduleNotification(scheduleId, enable) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${scheduleId}/toggle-notification`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleId}/toggle-notification`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -6103,7 +6103,7 @@ async function toggleScheduleAlarm(scheduleId, enable) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${scheduleId}/toggle-alarm`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleId}/toggle-alarm`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -6137,7 +6137,7 @@ async function toggleScheduleFeatured(scheduleId, feature) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/tutor/schedules/${scheduleId}/toggle-featured`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/schedules/${scheduleId}/toggle-featured`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -6187,7 +6187,7 @@ async function loadStudentReviews(studentProfileId) {
         }
 
         // Fetch review stats
-        const statsResponse = await fetch(`http://localhost:8000/api/student/reviews/${studentProfileId}/stats`, {
+        const statsResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${studentProfileId}/stats`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -6223,7 +6223,7 @@ async function loadStudentReviews(studentProfileId) {
         }
 
         // Fetch reviews
-        const reviewsResponse = await fetch(`http://localhost:8000/api/student/reviews/${studentProfileId}?limit=20`, {
+        const reviewsResponse = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${studentProfileId}?limit=20`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -6459,7 +6459,7 @@ async function submitStudentReview() {
 
         console.log('Submitting review:', reviewData);
 
-        const response = await fetch(`http://localhost:8000/api/student/reviews/${currentStudentForReview.student_profile_id}`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/student/reviews/${currentStudentForReview.student_profile_id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -6702,7 +6702,7 @@ async function loadTutorRequests() {
 // Load course requests from API
 async function loadTutorCourseRequests(token) {
     const container = document.getElementById('tutor-requests-list');
-    const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:8000';
+    const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : (window.API_BASE_URL || 'http://localhost:8000');
 
     try {
         const response = await fetch(`${API_BASE}/api/tutor/packages/course-requests`, {
@@ -6761,7 +6761,7 @@ async function loadTutorCourseRequests(token) {
 // Load school requests from API
 async function loadTutorSchoolRequests(token) {
     const container = document.getElementById('tutor-requests-list');
-    const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:8000';
+    const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : (window.API_BASE_URL || 'http://localhost:8000');
 
     try {
         // Map frontend status to database status
@@ -7088,7 +7088,7 @@ async function deleteCourseRequest(courseId) {
 
     try {
         const token = localStorage.getItem('token');
-        const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : 'http://localhost:8000';
+        const API_BASE = (typeof API_BASE_URL !== 'undefined') ? API_BASE_URL : (window.API_BASE_URL || 'http://localhost:8000');
 
         const response = await fetch(`${API_BASE}/api/tutor/packages/course-request/${courseId}`, {
             method: 'DELETE',

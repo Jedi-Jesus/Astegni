@@ -103,7 +103,7 @@ if (typeof UrlHelper === 'undefined') {
         
         getApiBaseUrl() {
             return this.isFileProtocol 
-                ? 'http://localhost:8000/api'
+                ? (window.API_BASE_URL || 'http://localhost:8000')/api
                 : '/api';
         },
         
@@ -117,7 +117,7 @@ if (typeof UrlHelper === 'undefined') {
             
             // For file protocol, prepend backend server URL
             if (this.isFileProtocol) {
-                return `http://localhost:8000${path}`;
+                return `${window.API_BASE_URL || 'http://localhost:8000'}${path}`;
             }
             
             // For http protocol, return as is
@@ -141,7 +141,7 @@ const ProfileSystem = (function() {
     'use strict';
 
     // Configuration
-    const API_BASE_URL = "http://localhost:8000";
+    const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
     
     const PROFILE_URLS = {
         user: "../profile-pages/user-profile.html",
@@ -426,7 +426,7 @@ function updateProfilePictures() {
         
         // Fallback for file protocol without UrlHelper
         if (window.location.protocol === 'file:') {
-            return `http://localhost:8000${url}`;
+            return `${window.API_BASE_URL || 'http://localhost:8000'}${url}`;
         }
         
         return url;

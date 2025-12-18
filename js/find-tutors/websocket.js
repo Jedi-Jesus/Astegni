@@ -9,7 +9,9 @@
         }
 
         try {
-            const ws = new WebSocket('ws://localhost:8000/ws/tutors/client_' + Date.now());
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsHost = window.API_BASE_URL ? new URL(window.API_BASE_URL).host : 'localhost:8000';
+            const ws = new WebSocket(`${wsProtocol}//${wsHost}/ws/tutors/client_` + Date.now());
 
             ws.onopen = () => {
                 console.log('WebSocket connected');

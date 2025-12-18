@@ -1509,7 +1509,7 @@ async function acceptParentInvitation(invitationId) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/parent/respond-invitation/${invitationId}?accept=true`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/respond-invitation/${invitationId}?accept=true`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1540,7 +1540,7 @@ async function rejectParentInvitation(invitationId) {
 
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:8000/api/parent/respond-invitation/${invitationId}?accept=false`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/respond-invitation/${invitationId}?accept=false`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1876,7 +1876,7 @@ async function acceptCoParentInvitation(invitationId) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/parent/coparent-invitation/${invitationId}/accept`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/coparent-invitation/${invitationId}/accept`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1913,7 +1913,7 @@ async function rejectCoParentInvitation(invitationId) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/parent/coparent-invitation/${invitationId}/reject`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/parent/coparent-invitation/${invitationId}/reject`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

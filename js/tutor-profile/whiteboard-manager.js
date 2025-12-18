@@ -11,7 +11,7 @@
 
 class WhiteboardManager {
     constructor() {
-        this.API_BASE = 'http://localhost:8000/api/whiteboard';
+        this.API_BASE = (window.API_BASE_URL || 'http://localhost:8000')/api/whiteboard;
         this.currentSession = null;
         this.currentPage = null;
         this.pages = [];

@@ -2036,7 +2036,7 @@ function openCreateCampaignModal() {
 }
 
 async function saveCampaign() {
-    const API_BASE_URL = 'http://localhost:8000';
+    const API_BASE_URL = window.API_BASE_URL || 'http://localhost:8000';
 
     // Get form values
     const name = document.getElementById('campaignName')?.value;

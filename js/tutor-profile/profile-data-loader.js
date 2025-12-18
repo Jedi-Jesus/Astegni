@@ -412,7 +412,7 @@ const TutorProfileDataLoader = {
             }
 
             // Fetch profile summary from the new API endpoint
-            const response = await fetch(`http://localhost:8000/api/tutor/profile-summary/${tutorId}`);
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/profile-summary/${tutorId}`);
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch profile summary: ${response.status}`);
@@ -474,7 +474,7 @@ const TutorProfileDataLoader = {
             }
 
             // Fetch courses from the courses table via API
-            const response = await fetch(`http://localhost:8000/api/course-management/tutor/${tutorId}/courses`);
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/course-management/tutor/${tutorId}/courses`);
 
             if (!response.ok) {
                 throw new Error(`Failed to fetch courses: ${response.status}`);

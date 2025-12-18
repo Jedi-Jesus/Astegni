@@ -175,7 +175,7 @@ async function loadSessions(statusFilter = null, page = 1) {
             return;
         }
 
-        let url = 'http://localhost:8000/api/tutor/sessions';
+        let url = (window.API_BASE_URL || 'http://localhost:8000')/api/tutor/sessions;
         if (statusFilter && statusFilter !== 'all') {
             url += `?status_filter=${statusFilter}`;
         }
@@ -1059,7 +1059,7 @@ async function toggleSessionNotification(sessionId, enable) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/tutor/sessions/${sessionId}/toggle-notification`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/sessions/${sessionId}/toggle-notification`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1091,7 +1091,7 @@ async function toggleSessionAlarm(sessionId, enable) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/tutor/sessions/${sessionId}/toggle-alarm`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/sessions/${sessionId}/toggle-alarm`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1123,7 +1123,7 @@ async function toggleSessionFeatured(sessionId, feature) {
             return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/tutor/sessions/${sessionId}/toggle-featured`, {
+        const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/sessions/${sessionId}/toggle-featured`, {
             method: 'PATCH',
             headers: {
                 'Authorization': `Bearer ${token}`,

@@ -4,7 +4,7 @@
 // ============================================
 
 const TutorProfileAPI = {
-    baseURL: 'http://localhost:8000',
+    baseURL: window.API_BASE_URL || 'http://localhost:8000',
 
     // Helper method to get auth headers
     getAuthHeaders() {

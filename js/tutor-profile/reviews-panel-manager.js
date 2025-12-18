@@ -63,7 +63,7 @@ const ReviewsPanelManager = {
             console.log('📥 Loading reviews for tutor ID:', tutorId);
 
             // Fetch from API
-            const response = await fetch(`http://localhost:8000/api/tutor/${tutorId}/reviews`);
+            const response = await fetch(`${window.API_BASE_URL || 'http://localhost:8000'}/api/tutor/${tutorId}/reviews`);
             if (!response.ok) {
                 throw new Error(`API error: ${response.status}`);
             }
