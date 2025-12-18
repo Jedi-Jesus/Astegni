@@ -20,7 +20,7 @@ const StatsCounter = {
     async fetchPlatformStats() {
         try {
             // Use the global API_BASE_URL if available, otherwise default to localhost
-            const baseUrl = window.API_BASE_URL || 'http://localhost:8000/api';
+            const baseUrl = window.API_BASE_URL ? `${window.API_BASE_URL}/api` : 'http://localhost:8000/api';
             const response = await fetch(`${baseUrl}/platform-stats`);
 
             if (!response.ok) {

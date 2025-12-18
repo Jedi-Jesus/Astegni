@@ -6,7 +6,8 @@
 // API_BASE_URL is set by config.js
 
 const FindTutorsAPI = {
-    baseUrl: window.API_BASE_URL,
+    // Ensure baseUrl ends with /api for consistent endpoint paths
+    baseUrl: window.API_BASE_URL ? `${window.API_BASE_URL}/api` : 'http://localhost:8000/api',
 
     getHeaders() {
         const headers = { 'Content-Type': 'application/json' };
