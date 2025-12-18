@@ -201,12 +201,21 @@ async def create_connection(
             detail=f"Connection already exists with status: {status_msg}"
         )
 
-    # Create new connection
+    # Get profile IDs for both requester and recipient
+    requester_profile_id = get_profile_id_for_role(db, user_id, current_user_role)
+    recipient_profile_id = target_profile_id  # Already set if recipient_profile_id was provided
+    if not recipient_profile_id:
+        # Look up recipient's profile_id if not already set
+        recipient_profile_id = get_profile_id_for_role(db, target_user_id, target_role)
+
+    # Create new connection with profile IDs
     new_connection = Connection(
         requested_by=user_id,
         requester_type=current_user_role,
+        requester_profile_id=requester_profile_id,
         recipient_id=target_user_id,
         recipient_type=target_role,
+        recipient_profile_id=recipient_profile_id,
         status='pending',
         requested_at=datetime.utcnow()
     )
