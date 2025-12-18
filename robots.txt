@@ -1,0 +1,19 @@
+# Astegni - Ethiopia's Premier Learning Platform
+# https://astegni.com
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://astegni.com/sitemap.xml
+
+# Disallow admin and API paths
+Disallow: /admin-pages/
+Disallow: /astegni-backend/
+Disallow: /test-*.html
+
+# Allow important pages
+Allow: /index.html
+Allow: /branch/
+Allow: /view-profiles/
+Allow: /profile-pages/
