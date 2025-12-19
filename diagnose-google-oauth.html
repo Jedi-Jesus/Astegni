@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Diagnostics - Astegni</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .check-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            text-align: center;
+            line-height: 20px;
+        }
+
+        .icon.pending { color: #f59e0b; }
+        .icon.success { color: #10b981; }
+        .icon.error { color: #ef4444; }
+
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .error-box h3 {
+            color: #dc2626;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .error-box p {
+            color: #991b1b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .success-box {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .success-box h3 {
+            color: #16a34a;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .code {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin-top: 8px;
+        }
+
+        .btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 12px;
+        }
+
+        .btn:hover {
+            background: #357ae8;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .info-box h3 {
+            color: #1e40af;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .info-box p, .info-box ul {
+            color: #1e3a8a;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info-box ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .info-box li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Google OAuth Diagnostic Tool</h1>
+        <p class="subtitle">Complete diagnostic check for "Can't continue with google.com" error</p>
+
+        <!-- Section 1: Environment Check -->
+        <div class="section">
+            <h2>1️⃣ Environment Check</h2>
+            <div class="check-item">
+                <span class="icon pending" id="icon-origin">⏳</span>
+                <span id="text-origin">Checking current origin...</span>
+            </div>
+            <div class="check-item">
+                <span class="icon pending" id="icon-cookies">⏳</span>
+                <span id="text-cookies">Checking cookie settings...</span>
+            </div>
+            <div class="check-item">
+                <span class="icon pending" id="icon-thirdparty">⏳</span>
+                <span id="text-thirdparty">Checking third-party cookies...</span>
+            </div>
+            <div id="env-details"></div>
+        </div>
+
+        <!-- Section 2: Backend Check -->
+        <div class="section">
+            <h2>2️⃣ Backend Configuration</h2>
+            <div class="check-item">
+                <span class="icon pending" id="icon-backend">⏳</span>
+                <span id="text-backend">Checking backend status...</span>
+            </div>
+            <div class="check-item">
+                <span class="icon pending" id="icon-config">⏳</span>
+                <span id="text-config">Fetching OAuth config...</span>
+            </div>
+            <div id="backend-details"></div>
+        </div>
+
+        <!-- Section 3: Google Library Check -->
+        <div class="section">
+            <h2>3️⃣ Google Sign-In Library</h2>
+            <div class="check-item">
+                <span class="icon pending" id="icon-library">⏳</span>
+                <span id="text-library">Loading Google library...</span>
+            </div>
+            <div class="check-item">
+                <span class="icon pending" id="icon-init">⏳</span>
+                <span id="text-init">Initializing Google Sign-In...</span>
+            </div>
+            <div id="library-details"></div>
+        </div>
+
+        <!-- Section 4: Google Console Settings -->
+        <div class="section">
+            <h2>4️⃣ Required Google Console Settings</h2>
+            <div class="info-box">
+                <h3>⚙️ What You Need to Configure</h3>
+                <p>Go to: <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></p>
+                <p style="margin-top: 8px;">Find your OAuth 2.0 Client ID and add these:</p>
+
+                <p style="margin-top: 12px; font-weight: 600;">Authorized JavaScript origins:</p>
+                <div class="code">http://localhost:8081
+http://localhost:8080</div>
+
+                <p style="margin-top: 12px; font-weight: 600;">Authorized redirect URIs:</p>
+                <div class="code">http://localhost:8081
+http://localhost:8080</div>
+
+                <p style="margin-top: 12px; font-weight: 600; color: #dc2626;">⚠️ IMPORTANT:</p>
+                <ul>
+                    <li>Save changes in Google Console</li>
+                    <li>Wait <strong>5-10 minutes</strong> for propagation</li>
+                    <li>Clear browser cache or use incognito mode</li>
+                    <li>Don't use trailing slashes (/) in URLs</li>
+                    <li>Use "localhost", not "127.0.0.1"</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 5: Browser Settings -->
+        <div class="section">
+            <h2>5️⃣ Browser Settings Check</h2>
+            <div class="info-box">
+                <h3>🍪 Enable Third-Party Cookies for Google</h3>
+                <p><strong>Chrome:</strong></p>
+                <ul>
+                    <li>Settings → Privacy and security → Cookies and other site data</li>
+                    <li>Select: "Allow all cookies" (temporary for testing)</li>
+                    <li>OR add site exception: <code>[*.]google.com</code></li>
+                </ul>
+
+                <p style="margin-top: 12px;"><strong>Firefox:</strong></p>
+                <ul>
+                    <li>Settings → Privacy & Security</li>
+                    <li>Enhanced Tracking Protection: Select "Standard" (not "Strict")</li>
+                    <li>OR add exception for google.com</li>
+                </ul>
+
+                <p style="margin-top: 12px;"><strong>Edge:</strong></p>
+                <ul>
+                    <li>Settings → Cookies and site permissions</li>
+                    <li>Manage and delete cookies → Allow cookies</li>
+                </ul>
+            </div>
+
+            <button class="btn" onclick="checkCookies()">🔍 Re-check Cookie Settings</button>
+        </div>
+
+        <!-- Section 6: Quick Fixes -->
+        <div class="section">
+            <h2>6️⃣ Quick Fixes</h2>
+            <div class="info-box">
+                <h3>🚀 Try These in Order</h3>
+                <ol>
+                    <li><strong>Open in Incognito Mode</strong> (Ctrl+Shift+N or Cmd+Shift+N)</li>
+                    <li><strong>Clear Google OAuth cache:</strong>
+                        <div class="code" style="margin-top: 8px;">1. Press F12 (DevTools)
+2. Right-click refresh button
+3. "Empty Cache and Hard Reload"</div>
+                    </li>
+                    <li><strong>Verify backend is running:</strong>
+                        <div class="code" style="margin-top: 8px;">cd astegni-backend
+python app.py</div>
+                    </li>
+                    <li><strong>Verify dev server is running:</strong>
+                        <div class="code" style="margin-top: 8px;">python dev-server.py</div>
+                    </li>
+                    <li><strong>Access via correct URL:</strong>
+                        <div class="code" style="margin-top: 8px;">http://localhost:8081/test-google-oauth.html</div>
+                    </li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Final Status -->
+        <div id="final-status"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let allChecksPassed = false;
+
+        function updateCheck(id, status, text) {
+            const icon = document.getElementById(`icon-${id}`);
+            const textEl = document.getElementById(`text-${id}`);
+
+            if (status === 'success') {
+                icon.textContent = '✅';
+                icon.className = 'icon success';
+            } else if (status === 'error') {
+                icon.textContent = '❌';
+                icon.className = 'icon error';
+            } else {
+                icon.textContent = '⏳';
+                icon.className = 'icon pending';
+            }
+
+            if (text) textEl.textContent = text;
+        }
+
+        function showError(containerId, title, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="error-box">
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function showSuccess(containerId, title, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="success-box">
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        function showInfo(containerId, data) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="code">${JSON.stringify(data, null, 2)}</div>
+            `;
+        }
+
+        // Check 1: Environment
+        async function checkEnvironment() {
+            const origin = window.location.origin;
+
+            if (origin === 'http://localhost:8081') {
+                updateCheck('origin', 'success', `Origin: ${origin} ✓`);
+            } else {
+                updateCheck('origin', 'error', `Origin: ${origin} ❌ (Expected: http://localhost:8081)`);
+                showError('env-details', '⚠️ Wrong Origin!',
+                    `You're accessing from ${origin}, but Google OAuth is configured for http://localhost:8081. Please access this page at http://localhost:8081/diagnose-google-oauth.html`);
+                return false;
+            }
+
+            return true;
+        }
+
+        // Check 2: Cookies
+        function checkCookies() {
+            try {
+                // Test if cookies are enabled
+                document.cookie = "test=1; SameSite=None; Secure";
+                const cookiesEnabled = document.cookie.indexOf("test=") !== -1;
+
+                if (cookiesEnabled) {
+                    updateCheck('cookies', 'success', 'Cookies enabled ✓');
+                    updateCheck('thirdparty', 'success', 'Third-party cookies likely enabled ✓');
+                } else {
+                    updateCheck('cookies', 'error', 'Cookies disabled ❌');
+                    showError('env-details', '🍪 Cookies Disabled!',
+                        'Cookies are disabled in your browser. Google OAuth requires cookies to work. Please enable cookies in your browser settings.');
+                    return false;
+                }
+            } catch (e) {
+                updateCheck('cookies', 'error', 'Cannot check cookies ❌');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Check 3: Backend
+        async function checkBackend() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/oauth/google/config`);
+
+                if (!response.ok) {
+                    throw new Error(`Backend returned ${response.status}`);
+                }
+
+                const config = await response.json();
+                updateCheck('backend', 'success', 'Backend online ✓');
+                updateCheck('config', 'success', 'OAuth configured ✓');
+
+                showInfo('backend-details', {
+                    client_id: config.client_id,
+                    redirect_uri: config.redirect_uri
+                });
+
+                return true;
+            } catch (error) {
+                updateCheck('backend', 'error', 'Backend offline ❌');
+                updateCheck('config', 'error', 'Cannot fetch config ❌');
+
+                showError('backend-details', '🔌 Backend Not Running!',
+                    `Cannot connect to backend at ${API_BASE_URL}. Make sure it's running: cd astegni-backend && python app.py`);
+
+                return false;
+            }
+        }
+
+        // Check 4: Google Library
+        async function checkGoogleLibrary() {
+            try {
+                await loadGoogleLibrary();
+                updateCheck('library', 'success', 'Google library loaded ✓');
+
+                const config = await (await fetch(`${API_BASE_URL}/api/oauth/google/config`)).json();
+
+                try {
+                    window.google.accounts.id.initialize({
+                        client_id: config.client_id,
+                        callback: () => {},
+                        auto_select: false,
+                        cancel_on_tap_outside: true
+                    });
+
+                    updateCheck('init', 'success', 'Google Sign-In initialized ✓');
+                    return true;
+                } catch (error) {
+                    updateCheck('init', 'error', 'Initialization failed ❌');
+
+                    showError('library-details', '⚠️ Google Sign-In Initialization Failed!',
+                        `This usually means:\n1. Your origin (http://localhost:8081) is not in Google Console's "Authorized JavaScript origins"\n2. Google hasn't propagated your changes yet (wait 5-10 minutes)\n3. Browser cache needs clearing (try incognito mode)\n\nError: ${error.message}`);
+
+                    return false;
+                }
+            } catch (error) {
+                updateCheck('library', 'error', 'Failed to load library ❌');
+                showError('library-details', '❌ Google Library Load Failed!', error.message);
+                return false;
+            }
+        }
+
+        function loadGoogleLibrary() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.accounts) {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+                script.onload = () => {
+                    const check = setInterval(() => {
+                        if (window.google && window.google.accounts) {
+                            clearInterval(check);
+                            resolve();
+                        }
+                    }, 100);
+
+                    setTimeout(() => {
+                        clearInterval(check);
+                        if (!window.google || !window.google.accounts) {
+                            reject(new Error('Library loaded but API not available'));
+                        }
+                    }, 5000);
+                };
+                script.onerror = () => reject(new Error('Failed to load Google library'));
+                document.head.appendChild(script);
+            });
+        }
+
+        // Run all checks
+        async function runDiagnostics() {
+            const envOk = await checkEnvironment();
+            if (!envOk) return;
+
+            const cookiesOk = checkCookies();
+            if (!cookiesOk) return;
+
+            const backendOk = await checkBackend();
+            if (!backendOk) return;
+
+            const libraryOk = await checkGoogleLibrary();
+
+            const finalStatus = document.getElementById('final-status');
+
+            if (libraryOk) {
+                finalStatus.innerHTML = `
+                    <div class="success-box">
+                        <h3>✅ All Checks Passed!</h3>
+                        <p>Your Google OAuth setup looks good! If you're still seeing the "Can't continue with google.com" error, it's likely a Google Console configuration issue.</p>
+                        <p style="margin-top: 12px;"><strong>Next steps:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 8px;">
+                            <li>Verify <code>http://localhost:8081</code> is in Google Console's "Authorized JavaScript origins"</li>
+                            <li>Wait 5-10 minutes after saving changes in Google Console</li>
+                            <li>Clear browser cache or use incognito mode</li>
+                            <li>Try the test page: <a href="/test-google-oauth.html">test-google-oauth.html</a></li>
+                        </ul>
+                    </div>
+                `;
+            } else {
+                finalStatus.innerHTML = `
+                    <div class="error-box">
+                        <h3>❌ Setup Issues Detected</h3>
+                        <p>Please fix the errors above before testing Google Sign-In.</p>
+                        <p style="margin-top: 12px;">See the <a href="/GOOGLE-OAUTH-TROUBLESHOOTING.md" target="_blank">troubleshooting guide</a> for detailed solutions.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Start diagnostics
+        runDiagnostics();
+    </script>
+</body>
+</html>

@@ -35,15 +35,15 @@ def run_server(port=8080):
     handler = NoCacheHTTPRequestHandler
 
     with socketserver.TCPServer(("", port), handler) as httpd:
-        print(f"🚀 Development server running at http://localhost:{port}/")
-        print(f"📂 Serving from: {httpd.server_address}")
-        print(f"✅ Cache disabled - all files will be fresh!")
-        print(f"\n💡 Press Ctrl+C to stop the server\n")
+        print(f"Development server running at http://localhost:{port}/")
+        print(f"Serving from: {httpd.server_address}")
+        print(f"Cache disabled - all files will be fresh!")
+        print(f"\nPress Ctrl+C to stop the server\n")
 
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
-            print("\n\n🛑 Server stopped.")
+            print("\n\nServer stopped.")
 
 if __name__ == "__main__":
     run_server(8081)

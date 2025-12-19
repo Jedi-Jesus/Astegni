@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google OAuth Test - Astegni</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .status-icon.success {
+            background: #10b981;
+        }
+
+        .status-icon.error {
+            background: #ef4444;
+        }
+
+        .status-icon.pending {
+            background: #f59e0b;
+        }
+
+        .test-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .test-button:hover {
+            background: #357ae8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.4);
+        }
+
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .logs {
+            background: #1e1e1e;
+            color: #00ff00;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+        }
+
+        .log-entry.error {
+            color: #ff6b6b;
+        }
+
+        .log-entry.success {
+            color: #51cf66;
+        }
+
+        .log-entry.info {
+            color: #74c0fc;
+        }
+
+        .instructions {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 16px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .instructions h3 {
+            color: #856404;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .instructions p {
+            color: #856404;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Google OAuth Test</h1>
+        <p class="subtitle">Diagnostic tool for testing Google Sign-In integration</p>
+
+        <div class="status-card">
+            <h3 style="margin-bottom: 16px; font-size: 16px;">System Status</h3>
+            <div class="status-item">
+                <div class="status-icon" id="status-backend"></div>
+                <span id="text-backend">Checking backend...</span>
+            </div>
+            <div class="status-item">
+                <div class="status-icon" id="status-library"></div>
+                <span id="text-library">Checking Google library...</span>
+            </div>
+            <div class="status-item">
+                <div class="status-icon" id="status-init"></div>
+                <span id="text-init">Checking OAuth initialization...</span>
+            </div>
+            <div class="status-item">
+                <div class="status-icon" id="status-origin"></div>
+                <span id="text-origin">Origin: <code id="current-origin">...</code></span>
+            </div>
+        </div>
+
+        <button class="test-button" id="test-button" disabled>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Test Google Sign-In
+        </button>
+
+        <div class="instructions">
+            <h3>📋 Before Testing:</h3>
+            <p>1. Verify <code>http://localhost:8081</code> is in your Google Console authorized JavaScript origins<br>
+            2. Wait 5-10 minutes after saving changes in Google Console<br>
+            3. Clear browser cache or use incognito mode<br>
+            4. Ensure backend is running (<code>python app.py</code>)</p>
+        </div>
+
+        <div class="logs" id="logs"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let clientId = null;
+
+        // Logging utility
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            const timestamp = new Date().toLocaleTimeString();
+            entry.textContent = `[${timestamp}] ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        // Update status indicator
+        function updateStatus(id, status, text) {
+            const icon = document.getElementById(`status-${id}`);
+            const textEl = document.getElementById(`text-${id}`);
+            icon.className = `status-icon ${status}`;
+            if (text) textEl.innerHTML = text;
+        }
+
+        // Initialize
+        async function initialize() {
+            log('🚀 Starting Google OAuth diagnostic test...', 'info');
+
+            // Check current origin
+            const origin = window.location.origin;
+            document.getElementById('current-origin').textContent = origin;
+            log(`Current origin: ${origin}`, 'info');
+
+            if (origin !== 'http://localhost:8081') {
+                updateStatus('origin', 'error', `Origin mismatch! Expected: http://localhost:8081, Got: ${origin}`);
+                log(`⚠️ WARNING: You're accessing this page from ${origin}, but Google OAuth is configured for http://localhost:8081`, 'error');
+                log('Please access this page at: http://localhost:8081/test-google-oauth.html', 'error');
+            } else {
+                updateStatus('origin', 'success', `Origin: <code>${origin}</code> ✓`);
+                log('✓ Origin matches expected value', 'success');
+            }
+
+            // Step 1: Check backend
+            log('Checking backend OAuth configuration...', 'info');
+            try {
+                const configRes = await fetch(`${API_BASE_URL}/api/oauth/google/config`);
+                if (!configRes.ok) {
+                    throw new Error(`Backend returned ${configRes.status}`);
+                }
+                const config = await configRes.json();
+                clientId = config.client_id;
+
+                updateStatus('backend', 'success', 'Backend OAuth configured ✓');
+                log(`✓ Backend configured successfully`, 'success');
+                log(`Client ID: ${clientId}`, 'info');
+                log(`Redirect URI: ${config.redirect_uri}`, 'info');
+
+                // Check status endpoint
+                const statusRes = await fetch(`${API_BASE_URL}/api/oauth/google/status`);
+                const status = await statusRes.json();
+                log(`OAuth Status: ${JSON.stringify(status, null, 2)}`, 'info');
+
+            } catch (error) {
+                updateStatus('backend', 'error', 'Backend not responding ✗');
+                log(`✗ Backend error: ${error.message}`, 'error');
+                log('Make sure backend is running: cd astegni-backend && python app.py', 'error');
+                return;
+            }
+
+            // Step 2: Load Google library
+            log('Loading Google Sign-In library...', 'info');
+            try {
+                await loadGoogleLibrary();
+                updateStatus('library', 'success', 'Google library loaded ✓');
+                log('✓ Google Sign-In library loaded successfully', 'success');
+            } catch (error) {
+                updateStatus('library', 'error', 'Failed to load library ✗');
+                log(`✗ Library error: ${error.message}`, 'error');
+                return;
+            }
+
+            // Step 3: Initialize Google Sign-In
+            log('Initializing Google Sign-In with client ID...', 'info');
+            try {
+                await initializeGoogleSignIn();
+                updateStatus('init', 'success', 'Google Sign-In initialized ✓');
+                log('✓ Google Sign-In initialized successfully', 'success');
+
+                // Enable test button
+                document.getElementById('test-button').disabled = false;
+                log('✅ All checks passed! Click the button to test sign-in', 'success');
+            } catch (error) {
+                updateStatus('init', 'error', 'Initialization failed ✗');
+                log(`✗ Initialization error: ${error.message}`, 'error');
+                log('This could be due to:', 'error');
+                log('1. Origin not authorized in Google Console', 'error');
+                log('2. Google propagation delay (wait 5-10 minutes)', 'error');
+                log('3. Browser cache (try incognito mode)', 'error');
+            }
+        }
+
+        // Load Google library
+        function loadGoogleLibrary() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.accounts) {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+
+                script.onload = () => {
+                    log('Google library script loaded', 'info');
+                    // Wait for google.accounts to be available
+                    const checkReady = setInterval(() => {
+                        if (window.google && window.google.accounts) {
+                            clearInterval(checkReady);
+                            resolve();
+                        }
+                    }, 100);
+
+                    setTimeout(() => {
+                        clearInterval(checkReady);
+                        if (!window.google || !window.google.accounts) {
+                            reject(new Error('Google library loaded but accounts API not available'));
+                        }
+                    }, 5000);
+                };
+
+                script.onerror = () => {
+                    reject(new Error('Failed to load Google Sign-In library'));
+                };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        // Initialize Google Sign-In
+        function initializeGoogleSignIn() {
+            return new Promise((resolve, reject) => {
+                try {
+                    window.google.accounts.id.initialize({
+                        client_id: clientId,
+                        callback: handleCredentialResponse,
+                        auto_select: false,
+                        cancel_on_tap_outside: true
+                    });
+                    log('Google Sign-In initialized with callback', 'info');
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        // Handle credential response
+        async function handleCredentialResponse(response) {
+            log('🎉 Received credential response from Google!', 'success');
+            log(`ID Token (first 50 chars): ${response.credential.substring(0, 50)}...`, 'info');
+
+            try {
+                log('Sending ID token to backend for verification...', 'info');
+                const authRes = await fetch(`${API_BASE_URL}/api/oauth/google`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        id_token: response.credential,
+                        role: 'student'
+                    })
+                });
+
+                if (!authRes.ok) {
+                    const error = await authRes.json();
+                    throw new Error(error.detail || 'Authentication failed');
+                }
+
+                const data = await authRes.json();
+                log('✅ AUTHENTICATION SUCCESSFUL!', 'success');
+                log(`Welcome, ${data.user.first_name}!`, 'success');
+                log(`User ID: ${data.user.id}`, 'info');
+                log(`Email: ${data.user.email}`, 'info');
+                log(`Role: ${data.user.active_role}`, 'info');
+                log(`Email Verified: ${data.user.email_verified}`, 'info');
+                log('Access token saved to localStorage', 'info');
+
+                // Save tokens
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                localStorage.setItem('userRole', data.user.active_role);
+
+                log('🎊 Test completed successfully! Redirecting to profile page in 3 seconds...', 'success');
+
+                setTimeout(() => {
+                    window.location.href = '/profile-pages/student-profile.html';
+                }, 3000);
+
+            } catch (error) {
+                log(`✗ Backend authentication failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Test button click
+        document.getElementById('test-button').addEventListener('click', () => {
+            log('🖱️ Test button clicked - prompting Google Sign-In...', 'info');
+            try {
+                window.google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed()) {
+                        log('⚠️ Google prompt not displayed', 'error');
+                        log('Reason: ' + notification.getNotDisplayedReason(), 'error');
+                        log('Trying alternative method...', 'info');
+
+                        // Fallback: render button
+                        const container = document.createElement('div');
+                        container.id = 'google-signin-button';
+                        container.style.position = 'fixed';
+                        container.style.top = '50%';
+                        container.style.left = '50%';
+                        container.style.transform = 'translate(-50%, -50%)';
+                        container.style.zIndex = '10000';
+                        document.body.appendChild(container);
+
+                        window.google.accounts.id.renderButton(
+                            container,
+                            {
+                                theme: 'outline',
+                                size: 'large',
+                                text: 'continue_with'
+                            }
+                        );
+
+                        log('Rendered fallback Google Sign-In button', 'info');
+                    } else if (notification.isSkippedMoment()) {
+                        log('⚠️ Google prompt skipped', 'error');
+                    } else {
+                        log('Google prompt displayed successfully', 'success');
+                    }
+                });
+            } catch (error) {
+                log(`✗ Error prompting sign-in: ${error.message}`, 'error');
+            }
+        });
+
+        // Start initialization
+        initialize();
+    </script>
+</body>
+</html>

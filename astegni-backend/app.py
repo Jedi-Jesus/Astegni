@@ -79,6 +79,33 @@ app.add_middleware(
 )
 
 # ============================================
+# GOOGLE FEDCM SUPPORT (for Google OAuth)
+# ============================================
+
+from fastapi import Request, Response
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class FedCMMiddleware(BaseHTTPMiddleware):
+    """
+    Middleware to add FedCM (Federated Credential Management) headers
+    Required for Google Sign-In to work properly
+    """
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+
+        # Add FedCM headers for Google OAuth endpoints
+        if request.url.path.startswith("/api/oauth"):
+            response.headers["Access-Control-Allow-Origin"] = "*"
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
+            response.headers["Access-Control-Allow-Headers"] = "*"
+
+        return response
+
+# Add FedCM middleware
+app.add_middleware(FedCMMiddleware)
+
+# ============================================
 # STATIC FILES
 # ============================================
 
@@ -95,6 +122,10 @@ if os.path.exists("../pictures"):
 # ============================================
 
 # IMPORTANT: Include specific routes BEFORE generic routes to avoid path conflicts
+# Include Google OAuth routes (authentication)
+from google_oauth_endpoints import router as google_oauth_router
+app.include_router(google_oauth_router)
+
 # Include tutor packages routes (must be before routes.py to avoid /api/tutor/{tutor_id} conflict)
 from tutor_packages_endpoints import router as tutor_packages_router
 app.include_router(tutor_packages_router)

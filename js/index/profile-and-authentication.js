@@ -1235,25 +1235,8 @@ window.selectSuggestion = function(suggestion) {
     showToast(`Searching for "${suggestion}"...`, "info");
 };
 
-window.socialLogin = function(platform) {
-    showToast(`Logging in with ${platform}...`, "info");
-    setTimeout(() => {
-        const defaultRole = "student";
-        APP_STATE.isLoggedIn = true;
-        APP_STATE.userRole = defaultRole;
-        APP_STATE.currentUser = {
-            name: "Social User",
-            email: "user@" + platform + ".com",
-            role: defaultRole,
-        };
-        localStorage.setItem("userRole", defaultRole);
-        localStorage.setItem("currentUser", JSON.stringify(APP_STATE.currentUser));
-        updateUIForLoggedInUser();
-        updateProfileLink(defaultRole);
-        closeModal("login-modal");
-        showToast("Login successful!", "success");
-    }, 1500);
-};
+// socialLogin function is now defined in js/root/google-oauth.js
+// DO NOT redefine it here - it will override the Google OAuth implementation
 
 // Export missing functions
 window.openForgotPasswordModal = openForgotPasswordModal;

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Google Sign-In Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        #google-signin-button {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .logs {
+            margin-top: 20px;
+            padding: 16px;
+            background: #1e1e1e;
+            color: #00ff00;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            text-align: left;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Simple Google Sign-In Test</h1>
+        <p>Click the Google button below to test OAuth</p>
+
+        <div id="status" class="status info">
+            Initializing Google Sign-In...
+        </div>
+
+        <!-- Google Sign-In Button will be rendered here -->
+        <div id="google-signin-button"></div>
+
+        <div class="logs" id="logs"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+        let clientId = null;
+
+        // Logging
+        function log(message, type = 'info') {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${timestamp}] ${message}`;
+            logs.appendChild(entry);
+            logs.scrollTop = logs.scrollHeight;
+            console.log(message);
+        }
+
+        // Update status
+        function setStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+        }
+
+        // Handle credential response from Google
+        async function handleCredentialResponse(response) {
+            log('✅ Received credential from Google!', 'success');
+            setStatus('✅ Google Sign-In successful! Verifying with backend...', 'success');
+
+            try {
+                const idToken = response.credential;
+                log(`ID Token: ${idToken.substring(0, 50)}...`);
+
+                // Send to backend
+                log('Sending to backend...');
+                const res = await fetch(`${API_BASE_URL}/api/oauth/google`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        id_token: idToken,
+                        role: 'student'
+                    })
+                });
+
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.detail || 'Backend authentication failed');
+                }
+
+                const data = await res.json();
+                log(`✅ Backend verified! Welcome, ${data.user.first_name}!`);
+                setStatus(`✅ Success! Logged in as ${data.user.email}`, 'success');
+
+                // Save tokens
+                localStorage.setItem('token', data.access_token);
+                localStorage.setItem('access_token', data.access_token);
+                localStorage.setItem('refresh_token', data.refresh_token);
+                localStorage.setItem('currentUser', JSON.stringify(data.user));
+                localStorage.setItem('userRole', data.user.active_role);
+
+                log('Tokens saved to localStorage');
+                log('Redirecting to profile in 3 seconds...');
+
+                setTimeout(() => {
+                    window.location.href = '/profile-pages/student-profile.html';
+                }, 3000);
+
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+                setStatus(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize Google Sign-In
+        async function initialize() {
+            try {
+                log('Fetching OAuth config from backend...');
+                const res = await fetch(`${API_BASE_URL}/api/oauth/google/config`);
+
+                if (!res.ok) {
+                    throw new Error('Backend not configured');
+                }
+
+                const config = await res.json();
+                clientId = config.client_id;
+                log(`✓ Backend configured with Client ID: ${clientId}`);
+
+                // Load Google library
+                log('Loading Google Sign-In library...');
+                await loadGoogleLibrary();
+                log('✓ Google library loaded');
+
+                // Initialize Google Sign-In
+                log('Initializing Google Sign-In...');
+                window.google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleCredentialResponse,
+                    auto_select: false,
+                    cancel_on_tap_outside: true
+                });
+                log('✓ Google Sign-In initialized');
+
+                // Render the button
+                log('Rendering Google Sign-In button...');
+                window.google.accounts.id.renderButton(
+                    document.getElementById('google-signin-button'),
+                    {
+                        theme: 'filled_blue',
+                        size: 'large',
+                        text: 'signin_with',
+                        shape: 'rectangular',
+                        logo_alignment: 'left',
+                        width: 300
+                    }
+                );
+                log('✓ Button rendered!');
+
+                setStatus('✅ Ready! Click the button above to sign in with Google', 'success');
+
+            } catch (error) {
+                log(`❌ Initialization failed: ${error.message}`, 'error');
+                setStatus(`❌ Initialization failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Load Google library
+        function loadGoogleLibrary() {
+            return new Promise((resolve, reject) => {
+                if (window.google && window.google.accounts) {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                script.async = true;
+                script.defer = true;
+
+                script.onload = () => {
+                    const check = setInterval(() => {
+                        if (window.google && window.google.accounts) {
+                            clearInterval(check);
+                            resolve();
+                        }
+                    }, 100);
+
+                    setTimeout(() => {
+                        clearInterval(check);
+                        if (!window.google || !window.google.accounts) {
+                            reject(new Error('Library loaded but API not available'));
+                        }
+                    }, 5000);
+                };
+
+                script.onerror = () => reject(new Error('Failed to load Google library'));
+                document.head.appendChild(script);
+            });
+        }
+
+        // Start initialization when page loads
+        initialize();
+    </script>
+</body>
+</html>
