@@ -14,27 +14,21 @@ async function fetchStatistics() {
             return [
                 { id: "counter-parents", target: stats.registered_parents ?? 0, current: 0, suffix: "+" },
                 { id: "counter-students", target: stats.students ?? 0, current: 0, suffix: "+" },
+                { id: "counter-courses", target: stats.courses ?? 0, current: 0, suffix: "+" },
                 { id: "counter-tutors", target: stats.expert_tutors ?? 0, current: 0, suffix: "+" },
                 { id: "counter-schools", target: stats.schools ?? 0, current: 0, suffix: "+" },
-                { id: "counter-courses", target: stats.courses ?? 0, current: 0, suffix: "+" },
-                { id: "counter-centers", target: stats.training_centers ?? 0, current: 0, suffix: "+" },
-                { id: "counter-books", target: stats.books_available ?? 0, current: 0, suffix: "+" },
-                { id: "counter-jobs", target: stats.job_opportunities ?? 0, current: 0, suffix: "+" },
             ];
         }
     } catch (error) {
         console.log('Using fallback statistics');
     }
-    // Return fallback data
+    // Return fallback data for 3 flip cards (front and back)
     return [
         { id: "counter-parents", target: 1273, current: 0, suffix: "+" },
         { id: "counter-students", target: 5670, current: 0, suffix: "+" },
+        { id: "counter-courses", target: 156, current: 0, suffix: "+" },
         { id: "counter-tutors", target: 327, current: 0, suffix: "+" },
         { id: "counter-schools", target: 10, current: 0, suffix: "+" },
-        { id: "counter-courses", target: 156, current: 0, suffix: "+" },
-        { id: "counter-centers", target: 59, current: 0, suffix: "+" },
-        { id: "counter-books", target: 13879, current: 0, suffix: "+" },
-        { id: "counter-jobs", target: 47, current: 0, suffix: "+" },
     ];
 }
 
@@ -67,14 +61,14 @@ async function initializeCounters() {
 }
 
 function initializeCounterScrollEffect() {
-    const heroSection = document.querySelector(".hero-section");
+    const statsSection = document.querySelector(".stats-section");
     let hasScrolledOut = false;
     let isResetting = false;
 
     window.addEventListener("scroll", () => {
-        if (!heroSection || !window.countersData) return;
+        if (!statsSection || !window.countersData) return;
 
-        const rect = heroSection.getBoundingClientRect();
+        const rect = statsSection.getBoundingClientRect();
         const isVisible = rect.bottom > 0;
 
         if (!isVisible && !hasScrolledOut) {

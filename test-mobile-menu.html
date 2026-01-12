@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Menu Test</title>
+    <link rel="stylesheet" href="css/root.css">
+    <style>
+        body {
+            padding-top: 100px;
+        }
+        .debug-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 9999;
+        }
+        .test-section {
+            padding: 20px;
+            margin: 20px;
+            background: var(--card-bg);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-panel" id="debugPanel">
+        <div>Debug Console:</div>
+        <div id="debugLog"></div>
+    </div>
+
+    <!-- Same navigation as index.html -->
+    <nav class="navbar py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Test</span>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <div class="nav-menu">
+                <div class="nav-items">
+                    <a class="nav-link px-2 py-1 rounded" href="#">Test Link</a>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle mobile menu">
+                <span class="mobile-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Panel -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <a href="#" class="mobile-logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Mobile</span>
+                    </div>
+                </a>
+            </div>
+            <div class="mobile-menu-divider"></div>
+            <a class="mobile-menu-link" href="#">Test Link 1</a>
+            <a class="mobile-menu-link" href="#">Test Link 2</a>
+            <a class="mobile-menu-link" href="#">Test Link 3</a>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
+
+    <div class="test-section">
+        <h1>Mobile Menu Test Page</h1>
+        <p>Resize your browser to below 1024px width to see the hamburger menu button.</p>
+        <p>Current window width: <span id="windowWidth"></span>px</p>
+        <button onclick="testButton()">Test Mobile Menu Button</button>
+        <button onclick="testStyles()">Check Button Styles</button>
+    </div>
+
+    <script src="js/root/app.js"></script>
+    <script src="js/root/theme-toggle.js"></script>
+    <script src="js/root/nav.js"></script>
+
+    <script>
+        function log(msg) {
+            const debugLog = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.innerHTML += `<div>[${timestamp}] ${msg}</div>`;
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
+        function testButton() {
+            const btn = document.getElementById('mobileMenuBtn');
+            log('Button element: ' + (btn ? 'FOUND' : 'NOT FOUND'));
+            if (btn) {
+                log('Button display: ' + getComputedStyle(btn).display);
+                log('Button visibility: ' + getComputedStyle(btn).visibility);
+                log('Button opacity: ' + getComputedStyle(btn).opacity);
+                log('Button classes: ' + btn.className);
+            }
+        }
+
+        function testStyles() {
+            const btn = document.getElementById('mobileMenuBtn');
+            if (btn) {
+                const styles = getComputedStyle(btn);
+                log('=== All relevant styles ===');
+                log('display: ' + styles.display);
+                log('visibility: ' + styles.visibility);
+                log('opacity: ' + styles.opacity);
+                log('position: ' + styles.position);
+                log('width: ' + styles.width);
+                log('height: ' + styles.height);
+                log('z-index: ' + styles.zIndex);
+                log('pointer-events: ' + styles.pointerEvents);
+            }
+        }
+
+        function updateWidth() {
+            document.getElementById('windowWidth').textContent = window.innerWidth;
+        }
+
+        window.addEventListener('resize', updateWidth);
+        window.addEventListener('DOMContentLoaded', () => {
+            updateWidth();
+            log('DOM Content Loaded');
+            testButton();
+        });
+    </script>
+</body>
+</html>

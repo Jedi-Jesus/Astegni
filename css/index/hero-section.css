@@ -81,51 +81,147 @@
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* Counter Cards */
-.counter-grid-wrapper {
-    margin: 3rem auto;
-    max-width: 1400px;
+/* Counter Cards in Hero Section */
+.hero-section .counter-grid-wrapper {
+    margin: 3rem auto 0;
+    max-width: 1200px;
+    position: relative;
+    z-index: 10;
 }
 
-.counter-grid-top {
+.counter-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
-    justify-content: center;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-.counter-grid-bottom {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
-    max-width: 1200px;
-    margin: 1.5rem auto 0;
+/* Flip Card Structure */
+.counter-flip-card {
+    background-color: transparent;
+    height: 280px;
+    perspective: 1000px;
+    cursor: pointer;
 }
 
-.counter-card-wide {
-    /* Each card spans width equivalent to 2 top cards */
-    min-width: 100%;
+.counter-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
 }
 
-/* Responsive adjustments for counter grids */
-@media (max-width: 1024px) {
-    .counter-grid-top {
-        grid-template-columns: repeat(2, 1fr);
+.counter-flip-card:hover .counter-flip-inner {
+    transform: rotateY(180deg);
+}
+
+.counter-flip-front,
+.counter-flip-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.15);
+}
+
+.counter-flip-front {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(248, 250, 252, 0.1));
+    border: 2px solid rgba(245, 158, 11, 0.3);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.counter-flip-back {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(255, 193, 7, 0.15));
+    border: 2px solid rgba(245, 158, 11, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: white;
+    transform: rotateY(180deg);
+}
+
+.counter-flip-back .counter-icon {
+    filter: brightness(0) invert(1);
+}
+
+.counter-flip-back .counter-number,
+.counter-flip-back .counter-number-back {
+    color: white;
+}
+
+.counter-flip-back .counter-label {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.counter-number-back {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 0.5rem;
+}
+
+/* Coming Soon Card on Flip Back */
+.counter-flip-back.coming-soon-card {
+    background: linear-gradient(135deg, rgba(255, 213, 79, 0.2), rgba(255, 193, 7, 0.15));
+    border: 2px dashed rgba(255, 255, 255, 0.5);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.counter-flip-back.coming-soon-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent 40%, rgba(var(--button-bg-rgb), 0.08) 50%, transparent 60%);
+    animation: shimmer 3s infinite;
+}
+
+.counter-flip-back.coming-soon-card .counter-icon {
+    filter: none;
+    opacity: 0.8;
+}
+
+.counter-flip-back.coming-soon-card .coming-soon-text {
+    color: white;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Auto-flip animation for counter cards */
+@keyframes autoFlipCounter {
+    0%, 45% {
+        transform: rotateY(0deg);
     }
-    .counter-grid-bottom {
-        grid-template-columns: repeat(2, 1fr);
+    50%, 95% {
+        transform: rotateY(180deg);
+    }
+    100% {
+        transform: rotateY(360deg);
     }
 }
 
-@media (max-width: 640px) {
-    .counter-grid-top {
-        grid-template-columns: 1fr;
-    }
-    .counter-grid-bottom {
-        grid-template-columns: 1fr;
-    }
+.counter-flip-card:nth-child(1) .counter-flip-inner {
+    animation: autoFlipCounter 12s infinite 0s;
+}
+.counter-flip-card:nth-child(2) .counter-flip-inner {
+    animation: autoFlipCounter 12s infinite 4s;
+}
+.counter-flip-card:nth-child(3) .counter-flip-inner {
+    animation: autoFlipCounter 12s infinite 8s;
+}
+
+.counter-flip-card:hover .counter-flip-inner {
+    animation-play-state: paused;
 }
 
 .counter-card-enhanced {
@@ -170,14 +266,16 @@
 .counter-number {
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--button-bg);
+    color: white;
     margin-bottom: 0.5rem;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .counter-label {
     font-size: 1rem;
-    color: var(--text-muted);
+    color: white;
     text-align: center;
+    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 /* Coming Soon Card Styles */

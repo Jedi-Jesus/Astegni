@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html data-theme="light" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Test Responsive Navigation</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            padding-top: 80px;
+        }
+
+        .test-info {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+
+        .test-info h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .screen-size {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #F59E0B;
+            padding: 1rem;
+            background: white;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .status {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            margin: 0.5rem 0;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+
+    <!-- Styles -->
+    <link href="css/root.css" rel="stylesheet" />
+    <link href="css/index.css" rel="stylesheet" />
+    <link href="css/index/responsive.css" rel="stylesheet" />
+</head>
+
+<body>
+    <!-- Navigation (same as index.html) -->
+    <nav class="navbar py-4 top-0 shadow-sm z-50 w-full fixed" style="background-color: var(--footer-bg);">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <a href="index.html" class="logo-container">
+                <div class="logo-text">
+                    <span class="logo-main">Astegni</span>
+                    <span class="logo-sub">Home</span>
+                </div>
+                <span class="logo-badge">Beta</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <div class="nav-menu">
+                <div class="nav-items">
+                    <a class="nav-link px-2 py-1 rounded" href="#">
+                        <span class="nav-icon">📰</span> News
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="branch/find-tutors.html">
+                        <span class="nav-icon">👨‍🏫</span> Find Tutors
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="branch/reels.html">
+                        <span class="nav-icon">🎬</span> Reels
+                    </a>
+                    <a class="nav-link px-2 py-1 rounded" href="#">
+                        <span class="nav-icon">📚</span> Bookstore
+                    </a>
+                </div>
+
+                <div class="nav-actions">
+                    <button class="nav-btn primary">Login</button>
+                    <button class="nav-btn secondary">Register</button>
+                    <button class="icon-btn" aria-label="Toggle theme">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                            </path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle mobile menu">
+                <span class="mobile-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu Panel -->
+    <div id="mobileMenu" class="mobile-menu hidden">
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-header">
+                <a href="index.html" class="mobile-logo-container">
+                    <div class="logo-text">
+                        <span class="logo-main">Astegni</span>
+                        <span class="logo-sub">Home</span>
+                    </div>
+                    <span class="logo-badge">Beta</span>
+                </a>
+            </div>
+
+            <div class="mobile-menu-divider"></div>
+
+            <a class="mobile-menu-link" href="#">
+                <span class="nav-icon">📰</span> News
+            </a>
+            <a class="mobile-menu-link" href="branch/find-tutors.html">
+                <span class="nav-icon">👨‍🏫</span> Find Tutors
+            </a>
+            <a class="mobile-menu-link" href="branch/reels.html">
+                <span class="nav-icon">🎬</span> Reels
+            </a>
+            <a class="mobile-menu-link" href="#">
+                <span class="nav-icon">📚</span> Bookstore
+            </a>
+
+            <div class="mobile-menu-divider"></div>
+
+            <div class="mobile-auth-section">
+                <button class="mobile-menu-item mobile-auth-btn">Login</button>
+                <button class="mobile-menu-item mobile-auth-btn">Register</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div id="mobileMenuOverlay" class="mobile-menu-overlay hidden"></div>
+
+    <!-- Test Content -->
+    <div class="test-info">
+        <h2>Responsive Navigation Test</h2>
+
+        <div class="screen-size" id="screenSize">Loading...</div>
+
+        <div id="desktopStatus" class="status">Desktop Nav: Checking...</div>
+        <div id="mobileStatus" class="status">Mobile Button: Checking...</div>
+
+        <h3>Expected Behavior:</h3>
+        <ul>
+            <li><strong>Desktop (≥1024px):</strong> Desktop navigation visible, mobile button hidden</li>
+            <li><strong>Tablet/Mobile (&lt;1024px):</strong> Mobile button visible, desktop navigation hidden</li>
+        </ul>
+
+        <h3>Testing Instructions:</h3>
+        <ol>
+            <li>Resize your browser window</li>
+            <li>Watch the screen size and status indicators above</li>
+            <li>At &lt;1024px, the hamburger menu button should appear</li>
+            <li>Click the hamburger to open the mobile menu</li>
+        </ol>
+    </div>
+
+    <script src="js/root/nav.js"></script>
+
+    <script>
+        // Screen size detector
+        function updateScreenInfo() {
+            const width = window.innerWidth;
+            const screenSizeEl = document.getElementById('screenSize');
+            const desktopStatus = document.getElementById('desktopStatus');
+            const mobileStatus = document.getElementById('mobileStatus');
+
+            screenSizeEl.textContent = `Current Width: ${width}px`;
+
+            // Check desktop nav visibility
+            const desktopNav = document.querySelector('.nav-menu');
+            const desktopDisplay = window.getComputedStyle(desktopNav).display;
+
+            // Check mobile button visibility
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            const mobileDisplay = window.getComputedStyle(mobileBtn).display;
+
+            if (width >= 1024) {
+                // Desktop
+                if (desktopDisplay !== 'none') {
+                    desktopStatus.className = 'status success';
+                    desktopStatus.textContent = '✓ Desktop Nav: Visible (Correct)';
+                } else {
+                    desktopStatus.className = 'status error';
+                    desktopStatus.textContent = '✗ Desktop Nav: Hidden (ERROR)';
+                }
+
+                if (mobileDisplay === 'none') {
+                    mobileStatus.className = 'status success';
+                    mobileStatus.textContent = '✓ Mobile Button: Hidden (Correct)';
+                } else {
+                    mobileStatus.className = 'status error';
+                    mobileStatus.textContent = `✗ Mobile Button: Visible (ERROR) - display: ${mobileDisplay}`;
+                }
+            } else {
+                // Mobile/Tablet
+                if (desktopDisplay === 'none') {
+                    desktopStatus.className = 'status success';
+                    desktopStatus.textContent = '✓ Desktop Nav: Hidden (Correct)';
+                } else {
+                    desktopStatus.className = 'status error';
+                    desktopStatus.textContent = `✗ Desktop Nav: Visible (ERROR) - display: ${desktopDisplay}`;
+                }
+
+                if (mobileDisplay !== 'none') {
+                    mobileStatus.className = 'status success';
+                    mobileStatus.textContent = `✓ Mobile Button: Visible (Correct) - display: ${mobileDisplay}`;
+                } else {
+                    mobileStatus.className = 'status error';
+                    mobileStatus.textContent = '✗ Mobile Button: Hidden (ERROR)';
+                }
+            }
+        }
+
+        // Update on load and resize
+        window.addEventListener('load', updateScreenInfo);
+        window.addEventListener('resize', updateScreenInfo);
+
+        // Initial check
+        updateScreenInfo();
+    </script>
+</body>
+</html>

@@ -75,6 +75,11 @@
     background: rgba(255, 213, 79, 0.15); /* Yellow tint for dark theme */
 }
 
+/* Ensure sidebar toggle hamburger spans inherit the correct color */
+.sidebar-toggle .hamburger span {
+    background: #F59E0B !important; /* Orange by default (light theme) */
+}
+
 .nav-brand {
     display: flex;
     align-items: center;
@@ -451,7 +456,7 @@
     height: 20px;
     position: relative;
     cursor: pointer;
-    display: none; /* Hidden by default on desktop */
+    display: flex; /* Show by default for pages that need it */
     flex-direction: column;
     justify-content: space-between;
     align-items: stretch;
@@ -461,18 +466,9 @@
     z-index: 1001;
 }
 
-/* Show hamburger inside sidebar-toggle button (for profile pages) */
-.sidebar-toggle .hamburger {
-    display: flex;
-}
-
-/* Force hamburger to show on tablet and mobile (overrides Tailwind lg:hidden if needed) */
-@media (max-width: 1024px) {
-    .hamburger,
-    button.hamburger,
-    #menu-btn.hamburger {
-        display: flex !important;
-    }
+/* Hide hamburger on index page only */
+body.index-page .hamburger {
+    display: none !important;
 }
 
 .hamburger span {
@@ -480,19 +476,24 @@
     left: 0;
     width: 100%;
     height: 3px;
-    background: var(--button-bg);
+    background: #F59E0B; /* Orange by default (light theme) */
     border-radius: 3px;
     transition: all 0.3s ease;
 }
 
-/* Theme-based colors for hamburger - orange in light mode, yellow in dark mode */
+/* Theme-based colors for ALL hamburger spans - orange in light mode, yellow in dark mode */
+/* High specificity selectors to override any conflicting styles */
 [data-theme="light"] .hamburger span,
-[data-theme="light"] .sidebar-toggle .hamburger span {
+[data-theme="light"] .sidebar-toggle .hamburger span,
+[data-theme="light"] button .hamburger span,
+[data-theme="light"] .sidebar-toggle > .hamburger > span {
     background: #F59E0B !important; /* Orange for light theme */
 }
 
 [data-theme="dark"] .hamburger span,
-[data-theme="dark"] .sidebar-toggle .hamburger span {
+[data-theme="dark"] .sidebar-toggle .hamburger span,
+[data-theme="dark"] button .hamburger span,
+[data-theme="dark"] .sidebar-toggle > .hamburger > span {
     background: #FFD54F !important; /* Yellow for dark theme */
 }
 
@@ -558,36 +559,39 @@
     margin: 1rem 0;
 }
 
+/* Mobile Profile Dropdown Container */
+.mobile-profile-dropdown {
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+/* Dropdown content hidden by default, shown when .open is added */
+.mobile-profile-dropdown .mobile-profile-dropdown-content {
+    display: none;
+}
+
+.mobile-profile-dropdown.open .mobile-profile-dropdown-content {
+    display: block;
+}
+
+/* Mobile Profile Header (Clickable Toggle) */
 .mobile-profile-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px 20px;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.875rem 1rem;
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    border-radius: 12px;
-    margin: 10px 20px;
+    border: none;
     color: white;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 0.5rem;
 }
 
-.mobile-profile-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-}
-
-.mobile-profile-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    color: var(--heading);
-    line-height: 1.2;
-}
-
-.mobile-profile-role {
-    font-size: 0.75rem;
-    color: var(--button-bg);
-    font-weight: 500;
-    text-transform: capitalize;
-    line-height: 1.2;
+.mobile-profile-header:hover {
+    background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
 }
 
 .mobile-profile-pic {
@@ -596,6 +600,187 @@
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.mobile-profile-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.mobile-profile-name {
+    font-weight: 600;
+    color: white;
+    font-size: 0.95rem;
+    line-height: 1.2;
+}
+
+.mobile-profile-role {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+    text-transform: capitalize;
+    line-height: 1.2;
+}
+
+.mobile-profile-arrow {
+    transition: transform 0.2s ease;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.mobile-profile-header.expanded .mobile-profile-arrow {
+    transform: rotate(180deg);
+}
+
+/* Mobile Profile Dropdown Content */
+.mobile-profile-dropdown-content {
+    padding: 0.5rem;
+    background: var(--hover-bg);
+    border-radius: 0 0 0.5rem 0.5rem;
+    margin-top: 0.25rem;
+}
+
+.mobile-dropdown-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    transition: background 0.2s ease;
+}
+
+.mobile-dropdown-user-info:hover {
+    background: rgba(245, 158, 11, 0.1);
+}
+
+.mobile-dropdown-pic {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.mobile-dropdown-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-dropdown-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--heading);
+}
+
+.mobile-dropdown-email {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.mobile-role-switcher-section {
+    padding: 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.mobile-role-switcher-header {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    padding: 0 0.5rem;
+}
+
+.mobile-role-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.mobile-role-options .mobile-role-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.625rem 0.75rem;
+    background: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    color: var(--text);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobile-role-options .mobile-role-btn:hover {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--button-bg);
+}
+
+.mobile-role-options .mobile-role-btn.active {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--button-bg);
+}
+
+.mobile-role-options .mobile-role-btn .role-icon {
+    font-size: 1rem;
+}
+
+.mobile-dropdown-logout {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: none;
+    border-radius: 0.5rem;
+    color: #ef4444;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.mobile-dropdown-logout:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.mobile-dropdown-logout .mobile-menu-icon {
+    width: 18px;
+    height: 18px;
+}
+
+/* Dark theme adjustments for mobile profile section */
+[data-theme="dark"] .mobile-profile-header {
+    background: rgba(255, 213, 79, 0.08);
+}
+
+[data-theme="dark"] .mobile-profile-header:hover {
+    background: rgba(255, 213, 79, 0.15);
+}
+
+[data-theme="dark"] .mobile-profile-role {
+    color: #FFD54F;
+}
+
+[data-theme="dark"] .mobile-dropdown-user-info:hover {
+    background: rgba(255, 213, 79, 0.1);
+}
+
+[data-theme="dark"] .mobile-role-options .mobile-role-btn:hover {
+    background: rgba(255, 213, 79, 0.1);
+    color: #FFD54F;
+}
+
+[data-theme="dark"] .mobile-role-options .mobile-role-btn.active {
+    background: rgba(255, 213, 79, 0.15);
+    color: #FFD54F;
 }
 
 /* Mobile-specific nav actions */
@@ -620,543 +805,36 @@
     transform: translateY(-2px);
 }
 
-/* Responsive Navigation */
-
-/* Tablet and below breakpoint - hide desktop nav, show hamburger */
-@media (max-width: 1024px) {
-    .navbar {
-        padding: 0.75rem 1rem;
-    }
-
-    /* Hide the entire nav-menu (contains nav-items and nav-actions) */
-    .nav-menu {
-        display: none !important;
-    }
-
-    /* Hide desktop nav items completely */
-    .nav-items {
-        display: none !important;
-    }
-
-    /* Hide desktop nav actions */
-    .nav-actions {
-        display: none !important;
-    }
-
-    /* Show hamburger menu button */
-    .hamburger {
-        display: flex !important;
-        flex-direction: column;
-        justify-content: space-between;
-        width: 28px;
-        height: 20px;
-        cursor: pointer;
-        z-index: 1001;
-    }
-
-    /* Hide profile container - use hamburger menu instead */
-    .profile-container {
-        display: none !important;
-    }
-
-    /* Mobile menu styling */
-    .mobile-menu {
-        position: fixed;
-        top: 65px;
-        left: 0;
-        right: 0;
-        background: var(--background);
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-        max-height: calc(100vh - 65px);
-        overflow-y: auto;
-        transform: translateY(-100%);
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.3s ease;
-        z-index: 999;
-    }
-
-    .mobile-menu:not(.hidden) {
-        transform: translateY(0);
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .mobile-menu-content {
-        padding: 1rem;
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .mobile-menu-content .nav-link {
-        display: block;
-        padding: 0.875rem 1rem;
-        border-radius: 8px;
-        font-size: 1rem;
-        transition: all 0.2s ease;
-    }
-
-    .mobile-menu-content .nav-link:hover,
-    .mobile-menu-content .nav-link:active {
-        background: rgba(var(--button-bg-rgb), 0.1);
-    }
-
-    .mobile-menu-content .nav-icon {
-        display: inline;
-        margin-right: 0.5rem;
-    }
-
-    .mobile-menu-item {
-        display: block;
-        width: 100%;
-        padding: 0.875rem 1rem;
-        text-align: left;
-        background: transparent;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        color: var(--text);
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .mobile-menu-item:hover,
-    .mobile-menu-item:active {
-        background: rgba(var(--button-bg-rgb), 0.1);
-    }
-
-    .mobile-menu-divider {
-        height: 1px;
-        background: var(--border-color);
-        margin: 0.75rem 0;
-    }
-}
-
-/* Mobile phones - smaller adjustments */
-@media (max-width: 768px) {
-    .mobile-menu {
-        top: 60px;
-        max-height: calc(100vh - 60px);
-    }
-}
-
-/* Small phones */
-@media (max-width: 480px) {
-    .navbar {
-        padding: 0.625rem 0.75rem;
-    }
-
-    /* Ensure hamburger is visible and properly styled */
-    .hamburger {
-        display: flex !important;
-        width: 26px;
-        height: 18px;
-    }
-
-    .hamburger span {
-        height: 2.5px;
-    }
-
-    .mobile-menu {
-        top: 55px;
-        max-height: calc(100vh - 55px);
-    }
-
-    .mobile-menu-content {
-        padding: 0.75rem;
-    }
-
-    .mobile-menu-content .nav-link,
-    .mobile-menu-item {
-        padding: 0.75rem 0.875rem;
-        font-size: 0.9375rem;
-    }
-
-    /* Logo adjustments for small screens */
-    .logo-text .logo-main {
-        font-size: 1.25rem;
-    }
-
-    .logo-text .logo-sub {
-        font-size: 0.6rem;
-    }
-
-    .logo-badge {
-        font-size: 0.5rem;
-        padding: 0.15rem 0.4rem;
-    }
-}
-
-/* Extra small phones */
-@media (max-width: 360px) {
-    .navbar {
-        padding: 0.5rem 0.625rem;
-    }
-
-    .hamburger {
-        width: 24px;
-        height: 16px;
-    }
-
-    .hamburger span {
-        height: 2px;
-    }
-
-    .logo-text .logo-main {
-        font-size: 1.1rem;
-    }
-
-    .logo-badge {
-        display: none;
-    }
-
-    .mobile-menu-content .nav-link,
-    .mobile-menu-item {
-        padding: 0.65rem 0.75rem;
-        font-size: 0.875rem;
-    }
-}
-
 /* ============================================
-   MOBILE PROFILE SECTION (for screens < 1024px)
-   ============================================ */
-.mobile-profile-section {
-    display: none;
-}
-
-.mobile-profile-section.hidden {
-    display: none !important;
-}
-
-@media (max-width: 1024px) {
-    .mobile-profile-section {
-        display: block;
-    }
-
-    .mobile-profile-section.hidden {
-        display: none !important;
-    }
-
-    /* Mobile Profile Dropdown Container */
-    .mobile-profile-dropdown {
-        border-radius: 12px;
-        overflow: hidden;
-        background: rgba(var(--button-bg-rgb), 0.05);
-        border: 1px solid rgba(var(--button-bg-rgb), 0.1);
-    }
-
-    /* Mobile Profile Header (Toggle Button) */
-    .mobile-profile-header {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        width: 100%;
-        padding: 0.875rem 1rem;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        text-align: left;
-        transition: all 0.2s ease;
-    }
-
-    .mobile-profile-header:hover {
-        background: rgba(var(--button-bg-rgb), 0.08);
-    }
-
-    .mobile-profile-pic {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--button-bg);
-        flex-shrink: 0;
-    }
-
-    .mobile-profile-info {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-        overflow: hidden;
-        flex: 1;
-    }
-
-    .mobile-profile-name {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--heading);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        line-height: 1.2;
-    }
-
-    .mobile-profile-role {
-        font-size: 0.8rem;
-        color: var(--button-bg);
-        font-weight: 500;
-        text-transform: capitalize;
-        line-height: 1.2;
-    }
-
-    .mobile-profile-arrow {
-        color: var(--text-muted);
-        transition: transform 0.2s ease;
-        flex-shrink: 0;
-    }
-
-    .mobile-profile-dropdown.open .mobile-profile-arrow {
-        transform: rotate(180deg);
-    }
-
-    /* Mobile Profile Dropdown Content */
-    .mobile-profile-dropdown-content {
-        display: none;
-        padding: 0;
-        border-top: 1px solid rgba(var(--button-bg-rgb), 0.1);
-        background: rgba(var(--button-bg-rgb), 0.03);
-    }
-
-    .mobile-profile-dropdown.open .mobile-profile-dropdown-content {
-        display: block;
-    }
-
-    /* User Info Link */
-    .mobile-dropdown-user-info {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.875rem 1rem;
-        text-decoration: none;
-        transition: background 0.2s ease;
-        border-bottom: 1px solid rgba(var(--button-bg-rgb), 0.08);
-    }
-
-    .mobile-dropdown-user-info:hover {
-        background: rgba(var(--button-bg-rgb), 0.08);
-    }
-
-    .mobile-dropdown-pic {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 1px solid rgba(var(--button-bg-rgb), 0.2);
-        flex-shrink: 0;
-    }
-
-    .mobile-dropdown-info {
-        display: flex;
-        flex-direction: column;
-        gap: 0.125rem;
-        overflow: hidden;
-    }
-
-    .mobile-dropdown-name {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: var(--heading);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .mobile-dropdown-email {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    /* Mobile Menu Icon */
-    .mobile-menu-icon {
-        width: 18px;
-        height: 18px;
-        margin-right: 0.5rem;
-        flex-shrink: 0;
-    }
-
-    /* Mobile Role Switcher Section */
-    .mobile-role-switcher-section {
-        padding: 0.75rem 1rem;
-        border-bottom: 1px solid rgba(var(--button-bg-rgb), 0.08);
-    }
-
-    .mobile-role-switcher-section.hidden {
-        display: none !important;
-    }
-
-    .mobile-role-switcher-header {
-        font-size: 0.6875rem;
-        font-weight: 600;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.5rem;
-    }
-
-    .mobile-role-options {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.375rem;
-    }
-
-    .mobile-role-option {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        padding: 0.375rem 0.625rem;
-        background: var(--background);
-        border: 1px solid rgba(var(--button-bg-rgb), 0.15);
-        border-radius: 6px;
-        font-size: 0.8125rem;
-        color: var(--text);
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .mobile-role-option:hover {
-        background: rgba(var(--button-bg-rgb), 0.1);
-        border-color: var(--button-bg);
-    }
-
-    .mobile-role-option.active {
-        background: rgba(var(--button-bg-rgb), 0.12);
-        border-color: var(--button-bg);
-        cursor: default;
-    }
-
-    .mobile-role-option .role-icon {
-        font-size: 0.875rem;
-    }
-
-    .mobile-role-option .role-name {
-        font-weight: 500;
-    }
-
-    .mobile-role-option .active-badge {
-        font-size: 0.5625rem;
-        padding: 0.0625rem 0.25rem;
-        background: var(--button-bg);
-        color: white;
-        border-radius: 3px;
-        margin-left: 0.125rem;
-    }
-
-    /* Mobile Logout Button */
-    .mobile-dropdown-logout {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        padding: 0.75rem 1rem;
-        background: transparent;
-        border: none;
-        color: #ef4444;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.2s ease;
-        text-align: left;
-    }
-
-    .mobile-dropdown-logout:hover {
-        background: rgba(239, 68, 68, 0.08);
-    }
-
-    .mobile-dropdown-logout .mobile-menu-icon {
-        color: #ef4444;
-    }
-}
-
-/* Small phones adjustments */
-@media (max-width: 480px) {
-    .mobile-profile-header {
-        padding: 0.75rem 0.875rem;
-        gap: 0.625rem;
-    }
-
-    .mobile-profile-pic {
-        width: 36px;
-        height: 36px;
-    }
-
-    .mobile-profile-name {
-        font-size: 0.875rem;
-    }
-
-    .mobile-profile-role {
-        font-size: 0.6875rem;
-    }
-
-    .mobile-dropdown-user-info {
-        padding: 0.75rem 0.875rem;
-    }
-
-    .mobile-dropdown-pic {
-        width: 32px;
-        height: 32px;
-    }
-
-    .mobile-dropdown-name {
-        font-size: 0.8125rem;
-    }
-
-    .mobile-dropdown-email {
-        font-size: 0.6875rem;
-    }
-
-    .mobile-role-switcher-section {
-        padding: 0.625rem 0.875rem;
-    }
-
-    .mobile-role-option {
-        padding: 0.3125rem 0.5rem;
-        font-size: 0.75rem;
-    }
-
-    .mobile-dropdown-logout {
-        padding: 0.625rem 0.875rem;
-        font-size: 0.8125rem;
-    }
-}
-
-/* Extra small phones */
-@media (max-width: 360px) {
-    .mobile-profile-header {
-        padding: 0.625rem 0.75rem;
-        gap: 0.5rem;
-    }
-
-    .mobile-profile-pic {
-        width: 32px;
-        height: 32px;
-    }
-
-    .mobile-profile-name {
-        font-size: 0.8125rem;
-    }
-
-    .mobile-profile-role {
-        font-size: 0.625rem;
-    }
-}
-
-/* ============================================
-   MOBILE SLIDE-IN PANEL (Index Page)
-   Right-side slide-in menu instead of dropdown
+   MOBILE MENU BUTTON BASE STYLES
+   Must come BEFORE media queries to allow proper overrides
    ============================================ */
 
-/* Mobile Menu Button */
+/* Mobile Menu Button - Base styles */
 .mobile-menu-btn,
 #mobileMenuBtn {
-    display: none;
+    display: none; /* Hidden by default, shown via media query < 1024px */
     padding: 0.5rem;
     background: transparent;
     border: none;
     cursor: pointer;
     z-index: 1001;
     margin-left: auto;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover effect for mobile button */
+.mobile-menu-btn:hover,
+#mobileMenuBtn:hover {
+    background: rgba(245, 158, 11, 0.1); /* Light orange background on hover */
+}
+
+[data-theme="dark"] .mobile-menu-btn:hover,
+[data-theme="dark"] #mobileMenuBtn:hover {
+    background: rgba(255, 213, 79, 0.1); /* Light yellow background on hover in dark mode */
 }
 
 .mobile-hamburger {
@@ -1167,12 +845,32 @@
 }
 
 .mobile-hamburger span {
-    display: block;
-    width: 100%;
-    height: 2px;
-    background: var(--text);
+    display: block !important;
+    width: 100% !important;
+    height: 2px !important;
+    background: #F59E0B !important; /* Orange for light theme */
+    background-color: #F59E0B !important;
     border-radius: 2px;
     transition: all 0.3s ease;
+}
+
+/* Dark theme - yellow hamburger */
+[data-theme="dark"] .mobile-hamburger span {
+    background: #FFD54F !important; /* Yellow for dark theme */
+    background-color: #FFD54F !important;
+}
+
+/* Extra specificity for the button's hamburger spans */
+#mobileMenuBtn .mobile-hamburger span,
+.mobile-menu-btn .mobile-hamburger span {
+    background: #F59E0B !important;
+    background-color: #F59E0B !important;
+}
+
+[data-theme="dark"] #mobileMenuBtn .mobile-hamburger span,
+[data-theme="dark"] .mobile-menu-btn .mobile-hamburger span {
+    background: #FFD54F !important;
+    background-color: #FFD54F !important;
 }
 
 .mobile-menu-btn.active .mobile-hamburger span:nth-child(1),
@@ -1189,6 +887,84 @@
 #mobileMenuBtn.active .mobile-hamburger span:nth-child(3) {
     transform: translateY(-7px) rotate(-45deg);
 }
+
+/* ============================================
+   RESPONSIVE NAVIGATION BREAKPOINTS
+   ============================================ */
+
+/* Tablet and Mobile: Hide desktop navigation, show mobile menu button */
+@media (max-width: 1023px) {
+    /* Hide desktop navigation elements */
+    .nav-menu {
+        display: none !important;
+    }
+
+    /* Show mobile menu button */
+    .mobile-menu-btn,
+    #mobileMenuBtn,
+    button.mobile-menu-btn,
+    button#mobileMenuBtn {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* Adjust navbar spacing for mobile */
+    .navbar .container {
+        padding: 0 1rem;
+    }
+
+    /* Make logo smaller on mobile */
+    .logo-text {
+        font-size: 1.25rem;
+    }
+
+    .logo-sub {
+        font-size: 0.6rem;
+    }
+
+    .logo-badge {
+        font-size: 0.55rem;
+        padding: 0.15rem 0.4rem;
+    }
+}
+
+/* Desktop: Hide mobile menu button, show desktop navigation */
+@media (min-width: 1024px) {
+    .mobile-menu-btn,
+    #mobileMenuBtn,
+    button.mobile-menu-btn,
+    button#mobileMenuBtn {
+        display: none !important;
+    }
+
+    .nav-menu {
+        display: flex !important;
+    }
+}
+
+/* ============================================
+   MOBILE PROFILE SECTION
+   ============================================ */
+.mobile-profile-section {
+    display: none;
+}
+
+.mobile-profile-section.hidden {
+    display: none;
+}
+
+/* Show mobile profile section when active (logged in) */
+@media (max-width: 1023px) {
+    .mobile-profile-section:not(.hidden) {
+        display: block;
+    }
+}
+
+/* ============================================
+   MOBILE SLIDE-IN PANEL (Index Page)
+   Right-side slide-in menu instead of dropdown
+   ============================================ */
 
 /* Slide-in Panel (positioned outside navbar) */
 #mobileMenu.mobile-menu {
@@ -1369,49 +1145,13 @@
     margin-left: auto;
 }
 
-/* Show mobile menu button below 1024px */
-@media (max-width: 1023px) {
-    .mobile-menu-btn,
-    #mobileMenuBtn,
-    button.mobile-menu-btn,
-    button#mobileMenuBtn {
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* Hide desktop nav menu on mobile */
-    .nav-menu {
-        display: none !important;
-    }
-
-    /* Hide desktop profile on mobile */
-    .profile-dropdown-container {
-        display: none !important;
-    }
-
-    /* Hide notification button on mobile (it's in the menu) */
-    #notification-bell {
-        display: none !important;
-    }
+/* Mobile menu panel and overlay base styles */
+#mobileMenu.mobile-menu {
+    display: block;
 }
 
-/* Hide mobile menu button and slide-in panel on desktop */
-@media (min-width: 1024px) {
-    .mobile-menu-btn,
-    #mobileMenuBtn,
-    button.mobile-menu-btn,
-    button#mobileMenuBtn {
-        display: none !important;
-    }
-
-    #mobileMenu.mobile-menu {
-        display: none !important;
-    }
-
-    #mobileMenuOverlay.mobile-menu-overlay {
-        display: none !important;
-    }
+#mobileMenuOverlay.mobile-menu-overlay {
+    display: block;
 }
 
 /* Mobile Role Options Styling */

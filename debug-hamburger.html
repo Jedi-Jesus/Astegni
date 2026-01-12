@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamburger Debug Console</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        .debug-section {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .debug-title {
+            color: #4ec9b0;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 5px;
+        }
+        .debug-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #1e1e1e;
+            border-left: 3px solid #007acc;
+            border-radius: 4px;
+        }
+        .label {
+            color: #9cdcfe;
+            font-weight: bold;
+        }
+        .value {
+            color: #ce9178;
+        }
+        .success {
+            border-left-color: #4ec9b0;
+            background: #1e2f1e;
+        }
+        .error {
+            border-left-color: #f48771;
+            background: #2f1e1e;
+        }
+        .warning {
+            border-left-color: #dcdcaa;
+            background: #2f2f1e;
+        }
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1177bb;
+        }
+        .visual-test {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .test-hamburger {
+            display: inline-block;
+            cursor: pointer;
+            width: 28px;
+            height: 20px;
+            position: relative;
+        }
+        .test-hamburger span {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: #F59E0B;
+            border-radius: 3px;
+        }
+        .test-hamburger span:nth-child(1) { top: 0; }
+        .test-hamburger span:nth-child(2) { top: 50%; transform: translateY(-50%); }
+        .test-hamburger span:nth-child(3) { bottom: 0; }
+    </style>
+</head>
+<body>
+    <h1 style="color: #4ec9b0; text-align: center;">🔍 Hamburger Button Debug Console</h1>
+
+    <div class="debug-section">
+        <div class="debug-title">🎯 Quick Actions</div>
+        <button onclick="runFullDiagnostics()">Run Full Diagnostics</button>
+        <button onclick="fixHamburgerVisibility()">Try Auto-Fix</button>
+        <button onclick="copyDebugInfo()">Copy Debug Info</button>
+        <button onclick="window.location.href='/branch/find-tutors.html'">Go to Find Tutors</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        function runFullDiagnostics() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            // Section 1: Element Existence
+            addSection('1️⃣ ELEMENT EXISTENCE CHECK', [
+                checkElement('#hamburger', 'Hamburger Button (#hamburger)'),
+                checkElement('.hamburger', 'Hamburger Class (.hamburger)'),
+                checkElement('.sidebar-toggle', 'Sidebar Toggle (.sidebar-toggle)'),
+                checkElement('.sidebar-toggle .hamburger', 'Nested Hamburger (.sidebar-toggle .hamburger)'),
+                checkElement('.sidebar-toggle .hamburger span', 'Hamburger Spans (.sidebar-toggle .hamburger span)')
+            ]);
+
+            // Section 2: Computed Styles
+            const hamburger = document.querySelector('#hamburger');
+            const hamburgerSpan = document.querySelector('.hamburger');
+            const spans = document.querySelectorAll('.sidebar-toggle .hamburger span');
+
+            if (hamburger) {
+                const styles = window.getComputedStyle(hamburger);
+                addSection('2️⃣ HAMBURGER BUTTON STYLES (#hamburger)', [
+                    { label: 'Display', value: styles.display, type: styles.display === 'none' ? 'error' : 'success' },
+                    { label: 'Visibility', value: styles.visibility, type: styles.visibility === 'hidden' ? 'error' : 'success' },
+                    { label: 'Opacity', value: styles.opacity, type: parseFloat(styles.opacity) === 0 ? 'error' : 'success' },
+                    { label: 'Width', value: styles.width },
+                    { label: 'Height', value: styles.height },
+                    { label: 'Position', value: styles.position },
+                    { label: 'Z-Index', value: styles.zIndex },
+                    { label: 'Background', value: styles.background || styles.backgroundColor },
+                    { label: 'Border', value: styles.border }
+                ]);
+            }
+
+            if (hamburgerSpan) {
+                const spanStyles = window.getComputedStyle(hamburgerSpan);
+                addSection('3️⃣ HAMBURGER SPAN CONTAINER (.hamburger)', [
+                    { label: 'Display', value: spanStyles.display, type: spanStyles.display === 'none' ? 'error' : 'success' },
+                    { label: 'Visibility', value: spanStyles.visibility, type: spanStyles.visibility === 'hidden' ? 'error' : 'success' },
+                    { label: 'Opacity', value: spanStyles.opacity, type: parseFloat(spanStyles.opacity) === 0 ? 'error' : 'success' },
+                    { label: 'Width', value: spanStyles.width },
+                    { label: 'Height', value: spanStyles.height },
+                    { label: 'Position', value: spanStyles.position }
+                ]);
+            }
+
+            if (spans.length > 0) {
+                spans.forEach((span, index) => {
+                    const spanStyle = window.getComputedStyle(span);
+                    addSection(`4️⃣ HAMBURGER LINE ${index + 1} STYLES`, [
+                        { label: 'Display', value: spanStyle.display, type: spanStyle.display === 'none' ? 'error' : 'success' },
+                        { label: 'Visibility', value: spanStyle.visibility, type: spanStyle.visibility === 'hidden' ? 'error' : 'success' },
+                        { label: 'Opacity', value: spanStyle.opacity, type: parseFloat(spanStyle.opacity) === 0 ? 'error' : 'success' },
+                        { label: 'Background', value: spanStyle.background || spanStyle.backgroundColor, type: (spanStyle.background || spanStyle.backgroundColor) === 'rgba(0, 0, 0, 0)' ? 'error' : 'success' },
+                        { label: 'Width', value: spanStyle.width },
+                        { label: 'Height', value: spanStyle.height },
+                        { label: 'Position', value: spanStyle.position },
+                        { label: 'Top', value: spanStyle.top },
+                        { label: 'Left', value: spanStyle.left },
+                        { label: 'Transform', value: spanStyle.transform }
+                    ]);
+                });
+            } else {
+                addSection('4️⃣ HAMBURGER LINES', [
+                    { label: 'Error', value: 'No hamburger line spans found!', type: 'error' }
+                ]);
+            }
+
+            // Section 5: CSS Rules Applied
+            if (hamburger) {
+                const matchedRules = getMatchedCSSRules(hamburger);
+                addSection('5️⃣ CSS RULES APPLIED TO #hamburger', matchedRules);
+            }
+
+            // Section 6: Theme Detection
+            const theme = document.documentElement.getAttribute('data-theme') || 'not set';
+            addSection('6️⃣ THEME & ENVIRONMENT', [
+                { label: 'Current Theme', value: theme, type: theme === 'not set' ? 'warning' : 'success' },
+                { label: 'HTML data-theme', value: document.documentElement.getAttribute('data-theme') || 'null' },
+                { label: 'Window Width', value: window.innerWidth + 'px' },
+                { label: 'Window Height', value: window.innerHeight + 'px' },
+                { label: 'Viewport Width', value: document.documentElement.clientWidth + 'px' }
+            ]);
+
+            // Section 7: Parent Elements
+            if (hamburger) {
+                const parent = hamburger.parentElement;
+                if (parent) {
+                    const parentStyles = window.getComputedStyle(parent);
+                    addSection('7️⃣ PARENT ELEMENT (.nav-brand)', [
+                        { label: 'Display', value: parentStyles.display },
+                        { label: 'Visibility', value: parentStyles.visibility },
+                        { label: 'Opacity', value: parentStyles.opacity },
+                        { label: 'Overflow', value: parentStyles.overflow },
+                        { label: 'Width', value: parentStyles.width },
+                        { label: 'Height', value: parentStyles.height }
+                    ]);
+                }
+            }
+
+            // Section 8: Visual Test
+            addVisualTest();
+
+            // Section 9: Recommendations
+            addRecommendations();
+        }
+
+        function checkElement(selector, name) {
+            const element = document.querySelector(selector);
+            const exists = element !== null;
+            const count = document.querySelectorAll(selector).length;
+            return {
+                label: name,
+                value: exists ? `✅ Found (${count} total)` : '❌ Not Found',
+                type: exists ? 'success' : 'error'
+            };
+        }
+
+        function addSection(title, items) {
+            const results = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = 'debug-section';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'debug-title';
+            titleDiv.textContent = title;
+            section.appendChild(titleDiv);
+
+            items.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'debug-item ' + (item.type || '');
+                itemDiv.innerHTML = `<span class="label">${item.label}:</span> <span class="value">${item.value}</span>`;
+                section.appendChild(itemDiv);
+            });
+
+            results.appendChild(section);
+        }
+
+        function getMatchedCSSRules(element) {
+            const sheets = document.styleSheets;
+            const rules = [];
+
+            for (let sheet of sheets) {
+                try {
+                    const cssRules = sheet.cssRules || sheet.rules;
+                    for (let rule of cssRules) {
+                        if (rule.selectorText && element.matches(rule.selectorText)) {
+                            rules.push({
+                                label: rule.selectorText,
+                                value: rule.style.cssText.substring(0, 100) + (rule.style.cssText.length > 100 ? '...' : ''),
+                                type: 'success'
+                            });
+                        }
+                    }
+                } catch (e) {
+                    // Cross-origin stylesheet, skip
+                }
+            }
+
+            if (rules.length === 0) {
+                rules.push({ label: 'No CSS rules found', value: 'Element may be hidden by external stylesheet', type: 'warning' });
+            }
+
+            return rules;
+        }
+
+        function addVisualTest() {
+            const results = document.getElementById('results');
+            const section = document.createElement('div');
+            section.className = 'debug-section';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'debug-title';
+            titleDiv.textContent = '8️⃣ VISUAL TEST (Expected Hamburger)';
+            section.appendChild(titleDiv);
+
+            const visualDiv = document.createElement('div');
+            visualDiv.className = 'visual-test';
+            visualDiv.innerHTML = `
+                <p style="color: #333; margin-bottom: 10px;"><strong>This is what your hamburger SHOULD look like:</strong></p>
+                <div class="test-hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <p style="color: #333; margin-top: 10px; font-size: 12px;">Orange three-line icon (hamburger menu)</p>
+            `;
+            section.appendChild(visualDiv);
+
+            results.appendChild(section);
+        }
+
+        function addRecommendations() {
+            const hamburger = document.querySelector('#hamburger');
+            const spans = document.querySelectorAll('.sidebar-toggle .hamburger span');
+            const recommendations = [];
+
+            if (!hamburger) {
+                recommendations.push({ label: '🔴 CRITICAL', value: 'Hamburger button element not found. Check if find-tutors.html is loaded.', type: 'error' });
+            } else {
+                const styles = window.getComputedStyle(hamburger);
+                if (styles.display === 'none') {
+                    recommendations.push({ label: '🔴 ISSUE', value: 'Hamburger button has display: none. Check CSS for hiding rules.', type: 'error' });
+                }
+                if (styles.visibility === 'hidden') {
+                    recommendations.push({ label: '🔴 ISSUE', value: 'Hamburger button has visibility: hidden.', type: 'error' });
+                }
+                if (parseFloat(styles.opacity) === 0) {
+                    recommendations.push({ label: '🔴 ISSUE', value: 'Hamburger button has opacity: 0.', type: 'error' });
+                }
+            }
+
+            if (spans.length === 0) {
+                recommendations.push({ label: '🔴 CRITICAL', value: 'Hamburger lines (spans) not found. HTML structure may be incorrect.', type: 'error' });
+            } else {
+                spans.forEach((span, index) => {
+                    const spanStyle = window.getComputedStyle(span);
+                    if (spanStyle.background === 'rgba(0, 0, 0, 0)' && spanStyle.backgroundColor === 'rgba(0, 0, 0, 0)') {
+                        recommendations.push({ label: `🟡 WARNING`, value: `Hamburger line ${index + 1} has transparent background. Color not applied.`, type: 'warning' });
+                    }
+                    if (spanStyle.height === '0px' || spanStyle.width === '0px') {
+                        recommendations.push({ label: `🟡 WARNING`, value: `Hamburger line ${index + 1} has zero dimensions.`, type: 'warning' });
+                    }
+                });
+            }
+
+            if (recommendations.length === 0) {
+                recommendations.push({ label: '✅ SUCCESS', value: 'No issues detected! Hamburger should be visible.', type: 'success' });
+            }
+
+            addSection('9️⃣ RECOMMENDATIONS & ISSUES', recommendations);
+        }
+
+        function fixHamburgerVisibility() {
+            const hamburger = document.querySelector('#hamburger');
+            const hamburgerSpan = document.querySelector('.hamburger');
+            const spans = document.querySelectorAll('.sidebar-toggle .hamburger span');
+
+            if (hamburger) {
+                hamburger.style.display = 'flex';
+                hamburger.style.visibility = 'visible';
+                hamburger.style.opacity = '1';
+            }
+
+            if (hamburgerSpan) {
+                hamburgerSpan.style.display = 'flex';
+                hamburgerSpan.style.visibility = 'visible';
+                hamburgerSpan.style.opacity = '1';
+            }
+
+            spans.forEach(span => {
+                span.style.display = 'block';
+                span.style.background = '#F59E0B';
+                span.style.height = '3px';
+                span.style.width = '100%';
+            });
+
+            alert('Auto-fix applied! Check the find-tutors page.');
+        }
+
+        function copyDebugInfo() {
+            const results = document.getElementById('results');
+            const text = results.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Debug info copied to clipboard!');
+            });
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            runFullDiagnostics();
+        });
+    </script>
+</body>
+</html>
