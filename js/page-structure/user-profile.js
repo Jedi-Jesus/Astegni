@@ -608,7 +608,34 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Load saved profile data on page load
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // ============================================
+    // AUTHENTICATION CHECK
+    // ============================================
+    // Check if AuthManager is loaded
+    if (typeof AuthManager === 'undefined' || typeof window.AuthManager === 'undefined') {
+        console.error('❌ AuthManager not loaded! Redirecting to login...');
+        alert('Authentication manager not loaded. Please refresh the page.');
+        window.location.href = '../index.html';
+        return;
+    }
+
+    // Wait for AuthManager to restore session
+    await window.AuthManager.restoreSession();
+
+    // Check if user is authenticated
+    if (!window.AuthManager.isAuthenticated()) {
+        console.warn('⚠️ User not authenticated. Redirecting to login...');
+        alert('Please log in to access your profile.');
+        window.location.href = '../index.html';
+        return;
+    }
+
+    console.log('✅ Authentication verified for user profile');
+
+    // ============================================
+    // LOAD PROFILE DATA
+    // ============================================
     const savedData = localStorage.getItem('userProfileData');
     if (savedData) {
         try {

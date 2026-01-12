@@ -34,6 +34,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     try {
+        // ============================================
+        // AUTHENTICATION CHECK
+        // ============================================
+        // Check if AuthManager is loaded
+        if (typeof AuthManager === 'undefined' || typeof window.AuthManager === 'undefined') {
+            console.error('❌ AuthManager not loaded! Redirecting to login...');
+            alert('Authentication manager not loaded. Please refresh the page.');
+            window.location.href = '../index.html';
+            return;
+        }
+
+        // Wait for AuthManager to restore session
+        await window.AuthManager.restoreSession();
+
+        // Check if user is authenticated
+        if (!window.AuthManager.isAuthenticated()) {
+            console.warn('⚠️ User not authenticated. Redirecting to login...');
+            alert('Please log in to access your tutor profile.');
+            window.location.href = '../index.html';
+            return;
+        }
+
+        // Check if user has tutor role
+        const userRole = window.AuthManager.getUserRole();
+        const user = window.AuthManager.getUser();
+
+        // DEBUG: Log detailed role information
+        console.log('🔍 [TutorProfile] Role Check Debug:', {
+            userRole: userRole,
+            user_active_role: user?.active_role,
+            user_role: user?.role,
+            user_roles: user?.roles,
+            localStorage_userRole: localStorage.getItem('userRole')
+        });
+
+        // More defensive role check - handle undefined, null, and string "undefined"
+        const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+
+        if (normalizedRole !== 'tutor') {
+            console.warn(`⚠️ [TutorProfile] User role is '${normalizedRole}', not 'tutor'. Redirecting...`);
+            alert(`This page is for tutors only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your tutor role or log in with a tutor account.`);
+            window.location.href = '../index.html';
+            return;
+        }
+
+        console.log('✅ Authentication verified for tutor role');
+
+        // ============================================
+        // CHECK API SERVICE
+        // ============================================
         // Check if API service is loaded
         if (typeof TutorProfileAPI === 'undefined') {
             console.error('❌ TutorProfileAPI not loaded');

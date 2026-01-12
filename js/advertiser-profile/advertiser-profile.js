@@ -34,44 +34,100 @@ const AppState = {
 };
 
 // Initialize Application
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     console.log('DOM Content Loaded');
-    initializeApp();
-    initializeTheme();
-    initializeSidebar();
-    initializeProfile();
-    initializeCampaigns();
-    initializeEventListeners();
-    initializeNotifications();
-    initializeActivityFeed();
-    initializeInsights();
-    
-    // Ensure Chart.js is loaded before initializing charts
-    let chartCheckInterval = setInterval(() => {
-        if (typeof Chart !== 'undefined') {
-            console.log('Chart.js is loaded, initializing charts...');
-            clearInterval(chartCheckInterval);
-            
-            // Initialize all charts
-            setTimeout(() => {
+
+    try {
+        // ============================================
+        // AUTHENTICATION CHECK
+        // ============================================
+        // Check if AuthManager is loaded
+        if (typeof AuthManager === 'undefined' || typeof window.AuthManager === 'undefined') {
+            console.error('❌ AuthManager not loaded! Redirecting to login...');
+            alert('Authentication manager not loaded. Please refresh the page.');
+            window.location.href = '../index.html';
+            return;
+        }
+
+        // Wait for AuthManager to restore session
+        await window.AuthManager.restoreSession();
+
+        // Check if user is authenticated
+        if (!window.AuthManager.isAuthenticated()) {
+            console.warn('⚠️ User not authenticated. Redirecting to login...');
+            alert('Please log in to access your advertiser profile.');
+            window.location.href = '../index.html';
+            return;
+        }
+
+        // Check if user has advertiser role
+        const userRole = window.AuthManager.getUserRole();
+        const user = window.AuthManager.getUser();
+
+        // DEBUG: Log detailed role information
+        console.log('🔍 [AdvertiserProfile] Role Check Debug:', {
+            userRole: userRole,
+            user_active_role: user?.active_role,
+            user_role: user?.role,
+            user_roles: user?.roles,
+            localStorage_userRole: localStorage.getItem('userRole')
+        });
+
+        // More defensive role check - handle undefined, null, and string "undefined"
+        const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+
+        if (normalizedRole !== 'advertiser') {
+            console.warn(`⚠️ [AdvertiserProfile] User role is '${normalizedRole}', not 'advertiser'. Redirecting...`);
+            alert(`This page is for advertisers only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your advertiser role or log in with an advertiser account.`);
+            window.location.href = '../index.html';
+            return;
+        }
+
+        console.log('✅ [AdvertiserProfile] Authentication verified for advertiser role');
+
+        // ============================================
+        // INITIALIZE APP
+        // ============================================
+        initializeApp();
+        initializeTheme();
+        initializeSidebar();
+        initializeProfile();
+        initializeCampaigns();
+        initializeEventListeners();
+        initializeNotifications();
+        initializeActivityFeed();
+        initializeInsights();
+
+        // Ensure Chart.js is loaded before initializing charts
+        let chartCheckInterval = setInterval(() => {
+            if (typeof Chart !== 'undefined') {
+                console.log('Chart.js is loaded, initializing charts...');
+                clearInterval(chartCheckInterval);
+
+                // Initialize all charts
+                setTimeout(() => {
+                    initializeCharts();
+                    initializeTimeline();
+                }, 100);
+            } else {
+                console.log('Waiting for Chart.js to load...');
+            }
+        }, 100);
+
+        // Fallback: Try to load charts after 3 seconds anyway
+        setTimeout(() => {
+            if (typeof Chart !== 'undefined' && !window.chartsInitialized) {
+                console.log('Fallback chart initialization...');
                 initializeCharts();
                 initializeTimeline();
-            }, 100);
-        } else {
-            console.log('Waiting for Chart.js to load...');
-        }
-    }, 100);
-    
-    // Fallback: Try to load charts after 3 seconds anyway
-    setTimeout(() => {
-        if (typeof Chart !== 'undefined' && !window.chartsInitialized) {
-            console.log('Fallback chart initialization...');
-            initializeCharts();
-            initializeTimeline();
-        }
-    }, 3000);
-    
-    hideLoadingScreen();
+            }
+        }, 3000);
+
+        hideLoadingScreen();
+    } catch (error) {
+        console.error('[AdvertiserProfile] Initialization error:', error);
+        hideLoadingScreen();
+    }
 });
 
 // App Initialization

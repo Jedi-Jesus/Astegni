@@ -42,14 +42,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             localStorage_userRole: localStorage.getItem('userRole')
         });
 
-        if (userRole !== 'student') {
-            console.warn(`⚠️ User role is '${userRole}', not 'student'. Redirecting...`);
-            alert(`This page is for students only. You are logged in as: ${userRole}\n\nPlease switch to your student role or log in with a student account.`);
+        // More defensive role check - handle undefined, null, and string "undefined"
+        const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+
+        if (normalizedRole !== 'student') {
+            console.warn(`⚠️ [StudentProfile] User role is '${normalizedRole}', not 'student'. Redirecting...`);
+            alert(`This page is for students only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your student role or log in with a student account.`);
             window.location.href = '../index.html';
             return;
         }
 
-        console.log('✅ Authentication verified for student role');
+        console.log('✅ [StudentProfile] Authentication verified for student role');
 
         // ============================================
         // INITIALIZE PROFILE

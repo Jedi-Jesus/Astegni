@@ -71,10 +71,60 @@ let chartInstance = null;
 // Initialization
 // ===========================
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     console.log('[ParentProfile] DOM Content Loaded'); // Debug log
 
     try {
+        // ============================================
+        // AUTHENTICATION CHECK
+        // ============================================
+        // Check if AuthManager is loaded
+        if (typeof AuthManager === 'undefined' || typeof window.AuthManager === 'undefined') {
+            console.error('❌ AuthManager not loaded! Redirecting to login...');
+            alert('Authentication manager not loaded. Please refresh the page.');
+            window.location.href = '../index.html';
+            return;
+        }
+
+        // Wait for AuthManager to restore session
+        await window.AuthManager.restoreSession();
+
+        // Check if user is authenticated
+        if (!window.AuthManager.isAuthenticated()) {
+            console.warn('⚠️ User not authenticated. Redirecting to login...');
+            alert('Please log in to access your parent profile.');
+            window.location.href = '../index.html';
+            return;
+        }
+
+        // Check if user has parent role
+        const userRole = window.AuthManager.getUserRole();
+        const user = window.AuthManager.getUser();
+
+        // DEBUG: Log detailed role information
+        console.log('🔍 [ParentProfile] Role Check Debug:', {
+            userRole: userRole,
+            user_active_role: user?.active_role,
+            user_role: user?.role,
+            user_roles: user?.roles,
+            localStorage_userRole: localStorage.getItem('userRole')
+        });
+
+        // More defensive role check - handle undefined, null, and string "undefined"
+        const normalizedRole = userRole && userRole !== 'undefined' && userRole !== 'null' ? userRole : null;
+
+        if (normalizedRole !== 'parent') {
+            console.warn(`⚠️ [ParentProfile] User role is '${normalizedRole}', not 'parent'. Redirecting...`);
+            alert(`This page is for parents only. You are logged in as: ${normalizedRole || 'unknown'}\n\nPlease switch to your parent role or log in with a parent account.`);
+            window.location.href = '../index.html';
+            return;
+        }
+
+        console.log('✅ [ParentProfile] Authentication verified for parent role');
+
+        // ============================================
+        // INITIALIZE APP
+        // ============================================
         // NOTE: Sidebar navigation is now handled by side-panel-navigation.js
         // No need to initialize SidebarManager here
 

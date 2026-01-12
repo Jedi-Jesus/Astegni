@@ -66,49 +66,72 @@ class AuthenticationManager {
     //   SESSION MANAGEMENT
     // ============================================
     async restoreSession() {
+        console.log('[AuthManager.restoreSession] Starting session restoration...');
+
         // Check both 'token' and 'access_token' for compatibility
         const token = localStorage.getItem('token') || localStorage.getItem('access_token');
         const user = localStorage.getItem('currentUser');
 
+        console.log('[AuthManager.restoreSession] Found token:', !!token, 'Found user:', !!user);
+
         if (token && user) {
-            this.token = token;
-            this.user = JSON.parse(user);
+            try {
+                this.token = token;
+                this.user = JSON.parse(user);
 
-            // Ensure user has roles array (for backward compatibility)
-            if (!this.user.roles && this.user.role) {
-                this.user.roles = [this.user.role];
-            }
-
-            // FIX: Ensure active_role is properly restored from localStorage
-            const storedUserRole = localStorage.getItem('userRole');
-            if (storedUserRole && !this.user.active_role) {
-                console.log('[AuthManager.restoreSession] Restoring active_role from userRole:', storedUserRole);
-                this.user.active_role = storedUserRole;
-            }
-
-            // If still no active_role but we have a role property, use that
-            if (!this.user.active_role && this.user.role) {
-                console.log('[AuthManager.restoreSession] Setting active_role from user.role:', this.user.role);
-                this.user.active_role = this.user.role;
-            }
-
-            // CRITICAL FIX: If role_ids is missing, fetch fresh user data from /api/me
-            if (!this.user.role_ids) {
-                console.log('[AuthManager.restoreSession] role_ids missing, fetching from /api/me...');
-                this.fetchUserData().catch(error => {
-                    console.warn('[AuthManager.restoreSession] Failed to fetch user data:', error);
+                console.log('[AuthManager.restoreSession] Parsed user:', {
+                    id: this.user.id,
+                    active_role: this.user.active_role,
+                    roles: this.user.roles
                 });
+
+                // Ensure user has roles array (for backward compatibility)
+                if (!this.user.roles && this.user.role) {
+                    this.user.roles = [this.user.role];
+                }
+
+                // FIX: Ensure active_role is properly restored from localStorage
+                const storedUserRole = localStorage.getItem('userRole');
+                if (storedUserRole && storedUserRole !== 'undefined' && storedUserRole !== 'null') {
+                    if (!this.user.active_role || this.user.active_role === 'undefined') {
+                        console.log('[AuthManager.restoreSession] Restoring active_role from userRole:', storedUserRole);
+                        this.user.active_role = storedUserRole;
+                    }
+                }
+
+                // If still no active_role but we have a role property, use that
+                if ((!this.user.active_role || this.user.active_role === 'undefined') && this.user.role && this.user.role !== 'undefined') {
+                    console.log('[AuthManager.restoreSession] Setting active_role from user.role:', this.user.role);
+                    this.user.active_role = this.user.role;
+                }
+
+                // CRITICAL FIX: If role_ids is missing, fetch fresh user data from /api/me
+                // But don't block - let the page load even if this fails
+                if (!this.user.role_ids) {
+                    console.log('[AuthManager.restoreSession] role_ids missing, fetching from /api/me...');
+                    this.fetchUserData().catch(error => {
+                        console.warn('[AuthManager.restoreSession] Failed to fetch user data:', error);
+                    });
+                }
+
+                // Verify token in background - don't block session restoration
+                this.verifyToken().catch(error => {
+                    // Silently handle token verification errors
+                    // Don't clear auth on network errors - allow offline usage
+                });
+
+                console.log('[AuthManager.restoreSession] Session restored successfully');
+                return true;
+            } catch (error) {
+                console.error('[AuthManager.restoreSession] Error parsing user data:', error);
+                // Clear corrupted data
+                localStorage.removeItem('currentUser');
+                this.user = null;
+                return false;
             }
-
-            // Verify token in background - don't block session restoration
-            this.verifyToken().catch(error => {
-                // Silently handle token verification errors
-                // Don't clear auth on network errors - allow offline usage
-            });
-
-            return true;
         }
 
+        console.log('[AuthManager.restoreSession] No session to restore');
         return false;
     }
 

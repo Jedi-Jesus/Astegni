@@ -5401,20 +5401,29 @@ async def get_parent_profile(
         "user_id": parent_profile.user_id,
         "username": parent_profile.username,  # Username from parent_profiles table only
         "name": f"{current_user.first_name} {current_user.father_name}",
+        "first_name": current_user.first_name,
+        "father_name": current_user.father_name,
+        "grandfather_name": current_user.grandfather_name,
         "bio": parent_profile.bio,
         "quote": parent_profile.quote,
         "relationship_type": parent_profile.relationship_type,
         "location": parent_profile.location,
-        "education_focus": parent_profile.education_focus,
         "email": current_user.email,
         "phone": current_user.phone,
+        "gender": current_user.gender,
         "total_children": parent_profile.total_children,
-        "active_children": parent_profile.active_children,
+        # Note: active_children field removed - doesn't exist in model (use total_children)
+        # Note: education_focus field removed - doesn't exist in model
         "rating": parent_profile.rating,
         "rating_count": parent_profile.rating_count,
         "is_verified": parent_profile.is_verified,
+        "is_active": parent_profile.is_active,
         "profile_picture": parent_profile.profile_picture,
         "cover_image": parent_profile.cover_image,
+        "hero_title": parent_profile.hero_title,
+        "hero_subtitle": parent_profile.hero_subtitle,
+        "children_ids": parent_profile.children_ids,
+        "coparent_ids": parent_profile.coparent_ids,
         "created_at": parent_profile.created_at,
         "updated_at": parent_profile.updated_at
     }
