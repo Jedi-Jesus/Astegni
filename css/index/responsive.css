@@ -78,12 +78,17 @@
         display: none !important;
     }
 
+    /* Show mobile menu button - high specificity */
     .hamburger,
     button.hamburger,
     #menu-btn,
     .mobile-menu-btn,
-    #mobileMenuBtn {
+    #mobileMenuBtn,
+    button.mobile-menu-btn,
+    button#mobileMenuBtn {
         display: flex !important;
+        align-items: center;
+        justify-content: center;
     }
 }
 
@@ -227,13 +232,21 @@
         display: none !important;
     }
 
+    /* Show mobile menu button - CRITICAL for mobile visibility */
     .hamburger,
     button.hamburger,
     #menu-btn,
     .mobile-menu-btn,
-    #mobileMenuBtn {
+    #mobileMenuBtn,
+    button.mobile-menu-btn,
+    button#mobileMenuBtn {
         display: flex !important;
+        align-items: center;
+        justify-content: center;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
+}
 
     /* Hero Section */
     .hero-section {
@@ -668,12 +681,21 @@
         display: none !important;
     }
 
+    /* CRITICAL: Show hamburger button on all small screens */
     .hamburger,
     button.hamburger,
-    #menu-btn {
+    #menu-btn,
+    .mobile-menu-btn,
+    #mobileMenuBtn,
+    button.mobile-menu-btn,
+    button#mobileMenuBtn {
         display: flex !important;
+        align-items: center;
+        justify-content: center;
         width: 26px;
-        height: 18px;
+        height: auto;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 
     /* Counter Grid */
