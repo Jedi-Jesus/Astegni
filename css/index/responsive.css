@@ -80,7 +80,9 @@
 
     .hamburger,
     button.hamburger,
-    #menu-btn {
+    #menu-btn,
+    .mobile-menu-btn,
+    #mobileMenuBtn {
         display: flex !important;
     }
 }
@@ -227,7 +229,9 @@
 
     .hamburger,
     button.hamburger,
-    #menu-btn {
+    #menu-btn,
+    .mobile-menu-btn,
+    #mobileMenuBtn {
         display: flex !important;
     }
 
